@@ -86,6 +86,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AA4A8AEA-0640-4FFF-922B-AEBFC799DB85}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
+		..\Directory.Build.props = ..\Directory.Build.props
 		..\LICENSE = ..\LICENSE
 		..\PUBLISHING.md = ..\PUBLISHING.md
 		..\README.md = ..\README.md

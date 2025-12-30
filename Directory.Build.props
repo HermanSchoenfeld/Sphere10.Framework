@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/HermanSchoenfeld/Hydrogen</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/HermanSchoenfeld/Hydrogen</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression Condition="'$(PackageLicenseFile)' == ''">MIT</PackageLicenseExpression>
     <PackageIconUrl>https://raw.githubusercontent.com/HermanSchoenfeld/Hydrogen/master/resources/branding/hydrogen-logo.png</PackageIconUrl>
     
     <!-- Version Management -->

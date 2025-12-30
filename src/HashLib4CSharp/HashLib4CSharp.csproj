@@ -14,7 +14,7 @@
         <PackageTags>hash crypto cryptography</PackageTags>
         <RepositoryUrl>https://github.com/Xor-el/HashLib4CSharp.git</RepositoryUrl>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageLicenseExpression>Apache-2.0 OR MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Xor-el/HashLib4CSharp</PackageProjectUrl>
         <PackageVersion>1.5.0</PackageVersion>
     </PropertyGroup>

@@ -90,6 +90,8 @@ $Projects = Get-ChildItem -Path $SrcPath -Filter "*.csproj" -Recurse |
     Where-Object { $_.BaseName -notmatch "\.DApp\." } |
     Where-Object { $_.BaseName -notmatch "^Hydrogen\.Generators$" } |
     Where-Object { $_.BaseName -notmatch "^Hydrogen\.NUnit" } |
+    Where-Object { $_.BaseName -notmatch "^Hydrogen\.Android$" } |
+    Where-Object { $_.BaseName -notmatch "^Hydrogen\.iOS$" } |
     Sort-Object Name
 
 Write-Information "[LIST] Found $($Projects.Count) projects to pack:"
