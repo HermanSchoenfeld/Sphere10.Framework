@@ -2,9 +2,8 @@
 <Project>
   <!-- Shared version and metadata across all projects -->
   <PropertyGroup>
-    <Company>Sphere 10 Software</Company>
     <Authors>Herman Schoenfeld</Authors>
-    <Copyright>Sphere 10 Software Pty Ltd</Copyright>
+    <Copyright>Herman Schoenfeld</Copyright>
     <RepositoryUrl>https://github.com/HermanSchoenfeld/Hydrogen</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/HermanSchoenfeld/Hydrogen</PackageProjectUrl>
