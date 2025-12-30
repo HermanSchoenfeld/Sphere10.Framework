@@ -3,6 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
+		<Description>NHibernate ORM integration for Hydrogen.Data providing object-relational mapping and LINQ support.</Description>
+		<PackageTags>nhibernate;orm;mapping;sql;database;linq</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

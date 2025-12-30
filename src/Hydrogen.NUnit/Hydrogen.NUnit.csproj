@@ -4,6 +4,8 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
+		<Description>NUnit testing extensions and utilities for Hydrogen framework providing test helpers and assertion extensions.</Description>
+		<PackageTags>nunit;testing;unit-tests;assertions;test-utilities</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

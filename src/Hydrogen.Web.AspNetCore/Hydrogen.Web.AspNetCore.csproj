@@ -5,6 +5,8 @@
     <AssemblyName>Hydrogen.Web.AspNetCore</AssemblyName>
     <RootNamespace>Hydrogen.Web.AspNetCore</RootNamespace>
     <LangVersion>preview</LangVersion>
+    <Description>ASP.NET Core integration for Hydrogen framework providing web services, middleware, and server-side utilities.</Description>
+    <PackageTags>aspnetcore;web;server;http;middleware;api</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

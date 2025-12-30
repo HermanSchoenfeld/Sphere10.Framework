@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <Description>Windows-specific utilities and extensions providing native Windows API integration, registry access, and platform-specific features.</Description>
+    <PackageTags>windows;native;winapi;registry;platform</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

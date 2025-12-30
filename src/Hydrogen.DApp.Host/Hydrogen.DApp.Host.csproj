@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <Description>DApp host application providing node hosting and DApp service deployment platform.</Description>
+    <PackageTags>dapp;host;node;deployment;blockchain</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

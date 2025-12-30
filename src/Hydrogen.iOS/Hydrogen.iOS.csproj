@@ -3,6 +3,9 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Nullable>disable</Nullable>
+    <Description>iOS platform bindings for Hydrogen framework providing mobile application support and iOS native integration.</Description>
+    <PackageTags>ios;mobile;xamarin;platform;bindings;iphone;ipad</PackageTags>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{E71F3053-056C-4381-9638-048ED73BDFF6}</ProjectGuid>

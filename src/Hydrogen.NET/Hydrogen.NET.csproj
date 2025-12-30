@@ -2,6 +2,8 @@
 
   <PropertyGroup>
 	  <TargetFramework>net8.0</TargetFramework>
+	  <Description>.NET specific extensions and utilities for Hydrogen framework providing platform-specific features and APIs.</Description>
+	  <PackageTags>dotnet;extensions;utilities;platform;framework</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

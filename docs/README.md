@@ -259,7 +259,7 @@ Each project in `/src` has its own README with examples and usage patterns:
 
 ## 🔗 Related Resources
 
-- **[GitHub Repository](https://github.com/Sphere10/Hydrogen)** — Source code
+- **[GitHub Repository](https://github.com/HermanSchoenfeld/Hydrogen)** — Source code
 - **[NuGet Packages](https://www.nuget.org/packages?q=Hydrogen)** — Published packages
 - **[Source Code Documentation](../src/README.md)** — Project structure
 

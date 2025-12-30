@@ -4,6 +4,8 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
+		<Description>Graphics and drawing utilities library providing image processing, color management, and UI rendering support.</Description>
+		<PackageTags>graphics;drawing;imaging;colors;ui;rendering</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

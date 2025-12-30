@@ -5,6 +5,8 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
+    <Description>Windows Forms UI controls for SQLite database connections. Provides ConnectionBar and ConnectionPanel implementations used dynamically by Hydrogen.Windows.Forms when SQLite is selected.</Description>
+    <PackageTags>winforms;sqlite;controls;connectionbar;connectionpanel;embedded</PackageTags>
   </PropertyGroup>
   
   <ItemGroup>

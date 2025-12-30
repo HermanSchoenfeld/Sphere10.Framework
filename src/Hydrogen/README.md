@@ -1569,7 +1569,7 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 
 ## 📖 Resources
 
-- **GitHub**: [Sphere10/Hydrogen](https://github.com/Sphere10/Hydrogen)
+- **GitHub**: [HermanSchoenfeld/Hydrogen](https://github.com/HermanSchoenfeld/Hydrogen)
 - **Website**: [sphere10.com](https://sphere10.com)
 - **Company**: Sphere 10 Software Pty Ltd
 

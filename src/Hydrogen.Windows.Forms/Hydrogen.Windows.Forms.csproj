@@ -8,6 +8,8 @@
 		<AssemblyName>Hydrogen.Windows.Forms</AssemblyName>
 		<RootNamespace>Hydrogen.Windows.Forms</RootNamespace>
 		<LangVersion>latest</LangVersion>
+		<Description>Windows Forms UI components library providing ready-to-use controls, grids, dialogs and utilities for Windows desktop applications.</Description>
+		<PackageTags>winforms;ui;controls;gui;desktop;windows</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

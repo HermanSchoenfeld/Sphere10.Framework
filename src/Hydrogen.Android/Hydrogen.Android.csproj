@@ -3,6 +3,9 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Nullable>disable</Nullable>
+    <Description>Android platform bindings for Hydrogen framework providing mobile application support and Android native integration.</Description>
+    <PackageTags>android;mobile;xamarin;platform;bindings</PackageTags>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{A574303A-F6D7-4E41-ADB8-E3BA4A79AAC4}</ProjectGuid>

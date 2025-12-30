@@ -6,6 +6,8 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ApplicationIcon />
 		<StartupObject />
+		<Description>Decentralized application (DApp) core framework providing blockchain integration, smart contracts, and distributed consensus mechanisms.</Description>
+		<PackageTags>dapp;blockchain;consensus;distributed;smart-contracts</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Description>Code generators for Hydrogen framework providing automated code generation utilities and T4 templates.</Description>
+    <PackageTags>codegen;generators;t4;automation;templates</PackageTags>
   </PropertyGroup>
 
 </Project>

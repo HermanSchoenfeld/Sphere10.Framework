@@ -66,5 +66,5 @@ The protocol which governs a HAP lifecycle is called the Host Protocol. It compr
 ![Hydrogen Application (HAP) Lifecycle](resources/host-protocol.svg)
 
 
-[1]: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen.DApp.Core/Runtime "Hydrogen Host Protocol source-code"
+[1]: https://github.com/HermanSchoenfeld/Hydrogen/tree/master/src/Hydrogen.DApp.Core/Runtime "Hydrogen Host Protocol source-code"
 

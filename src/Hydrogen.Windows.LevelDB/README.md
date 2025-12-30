@@ -118,8 +118,19 @@ DB.Destroy("mydb", new Options { CreateIfMissing = true });
 ## 📦 Dependencies
 
 - **Hydrogen**: Core framework library
-- **LevelDB**: Native LevelDB database engine
+- **LevelDB**: Native LevelDB database engine (BSD License)
 - **Snappy**: Compression library
+
+## 📜 License Attribution
+
+This package includes or uses the following third-party components:
+
+### LevelDB
+- **License**: BSD 3-Clause License
+- **Source**: https://github.com/google/leveldb
+- **Notice**: LevelDB is distributed under the BSD 3-Clause License. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met.
+
+For complete license details, see: https://github.com/google/leveldb/blob/master/LICENSE
 
 ## 💡 Use Cases
 
@@ -134,6 +145,7 @@ DB.Destroy("mydb", new Options { CreateIfMissing = true });
 - **Snapshots don't require locking** - they're copy-on-write
 - Always use `using` statements to ensure proper database cleanup
 - **Single writer** - only one writer at a time, but multiple concurrent readers are supported
+- **LevelDB License Compliance**: This package embeds LevelDB native binaries. Redistribution complies with LevelDB's BSD 3-Clause License - see License Attribution section above
 
 ## 📄 Related Projects
 

@@ -3,6 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
+		<Description>Cross-platform application framework providing core services for desktop and mobile applications including settings, licensing, command management, and UI components.</Description>
+		<PackageTags>application;framework;ui;desktop;mobile;mvvm</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

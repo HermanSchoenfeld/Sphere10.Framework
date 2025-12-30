@@ -4,6 +4,8 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
+		<Description>SQLite database provider for Hydrogen.Data providing lightweight embedded database support with schema management.</Description>
+		<PackageTags>sqlite;database;embedded;ado.net;data-access;sql</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
