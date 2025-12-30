@@ -7,8 +7,6 @@
 		<Company>Sphere 10 Software</Company>
 		<Copyright>Sphere 10 Software Pty Ltd</Copyright>
 		<LangVersion>latest</LangVersion>
-		<Description>LevelDB embedded key-value store integration for Windows providing fast, lightweight database access.</Description>
-		<PackageTags>leveldb;database;embedded;kvstore;key-value;windows</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

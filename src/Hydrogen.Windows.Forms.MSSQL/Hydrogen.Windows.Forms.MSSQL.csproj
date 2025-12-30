@@ -5,8 +5,6 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
-    <Description>Windows Forms UI controls for SQL Server connections. Provides ConnectionBar and ConnectionPanel implementations used dynamically by Hydrogen.Windows.Forms when SQL Server is selected.</Description>
-    <PackageTags>winforms;sqlserver;mssql;controls;connectionbar;connectionpanel</PackageTags>
   </PropertyGroup>
   
   <ItemGroup>

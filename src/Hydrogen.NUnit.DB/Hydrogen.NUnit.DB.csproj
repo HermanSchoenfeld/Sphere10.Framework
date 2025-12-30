@@ -3,8 +3,6 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Description>Database testing utilities for NUnit providing test data builders, fixtures, and database helpers.</Description>
-		<PackageTags>nunit;database;testing;test-fixtures;data-access;helpers</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

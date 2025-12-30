@@ -4,8 +4,6 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
-		<Description>Firebird database provider for Hydrogen.Data providing ADO.NET support and schema management for Firebird databases.</Description>
-		<PackageTags>firebird;database;ado.net;data-access;sql</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

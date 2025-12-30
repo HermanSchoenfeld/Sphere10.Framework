@@ -3,19 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Description>Network communications library providing UDP, TCP, and P2P networking capabilities with Kademlia DHT support.</Description>
-		<PackageTags>networking;udp;tcp;p2p;kademlia;dht;communications</PackageTags>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <Compile Remove="Kademlia\**" />
-	  <EmbeddedResource Remove="Kademlia\**" />
-	  <None Remove="Kademlia\**" />
-	</ItemGroup>
 
 	<ItemGroup>
 	  <Compile Remove="UDP\UDPClient.cs" />
 	  <Compile Remove="UDP\UDPEndpoint.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Kademlia\" />
 	</ItemGroup>
 
 	<ItemGroup>

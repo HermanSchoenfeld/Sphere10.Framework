@@ -3,8 +3,6 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Description>Extended cryptography library providing hashing, encryption, digital signatures, and key derivation algorithms with HashLib4CSharp integration.</Description>
-		<PackageTags>cryptography;hashing;encryption;signing;security;hashlib</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

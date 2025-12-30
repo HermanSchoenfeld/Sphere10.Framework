@@ -8,7 +8,6 @@
 		<Description>General-purpose library for full-stack use. Provides support for Caching, Collections, Comparers, Converion, Environment, Events, Exceptions, IO, FileSystem, Lambdas, Logging, Math, Memory, Scopes, Text, Threading, Scheduling and many other aspects.</Description>
 		<Copyright>Sphere 10 Software Pty Ltd</Copyright>
 		<!--<DefineConstants>ENABLE_CLUSTER_DIAGNOSTICS</DefineConstants>--> <!-- Enable this only for diagnosing clustered storage errors. Extremely slow. -->
-<<<<<<< HEAD
 		<PackageLicenseUrl>https://raw.githubusercontent.com/Sphere10/Framework/master/LICENSE</PackageLicenseUrl>
 		<PackageProjectUrl>https://github.com/Sphere10/Framework</PackageProjectUrl>
 		<PackageIconUrl>https://raw.githubusercontent.com/Sphere10/Framework/master/NugetIcon_64x64.png</PackageIconUrl>
@@ -16,8 +15,6 @@
 		<PackageReleaseNotes>Initial public release</PackageReleaseNotes>
 		<PackageTags>Collections, Comparers, Conversion, IO, Network, Cache, Logging, Threading, Scheduling, Math</PackageTags>
 		<Version>2.0.2</Version>
-=======
->>>>>>> 0ca8db07 (chore: v1.0.0 NuGet preparation - versioning, repository URLs, documentation, and packaging configuration)
 		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

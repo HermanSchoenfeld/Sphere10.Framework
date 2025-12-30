@@ -4,8 +4,6 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
-		<Description>SQL Server database provider for Hydrogen.Data providing ADO.NET support and schema management for SQL Server databases.</Description>
-		<PackageTags>sqlserver;mssql;database;ado.net;data-access;sql</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

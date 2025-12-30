@@ -4,8 +4,6 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<Description>Standalone DApp node application for blockchain network participation and distributed consensus.</Description>
-		<PackageTags>dapp;node;blockchain;consensus;network;distributed</PackageTags>
 	</PropertyGroup>
 	
 	<ItemGroup>
