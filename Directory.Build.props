@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Authors>Herman Schoenfeld</Authors>
     <Copyright>Herman Schoenfeld</Copyright>
-    <RepositoryUrl>https://github.com/HermanSchoenfeld/Hydrogen</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Sphere10/Sphere10.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/HermanSchoenfeld/Hydrogen</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Sphere10/Sphere10.Framework</PackageProjectUrl>
     <PackageLicenseExpression Condition="'$(PackageLicenseFile)' == ''">MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://raw.githubusercontent.com/HermanSchoenfeld/Hydrogen/master/resources/branding/hydrogen-logo.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/Sphere10/Sphere10.Framework/master/resources/branding/sphere10-icon.png</PackageIconUrl>
     
     <!-- Version Management -->
     <Version>1.0.0</Version>
@@ -35,7 +35,7 @@
   <!-- Package metadata defaults -->
   <PropertyGroup>
     <PackageTags>cryptography;framework;collections</PackageTags>
-    <Description Condition="'$(Description)' == ''">Hydrogen Framework</Description>
+    <Description Condition="'$(Description)' == ''">Sphere10 Framework</Description>
   </PropertyGroup>
 
 </Project>
