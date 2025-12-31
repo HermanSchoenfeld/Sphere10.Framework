@@ -1,13 +1,14 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Packs all Hydrogen framework projects into NuGet packages.
+    Packs all Sphere10 Framework projects into NuGet packages.
 
 .DESCRIPTION
-    Builds and packages all projects in the framework for release.
+    Builds and packages all projects in the Sphere10 Framework for release.
     - Uses local project references (UseLocalProjects=true) by default
     - Pass -UseNugetReferences to simulate production builds
     - Outputs packages to ./nuget-packages/
+    - Framework version: 3.0.0
 
 .EXAMPLE
     # Pack all projects (development build, local references)
@@ -38,8 +39,8 @@ $SolutionRoot = Split-Path -Parent $PSScriptRoot
 $SrcPath = Join-Path $SolutionRoot "src"
 $OutputFullPath = Join-Path $SolutionRoot $OutputPath
 
-Write-Information "[PACK] Hydrogen Framework NuGet Pack Script"
-Write-Information "=========================================="
+Write-Information "[PACK] Sphere10 Framework NuGet Pack Script"
+Write-Information "========================================="
 Write-Information "Solution Root: $SolutionRoot"
 Write-Information "Output Path: $OutputFullPath"
 Write-Information "Configuration: $Configuration"
@@ -88,10 +89,10 @@ if ($Verbose) {
 $Projects = Get-ChildItem -Path $SrcPath -Filter "*.csproj" -Recurse | 
     Where-Object { $_.Name -notmatch "\.Tests\.csproj$" } |
     Where-Object { $_.BaseName -notmatch "\.DApp\." } |
-    Where-Object { $_.BaseName -notmatch "^Hydrogen\.Generators$" } |
-    Where-Object { $_.BaseName -notmatch "^Hydrogen\.NUnit" } |
-    Where-Object { $_.BaseName -notmatch "^Hydrogen\.Android$" } |
-    Where-Object { $_.BaseName -notmatch "^Hydrogen\.iOS$" } |
+    Where-Object { $_.BaseName -notmatch "^Sphere10\.Framework\.Generators$" } |
+    Where-Object { $_.BaseName -notmatch "^Sphere10\.Framework\.NUnit" } |
+    Where-Object { $_.BaseName -notmatch "^Sphere10\.Framework\.Android$" } |
+    Where-Object { $_.BaseName -notmatch "^Sphere10\.Framework\.iOS$" } |
     Sort-Object Name
 
 Write-Information "[LIST] Found $($Projects.Count) projects to pack:"

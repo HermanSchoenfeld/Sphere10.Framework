@@ -11,6 +11,7 @@ Complete documentation for the Sphere10 Framework — a comprehensive .NET 8.0 f
 ### Essential Reading
 
 - **[START-HERE.md](START-HERE.md)** — Begin here for framework overview and quick navigation
+- **[Tools-Reference.md](Tools-Reference.md)** — Complete catalog of Tools.* namespace
 - **[DApp-Development-Guide.md](DApp-Development-Guide.md)** — Complete guide for building blockchain applications
 
 ### Architecture & Design

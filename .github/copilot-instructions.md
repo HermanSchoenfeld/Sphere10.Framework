@@ -44,9 +44,26 @@ resources/                    # Branding, fonts, presentations
 
 ## 🏛️ Architectural Patterns
 
+### Core Feature: Tools.* Namespace
+
+The **Tools namespace** is a defining architectural feature providing global, IntelliSense-discoverable static utility methods:
+
+- **Tools.Array, Tools.Collection, Tools.Text, Tools.Crypto** – Framework-wide utilities
+- **Tools.Sqlite, Tools.MSSql, Tools.NHibernate** – Database-specific tools
+- **Tools.WinTool, Tools.iOSTool, Tools.Web.AspNetCore** – Platform-specific extensions
+- **Discovery Pattern**: Type `Tools.` to explore all available operations
+- **Extensibility**: Each project adds its own Tool class to the Tools namespace
+
+Example:
+```csharp
+var encrypted = Tools.Crypto.Encrypt(plaintext, password);
+var sanitized = Tools.Text.RemoveWhitespace(input);
+byte[] hash = Tools.Crypto.SHA256(data);
+```
+
 ### Layered Design
-1. **Core Framework** (`Sphere10.Framework`) — Utilities, collections, serialization, DI
-2. **Data Access** (`Sphere10.Framework.Data`) — ADO.NET abstraction, multi-DB support
+1. **Core Framework** (`Sphere10.Framework`) — Utilities, collections, serialization, **Tools.* namespace**
+2. **Data Access** (`Sphere10.Framework.Data`) — ADO.NET abstraction, multi-DB support, **Tools.Data**
 3. **Networking** (`Sphere10.Framework.Communications`) — TCP, UDP, WebSockets, RPC
 4. **Blockchain/DApp** (`Sphere10.Framework.DApp.*`) — Blocks, wallets, plugins, nodes
 5. **Presentation** (`blackhole/`) — Blazor components, WebAssembly hosting

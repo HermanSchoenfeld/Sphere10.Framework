@@ -1,11 +1,12 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Publishes Hydrogen NuGet packages to NuGet.org
+    Publishes Sphere10 Framework NuGet packages to NuGet.org
 
 .DESCRIPTION
     Uploads pre-built NuGet packages from nuget-packages/ to NuGet.org
     Requires NUGET_API_KEY environment variable to be set.
+    Framework version: 3.0.0
 
 .EXAMPLE
     # Publish all packages
@@ -13,7 +14,7 @@
 
 .EXAMPLE
     # Publish specific package
-    .\scripts\publish.ps1 -ApiKey $apiKey -PackagePattern "Hydrogen.Data*"
+    .\scripts\publish.ps1 -ApiKey $apiKey -PackagePattern "Sphere10.Framework.Data*"
 
 .EXAMPLE
     # Dry run (don't actually publish)
@@ -45,8 +46,8 @@ if ([string]::IsNullOrWhiteSpace($ApiKey)) {
 $SolutionRoot = Split-Path -Parent $PSScriptRoot
 $PackagesFullPath = Join-Path $SolutionRoot $PackagesPath
 
-Write-Information "[>] Hydrogen Framework NuGet Publish"
-Write-Information "===================================="
+Write-Information "[>] Sphere10 Framework NuGet Publish"
+Write-Information "====================================="
 Write-Information "Package Path: $PackagesFullPath"
 Write-Information "NuGet Source: $Source"
 Write-Information "Dry Run: $DryRun"

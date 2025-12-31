@@ -248,6 +248,45 @@ Corresponding WinForms projects available for GUI applications:
 - **Bulk Operations**: Efficient batch insert/update patterns
 - **CSV/XML Support**: Data import/export utilities
 
+## 🛠️ Tools.* Namespace
+
+This project extends the global Tools namespace with database-specific utilities:
+
+### **Tools.Data**
+Generic database operations across all providers.
+```csharp
+var connection = Tools.Data.CreateConnection(connectionString);
+var adapter = Tools.Data.CreateDataAdapter(connection);
+```
+
+### **Tools.Sqlite** (via Sphere10.Framework.Data.Sqlite)
+SQLite-specific utilities.
+```csharp
+var dac = Tools.Sqlite.Open(":memory:");
+var dac = Tools.Sqlite.Create(filename, pageSize: 4096);
+Tools.Sqlite.Drop(Tools.Sqlite.GetFilePathFromConnectionString(connStr));
+bool exists = Tools.Sqlite.Exists(connectionString);
+```
+
+### **Tools.MSSql** (via Sphere10.Framework.Data.MSSQL)
+SQL Server-specific utilities.
+```csharp
+var adapter = Tools.MSSql.CreateAdapter(connectionString);
+var connection = Tools.MSSql.CreateConnection(connectionString);
+```
+
+### **Tools.Json** & **Tools.Xml**
+Data format conversion utilities.
+```csharp
+string json = Tools.Json.Serialize(data);
+var deserialized = Tools.Json.Deserialize<T>(json);
+
+string xml = Tools.Xml.Serialize(data);
+var deserialized = Tools.Xml.Deserialize<T>(xml);
+```
+
+For complete Tools reference, see [docs/Tools-Reference.md](../../docs/Tools-Reference.md)
+
 ## 🔌 Extensibility
 
 Implement `IDataAccessContext` to create custom DAC implementations for unsupported databases or specialized persistence needs. All database-specific projects (SQLite, MSSQL, Firebird) extend the abstract `DataAccessContext` base class.

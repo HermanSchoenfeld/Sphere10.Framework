@@ -219,6 +219,12 @@ Services defined with attributes work unchanged across different transport imple
 - **Response Serialization**: C# return values → JSON
 - **Protocol Handlers**: Transport-specific implementations (HTTP, WebSocket, etc.)
 
+## 🛠️ Tools.* Namespace
+
+This project does not define project-specific Tools classes. Refer to related projects:
+- [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) provides **Tools.Web** namespace for HTTP/RPC over ASP.NET Core
+- [docs/Tools-Reference.md](../../docs/Tools-Reference.md) for complete Tools catalog
+
 ## ⚠️ Design Considerations
 
 - **Stateless Services**: Design services as stateless when possible for distributed invocation

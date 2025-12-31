@@ -348,6 +348,38 @@ foreach (var entry in recentEntries) {
 }
 ```
 
+## 🛠️ Tools.* Namespace
+
+This project extends the global Tools namespace with Windows-specific utilities:
+
+### **Tools.WinTool**
+Windows-specific operations: registry, services, events, privileges.
+```csharp
+// Registry operations
+bool exists = Tools.WinTool.KeyExists(hostname, "HKEY_LOCAL_MACHINE\\Software\\MyApp");
+var key = Tools.WinTool.OpenKey(hostname, keyPath);
+var subkeys = Tools.WinTool.GetSubKeys(hostname, keyPath);
+
+// Service management
+bool running = Tools.WinTool.IsServiceRunning("MyService");
+Tools.WinTool.StartService("MyService");
+Tools.WinTool.StopService("MyService");
+
+// Privileges and security
+bool modified = Tools.WinTool.ModifyState(tokenHandle, "SeRestorePrivilege", true);
+ushort hiword = Tools.WinTool.HIWORD(data);
+Key key = Tools.WinTool.VirtualKeyToKey(virtualKeyCode);
+```
+
+### **Tools.WindowsTool**
+Advanced Windows shell operations.
+```csharp
+Tools.WinShell.CreateShortcutForApplication(executable, shortcutPath, arguments);
+string shortcutPath = Tools.WinShell.DetermineStartupShortcutFilename(appName);
+```
+
+For complete Tools reference, see [docs/Tools-Reference.md](../../docs/Tools-Reference.md)
+
 ## 🏗️ Architecture & Modules
 
 **Security Module**: Windows NT security abstraction

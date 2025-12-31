@@ -125,6 +125,7 @@ publish/
 
 # NuGet Packages Directory
 packages/
+nuget-packages/
 *.nupkg
 NBitcoin.Mono.nuspec
 NBitcoin.nuspec

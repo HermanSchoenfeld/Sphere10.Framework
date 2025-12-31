@@ -32,6 +32,154 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 - **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
 - **Maturity**: Production-ready (v2.0.2) with battle-tested core subsystems
 
+## 🛠️ Tools.* Namespace — Global Tooling Framework
+
+The **Tools namespace** is a defining feature of Sphere10 Framework, providing a **global, IntelliSense-discoverable collection of static utility methods** organized by domain. This acts as a single point of discovery for developers—instead of searching for the right helper class, simply type `Tools.` and explore available operations across the entire framework.
+
+### Core Tools Classes
+
+**Framework-Wide Utilities**
+- **Tools.Array** – Array manipulation, copying, resizing, searching
+- **Tools.Collection** – Collection operations, iteration, filtering, transformation
+- **Tools.Crypto** – Hashing, signatures, cryptographic operations
+- **Tools.DateTime** – Date/time parsing, formatting, calculations
+- **Tools.Enum** – Enumeration utilities, descriptions, conversion
+- **Tools.Exception** – Exception handling, formatting, analysis
+- **Tools.Expression** – LINQ expression building and manipulation
+- **Tools.FileSystem** – File I/O, directory operations, temp file management
+- **Tools.Json** – JSON serialization, parsing, transformation
+- **Tools.Lambda** – Lambda expression utilities and manipulation
+- **Tools.Mail** – Email composition and sending utilities
+- **Tools.Math** / **Tools.MathPlus** – Mathematical operations, RNG, advanced calculations
+- **Tools.Memory** – Buffer operations, memory allocation, byte formatting
+- **Tools.Network** – Network utilities, IP operations, connectivity
+- **Tools.Object** – Object cloning, copying, inspection
+- **Tools.Operator** – Generic operator invocation (Add, Subtract, etc.)
+- **Tools.Parse** – String parsing, type conversion
+- **Tools.Reflection** – Reflection utilities, type analysis, member inspection
+- **Tools.Runtime** – Runtime environment, version detection, diagnostics
+- **Tools.Scope** – Transactional scope management
+- **Tools.Span** – Span and memory utilities
+- **Tools.Stream** – Stream operations, decoration, reading/writing
+- **Tools.Text** – String manipulation, formatting, generation
+- **Tools.Thread** – Threading utilities, synchronization, async helpers
+- **Tools.Url** – URL parsing, encoding, manipulation
+- **Tools.Value** – Value type utilities and conversions
+- **Tools.Xml** – XML serialization, parsing, transformation
+
+### Platform-Specific Tools
+
+**Windows Integration**
+- **Tools.WinTool** – Windows registry, services, events, privileges
+- **Tools.WindowsTool** – Advanced Windows operations
+- **Tools.Tool** (WinForms) – WinForms-specific utilities
+
+**Web & Networking**
+- **Tools.Web.Html** – HTML generation, parsing, manipulation
+- **Tools.Web.AspNetCore** – ASP.NET Core integration
+- **Tools.Web.Downloader** – HTTP downloads and streaming
+
+**Database Access**
+- **Tools.Data** – Generic database operations
+- **Tools.Sqlite** – SQLite-specific utilities
+- **Tools.MSSql** – SQL Server-specific utilities
+- **Tools.NHibernate** – NHibernate ORM integration
+- **Tools.Xml** – XML data handling
+- **Tools.Json** – JSON data handling
+
+**Mobile Platforms**
+- **Tools.iOSTool** – iOS-specific utilities
+- **Tools.AndroidTool** – Android-specific utilities (as available)
+
+**Application Framework**
+- **Tools.Config** – Configuration and settings management
+- **Tools.NUnit** – NUnit testing utilities
+- **Tools.Drawing** – Graphics and drawing operations
+- **Tools.Debugger** – Debug-time utilities
+
+### Usage Pattern
+
+```csharp
+using Tools;  // Import the global Tools namespace
+
+// String operations
+string sanitized = Tools.Text.RemoveWhitespace(userInput);
+string truncated = Tools.Text.Truncate(longString, 100);
+
+// Collection operations
+var filtered = Tools.Collection.Where(items, x => x.IsActive);
+var flattened = Tools.Collection.Flatten(nestedList);
+
+// Cryptographic operations
+byte[] hash = Tools.Crypto.SHA256(data);
+bool isValid = Tools.Crypto.VerifySignature(data, signature);
+
+// JSON serialization
+string json = Tools.Json.Serialize(obj);
+var deserialized = Tools.Json.Deserialize<MyType>(json);
+
+// File operations
+string tempFile = Tools.FileSystem.GenerateTempFilename();
+Tools.FileSystem.WriteAllText(path, content);
+
+// Database access
+var dbConnection = Tools.Sqlite.Create(connectionString);
+var dataAdapter = Tools.MSSql.CreateAdapter(connectionString);
+
+// Network utilities
+bool isOnline = Tools.Network.IsInternetAvailable();
+string publicIP = Tools.Network.GetPublicIPAddress();
+
+// Windows-specific (Windows platform only)
+bool serviceRunning = Tools.WinTool.IsServiceRunning("MyService");
+Tools.WinTool.StartService("MyService");
+
+// Web utilities (ASP.NET Core context)
+string sanitized = Tools.Web.Html.SanitizeHtml(userHtml);
+var actionResult = Tools.Web.AspNetCore.CreateResponse(data);
+```
+
+### Design Philosophy
+
+The Tools namespace embodies several key principles:
+
+1. **Discovery-First**: Type `Tools.` to explore all available operations in IntelliSense
+2. **Consistency**: Related operations grouped under consistent tool names
+3. **Extensibility**: Projects extend with their own Tools.* classes (e.g., `Tools.WinTool`, `Tools.iOSTool`)
+4. **Composability**: Tools methods work together seamlessly for complex operations
+5. **Performance**: Methods optimized for production use, with zero-allocation variants where possible
+6. **Type Safety**: Generic methods preserve type information, avoiding casts
+
+### Extending with Custom Tools
+
+New projects in the framework define their own tool classes:
+
+```csharp
+// In Sphere10.Framework.Windows
+namespace Tools;
+
+public static class WinTool {
+    public static bool IsServiceRunning(string serviceName) { /* ... */ }
+    public static void StartService(string serviceName) { /* ... */ }
+}
+
+// In Sphere10.Framework.Data.MSSQL
+namespace Tools;
+
+public static class MSSqlTool {
+    public static IDataAccessCommand CreateAdapter(string connectionString) { /* ... */ }
+}
+
+// In Sphere10.Framework.Web.AspNetCore
+namespace Tools.Web;
+
+public static class AspNetCoreTool {
+    public static IActionResult CreateResponse<T>(T data) { /* ... */ }
+}
+```
+
+When a new domain adds its own tool class, it automatically becomes discoverable alongside all other tools.
+
 ## 🚀 Quick Navigation
 
 ### Core Sphere10 Framework Library Domains
