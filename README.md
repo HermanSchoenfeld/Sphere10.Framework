@@ -33,15 +33,15 @@ Copyright © Herman Schoenfeld, Sphere 10 Software 2018 - Present
 
 
 
-## � Project Structure
+## 📦 Project Structure
 
-The Sphere10 Framework framework consists of **45+ projects** organized by category within `src/`, `tests/`, and `utils/`:
+The Sphere10 Framework consists of **45+ projects** organized by category within `src/`, `tests/`, and `utils/`:
 
 ### 🔧 Core Framework & Utilities
 
 | Project | Purpose |
 |---------|---------|
-| [**Sphere10 Framework**](src/Sphere10 Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more |
+| [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more |
 | [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, command-line interface, and presentation framework |
 | [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes |
 | [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation |
@@ -97,7 +97,7 @@ The Sphere10 Framework framework consists of **45+ projects** organized by categ
 
 ## ✅ Test Projects
 
-The `tests/` directory contains **2000+ comprehensive tests** covering all framework subsystems:
+The `tests/` directory contains **2000+ comprehensive unit and integration tests** covering all framework subsystems:
 
 
 | Test Project | Purpose |
@@ -125,11 +125,11 @@ The `blackhole/` directory contains the Blazor-based presentation layer and alte
 | [**Sphere10.Framework.DApp.Presentation2**](blackhole/Sphere10.Framework.DApp.Presentation2/README.md) | Alternative presentation implementation with advanced patterns |
 | [**Sphere10.Framework.DApp.Presentation2.Loader**](blackhole/Sphere10.Framework.DApp.Presentation2.Loader/README.md) | WebAssembly host for the alternative presentation |
 
-## � Documentation & Learning
+## 📚 Documentation & Learning
 
 ### 🏗️ Architecture
 
-1. [What is the Sphere10 Framework Framework?](docs/Architecture/Sphere10.Framework.md)
+1. [What is the Sphere10 Framework?](docs/Architecture/Sphere10.Framework.md)
 2. [Sphere10 Framework Runtime](docs/Architecture/Runtime.md)
 3. [Framework Domains](docs/Architecture/Domains.md)
 
@@ -146,7 +146,7 @@ The `blackhole/` directory contains the Blazor-based presentation layer and alte
 9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
 10. [Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)
 
-## � Quick Navigation & Resources
+## 🔗 Quick Navigation & Resources
 
 - **Getting Started**: See [Sphere10.Framework.DApp.Node](src/Sphere10.Framework.DApp.Node/README.md) to run a blockchain node
 - **Web UI**: See [Sphere10.Framework.DApp.Presentation.Loader](blackhole/Sphere10.Framework.DApp.Presentation.Loader/README.md) for the web interface
