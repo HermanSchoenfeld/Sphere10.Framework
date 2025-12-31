@@ -31,6 +31,40 @@ Copyright © Herman Schoenfeld, Sphere 10 Software 2018 - Present
 - **Performance**: Caching, connection pooling, and optimized algorithms
 - **Testing**: Comprehensive testing framework and utilities for unit and integration testing
 
+## 🛠️ Tools.* Namespace — Global Utility Discovery
+
+The **Tools namespace** is a defining architectural feature providing a **global, IntelliSense-discoverable collection of static utility methods** across the entire framework. Simply type `Tools.` to explore all available operations:
+
+### Core Utilities
+- **Tools.Crypto** — Hashing, signatures, key derivation
+- **Tools.Text** — String manipulation, validation, generation
+- **Tools.Collection** — Collection operations, filtering, transformation
+- **Tools.FileSystem** — File I/O, directory management, temp files
+- **Tools.Reflection** — Type inspection, member discovery, attributes
+- **Tools.Json** / **Tools.Xml** — Data serialization
+- **Tools.Memory** — Buffer operations, memory allocation
+- **Tools.Maths** — Mathematical utilities and RNG
+- And 30+ more...
+
+### Platform-Specific Tools
+- **Tools.WinTool** (Windows) — Registry, services, event logging, privileges
+- **Tools.Web.Html** / **Tools.Web.AspNetCore** (Web) — HTML utilities, ASP.NET Core integration
+- **Tools.iOSTool** (iOS) — iOS-specific operations
+- **Tools.Data** / **Tools.Sqlite** / **Tools.MSSql** (Database) — Database provider utilities
+
+### Design Pattern
+```csharp
+using Tools;
+
+// Discovery-first pattern — IntelliSense shows all available tools
+byte[] hash = Tools.Crypto.SHA256(data);
+string sanitized = Tools.Text.RemoveWhitespace(input);
+var connection = Tools.Sqlite.Create(connectionString);
+bool running = Tools.WinTool.IsServiceRunning("MyService");
+```
+
+For the complete Tools reference, see [docs/Tools-Reference.md](docs/Tools-Reference.md).
+
 
 
 ## 📦 Project Structure
