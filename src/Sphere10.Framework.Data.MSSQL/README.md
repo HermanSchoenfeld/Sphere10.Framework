@@ -4,7 +4,7 @@
 
 **Microsoft SQL Server implementation** for Sphere10.Framework.Data abstraction layer, enabling enterprise-grade database access for large-scale applications with advanced features like linked servers, full-text search, and SQL Agent integration.
 
-Sphere10.Framework.Data.MSSQL brings **enterprise SQL Server capabilities** to the Sphere10 Framework framework while maintaining database-agnostic abstraction. Fully compatible with **Azure SQL Database**, on-premises SQL Server, and SQL Express instances.
+Sphere10.Framework.Data.MSSQL brings **enterprise SQL Server capabilities** to the Sphere10 Framework while maintaining database-agnostic abstraction. Fully compatible with **Azure SQL Database**, on-premises SQL Server, and SQL Express instances.
 
 ## ⚡ 10-Second Example
 

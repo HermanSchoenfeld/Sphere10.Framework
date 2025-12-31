@@ -4,7 +4,7 @@
 
 **Android platform abstraction** layer providing native Android APIs, Xamarin.Android integration, and Java interoperability for building native and hybrid mobile applications on Android platform.
 
-Sphere10.Framework.Android enables **cross-platform mobile development** with seamless integration to Android native capabilities including camera, sensors, location, notifications, background services, and hardware features while maintaining compatibility with Sphere10 Framework framework abstractions.
+Sphere10.Framework.Android enables **cross-platform mobile development** with seamless integration to Android native capabilities including camera, sensors, location, notifications, background services, and hardware features while maintaining compatibility with Sphere10 Framework abstractions.
 
 ## ⚡ 10-Second Example
 
@@ -24,7 +24,7 @@ var cameraAccess = await AndroidPermissions.RequestCameraAccessAsync();
 // Send local notification
 var notification = new AndroidNotification {
     Title = "Hello Android",
-    Message = "From Sphere10 Framework Framework",
+    Message = "From Sphere10 Framework",
     DelaySeconds = 5
 };
 await notification.ShowAsync();

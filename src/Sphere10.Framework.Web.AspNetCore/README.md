@@ -2,7 +2,7 @@
 
 # 💻 Sphere10.Framework.Web.AspNetCore
 
-**ASP.NET Core integration library** providing middleware, extensions, and utilities for building high-performance web applications and APIs with Sphere10 Framework framework.
+**ASP.NET Core integration library** providing middleware, extensions, and utilities for building high-performance web applications and APIs with Sphere10 Framework.
 
 Sphere10.Framework.Web.AspNetCore bridges Sphere10 Framework with **ASP.NET Core ecosystem**, enabling seamless integration of logging, configuration, dependency injection, routing, and custom middleware while following .NET best practices.
 
@@ -442,7 +442,7 @@ builder.Services.AddControllers(options => {
 
 ## 📖 Related Projects
 
-- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.NETCore](../Sphere10.Framework.NETCore) - .NET Core integration
 - [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Data access for web applications
 - [Sphere10.Framework.DApp.Presentation](../../blackhole/Sphere10.Framework.DApp.Presentation) - UI components

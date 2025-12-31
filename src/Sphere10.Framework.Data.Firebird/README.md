@@ -4,7 +4,7 @@
 
 **Firebird database implementation** for Sphere10.Framework.Data abstraction layer, providing open-source relational database access with ACID compliance and advanced SQL features.
 
-Sphere10.Framework.Data.Firebird brings **powerful open-source database capabilities** to the Sphere10 Framework framework while maintaining database-agnostic abstraction. Supports both **embedded (single-file) and server architectures**, making it ideal for desktop applications, small-to-medium enterprises, and resource-constrained environments.
+Sphere10.Framework.Data.Firebird brings **powerful open-source database capabilities** to the Sphere10 Framework while maintaining database-agnostic abstraction. Supports both **embedded (single-file) and server architectures**, making it ideal for desktop applications, small-to-medium enterprises, and resource-constrained environments.
 
 ## ⚡ 10-Second Example
 

@@ -40,7 +40,7 @@ var streamHash = HashFactory.Crypto.CreateSHA256().ComputeStream(stream);
 
 ## 📄 Related Projects
 
-- [Sphere10 Framework](../Sphere10 Framework) - Uses HashLib for cryptographic operations
+- [Sphere10.Framework](../Sphere10.Framework) - Uses HashLib for cryptographic operations
 - [Sphere10.Framework.CryptoEx](../Sphere10.Framework.CryptoEx) - Extended cryptography
 - [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain hashing
 

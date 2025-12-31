@@ -2,13 +2,13 @@
 
 # Sphere10.Framework.NUnit
 
-**NUnit testing framework extensions** for the Sphere10 Framework framework providing utilities, helpers, and test infrastructure for unit testing.
+**NUnit testing framework extensions** for the Sphere10 Framework providing utilities, helpers, and test infrastructure for unit testing.
 
 Core testing utilities including assertion extensions, test fixtures, and helper methods for test development.
 
 ## Overview
 
-`Sphere10.Framework.NUnit` provides NUnit-based testing utilities and infrastructure for Sphere10 Framework framework projects.
+`Sphere10.Framework.NUnit` provides NUnit-based testing utilities and infrastructure for Sphere10 Framework projects.
 
 ### What's Included
 
@@ -20,7 +20,7 @@ Core testing utilities including assertion extensions, test fixtures, and helper
 ## Dependencies
 
 - **NUnit**: NUnit testing framework
-- **Sphere10 Framework**: Core Sphere10 Framework framework
+- **Sphere10 Framework**: Core Sphere10 Framework
 
 ## License & Author
 

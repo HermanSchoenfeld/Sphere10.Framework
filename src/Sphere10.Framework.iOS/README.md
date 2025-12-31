@@ -4,7 +4,7 @@
 
 **iOS platform abstraction** layer providing native iOS APIs, Xamarin.iOS integration, and Swift interoperability for building native and hybrid mobile applications on Apple's iOS platform.
 
-Sphere10.Framework.iOS enables **cross-platform mobile development** with seamless integration to iOS native capabilities including camera, location, notifications, background tasks, and HomeKit support while maintaining compatibility with Sphere10 Framework framework abstractions.
+Sphere10.Framework.iOS enables **cross-platform mobile development** with seamless integration to iOS native capabilities including camera, location, notifications, background tasks, and HomeKit support while maintaining compatibility with Sphere10 Framework abstractions.
 
 ## ⚡ 10-Second Example
 
@@ -23,7 +23,7 @@ var cameraAccess = await iOSPermissions.RequestCameraAccessAsync();
 // Send local notification
 var notification = new iOSLocalNotification {
     Title = "Hello iOS",
-    Body = "From Sphere10 Framework Framework",
+    Body = "From Sphere10 Framework",
     DelaySeconds = 5
 };
 await notification.ScheduleAsync();

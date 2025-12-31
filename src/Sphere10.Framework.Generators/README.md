@@ -320,7 +320,7 @@ foreach (var error in results) {
 
 ## 📖 Related Projects
 
-- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.NET](../Sphere10.Framework.NET) - Reflection-based alternatives
 - [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework using generated code
 - [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Plugin system using generators

@@ -6,7 +6,7 @@ Component showcase and plugin demonstrating reusable Blazor widgets and UI patte
 
 ## 📋 Overview
 
-`Sphere10.Framework.DApp.Presentation.WidgetGallery` is both a plugin and showcase application that demonstrates all available Blazor components and widgets in the Sphere10 Framework framework. It serves as both documentation and a working example of how to build DApp UIs.
+`Sphere10.Framework.DApp.Presentation.WidgetGallery` is both a plugin and showcase application that demonstrates all available Blazor components and widgets in the Sphere10 Framework. It serves as both documentation and a working example of how to build DApp UIs.
 
 ## 🏗️ Architecture
 

@@ -287,7 +287,7 @@ Console.WriteLine($"Thumbnail: {thumb}");
 
 ## 📖 Related Projects
 
-- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - WinForms integration with drawing support
 - [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows-specific graphics APIs
 

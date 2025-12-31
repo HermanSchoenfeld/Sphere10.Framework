@@ -1,8 +1,8 @@
-# Sphere10 Framework Framework Documentation
+# Sphere10 Framework Documentation
 
 **Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.**
 
-Complete documentation for the Sphere10 Framework framework — a comprehensive .NET 5+ framework for building blockchain applications, DApps, and distributed systems.
+Complete documentation for the Sphere10 Framework — a comprehensive .NET 8.0 framework for building blockchain applications, DApps, and distributed systems.
 
 ---
 
@@ -116,7 +116,7 @@ docs/
 
 ## 📚 Core Domains
 
-The Sphere10 Framework framework provides 30+ domains across multiple categories:
+The Sphere10 Framework provides 30+ domains across multiple categories:
 
 ### Collections & Data Structures
 - Collections (maps, lists, sets, trees)
@@ -188,11 +188,11 @@ Each project in `/src` has its own README with examples and usage patterns:
 - [Sphere10.Framework.DApp.Core](../src/Sphere10.Framework.DApp.Core/README.md) — Blockchain core
 - [Sphere10.Framework.DApp.Node](../src/Sphere10.Framework.DApp.Node/README.md) — Node implementation
 - [Sphere10.Framework.DApp.Host](../src/Sphere10.Framework.DApp.Host/README.md) — Host management
-- [Sphere10.Framework.DApp.Presentation](../src/Sphere10.Framework.DApp.Presentation/README.md) — UI framework
+- [Sphere10.Framework.DApp.Presentation](../blackhole/Sphere10.Framework.DApp.Presentation/README.md) — UI framework
 
 **UI & Presentation**
-- [Sphere10.Framework.DApp.Presentation](../src/Sphere10.Framework.DApp.Presentation/README.md) — Blazor components
-- [Sphere10.Framework.DApp.Presentation.Loader](../src/Sphere10.Framework.DApp.Presentation.Loader/README.md) — Web app loader
+- [Sphere10.Framework.DApp.Presentation](../blackhole/Sphere10.Framework.DApp.Presentation/README.md) — Blazor components
+- [Sphere10.Framework.DApp.Presentation.Loader](../blackhole/Sphere10.Framework.DApp.Presentation.Loader/README.md) — Web app loader
 
 **Networking**
 - [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) — RPC and messaging

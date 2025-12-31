@@ -115,7 +115,7 @@ The **Sphere10 Framework Presentation Layer** is an enterprise-grade Blazor-base
 
 ### Plugin System
 
-The Sphere10 Framework framework uses a plugin architecture to allow third-party developers to extend functionality:
+The Sphere10 Framework uses a plugin architecture to allow third-party developers to extend functionality:
 
 ```
 ┌─────────────────────────────────────┐

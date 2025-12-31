@@ -284,7 +284,7 @@ Full Microsoft.Extensions.DependencyInjection support:
 
 ## 📖 Related Projects
 
-- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core integration
 - [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - RPC services with DI
 - [Sphere10.Framework.DApp.Host](../Sphere10.Framework.DApp.Host) - DApp host using this framework

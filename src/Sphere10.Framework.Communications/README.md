@@ -229,7 +229,7 @@ Services defined with attributes work unchanged across different transport imple
 
 ## 📖 Related Projects
 
-- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core RPC transport implementation
 - [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework with RPC support
 - [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - This library

@@ -6,7 +6,7 @@
 
 **Extended cryptography library** providing specialized implementations for blockchain applications including post-quantum signature schemes, ECDSA, key derivation, and verifiable randomness (VRF).
 
-Sphere10.Framework.CryptoEx extends [Sphere10 Framework](../Sphere10 Framework)'s core cryptography with advanced primitives used in distributed systems and blockchain protocols, supporting **post-quantum resistance, multiple elliptic curves, and advanced digital signatures**.
+Sphere10.Framework.CryptoEx extends [Sphere10.Framework](../Sphere10.Framework)'s core cryptography with advanced primitives used in distributed systems and blockchain protocols, supporting **post-quantum resistance, multiple elliptic curves, and advanced digital signatures**.
 
 ## ⚡ 10-Second Example
 
@@ -256,7 +256,7 @@ Bitcoin-specific cryptography is available through `DSS.ECDSA_SECP256k1` with sp
 
 ## 📖 Related Projects
 
-- [Sphere10 Framework](../Sphere10 Framework) - Core framework with basic cryptography
+- [Sphere10.Framework](../Sphere10.Framework) - Core framework with basic cryptography
 - [Sphere10.Framework.Consensus](../Sphere10.Framework.Consensus) - Consensus mechanisms using VRF and signatures
 - [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain DApp core with cryptographic security
 - [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network protocols with cryptographic authentication

@@ -68,6 +68,6 @@ await ViewService.DialogAsync(content, "Dialog Title");
 - [Sphere10.Framework.DApp.Presentation.Loader](./Sphere10.Framework.DApp.Presentation.Loader) - WebAssembly host for this library
 - [Sphere10.Framework.DApp.Presentation2](./Sphere10.Framework.DApp.Presentation2) - Alternative presentation implementation
 - [Sphere10.Framework.DApp.Presentation.WidgetGallery](./Sphere10.Framework.DApp.Presentation.WidgetGallery) - Component showcase
-- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework](../../../src/Sphere10.Framework) - Core framework
 
 

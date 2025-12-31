@@ -4,7 +4,7 @@
 
 **macOS platform abstraction** layer providing native macOS APIs, Xamarin.Mac integration, and Swift interoperability for building native desktop applications on Apple's macOS platform.
 
-Sphere10.Framework.macOS enables **cross-platform desktop development** with seamless integration to macOS native capabilities including file system, notifications, clipboard, menubar, dock, accessibility features, and system services while maintaining compatibility with Sphere10 Framework framework abstractions.
+Sphere10.Framework.macOS enables **cross-platform desktop development** with seamless integration to macOS native capabilities including file system, notifications, clipboard, menubar, dock, accessibility features, and system services while maintaining compatibility with Sphere10 Framework abstractions.
 
 ## ⚡ 10-Second Example
 
@@ -20,7 +20,7 @@ Console.WriteLine($"Processor: {systemInfo.ProcessorCount} cores");
 // Show notification
 var notification = new macOSNotification {
     Title = "Hello macOS",
-    Subtitle = "From Sphere10 Framework Framework",
+    Subtitle = "From Sphere10 Framework",
     Message = "This is a notification"
 };
 await notification.ShowAsync();
