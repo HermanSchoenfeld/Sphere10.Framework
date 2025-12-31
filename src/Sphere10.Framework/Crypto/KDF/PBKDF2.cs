@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Security.Cryptography;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class PBKDF2 {
 	public static byte[] DeriveKey(string secret, byte[] salt, int iterations, int keyLength) {
@@ -19,3 +19,4 @@ public static class PBKDF2 {
 	}
 
 }
+

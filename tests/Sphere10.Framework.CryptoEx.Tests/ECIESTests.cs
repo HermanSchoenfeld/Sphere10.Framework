@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,13 +8,13 @@
 
 using System;
 using NUnit.Framework;
-using Hydrogen.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx.EC;
 using System.Linq;
 using System.Text;
 using NUnit.Framework.Legacy;
 using Tools;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -61,3 +61,4 @@ public class ECIESTests {
 	}
 
 }
+

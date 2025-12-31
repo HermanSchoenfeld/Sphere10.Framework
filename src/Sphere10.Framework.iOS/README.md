@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 📱 Hydrogen.iOS
+# 📱 Sphere10.Framework.iOS
 
 **iOS platform abstraction** layer providing native iOS APIs, Xamarin.iOS integration, and Swift interoperability for building native and hybrid mobile applications on Apple's iOS platform.
 
-Hydrogen.iOS enables **cross-platform mobile development** with seamless integration to iOS native capabilities including camera, location, notifications, background tasks, and HomeKit support while maintaining compatibility with Hydrogen framework abstractions.
+Sphere10.Framework.iOS enables **cross-platform mobile development** with seamless integration to iOS native capabilities including camera, location, notifications, background tasks, and HomeKit support while maintaining compatibility with Sphere10 Framework framework abstractions.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.iOS;
+using Sphere10.Framework.iOS;
 using UIKit;
 
 // Access device capabilities
@@ -23,7 +23,7 @@ var cameraAccess = await iOSPermissions.RequestCameraAccessAsync();
 // Send local notification
 var notification = new iOSLocalNotification {
     Title = "Hello iOS",
-    Body = "From Hydrogen Framework",
+    Body = "From Sphere10 Framework Framework",
     DelaySeconds = 5
 };
 await notification.ScheduleAsync();
@@ -46,7 +46,7 @@ await notification.ScheduleAsync();
 ### Device Information & Capabilities
 
 ```csharp
-using Hydrogen.iOS;
+using Sphere10.Framework.iOS;
 using UIKit;
 
 // Get device information
@@ -72,7 +72,7 @@ Console.WriteLine($"Used: {storage.UsedBytes} bytes");
 ### Permission Request Patterns
 
 ```csharp
-using Hydrogen.iOS;
+using Sphere10.Framework.iOS;
 using CoreLocation;
 using AVFoundation;
 
@@ -117,7 +117,7 @@ Console.WriteLine($"Photo Library Permission: {photoLibStatus}");
 ### Local Notifications
 
 ```csharp
-using Hydrogen.iOS;
+using Sphere10.Framework.iOS;
 using UserNotifications;
 
 // Simple notification
@@ -173,7 +173,7 @@ await iOSLocalNotification.CancelNotificationAsync(notificationId);
 ### Camera & Photo Access
 
 ```csharp
-using Hydrogen.iOS;
+using Sphere10.Framework.iOS;
 using AVFoundation;
 using Photos;
 
@@ -221,7 +221,7 @@ await iOSPhotos.SavePhotoAsync(image);
 ### Location Services
 
 ```csharp
-using Hydrogen.iOS;
+using Sphere10.Framework.iOS;
 using CoreLocation;
 
 // Initialize location manager
@@ -257,17 +257,17 @@ if (status == PermissionStatus.Granted) {
 ### Background Task Execution
 
 ```csharp
-using Hydrogen.iOS;
+using Sphere10.Framework.iOS;
 using BackgroundTasks;
 
 // Register background task (in AppDelegate)
 BGTaskScheduler.Shared.Register(
-    forTaskWithIdentifier: "com.sphere10.hydrogen.refresh",
+    forTaskWithIdentifier: "com.sphere10.Sphere10.Framework.refresh",
     using: null,
     launchHandler: ProcessBackgroundTask);
 
 // Schedule background refresh
-var request = new BGAppRefreshTaskRequest("com.sphere10.hydrogen.refresh");
+var request = new BGAppRefreshTaskRequest("com.sphere10.Sphere10.Framework.refresh");
 request.EarliestBeginDate = NSDate.FromTimeIntervalSinceNow(60);  // In 60 seconds
 
 try {
@@ -304,7 +304,7 @@ private void PerformBackgroundWork() {
 }
 
 private void ScheduleNextBackgroundTask() {
-    var nextRequest = new BGAppRefreshTaskRequest("com.sphere10.hydrogen.refresh");
+    var nextRequest = new BGAppRefreshTaskRequest("com.sphere10.Sphere10.Framework.refresh");
     nextRequest.EarliestBeginDate = NSDate.FromTimeIntervalSinceNow(900);  // 15 minutes
     
     try {
@@ -353,14 +353,16 @@ private void ScheduleNextBackgroundTask() {
 
 ## 📚 Related Projects
 
-- [Hydrogen.Android](../Hydrogen.Android) - Android platform implementation
-- [Hydrogen.macOS](../Hydrogen.macOS) - macOS platform implementation
-- [Hydrogen.Windows](../Hydrogen.Windows) - Windows desktop implementation
-- [Hydrogen.Application](../Hydrogen.Application) - Cross-platform application abstraction
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests) - Test patterns and examples
+- [Sphere10.Framework.Android](../Sphere10.Framework.Android) - Android platform implementation
+- [Sphere10.Framework.macOS](../Sphere10.Framework.macOS) - macOS platform implementation
+- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows desktop implementation
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Cross-platform application abstraction
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

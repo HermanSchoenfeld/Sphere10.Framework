@@ -1,16 +1,16 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🔧 Hydrogen.NET
+# 🔧 Sphere10.Framework.NET
 
 **CLR and .NET Framework runtime utilities** providing type introspection, reflection helpers, dynamic code generation, and cross-framework compatibility abstractions.
 
-Hydrogen.NET enables **advanced metaprogramming** through reflection APIs, **runtime type discovery**, **dynamic code generation**, and **framework detection** for building robust .NET applications that work across Framework and modern .NET versions.
+Sphere10.Framework.NET enables **advanced metaprogramming** through reflection APIs, **runtime type discovery**, **dynamic code generation**, and **framework detection** for building robust .NET applications that work across Framework and modern .NET versions.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen;
-using Hydrogen.CodeBuilder;
+using Sphere10.Framework;
+using Sphere10.Framework.CodeBuilder;
 
 // Generate C# code at runtime
 var classBuilder = new ClassBuilder {
@@ -44,7 +44,7 @@ Console.WriteLine(generatedCode);  // Full C# class definition
 ### Code Generation with ClassBuilder
 
 ```csharp
-using Hydrogen.CodeBuilder;
+using Sphere10.Framework.CodeBuilder;
 
 // Create a class builder
 var classBuilder = new ClassBuilder {
@@ -97,7 +97,7 @@ public class Product {
 ### Type Discovery & Reflection
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.Reflection;
 
 // Find all types in loaded assemblies that implement an interface
@@ -182,7 +182,7 @@ var contractTypes = AppDomain.CurrentDomain
 ### Environment Detection & Process Monitoring
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 
 // Detect .NET runtime version
 var runtimeVersion = Environment.Version;
@@ -234,7 +234,7 @@ Console.WriteLine($"Linux: {isPlatformLinux}");
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **System.Reflection**: .NET reflection APIs (.NET built-in)
 - **System.CodeDom**: Code generation support (legacy, used internally)
 
@@ -256,10 +256,10 @@ Console.WriteLine($"Linux: {isPlatformLinux}");
 
 ## 📖 Related Projects
 
-- [Hydrogen.NETCore](../Hydrogen.NETCore) - .NET Core specific utilities and configuration
-- [Hydrogen.Windows](../Hydrogen.Windows) - Windows-specific APIs
-- [Hydrogen.Application](../Hydrogen.Application) - Application framework using reflection
-- [Hydrogen.Generators](../Hydrogen.Generators) - Compile-time code generation alternative
+- [Sphere10.Framework.NETCore](../Sphere10.Framework.NETCore) - .NET Core specific utilities and configuration
+- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows-specific APIs
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework using reflection
+- [Sphere10.Framework.Generators](../Sphere10.Framework.Generators) - Compile-time code generation alternative
 
 ## ⚖️ License
 
@@ -274,3 +274,5 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="GenericTableViewCell.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (http://www.sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -15,9 +15,9 @@ using System;
 using UIKit;
 using CoreGraphics;
 
-namespace Hydrogen.iOS {
+namespace Sphere10.Framework.iOS {
 
-	public class GenericTableViewCell : Hydrogen.iOS.BadgeCell {
+	public class GenericTableViewCell : Sphere10.Framework.iOS.BadgeCell {
 		private const float DefaultImageViewWidth = 40.0f;
 		private const float DefaultImageViewHeight = 40.0f;
 		private readonly CGSize _imageViewSize;
@@ -55,4 +55,5 @@ namespace Hydrogen.iOS {
 	}
 
 }
+
 

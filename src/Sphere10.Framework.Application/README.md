@@ -1,21 +1,21 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 💫 Hydrogen.Application
+# 💫 Sphere10.Framework.Application
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-**Application framework and lifecycle management** providing dependency injection integration, settings management, command-line argument parsing, and foundation for building full-featured Hydrogen-based applications.
+**Application framework and lifecycle management** providing dependency injection integration, settings management, command-line argument parsing, and foundation for building full-featured Sphere10 Framework-based applications.
 
-Hydrogen.Application enables **rapid application development** with built-in **service configuration, CLI argument parsing, settings persistence, and application lifecycle hooks** integrated with Microsoft.Extensions.DependencyInjection.
+Sphere10.Framework.Application enables **rapid application development** with built-in **service configuration, CLI argument parsing, settings persistence, and application lifecycle hooks** integrated with Microsoft.Extensions.DependencyInjection.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 // Build application with framework
-var app = HydrogenApp.CreateBuilder()
+var app = Sphere10App.CreateBuilder()
     .ConfigureServices(services => {
         services.AddSingleton<IRepository, DatabaseRepository>();
         services.AddSingleton<ILogger, ConsoleLogger>();
@@ -52,11 +52,11 @@ app.Run();
 ### Basic Application Setup
 
 ```csharp
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 // Create application with service configuration
-var app = HydrogenApp.CreateBuilder()
+var app = Sphere10App.CreateBuilder()
     .AddLogging()  // Add console logging
     .ConfigureServices(services => {
         // Register custom services
@@ -76,7 +76,7 @@ Console.WriteLine($"Loaded {users.Count} users");
 ### Settings Management
 
 ```csharp
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 // Define typed settings
@@ -87,7 +87,7 @@ public class AppSettings {
     public List<string> AllowedOrigins { get; set; }
 }
 
-var app = HydrogenApp.CreateBuilder()
+var app = Sphere10App.CreateBuilder()
     .ConfigureSettings<AppSettings>(settings => {
         settings.DatabaseConnection = "Server=localhost;Database=mydb";
         settings.MaxConnections = 100;
@@ -109,10 +109,10 @@ Console.WriteLine($"Max connections: {appSettings.MaxConnections}");
 ### Lifecycle Hooks
 
 ```csharp
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-var app = HydrogenApp.CreateBuilder()
+var app = Sphere10App.CreateBuilder()
     .ConfigureServices(services => {
         services.AddSingleton<IInitializer, DatabaseInitializer>();
     })
@@ -143,7 +143,7 @@ await app.RunAsync();
 ### Command-Line Argument Parsing
 
 ```csharp
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 
 // Define CLI arguments with attributes
 [CommandLineOptions]
@@ -178,11 +178,11 @@ Console.WriteLine(help);
 ### Service Factories & Scoping
 
 ```csharp
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 // Create scoped services for request-like patterns
-var app = HydrogenApp.CreateBuilder()
+var app = Sphere10App.CreateBuilder()
     .ConfigureServices(services => {
         // Singleton: one instance for entire application
         services.AddSingleton<IConfigurationService, ConfigurationService>();
@@ -207,7 +207,7 @@ using (var scope = app.ServiceProvider.CreateScope()) {
 ### REST API Integration
 
 ```csharp
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 public interface IUserService {
@@ -225,7 +225,7 @@ public class UserService : IUserService {
 }
 
 // Build application with REST support
-var app = HydrogenApp.CreateBuilder()
+var app = Sphere10App.CreateBuilder()
     .ConfigureServices(services => {
         services.AddSingleton<IUserRepository, UserRepository>();
         services.AddSingleton<IUserService, UserService>();
@@ -240,7 +240,7 @@ var user = await userService.GetUserAsync(42);
 
 ## 🎯 Module Organization
 
-- **Core**: `HydrogenApp`, `HydrogenAppBuilder` - Application creation and configuration
+- **Core**: `Sphere10App`, `Sphere10AppBuilder` - Application creation and configuration
 - **Lifecycle**: Startup/shutdown hooks with async cancellation support
 - **IoC/DI**: Integration with `Microsoft.Extensions.DependencyInjection`
 - **CommandLine**: `CommandLineParser`, `CommandLineArgument` attributes for CLI parsing
@@ -254,7 +254,7 @@ var user = await userService.GetUserAsync(42);
 The builder pattern provides fluent configuration:
 
 ```csharp
-HydrogenApp.CreateBuilder()
+Sphere10App.CreateBuilder()
     .AddLogging()
     .AddSettings<AppSettings>()
     .ConfigureServices(services => {/* ... */})
@@ -284,11 +284,11 @@ Full Microsoft.Extensions.DependencyInjection support:
 
 ## 📖 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework
-- [Hydrogen.Web.AspNetCore](../Hydrogen.Web.AspNetCore) - ASP.NET Core integration
-- [Hydrogen.Communications](../Hydrogen.Communications) - RPC services with DI
-- [Hydrogen.DApp.Host](../Hydrogen.DApp.Host) - DApp host using this framework
-- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node) - Blockchain node application
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core integration
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - RPC services with DI
+- [Sphere10.Framework.DApp.Host](../Sphere10.Framework.DApp.Host) - DApp host using this framework
+- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node) - Blockchain node application
 
 ## ✅ Status & Maturity
 
@@ -300,7 +300,7 @@ Full Microsoft.Extensions.DependencyInjection support:
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **Microsoft.Extensions.DependencyInjection**: Service composition
 - **System.Configuration.ConfigurationManager**: Configuration support
 - **System.Reflection**: Service discovery and attribute processing
@@ -318,3 +318,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+
+

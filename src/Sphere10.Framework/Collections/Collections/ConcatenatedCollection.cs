@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ConcatenatedCollection<T> : ICollection<T> {
 	private readonly ICollection<T> _first;
@@ -54,3 +54,4 @@ public class ConcatenatedCollection<T> : ICollection<T> {
 
 
 }
+

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class EnumerableCollectionAdapter<TVal> : ReadOnlyCollectionBase<TVal> {
 	private readonly Func<IEnumerator<TVal>> _enumeratorFunc;
@@ -27,3 +27,4 @@ public class EnumerableCollectionAdapter<TVal> : ReadOnlyCollectionBase<TVal> {
 
 	public override bool Contains(TVal item) => _containsFunc(item);
 }
+

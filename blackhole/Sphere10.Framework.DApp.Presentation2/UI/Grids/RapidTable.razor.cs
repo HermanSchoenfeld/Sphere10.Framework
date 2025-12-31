@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Hydrogen.DApp.Presentation2.UI.Grids {
+namespace Sphere10.Framework.DApp.Presentation2.UI.Grids {
 
 	/// <summary>
 	/// Rapid table control / component. async enumerates an async enumerable e.g. a stream
@@ -106,3 +106,5 @@ namespace Hydrogen.DApp.Presentation2.UI.Grids {
 	}
 
 }
+
+

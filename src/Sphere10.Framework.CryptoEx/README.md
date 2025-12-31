@@ -1,18 +1,18 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🔐 Hydrogen.CryptoEx
+# 🔐 Sphere10.Framework.CryptoEx
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Extended cryptography library** providing specialized implementations for blockchain applications including post-quantum signature schemes, ECDSA, key derivation, and verifiable randomness (VRF).
 
-Hydrogen.CryptoEx extends [Hydrogen](../Hydrogen)'s core cryptography with advanced primitives used in distributed systems and blockchain protocols, supporting **post-quantum resistance, multiple elliptic curves, and advanced digital signatures**.
+Sphere10.Framework.CryptoEx extends [Sphere10 Framework](../Sphere10 Framework)'s core cryptography with advanced primitives used in distributed systems and blockchain protocols, supporting **post-quantum resistance, multiple elliptic curves, and advanced digital signatures**.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.CryptoEx;
-using Hydrogen.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.CryptoEx.EC;
 using System.Text;
 
 // ECDSA signing with Bitcoin curve
@@ -51,7 +51,7 @@ if (signer.IES.TryDecrypt(encrypted, out var decrypted, privateKey)) {
 ### ECDSA Signatures with Deterministic Keys
 
 ```csharp
-using Hydrogen.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx.EC;
 using System.Text;
 
 // Initialize with Bitcoin curve (SECP256k1)
@@ -89,7 +89,7 @@ Console.WriteLine(privateKey.SequenceEqual(anotherPrivateKey));  // false
 ### ECIES: Public-Key Encryption
 
 ```csharp
-using Hydrogen.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx.EC;
 using System.Text;
 
 var ecdsa = new ECDSA(ECDSAKeyType.SECP384R1);
@@ -116,7 +116,7 @@ Console.WriteLine(ciphertext.SequenceEqual(ciphertext2));  // false
 ### Multiple Elliptic Curves
 
 ```csharp
-using Hydrogen.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx.EC;
 
 // All curves support same interface
 var secp256k1 = new ECDSA(ECDSAKeyType.SECP256K1);    // 256-bit (Bitcoin)
@@ -137,8 +137,8 @@ var sig384 = secp384r1.Sign(key384, message);  // ~384-bit security
 ### Verifiable Random Functions (VRF)
 
 ```csharp
-using Hydrogen.CryptoEx;
-using Hydrogen.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.CryptoEx.EC;
 
 // VRF creates deterministic but unpredictable outputs with proofs
 var vrf = VRF.CreateCryptographicVRF(
@@ -167,7 +167,7 @@ Console.WriteLine(output.SequenceEqual(output2));  // true
 ### Digital Signature Schemes (DSS)
 
 ```csharp
-using Hydrogen.CryptoEx;
+using Sphere10.Framework.CryptoEx;
 using System.Text;
 
 // Available schemes with different security properties
@@ -256,10 +256,10 @@ Bitcoin-specific cryptography is available through `DSS.ECDSA_SECP256k1` with sp
 
 ## 📖 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework with basic cryptography
-- [Hydrogen.Consensus](../Hydrogen.Consensus) - Consensus mechanisms using VRF and signatures
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - Blockchain DApp core with cryptographic security
-- [Hydrogen.Communications](../Hydrogen.Communications) - Network protocols with cryptographic authentication
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework with basic cryptography
+- [Sphere10.Framework.Consensus](../Sphere10.Framework.Consensus) - Consensus mechanisms using VRF and signatures
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain DApp core with cryptographic security
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network protocols with cryptographic authentication
 
 ## 🏆 Advanced Topics
 
@@ -267,7 +267,7 @@ See **Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)** documentatio
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **BouncyCastle.Cryptography**: Cryptographic primitives (EC, ECDSA, Hashing)
 - **.NET 8.0+**: Modern cryptography APIs
 
@@ -284,4 +284,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+
 

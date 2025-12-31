@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Base implementation for cache reapers that enforces registration semantics.
@@ -25,3 +25,4 @@ public abstract class CacheReaperBase : ICacheReaper {
 	/// <inheritdoc />
 	public abstract long MakeSpace(ICache requestingCache, long requestedBytes);
 }
+

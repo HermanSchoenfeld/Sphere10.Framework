@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace Hydrogen.Communications.RPC;
+namespace Sphere10.Framework.Communications.RPC;
 
 //Provide host/Local api calls and binding support.
 //Can be used as a singleton, a property or an object service
@@ -155,3 +155,4 @@ public class ApiService {
 		}
 	}
 }
+

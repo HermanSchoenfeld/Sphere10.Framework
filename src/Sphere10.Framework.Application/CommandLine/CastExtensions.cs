@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -80,3 +80,4 @@ public static class CastExtensions {
 			throw new InvalidCastException($"No method to cast {objType.FullName} to {typeof(T).FullName}");
 	}
 }
+

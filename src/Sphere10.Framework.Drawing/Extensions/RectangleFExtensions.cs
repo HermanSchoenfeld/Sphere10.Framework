@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class RectangleFExtensions {
 
@@ -238,3 +238,4 @@ public static class RectangleFExtensions {
 	#endregion
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -13,7 +13,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Hydrogen;
+using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -227,3 +227,4 @@ public static class Mail {
 	public static IEnumerable<string> ParseEmailsFromCommaSeparatedList(string emails) 
 		=> string.IsNullOrWhiteSpace(emails) ? Enumerable.Empty<string>() : emails.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim());
 }
+

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="VisualInheritanceFixerSub.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,10 +11,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class VisualInheritanceFixerSubForm {
 		/// <summary>
 		/// Required designer variable.
@@ -40,7 +40,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 		/// </summary>
 		private void InitializeComponent() {
 			this.cToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.mergeableMenuStrip2 = new Hydrogen.Windows.Forms.MergeableMenuStrip();
+			this.mergeableMenuStrip2 = new Sphere10.Framework.Windows.Forms.MergeableMenuStrip();
 			this.aToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
 			this.aAToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,9 +50,9 @@ namespace Hydrogen.Utils.WinFormsTester {
 			this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
 			this.bToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.bToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-			this.mergeableStatusStrip1 = new Hydrogen.Windows.Forms.MergeableStatusStrip();
+			this.mergeableStatusStrip1 = new Sphere10.Framework.Windows.Forms.MergeableStatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-			this.mergeableToolStrip1 = new Hydrogen.Windows.Forms.MergeableToolStrip();
+			this.mergeableToolStrip1 = new Sphere10.Framework.Windows.Forms.MergeableToolStrip();
 			this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
 			this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
 			this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
@@ -262,3 +262,5 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 	}
 }
+
+

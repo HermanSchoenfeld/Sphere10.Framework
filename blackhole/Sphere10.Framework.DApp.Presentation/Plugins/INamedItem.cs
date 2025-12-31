@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -14,7 +14,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Presentation.Plugins;
+namespace Sphere10.Framework.DApp.Presentation.Plugins;
 
 public interface INamedItem {
 	/// <summary>
@@ -22,3 +22,5 @@ public interface INamedItem {
 	/// </summary>
 	public string Name { get; }
 }
+
+

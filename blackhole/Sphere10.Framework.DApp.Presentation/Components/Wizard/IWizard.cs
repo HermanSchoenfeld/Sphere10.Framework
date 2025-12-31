@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hydrogen.DApp.Presentation.Components.Wizard;
+namespace Sphere10.Framework.DApp.Presentation.Components.Wizard;
 
 /// <summary>
 /// Wizard!
@@ -39,3 +39,5 @@ public interface IWizard {
 
 	Task<Result<bool>> CancelAsync();
 }
+
+

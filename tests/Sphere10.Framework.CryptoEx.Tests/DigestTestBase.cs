@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.Utilities.Encoders;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 /* This class is a modified version of the BouncyCastle Cryptographic Library Test class "DigestTest" and was borrowed from 
 <a href="https://github.com/bcgit/bc-csharp/blob/master/crypto/test/src/test/DigestTest.cs">https://github.com/bcgit/bc-csharp/blob/master/crypto/test/src/test/DigestTest.cs</a>
@@ -142,3 +142,4 @@ public abstract class DigestTest {
 
 	protected abstract IDigest CloneDigest(IDigest digest);
 }
+

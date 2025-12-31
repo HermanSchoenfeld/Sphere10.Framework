@@ -1,4 +1,4 @@
-//	Hydrogen.Data.Csv.CachedCsvReader.CsvBindingList
+//	Sphere10.Framework.Data.Csv.CachedCsvReader.CsvBindingList
 //	Copyright (c) 2006 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -24,7 +24,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Hydrogen.Data.Csv;
+namespace Sphere10.Framework.Data.Csv;
 
 public partial class CachedCsvReader
 	: CsvReader {
@@ -319,3 +319,4 @@ public partial class CachedCsvReader
 
 	}
 }
+

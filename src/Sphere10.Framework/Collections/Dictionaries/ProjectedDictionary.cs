@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedValue> : IDictionary<TProjectedKey, TProjectedValue> {
 	private readonly IDictionary<TKey, TValue> _source;
@@ -68,3 +68,4 @@ public sealed class ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedV
 	}
 
 }
+

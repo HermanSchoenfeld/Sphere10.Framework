@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class MultiKeyDictionary<K1, K2, V> : Dictionary<K1, Dictionary<K2, V>> {
 	private readonly IEqualityComparer<K2> _key2Comparer;
@@ -469,3 +469,4 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, K9, K10, K11, V>
 		return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, key5, key6, key7, key8, key9, key10, key11, out value);
 	}
 }
+

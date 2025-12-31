@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation2.UI.Wizard;
+using Sphere10.Framework.DApp.Presentation2.UI.Wizard;
 
-namespace Hydrogen.DApp.Presentation2.Logic.Wizard {
+namespace Sphere10.Framework.DApp.Presentation2.Logic.Wizard {
 
 	/// <summary>
 	/// Wizard builder - constructs wizard component and produces render fragment delegate
@@ -118,3 +118,5 @@ namespace Hydrogen.DApp.Presentation2.Logic.Wizard {
 		internal List<Type> Steps { get; } = new();
 	}
 }
+
+

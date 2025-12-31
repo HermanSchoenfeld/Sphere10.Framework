@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -13,7 +13,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A collection of <see cref="Stream"/>'s which are multiplexed onto a single <see cref="Stream"/> using a cluster-based approach similar in principle to how a file-system works.
@@ -87,7 +87,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public ClusteredStreams(
 		Stream rootStream,
-		int clusterSize = HydrogenDefaults.ClusterSize,
+		int clusterSize = Sphere10FrameworkDefaults.ClusterSize,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 0,
 		Endianness endianness = Endianness.LittleEndian,
@@ -589,7 +589,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 				sizeEstimator: _ => recordSerializer.ConstantSize,
 				reapStrategy: CacheReapPolicy.LeastUsed,
 				ExpirationPolicy.SinceLastAccessedTime,
-				maxCapacity: HydrogenDefaults.RecordCacheSize
+				maxCapacity: Sphere10FrameworkDefaults.RecordCacheSize
 			);
 		} else {
 			_streamDescriptorCache = null;
@@ -921,3 +921,5 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	#endregion
 
 }
+
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public class ProductUsageInformationTokenResolver : ITokenResolver {
 
@@ -17,7 +17,7 @@ public class ProductUsageInformationTokenResolver : ITokenResolver {
 		// to service locator pattern here. Exceptional case.
 		ProductUsageServices =
 			Tools.Values.Future.LazyLoad(
-				() => HydrogenFramework.Instance.ServiceProvider.GetService<IProductUsageServices>()
+				() => Sphere10Framework.Instance.ServiceProvider.GetService<IProductUsageServices>()
 			);
 	}
 
@@ -57,3 +57,4 @@ public class ProductUsageInformationTokenResolver : ITokenResolver {
 		return value != null;
 	}
 }
+

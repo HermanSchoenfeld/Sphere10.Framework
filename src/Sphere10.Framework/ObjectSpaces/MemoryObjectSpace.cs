@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// In-memory object space that stores data in a <see cref="MemoryStream"/> while reusing the same object space plumbing as file-backed instances.
@@ -20,9 +20,9 @@ public class MemoryObjectSpace : ObjectSpace {
 		ObjectSpaceDefinition objectSpaceDefinition, 
 		SerializerFactory serializerFactory, 
 		ComparerFactory comparerFactory, 
-		int clusterSize = HydrogenDefaults.ClusterSize, 
-		ClusteredStreamsPolicy clusteredStreamsPolicy = HydrogenDefaults.ContainerPolicy, 
-		Endianness endianness = HydrogenDefaults.Endianness
+		int clusterSize = Sphere10FrameworkDefaults.ClusterSize, 
+		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.ContainerPolicy, 
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
 	) : this(new MemoryStream(), objectSpaceDefinition, serializerFactory, comparerFactory, clusterSize, clusteredStreamsPolicy, endianness) {
 		Streams.OwnsStream = true;
 	}
@@ -32,9 +32,9 @@ public class MemoryObjectSpace : ObjectSpace {
 		ObjectSpaceDefinition objectSpaceDefinition, 
 		SerializerFactory serializerFactory, 
 		ComparerFactory comparerFactory, 
-		int clusterSize = HydrogenDefaults.ClusterSize, 
-		ClusteredStreamsPolicy clusteredStreamsPolicy = HydrogenDefaults.ContainerPolicy, 
-		Endianness endianness = HydrogenDefaults.Endianness
+		int clusterSize = Sphere10FrameworkDefaults.ClusterSize, 
+		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.ContainerPolicy, 
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
 	) : base(CreateStreams(memoryStream, clusterSize, clusteredStreamsPolicy, endianness, objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.Merkleized)), objectSpaceDefinition, serializerFactory, comparerFactory) {
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
@@ -60,3 +60,5 @@ public class MemoryObjectSpace : ObjectSpace {
 
 	
 }
+
+

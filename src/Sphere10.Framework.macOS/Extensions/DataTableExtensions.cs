@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="DataTableExtensions.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (http://www.sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -19,7 +19,7 @@ using System.Text.RegularExpressions;
 using System.Text;
 using System.Collections.Specialized;
 using System.Data;
-using Hydrogen;
+using Sphere10.Framework;
 
 namespace BW.Cranewatch.Data {
 	public static class DataTableExtensions {
@@ -59,3 +59,4 @@ namespace BW.Cranewatch.Data {
 
 	}
 }
+

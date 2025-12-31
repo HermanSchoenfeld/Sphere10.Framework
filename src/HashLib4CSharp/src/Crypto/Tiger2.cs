@@ -96,3 +96,4 @@ namespace HashLib4CSharp.Crypto
         internal static IHash CreateRound5() => new Tiger2_192(Enum.HashSize.HashSize192, HashRounds.Rounds5);
     }
 }
+

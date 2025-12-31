@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ProjectedComparer<TFrom, TTo> : IComparer<TTo> {
 	private readonly IComparer<TFrom> _sourceComparer;
@@ -27,3 +27,4 @@ public class ProjectedComparer<TFrom, TTo> : IComparer<TTo> {
 		return _sourceComparer.Compare(_inverseProjection(x), _inverseProjection(y));
 	}
 }
+

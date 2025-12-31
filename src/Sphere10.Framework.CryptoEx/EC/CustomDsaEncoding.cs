@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
 
-namespace Hydrogen.CryptoEx.EC;
+namespace Sphere10.Framework.CryptoEx.EC;
 
 public class CustomDsaEncoding : StandardDsaEncoding {
 	private const string EmptySignature = "Empty signature";
@@ -157,3 +157,4 @@ public class CustomDsaEncoding : StandardDsaEncoding {
 		throw new ArgumentException(MalformedSignature, nameof(encoding));
 	}
 }
+

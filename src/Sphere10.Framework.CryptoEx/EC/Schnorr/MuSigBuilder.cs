@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Org.BouncyCastle.Math;
 
-namespace Hydrogen.CryptoEx.EC.Schnorr;
+namespace Sphere10.Framework.CryptoEx.EC.Schnorr;
 
 public class MuSigBuilder {
 	private readonly byte[] _sessionId;
@@ -245,3 +245,4 @@ public class MuSigBuilder {
 		return _publicKey;
 	}
 }
+

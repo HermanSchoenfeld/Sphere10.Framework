@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Security.Permissions;
 using System.Security.Principal;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Windows.Security;
+namespace Sphere10.Framework.Windows.Security;
 
 [Flags]
 public enum ShareRights {
@@ -139,3 +139,4 @@ public sealed class ShareSecurity : NativeObjectSecurity {
 		get { return typeof(ShareAuditRule); }
 	}
 }
+

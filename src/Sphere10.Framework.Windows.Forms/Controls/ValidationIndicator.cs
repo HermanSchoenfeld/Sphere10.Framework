@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class ValidationIndicator : UserControl {
 	private ValidationState _validationState;
@@ -77,7 +77,7 @@ public partial class ValidationIndicator : UserControl {
 					}
 					if (_toolTip != null)
 						_toolTip.ToolTipTitle = "Error";
-					SetBackgroundImage(Hydrogen.Windows.Forms.Resources.Cross);
+					SetBackgroundImage(Sphere10.Framework.Windows.Forms.Resources.Cross);
 					break;
 				case ValidationState.Valid:
 					if (_loadingCircle != null) {
@@ -86,7 +86,7 @@ public partial class ValidationIndicator : UserControl {
 					}
 					if (_toolTip != null)
 						_toolTip.ToolTipTitle = "Success";
-					SetBackgroundImage(Hydrogen.Windows.Forms.Resources.Tick);
+					SetBackgroundImage(Sphere10.Framework.Windows.Forms.Resources.Tick);
 					break;
 				case ValidationState.Validating:
 					SetBackgroundImage(null);
@@ -183,3 +183,4 @@ public partial class ValidationIndicator : UserControl {
 	#endregion
 
 }
+

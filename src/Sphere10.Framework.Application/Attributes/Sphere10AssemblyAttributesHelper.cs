@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,9 +13,9 @@ using System.Reflection;
 using System.IO;
 using Tools;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
-internal static class HydrogenAssemblyAttributesHelper {
+internal static class Sphere10AssemblyAttributesHelper {
 
 	public static string GetAssemblyTitle() {
 		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyTitleAttribute>(false);
@@ -128,3 +128,4 @@ internal static class HydrogenAssemblyAttributesHelper {
 	}
 
 }
+

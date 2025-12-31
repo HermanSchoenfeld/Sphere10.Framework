@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
     partial class ServiceStatusControl {
         /// <summary> 
         /// Required designer variable.
@@ -32,7 +32,7 @@ namespace Hydrogen.Windows.Forms {
         /// </summary>
         private void InitializeComponent() {
             this._trafficLightLabel = new System.Windows.Forms.Label();
-            this._trafficLight = new Hydrogen.Windows.Forms.PanelEx();
+            this._trafficLight = new Sphere10.Framework.Windows.Forms.PanelEx();
             this._serviceButton = new System.Windows.Forms.Button();
             this._serviceDetailLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
@@ -102,8 +102,9 @@ namespace Hydrogen.Windows.Forms {
         #endregion
 
         private System.Windows.Forms.Label _trafficLightLabel;
-        private Hydrogen.Windows.Forms.PanelEx _trafficLight;
+        private Sphere10.Framework.Windows.Forms.PanelEx _trafficLight;
         private System.Windows.Forms.Button _serviceButton;
         private System.Windows.Forms.Label _serviceDetailLabel;
     }
 }
+

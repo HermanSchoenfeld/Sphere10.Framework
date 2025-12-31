@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 	partial class PasswordDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -41,7 +41,7 @@ namespace Hydrogen.Windows.Forms {
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this._errorRichTextBox = new System.Windows.Forms.RichTextBox();
-            this.pictureBoxEx1 = new Hydrogen.Windows.Forms.PictureBoxEx();
+            this.pictureBoxEx1 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxEx1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -171,7 +171,7 @@ namespace Hydrogen.Windows.Forms {
             this.pictureBoxEx1.Name = "pictureBoxEx1";
             this.pictureBoxEx1.Size = new System.Drawing.Size(37, 37);
             this.pictureBoxEx1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBoxEx1.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.Shield;
+            this.pictureBoxEx1.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.Shield;
             this.pictureBoxEx1.TabIndex = 0;
             this.pictureBoxEx1.TabStop = false;
             // 
@@ -227,3 +227,4 @@ namespace Hydrogen.Windows.Forms {
 
 	}
 }
+

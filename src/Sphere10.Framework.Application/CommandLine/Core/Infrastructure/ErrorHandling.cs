@@ -1,4 +1,4 @@
-﻿//Use project level define(s) when referencing with Paket.
+//Use project level define(s) when referencing with Paket.
 //#define ERRH_INTERNAL //  Uncomment or define at build time to set accessibility to internal.
 //#define ERRH_ENABLE_INLINE_METHODS // Uncomment or define at build time to enable method inlining when compiling for >= NET 4.5.
 //#define ERRH_ADD_MAYBE_METHODS // Uncomment or define at build time to add methods that use Maybe type
@@ -624,3 +624,4 @@ namespace RailwaySharp.ErrorHandling {
 //#endif
 	}
 }
+

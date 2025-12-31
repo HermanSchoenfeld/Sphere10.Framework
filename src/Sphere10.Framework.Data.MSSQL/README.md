@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 💾 Hydrogen.Data.MSSQL
+# 💾 Sphere10.Framework.Data.MSSQL
 
-**Microsoft SQL Server implementation** for Hydrogen.Data abstraction layer, enabling enterprise-grade database access for large-scale applications with advanced features like linked servers, full-text search, and SQL Agent integration.
+**Microsoft SQL Server implementation** for Sphere10.Framework.Data abstraction layer, enabling enterprise-grade database access for large-scale applications with advanced features like linked servers, full-text search, and SQL Agent integration.
 
-Hydrogen.Data.MSSQL brings **enterprise SQL Server capabilities** to the Hydrogen framework while maintaining database-agnostic abstraction. Fully compatible with **Azure SQL Database**, on-premises SQL Server, and SQL Express instances.
+Sphere10.Framework.Data.MSSQL brings **enterprise SQL Server capabilities** to the Sphere10 Framework framework while maintaining database-agnostic abstraction. Fully compatible with **Azure SQL Database**, on-premises SQL Server, and SQL Express instances.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // Connect to SQL Server (local or remote)
 var dac = Tools.MSSQL.Open(
@@ -51,7 +51,7 @@ var users = dac.ExecuteQuery(
 ### Connection Strings & Server Access
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // Local server with integrated security (Windows Authentication)
 var localDac = Tools.MSSQL.Open(
@@ -77,7 +77,7 @@ var pooledDac = Tools.MSSQL.Open(
 ### CRUD Operations with IDENTITY Keys
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.MSSQL.Open(
     "Server=.;Database=shopdb;Integrated Security=true;");
@@ -130,7 +130,7 @@ dac.ExecuteNonQuery(
 ### Transactions & ACID Compliance
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.MSSQL.Open(
     "Server=.;Database=bankdb;Integrated Security=true;");
@@ -197,7 +197,7 @@ Console.WriteLine($"Account 2: {acc2}");  // 6000.00
 ### Stored Procedure Integration
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.MSSQL.Open(
     "Server=.;Database=appdb;Integrated Security=true;");
@@ -268,22 +268,24 @@ dac.ExecuteNonQuery("EXECUTE spProcessMonthlyBilling");
 
 ## 📦 Dependencies
 
-- **Hydrogen.Data**: Data abstraction layer
+- **Sphere10.Framework.Data**: Data abstraction layer
 - **Microsoft.Data.SqlClient**: Modern SQL Server provider (recommended)
 - **System.Data.SqlClient**: Legacy provider (.NET Framework)
 - **.NET Standard 2.1+**: Cross-platform compatibility
 
 ## 📚 Related Projects
 
-- [Hydrogen.Data](../Hydrogen.Data) - Core data abstraction layer
-- [Hydrogen.Data.Sqlite](../Hydrogen.Data.Sqlite) - SQLite embedded implementation
-- [Hydrogen.Data.Firebird](../Hydrogen.Data.Firebird) - Firebird implementation
-- [Hydrogen.Data.NHibernate](../Hydrogen.Data.NHibernate) - NHibernate ORM integration
-- [Hydrogen.Windows.Forms.MSSQL](../Hydrogen.Windows.Forms.MSSQL) - WinForms data binding for SQL Server
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests) - Test patterns and examples
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Core data abstraction layer
+- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) - SQLite embedded implementation
+- [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird) - Firebird implementation
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate) - NHibernate ORM integration
+- [Sphere10.Framework.Windows.Forms.MSSQL](../Sphere10.Framework.Windows.Forms.MSSQL) - WinForms data binding for SQL Server
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

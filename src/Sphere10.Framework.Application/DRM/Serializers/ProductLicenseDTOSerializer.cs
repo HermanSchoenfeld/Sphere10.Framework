@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Text;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public class ProductLicenseDTOSerializer : ItemSerializerBase<ProductLicenseDTO> {
 	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32).AsNullableSerializer();
@@ -72,3 +72,4 @@ public class ProductLicenseDTOSerializer : ItemSerializerBase<ProductLicenseDTO>
 		LimitFeatureD = _nullableIntSerializer.Deserialize(reader, context)
 	};
 }
+

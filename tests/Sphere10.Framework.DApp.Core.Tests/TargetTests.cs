@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,8 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using Hydrogen;
-using Hydrogen.DApp.Core.Maths;
+using Sphere10.Framework;
+using Sphere10.Framework.DApp.Core.Maths;
 using NUnit.Framework.Legacy;
 
 namespace VelocityNET.Processing.Tests.Core;
@@ -105,3 +105,4 @@ public class MolinaTargetTests {
 		Check("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "0x00ffffff80000000000000000000000000000000000000000000000000000000", 134217728);
 	}
 }
+

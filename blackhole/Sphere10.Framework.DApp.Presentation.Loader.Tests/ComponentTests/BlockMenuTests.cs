@@ -1,4 +1,4 @@
-//// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+//// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //// Author: Herman Schoenfeld
 ////
 //// Distributed under the MIT software license, see the accompanying file
@@ -8,11 +8,11 @@
 
 //using Microsoft.Extensions.DependencyInjection;
 //using NUnit.Framework;
-//using Hydrogen.DApp.Presentation.Loader.Components;
-//using Hydrogen.DApp.Presentation.Loader.Plugins;
-//using Hydrogen.DApp.Presentation.Loader.ViewModels;
+//using Sphere10.Framework.DApp.Presentation.Loader.Components;
+//using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+//using Sphere10.Framework.DApp.Presentation.Loader.ViewModels;
 
-//namespace Hydrogen.DApp.Presentation.Loader.Tests.ComponentTests;
+//namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.ComponentTests;
 
 //public class Tests : Bunit.TestContext {
 //	[SetUp]
@@ -33,3 +33,5 @@
 //		ClassicAssert.NotNull(component.Instance);
 //	}
 //}
+
+

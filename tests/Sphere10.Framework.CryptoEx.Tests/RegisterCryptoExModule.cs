@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,18 +8,19 @@
 
 using NUnit.Framework;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 [SetUpFixture]
 public class RegisterCryptoExModule {
 	
 	[OneTimeSetUp]
 	public void RegisterModule() {
-		Hydrogen.CryptoEx.ModuleConfiguration.InitializeInternal();
+		Sphere10.Framework.CryptoEx.ModuleConfiguration.InitializeInternal();
 	}
 
 	[OneTimeTearDown]
 	public void DeregisterModule() {
-		Hydrogen.CryptoEx.ModuleConfiguration.FinalizeInternal();
+		Sphere10.Framework.CryptoEx.ModuleConfiguration.FinalizeInternal();
 	}
 }
+

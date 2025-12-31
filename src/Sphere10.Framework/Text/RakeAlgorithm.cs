@@ -1,4 +1,4 @@
-Ôªø// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author(s):
 //		@benmcevoy (https://github.com/benmcevoy)
 //		Jason Nelson (https://github.com/iamcarbon)
@@ -18,7 +18,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class RakeAlgorithm {
 	private readonly int _minCharLength;
@@ -222,7 +222,7 @@ public class RakeAlgorithm {
 		return true;
 	}
 
-	private static readonly Regex sentenceDelimiters = new Regex(@"[\[\]\n.!?,;:\t\-\""‚Äù‚Äú\(\)\\\'\u2019\u2013]", RegexOptions.Compiled);
+	private static readonly Regex sentenceDelimiters = new Regex(@"[\[\]\n.!?,;:\t\-\""îì\(\)\\\'\u2019\u2013]", RegexOptions.Compiled);
 
 	/// <summary>
 	/// Utility function to return a list of sentences.
@@ -294,7 +294,7 @@ public class RakeAlgorithm {
 
 		public static HashSet<string> ReadDefaultStopListWords() {
 			var assembly = Assembly.GetExecutingAssembly();
-			var resourceName = "Hydrogen.Text.StopWordList.txt";
+			var resourceName = "Sphere10.Framework.Text.StopWordList.txt";
 			using var stream = assembly.GetManifestResourceStream(resourceName);
 			using var reader = new StreamReader(stream);
 			var hashSet = new HashSet<string>();
@@ -305,3 +305,4 @@ public class RakeAlgorithm {
 		}
 	}
 }
+

@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🪟 Hydrogen.Windows
+# 🪟 Sphere10.Framework.Windows
 
 **Windows platform integration layer** providing secure, type-safe access to Windows-specific APIs, security features, registry management, and system integration.
 
-Hydrogen.Windows enables **secure Windows system programming** through abstractions over Windows APIs, handling NT security objects, Windows services, event logging, and registry access while maintaining safety and compatibility.
+Sphere10.Framework.Windows enables **secure Windows system programming** through abstractions over Windows APIs, handling NT security objects, Windows services, event logging, and registry access while maintaining safety and compatibility.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Windows.Security;
+using Sphere10.Framework.Windows.Security;
 
 // Get current machine information
 var host = NTHost.CurrentMachine;
@@ -46,8 +46,8 @@ Console.WriteLine($"Is member of Administrators: {isMember}");
 ### Accessing Windows NT Objects
 
 ```csharp
-using Hydrogen.Windows.Security;
-using Hydrogen.Windows;
+using Sphere10.Framework.Windows.Security;
+using Sphere10.Framework.Windows;
 
 // Get current machine (local host)
 var currentHost = NTHost.CurrentMachine;
@@ -74,7 +74,7 @@ Console.WriteLine($"NT Object: {ntObject.Domain}\\{ntObject.Name}");
 ### Local User Management
 
 ```csharp
-using Hydrogen.Windows.Security;
+using Sphere10.Framework.Windows.Security;
 
 var host = NTHost.CurrentMachine;
 
@@ -112,7 +112,7 @@ foreach (var user in allUsers) {
 ### Group Management & Membership
 
 ```csharp
-using Hydrogen.Windows.Security;
+using Sphere10.Framework.Windows.Security;
 
 var host = NTHost.CurrentMachine;
 
@@ -155,7 +155,7 @@ Console.WriteLine($"Total groups: {allGroups.Count}");
 ### Dangling Objects (Unresolved References)
 
 ```csharp
-using Hydrogen.Windows.Security;
+using Sphere10.Framework.Windows.Security;
 
 var host = NTHost.CurrentMachine;
 
@@ -193,7 +193,7 @@ if (aceToRemove != null) {
 ### Privilege Management
 
 ```csharp
-using Hydrogen.Windows.Security;
+using Sphere10.Framework.Windows.Security;
 
 var host = NTHost.CurrentMachine;
 var adminUser = host.GetUserByName("Administrator");
@@ -236,7 +236,7 @@ var commonPrivileges = new[] {
 ### Access Control & Permissions
 
 ```csharp
-using Hydrogen.Windows.Security;
+using Sphere10.Framework.Windows.Security;
 using System.Security.AccessControl;
 using System.IO;
 
@@ -274,7 +274,7 @@ Console.WriteLine("Permissions removed");
 ### Windows Services
 
 ```csharp
-using Hydrogen.Windows;
+using Sphere10.Framework.Windows;
 using System.ServiceProcess;
 
 // Get service controller
@@ -383,8 +383,8 @@ foreach (var entry in recentEntries) {
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
-- **Hydrogen.NET**: .NET framework utilities
+- **Sphere10 Framework**: Core framework
+- **Sphere10.Framework.NET**: .NET framework utilities
 - **System.ServiceProcess.ServiceController**: Service management (.NET built-in)
 - **System.Diagnostics.EventLog**: Event logging (.NET built-in)
 - **System.Security.AccessControl**: Security and ACL (.NET built-in)
@@ -418,10 +418,10 @@ foreach (var entry in recentEntries) {
 
 ## 📖 Related Projects
 
-- [Hydrogen.NET](../Hydrogen.NET) - .NET framework utilities
-- [Hydrogen.Windows.Forms](../Hydrogen.Windows.Forms) - Windows Forms UI framework
-- [Hydrogen.Windows.LevelDB](../Hydrogen.Windows.LevelDB) - Windows LevelDB integration
-- [Hydrogen.Application](../Hydrogen.Application) - Application framework
+- [Sphere10.Framework.NET](../Sphere10.Framework.NET) - .NET framework utilities
+- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - Windows Forms UI framework
+- [Sphere10.Framework.Windows.LevelDB](../Sphere10.Framework.Windows.LevelDB) - Windows LevelDB integration
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework
 
 ## ⚖️ License
 
@@ -436,3 +436,5 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+

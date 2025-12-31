@@ -1,4 +1,4 @@
-//	Hydrogen.Data.Csv.MissingFieldAction
+//	Sphere10.Framework.Data.Csv.MissingFieldAction
 //	Copyright (c) 2006 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -19,7 +19,7 @@
 //	FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 //	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-namespace Hydrogen.Data.Csv;
+namespace Sphere10.Framework.Data.Csv;
 
 /// <summary>
 /// Specifies the action to take when a field is missing.
@@ -40,3 +40,4 @@ public enum MissingFieldAction {
 	/// </summary>
 	ReplaceByNull = 2,
 }
+

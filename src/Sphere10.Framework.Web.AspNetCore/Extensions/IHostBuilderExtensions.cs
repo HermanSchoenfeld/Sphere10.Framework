@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Hosting;
 
 public static class IHostBuilderExtensions {
-	public static IHostBuilder UseHydrogenFramework(this IHostBuilder hostBuilder)
-		=> hostBuilder.ConfigureServices(x => x.AddHydrogenFramework());
+	public static IHostBuilder UseSphere10Framework(this IHostBuilder hostBuilder)
+		=> hostBuilder.ConfigureServices(x => x.AddSphere10Framework());
 
 }
+

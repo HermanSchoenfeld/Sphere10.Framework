@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Runtime.Serialization;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public enum ProductLicenseActionDTO : byte {
 	[EnumMember(Value = "enable")] Enable = 1,
@@ -17,3 +17,4 @@ public enum ProductLicenseActionDTO : byte {
 
 	[EnumMember(Value = "disable")] Disable
 }
+

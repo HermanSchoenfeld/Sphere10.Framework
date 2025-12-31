@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.IO;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
 
@@ -45,3 +45,4 @@ public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
 
 	protected virtual ShellLink.LinkDisplayMode GetShortcutDisplayMode() => ShellLink.LinkDisplayMode.Normal;
 }
+

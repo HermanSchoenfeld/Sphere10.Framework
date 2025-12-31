@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Drawing;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// A class that contains system defined settings for TaskPanes
@@ -400,3 +400,4 @@ public class TaskPaneInfo : IDisposable {
 
 
 }
+

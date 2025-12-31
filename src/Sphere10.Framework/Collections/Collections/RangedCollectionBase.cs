@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A base class for batch-optimized extended collections. Much of the boiler plate code is provided, implementations only
@@ -45,3 +45,4 @@ public abstract class RangedCollectionBase<T> : ExtendedCollectionBase<T> {
 	}
 
 }
+

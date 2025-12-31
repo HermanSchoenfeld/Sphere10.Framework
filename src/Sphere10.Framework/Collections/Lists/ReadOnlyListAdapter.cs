@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem> {
 	private readonly IList<TItem> _internalList;
@@ -25,3 +25,4 @@ public class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem> {
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
+

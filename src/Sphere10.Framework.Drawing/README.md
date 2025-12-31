@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🎨 Hydrogen.Drawing
+# 🎨 Sphere10.Framework.Drawing
 
 **Unified 2D graphics abstraction layer** providing drawing utilities, color manipulation, image processing, and shape rendering for Windows desktop and cross-platform applications.
 
-Hydrogen.Drawing enables **platform-agnostic graphics operations** through a high-level abstraction over GDI+, with utilities for color gradients, image manipulation, geometric transformations, and visual effects.
+Sphere10.Framework.Drawing enables **platform-agnostic graphics operations** through a high-level abstraction over GDI+, with utilities for color gradients, image manipulation, geometric transformations, and visual effects.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using Tools;
 using System.Drawing;
 
@@ -265,7 +265,7 @@ Console.WriteLine($"Thumbnail: {thumb}");
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **System.Drawing.Common**: .NET graphics abstraction (.NET built-in)
 - **System.Drawing.Primitives**: Primitive types (Point, Size, Rectangle)
 
@@ -287,9 +287,9 @@ Console.WriteLine($"Thumbnail: {thumb}");
 
 ## 📖 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework
-- [Hydrogen.Windows.Forms](../Hydrogen.Windows.Forms) - WinForms integration with drawing support
-- [Hydrogen.Windows](../Hydrogen.Windows) - Windows-specific graphics APIs
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - WinForms integration with drawing support
+- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows-specific graphics APIs
 
 ## ⚖️ License
 
@@ -304,3 +304,5 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+

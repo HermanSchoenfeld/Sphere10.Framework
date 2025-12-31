@@ -1,14 +1,14 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# Hydrogen.NUnit.DB
+# Sphere10.Framework.NUnit.DB
 
-**Database testing extensions** for NUnit providing fixtures, helpers, and utilities for testing database layers with Hydrogen.Data.
+**Database testing extensions** for NUnit providing fixtures, helpers, and utilities for testing database layers with Sphere10.Framework.Data.
 
 Database-specific test infrastructure for unit testing data access components across different database providers.
 
 ## Overview
 
-`Hydrogen.NUnit.DB` extends `Hydrogen.NUnit` with database-focused testing utilities and fixtures for Hydrogen.Data-based projects.
+`Sphere10.Framework.NUnit.DB` extends `Sphere10.Framework.NUnit` with database-focused testing utilities and fixtures for Sphere10.Framework.Data-based projects.
 
 ### What's Included
 
@@ -19,8 +19,8 @@ Database-specific test infrastructure for unit testing data access components ac
 
 ## Dependencies
 
-- **Hydrogen.NUnit**: Core NUnit utilities
-- **Hydrogen.Data**: Data access framework
+- **Sphere10.Framework.NUnit**: Core NUnit utilities
+- **Sphere10.Framework.Data**: Data access framework
 - **NUnit**: NUnit testing framework
 
 ## License & Author
@@ -28,3 +28,5 @@ Database-specific test infrastructure for unit testing data access components ac
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

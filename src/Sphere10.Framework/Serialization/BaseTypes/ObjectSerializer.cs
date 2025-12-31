@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class ObjectSerializer : ItemSerializerDecorator<object> {
 
@@ -6,5 +6,6 @@ public sealed class ObjectSerializer : ItemSerializerDecorator<object> {
 		: base(new ReferenceSerializer<object>(new PolymorphicSerializer<object>( factory, factory.GetPureSerializer<object>()))) {
 	}
 }
+
 
 

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ProjectedEqualityComparer<TFrom, TTo> : IEqualityComparer<TTo> {
 
@@ -25,3 +25,4 @@ public class ProjectedEqualityComparer<TFrom, TTo> : IEqualityComparer<TTo> {
 
 	public int GetHashCode(TTo obj) =>  _sourceComparer.GetHashCode(_inverseProjection(obj));
 }
+

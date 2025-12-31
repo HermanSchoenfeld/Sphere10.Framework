@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class VarIntSerializer : ItemSerializerBase<VarInt> {
 
@@ -13,3 +13,4 @@ public sealed class VarIntSerializer : ItemSerializerBase<VarInt> {
 	public override VarInt Deserialize(EndianBinaryReader reader, SerializationContext context) 
 		=> VarInt.Read(reader.BaseStream);
 }
+

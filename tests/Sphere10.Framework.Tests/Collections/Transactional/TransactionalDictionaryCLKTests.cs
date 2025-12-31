@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using FastSerialization;
-using Hydrogen.NUnit;
-using Hydrogen.Tests.Collections.StreamMapped;
+using Sphere10.Framework.NUnit;
+using Sphere10.Framework.Tests.Collections.StreamMapped;
 using NUnit.Framework;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -25,7 +25,7 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 		using var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		using var dictionary = new TransactionalDictionary<string, TestObject>(
-			HydrogenFileDescriptor.From(
+			Sphere10FrameworkFileDescriptor.From(
 				file,
 				dir,
 				containerPolicy:policy
@@ -50,8 +50,10 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 		var fn = file;
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(fn)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-		clustered = new TransactionalDictionary<TKey, TValue>( HydrogenFileDescriptor.From(file, dir, containerPolicy: policy),  keySerializer.AsConstantSize(256), valueSerializer, null, keyComparer, valueComparer, accessMode: FileAccessMode.OpenOrCreate);
+		clustered = new TransactionalDictionary<TKey, TValue>( Sphere10FrameworkFileDescriptor.From(file, dir, containerPolicy: policy),  keySerializer.AsConstantSize(256), valueSerializer, null, keyComparer, valueComparer, accessMode: FileAccessMode.OpenOrCreate);
 		return new Disposables(disposable1, disposable2, clustered);
 	}
 
 }
+
+

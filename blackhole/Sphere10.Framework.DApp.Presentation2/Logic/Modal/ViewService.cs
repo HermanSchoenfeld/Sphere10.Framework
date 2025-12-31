@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,12 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Hydrogen.DApp.Presentation2.Logic.Wizard;
-using Hydrogen.DApp.Presentation2.UI.Dialogs;
-using Hydrogen.DApp.Presentation2.UI.Dialogs.Content;
-using Hydrogen.DApp.Presentation2.UI.Wizard;
+using Sphere10.Framework.DApp.Presentation2.Logic.Wizard;
+using Sphere10.Framework.DApp.Presentation2.UI.Dialogs;
+using Sphere10.Framework.DApp.Presentation2.UI.Dialogs.Content;
+using Sphere10.Framework.DApp.Presentation2.UI.Wizard;
 
-namespace Hydrogen.DApp.Presentation2.Logic.Modal {
+namespace Sphere10.Framework.DApp.Presentation2.Logic.Modal {
 
 	/// <summary>
 	/// View service - provides common services to views.
@@ -131,3 +131,5 @@ namespace Hydrogen.DApp.Presentation2.Logic.Modal {
 	}
 
 }
+
+

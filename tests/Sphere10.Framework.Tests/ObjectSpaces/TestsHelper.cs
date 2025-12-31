@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen.Tests.ObjectSpaces;
+namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 public static class TestsHelper {
 
@@ -144,3 +144,4 @@ public static class TestsHelper {
 		TestTraits.FileMapped | TestTraits.Merklized | TestTraits.PersistentIgnorant,
 	];
 }
+

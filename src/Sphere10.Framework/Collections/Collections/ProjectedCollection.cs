@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class ProjectedCollection<T, TProjection> : ICollection<TProjection> {
 	private readonly ICollection<T> _source;
@@ -44,3 +44,4 @@ public sealed class ProjectedCollection<T, TProjection> : ICollection<TProjectio
 	}
 
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: David Price
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
+namespace Sphere10.Framework.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 	public static class Utility {
 
 		public static bool IsNullOrEmpty(this string text) {
@@ -21,3 +21,5 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes {
 		}
 	}
 }
+
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,12 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using WorkflowCore.Interface;
 using WorkflowCore.Models;
 
-namespace Hydrogen.Utils.WorkflowTester;
+namespace Sphere10.Framework.Utils.WorkflowTester;
 
 public partial class WorkflowTestForm : Form {
 
@@ -27,7 +27,7 @@ public partial class WorkflowTestForm : Form {
 		IServiceCollection services = new ServiceCollection();
 		services.AddLogging();
 		services.AddWorkflow();
-		//services.AddWorkflow(x => x.UseSqlServer(@"Server=.\;Database=Hydrogen_Workflow_Tester;Trusted_Connection=True;", true, true));
+		//services.AddWorkflow(x => x.UseSqlServer(@"Server=.\;Database=Sphere10Framework_Workflow_Tester;Trusted_Connection=True;", true, true));
 
 		services.AddSingleton<TestWorkflow1.Step2>();
 
@@ -376,3 +376,5 @@ public partial class WorkflowTestForm : Form {
 
 
 }
+
+

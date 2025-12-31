@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Hydrogen;
+using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -185,3 +185,4 @@ public static class Memory {
 
 
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,20 +6,25 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Web.AspNetCore;
+using Microsoft.Extensions.Logging;
+using Sphere10.Framework;
+using SphereLogger = Sphere10.Framework.ILogger;
 
-public class HydrogenLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider {
+namespace Sphere10.Framework.Web.AspNetCore;
 
-	public HydrogenLoggerProvider(Hydrogen.ILogger hydrogenLogger) {
-		HydrogenLogger = hydrogenLogger;
+public class Sphere10LoggerProvider : ILoggerProvider {
+
+	public Sphere10LoggerProvider(SphereLogger logger) {
+		Logger = logger;
 	}
 
-	protected ILogger HydrogenLogger { get; }
+	protected SphereLogger Logger { get; }
 
 	public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
-		=> new MicrosoftExtensionsLoggerAdapter(HydrogenLogger);
+		=> new MicrosoftExtensionsLoggerAdapter(Logger);
 
 	public void Dispose() {
 	}
 
 }
+

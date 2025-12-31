@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Data.Common;
 using NHibernate.Driver;
 using NHibernate.SqlTypes;
 
-namespace Hydrogen.Data.NHibernate;
+namespace Sphere10.Framework.Data.NHibernate;
 
 public class ExtendedSql2008ClientDriver : Sql2008ClientDriver {
 	protected override void InitializeParameter(DbParameter dbParam, string name, SqlType sqlType) {
@@ -21,3 +21,4 @@ public class ExtendedSql2008ClientDriver : Sql2008ClientDriver {
 		base.InitializeParameter(dbParam, name, sqlType);
 	}
 }
+

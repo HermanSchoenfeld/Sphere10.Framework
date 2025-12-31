@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,12 +10,12 @@ using System;
 using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Results;
-using Hydrogen.DApp.Presentation.Components.Wizard;
-using Hydrogen.DApp.Presentation.WidgetGallery.Extensions;
-using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Components;
-using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Models;
+using Sphere10.Framework.DApp.Presentation.Components.Wizard;
+using Sphere10.Framework.DApp.Presentation.WidgetGallery.Extensions;
+using Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.Components;
+using Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.Models;
 
-namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.ViewModels;
+namespace Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.ViewModels;
 
 public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetModel> {
 	private IValidator<NewWidgetModel> Validator { get; }
@@ -42,3 +42,5 @@ public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetMod
 		return Task.FromResult(Result.Success);
 	}
 }
+
+

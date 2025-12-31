@@ -12,7 +12,7 @@ using System.IO;
 using System.Collections;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 /// <summary>
 /// This struct supports the Yaowi Framework infrastructure and is not intended to be used directly from your code. 
@@ -280,3 +280,4 @@ public class TypeInfo {
 	#endregion static Helpers
 
 }
+

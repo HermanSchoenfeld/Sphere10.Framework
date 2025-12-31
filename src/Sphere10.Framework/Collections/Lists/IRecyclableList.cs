@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A list whose indices are recycled when removing and re-adding items. Existing holes are re-used before increasing the size of the list.
@@ -44,3 +44,4 @@ public interface IRecyclableList  {
 
 	void Update(long index, object item);
 }
+

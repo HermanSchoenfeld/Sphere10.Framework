@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -14,14 +14,14 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using System.Text;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Represents the outcome of an operation with optional messages or enum codes.
 /// </summary>
 /// <remarks>
 /// Used throughout tests for JSON round-trips and boolean-style success checks.
-/// See tests/Hydrogen.Tests/Misc/ResultTests.cs.
+/// See tests/Sphere10.Framework.Tests/Misc/ResultTests.cs.
 /// </remarks>
 [XmlRoot]
 [DataContract]
@@ -382,7 +382,7 @@ public class Result : IEquatable<Result> {
 /// </summary>
 /// <typeparam name="TValue">The payload type.</typeparam>
 /// <remarks>
-/// See tests/Hydrogen.Tests/Misc/ResultTests.cs for JSON serialization examples.
+/// See tests/Sphere10.Framework.Tests/Misc/ResultTests.cs for JSON serialization examples.
 /// </remarks>
 [XmlRoot]
 [DataContract]
@@ -498,3 +498,4 @@ public sealed class Result<TValue> : Result, IEquatable<Result<TValue>> {
 		return HashCode.Combine(base.GetHashCode(), Value);
 	}
 }
+

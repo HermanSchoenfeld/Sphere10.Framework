@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen.DApp.Core.Consensus;
+namespace Sphere10.Framework.DApp.Core.Consensus;
 
 /// <summary>
-/// A Hydrogen Operation references a rule (method), arguments (method arguments), entities (list of entities it
+/// A Sphere10.Framework Operation references a rule (method), arguments (method arguments), entities (list of entities it
 /// </summary>
 public class Operation {
 
@@ -33,3 +33,4 @@ public class Transaction {
 public class Entity {
 	public byte[] Object { get; }
 }
+

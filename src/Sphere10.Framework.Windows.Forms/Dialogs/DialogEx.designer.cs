@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 	partial class DialogEx {
 		/// <summary>
 		/// Required designer variable.
@@ -37,7 +37,7 @@ namespace Hydrogen.Windows.Forms {
             this.button4 = new System.Windows.Forms.Button();
             this._textLabel = new System.Windows.Forms.Label();
             this._textLabelPanel = new System.Windows.Forms.Panel();
-            this._pictureBoxEx = new Hydrogen.Windows.Forms.PictureBoxEx();
+            this._pictureBoxEx = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
             this._alwaysCheckBox = new System.Windows.Forms.CheckBox();
             this._textLabelPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx)).BeginInit();
@@ -120,7 +120,7 @@ namespace Hydrogen.Windows.Forms {
             this._pictureBoxEx.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this._pictureBoxEx.Name = "_pictureBoxEx";
             this._pictureBoxEx.Size = new System.Drawing.Size(81, 70);
-            this._pictureBoxEx.SystemIcon = Hydrogen.Windows.Forms.SystemIconType.None;
+            this._pictureBoxEx.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
             this._pictureBoxEx.TabIndex = 7;
             this._pictureBoxEx.TabStop = false;
             // 
@@ -179,3 +179,4 @@ namespace Hydrogen.Windows.Forms {
 		private System.Windows.Forms.CheckBox _alwaysCheckBox;
 	}
 }
+

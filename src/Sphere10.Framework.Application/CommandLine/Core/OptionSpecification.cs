@@ -103,3 +103,4 @@ sealed class OptionSpecification : Specification {
 		get { return flagCounter; }
 	}
 }
+

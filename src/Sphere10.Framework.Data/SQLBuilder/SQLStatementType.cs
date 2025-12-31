@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 /// <summary>
 ///  http://www.orafaq.com/faq/what_are_the_difference_between_ddl_dml_and_dcl_commands
@@ -20,3 +20,4 @@ public enum SQLStatementType {
 	DCL, // Data Control Language  (i.e. grant, revoke, etc)
 	TCL // Transaction Control Language (i.e. begin transaction, commit, rollback, etc)
 }
+

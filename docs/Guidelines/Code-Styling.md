@@ -1,4 +1,4 @@
-# Code Styling Guidelines
+﻿# Code Styling Guidelines
 
 Sphere 10 Software employs it's own code-styling approach which all contributions must adhere to. This document provides styling guidelines for common situations. To help contributors, Visual Studio and Resharper code-styling definitions are also provided and which can be adopted quickly by simply copying the `.editorconfig` file to the solution folder. However, the guidelines in this document go beyond what can be auto-formatted and contributors are required to read, understand and apply these guidelines. 
 
@@ -97,29 +97,29 @@ public class SomeClass {
 
 Namespaces are **NOT** necessarily organized by the strict `ProjectName.folder.subfolder.subsubfolder` convention suggested by Visual Studio and Resharper.  Care must be taken by the developer to ensure the namespaces are logically thought out and not overly granular. Expecting framework consumers to know the namespaces can be unrealistic and the preference is to employ more granular namespaces.
 
-For example, the `Hydrogen` module contains a myriad of system-tier domains which are all encumbered within a single `Hydrogen` namespace (this may change in future).
+For example, the `Sphere10 Framework` module contains a myriad of system-tier domains which are all encumbered within a single `Sphere10 Framework` namespace (this may change in future).
 
 For system-tier modules that is acceptable, however for other tiers the namespaces should be decomposed into a logical structuring that matches the `CompanyName.ProductName.Tier.Domain` pattern. If a domain is decomposed into sub-folders then it does **NOT** automatically mean the namespace should also be decomposed that way. It's up to developers discretion. Please refer to Sphere 10's [3-tier architecture guidelines](3-tier-Architecture.md) for understanding how tiers, domains and modules are structured according to the Sphere 10 Software Engineering methodology.
 
 **Example**
 
 ```
-Hydrogen
-Hydrogen.Application
-Hydrogen.DApp.Core
-Hydrogen.DApp.Core.Kademlia
-Hydrogen.DApp.Presentation.Host
-Hydrogen.DApp.Presentation.Node
-Hydrogen.DApp.Presentation.UI
+Sphere10 Framework
+Sphere10.Framework.Application
+Sphere10.Framework.DApp.Core
+Sphere10.Framework.DApp.Core.Kademlia
+Sphere10.Framework.DApp.Presentation.Host
+Sphere10.Framework.DApp.Presentation.Node
+Sphere10.Framework.DApp.Presentation.UI
 ```
 
 
 
 ### Tool Pattern
 
-Hydrogen Framework employs a syntactic naming convention for providing "tool" classes to framework consumers.  Tools are static classes that provide functionality in a specific domain. What makes them different is that tool classes are always defined in the  `global::Tools` namespace and never imported directly. 
+Sphere10 Framework Framework employs a syntactic naming convention for providing "tool" classes to framework consumers.  Tools are static classes that provide functionality in a specific domain. What makes them different is that tool classes are always defined in the  `global::Tools` namespace and never imported directly. 
 
-The reason it is done this way is to that framework consumers can always pull up tools by simply relying on intellisense and by typing `Tools.`. Since "Tools" is a global namespace, all classes defined in Tools will appear. This makes it very easy for a developer to pull up the toolbox whenever it is needed. Sphere 10 and Hydrogen framework Since knowing and remembering all tools is an unrealistic thing, tools can **always** be brought up by intellisense.
+The reason it is done this way is to that framework consumers can always pull up tools by simply relying on intellisense and by typing `Tools.`. Since "Tools" is a global namespace, all classes defined in Tools will appear. This makes it very easy for a developer to pull up the toolbox whenever it is needed. Sphere 10 and Sphere10 Framework framework Since knowing and remembering all tools is an unrealistic thing, tools can **always** be brought up by intellisense.
 
 To use tools, simply ensure the assembly is referenced and type `Tools.` in the code editor:
 
@@ -380,6 +380,7 @@ namespace SomeNamespace {
 }
 
 ```
+
 
 
 

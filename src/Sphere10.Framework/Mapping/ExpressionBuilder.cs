@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 public class ExpressionBuilder {
 	public static Expression<Func<T, object>> Create<T>(Member member) {
@@ -23,3 +23,4 @@ public class ExpressionBuilder {
 		return Expression.Lambda(castedProperty, param);
 	}
 }
+

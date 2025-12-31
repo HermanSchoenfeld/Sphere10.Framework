@@ -23,7 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -38,7 +38,7 @@
 		<EmbeddedResource Update="Properties\Resources.resx">
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
-			<CustomToolNamespace>Hydrogen.Windows.LevelDB</CustomToolNamespace>
+			<CustomToolNamespace>Sphere10.Framework.Windows.LevelDB</CustomToolNamespace>
 		</EmbeddedResource>
 	</ItemGroup>
 </Project>

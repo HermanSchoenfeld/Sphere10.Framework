@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,7 +13,7 @@ using System.Linq;
 using System.Text;
 
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 public class KeyTransformedFileStore<TFromKey, TToKey> : IFileStore<TToKey> {
 	protected readonly IFileStore<TFromKey> InternalFileStore;
@@ -111,3 +111,4 @@ public class KeyTransformedFileStore<TFromKey, TToKey> : IFileStore<TToKey> {
 	public void AppendAllText(TToKey fileKey, string contents, Encoding encoding) => InternalFileStore.AppendAllText(_toTransformer(fileKey), contents, encoding);
 
 }
+

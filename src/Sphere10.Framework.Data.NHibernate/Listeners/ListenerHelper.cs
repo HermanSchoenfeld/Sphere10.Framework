@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Linq;
 using NHibernate.Persister.Entity;
 
 
-namespace Hydrogen.Data.NHibernate;
+namespace Sphere10.Framework.Data.NHibernate;
 
 internal static class ListenerHelper {
 	private static readonly SynchronizedDictionary<string, IDictionary<string, int>> EntityPropertyIndexCache;
@@ -44,3 +44,4 @@ internal static class ListenerHelper {
 	}
 
 }
+

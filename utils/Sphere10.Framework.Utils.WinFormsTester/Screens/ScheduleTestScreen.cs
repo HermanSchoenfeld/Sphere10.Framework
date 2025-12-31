@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System;
 using System.IO;
 using System.Windows.Forms;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class ScheduleTestScreen : ApplicationScreen {
 	private readonly TextBoxWriter _textWriter;
@@ -55,10 +55,10 @@ public partial class ScheduleTestScreen : ApplicationScreen {
 				.OnInterval(TimeSpan.FromSeconds(2))
 				.Build();
 
-		Hydrogen.Scheduler.Asynchronous.JobStatusChanged +=
+		Sphere10.Framework.Scheduler.Asynchronous.JobStatusChanged +=
 			(job, fromStatus, toStatus) => _textWriter.WriteLine("{0}: {1} -> {2}", job.Name, fromStatus, toStatus);
-		Hydrogen.Scheduler.Asynchronous.AddJob(job1);
-		Hydrogen.Scheduler.Asynchronous.AddJob(job2);
+		Sphere10.Framework.Scheduler.Asynchronous.AddJob(job1);
+		Sphere10.Framework.Scheduler.Asynchronous.AddJob(job2);
 	}
 
 	private void TestButton_Click(object sender, EventArgs e) {
@@ -235,3 +235,5 @@ public class TestJob : ISchedulerJob {
 		job.Log.Debug("TestJob END");
 	}
 }
+
+

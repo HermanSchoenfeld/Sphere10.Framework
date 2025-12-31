@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System.Linq;
 using System.IO;
 using System.Windows.Forms;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public class CHMHelpProvider : IHelpServices {
 	private static readonly object SyncObject;
@@ -107,3 +107,4 @@ public class CHMHelpProvider : IHelpServices {
 	//private static extern bool MoveWindow(IntPtr hWnd, int x, int y, int w, int h, bool repaint);
 
 }
+

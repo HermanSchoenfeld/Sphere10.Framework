@@ -1,4 +1,4 @@
-﻿namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class MerkleTreeTestScreen {
 		/// <summary> 
 		/// Required designer variable.
@@ -32,7 +32,7 @@
 			this._printIntegersButton = new System.Windows.Forms.Button();
 			this._outputGroupBox = new System.Windows.Forms.GroupBox();
 			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this.mergeableMenuStrip1 = new Hydrogen.Windows.Forms.MergeableMenuStrip();
+			this.mergeableMenuStrip1 = new Sphere10.Framework.Windows.Forms.MergeableMenuStrip();
 			this._commandToolBox.SuspendLayout();
 			this._outputGroupBox.SuspendLayout();
 			this.SuspendLayout();
@@ -187,6 +187,8 @@
 		private System.Windows.Forms.Button _perfectMerkleButton;
 		private System.Windows.Forms.Button _printInvPow2Button;
 		private System.Windows.Forms.Button _treePerfTestsButton;
-		private Hydrogen.Windows.Forms.MergeableMenuStrip mergeableMenuStrip1;
+		private Sphere10.Framework.Windows.Forms.MergeableMenuStrip mergeableMenuStrip1;
 	}
 }
+
+

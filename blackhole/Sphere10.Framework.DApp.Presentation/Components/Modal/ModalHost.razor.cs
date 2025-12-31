@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,9 +10,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using Hydrogen;
+using Sphere10.Framework;
 
-namespace Hydrogen.DApp.Presentation.Components.Modal;
+namespace Sphere10.Framework.DApp.Presentation.Components.Modal;
 
 /// <summary>
 /// Modal host - a single instance of this component is rendered in the main layout. A child component / render template
@@ -99,3 +99,4 @@ public sealed partial class ModalHost {
 
 	private async Task HideModalAsync() => await JsRuntime.InvokeVoidAsync("hideModal");
 }
+

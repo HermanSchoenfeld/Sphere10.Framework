@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecorator<TItem, TInternalList>, ISynchronizedExtendedList<TItem>
 	where TInternalList : IExtendedList<TItem> {
@@ -159,3 +159,4 @@ public class SynchronizedExtendedList<TItem> : SynchronizedExtendedList<TItem, I
 		: base(internalList) {
 	}
 }
+

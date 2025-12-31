@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Decorates a TextWriter by applying time-stamp to the message.
@@ -36,3 +36,4 @@ public class TimeStampTextWriter : TextWriterDecorator<TextWriter> {
 		return string.Format("{0:" + DateFormat + "}: {1}", DateTimeKind == DateTimeKind.Utc ? DateTime.UtcNow : DateTime.Now, text);
 	}
 }
+

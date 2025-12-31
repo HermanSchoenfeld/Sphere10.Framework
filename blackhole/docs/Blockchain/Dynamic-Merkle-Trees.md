@@ -1,4 +1,4 @@
-# Dynamic Merkle-Trees
+﻿# Dynamic Merkle-Trees
 
 <pre>
   Author: Herman Schoenfeld <herman@sphere10.com>
@@ -649,12 +649,12 @@ This section contains an overview of the full reference implementation[^2] which
 
 Of particular relevance are the following source files:
 
-- The `MerkleMath.cs` file which implements most of the algorithms and proofs described in this paper: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/MerkleMath.cs
-- The `Pow2.cs` file which implements the powers-of-2 algorithms such as `reduce`: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Maths/Pow2.cs
+- The `MerkleMath.cs` file which implements most of the algorithms and proofs described in this paper: https://github.com/Sphere10/Sphere10 Framework/blob/master/src/Sphere10 Framework/Merkle/MerkleMath.cs
+- The `Pow2.cs` file which implements the powers-of-2 algorithms such as `reduce`: https://github.com/Sphere10/Sphere10 Framework/blob/master/src/Sphere10 Framework/Maths/Pow2.cs
 - The `LongMerkleTree.cs` file which implements the memory-efficient long-tree implementation of dynamic merkle-trees:
-https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/LongMerkleTree.cs
+https://github.com/Sphere10/Sphere10 Framework/blob/master/src/Sphere10 Framework/Merkle/LongMerkleTree.cs
 - The `FlatMerkleTree.cs` source file which implements the contiguous-memory flat-tree implementation of dynamic merkle-trees:
-https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/FlatMerkleTree.cs
+https://github.com/Sphere10/Sphere10 Framework/blob/master/src/Sphere10 Framework/Merkle/FlatMerkleTree.cs
 
 
 
@@ -673,7 +673,8 @@ https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/FlatMerkleT
 # 6. References
 
 [^1]: Ralph Merkle. "Secrecy, authentication and public key systems / A certified digital signature". Ph.D. dissertation, Dept. of Electrical Engineering, Stanford University, 1979. Url: http://www.merkle.com/papers/Certified1979.pdf
-[^2]: Github. Hydrogen Framework, Dynamic Merkle-Trees implementation. Url: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Merkle
+[^2]: Github. Sphere10 Framework Framework, Dynamic Merkle-Trees implementation. Url: https://github.com/Sphere10/Sphere10 Framework/tree/master/src/Sphere10 Framework/Merkle
 
-[^3]: Github. Hydrogen Framework, Flat-Tree implementation. Url: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/FlatMerkleTree.cs
-[^4]: Github. Hydrogen Framework, Long-Tree implementation. Url: https://github.com/Sphere10/Hydrogen/blob/master/src/Hydrogen/Merkle/LongMerkleTree.cs
+[^3]: Github. Sphere10 Framework Framework, Flat-Tree implementation. Url: https://github.com/Sphere10/Sphere10 Framework/blob/master/src/Sphere10 Framework/Merkle/FlatMerkleTree.cs
+[^4]: Github. Sphere10 Framework Framework, Long-Tree implementation. Url: https://github.com/Sphere10/Sphere10 Framework/blob/master/src/Sphere10 Framework/Merkle/LongMerkleTree.cs
+

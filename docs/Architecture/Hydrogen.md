@@ -1,29 +1,29 @@
-# Hydrogen Framework: Complete Architecture & Overview
+﻿# Sphere10 Framework Framework: Complete Architecture & Overview
 
 ## Table of Contents
 
-1. [What is Hydrogen](#what-is-hydrogen)
+1. [What is Sphere10 Framework](#what-is-Sphere10 Framework)
 2. [Framework Composition](#framework-composition)
 3. [Key Features & Capabilities](#key-features--capabilities)
 4. [Architecture Overview](#architecture-overview)
 5. [Deployment Model](#deployment-model)
-6. [When to Use Hydrogen](#when-to-use-hydrogen)
+6. [When to Use Sphere10 Framework](#when-to-use-Sphere10 Framework)
 7. [Quick Start Guide](#quick-start-guide)
 8. [Related Documentation](#related-documentation)
 
 ---
 
-## What is Hydrogen
+## What is Sphere10 Framework
 
-Hydrogen is a mature, production-ready **.NET 5+ comprehensive framework** designed for building full-stack applications across desktop, mobile, and web platforms. Originally architected for blockchain systems and P2P applications, Hydrogen has evolved into a general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and enterprise-grade utilities for high-performance .NET development.
+Sphere10 Framework is a mature, production-ready **.NET 5+ comprehensive framework** designed for building full-stack applications across desktop, mobile, and web platforms. Originally architected for blockchain systems and P2P applications, Sphere10 Framework has evolved into a general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and enterprise-grade utilities for high-performance .NET development.
 
 ### Vision & Goals
 
 **Vision**: Provide developers with a unified, extensible foundation for building sophisticated distributed applications with minimal boilerplate, maximum code reuse, and built-in support for scalability, security, and cross-platform deployment.
 
-The hydrogen framework is composed of 3 sub-frameworks.
+The Sphere10 Framework framework is composed of 3 sub-frameworks.
 
-### 1. Hydrogen Framework (`Hydrogen.*`)
+### 1. Sphere10 Framework Framework (`Sphere10.Framework.*`)
 
 The foundational layer providing **general-purpose utilities and libraries** usable across any .NET application.
 
@@ -43,7 +43,7 @@ The foundational layer providing **general-purpose utilities and libraries** usa
 
 An **enterprise service bus (ESB) implementation** for distributed inter-application communication.
 
-**Purpose**: Enable independent applications (Hydrogen-based or otherwise) to collaborate through standardized messaging without tight coupling.
+**Purpose**: Enable independent applications (Sphere10 Framework-based or otherwise) to collaborate through standardized messaging without tight coupling.
 
 **Features**:
 - Publish-Subscribe messaging patterns
@@ -53,36 +53,36 @@ An **enterprise service bus (ESB) implementation** for distributed inter-applica
 - Message routing and distribution
 - Error handling and compensation
 
-**Positioning**: Usable standalone or integrated with Hydrogen DApps for distributed system communication.
+**Positioning**: Usable standalone or integrated with Sphere10 Framework DApps for distributed system communication.
 
-### 3. Hydrogen DApp Framework (`Hydrogen.DApp.*`)
+### 3. Sphere10 Framework DApp Framework (`Sphere10.Framework.DApp.*`)
 
-**Blockchain and decentralized application specific functionality**, built atop both Hydrogen Framework and Helium.
+**Blockchain and decentralized application specific functionality**, built atop both Sphere10 Framework Framework and Helium.
 
 **Components**:
-- **Hydrogen.DApp.Core**: Block/transaction validation, wallet management, persistence, plugin system
-- **Hydrogen.DApp.Node**: Full blockchain node with consensus, P2P networking, JSON APIs, terminal UI
-- **Hydrogen.DApp.Host**: Host process for running nodes as services with automatic upgrade support
-- **Hydrogen.DApp.Presentation**: Blazor-based GUI framework for DApp interfaces
+- **Sphere10.Framework.DApp.Core**: Block/transaction validation, wallet management, persistence, plugin system
+- **Sphere10.Framework.DApp.Node**: Full blockchain node with consensus, P2P networking, JSON APIs, terminal UI
+- **Sphere10.Framework.DApp.Host**: Host process for running nodes as services with automatic upgrade support
+- **Sphere10.Framework.DApp.Presentation**: Blazor-based GUI framework for DApp interfaces
 
-# Hydrogen Framework: Complete Architecture & Overview
+# Sphere10 Framework Framework: Complete Architecture & Overview
 
 ## Table of Contents
 
-1. [What is Hydrogen](#what-is-hydrogen)
+1. [What is Sphere10 Framework](#what-is-Sphere10 Framework)
 2. [Framework Composition](#framework-composition)
 3. [Key Features & Capabilities](#key-features--capabilities)
 4. [Architecture Overview](#architecture-overview)
 5. [Deployment Model](#deployment-model)
-6. [When to Use Hydrogen](#when-to-use-hydrogen)
+6. [When to Use Sphere10 Framework](#when-to-use-Sphere10 Framework)
 7. [Quick Start Guide](#quick-start-guide)
 8. [Related Documentation](#related-documentation)
 
 ---
 
-## What is Hydrogen
+## What is Sphere10 Framework
 
-Hydrogen is a mature, production-ready **.NET 5+ comprehensive framework** designed for building full-stack applications across desktop, mobile, and web platforms. Originally architected for blockchain systems and P2P applications, Hydrogen has evolved into a general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and enterprise-grade utilities for high-performance .NET development.
+Sphere10 Framework is a mature, production-ready **.NET 5+ comprehensive framework** designed for building full-stack applications across desktop, mobile, and web platforms. Originally architected for blockchain systems and P2P applications, Sphere10 Framework has evolved into a general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and enterprise-grade utilities for high-performance .NET development.
 
 ### Vision & Goals
 
@@ -98,12 +98,12 @@ Hydrogen is a mature, production-ready **.NET 5+ comprehensive framework** desig
 
 ### Key Capabilities
 
-Hydrogen provides the following core features:
+Sphere10 Framework provides the following core features:
 
 - **Node**: A fully functional blockchain node with console-based UI, providing data persistence, P2P networking, wallet management, JSON APIs, and standard node functionality
 - **GUI**: Blazor-based graphical interface with rich widgets for composing applications
-- **In-Protocol Upgrades**: Applications control their own upgrades through blockchain governance—everything including node, UI, consensus rules, and data structures can be upgraded without requiring native application updates
-- **Automatic Interoperability**: Hydrogen applications easily interoperate with one another using complex workflow patterns (publish-subscribe, request-response, sagas) via the Helium framework
+- **In-Protocol Upgrades**: Applications control their own upgrades through blockchain governanceâ€”everything including node, UI, consensus rules, and data structures can be upgraded without requiring native application updates
+- **Automatic Interoperability**: Sphere10 Framework applications easily interoperate with one another using complex workflow patterns (publish-subscribe, request-response, sagas) via the Helium framework
 - **Plugin Architecture**: Plugins extend both Node and GUI, installed dynamically without recompilation
 - **Extensible Design**: Extension points throughout all layers for customization
 - **Cross-Platform**: Runs on Windows, macOS, iOS, Android, and any OS supporting .NET 5+
@@ -112,9 +112,9 @@ Hydrogen provides the following core features:
 
 ## Framework Composition
 
-Hydrogen is not monolithic but rather **three complementary sub-frameworks**, each addressing specific domains:
+Sphere10 Framework is not monolithic but rather **three complementary sub-frameworks**, each addressing specific domains:
 
-### 1. Hydrogen Framework (`Hydrogen.*`)
+### 1. Sphere10 Framework Framework (`Sphere10.Framework.*`)
 
 The foundational layer providing **general-purpose utilities and libraries** usable across any .NET application.
 
@@ -134,7 +134,7 @@ The foundational layer providing **general-purpose utilities and libraries** usa
 
 An **enterprise service bus (ESB) implementation** for distributed inter-application communication.
 
-**Purpose**: Enable independent applications (Hydrogen-based or otherwise) to collaborate through standardized messaging without tight coupling.
+**Purpose**: Enable independent applications (Sphere10 Framework-based or otherwise) to collaborate through standardized messaging without tight coupling.
 
 **Features**:
 - Publish-Subscribe messaging patterns
@@ -144,55 +144,55 @@ An **enterprise service bus (ESB) implementation** for distributed inter-applica
 - Message routing and distribution
 - Error handling and compensation
 
-**Positioning**: Usable standalone or integrated with Hydrogen DApps for distributed system communication.
+**Positioning**: Usable standalone or integrated with Sphere10 Framework DApps for distributed system communication.
 
-### 3. Hydrogen DApp Framework (`Hydrogen.DApp.*`)
+### 3. Sphere10 Framework DApp Framework (`Sphere10.Framework.DApp.*`)
 
-**Blockchain and decentralized application specific functionality**, built atop both Hydrogen Framework and Helium.
+**Blockchain and decentralized application specific functionality**, built atop both Sphere10 Framework Framework and Helium.
 
 **Components**:
-- **Hydrogen.DApp.Core**: Block/transaction validation, wallet management, persistence, plugin system
-- **Hydrogen.DApp.Node**: Full blockchain node with consensus, P2P networking, JSON APIs, terminal UI
-- **Hydrogen.DApp.Host**: Host process for running nodes as services with automatic upgrade support
-- **Hydrogen.DApp.Presentation**: Blazor-based GUI framework for DApp interfaces
+- **Sphere10.Framework.DApp.Core**: Block/transaction validation, wallet management, persistence, plugin system
+- **Sphere10.Framework.DApp.Node**: Full blockchain node with consensus, P2P networking, JSON APIs, terminal UI
+- **Sphere10.Framework.DApp.Host**: Host process for running nodes as services with automatic upgrade support
+- **Sphere10.Framework.DApp.Presentation**: Blazor-based GUI framework for DApp interfaces
 
 ### Sub-Framework Table
 
 | Framework | Naming Convention | Purpose |
 |-----------|------------------|---------|
-| **Hydrogen Framework** | `Hydrogen.*` | General-purpose modules usable across all application tiers |
+| **Sphere10 Framework Framework** | `Sphere10.Framework.*` | General-purpose modules usable across all application tiers |
 | **Helium** | `Sphere10.Helium.*` | Enterprise service bus for inter-application messaging and coordination |
-| **Hydrogen DApp** | `Hydrogen.DApp.*` | Blockchain, consensus, nodes, wallets, and P2P functionality |
+| **Sphere10 Framework DApp** | `Sphere10.Framework.DApp.*` | Blockchain, consensus, nodes, wallets, and P2P functionality |
 
 ### Framework Dependencies
 
 ```
-┌────────────────────────────────────────────────┐
-│      Hydrogen DApp Framework                   │
-│  (Blockchain & Decentralized Applications)     │
-├────────────────────────────────────────────────┤
-│  Core  │  Node  │  Host  │  Presentation       │
-└──────────────┬──────────────────────────┬──────┘
-               │                          │
-        ┌──────▼─────────────────────────▼────┐
-        │  Helium Framework                    │
-        │  (ESB/Messaging/Distribution)        │
-        └──────┬─────────────────────┬────────┘
-               │                     │
-        ┌──────▼─────────────────────▼────┐
-        │  Hydrogen Framework              │
-        │  (Core Libraries & Utilities)    │
-        │  - Collections, Crypto, Data     │
-        │  - Networking, Serialization     │
-        │  - Caching, Threading, UI        │
-        └──────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚      Sphere10 Framework DApp Framework                   â”‚
+â”‚  (Blockchain & Decentralized Applications)     â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Core  â”‚  Node  â”‚  Host  â”‚  Presentation       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜
+               â”‚                          â”‚
+        â”Œâ”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”
+        â”‚  Helium Framework                    â”‚
+        â”‚  (ESB/Messaging/Distribution)        â”‚
+        â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+               â”‚                     â”‚
+        â”Œâ”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”
+        â”‚  Sphere10 Framework Framework              â”‚
+        â”‚  (Core Libraries & Utilities)    â”‚
+        â”‚  - Collections, Crypto, Data     â”‚
+        â”‚  - Networking, Serialization     â”‚
+        â”‚  - Caching, Threading, UI        â”‚
+        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
 ## Key Features & Capabilities
 
-### Foundation Layer (Hydrogen Framework)
+### Foundation Layer (Sphere10 Framework Framework)
 
 #### Advanced Data Structures
 - **Collections**: B-trees, merkle trees, paged collections for memory efficiency
@@ -225,7 +225,7 @@ An **enterprise service bus (ESB) implementation** for distributed inter-applica
 - **Streaming**: Large object serialization via streaming interfaces
 - **Type Handling**: Custom type serialization and polymorphism
 
-### Application Framework (Hydrogen.Application)
+### Application Framework (Sphere10.Framework.Application)
 
 - **Lifecycle Management**: Standardized startup, configuration, shutdown
 - **Dependency Injection**: IoC container with component registration
@@ -233,7 +233,7 @@ An **enterprise service bus (ESB) implementation** for distributed inter-applica
 - **Configuration**: Environment-based with override support
 - **Component Lifecycle**: Hooks for initialization, startup, shutdown
 
-### Desktop UI (Hydrogen.Windows.Forms)
+### Desktop UI (Sphere10.Framework.Windows.Forms)
 
 - **Components**: Grids, trees, editors, validators, themed controls
 - **Data Binding**: Sophisticated binding between UI and data
@@ -241,7 +241,7 @@ An **enterprise service bus (ESB) implementation** for distributed inter-applica
 - **Plugins**: Dynamic UI plugin system
 - **Windows Integration**: Registry, services, event logging
 
-### Web & Blazor (Hydrogen.Web.AspNetCore)
+### Web & Blazor (Sphere10.Framework.Web.AspNetCore)
 
 - **Components**: Pre-built Blazor components (grids, modals, wizards)
 - **Widgets**: Autocomplete, responsive layouts, real-time updates
@@ -262,34 +262,34 @@ An **enterprise service bus (ESB) implementation** for distributed inter-applica
 
 ### 5-Tier Architecture
 
-Hydrogen implements a multi-tier architectural pattern for logical code organization:
+Sphere10 Framework implements a multi-tier architectural pattern for logical code organization:
 
 ```
-┌────────────────────────────────────────┐
-│      Presentation Tier                 │
-│  (UI, APIs, Console, Web Applications) │
-└───────────────┬────────────────────────┘
-                │
-┌───────────────▼────────────────────────┐
-│      Communications Tier               │
-│  (Networking, IPC, RPC, Messaging)     │
-└───────────────┬────────────────────────┘
-                │
-┌───────────────▼────────────────────────┐
-│      Processing Tier                   │
-│  (Business Logic, Algorithms, Rules)   │
-└───────────────┬────────────────────────┘
-                │
-┌───────────────▼────────────────────────┐
-│      Data Tier                         │
-│  (Persistence, Databases, Storage)     │
-└────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚      Presentation Tier                 â”‚
+â”‚  (UI, APIs, Console, Web Applications) â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚      Communications Tier               â”‚
+â”‚  (Networking, IPC, RPC, Messaging)     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚      Processing Tier                   â”‚
+â”‚  (Business Logic, Algorithms, Rules)   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚      Data Tier                         â”‚
+â”‚  (Persistence, Databases, Storage)     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
-┌────────────────────────────────────────┐
-│      System Tier (Foundational)        │
-│  (Collections, Crypto, Utilities)      │
-│  Used by all tiers - no dependencies   │
-└────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚      System Tier (Foundational)        â”‚
+â”‚  (Collections, Crypto, Utilities)      â”‚
+â”‚  Used by all tiers - no dependencies   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Domains
@@ -304,18 +304,18 @@ See [Domains.md](Domains.md) for complete reference of 30+ framework domains.
 
 ### Deployment Model Diagram
 
-![Hydrogen Deployment Model](resources/Hydrogen-Deployment-Host-AppPackage.png)
+![Sphere10 Framework Deployment Model](resources/Sphere10 Framework-Deployment-Host-AppPackage.png)
 
 ---
 
 ## Deployment Model
 
-Hydrogen applications support **in-protocol upgrades** without requiring user-installed application updates.
+Sphere10 Framework applications support **in-protocol upgrades** without requiring user-installed application updates.
 
 ### Key Components
 
 1. **Host**: Thin wrapper installed by users (never upgraded)
-2. **HAP**: Versioned Hydrogen Application Package bundle
+2. **HAP**: Versioned Sphere10 Framework Application Package bundle
 3. **Consensus Databases**: Blockchain and state data (persisted across upgrades)
 4. **Node**: Blockchain engine with consensus rules
 5. **GUI**: Blazor-based user interface
@@ -324,62 +324,62 @@ Hydrogen applications support **in-protocol upgrades** without requiring user-in
 
 ```
 Initial Setup
-  ↓
+  â†“
 Host Installs & Runs HAP v1
-  ↓
+  â†“
 Node Syncs Blockchain, GUI Launches
-  ↓
+  â†“
 Blockchain Signals Upgrade to HAP v2
-  ↓
+  â†“
 Host Archives v1, Deploys v2
-  ↓
+  â†“
 Node v2 Starts, Applies Consensus Updates
-  ↓
+  â†“
 GUI v2 Launches
 ```
 
-**Advantage**: Everything upgradeable—consensus rules, data formats, UI, cryptography—through blockchain governance.
+**Advantage**: Everything upgradeableâ€”consensus rules, data formats, UI, cryptographyâ€”through blockchain governance.
 
 See [Runtime.md](Runtime.md) for complete deployment and runtime details.
 
 ---
 
-## When to Use Hydrogen
+## When to Use Sphere10 Framework
 
 ### Ideal For:
 
-✅ **Blockchain & DApps**
+âœ… **Blockchain & DApps**
 - Custom layer-1 blockchain systems
 - DApps requiring cross-platform deployment  
 - Systems needing in-protocol upgrades
 
-✅ **Distributed Systems**
+âœ… **Distributed Systems**
 - P2P applications with multiple nodes
 - Microservices requiring inter-process communication
 - Backend services with caching and pooling
 
-✅ **Enterprise Multi-Tier Applications**
+âœ… **Enterprise Multi-Tier Applications**
 - Desktop apps with multiple data sources
 - Web apps with complex business logic
 - Mixed-platform applications (Windows/Web/Mobile)
 
-✅ **High-Performance Systems**
+âœ… **High-Performance Systems**
 - Advanced caching strategies
 - Large dataset handling
 - Performance-critical cryptography
 
-✅ **Plugin-Based Applications**
+âœ… **Plugin-Based Applications**
 - Extensible desktop applications
 - Modular web applications
 - Dynamic feature loading
 
 ### May Not Be Ideal For:
 
-❌ **Simple CRUD Applications** - Likely over-engineered
+âŒ **Simple CRUD Applications** - Likely over-engineered
 
-❌ **Low-Latency Real-Time Systems** - Managed .NET may not meet sub-millisecond requirements
+âŒ **Low-Latency Real-Time Systems** - Managed .NET may not meet sub-millisecond requirements
 
-❌ **Severely Resource-Constrained** - Requires significant memory/storage
+âŒ **Severely Resource-Constrained** - Requires significant memory/storage
 
 ---
 
@@ -388,19 +388,19 @@ See [Runtime.md](Runtime.md) for complete deployment and runtime details.
 ### 1. Installation
 
 ```bash
-dotnet add package Hydrogen
-dotnet add package Hydrogen.Application
+dotnet add package Sphere10 Framework
+dotnet add package Sphere10.Framework.Application
 ```
 
 ### 2. Basic Application
 
 ```csharp
-using Hydrogen;
-using Hydrogen.Application;
+using Sphere10 Framework;
+using Sphere10.Framework.Application;
 
 class Program {
     static void Main(string[] args) {
-        var app = new HydrogenApplication();
+        var app = new Sphere10Application();
         app.Register<IMyService, MyService>();
         app.Initialize();
         app.Run();
@@ -412,7 +412,7 @@ public interface IMyService {
 }
 
 public class MyService : IMyService {
-    public void Execute() => Console.WriteLine("Hello from Hydrogen!");
+    public void Execute() => Console.WriteLine("Hello from Sphere10 Framework!");
 }
 ```
 
@@ -478,8 +478,8 @@ await client.SendAsync("Hello");
 ### 7. Building a DApp
 
 ```csharp
-// dotnet add package Hydrogen.DApp.Core
-// dotnet add package Hydrogen.DApp.Node
+// dotnet add package Sphere10.Framework.DApp.Core
+// dotnet add package Sphere10.Framework.DApp.Node
 
 public class MyBlockchain : BlockchainNode {
     public override void InitializeConsensusRules() {
@@ -515,32 +515,34 @@ See [DApp Development Guide](../DApp-Guide.md) for comprehensive DApp building i
 - **[Helium Architecture](../Helium/Architecture.md)** - Messaging patterns
 
 ### User Interface
-- **[Presentation Requirements](../PresentationLayer/Hydrogen-Requirements.md)** - UI specifications
-- **[Design System](../PresentationLayer/Design/Hydrogen%20Presentation.md)** - Component library
+- **[Presentation Requirements](../PresentationLayer/Sphere10 Framework-Requirements.md)** - UI specifications
+- **[Design System](../PresentationLayer/Design/Sphere10 Framework%20Presentation.md)** - Component library
 
 ---
 
 ## Copyright & Attribution
 
-Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software
+Copyright Â© 2018-Present Herman Schoenfeld & Sphere 10 Software
 
-All rights reserved. Hydrogen Framework represents years of architectural development for building sophisticated distributed systems.
+All rights reserved. Sphere10 Framework Framework represents years of architectural development for building sophisticated distributed systems.
 
 Each sub-framework addresses specific [domains](Domains.md) relevant to applications. Many domains primarily support other domains, while some are specifically intended for framework consumers. All domains are available for consumption if needed.
 
 ### Hydroge Deployment Model
 
-![Hydrogen Deployment Model](resources/Hydrogen-Deployment-Host-AppPackage.png)
+![Sphere10 Framework Deployment Model](resources/Sphere10 Framework-Deployment-Host-AppPackage.png)
 
-### Hydrogen 3-tier Architecture
+### Sphere10 Framework 3-tier Architecture
 
-![Hydrogen 3-tier architecture](../guidelines/resources/Framework-75pct.png)
+![Sphere10 Framework 3-tier architecture](../guidelines/resources/Framework-75pct.png)
 
 ### Links
-1. [Hydrogen Framework Domains](Domains.md#Sphere-10-Framework-Domains)
-2. [Helium Domains](Domains.md#Hydrogen-Domains)
-3. [Hydrogen Domains](Domains.md#hydrogen-domains)
+1. [Sphere10 Framework Framework Domains](Domains.md#Sphere-10-Framework-Domains)
+2. [Helium Domains](Domains.md#Sphere10 Framework-Domains)
+3. [Sphere10 Framework Domains](Domains.md#Sphere10 Framework-domains)
 4. [Runtime Model](Runtime.md)
 5. [3-tier architecture](../Guidelines/3-tier-Architecture.md)
 6. [Code Styling Guidelines](../Guidelines/Code-Styling.md)
+
+
 

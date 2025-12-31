@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Hydrogen.DApp.Core.Mining;
+using Sphere10.Framework.DApp.Core.Mining;
 
-namespace Hydrogen.DApp.Node.RPC;
+namespace Sphere10.Framework.DApp.Node.RPC;
 
 [Serializable]
 public class MiningSolutionResultJsonSurogate {
@@ -21,3 +21,4 @@ public class MiningSolutionResultJsonSurogate {
 	public uint TimeStamp { get; set; }
 	public uint BlockNumber { get; set; }
 }
+

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Adapts an <see cref="IExtendedList{T}"/> and a <see cref="IStack{T}"/> into a <see cref="IRecyclableList{T}"/>.
@@ -65,3 +65,4 @@ public class RecyclableListAdapter<T> : RecyclableListBase<T> {
 
 
 }
+

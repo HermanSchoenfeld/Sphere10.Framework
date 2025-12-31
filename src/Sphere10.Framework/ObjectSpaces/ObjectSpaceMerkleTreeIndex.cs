@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Maintains a <see cref="IMerkleTree"/> of an <see cref="ObjectSpace"/>. It does this by adopting the merkle-roots of the underlying <see cref="ObjectSpace"/>'s dimensions <see cref="IMerkleTree"/> as leaves in it's own tree.
@@ -114,7 +114,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		}
 
 		// check expected matches stored spatial root
-		var calculatedRoot = Hydrogen.MerkleTree.ComputeMerkleRoot(dimensionRoots, _objectSpace.Definition.HashFunction);
+		var calculatedRoot = Sphere10.Framework.MerkleTree.ComputeMerkleRoot(dimensionRoots, _objectSpace.Definition.HashFunction);
 		if (!ByteArrayEqualityComparer.Instance.Equals(MerkleTree.Root, calculatedRoot))
 			throw new InvalidDataException($"ObjectSpace merkle-tree root did not match roots of dimension trees");
 
@@ -138,3 +138,4 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		=> throw new NotSupportedException($"{nameof(ObjectSpaceMerkleTreeIndex)} does not support mutations of dimensions");
 
 }
+

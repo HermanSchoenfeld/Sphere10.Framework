@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using SourceGrid.Cells.Controllers;
 
-namespace Hydrogen.Windows.Forms.AppointmentBook;
+namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
 internal class BaseCellController : SourceGrid.Cells.Controllers.ControllerBase {
 	private Cursor _previousCursor;
@@ -141,3 +141,4 @@ internal class BaseCellController : SourceGrid.Cells.Controllers.ControllerBase 
 	#endregion
 
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.DApp.Core.Consensus;
+using Sphere10.Framework.DApp.Core.Consensus;
 
-namespace Hydrogen.DApp.Core.Mining;
+namespace Sphere10.Framework.DApp.Core.Mining;
 
 public class MiningPuzzle {
 
@@ -46,3 +46,4 @@ public class MiningPuzzle {
 	public bool IsSolved() => ComputeCompactWork() > CompactTarget;
 
 }
+

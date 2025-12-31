@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Win32;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// Sets a handler to catch the system shutdown event, so the application can close properly.
@@ -38,7 +38,7 @@ public class SessionEndingHandlerInitializer : ApplicationInitializerBase {
 		if (ServiceProvider.TryGetService<IUserInterfaceServices>(out var userInterfaceServices)) {
 			userInterfaceServices.Exit(true);
 		} else {
-			HydrogenFramework.Instance.EndFramework();
+			Sphere10Framework.Instance.EndFramework();
 			Environment.Exit(-1);
 		}
 	}
@@ -47,3 +47,4 @@ public class SessionEndingHandlerInitializer : ApplicationInitializerBase {
 	}
 
 }
+

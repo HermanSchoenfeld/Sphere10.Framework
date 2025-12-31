@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 
-namespace Hydrogen.CryptoEx;
+namespace Sphere10.Framework.CryptoEx;
 
 public abstract class HavalDigest
 	: IDigest, IMemoable {
@@ -966,3 +966,4 @@ public class Haval5_256Digest : HavalDigest {
 		return new Haval5_256Digest(this);
 	}
 }
+

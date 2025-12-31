@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ScreenA.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester
+namespace Sphere10.Framework.Utils.WinFormsTester
 {
 	partial class CommunicationsTestScreen
 	{
@@ -41,7 +41,7 @@ namespace Hydrogen.Utils.WinFormsTester
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.Output = new Hydrogen.Windows.Forms.TextBoxEx();
+            this.Output = new Sphere10.Framework.Windows.Forms.TextBoxEx();
             this.Send = new System.Windows.Forms.Button();
             this.Protocol = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -349,7 +349,7 @@ namespace Hydrogen.Utils.WinFormsTester
 
 		#endregion
 
-		private Hydrogen.Windows.Forms.TextBoxEx Output;
+		private Sphere10.Framework.Windows.Forms.TextBoxEx Output;
 		private System.Windows.Forms.Button Send;
 		private System.Windows.Forms.ListBox Protocol;
 		private System.Windows.Forms.Label label2;
@@ -378,3 +378,5 @@ namespace Hydrogen.Utils.WinFormsTester
 		private System.Windows.Forms.DataGridViewButtonColumn ColumnClose;
 	}
 }
+
+

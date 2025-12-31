@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.IO;
-using Hydrogen.NUnit;
+using Sphere10.Framework.NUnit;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -262,3 +262,4 @@ public class FileMappedBufferTests {
 		}
 	}
 }
+

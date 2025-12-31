@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -13,7 +13,7 @@ using SysMath = System.Math;
 /// <summary>
 /// From http://sci.math.narkive.com/4iRcGoJ3/some-functions LOL
 /// </summary>
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class SchoenfeldFunctions {
 	private const long R = 10;
@@ -41,3 +41,4 @@ public static class SchoenfeldFunctions {
 	public static long PREVDIGIT(long x) => LASTDIGIT(PREVNUM(x));
 
 }
+

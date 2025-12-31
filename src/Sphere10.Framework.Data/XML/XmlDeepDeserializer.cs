@@ -14,7 +14,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Xml;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 /// <summary>
 /// Deserializes complex objects serialized with the XmlSerializer.
@@ -803,3 +803,4 @@ public class XmlDeepDeserializer : IDisposable {
 	#endregion Misc
 
 }
+

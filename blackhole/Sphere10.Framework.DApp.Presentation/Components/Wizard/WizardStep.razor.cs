@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Hydrogen.DApp.Presentation.Components.Wizard;
+namespace Sphere10.Framework.DApp.Presentation.Components.Wizard;
 
 /// <summary>
 /// Wizard step component base. 
@@ -91,3 +91,5 @@ public abstract class WizardStepBase : ComponentBase {
 	/// <returns> whether or not the step is finished and to move prev</returns>
 	public abstract Task<Result> OnPreviousAsync();
 }
+
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 // There is an issue dealing with flags that have value '0'. How is such a flag to be interpreted?
 public partial class FlagsCheckedBoxListScreen : ApplicationScreen {
@@ -50,3 +50,5 @@ public partial class FlagsCheckedBoxListScreen : ApplicationScreen {
 	}
 
 }
+
+

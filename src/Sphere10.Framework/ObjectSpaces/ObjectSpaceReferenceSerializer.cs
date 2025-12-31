@@ -1,5 +1,5 @@
-﻿
-//namespace Hydrogen;
+
+//namespace Sphere10.Framework;
 
 ///// <summary>
 ///// Serializer wrapper for handling reference types within an ObjectSpace. If a type is tracked within a dimension of the object-space,
@@ -12,3 +12,4 @@
 //	public ObjectSpaceReferenceSerializer(IItemSerializer<TItem> valueSerializer, ReferenceSerializerMode mode) : base(valueSerializer, mode) {
 //	}
 //}
+

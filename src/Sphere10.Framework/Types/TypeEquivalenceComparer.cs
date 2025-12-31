@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 using System;
 using System.Collections.Generic;
@@ -71,3 +71,4 @@ public class TypeEquivalenceComparer : IEqualityComparer<Type> {
 		return hash;
 	}
 }
+

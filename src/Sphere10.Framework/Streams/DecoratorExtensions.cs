@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class StreamDecoratorExtensions {
 
@@ -58,3 +58,4 @@ public static class StreamDecoratorExtensions {
 		return new ConcurrentStream(stream);
 	}
 }
+

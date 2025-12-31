@@ -25,3 +25,4 @@ namespace HashLib4CSharp.Enum
         HashSize512 = 64
     }
 }
+

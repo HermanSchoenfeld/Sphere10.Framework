@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Hydrogen.DApp.Presentation2.UI.Grids {
+namespace Sphere10.Framework.DApp.Presentation2.UI.Grids {
 	/// <summary>
 	/// Paging table - simple table with pagination 
 	/// </summary>
@@ -139,3 +139,5 @@ namespace Hydrogen.DApp.Presentation2.UI.Grids {
 
 	}
 }
+
+

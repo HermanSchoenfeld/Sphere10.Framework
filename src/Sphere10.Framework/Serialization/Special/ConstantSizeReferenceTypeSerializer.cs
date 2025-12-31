@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 
 public sealed class ConstantSizeReferenceTypeSerializer<TItem> : ItemSerializerDecorator<TItem>  {
@@ -32,3 +32,4 @@ public sealed class ConstantSizeReferenceTypeSerializer<TItem> : ItemSerializerD
 	}
 
 }
+

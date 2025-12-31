@@ -13,7 +13,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 /// <summary>
 /// Container for binary data.
@@ -164,3 +164,4 @@ public class BinaryContainerTypeConverter : TypeConverter {
 	}
 
 }
+

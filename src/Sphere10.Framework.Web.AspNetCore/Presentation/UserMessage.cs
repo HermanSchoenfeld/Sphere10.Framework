@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 /// <summary>
 /// Describes a message to a user. Currently used within the MVC pipeline (BPM) to pass warning messages in TransferResults.
@@ -26,3 +26,4 @@ public sealed class UserMessage {
 	}
 
 }
+

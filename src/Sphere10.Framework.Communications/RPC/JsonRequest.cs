@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using Newtonsoft.Json;
 
-namespace Hydrogen.Communications.RPC;
+namespace Sphere10.Framework.Communications.RPC;
 
 [JsonObject(MemberSerialization.OptIn)]
 public class JsonRequest {
@@ -26,3 +26,4 @@ public class JsonRequest {
 
 	[JsonProperty("id")] public object Id { get; set; }
 }
+

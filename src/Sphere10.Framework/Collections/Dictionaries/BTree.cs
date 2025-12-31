@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 //TODO: refactor so nodes are stored in a IExtended list, then pass that list in (TransactionalList)
 public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
@@ -774,3 +774,4 @@ public class BTree<K, V> : IDictionary<K, V> where K : IComparable<K> {
 	}
 
 }
+

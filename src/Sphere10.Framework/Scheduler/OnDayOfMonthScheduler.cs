@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class OnDayOfMonthScheduler<T> : BaseJobSchedule<T> where T : class, IJob {
 	private int DayOfMonth { get; set; }
@@ -66,3 +66,4 @@ public class OnDayOfMonthScheduler<T> : BaseJobSchedule<T> where T : class, IJob
 		return Tools.Time.CalculateNextDayOfMonth(DateTime.UtcNow, DayOfMonth, TimeOfDay);
 	}
 }
+

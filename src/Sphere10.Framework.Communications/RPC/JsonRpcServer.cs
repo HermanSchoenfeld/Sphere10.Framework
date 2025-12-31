@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Threading;
 using System.Diagnostics;
 
-namespace Hydrogen.Communications.RPC;
+namespace Sphere10.Framework.Communications.RPC;
 //Json server as an ApiService 
 
 
@@ -89,3 +89,4 @@ public class JsonRpcServer {
 		ActiveClients.RemoveAt(idx);
 	}
 }
+

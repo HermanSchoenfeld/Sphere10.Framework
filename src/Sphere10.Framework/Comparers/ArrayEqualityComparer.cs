@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen.Collections;
+namespace Sphere10.Framework.Collections;
 
 public class ArrayEqualityComparer<T> : IEqualityComparer<T[]> {
 	private readonly IEqualityComparer<T> _elementComparer;
@@ -34,3 +34,4 @@ public class ArrayEqualityComparer<T> : IEqualityComparer<T[]> {
 		return unchecked(obj.Select(e => e.GetHashCode()).Aggregate(0, (a, b) => (((23 * 37) + a) * 37) + b));
 	}
 }
+

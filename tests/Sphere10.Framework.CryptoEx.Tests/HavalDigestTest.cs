@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Org.BouncyCastle.Crypto;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 /**
  * Test vectors for Haval5_256Digest
@@ -48,3 +48,4 @@ public class Haval5_256DigestTest
 		digestTest.PerformTest();
 	}
 }
+

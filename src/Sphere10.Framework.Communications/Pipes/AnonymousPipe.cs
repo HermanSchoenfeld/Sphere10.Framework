@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Threading;
 using System.IO.Pipes;
 using System.Threading.Tasks;
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 	public event EventHandlerEx<string> ReceivedString;
@@ -130,3 +130,4 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 	}
 
 }
+

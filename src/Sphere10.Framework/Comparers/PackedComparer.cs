@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class PackedComparer : IComparer<object> {
 	private readonly object _comparer;
@@ -29,3 +29,4 @@ public class PackedComparer : IComparer<object> {
 	}
 	
 }
+

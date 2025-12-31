@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Decorator that adds a prefix to every log message produced by the wrapped logger.
@@ -45,3 +45,4 @@ public abstract class PrefixLoggerBase : LoggerDecorator {
 	protected abstract string GetPrefix();
 
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using NHibernate.Engine;
 using NHibernate.Persister.Entity;
 using NHibernate.Proxy;
 
-namespace Hydrogen.Data.NHibernate;
+namespace Sphere10.Framework.Data.NHibernate;
 
 public static class SessionExtensions {
 	public static T Attach<T>(this ISession session, T entity, LockMode mode = null) {
@@ -26,3 +26,4 @@ public static class SessionExtensions {
 		return (entity);
 	}
 }
+

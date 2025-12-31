@@ -1,4 +1,4 @@
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public enum VideoSharingPlatform {
 	YouTube,
@@ -6,3 +6,4 @@ public enum VideoSharingPlatform {
 	BitChute,
 	Vimeo
 }
+

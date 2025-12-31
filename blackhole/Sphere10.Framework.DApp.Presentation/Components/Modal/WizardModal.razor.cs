@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,9 +8,9 @@
 
 using System;
 using Microsoft.AspNetCore.Components;
-using Hydrogen.DApp.Presentation.Components.Wizard;
+using Sphere10.Framework.DApp.Presentation.Components.Wizard;
 
-namespace Hydrogen.DApp.Presentation.Components.Modal;
+namespace Sphere10.Framework.DApp.Presentation.Components.Modal;
 
 /// <summary>
 /// Wizard modal - show a wizard component inside a modal dialog.
@@ -79,3 +79,4 @@ public partial class WizardModal {
 		OnStepChange = EventCallback.Factory.Create(this, StateHasChanged);
 	}
 }
+

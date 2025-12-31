@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public class ExceptionDialog : DialogEx {
 
@@ -55,3 +55,4 @@ public class ExceptionDialog : DialogEx {
 
 
 }
+

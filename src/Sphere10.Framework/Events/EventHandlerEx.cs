@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 [Serializable]
 public delegate void EventHandlerEx();
@@ -32,3 +32,4 @@ public delegate void EventHandlerEx<in T1, in T2, in T3, in T4>(T1 arg1, T2 arg2
 
 [Serializable]
 public delegate void EventHandlerEx<in T1, in T2, in T3, in T4, in T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+

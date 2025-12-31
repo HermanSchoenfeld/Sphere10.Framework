@@ -10,7 +10,7 @@ namespace CSharpx;
 #region Maybe Type
 
 /// <summary>
-/// Discriminator for <see cref="Hydrogen.Maybe"/>.
+/// Discriminator for <see cref="Sphere10.Framework.Maybe"/>.
 /// </summary>
 #if !CSX_MAYBE_INTERNAL
 public
@@ -67,7 +67,7 @@ public
 
 
 /// <summary>
-/// Models a <see cref="Hydrogen.Maybe"/> when in empty state.
+/// Models a <see cref="Sphere10.Framework.Maybe"/> when in empty state.
 /// </summary>
 #if !CSX_MAYBE_INTERNAL
 public
@@ -80,7 +80,7 @@ public
 
 
 /// <summary>
-/// Models a <see cref="Hydrogen.Maybe"/> when contains a value.
+/// Models a <see cref="Sphere10.Framework.Maybe"/> when contains a value.
 /// </summary>
 #if !CSX_MAYBE_INTERNAL
 public
@@ -103,7 +103,7 @@ public
 
 
 /// <summary>
-/// Provides static methods for manipulating <see cref="Hydrogen.Maybe"/>.
+/// Provides static methods for manipulating <see cref="Sphere10.Framework.Maybe"/>.
 /// </summary>
 #if !CSX_MAYBE_INTERNAL
 public
@@ -113,14 +113,14 @@ public
 	#region Value Case Constructors
 
 	/// <summary>
-	/// Builds the empty case of <see cref="Hydrogen.Maybe"/>.
+	/// Builds the empty case of <see cref="Sphere10.Framework.Maybe"/>.
 	/// </summary>
 	public static Maybe<T> Nothing<T>() {
 		return new Nothing<T>();
 	}
 
 	/// <summary>
-	/// Builds the case when <see cref="Hydrogen.Maybe"/> contains a value.
+	/// Builds the case when <see cref="Sphere10.Framework.Maybe"/> contains a value.
 	/// </summary>
 	public static Just<T> Just<T>(T value) {
 		return new Just<T>(value);
@@ -131,7 +131,7 @@ public
 	#region Monad
 
 	/// <summary>
-	/// Inject a value into the monadic <see cref="Hydrogen.Maybe{T}"/> type.
+	/// Inject a value into the monadic <see cref="Sphere10.Framework.Maybe{T}"/> type.
 	/// </summary>
 	public static Maybe<T> Return<T>(T value) {
 		return Equals(value, default(T)) ? Maybe.Nothing<T>() : Maybe.Just(value);
@@ -186,7 +186,7 @@ public
 
 
 /// <summary>
-/// Provides convenience extension methods for <see cref="Hydrogen.Maybe"/>.
+/// Provides convenience extension methods for <see cref="Sphere10.Framework.Maybe"/>.
 /// </summary>
 #if !CSX_MAYBE_INTERNAL
 public
@@ -238,8 +238,8 @@ public
 	#endregion
 
 	/// <summary>
-	/// Equivalent to monadic <see cref="Hydrogen.Maybe.Return{T}"/> operation.
-	/// Builds a <see cref="Hydrogen.Just{T}"/> value in case <paramref name="value"/> is different from its default.
+	/// Equivalent to monadic <see cref="Sphere10.Framework.Maybe.Return{T}"/> operation.
+	/// Builds a <see cref="Sphere10.Framework.Just{T}"/> value in case <paramref name="value"/> is different from its default.
 	/// </summary>
 	public static Maybe<T> ToMaybe<T>(this T value) {
 		return Maybe.Return(value);
@@ -311,21 +311,21 @@ public
 	#endregion
 
 	/// <summary>
-	/// Returns <c>true</c> iffits argument is of the form <see cref="Hydrogen.Just{T}"/>.
+	/// Returns <c>true</c> iffits argument is of the form <see cref="Sphere10.Framework.Just{T}"/>.
 	/// </summary>
 	public static bool IsJust<T>(this Maybe<T> maybe) {
 		return maybe.Tag == MaybeType.Just;
 	}
 
 	/// <summary>
-	/// Returns <c>true</c> iffits argument is of the form <see cref="Hydrogen.Nothing{T}"/>.
+	/// Returns <c>true</c> iffits argument is of the form <see cref="Sphere10.Framework.Nothing{T}"/>.
 	/// </summary>
 	public static bool IsNothing<T>(this Maybe<T> maybe) {
 		return maybe.Tag == MaybeType.Nothing;
 	}
 
 	/// <summary>
-	/// Extracts the element out of a <see cref="Hydrogen.Just{T}"/> and returns a default value if its argument is <see cref="Hydrogen.Nothing{T}"/>.
+	/// Extracts the element out of a <see cref="Sphere10.Framework.Just{T}"/> and returns a default value if its argument is <see cref="Sphere10.Framework.Nothing{T}"/>.
 	/// </summary>
 	public static T FromJust<T>(this Maybe<T> maybe) {
 		T value;
@@ -336,7 +336,7 @@ public
 	}
 
 	/// <summary>
-	/// Extracts the element out of a <see cref="Hydrogen.Just{T}"/> and throws an error if its argument is <see cref="Hydrogen.Nothing{T}"/>.
+	/// Extracts the element out of a <see cref="Sphere10.Framework.Just{T}"/> and throws an error if its argument is <see cref="Sphere10.Framework.Nothing{T}"/>.
 	/// </summary>
 	public static T FromJustOrFail<T>(this Maybe<T> maybe, Exception exceptionToThrow = null) {
 		T value;
@@ -371,7 +371,7 @@ public
 	}
 
 	/// <summary>
-	/// Returns an empty list when given <see cref="Hydrogen.Nothing{T}"/> or a singleton list when given a <see cref="Hydrogen.Just{T}"/>.
+	/// Returns an empty list when given <see cref="Sphere10.Framework.Nothing{T}"/> or a singleton list when given a <see cref="Sphere10.Framework.Just{T}"/>.
 	/// </summary>
 	public static IEnumerable<T> ToEnumerable<T>(this Maybe<T> maybe) {
 		T value;
@@ -381,3 +381,4 @@ public
 		return Enumerable.Empty<T>();
 	}
 }
+

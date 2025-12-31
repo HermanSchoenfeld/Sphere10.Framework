@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 	partial class CrudDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -31,7 +31,7 @@ namespace Hydrogen.Windows.Forms {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			this._crudGrid = new Hydrogen.Windows.Forms.CrudGrid();
+			this._crudGrid = new Sphere10.Framework.Windows.Forms.CrudGrid();
 			this._okButton = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
@@ -41,7 +41,7 @@ namespace Hydrogen.Windows.Forms {
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._crudGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this._crudGrid.Capabilities = ((Hydrogen.DataSourceCapabilities)((Hydrogen.DataSourceCapabilities.CanCreate | Hydrogen.DataSourceCapabilities.CanRead)));
+			this._crudGrid.Capabilities = ((Sphere10.Framework.DataSourceCapabilities)((Sphere10.Framework.DataSourceCapabilities.CanCreate | Sphere10.Framework.DataSourceCapabilities.CanRead)));
 			this._crudGrid.Location = new System.Drawing.Point(12, 12);
 			this._crudGrid.MinimumSize = new System.Drawing.Size(319, 87);
 			this._crudGrid.Name = "_crudGrid";
@@ -81,3 +81,4 @@ namespace Hydrogen.Windows.Forms {
 		private System.Windows.Forms.Button _okButton;
 	}
 }
+

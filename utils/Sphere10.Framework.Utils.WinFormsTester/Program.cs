@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,11 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.Windows.Forms;
-using Hydrogen.Application;
+using Sphere10.Framework.Windows.Forms;
+using Sphere10.Framework.Application;
 
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>
 /// Test Licenses
@@ -38,6 +38,8 @@ static class Program {
 		AppDomain.CurrentDomain.UnhandledException += (s, e) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", (Exception)e.ExceptionObject)).Invoke();
 		System.Windows.Forms.Application.ThreadException += (xs, xe) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", xe.Exception)).Invoke();
 		SystemLog.RegisterLogger(new ConsoleLogger());
-		HydrogenFramework.Instance.StartWinFormsApplication<BlockMainForm>();
+		Sphere10Framework.Instance.StartWinFormsApplication<BlockMainForm>();
 	}
 }
+
+

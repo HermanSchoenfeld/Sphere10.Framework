@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
 	public const int DefaultTimeoutMS = 5000;
@@ -240,3 +240,4 @@ public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
 	#endregion
 
 }
+

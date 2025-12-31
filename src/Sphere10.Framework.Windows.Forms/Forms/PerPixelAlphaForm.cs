@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <para>Your PerPixel form should inherit this class</para>
 /// <author><name>Rui Godinho Lopes</name><email>rui@ruilopes.com</email></author>
@@ -77,3 +77,4 @@ public class PerPixelAlphaForm : Form {
 		}
 	}
 }
+

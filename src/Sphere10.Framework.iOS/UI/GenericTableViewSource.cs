@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="GenericTableViewSource.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (http://www.sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -18,9 +18,9 @@ using System.Linq;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
-using Hydrogen;
+using Sphere10.Framework;
 
-namespace Hydrogen.iOS {
+namespace Sphere10.Framework.iOS {
 
 	// See this for adding improvements: https://gist.github.com/praeclarum/10024108
 	public sealed class GenericTableViewSource<T> : UITableViewSource {
@@ -154,7 +154,7 @@ namespace Hydrogen.iOS {
 					cell.BadgeView.BackgroundColor = itemDescription.BadgeTextColor;
 
 			} else {
-				if (cell.AccessoryView is Hydrogen.iOS.BadgeView)
+				if (cell.AccessoryView is Sphere10.Framework.iOS.BadgeView)
 					cell.ShowBadgeView = false;
 			}
 			cell.Accessory = itemDescription.Accessory;
@@ -181,4 +181,5 @@ namespace Hydrogen.iOS {
 		}
 	}
 }
+
 

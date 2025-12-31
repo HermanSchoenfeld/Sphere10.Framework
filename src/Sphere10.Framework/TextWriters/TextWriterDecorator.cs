@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Text;
 using System.IO;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Decorator for the <see cref="TextWriter"/> class. Applies a functor to the message before sending it to the underlying TextWriter.
@@ -78,3 +78,4 @@ public abstract class TextWriterDecorator : TextWriterDecorator<TextWriter> {
 		: base(internalWriter) {
 	}
 }
+

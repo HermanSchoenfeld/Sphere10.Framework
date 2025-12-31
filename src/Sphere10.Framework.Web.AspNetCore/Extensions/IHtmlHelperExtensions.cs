@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Hosting;
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 public static class HtmlHelperExtensions {
 
@@ -249,3 +249,4 @@ public static class HtmlHelperExtensions {
 	}
 
 }
+

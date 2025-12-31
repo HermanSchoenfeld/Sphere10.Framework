@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 /// <summary>
 /// These represent settings relevant to the system user of the application, and are not shared between users.
@@ -39,3 +39,4 @@ public static class UserSettings {
 	private static void CheckProvider()
 		=> Guard.Ensure(_provider != null, "User settings provider has not been set");
 }
+

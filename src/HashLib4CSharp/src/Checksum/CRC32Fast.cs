@@ -157,3 +157,4 @@ namespace HashLib4CSharp.Checksum
             LocalCrcCompute(Crc32CastagnoliTable, data);
     }
 }
+

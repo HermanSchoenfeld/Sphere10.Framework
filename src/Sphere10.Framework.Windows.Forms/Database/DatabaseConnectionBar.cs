@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,15 +12,15 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnectionProvider {
-	private const string MSSQLConnectionBarTypeName = "Hydrogen.Windows.Forms.MSSQL.MSSQLConnectionBar, Hydrogen.Windows.Forms.MSSQL";
-	private const string SqliteConnectionBarTypeName = "Hydrogen.Windows.Forms.Sqlite.SqliteConnectionBar, Hydrogen.Windows.Forms.Sqlite";
-	private const string FirebirdConnectionBarTypeName = "Hydrogen.Windows.Forms.Firebird.FirebirdConnectionBar, Hydrogen.Windows.Forms.Firebird";
-	private const string FirebirdFileConnectionBarTypeName = "Hydrogen.Windows.Forms.Firebird.FirebirdEmbeddedConnectionBar, Hydrogen.Windows.Forms.Firebird";
+	private const string MSSQLConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.MSSQL.MSSQLConnectionBar, Sphere10.Framework.Windows.Forms.MSSQL";
+	private const string SqliteConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Sqlite.SqliteConnectionBar, Sphere10.Framework.Windows.Forms.Sqlite";
+	private const string FirebirdConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdConnectionBar, Sphere10.Framework.Windows.Forms.Firebird";
+	private const string FirebirdFileConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdEmbeddedConnectionBar, Sphere10.Framework.Windows.Forms.Firebird";
 
 	public DatabaseConnectionBar() {
 		InitializeComponent();
@@ -121,3 +121,4 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 		_connectionProviderPanel.Controls.Add(CurrentConnectionBar);
 	}
 }
+

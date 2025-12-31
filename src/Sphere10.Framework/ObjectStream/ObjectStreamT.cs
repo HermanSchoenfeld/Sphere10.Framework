@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-using Hydrogen.Mapping;
+using Sphere10.Framework.Mapping;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +15,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A objectStream that stores objects in a stream using a <see cref="ClusteredStreams"/>. This can also maintain
@@ -82,3 +82,4 @@ public class ObjectStream<T> : ObjectStream {
 	}
 	
 }
+

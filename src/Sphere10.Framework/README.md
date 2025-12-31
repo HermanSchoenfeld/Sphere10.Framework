@@ -1,6 +1,6 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🧪 Hydrogen
+# 🧪 Sphere10 Framework
 
 **Developer**: Herman Schoenfeld  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software  
@@ -11,9 +11,9 @@
 
 ## 📋 Project Overview
 
-Hydrogen is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.
+Sphere10 Framework is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.
 
-Unlike general-purpose libraries, Hydrogen doesn't provide application frameworks or abstractions. Instead, it offers:
+Unlike general-purpose libraries, Sphere10 Framework doesn't provide application frameworks or abstractions. Instead, it offers:
 
 - **50+ collection types** (extended lists, stream-mapped, paged, recyclable, merkle-aware)
 - **Advanced serialization framework** (polymorphism, references, versioning, constant-size encoding)
@@ -29,12 +29,12 @@ Unlike general-purpose libraries, Hydrogen doesn't provide application framework
 - **Dependencies**: Zero external dependencies for core functionality (optional: BouncyCastle, Newtonsoft.Json)
 - **Platform Support**: Windows, Linux, macOS, iOS, Android
 - **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
-- **Tests**: [Comprehensive test suite](../../tests/Hydrogen.Tests/) with 25+ subsystems and 2000+ tests
+- **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
 - **Maturity**: Production-ready (v2.0.2) with battle-tested core subsystems
 
 ## 🚀 Quick Navigation
 
-### Core Hydrogen Library Domains
+### Core Sphere10 Framework Library Domains
 
 **Data Structures & Collections**
 - 📦 [Collections/](Collections/) – Extended lists, stream-mapped, recyclable, paged, observable, synchronized variants
@@ -102,64 +102,64 @@ Unlike general-purpose libraries, Hydrogen doesn't provide application framework
 ### Related Projects
 
 **Data Access & Persistence**
-- [Hydrogen.Data](../Hydrogen.Data/) – Database abstraction layer (SQL Server, SQLite, Firebird)
-- [Hydrogen.Data.Sqlite](../Hydrogen.Data.Sqlite/) – SQLite-specific integration
-- [Hydrogen.Data.MSSQL](../Hydrogen.Data.MSSQL/) – SQL Server integration
-- [Hydrogen.Data.Firebird](../Hydrogen.Data.Firebird/) – Firebird integration
-- [Hydrogen.Data.NHibernate](../Hydrogen.Data.NHibernate/) – NHibernate ORM integration
-- [Hydrogen.Windows.LevelDB](../Hydrogen.Windows.LevelDB/) – High-performance embedded key-value store
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data/) – Database abstraction layer (SQL Server, SQLite, Firebird)
+- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite/) – SQLite-specific integration
+- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL/) – SQL Server integration
+- [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird/) – Firebird integration
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate/) – NHibernate ORM integration
+- [Sphere10.Framework.Windows.LevelDB](../Sphere10.Framework.Windows.LevelDB/) – High-performance embedded key-value store
 
 **Networking & Communications**
-- [Hydrogen.Communications](../Hydrogen.Communications/) – Multi-protocol networking (RPC, TCP, UDP, WebSockets)
-- [Hydrogen.Web.AspNetCore](../Hydrogen.Web.AspNetCore/) – ASP.NET Core integration and middleware
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications/) – Multi-protocol networking (RPC, TCP, UDP, WebSockets)
+- [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore/) – ASP.NET Core integration and middleware
 
 **Cryptography & Consensus**
-- [Hydrogen.CryptoEx](../Hydrogen.CryptoEx/) – Extended cryptography (ECDSA, ECIES, Schnorr, post-quantum)
-- [Hydrogen.Consensus](../Hydrogen.Consensus/) – Blockchain consensus mechanisms
+- [Sphere10.Framework.CryptoEx](../Sphere10.Framework.CryptoEx/) – Extended cryptography (ECDSA, ECIES, Schnorr, post-quantum)
+- [Sphere10.Framework.Consensus](../Sphere10.Framework.Consensus/) – Blockchain consensus mechanisms
 
 **Desktop & Platform Integration**
-- [Hydrogen.Windows](../Hydrogen.Windows/) – Windows utilities (registry, services, events, security)
-- [Hydrogen.Windows.Forms](../Hydrogen.Windows.Forms/) – WinForms component integration
-- [Hydrogen.Windows.Forms.Sqlite](../Hydrogen.Windows.Forms.Sqlite/) – SQLite integration for WinForms
-- [Hydrogen.Windows.Forms.MSSQL](../Hydrogen.Windows.Forms.MSSQL/) – SQL Server integration for WinForms
-- [Hydrogen.Windows.Forms.Firebird](../Hydrogen.Windows.Forms.Firebird/) – Firebird integration for WinForms
-- [Hydrogen.Drawing](../Hydrogen.Drawing/) – Graphics and drawing utilities
+- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows/) – Windows utilities (registry, services, events, security)
+- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms/) – WinForms component integration
+- [Sphere10.Framework.Windows.Forms.Sqlite](../Sphere10.Framework.Windows.Forms.Sqlite/) – SQLite integration for WinForms
+- [Sphere10.Framework.Windows.Forms.MSSQL](../Sphere10.Framework.Windows.Forms.MSSQL/) – SQL Server integration for WinForms
+- [Sphere10.Framework.Windows.Forms.Firebird](../Sphere10.Framework.Windows.Forms.Firebird/) – Firebird integration for WinForms
+- [Sphere10.Framework.Drawing](../Sphere10.Framework.Drawing/) – Graphics and drawing utilities
 
 **Application Framework**
-- [Hydrogen.Application](../Hydrogen.Application/) – Lifecycle management, DI, configuration
-- [Hydrogen.Application.Settings](../Hydrogen.Application.Settings/) – Persistent settings management
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application/) – Lifecycle management, DI, configuration
+- [Sphere10.Framework.Application.Settings](../Sphere10.Framework.Application.Settings/) – Persistent settings management
 
 **Testing & Quality**
-- [Hydrogen.NUnit](../Hydrogen.NUnit/) – NUnit testing utilities
-- [Hydrogen.NUnit.DB](../Hydrogen.NUnit.DB/) – Database testing utilities
+- [Sphere10.Framework.NUnit](../Sphere10.Framework.NUnit/) – NUnit testing utilities
+- [Sphere10.Framework.NUnit.DB](../Sphere10.Framework.NUnit.DB/) – Database testing utilities
 
 **Cross-Platform & Generators**
-- [Hydrogen.NET](../Hydrogen.NET/) – .NET platform abstractions
-- [Hydrogen.NETCore](../Hydrogen.NETCore/) – .NET Core-specific implementations
-- [Hydrogen.Android](../Hydrogen.Android/) – Android platform integration
-- [Hydrogen.iOS](../Hydrogen.iOS/) – iOS platform integration
-- [Hydrogen.macOS](../Hydrogen.macOS/) – macOS platform integration
-- [Hydrogen.Generators](../Hydrogen.Generators/) – Code generation utilities
+- [Sphere10.Framework.NET](../Sphere10.Framework.NET/) – .NET platform abstractions
+- [Sphere10.Framework.NETCore](../Sphere10.Framework.NETCore/) – .NET Core-specific implementations
+- [Sphere10.Framework.Android](../Sphere10.Framework.Android/) – Android platform integration
+- [Sphere10.Framework.iOS](../Sphere10.Framework.iOS/) – iOS platform integration
+- [Sphere10.Framework.macOS](../Sphere10.Framework.macOS/) – macOS platform integration
+- [Sphere10.Framework.Generators](../Sphere10.Framework.Generators/) – Code generation utilities
 
 **Blockchain & DApps**
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core/) – Decentralized app core functionality
-- [Hydrogen.DApp.Host](../Hydrogen.DApp.Host/) – DApp hosting infrastructure
-- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node/) – DApp node implementation
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core/) – Decentralized app core functionality
+- [Sphere10.Framework.DApp.Host](../Sphere10.Framework.DApp.Host/) – DApp hosting infrastructure
+- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node/) – DApp node implementation
 
 ### Test Suites
 
 **Core Library Tests**
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests/) – Comprehensive test suite for all Hydrogen domains
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests/) – Comprehensive test suite for all Sphere10 Framework domains
 
 **Related Project Tests**
-- [Hydrogen.Communications.Tests](../../tests/Hydrogen.Communications.Tests/) – Networking and protocol tests
-- [Hydrogen.CryptoEx.Tests](../../tests/Hydrogen.CryptoEx.Tests/) – Extended cryptography tests
-- [Hydrogen.Data.Tests](../../tests/Hydrogen.Data.Tests/) – Database integration tests
-- [Hydrogen.Windows.Tests](../../tests/Hydrogen.Windows.Tests/) – Windows utilities tests
-- [Hydrogen.Windows.LevelDB.Tests](../../tests/Hydrogen.Windows.LevelDB.Tests/) – LevelDB integration tests
-- [Hydrogen.DApp.Core.Tests](../../tests/Hydrogen.DApp.Core.Tests/) – DApp core tests
-- [Hydrogen.NET.Tests](../../tests/Hydrogen.NET.Tests/) – .NET platform tests
-- [Hydrogen.NETCore.Tests](../../tests/Hydrogen.NETCore.Tests/) – .NET Core tests
+- [Sphere10.Framework.Communications.Tests](../../tests/Sphere10.Framework.Communications.Tests/) – Networking and protocol tests
+- [Sphere10.Framework.CryptoEx.Tests](../../tests/Sphere10.Framework.CryptoEx.Tests/) – Extended cryptography tests
+- [Sphere10.Framework.Data.Tests](../../tests/Sphere10.Framework.Data.Tests/) – Database integration tests
+- [Sphere10.Framework.Windows.Tests](../../tests/Sphere10.Framework.Windows.Tests/) – Windows utilities tests
+- [Sphere10.Framework.Windows.LevelDB.Tests](../../tests/Sphere10.Framework.Windows.LevelDB.Tests/) – LevelDB integration tests
+- [Sphere10.Framework.DApp.Core.Tests](../../tests/Sphere10.Framework.DApp.Core.Tests/) – DApp core tests
+- [Sphere10.Framework.NET.Tests](../../tests/Sphere10.Framework.NET.Tests/) – .NET platform tests
+- [Sphere10.Framework.NETCore.Tests](../../tests/Sphere10.Framework.NETCore.Tests/) – .NET Core tests
 - [HashLib4CSharp.Tests](../../tests/HashLib4CSharp.Tests/) – Cryptographic hash tests
 
 ---
@@ -170,7 +170,7 @@ Unlike general-purpose libraries, Hydrogen doesn't provide application framework
 
 **Composability**: The library is structured around small, focused abstractions that compose predictably. Decorators, adapters, and interfaces allow developers to layer functionality without tight coupling.
 
-**Explicit Control**: Hydrogen favors explicitness over magic. Memory allocation strategies, serialization formats, caching policies, and locking semantics are configurable rather than hidden behind opaque defaults.
+**Explicit Control**: Sphere10 Framework favors explicitness over magic. Memory allocation strategies, serialization formats, caching policies, and locking semantics are configurable rather than hidden behind opaque defaults.
 
 **Performance-Conscious**: Many components are optimized for batch operations, memory locality, and reduced allocations. The library provides both in-memory and stream-backed variants of collections to accommodate different performance/capacity tradeoffs.
 
@@ -180,7 +180,7 @@ Unlike general-purpose libraries, Hydrogen doesn't provide application framework
 
 ### ❌ Non-Goals
 
-- **High-level Application Frameworks**: Hydrogen does not provide MVC frameworks, dependency injection containers, or application scaffolding.
+- **High-level Application Frameworks**: Sphere10 Framework does not provide MVC frameworks, dependency injection containers, or application scaffolding.
 - **Platform Abstractions**: The library does not abstract away platform-specific APIs beyond what .NET Standard requires.
 - **Opinionated Workflows**: While the library enables patterns like repositories and transactional scopes, it does not enforce specific architectural patterns.
 
@@ -188,7 +188,7 @@ Unlike general-purpose libraries, Hydrogen doesn't provide application framework
 
 ### Collections
 
-Hydrogen provides an extensive suite of collection types that extend beyond the standard .NET collections:
+Sphere10 Framework provides an extensive suite of collection types that extend beyond the standard .NET collections:
 
 - **Extended Lists and Collections**: Interfaces like `IExtendedList<T>` and `IExtendedCollection<T>` support range-based operations (batch reads, writes, insertions, deletions) for improved performance when working with large datasets.
 - **Stream-Mapped Collections**: Collections such as `StreamMappedList<T>`, `StreamMappedDictionary<TKey, TValue>`, and `StreamMappedHashSet<T>` persist their data to streams, enabling collections that exceed available memory while maintaining list/dictionary/set semantics.
@@ -222,7 +222,7 @@ Object spaces are suitable for lightweight embedded databases, event stores, and
 
 ### 🌳 Merkle Trees
 
-Hydrogen includes multiple merkle-tree implementations optimized for different use cases:
+Sphere10 Framework includes multiple merkle-tree implementations optimized for different use cases:
 
 - **Flat Merkle Trees**: Store all nodes in contiguous memory, optimized for fast random access and proof generation.
 - **Simple Merkle Trees**: Lazily compute parent nodes, suitable for smaller trees where memory is less constrained.
@@ -243,7 +243,7 @@ The library provides cryptographic primitives and utilities:
 
 ### 📦 Serialization
 
-Hydrogen's serialization framework is designed for efficiency, control, and extensibility:
+Sphere10 Framework's serialization framework is designed for efficiency, control, and extensibility:
 
 - **Item Serializers**: The `IItemSerializer<T>` abstraction enables custom serialization logic for any type. Serializers can be composed, decorated, and registered in a `SerializerFactory`.
 - **Polymorphic Serialization**: Support for serializing and deserializing class hierarchies with type discrimination using `[KnownSubType]` attributes.
@@ -285,7 +285,7 @@ This framework is suitable for building custom RPC mechanisms, control protocols
 
 ### 📲 Streams and I/O
 
-Hydrogen extends .NET's stream abstractions with specialized implementations:
+Sphere10 Framework extends .NET's stream abstractions with specialized implementations:
 
 - **Bounded Streams**: Restrict read/write operations to a defined segment of an underlying stream.
 - **Fragmented Streams**: Compose multiple disparate byte fragments into a single logical stream.
@@ -640,7 +640,7 @@ Many components follow the decorator pattern, allowing behavior to be layered:
 - `ListDecorator<T>`: Augment list behavior without reimplementing the entire interface.
 - `ItemSerializerDecorator<T>`: Transform serialization logic (e.g., add null-handling or reference-tracking).
 
-Adapters convert between related interfaces (e.g., `IList<T>` to `IExtendedList<T>`) to integrate external code with Hydrogen's abstractions.
+Adapters convert between related interfaces (e.g., `IList<T>` to `IExtendedList<T>`) to integrate external code with Sphere10 Framework's abstractions.
 
 ## 🎯 Typical Use Cases
 
@@ -656,14 +656,14 @@ Adapters convert between related interfaces (e.g., `IList<T>` to `IExtendedList<
 
 ### 📊 Less-Suited Scenarios
 
-- **Simple CRUD Applications**: If standard Entity Framework or Dapper suffice, Hydrogen's low-level primitives may introduce unnecessary complexity.
+- **Simple CRUD Applications**: If standard Entity Framework or Dapper suffice, Sphere10 Framework's low-level primitives may introduce unnecessary complexity.
 - **Web APIs with Standard ORMs**: The library does not integrate with ASP.NET or Entity Framework out-of-the-box.
-- **UI-Centric Applications**: Hydrogen focuses on data structures and persistence, not UI frameworks or bindings.
+- **UI-Centric Applications**: Sphere10 Framework focuses on data structures and persistence, not UI frameworks or bindings.
 - **Rapid Prototyping**: The library's emphasis on explicitness and control trades off against rapid development convenience.
 
 ## 🏗️ Architecture Overview
 
-Hydrogen's architecture is organized into largely independent subsystems that compose through well-defined interfaces:
+Sphere10 Framework's architecture is organized into largely independent subsystems that compose through well-defined interfaces:
 
 1. **Collections Layer**: Extended list and collection interfaces define the foundation. Implementations range from simple in-memory structures to complex stream-mapped and paged variants.
 
@@ -687,15 +687,15 @@ Data typically flows from application code through collections or object spaces,
 
 ```bash
 # Core library
-dotnet add package Hydrogen
+dotnet add package Sphere10 Framework
 
 # Platform-specific (optional)
-dotnet add package Hydrogen.Windows              # Windows utilities
-dotnet add package Hydrogen.Windows.Forms        # WinForms integration
-dotnet add package Hydrogen.Windows.LevelDB      # Native LevelDB wrapper
-dotnet add package Hydrogen.CryptoEx             # Extended cryptography (ECDSA, ECIES)
-dotnet add package Hydrogen.Communications       # Networking & protocols
-dotnet add package Hydrogen.Web.AspNetCore       # ASP.NET Core integration
+dotnet add package Sphere10.Framework.Windows              # Windows utilities
+dotnet add package Sphere10.Framework.Windows.Forms        # WinForms integration
+dotnet add package Sphere10.Framework.Windows.LevelDB      # Native LevelDB wrapper
+dotnet add package Sphere10.Framework.CryptoEx             # Extended cryptography (ECDSA, ECIES)
+dotnet add package Sphere10.Framework.Communications       # Networking & protocols
+dotnet add package Sphere10.Framework.Web.AspNetCore       # ASP.NET Core integration
 ```
 
 Or reference compiled assemblies directly in your project.
@@ -703,7 +703,7 @@ Or reference compiled assemblies directly in your project.
 ### 10-Second Example
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.IO;
 
 // BinarySerializer: Efficient binary serialization
@@ -734,7 +734,7 @@ syncList.Add(42);  // Automatically locked during mutation
 **BinarySerializer: Efficient Binary Serialization**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.IO;
 
 // Serialize primitive types
@@ -775,7 +775,7 @@ productStream.Seek(offsets[500], SeekOrigin.Begin);
 **StreamMappedList: Disk-Backed Collections**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.IO;
 
 // Create a collection that persists to disk
@@ -827,7 +827,7 @@ checkedList.Save();
 **StreamPagedList: Memory-Paged Disk Collections**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.IO;
 
 // StreamPagedList loads pages into memory as needed (more efficient for sequential access)
@@ -865,7 +865,7 @@ var constSizeList = new StreamPagedList<string>(
 **FlatMerkleTree: Cryptographic Integrity Proofs**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.Security.Cryptography;
 
 // Create a flat merkle tree (all nodes in memory, optimal for proof generation)
@@ -911,7 +911,7 @@ var longTree = new LongMerkleTree(CHF.SHA2_256);
 **LongMerkleTree: Memory-Efficient Merkle Trees**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 
 // LongMerkleTree: For massive datasets (millions of items)
 // Only stores sub-root hashes, not all nodes
@@ -952,7 +952,7 @@ Console.WriteLine($"Tree depth: {size.Depth}");
 **Synchronized Collections: Thread-Safe Wrappers**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -1094,7 +1094,7 @@ The serialization system supports reference-tracked graphs, polymorphic types, a
 **Merkle List with Integrity Proofs:**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.Security.Cryptography;
 
 // Create a merkle-aware list with SHA-256
@@ -1143,7 +1143,7 @@ var multiProof = merkleDictionary.MerkleTree.GenerateMultiProof(new[] { 0, 1 });
 **Built-in Serializers (Default):**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 
 // Simple type serialization
 var intSerializer = ItemSerializer<int>.Default;
@@ -1229,7 +1229,7 @@ var restored = refSerializer.Deserialize(data);
 **Compact Integer Encoding (VarInt/CVarInt):**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 
 // VarInt: Variable-length signed integers (more compact for small numbers)
 using (var ms = new MemoryStream()) {
@@ -1258,7 +1258,7 @@ class CompactSerializer : ItemSerializerBase<int> {
 **Cryptographic Hashing:**
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 
 var data = "Hello, World!";
 
@@ -1284,7 +1284,7 @@ var hashes = Tools.Hashing.ComputeMultipleHashes(data, CHF.SHA2_256, CHF.SHA3_25
 ### 📝 String Extensions (50+ helpers)
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 
 var text = "Hello World";
 
@@ -1318,7 +1318,7 @@ var csv = new[] { "a", "b", "c" }.JoinWith(", ");
 **LevelDB Integration (High-Performance Key-Value Store):**
 
 ```csharp
-using Hydrogen.Windows.LevelDB;
+using Sphere10.Framework.Windows.LevelDB;
 
 // Open database
 using var db = new DB("./mydata");
@@ -1528,7 +1528,7 @@ logged.Add(42);  // "Adding 42" logged
 
 ## ✅ Status & Maturity
 
-Hydrogen is a mature library that has evolved over multiple years. Core subsystems (collections, serialization, transactions, merkle trees) are stable and production-tested. Some components (post-quantum cryptography, protocol orchestration) may be less battle-tested and should be evaluated carefully for production use.
+Sphere10 Framework is a mature library that has evolved over multiple years. Core subsystems (collections, serialization, transactions, merkle trees) are stable and production-tested. Some components (post-quantum cryptography, protocol orchestration) may be less battle-tested and should be evaluated carefully for production use.
 
 ### Compatibility
 
@@ -1543,13 +1543,13 @@ Hydrogen is a mature library that has evolved over multiple years. Core subsyste
 
 ### 📦 Platform-Specific Packages
 
-- `Hydrogen.Windows` - Windows-specific utilities
-- `Hydrogen.Windows.Forms` - WinForms integration
-- `Hydrogen.Windows.LevelDB` - Native LevelDB wrapper
-- `Hydrogen.Application` - Cross-platform application framework
-- `Hydrogen.Communications` - Networking and protocol layers
-- `Hydrogen.Web.AspNetCore` - ASP.NET Core integration
-- `Hydrogen.CryptoEx` - Extended cryptography (ECDSA, ECIES, etc.)
+- `Sphere10.Framework.Windows` - Windows-specific utilities
+- `Sphere10.Framework.Windows.Forms` - WinForms integration
+- `Sphere10.Framework.Windows.LevelDB` - Native LevelDB wrapper
+- `Sphere10.Framework.Application` - Cross-platform application framework
+- `Sphere10.Framework.Communications` - Networking and protocol layers
+- `Sphere10.Framework.Web.AspNetCore` - ASP.NET Core integration
+- `Sphere10.Framework.CryptoEx` - Extended cryptography (ECDSA, ECIES, etc.)
 
 ##  Dependencies
 
@@ -1569,7 +1569,7 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 
 ## 📖 Resources
 
-- **GitHub**: [HermanSchoenfeld/Hydrogen](https://github.com/HermanSchoenfeld/Hydrogen)
+- **GitHub**: [HermanSchoenfeld/Sphere10 Framework](https://github.com/HermanSchoenfeld/Sphere10 Framework)
 - **Website**: [sphere10.com](https://sphere10.com)
 - **Company**: Sphere 10 Software Pty Ltd
 
@@ -1580,3 +1580,4 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 ---
 
 **Version**: 2.0.2
+

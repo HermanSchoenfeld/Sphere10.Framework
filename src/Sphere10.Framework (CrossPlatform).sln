@@ -3,43 +3,43 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32203.90
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen", "Hydrogen\Hydrogen.csproj", "{A2192000-1BDE-4657-AC90-289CF096C674}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework", "Sphere10.Framework\Sphere10.Framework.csproj", "{A2192000-1BDE-4657-AC90-289CF096C674}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data", "Hydrogen.Data\Hydrogen.Data.csproj", "{50CE7B59-6C51-413E-ADB3-2FA3E8102813}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Data", "Sphere10.Framework.Data\Sphere10.Framework.Data.csproj", "{50CE7B59-6C51-413E-ADB3-2FA3E8102813}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data.Firebird", "Hydrogen.Data.Firebird\Hydrogen.Data.Firebird.csproj", "{6DB6A05C-45EA-4F95-BE9C-F49A458CF805}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Data.Firebird", "Sphere10.Framework.Data.Firebird\Sphere10.Framework.Data.Firebird.csproj", "{6DB6A05C-45EA-4F95-BE9C-F49A458CF805}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data.MSSQL", "Hydrogen.Data.MSSQL\Hydrogen.Data.MSSQL.csproj", "{D02577B8-4F1D-42B9-8802-454AE99D17D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Data.MSSQL", "Sphere10.Framework.Data.MSSQL\Sphere10.Framework.Data.MSSQL.csproj", "{D02577B8-4F1D-42B9-8802-454AE99D17D6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data.Sqlite", "Hydrogen.Data.Sqlite\Hydrogen.Data.Sqlite.csproj", "{1DD01193-9CB6-4EA9-8987-39F454C5DBBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Data.Sqlite", "Sphere10.Framework.Data.Sqlite\Sphere10.Framework.Data.Sqlite.csproj", "{1DD01193-9CB6-4EA9-8987-39F454C5DBBB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Application", "Hydrogen.Application\Hydrogen.Application.csproj", "{143386E8-8873-42C1-8284-4105213DAC94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Application", "Sphere10.Framework.Application\Sphere10.Framework.Application.csproj", "{143386E8-8873-42C1-8284-4105213DAC94}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Drawing", "Hydrogen.Drawing\Hydrogen.Drawing.csproj", "{6601D944-F150-4578-A14E-604B4EEC9867}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Drawing", "Sphere10.Framework.Drawing\Sphere10.Framework.Drawing.csproj", "{6601D944-F150-4578-A14E-604B4EEC9867}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NUnit", "Hydrogen.NUnit\Hydrogen.NUnit.csproj", "{C08B47F1-BD56-4BC0-9241-214B67F91470}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NUnit", "Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj", "{C08B47F1-BD56-4BC0-9241-214B67F91470}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Communications", "Hydrogen.Communications\Hydrogen.Communications.csproj", "{B9BAB6BC-4023-4689-B2F0-F15473547DA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Communications", "Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj", "{B9BAB6BC-4023-4689-B2F0-F15473547DA2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashLib4CSharp", "HashLib4CSharp\HashLib4CSharp.csproj", "{CD719561-BE76-460D-BC34-48791D1C43D2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.CryptoEx", "Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj", "{5F913C77-3FD5-4E05-BA61-ECF81BB5BA09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.CryptoEx", "Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj", "{5F913C77-3FD5-4E05-BA61-ECF81BB5BA09}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E7705E7B-D04B-488C-8442-149A029F34B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET.Tests", "..\tests\Hydrogen.NET.Tests\Hydrogen.NET.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NET.Tests", "..\tests\Sphere10.Framework.NET.Tests\Sphere10.Framework.NET.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.DApp.Core.Tests", "..\tests\Hydrogen.DApp.Core.Tests\Hydrogen.DApp.Core.Tests.csproj", "{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.DApp.Core.Tests", "..\tests\Sphere10.Framework.DApp.Core.Tests\Sphere10.Framework.DApp.Core.Tests.csproj", "{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Tests", "..\tests\Hydrogen.Tests\Hydrogen.Tests.csproj", "{A1206153-4D43-4A74-82FE-60B1A1C00AF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Tests", "..\tests\Sphere10.Framework.Tests\Sphere10.Framework.Tests.csproj", "{A1206153-4D43-4A74-82FE-60B1A1C00AF9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NUnit.DB", "Hydrogen.NUnit.DB\Hydrogen.NUnit.DB.csproj", "{3FE7BEA4-FB7D-4C14-ABC0-D70CAE958204}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NUnit.DB", "Sphere10.Framework.NUnit.DB\Sphere10.Framework.NUnit.DB.csproj", "{3FE7BEA4-FB7D-4C14-ABC0-D70CAE958204}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Communications.Tests", "..\tests\Hydrogen.Communications.Tests\Hydrogen.Communications.Tests.csproj", "{C5A86B37-47F8-4176-BE9A-4B16D58B6416}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Communications.Tests", "..\tests\Sphere10.Framework.Communications.Tests\Sphere10.Framework.Communications.Tests.csproj", "{C5A86B37-47F8-4176-BE9A-4B16D58B6416}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.CryptoEx.Tests", "..\tests\Hydrogen.CryptoEx.Tests\Hydrogen.CryptoEx.Tests.csproj", "{5EFC5E99-FD35-4F12-A9A1-966F40ED70B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.CryptoEx.Tests", "..\tests\Sphere10.Framework.CryptoEx.Tests\Sphere10.Framework.CryptoEx.Tests.csproj", "{5EFC5E99-FD35-4F12-A9A1-966F40ED70B6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.Data.Tests", "..\tests\Hydrogen.Data.Tests\Hydrogen.Data.Tests.csproj", "{D6096FDC-FF51-4402-AAE5-5C31500E4480}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Data.Tests", "..\tests\Sphere10.Framework.Data.Tests\Sphere10.Framework.Data.Tests.csproj", "{D6096FDC-FF51-4402-AAE5-5C31500E4480}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Recipes", "Recipes", "{05FD2225-937A-4F7C-BEBA-1E853A1DAC16}"
 EndProject
@@ -49,7 +49,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.AnonymousP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.UDPSimple", "..\recipes\AbstractProtocol.UPDSimple\AbstractProtocol.UDPSimple.csproj", "{0A67216B-D8E4-4C72-A461-DE260E5DBF95}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hydrogen.NET", "Hydrogen.NET\Hydrogen.NET.csproj", "{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NET", "Sphere10.Framework.NET\Sphere10.Framework.NET.csproj", "{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

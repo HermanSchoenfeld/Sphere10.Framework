@@ -1,6 +1,6 @@
-﻿// These are left here for future in case more decomposition required
+// These are left here for future in case more decomposition required
 
-//using Hydrogen;
+//using Sphere10.Framework;
 //using System.Linq;
 
 //public interface IMetaDataStorage<TKey> {
@@ -29,3 +29,4 @@
 
 //public interface IIndexStorage<TKey> : IMetaDataStorage<TKey>,  ILookup<TKey, long> {
 //}
+

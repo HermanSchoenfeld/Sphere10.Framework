@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 	partial class ConnectionBarBase {
 		/// <summary> 
 		/// Required designer variable.
@@ -41,7 +41,7 @@ namespace Hydrogen.Windows.Forms {
             // OptionsButton
             // 
             this.OptionsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.OptionsButton.Image = global::Hydrogen.Windows.Forms.Resources.NORMALGROUPEXPAND;
+            this.OptionsButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.NORMALGROUPEXPAND;
             this.OptionsButton.Location = new System.Drawing.Point(463, 15);
             this.OptionsButton.Name = "OptionsButton";
             this.OptionsButton.Size = new System.Drawing.Size(28, 23);
@@ -85,3 +85,4 @@ namespace Hydrogen.Windows.Forms {
 
 	}
 }
+

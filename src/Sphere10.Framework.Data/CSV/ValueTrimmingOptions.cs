@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Hydrogen.Data.Csv;
+namespace Sphere10.Framework.Data.Csv;
 
 [Flags]
 public enum ValueTrimmingOptions {
@@ -18,3 +18,4 @@ public enum ValueTrimmingOptions {
 	QuotedOnly = 2,
 	All = UnquotedOnly | QuotedOnly
 }
+

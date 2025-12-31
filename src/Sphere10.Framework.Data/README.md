@@ -1,15 +1,15 @@
-# 💾 Hydrogen.Data
+# 💾 Sphere10.Framework.Data
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Universal data access abstraction layer** providing ADO.NET enhancements, schema management, transaction scopes, and database-agnostic persistence.
 
-Hydrogen.Data enables **vendor-independent database access** through a unified API while supporting **SQLite, SQL Server, Firebird, and NHibernate**. Core abstractions handle connection pooling, transactions, type mapping, and bulk operations.
+Sphere10.Framework.Data enables **vendor-independent database access** through a unified API while supporting **SQLite, SQL Server, Firebird, and NHibernate**. Core abstractions handle connection pooling, transactions, type mapping, and bulk operations.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // SQLite in-memory database
 var dac = Tools.Sqlite.Open(":memory:");
@@ -46,7 +46,7 @@ using (var scope = dac.BeginTransactionScope()) {
 ### Connection & Basic Operations
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // Open SQLite database
 var dac = Tools.Sqlite.Open("mydata.db");
@@ -65,7 +65,7 @@ using (var conn = dac.CreateConnection()) {
 ### Insert & Retrieve
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.Sqlite.Open(":memory:");
 
@@ -210,23 +210,23 @@ results = dac.ExecuteQuery(
 
 ## 📊 Database-Specific Implementations
 
-Hydrogen.Data provides database-specific projects with optimized implementations:
+Sphere10.Framework.Data provides database-specific projects with optimized implementations:
 
-- [Hydrogen.Data.Sqlite](../Hydrogen.Data.Sqlite) - SQLite support (embedded, in-memory)
-- [Hydrogen.Data.MSSQL](../Hydrogen.Data.MSSQL) - SQL Server support
-- [Hydrogen.Data.Firebird](../Hydrogen.Data.Firebird) - Firebird database support
-- [Hydrogen.Data.NHibernate](../Hydrogen.Data.NHibernate) - NHibernate ORM integration
+- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) - SQLite support (embedded, in-memory)
+- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) - SQL Server support
+- [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird) - Firebird database support
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate) - NHibernate ORM integration
 
 Corresponding WinForms projects available for GUI applications:
-- [Hydrogen.Windows.Forms.Sqlite](../Hydrogen.Windows.Forms.Sqlite)
-- [Hydrogen.Windows.Forms.MSSQL](../Hydrogen.Windows.Forms.MSSQL)
-- [Hydrogen.Windows.Forms.Firebird](../Hydrogen.Windows.Forms.Firebird)
+- [Sphere10.Framework.Windows.Forms.Sqlite](../Sphere10.Framework.Windows.Forms.Sqlite)
+- [Sphere10.Framework.Windows.Forms.MSSQL](../Sphere10.Framework.Windows.Forms.MSSQL)
+- [Sphere10.Framework.Windows.Forms.Firebird](../Sphere10.Framework.Windows.Forms.Firebird)
 
 ## 🔧 Usage
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **System.Data**: ADO.NET abstraction (.NET built-in)
 - **Database-specific drivers**: Installed by platform-specific packages (SQLite, SQL Server, Firebird, NHibernate)
 
@@ -237,7 +237,7 @@ Corresponding WinForms projects available for GUI applications:
 - **Keep transaction scopes small** - only operations that must be atomic
 - **Parameterized queries only** - never concatenate user input into SQL strings
 - **Handle exceptions properly** - transaction scopes auto-rollback on exception; explicit `Commit()` required for success
-- **Test with multiple databases** - Hydrogen.Data is database-agnostic, but specific DBMS edge cases may exist
+- **Test with multiple databases** - Sphere10.Framework.Data is database-agnostic, but specific DBMS edge cases may exist
 
 ## 🧬 Architecture Layers
 
@@ -265,14 +265,14 @@ Implement `IDataAccessContext` to create custom DAC implementations for unsuppor
 - **Maturity**: Production-tested, core abstraction stable
 - **.NET Target**: .NET 8.0+ (primary), .NET Standard 2.0 compatibility for some components
 - **Thread Safety**: Each DAC instance should be used single-threaded; create separate instances for concurrent access
-- **Backward Compatibility**: Database schemas may require migration between Hydrogen versions
+- **Backward Compatibility**: Database schemas may require migration between Sphere10 Framework versions
 
 ## 📖 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework
-- [Hydrogen.Windows.Forms](../Hydrogen.Windows.Forms) - WinForms integration with DAC support
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - Blockchain persistence using this layer
-- [Hydrogen.Application](../Hydrogen.Application) - Application framework with data access patterns
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - WinForms integration with DAC support
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain persistence using this layer
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework with data access patterns
 
 ## ⚖️ License
 
@@ -287,3 +287,5 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+

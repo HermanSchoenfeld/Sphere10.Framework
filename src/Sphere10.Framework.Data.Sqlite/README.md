@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 💾 Hydrogen.Data.Sqlite
+# 💾 Sphere10.Framework.Data.Sqlite
 
-**SQLite implementation** for Hydrogen.Data abstraction layer, providing embedded database access without external dependencies for development, testing, and lightweight deployments.
+**SQLite implementation** for Sphere10.Framework.Data abstraction layer, providing embedded database access without external dependencies for development, testing, and lightweight deployments.
 
-Hydrogen.Data.Sqlite enables **zero-configuration database access** with in-memory and file-based SQLite databases, ideal for embedded scenarios, testing, and resource-constrained environments. Seamlessly integrates with the Hydrogen.Data abstraction for database-agnostic applications.
+Sphere10.Framework.Data.Sqlite enables **zero-configuration database access** with in-memory and file-based SQLite databases, ideal for embedded scenarios, testing, and resource-constrained environments. Seamlessly integrates with the Sphere10.Framework.Data abstraction for database-agnostic applications.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // In-memory or file-based database
 var dac = Tools.Sqlite.Open(":memory:");
@@ -49,7 +49,7 @@ int count = dac.ExecuteScalar<int>(
 ### Connection & Database Creation
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // In-memory database (fast testing, no disk I/O)
 var memoryDb = Tools.Sqlite.Open(":memory:");
@@ -75,7 +75,7 @@ fileDb.ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS Products (
 ### Insert & Retrieve Operations
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.Sqlite.Open("shop.db");
 
@@ -125,7 +125,7 @@ var expensiveCount = dac.ExecuteScalar<int>(
 ### Transactions & Data Consistency
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.Sqlite.Open("bank.db");
 
@@ -178,7 +178,7 @@ Console.WriteLine($"Bob: {bobBalance}");      // 600
 ### Update & Delete Operations
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.Sqlite.Open("inventory.db");
 
@@ -222,7 +222,7 @@ var product = dac.ExecuteQuery("SELECT * FROM Products WHERE ID = 1");
 
 **SqliteDatabaseManager**: Core abstraction implementing IDataAccessContext for SQLite operations.
 
-**Connection Pooling**: Automatic connection reuse and lifecycle management through Hydrogen.Data.
+**Connection Pooling**: Automatic connection reuse and lifecycle management through Sphere10.Framework.Data.
 
 **SQLite Driver**: System.Data.SQLite (P/Invoke) or Microsoft.Data.Sqlite (managed) depending on platform.
 
@@ -234,7 +234,7 @@ var product = dac.ExecuteQuery("SELECT * FROM Products WHERE ID = 1");
 - Enable **WAL mode** for file-based databases to improve concurrency: `PRAGMA journal_mode=WAL`
 - Always use **parameterized queries** with `ColumnValue` to prevent SQL injection
 - Wrap related operations in **transaction scopes** for atomicity
-- Use **connection pooling** through Hydrogen.Data rather than creating new connections
+- Use **connection pooling** through Sphere10.Framework.Data rather than creating new connections
 - Consider database **file location** in application deployment (relative vs absolute paths)
 - Test with both **in-memory** (fast) and **file-based** (realistic) databases
 
@@ -248,21 +248,22 @@ var product = dac.ExecuteQuery("SELECT * FROM Products WHERE ID = 1");
 
 ## 📦 Dependencies
 
-- **Hydrogen.Data**: Data abstraction layer
+- **Sphere10.Framework.Data**: Data abstraction layer
 - **System.Data.SQLite** or **Microsoft.Data.Sqlite**: SQLite database provider
 - **.NET Standard 2.1+**: Cross-platform compatibility
 
 ## 📚 Related Projects
 
-- [Hydrogen.Data](../Hydrogen.Data) - Core data abstraction layer
-- [Hydrogen.Data.MSSQL](../Hydrogen.Data.MSSQL) - SQL Server implementation
-- [Hydrogen.Data.Firebird](../Hydrogen.Data.Firebird) - Firebird implementation
-- [Hydrogen.Data.NHibernate](../Hydrogen.Data.NHibernate) - NHibernate ORM integration
-- [Hydrogen.Windows.Forms.Sqlite](../Hydrogen.Windows.Forms.Sqlite) - WinForms data binding for SQLite
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests) - Test patterns and examples
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Core data abstraction layer
+- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) - SQL Server implementation
+- [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird) - Firebird implementation
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate) - NHibernate ORM integration
+- [Sphere10.Framework.Windows.Forms.Sqlite](../Sphere10.Framework.Windows.Forms.Sqlite) - WinForms data binding for SQLite
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+

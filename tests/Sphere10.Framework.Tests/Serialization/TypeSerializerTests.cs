@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable]
@@ -38,7 +38,7 @@ public class TypeSerializerTests {
 	[Test]
 	public void TypeSerializer_OutOfAssemblyType() {
 		var serializer = new TypeSerializer();
-		var type = typeof(Hydrogen.Data.HydrogenJsonSerializer);
+		var type = typeof(Sphere10.Framework.Data.Sphere10FrameworkJsonSerializer);
 		var serialized = serializer.SerializeBytesLE(type);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
 		Assert.That(deserialized, Is.EqualTo(type));
@@ -47,7 +47,7 @@ public class TypeSerializerTests {
 	[Test]
 	public void TypeSerializer_PureGenericType() {
 		var serializer = new TypeSerializer();
-		var type = typeof(Hydrogen.IBijectiveDictionary<,>);
+		var type = typeof(Sphere10.Framework.IBijectiveDictionary<,>);
 		var serialized = serializer.SerializeBytesLE(type);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
 		Assert.That(deserialized, Is.EqualTo(type));
@@ -56,7 +56,7 @@ public class TypeSerializerTests {
 	[Test]
 	public void TypeSerializer_CrossAssemblyConstructedGenericType() {
 		var serializer = new TypeSerializer();
-		var type = typeof(IDictionary<IList<KeyValuePair<Account, int>>, IList<Hydrogen.Data.HydrogenJsonSerializer>>);
+		var type = typeof(IDictionary<IList<KeyValuePair<Account, int>>, IList<Sphere10.Framework.Data.Sphere10FrameworkJsonSerializer>>);
 		var serialized = serializer.SerializeBytesLE(type);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
 		Assert.That(deserialized, Is.EqualTo(type));
@@ -75,7 +75,7 @@ public class TypeSerializerTests {
 
 	[Test]
 	public void AssemblyTypeSerializer_OutOfAssemblyType() {
-		var type = typeof(Hydrogen.Data.HydrogenJsonSerializer);
+		var type = typeof(Sphere10.Framework.Data.Sphere10FrameworkJsonSerializer);
 		var assembly = Assembly.GetAssembly(type);
 		var serializer = new AssemblyTypeSerializer(assembly);
 		var serialized = serializer.SerializeBytesLE(type);
@@ -86,20 +86,20 @@ public class TypeSerializerTests {
 
 	[Test]
 	public void AssemblyTypeSerializer_FailsOnWrongAssembly_Calc() {
-		var serializer = new AssemblyTypeSerializer(Assembly.GetAssembly(typeof(Hydrogen.Data.HydrogenJsonSerializer)));
+		var serializer = new AssemblyTypeSerializer(Assembly.GetAssembly(typeof(Sphere10.Framework.Data.Sphere10FrameworkJsonSerializer)));
 		Assert.That(() => serializer.CalculateSize(typeof(Account)), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
 	public void AssemblyTypeSerializer_FailsOnWrongAssembly_Serialize() {
-		var serializer = new AssemblyTypeSerializer(Assembly.GetAssembly(typeof(Hydrogen.Data.HydrogenJsonSerializer)));
+		var serializer = new AssemblyTypeSerializer(Assembly.GetAssembly(typeof(Sphere10.Framework.Data.Sphere10FrameworkJsonSerializer)));
 		Assert.That(() => serializer.SerializeBytesLE(typeof(Account)), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
 	public void AssemblyTypeSerializer_FailsOnWrongAssembly_Deserialize() {
-		var serializer = new AssemblyTypeSerializer(Assembly.GetAssembly(typeof(Hydrogen.Data.HydrogenJsonSerializer)));
-		var serialized = serializer.SerializeBytesLE(typeof(Hydrogen.Data.HydrogenJsonSerializer));
+		var serializer = new AssemblyTypeSerializer(Assembly.GetAssembly(typeof(Sphere10.Framework.Data.Sphere10FrameworkJsonSerializer)));
+		var serialized = serializer.SerializeBytesLE(typeof(Sphere10.Framework.Data.Sphere10FrameworkJsonSerializer));
 		var serializer2 = new AssemblyTypeSerializer(Assembly.GetAssembly(typeof(Account)));
 		Assert.That(() => serializer2.DeserializeBytesLE(serialized), Throws.InstanceOf<InvalidOperationException>());
 	}
@@ -151,3 +151,4 @@ public class TypeSerializerTests {
 		Assert.That(deserialized, Is.EquivalentTo(types));
 	}
 }
+

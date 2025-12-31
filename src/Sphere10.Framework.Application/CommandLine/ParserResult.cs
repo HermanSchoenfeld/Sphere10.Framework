@@ -1,4 +1,4 @@
-﻿// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
+// Copyright 2005-2015 Giacomo Stelluti Scala & Contributors. All rights reserved. See License.md in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -193,3 +193,4 @@ public sealed class NotParsed<T> : ParserResult<T>, IEquatable<NotParsed<T>> {
 		       && Errors.SequenceEqual(other.Errors);
 	}
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,13 +9,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hydrogen.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx.EC;
 using NUnit.Framework;
 using Org.BouncyCastle.Utilities;
-using Hydrogen.CryptoEx.EC.Schnorr;
+using Sphere10.Framework.CryptoEx.EC.Schnorr;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
 public class MuSigBuilderTest {
@@ -358,3 +358,4 @@ public class MuSigBuilderTest {
 		}
 	}
 }
+

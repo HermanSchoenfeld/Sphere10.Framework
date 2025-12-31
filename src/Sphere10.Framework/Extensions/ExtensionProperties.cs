@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -38,3 +38,4 @@ public static class ObjectExtensions {
 	/// <returns>A dynamic collection of properties associated with an object instance.</returns>
 	public static dynamic GetExtensionProperties(this object obj) => extendedData.GetValue(obj, _ => new ExpandoObject());
 }
+

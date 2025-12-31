@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 internal static class HttpResponseMessageExtensions {
 	internal static async Task<T> ParseStreamAsync<T>(this HttpResponseMessage response, JsonSerializerSettings serializerSettings = null) {
@@ -22,3 +22,4 @@ internal static class HttpResponseMessageExtensions {
 		return serializer.Deserialize<T>(jsonReader);
 	}
 }
+

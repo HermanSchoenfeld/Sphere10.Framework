@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,10 +11,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 using Exception = System.Exception;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class TransactionalCollectionScreen : ApplicationScreen {
 	private TextWriter _outputWriter;
@@ -24,8 +24,8 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 		_listTypeComboBox.EnumType = typeof(ListType);
 		_listTypeComboBox.SelectedEnum = ListType.Transactional;
 		_outputWriter = new TextBoxWriter(_outputTextBox);
-		_copyButton.Image = Hydrogen.Windows.Forms.Resources.Copy_16x16.ToBitmap(16, 16);
-		_clearButton.Image = Hydrogen.Windows.Forms.Resources.CrossIcon.ToBitmap(16, 16);
+		_copyButton.Image = Sphere10.Framework.Windows.Forms.Resources.Copy_16x16.ToBitmap(16, 16);
+		_clearButton.Image = Sphere10.Framework.Windows.Forms.Resources.CrossIcon.ToBitmap(16, 16);
 		_policyBox.EnumType = typeof(ClusteredStreamsPolicy);
 		_policyBox.SelectedEnum = ClusteredStreamsPolicy.Default;
 	}
@@ -145,7 +145,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 		var totalTime = TimeSpan.Zero;
 		var policy = (ClusteredStreamsPolicy)_policyBox.SelectedEnum;
 		var dict = new TransactionalDictionary<byte[], byte[]>(
-			HydrogenFileDescriptor.From(
+			Sphere10FrameworkFileDescriptor.From(
 				Path.GetTempFileName(),
 				Path.GetTempPath(),
 				pageSize: _pageSizeIntBox.Value.GetValueOrDefault(0),
@@ -196,7 +196,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 		switch (listType) {
 			case ListType.Transactional:
 				var txnList = new TransactionalList<byte[]>(
-					HydrogenFileDescriptor.From(
+					Sphere10FrameworkFileDescriptor.From(
 						Path.GetTempFileName(),
 						Path.GetTempPath(),
 						pageSize: pageSize,
@@ -363,3 +363,6 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 
 
 }
+
+
+

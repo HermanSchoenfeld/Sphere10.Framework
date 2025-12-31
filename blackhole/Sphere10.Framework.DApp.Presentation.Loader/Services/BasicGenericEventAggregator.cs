@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.Services;
 
-namespace Hydrogen.DApp.Presentation.Loader.Services;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Services;
 
 public class BasicGenericEventAggregator : IGenericEventAggregator {
 	private Dictionary<Type, List<Delegate>> Subscriptions { get; } = new();
@@ -48,3 +48,5 @@ public class BasicGenericEventAggregator : IGenericEventAggregator {
 		}
 	}
 }
+
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransactionalHashSet<TItem> {
 	
@@ -21,14 +21,14 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 	internal new readonly ITransactionalDictionary<byte[], TItem> InternalDictionary;
 
 	public TransactionalHashSet(
-		HydrogenFileDescriptor fileDescriptor,
+		Sphere10FrameworkFileDescriptor fileDescriptor,
 		IItemSerializer<TItem> serializer,
 		CHF chf = CHF.SHA2_256, 
 		IItemChecksummer<byte[]> keyChecksum = null, 
 		IEqualityComparer<TItem> comparer = null,
 		int reservedStreamCount = 2,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName,
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
 		new TransactionalStream(fileDescriptor, accessMode),
@@ -48,15 +48,15 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 	}
 
 	public TransactionalHashSet(
-		HydrogenFileDescriptor fileDescriptor,
+		Sphere10FrameworkFileDescriptor fileDescriptor,
 		IItemSerializer<TItem> serializer, 
 		IItemHasher<TItem> hasher, 
 		IItemChecksummer<byte[]> keyChecksum = null, 
 		IEqualityComparer<TItem> comparer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		int reservedStreamCount = 2,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName,
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
 		new TransactionalStream(fileDescriptor, accessMode),
@@ -84,9 +84,9 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		IEqualityComparer<TItem> comparer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		int reservedStreamCount = 2,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName,
-		Endianness endianness = HydrogenDefaults.Endianness,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness,
 		bool readOnly = false,
 		bool autoLoad = false
 	) : this(
@@ -129,3 +129,5 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 	public Task RollbackAsync() => InternalDictionary.RollbackAsync();
 
 }
+
+

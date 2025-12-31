@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,10 +9,10 @@
 using NUnit.Framework;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities.Encoders;
-using Hydrogen.CryptoEx.HF;
+using Sphere10.Framework.CryptoEx.HF;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 /**
       * Test vectors for Murmur3_x86_32Digest
@@ -101,3 +101,4 @@ public class Murmur3_x86_32DigestTest : DigestTest {
 			1143690750);
 	}
 }
+

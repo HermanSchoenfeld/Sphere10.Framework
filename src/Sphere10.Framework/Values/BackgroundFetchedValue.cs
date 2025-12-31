@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Threading;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A future whose value is fetched (on activation) by a background thread and whose <see cref="Value"/> property blocks until thread complex.
@@ -56,3 +56,4 @@ public class BackgroundFetchedValue<T> : IFuture<T> {
 		return _resetEvent.IsSet ? Convert.ToString(_value) : "Future value has not currently been determined";
 	}
 }
+

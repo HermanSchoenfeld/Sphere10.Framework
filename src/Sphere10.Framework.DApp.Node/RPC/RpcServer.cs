@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Poylminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Communications.RPC;
+using Sphere10.Framework.Communications.RPC;
 
-namespace Hydrogen.DApp.Node.RPC;
+namespace Sphere10.Framework.DApp.Node.RPC;
 
 //Generic json rpc server singleton for spot calls (Pulse mode)
 public class RpcServer {
@@ -27,3 +27,4 @@ public class RpcServer {
 		_instance = null;
 	}
 }
+

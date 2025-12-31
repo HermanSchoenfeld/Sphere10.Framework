@@ -1,4 +1,4 @@
-//	Hydrogen.Data.Csv.MalformedCsvException
+//	Sphere10.Framework.Data.Csv.MalformedCsvException
 //	Copyright (c) 2005 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -22,9 +22,9 @@
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
-using Hydrogen.Data.Csv.Resources;
+using Sphere10.Framework.Data.Csv.Resources;
 
-namespace Hydrogen.Data.Csv;
+namespace Sphere10.Framework.Data.Csv;
 
 /// <summary>
 /// Represents the exception that is thrown when a CSV file is malformed.
@@ -205,3 +205,4 @@ public class MalformedCsvException
 	#endregion
 
 }
+

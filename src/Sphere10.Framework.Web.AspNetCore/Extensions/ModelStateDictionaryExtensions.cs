@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 public static class ModelStateDictionaryExtensions {
 
@@ -39,3 +39,4 @@ public static class ModelStateDictionaryExtensions {
 	}
 
 }
+

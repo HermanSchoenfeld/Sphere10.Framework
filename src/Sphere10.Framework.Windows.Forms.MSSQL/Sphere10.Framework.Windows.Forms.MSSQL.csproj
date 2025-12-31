@@ -14,8 +14,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Hydrogen.Data.MSSQL\Hydrogen.Data.MSSQL.csproj" />
-    <ProjectReference Include="..\Hydrogen.Windows.Forms\Hydrogen.Windows.Forms.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Data.MSSQL\Sphere10.Framework.Data.MSSQL.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Windows.Forms\Sphere10.Framework.Windows.Forms.csproj" />
   </ItemGroup>
 
 </Project>

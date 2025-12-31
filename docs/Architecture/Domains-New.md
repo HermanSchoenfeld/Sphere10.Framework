@@ -1,12 +1,12 @@
-# Hydrogen Domains Reference
+﻿# Sphere10 Framework Domains Reference
 
 ## Table of Contents
 
 1. [What are Domains](#what-are-domains)
 2. [Domain Organization](#domain-organization)
-3. [Hydrogen Framework Domains](#hydrogen-framework-domains)
+3. [Sphere10 Framework Framework Domains](#Sphere10 Framework-framework-domains)
 4. [Helium Framework Domains](#helium-framework-domains)
-5. [Hydrogen DApp Domains](#hydrogen-dapp-domains)
+5. [Sphere10 Framework DApp Domains](#Sphere10 Framework-dapp-domains)
 6. [Domain Dependencies](#domain-dependencies)
 7. [Extending with Custom Domains](#extending-with-custom-domains)
 
@@ -41,35 +41,35 @@ A **domain** is a logical grouping of code and functionality that represents a s
 Domains follow the pattern: `Company.Product.Tier.Domain`
 
 **Examples**:
-- `Sphere10.Hydrogen.System.Collections`
-- `Sphere10.Hydrogen.Data.ObjectSpaces`
-- `Sphere10.Hydrogen.DApp.Consensus`
+- `Sphere10.Sphere10.Framework.System.Collections`
+- `Sphere10.Sphere10.Framework.Data.ObjectSpaces`
+- `Sphere10.Sphere10.Framework.DApp.Consensus`
 
 ### Filesystem Organization
 
 Domains are typically organized within modules by sub-folders:
 
 ```
-Hydrogen/
-├── Cache/
-│   ├── ICacheProvider.cs
-│   ├── Policies/
-│   └── BatchCache.cs
-├── Collections/
-│   ├── BTree.cs
-│   ├── MerkleTree.cs
-│   └── Merkle/
-└── Crypto/
-    ├── Hashing/
-    ├── Signing/
-    └── KeyDerivation/
+Sphere10 Framework/
+â”œâ”€â”€ Cache/
+â”‚   â”œâ”€â”€ ICacheProvider.cs
+â”‚   â”œâ”€â”€ Policies/
+â”‚   â””â”€â”€ BatchCache.cs
+â”œâ”€â”€ Collections/
+â”‚   â”œâ”€â”€ BTree.cs
+â”‚   â”œâ”€â”€ MerkleTree.cs
+â”‚   â””â”€â”€ Merkle/
+â””â”€â”€ Crypto/
+    â”œâ”€â”€ Hashing/
+    â”œâ”€â”€ Signing/
+    â””â”€â”€ KeyDerivation/
 ```
 
 ---
 
-## Hydrogen Framework Domains
+## Sphere10 Framework Framework Domains
 
-Hydrogen Framework provides **35+ domains** organized by system tier. These domains are foundational and contain **zero blockchain dependencies**.
+Sphere10 Framework Framework provides **35+ domains** organized by system tier. These domains are foundational and contain **zero blockchain dependencies**.
 
 ### System Tier Domains
 
@@ -114,7 +114,7 @@ System tier provides foundational functionality used by all other tiers.
 **Purpose**: Type conversion and data transformation utilities
 
 **Key Components**:
-- Endian conversion (big-endian ↔ little-endian)
+- Endian conversion (big-endian â†” little-endian)
 - Numeric type conversion
 - Custom conversion strategies
 - `IEndianConvertible`: Endian-aware interface
@@ -458,9 +458,9 @@ Helium provides **distributed messaging and orchestration** functionality.
 
 ---
 
-## Hydrogen DApp Domains
+## Sphere10 Framework DApp Domains
 
-Hydrogen DApp adds **blockchain and consensus-specific** domains.
+Sphere10 Framework DApp adds **blockchain and consensus-specific** domains.
 
 ### Consensus Domain
 **Purpose**: Blockchain consensus rules and validation
@@ -561,18 +561,18 @@ Hydrogen DApp adds **blockchain and consensus-specific** domains.
 ### Dependency Flow
 
 ```
-Hydrogen DApp Domains
-    ↓
+Sphere10 Framework DApp Domains
+    â†“
     Depends on
-    ↓
+    â†“
 Helium Domains
-    ↓
+    â†“
     Depends on
-    ↓
-Hydrogen Framework Domains
-    ↓
+    â†“
+Sphere10 Framework Framework Domains
+    â†“
     Zero external dependencies
-    ↓
+    â†“
 .NET Framework
 ```
 
@@ -671,26 +671,26 @@ public class UserService {
 ## Domain Best Practices
 
 ### DO:
-✅ Keep domains focused on a single responsibility
-✅ Use framework interfaces for integration
-✅ Document public APIs and contracts
-✅ Provide clear examples and usage patterns
-✅ Consider performance implications
-✅ Use dependency injection for testability
+âœ… Keep domains focused on a single responsibility
+âœ… Use framework interfaces for integration
+âœ… Document public APIs and contracts
+âœ… Provide clear examples and usage patterns
+âœ… Consider performance implications
+âœ… Use dependency injection for testability
 
 ### DON'T:
-❌ Mix concerns from multiple domains in one class
-❌ Create circular dependencies between domains
-❌ Bypass frameworks abstractions
-❌ Skip documentation and API design
-❌ Ignore error handling and edge cases
-❌ Create overly granular micro-domains
+âŒ Mix concerns from multiple domains in one class
+âŒ Create circular dependencies between domains
+âŒ Bypass frameworks abstractions
+âŒ Skip documentation and API design
+âŒ Ignore error handling and edge cases
+âŒ Create overly granular micro-domains
 
 ---
 
 ## Related Documentation
 
-- **[Hydrogen.md](Hydrogen.md)** - Framework overview and composition
+- **[Sphere10.Framework.md](Sphere10.Framework.md)** - Framework overview and composition
 - **[Runtime.md](Runtime.md)** - Deployment model and lifecycle
 - **[3-tier Architecture](../Guidelines/3-tier-Architecture.md)** - Tier definitions
 - **[Code Styling](../Guidelines/Code-Styling.md)** - Coding standards
@@ -699,6 +699,7 @@ public class UserService {
 
 ## Copyright & Attribution
 
-Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software
+Copyright Â© 2018-Present Herman Schoenfeld & Sphere 10 Software
 
 All rights reserved.
+

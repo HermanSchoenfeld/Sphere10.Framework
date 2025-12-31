@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Fast, thread-safe static hash methods.
@@ -49,7 +49,7 @@ public static class Hashers {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static byte[] Hash<TItem>(CHF algorithm, TItem item, IItemSerializer<TItem> serializer, Endianness endianness = HydrogenDefaults.Endianness) {
+	public static byte[] Hash<TItem>(CHF algorithm, TItem item, IItemSerializer<TItem> serializer, Endianness endianness = Sphere10FrameworkDefaults.Endianness) {
 		var bytes = serializer.SerializeToBytes(item, endianness);
 		return Hash(algorithm, bytes);
 	}
@@ -245,3 +245,5 @@ public static class Hashers {
 
 	}
 }
+
+

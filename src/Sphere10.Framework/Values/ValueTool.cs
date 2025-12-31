@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,17 +10,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Hydrogen;
+using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
 
 public class Values {
 	public const double MAX_SIMPSON_RECURSION = 100;
-	public const char INFINITY_SYMBOL = '∞';
-	public const string INFINITY_STRING = "∞";
-	public const string NEGATIVE_INFINITY_STRING = "-∞";
-	public const string POSITIVE_INFINITY_STRING = "+∞";
+	public const char INFINITY_SYMBOL = '\u221E';
+	public const string INFINITY_STRING = "\u221E";
+	public const string NEGATIVE_INFINITY_STRING = "-\u221E";
+	public const string POSITIVE_INFINITY_STRING = "+\u221E";
 	public const string UNDEFINED_STRING = "undef";
 
 	/// <summary>
@@ -201,3 +201,4 @@ public class Values {
 	}
 
 }
+

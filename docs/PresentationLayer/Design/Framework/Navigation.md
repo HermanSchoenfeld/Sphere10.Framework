@@ -1,4 +1,4 @@
-# Navigation
+﻿# Navigation
 
 Navigation within the Blazor framework is browser-URL based and the result output is directed by the router component and main layout. This system is utilized for navigating to pages supplied by `AppBlocks` from loaded `Plugins`. 
 
@@ -27,7 +27,7 @@ The Blazor navigation system may route to pages located in assemblies other than
 
 ## Plugin Page Navigation
 
-Navigation to pages provided by plugins is achieved through browser URL navigation and utilizing the `NavigationManager` abstract class from the Blazor framework. This process is Blazor first, the Hydrogen specific classes then observe changes via `NavigationManager`.
+Navigation to pages provided by plugins is achieved through browser URL navigation and utilizing the `NavigationManager` abstract class from the Blazor framework. This process is Blazor first, the Sphere10 Framework specific classes then observe changes via `NavigationManager`.
 
 **Navigation Process:**
 
@@ -35,7 +35,7 @@ Navigation to pages provided by plugins is achieved through browser URL navigati
 2. Blazor Router component attempts to locate the page matching the URL. Framework checks main assembly and additional assembly razor pages for matching URL.
 3. Found page is activated by Framework and displayed in Main Content section of Layout
 4. `DefaultAppManager` observes `NavigationManager`'s `LocationChanged` event, updating its `SelectedPage` and `SelectedApp` properties and raises events `AppSelected` and `AppBlockPageSelected` 
-5. Hydrogen specific view components such as sidebar respond to `IAppManager` events notifying them of change to page and app block.
+5. Sphere10 Framework specific view components such as sidebar respond to `IAppManager` events notifying them of change to page and app block.
 
 ```c#
 // DefaultAppManager -- handling the location changed event.
@@ -68,3 +68,4 @@ private void NavigationManagerOnLocationChanged(object? sender, LocationChangedE
     }
 }
 ```
+

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class IdempotentComparer<T> : IComparer<T> {
 	public static readonly IdempotentComparer<T> Instance = new();
@@ -17,3 +17,4 @@ public class IdempotentComparer<T> : IComparer<T> {
 		=> new ProjectionComparer<T, TMember>(member, memberComparer);
 
 }
+

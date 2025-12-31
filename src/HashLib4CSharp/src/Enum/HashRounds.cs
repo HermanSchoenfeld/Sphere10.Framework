@@ -21,3 +21,4 @@ namespace HashLib4CSharp.Enum
         Rounds8 = 8
     }
 }
+

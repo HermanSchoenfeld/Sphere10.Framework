@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
     partial class PathSelectorControl {
         /// <summary> 
         /// Required designer variable.
@@ -32,7 +32,7 @@ namespace Hydrogen.Windows.Forms {
         /// </summary>
         private void InitializeComponent() {
             this._fileSelectorButton = new System.Windows.Forms.Button();
-            this._filenameTextBox = new Hydrogen.Windows.Forms.TextBoxEx();
+            this._filenameTextBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
             this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this._tableLayoutPanel.SuspendLayout();
             this.SuspendLayout();
@@ -93,7 +93,8 @@ namespace Hydrogen.Windows.Forms {
         #endregion
 
         private System.Windows.Forms.Button _fileSelectorButton;
-        private Hydrogen.Windows.Forms.TextBoxEx _filenameTextBox;
+        private Sphere10.Framework.Windows.Forms.TextBoxEx _filenameTextBox;
         private System.Windows.Forms.TableLayoutPanel _tableLayoutPanel;
     }
 }
+

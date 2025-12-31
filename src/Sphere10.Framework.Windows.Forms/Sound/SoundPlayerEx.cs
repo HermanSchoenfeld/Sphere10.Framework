@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.IO;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public class SoundPlayerEx : IDisposable {
 	private byte[] _bytesToPlay;
@@ -92,3 +92,4 @@ public class SoundPlayerEx : IDisposable {
 	#endregion
 
 }
+

@@ -1,10 +1,10 @@
-# 3-tier Architecture
+﻿# 3-tier Architecture
 
 A  3-tier architecture is a method for structuring the code of a software system. It typically decomposes a system into 3 primary tiers.
 
 1. **Presentation**: responsible for all aspects user interface. This tier contains all presentation-oriented modules which (may) depend on other tiers for their operation (primarily, the processing-tier). Modules in the presentation-tier include graphical, console and background executables as well as libraries that support that functionality.
 
-2. **Processing**: responsible for things computational and algorithmic. Modules in the processing-tier are also known as "business logic" and are primarily concerned with the processing and transformation of data. Modules in the processing-tier includes application logic, business components, consensus rules and hydrogen core.  Modules in this are computational-oriented that may depend on data tier (and ancillary tiers).
+2. **Processing**: responsible for things computational and algorithmic. Modules in the processing-tier are also known as "business logic" and are primarily concerned with the processing and transformation of data. Modules in the processing-tier includes application logic, business components, consensus rules and Sphere10 Framework core.  Modules in this are computational-oriented that may depend on data tier (and ancillary tiers).
 
 3. **Data**: responsible for all things data-persistence. Includes database drivers, blockchain databases, relational databases, file-based storage formats.
 
@@ -60,10 +60,10 @@ McDonalds.PointOfSale.Processing.Ordering
 McDonalds.PointOfSale.Data.SAP;
 ```
 
-Naming conventions are not strict and can vary reasonable and intuitively given the context. For example, the use of `.Core` as a catch-all tier for processing, communications and  data-tier is employed by Hydrogen.
+Naming conventions are not strict and can vary reasonable and intuitively given the context. For example, the use of `.Core` as a catch-all tier for processing, communications and  data-tier is employed by Sphere10.Framework.
 
 ```
-Hydrogen.DApp.Core     ; Includes processing, networking, data
+Sphere10.Framework.DApp.Core     ; Includes processing, networking, data
 ```
 
 ## Framework
@@ -71,4 +71,5 @@ Hydrogen.DApp.Core     ; Includes processing, networking, data
 A framework is a collection of modules structured and organized into a 3-tier architecture. Frameworks offer domains of functionality which are used to construct applications.
 
 ![Framework](resources/Framework-75pct.png)
+
 

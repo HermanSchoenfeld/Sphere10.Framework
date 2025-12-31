@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# ⚙️ Hydrogen.Generators
+# ⚙️ Sphere10.Framework.Generators
 
 **C# source generators** providing compile-time code generation for boilerplate reduction, plugin scaffolding, and compile-time optimization.
 
-Hydrogen.Generators uses Roslyn analyzers to **generate code at compile time**, eliminating runtime reflection overhead and reducing boilerplate while maintaining type safety and compile-time checking.
+Sphere10.Framework.Generators uses Roslyn analyzers to **generate code at compile time**, eliminating runtime reflection overhead and reducing boilerplate while maintaining type safety and compile-time checking.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Generators;
+using Sphere10.Framework.Generators;
 
 // Create a class with a GenerateCode attribute
 [GenerateCode]
@@ -46,7 +46,7 @@ Console.WriteLine(user);  // Auto-generated ToString()
 ### Value Type Code Generation
 
 ```csharp
-using Hydrogen.Generators;
+using Sphere10.Framework.Generators;
 
 // Mark class for code generation
 [GenerateCode]
@@ -92,7 +92,7 @@ Console.WriteLine(addressSet.Count);  // 1 (duplicates removed by value)
 ### Plugin Code Generation
 
 ```csharp
-using Hydrogen.Generators;
+using Sphere10.Framework.Generators;
 
 // Mark plugin for scaffolding generation
 [GeneratePluginCode("MyApp.Plugins")]
@@ -119,7 +119,7 @@ plugins.Register<MyCustomPlugin>();  // Scaffolding handles registration
 ### DTO & Entity Code Generation
 
 ```csharp
-using Hydrogen.Generators;
+using Sphere10.Framework.Generators;
 
 // Mark as data transfer object
 [GenerateDataTransferCode]
@@ -153,7 +153,7 @@ Console.WriteLine(user);  // Uses generated ToString()
 ### API Controller Scaffolding
 
 ```csharp
-using Hydrogen.Generators;
+using Sphere10.Framework.Generators;
 using Microsoft.AspNetCore.Mvc;
 
 // Mark for API generation
@@ -192,7 +192,7 @@ public partial class UsersController : ControllerBase {
 ### Serialization Code Generation
 
 ```csharp
-using Hydrogen.Generators;
+using Sphere10.Framework.Generators;
 using System.Text.Json;
 
 // Mark for serialization generation
@@ -229,7 +229,7 @@ Console.WriteLine($"Connection: {restored.DatabaseConnection}");
 ### Validation Code Generation
 
 ```csharp
-using Hydrogen.Generators;
+using Sphere10.Framework.Generators;
 using System.ComponentModel.DataAnnotations;
 
 // Mark for validation generation
@@ -298,7 +298,7 @@ foreach (var error in results) {
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **Microsoft.CodeAnalysis**: Roslyn compiler API
 - **Microsoft.CodeAnalysis.CSharp**: C# language support
 
@@ -320,10 +320,10 @@ foreach (var error in results) {
 
 ## 📖 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework
-- [Hydrogen.NET](../Hydrogen.NET) - Reflection-based alternatives
-- [Hydrogen.Application](../Hydrogen.Application) - Application framework using generated code
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - Plugin system using generators
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework.NET](../Sphere10.Framework.NET) - Reflection-based alternatives
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework using generated code
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Plugin system using generators
 
 ## ⚖️ License
 
@@ -338,3 +338,5 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+

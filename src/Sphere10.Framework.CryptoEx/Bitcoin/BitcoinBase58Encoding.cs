@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Linq;
 using System.Diagnostics;
 
-namespace Hydrogen.CryptoEx.Bitcoin;
+namespace Sphere10.Framework.CryptoEx.Bitcoin;
 
 // this implementation is based on https://github.com/bitcoin/bitcoin/blob/master/src/base58.cpp
 public class BitcoinBase58Encoding {
@@ -156,3 +156,4 @@ public class BitcoinBase58Encoding {
 		return new string(str);
 	}
 }
+

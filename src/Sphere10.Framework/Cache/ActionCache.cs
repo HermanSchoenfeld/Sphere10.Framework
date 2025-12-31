@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Cache implementation that fetches individual values via delegates and supports optional size estimation and staleness checks.
@@ -61,3 +61,4 @@ public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
 	protected override long EstimateSize(TValue value)
 		=> _estimateSizeFunc?.Invoke(value) ?? 0;
 }
+

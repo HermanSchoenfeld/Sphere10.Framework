@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 public sealed class DACScope : SyncTransactionalScope<IDbTransaction> {
 	private const string DefaultContextPrefix = "EA9CC911-C209-42B9-B113-84562706145D";
@@ -127,3 +127,4 @@ public sealed class DACScope : SyncTransactionalScope<IDbTransaction> {
 		}
 	}
 }
+

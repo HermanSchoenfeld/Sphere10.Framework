@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Class representing a value which will be available some time in the future.
@@ -26,3 +26,4 @@ public static class IFutureExtensions {
 	public static IFuture<TProjection> AsProjection<T, TProjection>(this IFuture<T> future, Func<T, TProjection> projection)
 		=> Tools.Values.Future.Projection(future, projection);
 }
+

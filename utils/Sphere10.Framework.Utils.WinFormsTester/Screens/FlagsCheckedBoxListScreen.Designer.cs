@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="FlagsCheckedBoxListTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class FlagsCheckedBoxListScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -37,7 +37,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 		/// </summary>
 		private void InitializeComponent() {
 			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this._flagsCheckedListBox = new Hydrogen.Windows.Forms.FlagsCheckedListBox();
+			this._flagsCheckedListBox = new Sphere10.Framework.Windows.Forms.FlagsCheckedListBox();
 			this.SuspendLayout();
 			// 
 			// _outputTextBox
@@ -78,7 +78,9 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 		#endregion
 
-		private Hydrogen.Windows.Forms.FlagsCheckedListBox _flagsCheckedListBox;
+		private Sphere10.Framework.Windows.Forms.FlagsCheckedListBox _flagsCheckedListBox;
 		private System.Windows.Forms.TextBox _outputTextBox;
 	}
 }
+
+

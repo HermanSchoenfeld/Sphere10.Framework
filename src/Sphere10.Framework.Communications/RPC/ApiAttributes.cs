@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Communications.RPC;
+namespace Sphere10.Framework.Communications.RPC;
 
 //Attribute that makes this instance automaticaly registered in the service manager.
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
@@ -35,3 +35,4 @@ public sealed class RpcAPIArgumentAttribute : Attribute {
 
 	public string ExplicitArgumentName { get; private set; }
 }
+

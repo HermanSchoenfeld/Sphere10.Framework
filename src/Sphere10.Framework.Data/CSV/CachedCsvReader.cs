@@ -1,4 +1,4 @@
-//	Hydrogen.Data.Csv.CachedCsvReader
+//	Sphere10.Framework.Data.Csv.CachedCsvReader
 //	Copyright (c) 2005 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -24,9 +24,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using Hydrogen.Data.Csv.Resources;
+using Sphere10.Framework.Data.Csv.Resources;
 
-namespace Hydrogen.Data.Csv;
+namespace Sphere10.Framework.Data.Csv;
 
 /// <summary>
 /// Represents a reader that provides fast, cached, dynamic access to CSV data.
@@ -369,3 +369,4 @@ public partial class CachedCsvReader
 	#endregion
 
 }
+

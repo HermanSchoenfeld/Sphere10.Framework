@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Hydrogen.CryptoEx.Bitcoin;
+using Sphere10.Framework.CryptoEx.Bitcoin;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 //https://github.com/bitcoin/bitcoin/blob/master/src/test/base58_tests.cpp
 [TestFixture]
@@ -97,3 +97,4 @@ public class BitcoinBase58EncodingTests {
 		ClassicAssert.AreEqual(expected, result);
 	}
 }
+

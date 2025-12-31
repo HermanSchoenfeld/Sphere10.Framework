@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class AccountEqualityComparer : IEqualityComparer<Account> {
 	public bool Equals(Account x, Account y) {
@@ -19,3 +19,4 @@ public class AccountEqualityComparer : IEqualityComparer<Account> {
 		return HashCode.Combine(obj.Name, obj.Quantity, obj.UniqueNumber, obj.Identity);
 	}
 }
+

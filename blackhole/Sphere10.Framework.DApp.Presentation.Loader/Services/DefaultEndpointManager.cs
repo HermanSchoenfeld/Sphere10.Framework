@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,9 +12,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Microsoft.Extensions.Options;
-using Hydrogen.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.Services;
 
-namespace Hydrogen.DApp.Presentation.Loader.Services;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Services;
 
 /// <summary>
 /// Server / backend configuration service.
@@ -23,7 +23,7 @@ public class DefaultEndpointManager : IEndpointManager {
 	/// <summary>
 	/// key that endpoint values are stored against in browser local streams.
 	/// </summary>
-	private readonly string _hydrogenEndpointKey = "hydrogen.endpoints";
+	private readonly string _sphere10EndpointKey = "Sphere10.Framework.endpoints";
 
 	/// <summary>
 	/// Raised when the current endpoint in use is changed.
@@ -51,9 +51,9 @@ public class DefaultEndpointManager : IEndpointManager {
 
 		var endpoints = Configuration.Value.Servers;
 
-		if (SyncLocalStorageService.ContainKey(_hydrogenEndpointKey)) {
+		if (SyncLocalStorageService.ContainKey(_sphere10EndpointKey)) {
 			endpoints = endpoints
-				.Concat(SyncLocalStorageService.GetItem<IEnumerable<Uri>>(_hydrogenEndpointKey))
+				.Concat(SyncLocalStorageService.GetItem<IEnumerable<Uri>>(_sphere10EndpointKey))
 				.ToList();
 		}
 
@@ -117,15 +117,15 @@ public class DefaultEndpointManager : IEndpointManager {
 		if (validationResult) {
 			List<Uri> existing = new();
 
-			if (await LocalStorageService.ContainKeyAsync(_hydrogenEndpointKey)) {
-				existing = (await LocalStorageService.GetItemAsync<IEnumerable<Uri>>(_hydrogenEndpointKey))
+			if (await LocalStorageService.ContainKeyAsync(_sphere10EndpointKey)) {
+				existing = (await LocalStorageService.GetItemAsync<IEnumerable<Uri>>(_sphere10EndpointKey))
 					.ToList();
 			}
 
 			if (existing.All(x => x != uri)) {
 				existing.Add(uri);
 
-				await LocalStorageService.SetItemAsync(_hydrogenEndpointKey, existing);
+				await LocalStorageService.SetItemAsync(_sphere10EndpointKey, existing);
 
 				Endpoints = Endpoints.Append(uri);
 				EndpointAdded?.Invoke(this, EventArgs.Empty);
@@ -137,3 +137,5 @@ public class DefaultEndpointManager : IEndpointManager {
 		}
 	}
 }
+
+

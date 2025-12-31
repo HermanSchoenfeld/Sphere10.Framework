@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.ComponentModel;
 using SourceGrid.Cells;
 using SourceGrid.Selection;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
 namespace SourceGrid.Extensions.PingGrids;
 
@@ -393,3 +393,4 @@ public class PingGrid : GridVirtual {
 		//mEditingRow = null;
 	}
 }
+

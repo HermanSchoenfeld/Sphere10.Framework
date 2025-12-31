@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -14,7 +14,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Merkleizes an <see cref="IExtendedList{T}"/> by hashing it's items and maintaining those hashes in an <see cref="IDynamicMerkleTree"/> .
@@ -29,11 +29,11 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		: this(internalList, CHF.SHA2_256) {
 	}
 
-	public MerkleListAdapter(TList internalList, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness)
+	public MerkleListAdapter(TList internalList, CHF hashAlgorithm, Endianness endianness = Sphere10FrameworkDefaults.Endianness)
 		: this(internalList, ItemSerializer<TItem>.Default, hashAlgorithm, endianness) {
 	}
 
-	public MerkleListAdapter(TList internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness)
+	public MerkleListAdapter(TList internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm, Endianness endianness = Sphere10FrameworkDefaults.Endianness)
 		: this(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness), new FlatMerkleTree(hashAlgorithm)) {
 	}
 
@@ -140,3 +140,5 @@ public class MerkleListAdapter<TItem> : MerkleListAdapter<TItem, IExtendedList<T
 		: base(internalList, hasher, merkleTree) {
 	}
 }
+
+

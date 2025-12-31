@@ -204,3 +204,4 @@ static class SpecificationPropertyRules {
 		return true;
 	}
 }
+

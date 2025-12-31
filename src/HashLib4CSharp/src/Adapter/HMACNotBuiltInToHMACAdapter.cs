@@ -61,3 +61,4 @@ namespace HashLib4CSharp.Adapter
         public override string ToString() => $"{GetType().Name}({_hmacNotBuiltIn.Name})";
     }
 }
+

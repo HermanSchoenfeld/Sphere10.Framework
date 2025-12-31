@@ -1,4 +1,4 @@
-﻿namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class TransactionalCollectionScreen {
 		/// <summary> 
 		/// Required designer variable.
@@ -32,24 +32,24 @@
             this._copyButton = new System.Windows.Forms.Button();
             this._clearButton = new System.Windows.Forms.Button();
             this._outputTextBox = new System.Windows.Forms.TextBox();
-            this.mergeableMenuStrip1 = new Hydrogen.Windows.Forms.MergeableMenuStrip();
+            this.mergeableMenuStrip1 = new Sphere10.Framework.Windows.Forms.MergeableMenuStrip();
             this._configGroupBox = new System.Windows.Forms.GroupBox();
             this.label7 = new System.Windows.Forms.Label();
-            this._listTypeComboBox = new Hydrogen.Windows.Forms.EnumComboBox();
-            this._batchIntBox = new Hydrogen.Windows.Forms.IntBox();
+            this._listTypeComboBox = new Sphere10.Framework.Windows.Forms.EnumComboBox();
+            this._batchIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
             this.label6 = new System.Windows.Forms.Label();
             this._commitCheckBox = new System.Windows.Forms.CheckBox();
-            this._itemSizeIntBox = new Hydrogen.Windows.Forms.IntBox();
+            this._itemSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
             this.label5 = new System.Windows.Forms.Label();
-            this._cacheSizeIntBox = new Hydrogen.Windows.Forms.IntBox();
+            this._cacheSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
             this.label4 = new System.Windows.Forms.Label();
-            this._pageSizeIntBox = new Hydrogen.Windows.Forms.IntBox();
+            this._pageSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
             this.label3 = new System.Windows.Forms.Label();
-            this._clusterSizeIntBox = new Hydrogen.Windows.Forms.IntBox();
+            this._clusterSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
             this.label2 = new System.Windows.Forms.Label();
-            this._itemsIntBox = new Hydrogen.Windows.Forms.IntBox();
+            this._itemsIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
             this.label1 = new System.Windows.Forms.Label();
-            this._policyBox = new Hydrogen.Windows.Forms.FlagsCheckedListBox();
+            this._policyBox = new Sphere10.Framework.Windows.Forms.FlagsCheckedListBox();
             this._testsGroupBox.SuspendLayout();
             this._outputGroupBox.SuspendLayout();
             this._configGroupBox.SuspendLayout();
@@ -396,28 +396,30 @@
 		private System.Windows.Forms.GroupBox _testsGroupBox;
 		private System.Windows.Forms.GroupBox _outputGroupBox;
 		private System.Windows.Forms.TextBox _outputTextBox;
-		private Hydrogen.Windows.Forms.MergeableMenuStrip mergeableMenuStrip1;
+		private Sphere10.Framework.Windows.Forms.MergeableMenuStrip mergeableMenuStrip1;
 		private System.Windows.Forms.GroupBox _configGroupBox;
-		private Hydrogen.Windows.Forms.IntBox _itemsIntBox;
+		private Sphere10.Framework.Windows.Forms.IntBox _itemsIntBox;
 		private System.Windows.Forms.Label label1;
-		private Hydrogen.Windows.Forms.IntBox _clusterSizeIntBox;
+		private Sphere10.Framework.Windows.Forms.IntBox _clusterSizeIntBox;
 		private System.Windows.Forms.Label label2;
-		private Hydrogen.Windows.Forms.IntBox _pageSizeIntBox;
+		private Sphere10.Framework.Windows.Forms.IntBox _pageSizeIntBox;
 		private System.Windows.Forms.Label label3;
-		private Hydrogen.Windows.Forms.IntBox _cacheSizeIntBox;
+		private Sphere10.Framework.Windows.Forms.IntBox _cacheSizeIntBox;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Button _clearButton;
 		private System.Windows.Forms.Button _copyButton;
-		private Hydrogen.Windows.Forms.IntBox _itemSizeIntBox;
+		private Sphere10.Framework.Windows.Forms.IntBox _itemSizeIntBox;
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.CheckBox _commitCheckBox;
-		private Hydrogen.Windows.Forms.IntBox _batchIntBox;
+		private Sphere10.Framework.Windows.Forms.IntBox _batchIntBox;
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.Button _storageStreamButton;
 		private System.Windows.Forms.Button _dictionaryAppend;
 		private System.Windows.Forms.Label label7;
-		private Hydrogen.Windows.Forms.EnumComboBox _listTypeComboBox;
+		private Sphere10.Framework.Windows.Forms.EnumComboBox _listTypeComboBox;
 		private System.Windows.Forms.Button _bufferTestButton;
-		private Hydrogen.Windows.Forms.FlagsCheckedListBox _policyBox;
+		private Sphere10.Framework.Windows.Forms.FlagsCheckedListBox _policyBox;
 	}
 }
+
+

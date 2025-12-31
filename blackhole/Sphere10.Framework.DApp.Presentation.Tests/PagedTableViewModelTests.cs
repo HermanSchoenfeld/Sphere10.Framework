@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,11 +10,11 @@ using System;
 using System.Linq;
 using AutoFixture;
 using NUnit.Framework;
-using Hydrogen.DApp.Presentation.Components.Tables;
-using Hydrogen.DApp.Presentation.Models;
+using Sphere10.Framework.DApp.Presentation.Components.Tables;
+using Sphere10.Framework.DApp.Presentation.Models;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.DApp.Presentation.Tests;
+namespace Sphere10.Framework.DApp.Presentation.Tests;
 
 public class PagedTableTests {
 	private Fixture AutoFixture { get; } = new();
@@ -102,3 +102,5 @@ public class PagedTableTests {
 		ClassicAssert.AreEqual(1, vm.CurrentPage);
 	}
 }
+
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 internal static class NamedLookupInfo {
 	private static readonly Dictionary<Type, Dictionary<string, Type>> ServiceMaps = new();
@@ -28,3 +28,4 @@ internal static class NamedLookupInfo {
 		return serviceMap;
 	}
 }
+

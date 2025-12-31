@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Newtonsoft.Json;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public interface IRestClient {
 	Task<T> GetAsync<T>(
@@ -44,3 +44,4 @@ public interface IRestClient {
 		JsonSerializerSettings responseSerializerSettings = null,
 		CancellationToken cancellationToken = default);
 }
+

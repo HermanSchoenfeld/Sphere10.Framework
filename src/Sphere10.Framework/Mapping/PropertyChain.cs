@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 public class PropertyChain : IAccessor {
 	private readonly Member[] _chain;
@@ -85,3 +85,4 @@ public class PropertyChain : IAccessor {
 		return target;
 	}
 }
+

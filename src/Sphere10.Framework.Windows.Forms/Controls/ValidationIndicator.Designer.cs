@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 	partial class ValidationIndicator {
 		/// <summary> 
 		/// Required designer variable.
@@ -32,7 +32,7 @@ namespace Hydrogen.Windows.Forms {
 		/// </summary>
 		private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            this._loadingCircle = new Hydrogen.Windows.Forms.LoadingCircle();
+            this._loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
             this._toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
@@ -59,7 +59,7 @@ namespace Hydrogen.Windows.Forms {
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::Hydrogen.Windows.Forms.Resources.Tick;
+            this.BackgroundImage = global::Sphere10.Framework.Windows.Forms.Resources.Tick;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.Controls.Add(this._loadingCircle);
             this.DoubleBuffered = true;
@@ -77,3 +77,4 @@ namespace Hydrogen.Windows.Forms {
 		private System.Windows.Forms.ToolTip _toolTip;
 	}
 }
+

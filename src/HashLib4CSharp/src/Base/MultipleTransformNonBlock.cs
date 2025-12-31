@@ -99,3 +99,4 @@ namespace HashLib4CSharp.Base
         protected abstract IHashResult ComputeAggregatedBytes(byte[] data);
     }
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Object space backed by a transactional file, wiring commit/rollback semantics to the underlying <see cref="TransactionalStream"/>.
@@ -23,7 +23,7 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 
 	private readonly TransactionalStream _fileStream;
 
-	public FileObjectSpace(HydrogenFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default)
+	public FileObjectSpace(Sphere10FrameworkFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default)
 		: base(CreateStreams(file, objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.Merkleized), accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode) {
 		Guard.ArgumentNotNull(file, nameof(file));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
@@ -46,9 +46,9 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 
 	public FileAccessMode AccessMode { get; }
 	
-	public HydrogenFileDescriptor File { get; }
+	public Sphere10FrameworkFileDescriptor File { get; }
 
-	private static ClusteredStreams CreateStreams(HydrogenFileDescriptor file, bool merkleized, FileAccessMode accessMode, out TransactionalStream fileStream) {
+	private static ClusteredStreams CreateStreams(Sphere10FrameworkFileDescriptor file, bool merkleized, FileAccessMode accessMode, out TransactionalStream fileStream) {
 		fileStream = new TransactionalStream(file, accessMode.WithoutAutoLoad());
 		var objectSpaceMetaDataStreamCount = merkleized ? 1 : 0;
 		var streams = new ClusteredStreams(
@@ -119,3 +119,5 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 		_fileStream.RolledBack -= OnRolledBack;
 	}
 }
+
+

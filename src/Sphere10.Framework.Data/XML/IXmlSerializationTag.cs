@@ -6,7 +6,7 @@
 // http://www.codeproject.com/KB/XML/deepserializer.aspx
 // -----------------------------------------------------------------------------------
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 public interface IXmlSerializationTag {
 	string ASSEMBLY_TAG { get; }
@@ -25,3 +25,4 @@ public interface IXmlSerializationTag {
 	string CONSTRUCTOR_TAG { get; }
 	string BINARY_DATA_TAG { get; }
 }
+

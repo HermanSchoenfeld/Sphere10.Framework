@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -160,3 +160,4 @@ public class StreamMappedMerkleRecyclableListWithIndexTests : RecyclableListTest
 
 
 }
+

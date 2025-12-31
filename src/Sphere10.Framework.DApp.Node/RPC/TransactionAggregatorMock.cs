@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using System;
 using System.Threading;
-using Hydrogen.DApp.Core.Consensus;
-using Hydrogen.DApp.Node.RPC;
+using Sphere10.Framework.DApp.Core.Consensus;
+using Sphere10.Framework.DApp.Node.RPC;
 
-namespace Hydrogen.DApp.Core.Mining;
+namespace Sphere10.Framework.DApp.Core.Mining;
 
 ////////////////////////////////////////////////////////////////////////////
 //Aggregator MOCK
@@ -84,3 +84,4 @@ public class TransactionAggregatorMock : IDisposable {
 			{ From = Tools.Text.GenerateRandomString(32), To = Tools.Text.GenerateRandomString(32), Amount = (ulong)Tools.Maths.RNG.Next(), Fees = (ulong)Tools.Maths.RNG.Next() });
 	}
 }
+

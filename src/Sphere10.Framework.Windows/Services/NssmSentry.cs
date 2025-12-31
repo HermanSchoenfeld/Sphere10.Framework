@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen.Windows;
+namespace Sphere10.Framework.Windows;
 
 /// <summary>
 /// A process sentry for the Non-sucking Service Manager (NSSM). It is assumed NSSM is in the environment path.
@@ -48,3 +48,4 @@ public class NssmSentry : ProcessSentry {
 		return base.RunWithErrorCodeCheckAsync($"stop \"{name}\"", cancellationToken: cancellationToken);
 	}
 }
+

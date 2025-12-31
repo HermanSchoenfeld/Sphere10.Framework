@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Data;
 using NHibernate.Dialect;
 
-namespace Hydrogen.Data.NHibernate;
+namespace Sphere10.Framework.Data.NHibernate;
 
 public class ExtendedMssqlDialect : MsSql2008Dialect {
 	protected override void RegisterNumericTypeMappings() {
@@ -20,3 +20,4 @@ public class ExtendedMssqlDialect : MsSql2008Dialect {
 		RegisterColumnType(DbType.UInt64, "DECIMAL(28)");
 	}
 }
+

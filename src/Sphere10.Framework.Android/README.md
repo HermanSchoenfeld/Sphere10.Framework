@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🤖 Hydrogen.Android
+# 🤖 Sphere10.Framework.Android
 
 **Android platform abstraction** layer providing native Android APIs, Xamarin.Android integration, and Java interoperability for building native and hybrid mobile applications on Android platform.
 
-Hydrogen.Android enables **cross-platform mobile development** with seamless integration to Android native capabilities including camera, sensors, location, notifications, background services, and hardware features while maintaining compatibility with Hydrogen framework abstractions.
+Sphere10.Framework.Android enables **cross-platform mobile development** with seamless integration to Android native capabilities including camera, sensors, location, notifications, background services, and hardware features while maintaining compatibility with Sphere10 Framework framework abstractions.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Android;
+using Sphere10.Framework.Android;
 using Android.App;
 using Android.Content;
 
@@ -24,7 +24,7 @@ var cameraAccess = await AndroidPermissions.RequestCameraAccessAsync();
 // Send local notification
 var notification = new AndroidNotification {
     Title = "Hello Android",
-    Message = "From Hydrogen Framework",
+    Message = "From Sphere10 Framework Framework",
     DelaySeconds = 5
 };
 await notification.ShowAsync();
@@ -47,7 +47,7 @@ await notification.ShowAsync();
 ### Device Information & Sensors
 
 ```csharp
-using Hydrogen.Android;
+using Sphere10.Framework.Android;
 using Android.Hardware;
 
 // Get device information
@@ -86,7 +86,7 @@ accelerometer.Start(SensorDelay.Normal);
 ### Runtime Permission Handling
 
 ```csharp
-using Hydrogen.Android;
+using Sphere10.Framework.Android;
 using Android.Manifest;
 
 // Camera permission
@@ -134,7 +134,7 @@ var storageStatus = await AndroidPermissions.RequestStoragePermissionAsync();
 ### Local Notifications
 
 ```csharp
-using Hydrogen.Android;
+using Sphere10.Framework.Android;
 using Android.App;
 
 // Simple notification
@@ -198,7 +198,7 @@ await AndroidNotification.CancelNotificationAsync(notificationId);
 ### Camera & Media Capture
 
 ```csharp
-using Hydrogen.Android;
+using Sphere10.Framework.Android;
 using Android.Provider;
 
 // Initialize camera
@@ -247,7 +247,7 @@ foreach (var item in media) {
 ### Location Services
 
 ```csharp
-using Hydrogen.Android;
+using Sphere10.Framework.Android;
 using Android.Locations;
 
 // Request location permission first
@@ -288,7 +288,7 @@ if (status == PermissionStatus.Granted) {
 ### Background Services & Job Scheduling
 
 ```csharp
-using Hydrogen.Android;
+using Sphere10.Framework.Android;
 using Android.App;
 using AndroidX.Work;
 
@@ -393,14 +393,16 @@ public class SyncWorker : Worker {
 
 ## 📚 Related Projects
 
-- [Hydrogen.iOS](../Hydrogen.iOS) - iOS platform implementation
-- [Hydrogen.macOS](../Hydrogen.macOS) - macOS platform implementation
-- [Hydrogen.Windows](../Hydrogen.Windows) - Windows desktop implementation
-- [Hydrogen.Application](../Hydrogen.Application) - Cross-platform application abstraction
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests) - Test patterns and examples
+- [Sphere10.Framework.iOS](../Sphere10.Framework.iOS) - iOS platform implementation
+- [Sphere10.Framework.macOS](../Sphere10.Framework.macOS) - macOS platform implementation
+- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows desktop implementation
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Cross-platform application abstraction
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

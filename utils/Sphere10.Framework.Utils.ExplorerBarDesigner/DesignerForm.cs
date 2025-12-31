@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,10 +12,10 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.Drawing.Drawing2D;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
 
-namespace Hydrogen.Utils.ExplorerBarDesigner;
+namespace Sphere10.Framework.Utils.ExplorerBarDesigner;
 
 public partial class DesignerForm : Form {
 	public DesignerForm() {
@@ -199,7 +199,7 @@ public class ExplorerBarSettings {
 		this.ExpandoNormalBackImage = defaultImage;
 		this.ExpandoNormalBorder = Border.Empty;
 		this.ExpandoNormalBorderColor = defaultColor;
-		this.ExpandoNormalPadding = Hydrogen.Windows.Forms.PaddingEx.Empty;
+		this.ExpandoNormalPadding = Sphere10.Framework.Windows.Forms.PaddingEx.Empty;
 		this.ExpandoSpecialBackColor = Color.Black;
 		this.ExpandoSpecialBackImage = defaultImage;
 		this.ExpandoSpecialBorder = Border.Empty;
@@ -329,3 +329,5 @@ public class ExplorerBarSettings {
 	[Category("Header Info")] public float HeaderInfoGradientOffset { get; set; }
 	[Category("Header Info")] public int HeaderInfoTitleRadius { get; set; }
 }
+
+

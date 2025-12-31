@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using Terminal.Gui;
 
-namespace Hydrogen.DApp.Node.UI;
+namespace Sphere10.Framework.DApp.Node.UI;
 
 public class LogView : FrameView {
 	private const int DefaultMaxLines = 250;
@@ -66,3 +66,4 @@ public class LogView : FrameView {
 	}
 
 }
+

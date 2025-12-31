@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="MiscTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class MiscTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -267,9 +267,9 @@ namespace Hydrogen.Utils.WinFormsTester {
 		#endregion
 
 		private System.Windows.Forms.ComboBox comboBox1;
-		private Hydrogen.Windows.Forms.ListMerger listMerger1;
+		private Sphere10.Framework.Windows.Forms.ListMerger listMerger1;
 		private System.Windows.Forms.Button button1;
-		private Hydrogen.Windows.Forms.TextBoxEx _outputTextBox;
+		private Sphere10.Framework.Windows.Forms.TextBoxEx _outputTextBox;
 		private System.Windows.Forms.Button _clipTestButton;
 		private System.Windows.Forms.Button _scopedContextTestButton;
 		private System.Windows.Forms.Button _compressTestButton;
@@ -277,10 +277,12 @@ namespace Hydrogen.Utils.WinFormsTester {
 		private System.Windows.Forms.Button _sqliteTestButton;
 		private System.Windows.Forms.Button button2;
 		private System.Windows.Forms.Button _sqlServerTest;
-		private Hydrogen.Windows.Forms.ProgressBarEx progressBarEx1;
+		private Sphere10.Framework.Windows.Forms.ProgressBarEx progressBarEx1;
 		private System.Windows.Forms.Button button3;
 		private System.Windows.Forms.Button _systemPathsButton;
 		private System.Windows.Forms.Button _macAddressesButton;
 		private System.Windows.Forms.Button _mappingTests;
 	}
 }
+
+

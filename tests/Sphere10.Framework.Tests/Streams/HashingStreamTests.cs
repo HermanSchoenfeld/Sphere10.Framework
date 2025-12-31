@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class HashingStreamTests {
 
@@ -82,3 +82,4 @@ public class HashingStreamTests {
 		Assert.That(hashingStream.GetDigest(), Is.EqualTo(Hashers.Hash(chf, new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 })));
 	}
 }
+

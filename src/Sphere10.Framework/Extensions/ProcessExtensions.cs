@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 // https://raw.githubusercontent.com/dotnet/extensions/ffb7c20fb22a31ac31d3a836a8455655867e8e16/shared/Microsoft.Extensions.Process.Sources/ProcessHelper.cs
 public static class ProcessExtensions {
@@ -101,3 +101,4 @@ public static class ProcessExtensions {
 		return process.ExitCode;
 	}
 }
+

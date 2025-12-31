@@ -1,8 +1,8 @@
-﻿# ⚙️ Settings
+# ?? Settings
 
 **Settings management library** providing simple, type-safe, encrypted configuration storage for application and user settings.
 
-## 💫 Declare your settings
+## ?? Declare your settings
 
 Settings objects inherit `SettingsObject` and have properties. Default values can be specified by `DefaultValueAttribute` or directly with assignment. Use `AppSettingAttribute` to link to `app.config` or `web.config`:
 
@@ -35,7 +35,7 @@ Settings objects inherit `SettingsObject` and have properties. Default values ca
 	}
 ```
 
-## 📄 Load your settings
+## ?? Load your settings
 
 On first load, default values are used. On subsequent loads, persisted values are retrieved. `UserSettings` are per-user; `GlobalSettings` are system-wide. Multiple instances can be differentiated by string `ID`:
 
@@ -45,7 +45,7 @@ On first load, default values are used. On subsequent loads, persisted values ar
 	var database = GlobalSettings.Get<DatabaseSettings>();
 ```
 
-## 📑 Persist your settings
+## ?? Persist your settings
 
 Modify settings and save them back to persistent storage:
 
@@ -56,7 +56,7 @@ Modify settings and save them back to persistent storage:
 
 Next time you load them (via the same provider you retrieved them from), their updated values will be returned.
 
-## 🔐 Encryption
+## ?? Encryption
 
 Declare the product secret in your top-level assembly-info to enable encryption:
 
@@ -67,7 +67,7 @@ Declare the product secret in your top-level assembly-info to enable encryption:
 This is used to encrypt settings. Only properties marked with "EncryptedAttribute"" will be encrypted.
 
 
-## 🔧 Implementing your own settings provider
+## ?? Implementing your own settings provider
 
 ```csharp
 	public class MyCustomSettingsProvider : ISettingsProvider {
@@ -76,7 +76,7 @@ This is used to encrypt settings. Only properties marked with "EncryptedAttribut
     }
 ```
 
-## ⚡ Changing default `UserSettings` and `GlobalSettings` providers
+## ? Changing default `UserSettings` and `GlobalSettings` providers
 
 Add a `ModuleConfiguration` to register custom providers:
 

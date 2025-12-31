@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ParseErrorEventArgs.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//	Hydrogen.Data.Csv.ParseErrorEventArgs
+//	Sphere10.Framework.Data.Csv.ParseErrorEventArgs
 //	Copyright (c) 2006 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -34,7 +34,7 @@
 
 using System;
 
-namespace Hydrogen.Data.Csv;
+namespace Sphere10.Framework.Data.Csv;
 
 /// <summary>
 /// Provides data for the <see cref="M:CsvReader.ParseError"/> event.
@@ -93,3 +93,4 @@ public class ParseErrorEventArgs
 	#endregion
 
 }
+

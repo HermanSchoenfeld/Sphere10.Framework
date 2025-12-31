@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,12 +10,12 @@ using System;
 using NUnit.Framework;
 using System.Security.Principal;
 using System.IO;
-using Hydrogen.Windows;
-using Hydrogen.Windows.Security;
+using Sphere10.Framework.Windows;
+using Sphere10.Framework.Windows.Security;
 using NUnit.Framework.Legacy;
 
 
-namespace Hydrogen.UnitTests;
+namespace Sphere10.Framework.UnitTests;
 
 [TestFixture]
 public class WindowsSecurityTests {
@@ -1183,3 +1183,4 @@ public class WindowsSecurityTests {
 
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,10 +9,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Hydrogen.FastReflection;
+using Sphere10.Framework.FastReflection;
 using NHibernate.Event;
 
-namespace Hydrogen.Data.NHibernate;
+namespace Sphere10.Framework.Data.NHibernate;
 
 // TODO: Add CreatedBy and LastUpdatedBy similar to https://ayende.com/blog/3987/nhibernate-ipreupdateeventlistener-ipreinserteventlistener
 // Get a IAuditableIdentityProvider from ComponentRegistry to properly support ASP.NET
@@ -79,3 +79,4 @@ internal class BusinessObjectAuditor : IPreInsertEventListener, IPreUpdateEventL
 	}
 
 }
+

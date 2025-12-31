@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,7 +13,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 public class MSSQLDAC : DACBase {
 
@@ -153,3 +153,4 @@ FROM
 
 	}
 }
+

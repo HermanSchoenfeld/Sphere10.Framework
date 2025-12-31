@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@
 // Web: https://sphere10.com/tech/dynamic-merkle-trees
 // e-print: https://vixra.org/abs/2305.0087
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Represents a sub-root hash at a given height within a merkle tree.
@@ -35,3 +35,4 @@ public record MerkleSubRoot {
 		Hash = hash;
 	}
 }
+

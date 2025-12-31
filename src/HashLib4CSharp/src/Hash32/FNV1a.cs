@@ -38,3 +38,4 @@ namespace HashLib4CSharp.Hash32
         }
     }
 }
+

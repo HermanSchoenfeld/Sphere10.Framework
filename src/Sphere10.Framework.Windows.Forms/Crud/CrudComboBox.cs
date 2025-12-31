@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 
-namespace Hydrogen.Windows.Forms.Crud;
+namespace Sphere10.Framework.Windows.Forms.Crud;
 
 public class CrudComboBox : CustomComboBox {
 	private readonly CrudGrid _crudGrid;
@@ -139,3 +139,4 @@ public class CrudComboBox : CustomComboBox {
 		RaiseEntitySelectionChanged(null);
 	}
 }
+

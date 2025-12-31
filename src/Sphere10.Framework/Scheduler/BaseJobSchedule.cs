@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public abstract class BaseJobSchedule : IJobSchedule {
 	protected uint? TotalIterations { get; set; }
@@ -96,3 +96,4 @@ public abstract class BaseJobSchedule<T> : BaseJobSchedule where T : class, IJob
 		set { base.Job = value; }
 	}
 }
+

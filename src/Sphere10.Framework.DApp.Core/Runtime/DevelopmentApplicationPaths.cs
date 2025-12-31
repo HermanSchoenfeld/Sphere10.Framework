@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,26 +10,26 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Hydrogen.DApp.Core.Runtime;
+namespace Sphere10.Framework.DApp.Core.Runtime;
 
 /// <summary>
 /// Used for running within IDE.
 /// </summary>
 public class DevelopmentApplicationPaths : IApplicationPaths {
-	internal const string NodeProjectDir = "Hydrogen.DApp.Node";
-	internal const string NodeExecutableFileName = "Hydrogen.DApp.Node.exe";
-	internal const string GuiProjectDir = "Hydrogen.DApp.Presentation2.Loader";
-	internal const string GuiExecutableFileName = "Hydrogen.DApp.Presentation2.Loader.exe";
+	internal const string NodeProjectDir = "Sphere10.Framework.DApp.Node";
+	internal const string NodeExecutableFileName = "Sphere10.Framework.DApp.Node.exe";
+	internal const string GuiProjectDir = "Sphere10.Framework.DApp.Presentation2.Loader";
+	internal const string GuiExecutableFileName = "Sphere10.Framework.DApp.Presentation2.Loader.exe";
 
 	private readonly string _solutionFolderPath;
 
 	public DevelopmentApplicationPaths()
-		: this(GetHydrogenSolutionFolder()) {
+		: this(GetSphere10FrameworkSolutionFolder()) {
 	}
 
-	public DevelopmentApplicationPaths(string hydrogenSolutionFolder) {
-		Guard.DirectoryExists(hydrogenSolutionFolder);
-		_solutionFolderPath = hydrogenSolutionFolder;
+	public DevelopmentApplicationPaths(string sphere10FrameworkSolutionFolder) {
+		Guard.DirectoryExists(sphere10FrameworkSolutionFolder);
+		_solutionFolderPath = sphere10FrameworkSolutionFolder;
 		Root = Tools.FileSystem.GetTempEmptyDirectory(true);
 		CreateDirectoriesIfMissing();
 	}
@@ -99,10 +99,11 @@ public class DevelopmentApplicationPaths : IApplicationPaths {
 			Directory.CreateDirectory(ArchivesFolder);
 	}
 
-	private static string GetHydrogenSolutionFolder() {
+	private static string GetSphere10FrameworkSolutionFolder() {
 		var runningExecutablePath = Assembly.GetEntryAssembly()?.Location;
 		if (string.IsNullOrEmpty(runningExecutablePath) || !Path.IsPathFullyQualified(runningExecutablePath))
 			throw new SoftwareException("Development mode can only be executed from a file-system");
 		return Tools.FileSystem.GetParentDirectoryPath(runningExecutablePath, 5); // 5 levels of parent dir's to get solution folder
 	}
 }
+

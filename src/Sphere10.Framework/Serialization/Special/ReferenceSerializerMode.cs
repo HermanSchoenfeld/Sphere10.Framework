@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 [Flags]
 public enum ReferenceSerializerMode {
@@ -12,3 +12,4 @@ public enum ReferenceSerializerMode {
 	None = 0,
 	Default = SupportNull | SupportContextReferences | SupportExternalReferences,
 }
+

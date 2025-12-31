@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,9 +12,9 @@
 //using System.Linq;
 //using System.Text;
 //using NUnit.Framework;
-//using Hydrogen;
-//using Hydrogen.DApp.Core.Encoding;
-//using Hydrogen.DApp.Core.Maths;
+//using Sphere10.Framework;
+//using Sphere10.Framework.DApp.Core.Encoding;
+//using Sphere10.Framework.DApp.Core.Maths;
 
 //namespace VelocityNET.Processing.Tests.Core {
 
@@ -163,5 +163,6 @@
 //    }
 
 //}
+
 
 

@@ -1,4 +1,4 @@
-﻿namespace HydrogenTester.WinForms.Screens {
+namespace Sphere10.Framework.Utils.WinFormsTester.Screens {
 	partial class EmailTestScreen {
 		/// <summary> 
 		/// Required designer variable.
@@ -29,7 +29,7 @@
 			label4 = new System.Windows.Forms.Label();
 			_fromTextBox = new System.Windows.Forms.TextBox();
 			label6 = new System.Windows.Forms.Label();
-			_smtpPortIntBox = new Hydrogen.Windows.Forms.IntBox();
+			_smtpPortIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
 			_sslCheckBox = new System.Windows.Forms.CheckBox();
 			_bodyTextBox = new System.Windows.Forms.TextBox();
 			label5 = new System.Windows.Forms.Label();
@@ -49,7 +49,7 @@
 			label11 = new System.Windows.Forms.Label();
 			_subjectTextBox = new System.Windows.Forms.TextBox();
 			_isHtmlCheckBox = new System.Windows.Forms.CheckBox();
-			_loadingCircle = new Hydrogen.Windows.Forms.LoadingCircle();
+			_loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
 			SuspendLayout();
 			// 
 			// label1
@@ -351,7 +351,7 @@
 		private System.Windows.Forms.TextBox _fromTextBox;
 		private System.Windows.Forms.TextBox textBox4;
 		private System.Windows.Forms.Label label6;
-		private Hydrogen.Windows.Forms.IntBox _smtpPortIntBox;
+		private Sphere10.Framework.Windows.Forms.IntBox _smtpPortIntBox;
 		private System.Windows.Forms.CheckBox _sslCheckBox;
 		private System.Windows.Forms.TextBox _bodyTextBox;
 		private System.Windows.Forms.Label label5;
@@ -369,6 +369,8 @@
 		private System.Windows.Forms.Label label11;
 		private System.Windows.Forms.TextBox _subjectTextBox;
 		private System.Windows.Forms.CheckBox _isHtmlCheckBox;
-		private Hydrogen.Windows.Forms.LoadingCircle _loadingCircle;
+		private Sphere10.Framework.Windows.Forms.LoadingCircle _loadingCircle;
 	}
 }
+
+

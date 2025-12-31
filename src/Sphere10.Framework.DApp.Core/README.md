@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# ⛓️ Hydrogen.DApp.Core
+# ⛓️ Sphere10.Framework.DApp.Core
 
 **Core blockchain and distributed application framework** providing fundamental types, patterns, and infrastructure for building blockchain-based DApps with plugin support and in-protocol upgrades.
 
-Hydrogen.DApp.Core is the **foundation for all Hydrogen DApps**, enabling developers to build blockchain systems with flexible transaction handling, multi-wallet support, plugin architecture, and governance-driven upgrades through blockchain state.
+Sphere10.Framework.DApp.Core is the **foundation for all Sphere10 Framework DApps**, enabling developers to build blockchain systems with flexible transaction handling, multi-wallet support, plugin architecture, and governance-driven upgrades through blockchain state.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 // Define a blockchain application
 public class MyBlockchainApp : Plugin {
@@ -54,8 +54,8 @@ Console.WriteLine($"Running {app.Name} v{app.Version}");
 ### Initialize Blockchain Core
 
 ```csharp
-using Hydrogen.DApp.Core;
-using Hydrogen.DApp.Core.Configuration;
+using Sphere10.Framework.DApp.Core;
+using Sphere10.Framework.DApp.Core.Configuration;
 
 // Create configuration
 var config = new BlockchainConfiguration {
@@ -82,7 +82,7 @@ Console.WriteLine($"Height: {blockHeight}, Difficulty: {difficulty}");
 ### Create & Register Plugins
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 // Define custom application plugin
 [Plugin("MyDApp", "1.0.0")]
@@ -119,9 +119,9 @@ myApp.ProcessTransaction(transaction);
 ### Multi-Wallet Account Management
 
 ```csharp
-using Hydrogen.DApp.Core;
-using Hydrogen.DApp.Core.Wallets;
-using Hydrogen.CryptoEx;
+using Sphere10.Framework.DApp.Core;
+using Sphere10.Framework.DApp.Core.Wallets;
+using Sphere10.Framework.CryptoEx;
 
 // Create wallet
 var wallet = new Wallet("MyWallet");
@@ -161,7 +161,7 @@ Console.WriteLine($"Signature valid: {isValid}");
 ### Transaction Creation & Validation
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 var blockchain = core.GetBlockchain();
 
@@ -197,8 +197,8 @@ Console.WriteLine($"Gas Used: {receipt.GasUsed}");
 ### Block Creation & Mining
 
 ```csharp
-using Hydrogen.DApp.Core;
-using Hydrogen.DApp.Core.Mining;
+using Sphere10.Framework.DApp.Core;
+using Sphere10.Framework.DApp.Core.Mining;
 
 var blockchain = core.GetBlockchain();
 var miner = new ProofOfWorkMiner();
@@ -231,7 +231,7 @@ if (minerResult.IsMined) {
 ### Blockchain Events & Subscriptions
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 var blockchain = core.GetBlockchain();
 
@@ -258,7 +258,7 @@ await blockchain.ProcessAsync();
 ### Consensus & Difficulty Adjustment
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 var blockchain = core.GetBlockchain();
 
@@ -326,11 +326,11 @@ Console.WriteLine($"New Difficulty: {blockchain.GetCurrentDifficulty()}");
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
-- **Hydrogen.Application**: Application lifecycle
-- **Hydrogen.Communications**: Network communication
-- **Hydrogen.CryptoEx**: Cryptographic primitives and hashing
-- **Hydrogen.Data**: Persistent data access
+- **Sphere10 Framework**: Core framework
+- **Sphere10.Framework.Application**: Application lifecycle
+- **Sphere10.Framework.Communications**: Network communication
+- **Sphere10.Framework.CryptoEx**: Cryptographic primitives and hashing
+- **Sphere10.Framework.Data**: Persistent data access
 - **BouncyCastle.Cryptography**: Cryptographic library
 - **Newtonsoft.Json**: JSON serialization
 - **SharpZipLib**: Compression support
@@ -354,11 +354,11 @@ Console.WriteLine($"New Difficulty: {blockchain.GetCurrentDifficulty()}");
 
 ## 📖 Related Projects
 
-- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node) - Reference node implementation
-- [Hydrogen.DApp.Host](../Hydrogen.DApp.Host) - Node hosting and lifecycle
-- [Hydrogen.Communications](../Hydrogen.Communications) - Network layer
-- [Hydrogen.CryptoEx](../Hydrogen.CryptoEx) - Cryptographic functions
-- [Hydrogen.Data](../Hydrogen.Data) - Persistence layer
+- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node) - Reference node implementation
+- [Sphere10.Framework.DApp.Host](../Sphere10.Framework.DApp.Host) - Node hosting and lifecycle
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network layer
+- [Sphere10.Framework.CryptoEx](../Sphere10.Framework.CryptoEx) - Cryptographic functions
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Persistence layer
 
 ## ⚖️ License
 
@@ -373,3 +373,5 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+

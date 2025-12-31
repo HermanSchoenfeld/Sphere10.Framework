@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using Hydrogen;
+using Sphere10.Framework;
 using NUnit.Framework.Legacy;
 
 namespace Tools;
@@ -54,3 +54,4 @@ public static class NUnit {
 	}
 
 }
+

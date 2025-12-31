@@ -1,6 +1,6 @@
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
-public record HydrogenFileDescriptor : TransactionalFileDescriptor {
+public record Sphere10FrameworkFileDescriptor : TransactionalFileDescriptor {
 
 	public int ClusterSize { get; init; }
 
@@ -8,20 +8,20 @@ public record HydrogenFileDescriptor : TransactionalFileDescriptor {
 
 	public Endianness Endianness { get; init; }
 
-	public new static HydrogenFileDescriptor From(string path) 
-		=> From(path, HydrogenDefaults.TransactionalPageFolder, HydrogenDefaults.TransactionalPageSize, HydrogenDefaults.MaxMemoryPerCollection, HydrogenDefaults.ClusterSize, HydrogenDefaults.ContainerPolicy);
+	public new static Sphere10FrameworkFileDescriptor From(string path) 
+		=> From(path, Sphere10FrameworkDefaults.TransactionalPageFolder, Sphere10FrameworkDefaults.TransactionalPageSize, Sphere10FrameworkDefaults.MaxMemoryPerCollection, Sphere10FrameworkDefaults.ClusterSize, Sphere10FrameworkDefaults.ContainerPolicy);
 
-	public new static HydrogenFileDescriptor From(string path, long pageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection)
-		=> From(path, HydrogenDefaults.TransactionalPageFolder, pageSize, maxMemory);
+	public new static Sphere10FrameworkFileDescriptor From(string path, long pageSize = Sphere10FrameworkDefaults.TransactionalPageSize, long maxMemory = Sphere10FrameworkDefaults.MaxMemoryPerCollection)
+		=> From(path, Sphere10FrameworkDefaults.TransactionalPageFolder, pageSize, maxMemory);
 
-	private new static HydrogenFileDescriptor From(string path, string pagesDirectoryPath, long pageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection) 
-		=> From(path, pagesDirectoryPath, pageSize, maxMemory, HydrogenDefaults.ClusterSize, HydrogenDefaults.ContainerPolicy);
+	private new static Sphere10FrameworkFileDescriptor From(string path, string pagesDirectoryPath, long pageSize = Sphere10FrameworkDefaults.TransactionalPageSize, long maxMemory = Sphere10FrameworkDefaults.MaxMemoryPerCollection) 
+		=> From(path, pagesDirectoryPath, pageSize, maxMemory, Sphere10FrameworkDefaults.ClusterSize, Sphere10FrameworkDefaults.ContainerPolicy);
 
 
-	public static HydrogenFileDescriptor From(string path, long pageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStreamsPolicy containerPolicy = HydrogenDefaults.ContainerPolicy)
-		=> From(path, HydrogenDefaults.TransactionalPageFolder, pageSize, maxMemory, clusterSize, containerPolicy);
+	public static Sphere10FrameworkFileDescriptor From(string path, long pageSize = Sphere10FrameworkDefaults.TransactionalPageSize, long maxMemory = Sphere10FrameworkDefaults.MaxMemoryPerCollection, int clusterSize = Sphere10FrameworkDefaults.ClusterSize, ClusteredStreamsPolicy containerPolicy = Sphere10FrameworkDefaults.ContainerPolicy)
+		=> From(path, Sphere10FrameworkDefaults.TransactionalPageFolder, pageSize, maxMemory, clusterSize, containerPolicy);
 
-	public static HydrogenFileDescriptor From(string path, string pagesDirectoryPath, long pageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, int clusterSize = HydrogenDefaults.ClusterSize, ClusteredStreamsPolicy containerPolicy = HydrogenDefaults.ContainerPolicy, Endianness endianness = HydrogenDefaults.Endianness) 
+	public static Sphere10FrameworkFileDescriptor From(string path, string pagesDirectoryPath, long pageSize = Sphere10FrameworkDefaults.TransactionalPageSize, long maxMemory = Sphere10FrameworkDefaults.MaxMemoryPerCollection, int clusterSize = Sphere10FrameworkDefaults.ClusterSize, ClusteredStreamsPolicy containerPolicy = Sphere10FrameworkDefaults.ContainerPolicy, Endianness endianness = Sphere10FrameworkDefaults.Endianness) 
 		=> new() { 
 			Path = path,
 			PagesDirectoryPath = pagesDirectoryPath,
@@ -32,3 +32,5 @@ public record HydrogenFileDescriptor : TransactionalFileDescriptor {
 			Endianness = endianness
 		};
 }
+
+

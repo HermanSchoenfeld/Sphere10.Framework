@@ -872,3 +872,4 @@ namespace HashLib4CSharp.Crypto
         internal static IHash CreateHashSize256() => new Snefru_8(Enum.HashSize.HashSize256);
     }
 }
+

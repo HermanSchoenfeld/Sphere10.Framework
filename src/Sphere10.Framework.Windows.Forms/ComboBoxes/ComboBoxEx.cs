@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public class ComboBoxEx : ComboBox {
 	private PlaceHolderTextExtender _placeHolderTextExtender;
@@ -28,7 +28,7 @@ public class ComboBoxEx : ComboBox {
 
 	private void InitializeComponent() {
 		this.components = new System.ComponentModel.Container();
-		this._placeHolderTextExtender = new Hydrogen.Windows.Forms.PlaceHolderTextExtender(this.components);
+		this._placeHolderTextExtender = new Sphere10.Framework.Windows.Forms.PlaceHolderTextExtender(this.components);
 		this.SuspendLayout();
 		// 
 		// TextBoxEx
@@ -37,3 +37,4 @@ public class ComboBoxEx : ComboBox {
 		this.ResumeLayout(false);
 	}
 }
+

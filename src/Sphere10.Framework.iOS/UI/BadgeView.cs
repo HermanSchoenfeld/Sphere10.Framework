@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="BadgeView.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (http://www.sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -15,7 +15,7 @@ using System;
 using CoreGraphics;
 using UIKit;
 
-namespace Hydrogen.iOS {
+namespace Sphere10.Framework.iOS {
 	public class BadgeView : UILabel {
 		private const float InternalPadding = 10.0f;
 		public const float DefaultHeight = 15.0f;
@@ -76,4 +76,5 @@ namespace Hydrogen.iOS {
 		}
 	}
 }
+
 

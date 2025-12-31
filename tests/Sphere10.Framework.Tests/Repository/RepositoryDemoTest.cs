@@ -1,4 +1,4 @@
-﻿//// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+//// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //// Author: Herman Schoenfeld
 ////
 //// Distributed under the MIT software license, see the accompanying file
@@ -14,7 +14,7 @@
 //using System.Threading.Tasks;
 //using NUnit.Framework;
 
-//namespace Hydrogen.Tests;
+//namespace Sphere10.Framework.Tests;
 
 //[TestFixture, Timeout(60000)]
 //public class RepositoryTests {
@@ -574,7 +574,7 @@
 //			Tools.FileSystem.CreateDirectory(txnDir);
 
 //		_transactionalDict = new TransactionalDictionary<string, PlayerRecord>(
-//			HydrogenFileDescriptor.From(repoPath, txnDir, containerPolicy: ClusteredStreamsPolicy.Default),
+//			Sphere10FrameworkFileDescriptor.From(repoPath, txnDir, containerPolicy: ClusteredStreamsPolicy.Default),
 //			new StringSerializer(),
 //			new PlayerRecordSerializer(),
 //			keyChecksum: new ObjectHashCodeChecksummer<string>()
@@ -639,3 +639,5 @@
 
 //	public ValueTask DisposeAsync() => _repoAdapter.DisposeAsync();
 //}
+
+

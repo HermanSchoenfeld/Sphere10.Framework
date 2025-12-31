@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public class ApplicationVersion : IComparable<ApplicationVersion>, IEquatable<ApplicationVersion>, IFormattable {
 
@@ -152,3 +152,4 @@ public class ApplicationVersion : IComparable<ApplicationVersion>, IEquatable<Ap
 	public static bool operator >=(ApplicationVersion left, ApplicationVersion right) 
 		=> left is null ? right is null : left.CompareTo(right) >= 0;
 }
+

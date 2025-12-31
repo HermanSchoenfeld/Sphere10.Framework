@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 
-namespace Hydrogen.CryptoEx.PascalCoin;
+namespace Sphere10.Framework.CryptoEx.PascalCoin;
 
 public class PascalBase58Encoding {
 	public const string CharSet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -66,3 +66,4 @@ public class PascalBase58Encoding {
 		return result;
 	}
 }
+

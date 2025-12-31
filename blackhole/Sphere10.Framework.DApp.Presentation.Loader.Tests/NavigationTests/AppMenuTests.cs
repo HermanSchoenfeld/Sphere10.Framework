@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,12 +8,12 @@
 
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Hydrogen.DApp.Presentation.Loader.Plugins;
-using Hydrogen.DApp.Presentation.Loader.Tests.PluginManagerTests;
-using Hydrogen.DApp.Presentation.Loader.ViewModels;
+using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+using Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginManagerTests;
+using Sphere10.Framework.DApp.Presentation.Loader.ViewModels;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.DApp.Presentation.Loader.Tests.NavigationTests;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.NavigationTests;
 
 public class AppMenuTests {
 	[Test]
@@ -32,3 +32,5 @@ public class AppMenuTests {
 		ClassicAssert.AreSame(appManager.SelectedApp?.AppBlocks, blockMenuViewModel.AppBlocks);
 	}
 }
+
+

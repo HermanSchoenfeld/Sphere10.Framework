@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen.Communications.RPC;
+namespace Sphere10.Framework.Communications.RPC;
 
 public class ApiDescriptor {
 	//UniqueID name / Class name. NOTE: does not support anonymous method.
@@ -17,3 +17,4 @@ public class ApiDescriptor {
 	//Methods/services description (name, params(type and defult value), return value type). 
 	protected List<ApiMethodDescriptor> Methods;
 }
+

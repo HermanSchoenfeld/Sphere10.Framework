@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 public class XmlFileDictionary<T1, T2> : DictionaryDecorator<T1, T2>, IPersistedDictionary<T1, T2> {
 	private readonly bool _useSimpleXmlSerialization;
@@ -117,3 +117,4 @@ public class XmlFileDictionary<T1, T2> : DictionaryDecorator<T1, T2>, IPersisted
 			File.Delete(Filename);
 	}
 }
+

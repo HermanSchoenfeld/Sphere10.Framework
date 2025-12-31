@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using VOID = Hydrogen.Void;
+using VOID = Sphere10.Framework.Void;
 
-namespace Hydrogen {
+namespace Sphere10.Framework {
 
 	/// <summary>
 	/// TaskCompletionSource is missing from .NET Standard. An implementation which decorates an <see cref="TaskCompletionSource{TResult}"/> is used.
@@ -69,3 +69,4 @@ namespace Hydrogen {
 }
 
 #endif
+

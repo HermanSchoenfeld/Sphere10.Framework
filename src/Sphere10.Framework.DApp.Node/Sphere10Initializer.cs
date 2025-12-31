@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,21 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 
-namespace Hydrogen.DApp.Node;
+namespace Sphere10.Framework.DApp.Node;
 
-public interface IHydrogenA {
+public interface ISphere10FrameworkA {
 }
 
 
-public class HydrogenInitializer : ApplicationInitializerBase {
+public class Sphere10Initializer : ApplicationInitializerBase {
 
 	public override void Initialize() {
 		SystemLog.RegisterLogger(new TimestampLogger(new ConsoleLogger()));
 
-		//NOTE: Until HydrogenInitializer gets to properly reference CryptoEx module, we init it here.
-		//Hydrogen.CryptoEx.HydrogenFrameworkIntegration.Initialize();
+		//NOTE: Until Sphere10.FrameworkInitializer gets to properly reference CryptoEx module, we init it here.
+		//Sphere10.Framework.CryptoEx.Sphere10FrameworkIntegration.Initialize();
 		//SystemLog.RegisterLogger(new TimestampLogger(new DebugLogger()));
 
 
@@ -28,3 +28,4 @@ public class HydrogenInitializer : ApplicationInitializerBase {
 		//RpcServer.Start(true, 27000, 32);
 	}
 }
+

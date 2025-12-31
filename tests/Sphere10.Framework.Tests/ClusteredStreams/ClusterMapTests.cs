@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.IO;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 /// <remarks>
 /// During dev, bugs seemed to occur when clusters linked in descending order.
@@ -366,3 +366,4 @@ public class ClusterMapTests {
 
 
 }
+

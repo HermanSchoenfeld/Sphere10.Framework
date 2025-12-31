@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Data;
-using Hydrogen;
+using Sphere10.Framework;
 using System.Reflection;
-using Hydrogen.Data;
-using Hydrogen.Data.Csv;
+using Sphere10.Framework.Data;
+using Sphere10.Framework.Data.Csv;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -66,3 +66,4 @@ public static partial class Data {
 		return dataTable;
 	}
 }
+

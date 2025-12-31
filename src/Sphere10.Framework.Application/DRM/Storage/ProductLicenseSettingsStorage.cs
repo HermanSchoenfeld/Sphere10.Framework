@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,8 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen;
-using Hydrogen.Application;
+using Sphere10.Framework;
+using Sphere10.Framework.Application;
 using Newtonsoft.Json;
 
 namespace Sphere10.DRM;
@@ -28,7 +28,7 @@ public class ProductLicenseSettingsStorage : IProductLicenseStorage {
 	protected ISettingsServices SettingsServices { get; }
 
 	public bool TryGetDefaultLicense(out ProductLicenseActivationDTO licenseActivation) {
-		licenseActivation = HydrogenAssemblyAttributesHelper.GetAssemblyDefaultProductLicenseActivation();
+		licenseActivation = Sphere10AssemblyAttributesHelper.GetAssemblyDefaultProductLicenseActivation();
 		if (licenseActivation == null)
 			return false;
 		return true;
@@ -72,3 +72,4 @@ public class ProductLicenseSettingsStorage : IProductLicenseStorage {
 	}
 
 }
+

@@ -1,12 +1,12 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 💾 Hydrogen.Windows.LevelDB
+# 💾 Sphere10.Framework.Windows.LevelDB
 
 **LevelDB integration for Windows** providing high-performance embedded key-value storage for blockchain data, indices, and persistent caches.
 
 ## 📋 Overview
 
-`Hydrogen.Windows.LevelDB` integrates Google's LevelDB into Hydrogen applications, providing high-performance key-value storage suitable for blockchain ledgers, indices, and persistent caches on Windows platforms.
+`Sphere10.Framework.Windows.LevelDB` integrates Google's LevelDB into Sphere10 Framework applications, providing high-performance key-value storage suitable for blockchain ledgers, indices, and persistent caches on Windows platforms.
 
 ## 🚀 Key Features
 
@@ -25,7 +25,7 @@
 Store and retrieve key-value data:
 
 ```csharp
-using Hydrogen.Windows.LevelDB;
+using Sphere10.Framework.Windows.LevelDB;
 
 // Create/open database
 using (var db = new DB("mydb", new Options { CreateIfMissing = true })) {
@@ -117,7 +117,7 @@ DB.Destroy("mydb", new Options { CreateIfMissing = true });
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework library
+- **Sphere10 Framework**: Core framework library
 - **LevelDB**: Native LevelDB database engine (BSD License)
 - **Snappy**: Compression library
 
@@ -149,5 +149,7 @@ For complete license details, see: https://github.com/google/leveldb/blob/master
 
 ## 📄 Related Projects
 
-- [Hydrogen.Data](../Hydrogen.Data) - Data access abstraction
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - Blockchain using storage
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Data access abstraction
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain using storage
+
+

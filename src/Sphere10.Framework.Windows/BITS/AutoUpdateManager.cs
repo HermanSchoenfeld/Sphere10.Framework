@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.CodeDom.Compiler;
 using System.Diagnostics;
 
 
-namespace Hydrogen.Windows.BITS;
+namespace Sphere10.Framework.Windows.BITS;
 
 public interface IPatch {
 	void Execute();
@@ -169,3 +169,4 @@ public class AutoUpdater {
 	void downloadJob_OnJobErrorEvent(object sender, JobErrorNotificationEventArgs e) {
 	}
 }
+

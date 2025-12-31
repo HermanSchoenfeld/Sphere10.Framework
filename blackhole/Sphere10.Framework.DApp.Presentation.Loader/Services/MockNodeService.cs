@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,10 +12,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.Models;
-using Hydrogen.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.Models;
+using Sphere10.Framework.DApp.Presentation.Services;
 
-namespace Hydrogen.DApp.Presentation.Loader.Services;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Services;
 
 /// <summary>
 /// Node service -- example data service not for real use with node.
@@ -81,3 +81,5 @@ public sealed class MockNodeService : INodeService, IDisposable {
 	private void EndpointManagerOnEndpointChanged(object? sender, EventArgs e) {
 	}
 }
+
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Microsoft.AspNetCore.Components;
-using Hydrogen.DApp.Presentation.Components.Modal;
-using Hydrogen.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.Components.Modal;
+using Sphere10.Framework.DApp.Presentation.Services;
 
-namespace Hydrogen.DApp.Presentation.Loader.Layouts;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Layouts;
 
 /// <summary>
 /// Main layout
@@ -33,3 +33,5 @@ public partial class MainLayout {
 		base.OnAfterRender(firstRender);
 	}
 }
+
+

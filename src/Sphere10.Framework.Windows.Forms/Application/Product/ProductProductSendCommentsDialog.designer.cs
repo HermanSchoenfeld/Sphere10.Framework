@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 
     partial class ProductProductSendCommentsDialog {
         /// <summary>
@@ -33,14 +33,14 @@ namespace Hydrogen.Windows.Forms {
         /// </summary>
         private void InitializeComponent() {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this._basicContactDetailsControl = new Hydrogen.Windows.Forms.BasicContactDetailsControl();
+			this._basicContactDetailsControl = new Sphere10.Framework.Windows.Forms.BasicContactDetailsControl();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this._commentTextBox = new System.Windows.Forms.TextBox();
             this._cancelButton = new System.Windows.Forms.Button();
             this._sendButton = new System.Windows.Forms.Button();
-			this.applicationBanner1 = new Hydrogen.Windows.Forms.ApplicationBanner();
+			this.applicationBanner1 = new Sphere10.Framework.Windows.Forms.ApplicationBanner();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-			this._whoAreYouControl = new Hydrogen.Windows.Forms.WhoAreYouControl();
+			this._whoAreYouControl = new Sphere10.Framework.Windows.Forms.WhoAreYouControl();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -138,7 +138,7 @@ namespace Hydrogen.Windows.Forms {
             this._whoAreYouControl.Name = "_whoAreYouControl";
             this._whoAreYouControl.Size = new System.Drawing.Size(197, 92);
             this._whoAreYouControl.TabIndex = 0;
-			this._whoAreYouControl.UserType = Hydrogen.Application.UserType.HomeUser;
+			this._whoAreYouControl.UserType = Sphere10.Framework.Application.UserType.HomeUser;
             // 
             // SendCommentsForm
             // 
@@ -175,7 +175,8 @@ namespace Hydrogen.Windows.Forms {
         private BasicContactDetailsControl _basicContactDetailsControl;
         private ApplicationBanner applicationBanner1;
         private System.Windows.Forms.GroupBox groupBox3;
-        private Hydrogen.Windows.Forms.WhoAreYouControl _whoAreYouControl;
+        private Sphere10.Framework.Windows.Forms.WhoAreYouControl _whoAreYouControl;
     }
 }
+
 

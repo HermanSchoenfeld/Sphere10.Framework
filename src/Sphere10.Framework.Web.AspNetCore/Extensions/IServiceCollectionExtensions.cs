@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,20 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Application;
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Web.AspNetCore;
 using Microsoft.Extensions.Logging;
+using Sphere10.Framework;
+
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionExtensions {
-	public static IServiceCollection AddHydrogenFramework(this IServiceCollection serviceCollection) {
-		HydrogenFramework.Instance.RegisterModules(serviceCollection);
+	public static IServiceCollection AddSphere10Framework(this IServiceCollection serviceCollection) {
+		Sphere10Framework.Instance.RegisterModules(serviceCollection);
 		return serviceCollection;
 	}
 
-	public static IServiceCollection AddHydrogenLogger(this IServiceCollection serviceCollection, Hydrogen.ILogger logger) {
-		return serviceCollection.AddTransient<ILoggerProvider>(_ => new HydrogenLoggerProvider(logger));
+	public static IServiceCollection AddSphere10FrameworkLogger(this IServiceCollection serviceCollection, Sphere10.Framework.ILogger logger) {
+		return serviceCollection.AddTransient<ILoggerProvider>(_ => new Sphere10LoggerProvider(logger));
 	}
 
 }
+

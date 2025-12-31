@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -17,14 +17,14 @@
 //using System.Net;
 //using System.Linq;
 //using System.Text;
-//using Hydrogen;
-//using Hydrogen.Communications.RPC;
+//using Sphere10.Framework;
+//using Sphere10.Framework.Communications.RPC;
 //using Newtonsoft.Json;
 //using Newtonsoft.Json.Linq;
-//using Hydrogen.Communications;
+//using Sphere10.Framework.Communications;
 //using Newtonsoft.Json.Converters;
 
-//namespace Hydrogen.Tests {
+//namespace Sphere10.Framework.Tests {
 //	public enum FreeEnum { First, Second, Third };
 
 //	//Anonymous API functions
@@ -703,5 +703,6 @@
 //	}
 
 //}
+
 
 

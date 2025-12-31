@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,14 +8,14 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Hydrogen.DApp.Presentation.Plugins;
+using Sphere10.Framework.DApp.Presentation.Plugins;
 
-namespace Hydrogen.DApp.Presentation.Loader.Tests;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Tests;
 
 public class TestPlugin : Plugin {
 	public TestPlugin() {
 		Apps = new[] {
-			new Hydrogen.DApp.Presentation.Plugins.App("/",
+			new Sphere10.Framework.DApp.Presentation.Plugins.App("/",
 				"Home",
 				"abc",
 				new[] {
@@ -30,7 +30,7 @@ public class TestPlugin : Plugin {
 								})
 						})
 				}),
-			new Hydrogen.DApp.Presentation.Plugins.App("/app1",
+			new Sphere10.Framework.DApp.Presentation.Plugins.App("/app1",
 				"app1",
 				"abc",
 				new[] {
@@ -58,3 +58,5 @@ public class TestPlugin : Plugin {
 
 internal class TestViewModel {
 }
+
+

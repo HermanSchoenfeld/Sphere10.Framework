@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms.Firebird {
+namespace Sphere10.Framework.Windows.Forms.Firebird {
 	partial class FirebirdEmbeddedConnectionBar {
 		/// <summary> 
 		/// Required designer variable.
@@ -36,7 +36,7 @@ namespace Hydrogen.Windows.Forms.Firebird {
 			this._passwordTextBox = new System.Windows.Forms.TextBox();
 			this._journalLabel = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
-			this._fileSelectorControl = new Hydrogen.Windows.Forms.PathSelectorControl();
+			this._fileSelectorControl = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
 			this.label5 = new System.Windows.Forms.Label();
 			this._tableLayoutPanel.SuspendLayout();
 			this.SuspendLayout();
@@ -117,7 +117,7 @@ namespace Hydrogen.Windows.Forms.Firebird {
 			this._fileSelectorControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this._fileSelectorControl.Location = new System.Drawing.Point(0, 15);
 			this._fileSelectorControl.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
-			this._fileSelectorControl.Mode = Hydrogen.Windows.Forms.PathSelectionMode.File;
+			this._fileSelectorControl.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.File;
 			this._fileSelectorControl.Name = "_fileSelectorControl";
 			this._fileSelectorControl.Path = "";
 			this._fileSelectorControl.PlaceHolderText = "";
@@ -161,3 +161,4 @@ namespace Hydrogen.Windows.Forms.Firebird {
         private System.Windows.Forms.Label label5;
     }
 }
+

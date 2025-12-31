@@ -1,4 +1,4 @@
-﻿namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class WAMSTestScreen {
 		/// <summary> 
 		/// Required designer variable.
@@ -38,7 +38,7 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this._heightControl = new System.Windows.Forms.NumericUpDown();
 			this._winternitzControl = new System.Windows.Forms.NumericUpDown();
-			this._hashAlgControl = new Hydrogen.Windows.Forms.EnumComboBox();
+			this._hashAlgControl = new Sphere10.Framework.Windows.Forms.EnumComboBox();
 			this._optimizedPubKeyCheckBox = new System.Windows.Forms.CheckBox();
 			this._commandToolBox.SuspendLayout();
 			this._outputGroupBox.SuspendLayout();
@@ -305,7 +305,7 @@
 		private System.Windows.Forms.Button _miscTests;
 		private System.Windows.Forms.Button _miscTests2;
 		private System.Windows.Forms.GroupBox _optionsGroupBox;
-		private Hydrogen.Windows.Forms.EnumComboBox _hashAlgControl;
+		private Sphere10.Framework.Windows.Forms.EnumComboBox _hashAlgControl;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label1;
@@ -316,3 +316,5 @@
 		private System.Windows.Forms.CheckBox _optimizedPubKeyCheckBox;
 	}
 }
+
+

@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 public interface IAccessor {
 	string FieldName { get; }
@@ -15,3 +15,4 @@ public interface IAccessor {
 
 	string Name { get; }
 }
+

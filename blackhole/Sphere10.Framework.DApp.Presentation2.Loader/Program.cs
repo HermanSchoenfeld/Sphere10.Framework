@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Hydrogen.DApp.Presentation2.Loader;
+namespace Sphere10.Framework.DApp.Presentation2.Loader;
 
 public class Program {
 	public static async Task Main(string[] args) {
@@ -24,3 +24,5 @@ public class Program {
 		await builder.Build().RunAsync();
 	}
 }
+
+

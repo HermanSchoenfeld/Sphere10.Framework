@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class PackedEqualityComparer : IEqualityComparer<object> {
 	private readonly object _comparer;
@@ -32,3 +32,4 @@ public class PackedEqualityComparer : IEqualityComparer<object> {
 	}
 
 }
+

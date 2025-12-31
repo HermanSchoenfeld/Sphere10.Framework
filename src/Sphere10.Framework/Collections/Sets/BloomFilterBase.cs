@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Bloom filter base implementation with parameterized length, hashing rounds. Sub-classes need only implement hashing function itself.
@@ -92,3 +92,4 @@ public abstract class BloomFilterBase<TItem> : IBloomFilter<TItem> {
 		return GetEnumerator();
 	}
 }
+

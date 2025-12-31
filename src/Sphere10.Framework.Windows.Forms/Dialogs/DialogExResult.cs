@@ -1,4 +1,4 @@
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public enum DialogExResult {
 	Button1,
@@ -7,3 +7,4 @@ public enum DialogExResult {
 	Button4,
 	Button5
 }
+

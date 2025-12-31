@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen.Communications.RPC;
+namespace Sphere10.Framework.Communications.RPC;
 
 //Service Manager Singleton
 public class ApiServiceManager {
@@ -95,3 +95,4 @@ public class ApiServiceManager {
 		}
 	}
 }
+

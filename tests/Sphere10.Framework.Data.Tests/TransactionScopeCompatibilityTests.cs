@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using System.Transactions;
 using NUnit.Framework;
-using Hydrogen.NUnit;
+using Sphere10.Framework.NUnit;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Data.Tests;
+namespace Sphere10.Framework.Data.Tests;
 
 [TestFixture]
 public class TransactionScopeCompatibilityTests : DACTestFixture {
@@ -195,3 +195,4 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 		}
 	}
 }
+

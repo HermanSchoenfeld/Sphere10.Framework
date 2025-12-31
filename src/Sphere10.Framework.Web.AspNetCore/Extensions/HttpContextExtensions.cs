@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http;
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 public static class HttpContextExtensions {
 	public const string UserMessagesKey = "UserMessages_449E67E9-F455-454a-86A7-1E49CB8F7A9B";
@@ -32,3 +32,4 @@ public static class HttpContextExtensions {
 		return context.Items[UserMessagesKey] as Collection<UserMessage>;
 	}
 }
+

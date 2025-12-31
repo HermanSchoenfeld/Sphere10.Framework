@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,11 +9,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Hydrogen.DApp.Presentation.Plugins;
+using Sphere10.Framework.DApp.Presentation.Plugins;
 using NUnit.Framework.Legacy;
 using Assert = NUnit.Framework.Assert;
 
-namespace Hydrogen.DApp.Presentation.Loader.Tests.PluginTests;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginTests;
 
 public class MenuItemTests {
 	[Test]
@@ -66,3 +66,5 @@ public class MenuItemTests {
 		ClassicAssert.IsTrue(menu1[0].Children[0].Heading == copy[0].Children[0].Heading);
 	}
 }
+
+

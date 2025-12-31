@@ -1,4 +1,4 @@
-# Publishing Hydrogen to NuGet
+﻿# Publishing Sphere10 Framework to NuGet
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ Verify on [nuget.org](https://www.nuget.org/) (may take a few minutes).
 
 ## GitHub Actions CI/CD
 
-1. Add `NUGET_API_KEY` secret in repository Settings → Secrets
+1. Add `NUGET_API_KEY` secret in repository Settings â†’ Secrets
 2. Push version tag to trigger workflow:
    ```powershell
    git tag v1.0.0
@@ -152,15 +152,15 @@ Test production mode:
 
 1. **Always test locally first**
    ```powershell
-   dotnet build "src\Hydrogen (CrossPlatform).sln" -c Release
+   dotnet build "src\Sphere10 Framework (CrossPlatform).sln" -c Release
    ./scripts/pack.ps1 -Clean
    ./scripts/publish.ps1 -DryRun
    ```
 
 2. **Use semantic versioning** (MAJOR.MINOR.PATCH)
-   - Breaking changes → increment MAJOR
-   - New features → increment MINOR
-   - Bug fixes → increment PATCH
+   - Breaking changes â†’ increment MAJOR
+   - New features â†’ increment MINOR
+   - Bug fixes â†’ increment PATCH
 
 3. **Keep versions in sync** - All packages use same version from `Directory.Build.props`
 
@@ -174,3 +174,4 @@ Test production mode:
    ```powershell
    ./scripts/pack.ps1 -UseNugetReferences
    ```
+

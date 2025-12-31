@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,11 +9,11 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class ApplicationBanner : ApplicationControl {
 	private string _companyName;
@@ -28,7 +28,7 @@ public partial class ApplicationBanner : ApplicationControl {
 		CompanyName = _companyNameLabel.Text;
 		Version = _versionLabel.Text;
 		Title = _productNameLabel.Text;
-		ApplicationIcon = Tools.Values.Future.LazyLoad(() => HydrogenFramework.Instance.ServiceProvider.GetService<IApplicationIconProvider>().ApplicationIcon);
+		ApplicationIcon = Tools.Values.Future.LazyLoad(() => Sphere10Framework.Instance.ServiceProvider.GetService<IApplicationIconProvider>().ApplicationIcon);
 	}
 
 	protected IFuture<Icon> ApplicationIcon { get; }
@@ -40,9 +40,9 @@ public partial class ApplicationBanner : ApplicationControl {
 		base.InitializeUIPrimingData();
 		_iconPanel.BackgroundImage = ApplicationIcon.Value.ToBitmap().Resize(new Size(_iconPanel.Width, _iconPanel.Height), ResizeMethod.AspectFitPadded, paddingColor: Color.Transparent);
 		// Upload to child controls the processed strings. Visual inheritance can be used to change these strings.
-		_companyNameLabel.Text = Hydrogen.StringFormatter.FormatEx(CompanyName);
-		_productNameLabel.Text = Hydrogen.StringFormatter.FormatEx(Title);
-		_versionLabel.Text = Hydrogen.StringFormatter.FormatEx(Version);
+		_companyNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(CompanyName);
+		_productNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(Title);
+		_versionLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(Version);
 	}
 
 
@@ -56,7 +56,7 @@ public partial class ApplicationBanner : ApplicationControl {
 				_companyNameLabel.Text = _companyName;
 			}
 			if (Loaded) {
-				_companyNameLabel.Text = Hydrogen.StringFormatter.FormatEx(_companyName);
+				_companyNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(_companyName);
 			}
 			Invalidate();
 		}
@@ -72,7 +72,7 @@ public partial class ApplicationBanner : ApplicationControl {
 				_versionLabel.Text = _version;
 			}
 			if (Loaded) {
-				_versionLabel.Text = Hydrogen.StringFormatter.FormatEx(_version);
+				_versionLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(_version);
 			}
 			Invalidate();
 		}
@@ -88,7 +88,7 @@ public partial class ApplicationBanner : ApplicationControl {
 				_productNameLabel.Text = _title;
 			}
 			if (Loaded) {
-				_productNameLabel.Text = Hydrogen.StringFormatter.FormatEx(_title);
+				_productNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(_title);
 			}
 			Invalidate();
 		}
@@ -121,3 +121,4 @@ public partial class ApplicationBanner : ApplicationControl {
 	}
 
 }
+

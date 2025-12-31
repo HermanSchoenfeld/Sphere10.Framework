@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A stream wrapper that ensures a lock is attained before any member is invoked. It also provides a mechanism to acquire a locking scope.
@@ -225,3 +225,4 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 			throw new InvalidOperationException("Stream cannot be accessed without acquiring a locking scope");
 	}
 }
+

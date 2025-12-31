@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Maths;
+using Sphere10.Framework.Maths;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class TimelikeMinkowskiDerivativeFunction : IFunction {
 	private readonly IFunction _derivativeFunction = null;
@@ -21,3 +21,4 @@ public class TimelikeMinkowskiDerivativeFunction : IFunction {
 		return System.Math.Sqrt(1 - System.Math.Pow(_derivativeFunction.Eval(x), 2));
 	}
 }
+

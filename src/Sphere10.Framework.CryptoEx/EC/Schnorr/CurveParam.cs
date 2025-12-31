@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using Org.BouncyCastle.Crypto.EC;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 
-namespace Hydrogen.CryptoEx.EC;
+namespace Sphere10.Framework.CryptoEx.EC;
 
 public class CurveData {
 	public ECPoint G { get; internal set; }
@@ -36,3 +36,4 @@ public class CurveParam {
 		return CurveParams.TryGetValue(keyType, out var result) ? result : throw new Exception($"{nameof(keyType)} not found.");
 	}
 }
+

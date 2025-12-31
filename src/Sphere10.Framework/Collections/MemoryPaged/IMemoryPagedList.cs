@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Extends <see cref="IPagedList{TItem}"/> with behaviors for paging in and out of memory-constrained environments.
@@ -46,3 +46,4 @@ public interface IMemoryPagedList<TItem> : IPagedList<TItem>, IDisposable {
 	/// </summary>
 	void Flush();
 }
+

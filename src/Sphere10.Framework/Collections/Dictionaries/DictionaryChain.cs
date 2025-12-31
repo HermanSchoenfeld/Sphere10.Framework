@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A chain-of-responsibility pattern implementation of <see cref="IDictionary{TKey,TValue}"/>.
@@ -126,3 +126,4 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 			base.Add(key, value);
 	}
 }
+

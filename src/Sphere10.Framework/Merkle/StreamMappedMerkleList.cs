@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Stream-mapped list that maintains a merkle tree index over its items for integrity proofs.
@@ -56,7 +56,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		IItemChecksummer<TItem> itemChecksummer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 1,
-		string merkleTreeIndexName = HydrogenDefaults.DefaultMerkleTreeIndexName,
+		string merkleTreeIndexName = Sphere10FrameworkDefaults.DefaultMerkleTreeIndexName,
 		string optionalItemChecksumIndexName = null,
 		Endianness endianness = Endianness.LittleEndian, 
 		bool autoLoad = false
@@ -186,3 +186,5 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 	}
 
 }
+
+

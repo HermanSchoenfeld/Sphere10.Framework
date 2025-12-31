@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,9 +10,9 @@ using System.IO;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Utilities.IO;
-using Hydrogen.CryptoEx.IES;
+using Sphere10.Framework.CryptoEx.IES;
 
-namespace Hydrogen.CryptoEx.EC.IES;
+namespace Sphere10.Framework.CryptoEx.EC.IES;
 
 internal class ECIESPublicKeyParser : IKeyParser {
 	private readonly ECDomainParameters _ecParams;
@@ -51,3 +51,4 @@ internal class ECIESPublicKeyParser : IKeyParser {
 		return new ECPublicKeyParameters(_ecParams.Curve.DecodePoint(v), _ecParams);
 	}
 }
+

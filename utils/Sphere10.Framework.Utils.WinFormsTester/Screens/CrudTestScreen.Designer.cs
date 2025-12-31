@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="CrudTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,9 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class CrudTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -295,12 +295,12 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 		#endregion
 
-		private Hydrogen.Windows.Forms.CrudGrid _crudGrid;
-		private Hydrogen.Windows.Forms.FlagsCheckedListBox _flagsCheckedListBox;
+		private Sphere10.Framework.Windows.Forms.CrudGrid _crudGrid;
+		private Sphere10.Framework.Windows.Forms.FlagsCheckedListBox _flagsCheckedListBox;
 		private System.Windows.Forms.TextBox _outputTextBox;
 		private System.Windows.Forms.CheckBox _generateDeleteErrorCheckBox;
 		private System.Windows.Forms.Button _crudDialogButton;
-		private Hydrogen.Windows.Forms.Crud.CrudComboBox _crudComboBox;
+		private Sphere10.Framework.Windows.Forms.Crud.CrudComboBox _crudComboBox;
 		private System.Windows.Forms.CheckBox _generateCreateErrorCheckBox;
 		private System.Windows.Forms.CheckBox _generateUpdateErrorCheckBox;
 		private System.Windows.Forms.Button _selectFirstEntityButton;
@@ -315,3 +315,5 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 	}
 }
+
+

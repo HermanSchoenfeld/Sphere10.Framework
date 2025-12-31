@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ListEqualityComparer<T> : IEqualityComparer<IList<T>> {
 	private readonly IEqualityComparer<T> _itemComparer;
@@ -24,3 +24,4 @@ public class ListEqualityComparer<T> : IEqualityComparer<IList<T>> {
 		=> obj.Select(x => HashCode.Combine(x)).Aggregate(HashCode.Combine(obj), HashCode.Combine);
 
 }
+

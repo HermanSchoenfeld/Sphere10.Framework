@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Hydrogen.DApp.Host": {
+    "Sphere10.Framework.DApp.Host": {
       "commandName": "Project",
       "commandLineArgs": "--development",
       "nativeDebugging": true

@@ -16,7 +16,8 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM.
 
 [assembly: Guid("bc7dbc34-2fd6-468f-9850-bdba9515e1a8")]
-[assembly: InternalsVisibleTo("Hydrogen.Tests")]
-[assembly: InternalsVisibleTo("Hydrogen.NUnit")]
-[assembly: InternalsVisibleTo("Hydrogen.Application")]
-[assembly: InternalsVisibleTo("Hydrogen.Application.Tests")]
+[assembly: InternalsVisibleTo("Sphere10.Framework.Tests")]
+[assembly: InternalsVisibleTo("Sphere10.Framework.NUnit")]
+[assembly: InternalsVisibleTo("Sphere10.Framework.Application")]
+[assembly: InternalsVisibleTo("Sphere10.Framework.Application.Tests")]
+

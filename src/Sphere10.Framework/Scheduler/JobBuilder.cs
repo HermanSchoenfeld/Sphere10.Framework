@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class JobBuilder<T> where T : BaseJob {
 	internal readonly T Job;
@@ -63,3 +63,4 @@ public class JobBuilder : JobBuilder<BaseJob> {
 		return new JobBuilder(new SchedulerJob(jobType));
 	}
 }
+

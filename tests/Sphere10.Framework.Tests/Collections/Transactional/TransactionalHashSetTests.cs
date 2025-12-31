@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 public class TransactionalHashSetTests : SetTestsBase {
@@ -26,7 +26,7 @@ public class TransactionalHashSetTests : SetTestsBase {
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		var serializer = ItemSerializer<TValue>.Default;
-		var hashset = new TransactionalHashSet<TValue>(HydrogenFileDescriptor.From(file, dir), serializer, comparer: comparer);
+		var hashset = new TransactionalHashSet<TValue>(Sphere10FrameworkFileDescriptor.From(file, dir), serializer, comparer: comparer);
 		if (hashset.RequiresLoad)
 			hashset.Load();
 		set = hashset;
@@ -34,3 +34,5 @@ public class TransactionalHashSetTests : SetTestsBase {
 
 	}
 }
+
+

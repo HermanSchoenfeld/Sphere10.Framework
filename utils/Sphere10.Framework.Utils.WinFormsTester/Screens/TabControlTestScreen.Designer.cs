@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="TabControlTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester
+namespace Sphere10.Framework.Utils.WinFormsTester
 {
     partial class TabControlTestScreen
     {
@@ -48,7 +48,7 @@ namespace Hydrogen.Utils.WinFormsTester
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.tabControlTestControl1 = new Hydrogen.Utils.WinFormsTester.TabControlTestControl();
+            this.tabControlTestControl1 = new Sphere10.Framework.Utils.WinFormsTester.TabControlTestControl();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -163,3 +163,5 @@ namespace Hydrogen.Utils.WinFormsTester
         private System.Windows.Forms.Label label1;
     }
 }
+
+

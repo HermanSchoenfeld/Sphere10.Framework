@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 	partial class DatabaseConnectionPanel {
 		/// <summary> 
 		/// Required designer variable.
@@ -31,7 +31,7 @@ namespace Hydrogen.Windows.Forms {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-            this._dbmsCombo = new Hydrogen.Windows.Forms.EnumComboBox();
+            this._dbmsCombo = new Sphere10.Framework.Windows.Forms.EnumComboBox();
             this._connectionProviderPanel = new System.Windows.Forms.Panel();
             this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
@@ -115,8 +115,9 @@ namespace Hydrogen.Windows.Forms {
 		#endregion
 
 		protected System.Windows.Forms.Panel _connectionProviderPanel;
-		protected Hydrogen.Windows.Forms.EnumComboBox _dbmsCombo;
+		protected Sphere10.Framework.Windows.Forms.EnumComboBox _dbmsCombo;
         private System.Windows.Forms.TableLayoutPanel _tableLayoutPanel;
         private System.Windows.Forms.Label label2;
     }
 }
+

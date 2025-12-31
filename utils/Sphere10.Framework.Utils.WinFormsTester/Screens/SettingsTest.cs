@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,11 +9,11 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using Hydrogen.Application;
-using Hydrogen.Data;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Data;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class SettingsTest : ApplicationScreen {
 	private readonly TextWriter _outputWriter;
@@ -78,3 +78,5 @@ public class Test1Settings : SettingsObject {
 	[EncryptedString] public string Secret { get; set; } = "Hello!";
 
 }
+
+

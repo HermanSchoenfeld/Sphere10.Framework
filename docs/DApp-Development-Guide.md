@@ -1,6 +1,6 @@
-# Hydrogen DApp Development Guide
+﻿# Sphere10 Framework DApp Development Guide
 
-**Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.**
+**Copyright Â© 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.**
 
 ## Table of Contents
 
@@ -19,9 +19,9 @@
 
 ## Introduction
 
-### What is a Hydrogen DApp?
+### What is a Sphere10 Framework DApp?
 
-A **Hydrogen DApp (Decentralized Application)** is a blockchain-based application built on the Hydrogen framework that combines:
+A **Sphere10 Framework DApp (Decentralized Application)** is a blockchain-based application built on the Sphere10 Framework framework that combines:
 
 1. **Consensus Layer** - Agreement rules for validating transactions and blocks
 2. **Processing Layer** - Business logic and state transitions
@@ -29,7 +29,7 @@ A **Hydrogen DApp (Decentralized Application)** is a blockchain-based applicatio
 4. **Presentation Layer** - Blazor-based GUI for user interaction
 5. **Plugin System** - Extensibility for custom functionality
 
-### Why Build on Hydrogen?
+### Why Build on Sphere10 Framework?
 
 | Feature | Benefit |
 |---------|---------|
@@ -48,26 +48,26 @@ A **Hydrogen DApp (Decentralized Application)** is a blockchain-based applicatio
 ### High-Level Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│   User Interface (Blazor-based GUI)     │
-├─────────────────────────────────────────┤
-│   API Layer (JSON RPC)                  │
-├─────────────────────────────────────────┤
-│   DApp Processing Layer                 │
-│   ├── Consensus Rules                   │
-│   ├── State Transitions                 │
-│   └── Business Logic                    │
-├─────────────────────────────────────────┤
-│   Persistence Layer                     │
-│   ├── Blockchain (Consensus Database)   │
-│   ├── Object Spaces (State)              │
-│   └── Wallet Data                       │
-├─────────────────────────────────────────┤
-│   P2P Networking Layer                  │
-├─────────────────────────────────────────┤
-│   Hydrogen Framework (Collections,      │
-│   Crypto, Serialization, etc.)          │
-└─────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚   User Interface (Blazor-based GUI)     â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚   API Layer (JSON RPC)                  â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚   DApp Processing Layer                 â”‚
+â”‚   â”œâ”€â”€ Consensus Rules                   â”‚
+â”‚   â”œâ”€â”€ State Transitions                 â”‚
+â”‚   â””â”€â”€ Business Logic                    â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚   Persistence Layer                     â”‚
+â”‚   â”œâ”€â”€ Blockchain (Consensus Database)   â”‚
+â”‚   â”œâ”€â”€ Object Spaces (State)              â”‚
+â”‚   â””â”€â”€ Wallet Data                       â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚   P2P Networking Layer                  â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚   Sphere10 Framework Framework (Collections,      â”‚
+â”‚   Crypto, Serialization, etc.)          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### The Three-Tier Structure
@@ -97,7 +97,7 @@ DApps follow the [3-Tier Architecture](Guidelines/3-tier-Architecture.md):
 
 ## Core Components
 
-### 1. Hydrogen.DApp.Core
+### 1. Sphere10.Framework.DApp.Core
 
 **Purpose**: Core blockchain functionality and state management
 
@@ -146,7 +146,7 @@ public interface IDAppPlugin {
 }
 ```
 
-### 2. Hydrogen.DApp.Node
+### 2. Sphere10.Framework.DApp.Node
 
 **Purpose**: Full blockchain node with P2P networking and consensus
 
@@ -161,7 +161,7 @@ public interface IDAppPlugin {
 **Starting a Node**:
 
 ```csharp
-using Hydrogen.DApp.Node;
+using Sphere10.Framework.DApp.Node;
 
 var nodeConfig = new NodeConfiguration {
     Port = 8000,
@@ -178,18 +178,18 @@ await node.Start();
 // and begins consensus validation
 ```
 
-### 3. Hydrogen.DApp.Host
+### 3. Sphere10.Framework.DApp.Host
 
 **Purpose**: Process lifecycle management and application upgrading
 
 **Key Features**:
-- Loads HAP (Hydrogen Application Package)
+- Loads HAP (Sphere10 Framework Application Package)
 - Manages Node and GUI processes
 - Detects upgrade blocks on blockchain
 - Archives and deploys new HAPs
 - Handles inter-process communication via anonymous pipes
 
-### 4. Hydrogen.DApp.Presentation
+### 4. Sphere10.Framework.DApp.Presentation
 
 **Purpose**: Blazor-based GUI framework
 
@@ -207,8 +207,8 @@ await node.Start();
 ### Step 1: Define Your Consensus Rules
 
 ```csharp
-using Hydrogen.DApp.Core;
-using Hydrogen.CryptoEx;
+using Sphere10.Framework.DApp.Core;
+using Sphere10.Framework.CryptoEx;
 
 public class MyConsensusRules : ConsensusRulesBase {
     
@@ -256,7 +256,7 @@ public class MyConsensusRules : ConsensusRulesBase {
 ### Step 2: Define Your State Model
 
 ```csharp
-using Hydrogen.ObjectSpace;
+using Sphere10.Framework.ObjectSpace;
 
 // Define your application state that lives in object space
 public class ApplicationState {
@@ -276,7 +276,7 @@ public class AccountBalance {
 ### Step 3: Create Consensus Stream Handlers
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 public class ConsensusStreamProcessor {
     
@@ -324,7 +324,7 @@ public class ConsensusStreamProcessor {
 ### Step 4: Create Your DApp Class
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 public class MyDApp : DAppBase {
     
@@ -412,7 +412,7 @@ public class MyDApp : DAppBase {
 Plugins extend both Node and GUI without requiring core recompilation.
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 public class MyCustomPlugin : IDAppPlugin {
     
@@ -476,7 +476,7 @@ pluginHost.LoadPlugin(assembly.GetType("MyCustomPlugin.MyCustomPlugin"));
 ### Example: Creating a Token Domain
 
 ```csharp
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Core;
 
 // Define token data structure
 public class Token {
@@ -562,7 +562,7 @@ public class TokenProcessor {
 ### Implementing Proof-of-Work
 
 ```csharp
-using Hydrogen.CryptoEx;
+using Sphere10.Framework.CryptoEx;
 using System.Numerics;
 
 public class ProofOfWorkValidator {
@@ -669,7 +669,7 @@ public class ProofOfStakeValidator {
 ### Using Object Spaces for Distributed State
 
 ```csharp
-using Hydrogen.ObjectSpace;
+using Sphere10.Framework.ObjectSpace;
 
 // Define your consensus state
 public class DAppState : ConsensusState {
@@ -820,7 +820,7 @@ Before deploying to production:
 ### 1. Consensus Rule Safety
 
 ```csharp
-// ✅ DO: Return descriptive validation results
+// âœ… DO: Return descriptive validation results
 public ValidationResult ValidateTransaction(Transaction tx) {
     if (tx.Inputs.Count == 0)
         return ValidationResult.Failure("Transaction must have inputs");
@@ -831,7 +831,7 @@ public ValidationResult ValidateTransaction(Transaction tx) {
     return ValidationResult.Success();
 }
 
-// ❌ DON'T: Silent failures
+// âŒ DON'T: Silent failures
 public ValidationResult ValidateTransaction(Transaction tx) {
     try {
         // validation logic
@@ -845,7 +845,7 @@ public ValidationResult ValidateTransaction(Transaction tx) {
 ### 2. Plugin Safety
 
 ```csharp
-// ✅ DO: Validate plugin signatures
+// âœ… DO: Validate plugin signatures
 public void LoadPlugin(string pluginPath) {
     var signature = GetPluginSignature(pluginPath);
     if (!VerifySignature(signature, AllowedPublicKeys))
@@ -854,7 +854,7 @@ public void LoadPlugin(string pluginPath) {
     LoadAndExecutePlugin(pluginPath);
 }
 
-// ❌ DON'T: Load unsigned plugins
+// âŒ DON'T: Load unsigned plugins
 public void LoadPlugin(string pluginPath) {
     var assembly = Assembly.LoadFrom(pluginPath);
     // No signature verification
@@ -864,7 +864,7 @@ public void LoadPlugin(string pluginPath) {
 ### 3. State Consistency
 
 ```csharp
-// ✅ DO: Atomic state updates
+// âœ… DO: Atomic state updates
 public void ProcessBlock(Block block) {
     using (var transaction = _db.BeginTransaction()) {
         try {
@@ -879,7 +879,7 @@ public void ProcessBlock(Block block) {
     }
 }
 
-// ❌ DON'T: Partial updates
+// âŒ DON'T: Partial updates
 public void ProcessBlock(Block block) {
     foreach (var tx in block.Transactions) {
         ProcessTransaction(tx);  // No rollback if one fails
@@ -890,7 +890,7 @@ public void ProcessBlock(Block block) {
 ### 4. Performance Optimization
 
 ```csharp
-// ✅ DO: Batch operations
+// âœ… DO: Batch operations
 public void ProcessTransactions(List<Transaction> transactions) {
     using (var batch = _db.CreateBatch()) {
         foreach (var tx in transactions) {
@@ -902,7 +902,7 @@ public void ProcessTransactions(List<Transaction> transactions) {
     }
 }
 
-// ❌ DON'T: Individual operations
+// âŒ DON'T: Individual operations
 public void ProcessTransactions(List<Transaction> transactions) {
     foreach (var tx in transactions) {
         var account = _state.Accounts.Get(ExtractSender(tx));
@@ -915,7 +915,7 @@ public void ProcessTransactions(List<Transaction> transactions) {
 ### 5. Error Recovery
 
 ```csharp
-// ✅ DO: Graceful degradation
+// âœ… DO: Graceful degradation
 public ValidationResult SyncBlockchain() {
     try {
         return FullSync();
@@ -929,7 +929,7 @@ public ValidationResult SyncBlockchain() {
     }
 }
 
-// ❌ DON'T: Hard failures
+// âŒ DON'T: Hard failures
 public void SyncBlockchain() {
     FullSync();  // Crashes on any error
 }
@@ -939,8 +939,8 @@ public void SyncBlockchain() {
 
 ## Resources & References
 
-- [Hydrogen.DApp.Core README](../src/Hydrogen.DApp.Core/README.md)
-- [Hydrogen.DApp.Node README](../src/Hydrogen.DApp.Node/README.md)
+- [Sphere10.Framework.DApp.Core README](../src/Sphere10.Framework.DApp.Core/README.md)
+- [Sphere10.Framework.DApp.Node README](../src/Sphere10.Framework.DApp.Node/README.md)
 - [Consensus Documentation](Architecture/Runtime.md)
 - [Code Styling Guidelines](Guidelines/Code-Styling.md)
 
@@ -949,3 +949,4 @@ public void SyncBlockchain() {
 **Version**: 1.0  
 **Last Updated**: December 2025  
 **Author**: Sphere 10 Software
+

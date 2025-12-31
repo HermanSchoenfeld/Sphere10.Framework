@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class BloomFilterMath {
 
@@ -20,3 +20,4 @@ public static class BloomFilterMath {
 		return (int)Math.Round(-hashRounds * maxItems / Math.Log(1 - Math.Pow((double)targetError, 1.0D / hashRounds)));
 	}
 }
+

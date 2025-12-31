@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 /// <summary>
 /// Used as a wrapper for a IoC service activated filters.
@@ -21,3 +21,4 @@ public abstract class FilterFactoryBase<TFilter> : Attribute, IFilterFactory whe
 		=> serviceProvider.GetService<TFilter>();
 	public bool IsReusable => false;
 }
+

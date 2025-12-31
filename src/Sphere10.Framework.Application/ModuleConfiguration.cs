@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,14 +11,14 @@ using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.DRM;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public class ModuleConfiguration : ModuleConfigurationBase {
 
 	public override int Priority => int.MinValue; // last to execute
 
 	public override void RegisterComponents(IServiceCollection serviceCollection) {
-		if (HydrogenFramework.Instance.Options.HasFlag(HydrogenFrameworkOptions.EnableDrm))
+		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.EnableDrm))
 			EnableDRM(serviceCollection);
 		else
 			DisableDRM(serviceCollection);
@@ -101,7 +101,7 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>())
 			serviceCollection.AddTransient<IBackgroundLicenseVerifier, ClientBackgroundLicenseVerifier>();
 
-		if (HydrogenFramework.Instance.Options.HasFlag(HydrogenFrameworkOptions.BackgroundLicenseVerify))
+		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.BackgroundLicenseVerify))
 			serviceCollection.AddInitializer<VerifyLicenseInitializer>();
 	}
 
@@ -140,3 +140,4 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		base.OnFinalize(serviceProvider);
 	}
 }
+

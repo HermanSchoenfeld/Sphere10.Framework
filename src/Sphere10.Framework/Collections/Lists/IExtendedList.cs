@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public interface IExtendedList<T> : IExtendedCollection<T>, IReadOnlyExtendedList<T>, IWriteOnlyExtendedList<T>, IList<T> {
 	// Below interface methods resolve ambiguities between IReadOnlyExtendedList<T> and IList<T>
@@ -47,3 +47,4 @@ public static class IExtendedListExtensions {
 		return Tools.Collection.BinarySearch(list, value, 0, list.Count - 1, comparer.Compare);
 	}
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Cache tuned for session-style lifetimes that expire entries based on last access.
@@ -64,3 +64,4 @@ public class SessionCache<K, T> : CacheBase<K, T> {
 	protected override bool CheckStaleness(K key, CachedItem<T> item) => false;
 
 }
+

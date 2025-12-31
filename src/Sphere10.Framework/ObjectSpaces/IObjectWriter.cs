@@ -1,8 +1,8 @@
-﻿//using System;
+//using System;
 //using System.Collections.Generic;
 //using System.Text;
 
-//namespace Hydrogen;
+//namespace Sphere10.Framework;
 
 //public class IObjectPersistor {
 
@@ -11,4 +11,5 @@
 //	internal TItem Read(long byteSize, EndianBinaryReader reader);
 
 //}
+
 

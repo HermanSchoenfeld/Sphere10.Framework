@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.Services;
-using Hydrogen.DApp.Presentation.ViewModels;
+using Sphere10.Framework.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.ViewModels;
 
-namespace Hydrogen.DApp.Presentation.Loader.ViewModels;
+namespace Sphere10.Framework.DApp.Presentation.Loader.ViewModels;
 
 /// <summary>
 /// View model for servers page.
@@ -91,3 +91,5 @@ public class ServersViewModel : ComponentViewModelBase {
 public class NewServer {
 	[Required(AllowEmptyStrings = false)] public string? Uri { get; set; }
 }
+
+

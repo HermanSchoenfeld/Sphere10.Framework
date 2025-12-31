@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class ProjectedReadOnlyDictionary<TKey, TValue, TProjectedKey, TProjectedValue> : IReadOnlyDictionary<TProjectedKey, TProjectedValue> {
 	private readonly IReadOnlyDictionary<TKey, TValue> _source;
@@ -46,3 +46,4 @@ public sealed class ProjectedReadOnlyDictionary<TKey, TValue, TProjectedKey, TPr
 	public TProjectedValue this[TProjectedKey key] => _valueProjection(_source[_inverseKeyProjection(key)]);
 
 }
+

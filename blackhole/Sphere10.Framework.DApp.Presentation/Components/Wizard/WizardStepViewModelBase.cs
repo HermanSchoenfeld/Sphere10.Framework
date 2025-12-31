@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.ViewModels;
+using Sphere10.Framework.DApp.Presentation.ViewModels;
 
-namespace Hydrogen.DApp.Presentation.Components.Wizard;
+namespace Sphere10.Framework.DApp.Presentation.Components.Wizard;
 
 public abstract class WizardStepViewModelBase<TModel> : ComponentViewModelBase {
 	/// <summary>
@@ -36,3 +36,5 @@ public abstract class WizardStepViewModelBase<TModel> : ComponentViewModelBase {
 	/// <returns> whether or not to progress</returns>
 	public abstract Task<Result> OnPreviousAsync();
 }
+
+

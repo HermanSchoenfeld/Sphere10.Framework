@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 public class SingleMember : IAccessor {
 
 	public SingleMember(Member member) {
@@ -43,3 +43,4 @@ public class SingleMember : IAccessor {
 		return new SingleMember(member);
 	}
 }
+

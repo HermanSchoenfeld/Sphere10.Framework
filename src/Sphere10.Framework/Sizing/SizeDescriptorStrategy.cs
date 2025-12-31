@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public enum SizeDescriptorStrategy {
 
@@ -27,3 +27,4 @@ public static class SizeDescriptorStrategyExtensions {
 		};
 	}
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [Parallelizable]
 public class SortedListTests {
@@ -33,3 +33,4 @@ public class SortedListTests {
 		sortedList.Should().BeEquivalentTo(new[] { 5, 5, 4, 3, 2, 1, 1 });
 	}
 }
+

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Hydrogen.FastReflection;
-using Hydrogen.Mapping;
+using Sphere10.Framework.FastReflection;
+using Sphere10.Framework.Mapping;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Builds a serializer for a given type by allowing the client to determine individual member serializers.
@@ -274,3 +274,4 @@ public abstract class SerializerBuilder {
 	}
 
 }
+

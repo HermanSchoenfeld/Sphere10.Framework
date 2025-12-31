@@ -316,3 +316,4 @@ namespace HashLib4CSharp.Hash64
             };
     }
 }
+

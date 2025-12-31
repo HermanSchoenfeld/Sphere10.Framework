@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Globalization;
-using Hydrogen.Application;
-using Hydrogen.Windows.Forms.Components.BlockFramework;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Windows.Forms.Components.BlockFramework;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// Application UIs can be presented as a screen. It is a proxy ApplicationServiceProvider
@@ -143,3 +143,4 @@ public class ApplicationScreen : ApplicationControl, IHelpableObject {
 		ScreenDestroyed?.Invoke(this, EventArgs.Empty);
 	}
 }
+

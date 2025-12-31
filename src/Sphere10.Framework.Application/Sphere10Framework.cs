@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,9 +13,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
-public class HydrogenFramework {
+public class Sphere10Framework {
 	private readonly object _threadLock;
 	private bool _registeredModules;
 	private bool _frameworkOwnsServicesProvider;
@@ -27,11 +27,11 @@ public class HydrogenFramework {
 
 	public event EventHandlerEx<ProductInformation, ProductInformation> VersionChangeDetected;
 
-	static HydrogenFramework() {
-		Instance = new HydrogenFramework();
+	static Sphere10Framework() {
+		Instance = new Sphere10Framework();
 	}
 
-	public HydrogenFramework() {
+	public Sphere10Framework() {
 		IsStarted = false;
 		_registeredModules = false;
 		_frameworkOwnsServicesProvider = false;
@@ -49,13 +49,13 @@ public class HydrogenFramework {
 		);
 	}
 
-	public static HydrogenFramework Instance { get; }
+	public static Sphere10Framework Instance { get; }
 
 	public IServiceProvider ServiceProvider { get; private set; }
 
 	public bool IsStarted { get; private set; }
 
-	public HydrogenFrameworkOptions Options { get; private set; }
+	public Sphere10FrameworkOptions Options { get; private set; }
 
 	private IFuture<ICoreModuleConfiguration[]> ModuleConfigurations { get; set; }
 
@@ -69,10 +69,10 @@ public class HydrogenFramework {
 		return serviceCollection;
 	}
 
-	public void StartFramework(HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default)
+	public void StartFramework(Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default)
 		=> StartFramework(_ => { }, options);
 
-	public void StartFramework(Action<IServiceCollection> configure, HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default) {
+	public void StartFramework(Action<IServiceCollection> configure, Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default) {
 		Options = options;
 		var serviceCollection = new ServiceCollection();
 		configure?.Invoke(serviceCollection);
@@ -81,10 +81,10 @@ public class HydrogenFramework {
 		_frameworkOwnsServicesProvider = true;
 	}
 
-	public void StartFramework(IServiceProvider serviceProvider, HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default) {
+	public void StartFramework(IServiceProvider serviceProvider, Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default) {
 		CheckNotStarted();
 		Guard.Ensure(_registeredModules, "Modules have not been registered");
-		Guard.Against(IsStarted, "Hydrogen framework has already been started");
+		Guard.Against(IsStarted, "Sphere10.Framework framework has already been started");
 		Options = options;
 		ServiceProvider = serviceProvider;
 		Initializing?.Invoke();
@@ -167,11 +167,12 @@ public class HydrogenFramework {
 
 	private void CheckStarted() {
 		if (!IsStarted)
-			throw new InvalidOperationException("Hydrogen Framework was not started");
+			throw new InvalidOperationException("Sphere10.Framework Framework was not started");
 	}
 
 	private void CheckNotStarted() {
 		if (IsStarted)
-			throw new InvalidOperationException("Hydrogen Framework is already started");
+			throw new InvalidOperationException("Sphere10.Framework Framework is already started");
 	}
 }
+

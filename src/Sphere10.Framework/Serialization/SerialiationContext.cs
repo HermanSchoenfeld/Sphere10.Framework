@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class SerializationContext : SyncScope {
 
@@ -268,3 +268,4 @@ public sealed class SerializationContext : SyncScope {
 	#endregion
 
 }
+

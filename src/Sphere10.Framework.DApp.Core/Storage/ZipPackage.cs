@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.IO.Compression;
 using System.Linq;
 
 
-namespace Hydrogen.DApp.Core.Storage;
+namespace Sphere10.Framework.DApp.Core.Storage;
 
 public class ZipPackage : KeyValueStoreBase<string> {
 	protected FileStream _stream;
@@ -95,3 +95,4 @@ public class ZipPackage : KeyValueStoreBase<string> {
 	}
 
 }
+

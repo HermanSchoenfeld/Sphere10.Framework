@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -13,9 +13,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A set implementation of <see cref="IStreamMappedHashSet{TItem}" and <see cref="IMerkleSet{TItem}"/>. />
@@ -56,10 +56,10 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 		CHF hashAlgorithm = CHF.SHA2_256,
 		IEqualityComparer<TItem> comparer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
-		string merkleTreeIndexName = HydrogenDefaults.DefaultMerkleTreeIndexName,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName,
-		Endianness endianness = HydrogenDefaults.Endianness,
+		string merkleTreeIndexName = Sphere10FrameworkDefaults.DefaultMerkleTreeIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness,
 		bool autoLoad = false
 	) : this(
 		rootStream,
@@ -85,9 +85,9 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 		CHF hashAlgorithm,
 		IEqualityComparer<TItem> comparer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
-		string merkleTreeIndexName = HydrogenDefaults.DefaultMerkleTreeIndexName,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName,
+		string merkleTreeIndexName = Sphere10FrameworkDefaults.DefaultMerkleTreeIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false
 	) : this(
@@ -126,3 +126,5 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 	}
 
 }
+
+

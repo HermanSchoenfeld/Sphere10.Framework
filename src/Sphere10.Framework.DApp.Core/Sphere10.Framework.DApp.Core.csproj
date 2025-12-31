@@ -27,10 +27,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
-		<ProjectReference Include="..\Hydrogen.Communications\Hydrogen.Communications.csproj" />
-		<ProjectReference Include="..\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
-		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

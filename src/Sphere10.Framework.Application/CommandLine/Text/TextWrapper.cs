@@ -162,3 +162,4 @@ public class TextWrapper {
 			: str.Substring(0, n);
 	}
 }
+

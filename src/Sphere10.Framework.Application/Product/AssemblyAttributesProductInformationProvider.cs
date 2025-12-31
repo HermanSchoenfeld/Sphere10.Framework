@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public class AssemblyAttributesProductInformationProvider : IProductInformationProvider {
 	private ProductInformation _productInformation;
@@ -30,26 +30,27 @@ public class AssemblyAttributesProductInformationProvider : IProductInformationP
 
 	protected ProductInformation GetProductInformation() {
 
-		var version = ApplicationVersion.Parse(HydrogenAssemblyAttributesHelper.GetAssemblyVersion());
-		version.Distribution = HydrogenAssemblyAttributesHelper.GetAssemblyProductDistribution() ?? ProductDistribution.ReleaseCandidate;
+		var version = ApplicationVersion.Parse(Sphere10AssemblyAttributesHelper.GetAssemblyVersion());
+		version.Distribution = Sphere10AssemblyAttributesHelper.GetAssemblyProductDistribution() ?? ProductDistribution.ReleaseCandidate;
 
 		return new ProductInformation {
-			CompanyName = HydrogenAssemblyAttributesHelper.GetAssemblyCompany() ?? string.Empty,
-			CompanyNumber = HydrogenAssemblyAttributesHelper.GetAssemblyCompanyNumber() ?? string.Empty,
-			CompanyUrl = HydrogenAssemblyAttributesHelper.GetAssemblyCompanyLink() ?? string.Empty,
-			CopyrightNotice = HydrogenAssemblyAttributesHelper.GetAssemblyCopyright() ?? string.Empty,
-			DefaultProductLicense = HydrogenAssemblyAttributesHelper.GetAssemblyDefaultProductLicenseActivation(),
-			ProductDrmApiUrl = HydrogenAssemblyAttributesHelper.GetProductDrmApi() ?? string.Empty,
-			ProductCode = HydrogenAssemblyAttributesHelper.GetAssemblyProductCode() ?? Guid.Empty,
-			ProductDescription = HydrogenAssemblyAttributesHelper.GetAssemblyDescription() ?? string.Empty,
-			ProductName = HydrogenAssemblyAttributesHelper.GetAssemblyProduct() ?? string.Empty,
-			ProductPurchaseUrl = HydrogenAssemblyAttributesHelper.GetAssemblyProductPurchaseLink() ?? string.Empty,
-			ProductUrl = HydrogenAssemblyAttributesHelper.GetAssemblyProductLink() ?? string.Empty,
-			AuthorName = HydrogenAssemblyAttributesHelper.GetAssemblyAuthorName() ?? string.Empty,
-			AuthorEmail = HydrogenAssemblyAttributesHelper.GetAssemblyAuthorEmail() ?? string.Empty,
+			CompanyName = Sphere10AssemblyAttributesHelper.GetAssemblyCompany() ?? string.Empty,
+			CompanyNumber = Sphere10AssemblyAttributesHelper.GetAssemblyCompanyNumber() ?? string.Empty,
+			CompanyUrl = Sphere10AssemblyAttributesHelper.GetAssemblyCompanyLink() ?? string.Empty,
+			CopyrightNotice = Sphere10AssemblyAttributesHelper.GetAssemblyCopyright() ?? string.Empty,
+			DefaultProductLicense = Sphere10AssemblyAttributesHelper.GetAssemblyDefaultProductLicenseActivation(),
+			ProductDrmApiUrl = Sphere10AssemblyAttributesHelper.GetProductDrmApi() ?? string.Empty,
+			ProductCode = Sphere10AssemblyAttributesHelper.GetAssemblyProductCode() ?? Guid.Empty,
+			ProductDescription = Sphere10AssemblyAttributesHelper.GetAssemblyDescription() ?? string.Empty,
+			ProductName = Sphere10AssemblyAttributesHelper.GetAssemblyProduct() ?? string.Empty,
+			ProductPurchaseUrl = Sphere10AssemblyAttributesHelper.GetAssemblyProductPurchaseLink() ?? string.Empty,
+			ProductUrl = Sphere10AssemblyAttributesHelper.GetAssemblyProductLink() ?? string.Empty,
+			AuthorName = Sphere10AssemblyAttributesHelper.GetAssemblyAuthorName() ?? string.Empty,
+			AuthorEmail = Sphere10AssemblyAttributesHelper.GetAssemblyAuthorEmail() ?? string.Empty,
 			ProductVersion = version,
-			HelpResources = HydrogenAssemblyAttributesHelper.GetAssemblyProductHelpResources()
+			HelpResources = Sphere10AssemblyAttributesHelper.GetAssemblyProductHelpResources()
 		};
 	}
 
 }
+

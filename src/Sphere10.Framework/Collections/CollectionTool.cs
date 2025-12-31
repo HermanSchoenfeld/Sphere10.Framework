@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -13,8 +13,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Hydrogen;
-using Void = Hydrogen.Void;
+using Sphere10.Framework;
+using Void = Sphere10.Framework.Void;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -233,7 +233,7 @@ public static class Collection {
 	}
 
 	/// <summary>
-	/// Validates a 64-bit length value can fit within 32-bit addressing used by Hydrogen collections.
+	/// Validates a 64-bit length value can fit within 32-bit addressing used by Sphere10.Framework collections.
 	/// </summary>
 	/// <param name="value">The length to validate.</param>
 	/// <returns>The input value cast to <see cref="int"/> if within range.</returns>
@@ -241,10 +241,10 @@ public static class Collection {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CheckNotImplemented64bitAddressingLength(long value) {
 		if (value < int.MinValue)
-			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Sphere10.Framework");
 
 		if (value > int.MaxValue)
-			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Sphere10.Framework");
 
 		unchecked {
 			return (int)value;
@@ -253,7 +253,7 @@ public static class Collection {
 
 
 	/// <summary>
-	/// Validates a 64-bit index value can fit within 32-bit addressing used by Hydrogen collections.
+	/// Validates a 64-bit index value can fit within 32-bit addressing used by Sphere10.Framework collections.
 	/// </summary>
 	/// <param name="value">The index to validate.</param>
 	/// <returns>The input value cast to <see cref="int"/> if within range.</returns>
@@ -261,10 +261,10 @@ public static class Collection {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static int CheckNotImplemented64bitAddressingIndex(long value) {
 		if (value < int.MinValue)
-			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Sphere10.Framework");
 
 		if (value > int.MaxValue)
-			throw new NotImplementedException("64-bit addressing is not currently implemented in Hydrogen");
+			throw new NotImplementedException("64-bit addressing is not currently implemented in Sphere10.Framework");
 
 		unchecked {
 			return (int)value;
@@ -273,7 +273,7 @@ public static class Collection {
 
 
 	/// <summary>
-	/// Resizes an array while enforcing Hydrogen's large-array limitations.
+	/// Resizes an array while enforcing Sphere10.Framework's large-array limitations.
 	/// </summary>
 	/// <typeparam name="T">The element type.</typeparam>
 	/// <param name="internalArray">The array reference to resize.</param>
@@ -284,7 +284,8 @@ public static class Collection {
 		if (length <= int.MaxValue) {
 			System.Array.Resize(ref internalArray, checked((int)length));
 		} else if (length != internalArray.LongLength) {	
-			throw new NotSupportedException("Huge-arrays are not currently supported in Hydrogen");
+			throw new NotSupportedException("Huge-arrays are not currently supported in Sphere10.Framework");
 		}
 	}
 }
+

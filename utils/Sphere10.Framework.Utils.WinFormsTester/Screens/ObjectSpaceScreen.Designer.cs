@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ScreenA.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,9 +11,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester
+namespace Sphere10.Framework.Utils.WinFormsTester
 {
     partial class ObjectSpaceScreen
     {
@@ -107,3 +107,5 @@ namespace Hydrogen.Utils.WinFormsTester
 		private System.Windows.Forms.TextBox textBox1;
 	}
 }
+
+

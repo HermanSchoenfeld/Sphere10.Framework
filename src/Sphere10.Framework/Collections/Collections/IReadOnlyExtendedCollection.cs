@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public interface IReadOnlyExtendedCollection<T> : IReadOnlyCollection<T> {
 	bool Contains(T item);
@@ -17,3 +17,4 @@ public interface IReadOnlyExtendedCollection<T> : IReadOnlyCollection<T> {
 
 	void CopyTo(T[] array, int arrayIndex);
 }
+

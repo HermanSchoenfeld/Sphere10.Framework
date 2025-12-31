@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A recursive data type is a data type for values that may contain other values of the same type. Data of recursive types is usually viewed as directed acyclic graphs.
@@ -121,4 +121,5 @@ public class RecursiveDataType<TState> : IEquatable<RecursiveDataType<TState>> {
 		return HashCode.Combine(_subStates.Select(x => x.GetHashCode()), State);
 	}
 }
+
 

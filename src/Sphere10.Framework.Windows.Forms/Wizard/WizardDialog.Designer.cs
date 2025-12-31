@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
     partial class WizardDialog<T> {
         /// <summary>
         /// Required designer variable.
@@ -34,7 +34,7 @@ namespace Hydrogen.Windows.Forms {
 			this._nextButton = new System.Windows.Forms.Button();
 			this._previousButton = new System.Windows.Forms.Button();
 			this._contentPanel = new System.Windows.Forms.Panel();
-			this.loadingCircle1 = new Hydrogen.Windows.Forms.LoadingCircle();
+			this.loadingCircle1 = new Sphere10.Framework.Windows.Forms.LoadingCircle();
 			this.SuspendLayout();
 			// 
 			// _nextButton
@@ -87,7 +87,7 @@ namespace Hydrogen.Windows.Forms {
 			this.loadingCircle1.RotationSpeed = 100;
 			this.loadingCircle1.Size = new System.Drawing.Size(35, 28);
 			this.loadingCircle1.SpokeThickness = 2;
-			this.loadingCircle1.StylePreset = Hydrogen.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
+			this.loadingCircle1.StylePreset = Sphere10.Framework.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
 			this.loadingCircle1.TabIndex = 5;
 			this.loadingCircle1.Text = "_loadingCircle";
 			this.loadingCircle1.Visible = false;
@@ -118,3 +118,4 @@ namespace Hydrogen.Windows.Forms {
         private LoadingCircle loadingCircle1;
     }
 }
+

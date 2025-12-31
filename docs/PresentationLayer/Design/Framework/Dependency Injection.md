@@ -1,16 +1,16 @@
-# Dependency Injection
+﻿# Dependency Injection
 
 Blazor is based around .NET Core dependency injection and the Microsoft `IServicesCollection` + `IServiceProvider` container. Using this main container, dependencies can be provided automatically to views as they're rendered. 
 
 ## Framework Services
 
-Framework services are registered in `Hydrogen.DApp.Presentation.Loader` `Program.cs` as part of the `Host` build up process. 
+Framework services are registered in `Sphere10.Framework.DApp.Presentation.Loader` `Program.cs` as part of the `Host` build up process. 
 
 
 
 ## View Model registration
 
-View Model automatic registration is supported through a naming convention-based type scanning process. A extension method to `IServiceCollection` is available in the `Hydrogen.DApp.Presentation ` namespace:
+View Model automatic registration is supported through a naming convention-based type scanning process. A extension method to `IServiceCollection` is available in the `Sphere10.Framework.DApp.Presentation ` namespace:
 
 ```c#
 public static IServiceCollection AddViewModelsFromAssembly(this IServiceCollection serviceCollection,
@@ -34,3 +34,4 @@ protected abstract void ConfigureServicesInternal(IServiceCol
 ```
 
 See [Plugins](./Plugins.md) for more information. 
+

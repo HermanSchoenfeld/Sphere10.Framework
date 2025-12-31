@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,10 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.DApp.Presentation.ViewModels;
-using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Services;
+using Sphere10.Framework.DApp.Presentation.ViewModels;
+using Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.Services;
 
-namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.ViewModels;
+namespace Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.ViewModels;
 
 public class WidgetGalleryViewModel : ComponentViewModelBase {
 	public IRandomNumberService NumberService { get; }
@@ -18,3 +18,5 @@ public class WidgetGalleryViewModel : ComponentViewModelBase {
 		NumberService = numberService;
 	}
 }
+
+

@@ -1,4 +1,4 @@
-﻿namespace Hydrogen.Utils.WorkflowTester
+namespace Sphere10.Framework.Utils.WorkflowTester
 {
 	partial class WorkflowTestForm
 	{
@@ -225,3 +225,4 @@
 		private CheckBox _cancelSubscriptionCheckBox;
 	}
 }
+

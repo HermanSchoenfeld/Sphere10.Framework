@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,12 +9,12 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Hydrogen.Communications;
-using Hydrogen.DApp.Core;
-using Hydrogen.DApp.Core.Consensus;
-using Hydrogen.DApp.Core.Maths;
+using Sphere10.Framework.Communications;
+using Sphere10.Framework.DApp.Core;
+using Sphere10.Framework.DApp.Core.Consensus;
+using Sphere10.Framework.DApp.Core.Maths;
 
-namespace Hydrogen.DApp.Node.RPC;
+namespace Sphere10.Framework.DApp.Node.RPC;
 
 //TODO: make surogate byte[] values end by 'Hash' so rhminer can identify then as byte array automaticaly
 [Serializable]
@@ -112,3 +112,4 @@ public class NewMinerBlockSurogate {
 		return block;
 	}
 }
+

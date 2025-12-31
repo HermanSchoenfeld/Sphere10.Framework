@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Terminal.Gui;
 
-namespace Hydrogen.DApp.Node.UI;
+namespace Sphere10.Framework.DApp.Node.UI;
 
 public abstract class Screen : View {
 	private bool _initialized;
@@ -181,3 +181,4 @@ public abstract class Screen<T> : Screen {
 	public virtual void OnModelChanged() {
 	}
 }
+

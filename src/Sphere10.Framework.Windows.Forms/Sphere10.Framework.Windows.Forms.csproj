@@ -5,8 +5,8 @@
 		<OutputType>Library</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
-		<AssemblyName>Hydrogen.Windows.Forms</AssemblyName>
-		<RootNamespace>Hydrogen.Windows.Forms</RootNamespace>
+		<AssemblyName>Sphere10.Framework.Windows.Forms</AssemblyName>
+		<RootNamespace>Sphere10.Framework.Windows.Forms</RootNamespace>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
@@ -64,11 +64,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
-		<ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj" />
-		<ProjectReference Include="..\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
-		<ProjectReference Include="..\Hydrogen.Windows\Hydrogen.Windows.csproj" />
-		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Data\Sphere10.Framework.Data.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Drawing\Sphere10.Framework.Drawing.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Windows\Sphere10.Framework.Windows.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -485,7 +485,7 @@
 			<SubType>Designer</SubType>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
 			<Generator>PublicResXFileCodeGenerator</Generator>
-			<CustomToolNamespace>Hydrogen.Windows.Forms</CustomToolNamespace>
+			<CustomToolNamespace>Sphere10.Framework.Windows.Forms</CustomToolNamespace>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Wizard\WizardDialog.resx">
 			<DependentUpon>WizardDialog.cs</DependentUpon>

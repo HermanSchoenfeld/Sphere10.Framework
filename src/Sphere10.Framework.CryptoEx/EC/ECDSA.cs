@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -16,9 +16,9 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
-using Hydrogen.CryptoEx.EC.IES;
+using Sphere10.Framework.CryptoEx.EC.IES;
 
-namespace Hydrogen.CryptoEx.EC;
+namespace Sphere10.Framework.CryptoEx.EC;
 
 public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.PublicKey> {
 	private readonly ECDSAKeyType _keyType;
@@ -186,3 +186,4 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 
 	}
 }
+

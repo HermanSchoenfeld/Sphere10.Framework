@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Hydrogen.Maths.Compiler;
+namespace Sphere10.Framework.Maths.Compiler;
 
 public class FunctionDeclarationTree : SyntaxTree {
 	private List<Token> _parameters;
@@ -42,3 +42,4 @@ public class FunctionDeclarationTree : SyntaxTree {
 		return string.Format("FunctionDeclaration({0},Params({1}),{2})", Token.Value, paramsText.ToString(), _expression.ToString());
 	}
 }
+

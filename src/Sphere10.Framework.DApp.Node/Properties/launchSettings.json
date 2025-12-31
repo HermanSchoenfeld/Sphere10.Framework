@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "Hydrogen.DApp.Node": {
+    "Sphere10.Framework.DApp.Node": {
       "commandName": "Project",
       "nativeDebugging": true
     }

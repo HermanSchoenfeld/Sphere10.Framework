@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -11,14 +11,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Thread-safe producer/consumer queue with capacity tracking.
 /// </summary>
 /// <typeparam name="T">Item type.</typeparam>
 /// <remarks>
-/// See tests/Hydrogen.Tests/Collections/Queue/ProducerConsumerQueueTest.cs for usage patterns.
+/// See tests/Sphere10.Framework.Tests/Collections/Queue/ProducerConsumerQueueTest.cs for usage patterns.
 /// </remarks>
 public class ProducerConsumerQueue<T> : SyncDisposable {
 	private readonly object _threadLock;
@@ -294,3 +294,4 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 
 
 }
+

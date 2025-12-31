@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Hydrogen;
-using Hydrogen.DApp.Presentation.Models;
+using Sphere10.Framework;
+using Sphere10.Framework.DApp.Presentation.Models;
 
-namespace Hydrogen.DApp.Presentation.Components;
+namespace Sphere10.Framework.DApp.Presentation.Components;
 
 /// <summary>
 /// Search input component
@@ -82,3 +82,5 @@ public partial class SearchInput {
 		Throttle = new Throttle(TimeSpan.FromMilliseconds(SearchFreqLimitMs));
 	}
 }
+
+

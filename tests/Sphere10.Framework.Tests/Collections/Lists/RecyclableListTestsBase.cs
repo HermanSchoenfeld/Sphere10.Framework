@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,11 +12,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Hydrogen.NUnit;
+using Sphere10.Framework.NUnit;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public abstract class RecyclableListTestsBase {
 
@@ -157,3 +157,4 @@ public abstract class RecyclableListTestsBase {
 	//	);
 	//}
 }
+

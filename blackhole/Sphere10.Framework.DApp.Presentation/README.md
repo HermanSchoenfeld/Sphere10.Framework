@@ -1,12 +1,12 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🎨 Hydrogen.DApp.Presentation
+# 🎨 Sphere10.Framework.DApp.Presentation
 
 **Blazor component library** providing rich, reusable UI components for building responsive web interfaces for blockchain DApps.
 
 ## 📋 Overview
 
-`Hydrogen.DApp.Presentation` is a Razor component library providing a rich set of reusable Blazor components for building user interfaces for Hydrogen DApps. It includes dialogs, wizards, modals, grids, and other common UI patterns needed for blockchain applications.
+`Sphere10.Framework.DApp.Presentation` is a Razor component library providing a rich set of reusable Blazor components for building user interfaces for Sphere10 Framework DApps. It includes dialogs, wizards, modals, grids, and other common UI patterns needed for blockchain applications.
 
 ## 🏗️ Architecture
 
@@ -59,13 +59,15 @@ await ViewService.DialogAsync(content, "Dialog Title");
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **Microsoft.AspNetCore.Components**: Blazor component framework
 - **Microsoft.JSInterop**: JavaScript interop for interactive features
 
 ## � Related Projects
 
-- [Hydrogen.DApp.Presentation.Loader](./Hydrogen.DApp.Presentation.Loader) - WebAssembly host for this library
-- [Hydrogen.DApp.Presentation2](./Hydrogen.DApp.Presentation2) - Alternative presentation implementation
-- [Hydrogen.DApp.Presentation.WidgetGallery](./Hydrogen.DApp.Presentation.WidgetGallery) - Component showcase
-- [Hydrogen](../Hydrogen) - Core framework
+- [Sphere10.Framework.DApp.Presentation.Loader](./Sphere10.Framework.DApp.Presentation.Loader) - WebAssembly host for this library
+- [Sphere10.Framework.DApp.Presentation2](./Sphere10.Framework.DApp.Presentation2) - Alternative presentation implementation
+- [Sphere10.Framework.DApp.Presentation.WidgetGallery](./Sphere10.Framework.DApp.Presentation.WidgetGallery) - Component showcase
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+
+

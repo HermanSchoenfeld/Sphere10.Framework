@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,7 +13,7 @@ using NUnit.Framework;
 using System.IO;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -71,7 +71,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -176,7 +176,7 @@ public class TransactionalFileMappedBufferTests {
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
@@ -203,7 +203,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -335,7 +335,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -363,7 +363,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -396,7 +396,7 @@ public class TransactionalFileMappedBufferTests {
 		var originalData = RNG.NextBytes(pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
@@ -424,7 +424,7 @@ public class TransactionalFileMappedBufferTests {
 		var originalData = RNG.NextBytes(pageSize + pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
@@ -482,7 +482,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -515,7 +515,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -549,7 +549,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 10);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -587,7 +587,7 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 2); // create 2 pages of default data
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
+		var pagesDir = Path.Combine(baseDir, Sphere10FrameworkDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
@@ -932,3 +932,5 @@ public class TransactionalFileMappedBufferTests {
 
 
 }
+
+

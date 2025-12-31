@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Net.Sockets;
 using System.Net;
 
-namespace Hydrogen.Communications.RPC;
+namespace Sphere10.Framework.Communications.RPC;
 
 //Implement a TCP communication endpoint
 public class TcpEndPoint : IEndPoint {
@@ -84,3 +84,4 @@ public class TcpEndPoint : IEndPoint {
 		TcpSocket = null;
 	}
 }
+

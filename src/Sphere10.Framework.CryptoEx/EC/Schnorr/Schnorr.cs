@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -18,9 +18,9 @@ using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Math.EC.Multiplier;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities;
-using Hydrogen.CryptoEx.EC.IES;
+using Sphere10.Framework.CryptoEx.EC.IES;
 
-namespace Hydrogen.CryptoEx.EC.Schnorr;
+namespace Sphere10.Framework.CryptoEx.EC.Schnorr;
 
 //https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
 public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schnorr.PublicKey> {
@@ -460,3 +460,4 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class DRMAboutBox : ProductAboutBox {
 
@@ -24,7 +24,7 @@ public partial class DRMAboutBox : ProductAboutBox {
 	}
 
 	private void SetLicenseMessage() {
-		var productLicenseEnforcer = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
+		var productLicenseEnforcer = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
 		productLicenseEnforcer.CalculateRights(out var nag);
 		_expirationControl.Text = nag;
 	}
@@ -35,10 +35,11 @@ public partial class DRMAboutBox : ProductAboutBox {
 			form.ShowDialog();
 			SetLicenseMessage();
 		} catch (Exception error) {
-			var uiservices = HydrogenFramework.Instance.ServiceProvider.GetService<IUserInterfaceServices>();
+			var uiservices = Sphere10Framework.Instance.ServiceProvider.GetService<IUserInterfaceServices>();
 			uiservices.ReportError(error);
 		}
 	}
 
 
 }
+

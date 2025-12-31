@@ -1,16 +1,16 @@
-# Hydrogen Framework - Documentation Guide
+﻿# Sphere10 Framework Framework - Documentation Guide
 
-**Welcome to the Hydrogen Framework Documentation!**
+**Welcome to the Sphere10 Framework Framework Documentation!**
 
-This is your starting point for understanding the Hydrogen framework, its architecture, and how to use it.
+This is your starting point for understanding the Sphere10 Framework framework, its architecture, and how to use it.
 
 ## Quick Navigation
 
-### 📚 Essential Documentation
+### ðŸ“š Essential Documentation
 
-**New to Hydrogen?** Start here:
-1. [What is Hydrogen?](Architecture/Hydrogen.md#what-is-hydrogen) - Overview and core concepts
-2. [Framework Composition](Architecture/Hydrogen.md#framework-composition) - Three sub-frameworks explained
+**New to Sphere10 Framework?** Start here:
+1. [What is Sphere10 Framework?](Architecture/Sphere10.Framework.md#what-is-Sphere10 Framework) - Overview and core concepts
+2. [Framework Composition](Architecture/Sphere10.Framework.md#framework-composition) - Three sub-frameworks explained
 3. [3-Tier Architecture Guide](Guidelines/3-tier-Architecture.md) - Architectural principles
 
 **Understanding the System?** Read these:
@@ -20,58 +20,58 @@ This is your starting point for understanding the Hydrogen framework, its archit
 
 **Learning Blockchain Concepts?**
 - [What is Blockchain?](Education/What-is-Blockchain.md) - Comprehensive blockchain education
-- [Blockchain Consensus](Architecture/Runtime.md#consensus-mechanisms) - Consensus mechanisms in Hydrogen
-- [DApp Development](DApp-Development-Guide.md) - Building DApps on Hydrogen
+- [Blockchain Consensus](Architecture/Runtime.md#consensus-mechanisms) - Consensus mechanisms in Sphere10 Framework
+- [DApp Development](DApp-Development-Guide.md) - Building DApps on Sphere10 Framework
 
-### 🎯 By Use Case
+### ðŸŽ¯ By Use Case
 
 | Use Case | Start Here |
 |----------|-----------|
-| **Building a Blockchain DApp** | [Hydrogen.DApp.Core README](../src/Hydrogen.DApp.Core/README.md) |
-| **Creating a Node** | [Hydrogen.DApp.Node README](../src/Hydrogen.DApp.Node/README.md) |
-| **Building a UI/GUI** | [Hydrogen.DApp.Presentation README](../src/Hydrogen.DApp.Presentation/README.md) |
-| **Using Collections & Data** | [Hydrogen.Data README](../src/Hydrogen.Data/README.md) |
-| **Cryptography & Security** | [Hydrogen.CryptoEx README](../src/Hydrogen.CryptoEx/README.md) |
-| **Networking & RPC** | [Hydrogen.Communications README](../src/Hydrogen.Communications/README.md) |
-| **General Utilities** | [Hydrogen Core README](../src/Hydrogen/README.md) |
+| **Building a Blockchain DApp** | [Sphere10.Framework.DApp.Core README](../src/Sphere10.Framework.DApp.Core/README.md) |
+| **Creating a Node** | [Sphere10.Framework.DApp.Node README](../src/Sphere10.Framework.DApp.Node/README.md) |
+| **Building a UI/GUI** | [Sphere10.Framework.DApp.Presentation README](../src/Sphere10.Framework.DApp.Presentation/README.md) |
+| **Using Collections & Data** | [Sphere10.Framework.Data README](../src/Sphere10.Framework.Data/README.md) |
+| **Cryptography & Security** | [Sphere10.Framework.CryptoEx README](../src/Sphere10.Framework.CryptoEx/README.md) |
+| **Networking & RPC** | [Sphere10.Framework.Communications README](../src/Sphere10.Framework.Communications/README.md) |
+| **General Utilities** | [Sphere10 Framework Core README](../src/Sphere10 Framework/README.md) |
 
-### 📂 Documentation Structure
+### ðŸ“‚ Documentation Structure
 
 ```
 docs/
-├── Architecture/
-│   ├── Hydrogen.md           → Framework overview & vision
-│   ├── Domains.md            → Catalog of all domains
-│   ├── Runtime.md            → Deployment model & lifecycle
-│   └── resources/            → Diagrams and images
-├── Guidelines/
-│   ├── 3-tier-Architecture.md → Architectural patterns
-│   ├── Code-Styling.md       → Coding standards
-│   └── resources/            → Config files & images
-├── Education/
-│   ├── README.md             → Learning resources hub
-│   ├── What-is-Blockchain.md → Blockchain fundamentals
-│   └── resources/            → Educational diagrams
-├── Helium/
-│   ├── README.md             → ESB framework overview
-│   └── resources/            → Helium diagrams
-├── PresentationLayer/
-│   ├── Hydrogen-Requirements.md → UI requirements & design
-│   ├── Design/               → UI design specifications
-│   └── resources/            → UI mockups & designs
-└── START-HERE.md             ← You are here
+â”œâ”€â”€ Architecture/
+â”‚   â”œâ”€â”€ Sphere10.Framework.md           â†’ Framework overview & vision
+â”‚   â”œâ”€â”€ Domains.md            â†’ Catalog of all domains
+â”‚   â”œâ”€â”€ Runtime.md            â†’ Deployment model & lifecycle
+â”‚   â””â”€â”€ resources/            â†’ Diagrams and images
+â”œâ”€â”€ Guidelines/
+â”‚   â”œâ”€â”€ 3-tier-Architecture.md â†’ Architectural patterns
+â”‚   â”œâ”€â”€ Code-Styling.md       â†’ Coding standards
+â”‚   â””â”€â”€ resources/            â†’ Config files & images
+â”œâ”€â”€ Education/
+â”‚   â”œâ”€â”€ README.md             â†’ Learning resources hub
+â”‚   â”œâ”€â”€ What-is-Blockchain.md â†’ Blockchain fundamentals
+â”‚   â””â”€â”€ resources/            â†’ Educational diagrams
+â”œâ”€â”€ Helium/
+â”‚   â”œâ”€â”€ README.md             â†’ ESB framework overview
+â”‚   â””â”€â”€ resources/            â†’ Helium diagrams
+â”œâ”€â”€ PresentationLayer/
+â”‚   â”œâ”€â”€ Sphere10 Framework-Requirements.md â†’ UI requirements & design
+â”‚   â”œâ”€â”€ Design/               â†’ UI design specifications
+â”‚   â””â”€â”€ resources/            â†’ UI mockups & designs
+â””â”€â”€ START-HERE.md             â† You are here
 ```
 
 ## Documentation Topics
 
 ### Architecture & Design (docs/Architecture/)
 
-**[Hydrogen.md](Architecture/Hydrogen.md)**
-- What is Hydrogen and why it exists
-- Three sub-frameworks (Hydrogen, Helium, Hydrogen.DApp)
+**[Sphere10.Framework.md](Architecture/Sphere10.Framework.md)**
+- What is Sphere10 Framework and why it exists
+- Three sub-frameworks (Sphere10 Framework, Helium, Sphere10.Framework.DApp)
 - Key features and capabilities
 - Architecture layers and deployment model
-- Use cases and when to use Hydrogen
+- Use cases and when to use Sphere10 Framework
 
 **[Domains.md](Architecture/Domains.md)**
 - Complete reference of 30+ framework domains
@@ -80,7 +80,7 @@ docs/
 - Domain relationships and dependencies
 
 **[Runtime.md](Architecture/Runtime.md)**
-- Hydrogen Application Package (HAP) specification
+- Sphere10 Framework Application Package (HAP) specification
 - Host, Node, and GUI architecture
 - Application folder structure
 - HAP lifecycle and state transitions
@@ -133,14 +133,14 @@ docs/
 
 ## Quick Answer to Common Questions
 
-**Q: What is Hydrogen?**  
-A: Hydrogen is a comprehensive .NET framework for building distributed applications, originally designed for blockchain but applicable to any sophisticated system.
+**Q: What is Sphere10 Framework?**  
+A: Sphere10 Framework is a comprehensive .NET framework for building distributed applications, originally designed for blockchain but applicable to any sophisticated system.
 
-**Q: Should I use Hydrogen for my project?**  
-A: If you need advanced data structures, cryptography, multi-database support, or cross-platform capabilities—yes. See [Use Cases](Architecture/Hydrogen.md#use-cases).
+**Q: Should I use Sphere10 Framework for my project?**  
+A: If you need advanced data structures, cryptography, multi-database support, or cross-platform capabilitiesâ€”yes. See [Use Cases](Architecture/Sphere10.Framework.md#use-cases).
 
-**Q: How do I build a blockchain on Hydrogen?**  
-A: Start with [Hydrogen.DApp.Core](../src/Hydrogen.DApp.Core/README.md), review [Consensus documentation](Architecture/Runtime.md#consensus-mechanisms), and follow [DApp Development Guide](DApp-Development-Guide.md).
+**Q: How do I build a blockchain on Sphere10 Framework?**  
+A: Start with [Sphere10.Framework.DApp.Core](../src/Sphere10.Framework.DApp.Core/README.md), review [Consensus documentation](Architecture/Runtime.md#consensus-mechanisms), and follow [DApp Development Guide](DApp-Development-Guide.md).
 
 **Q: Where are the code examples?**  
 A: Each project's README in `/src/` contains extensive examples. Also check `/tests/` for working test patterns.
@@ -154,38 +154,38 @@ A: See [Code Styling Guide](Guidelines/Code-Styling.md) for comprehensive guidel
 **Q: How does in-protocol upgrading work?**  
 A: See [Runtime Model - Upgrade Mechanism](Architecture/Runtime.md#upgrade-mechanism).
 
-**Q: Can I use Hydrogen without blockchains?**  
-A: Absolutely! The base `Hydrogen.*` framework has no blockchain dependencies. Use just the parts you need.
+**Q: Can I use Sphere10 Framework without blockchains?**  
+A: Absolutely! The base `Sphere10.Framework.*` framework has no blockchain dependencies. Use just the parts you need.
 
 ## For Different Roles
 
-### 👨‍💻 Developers
+### ðŸ‘¨â€ðŸ’» Developers
 1. Read [3-Tier Architecture](Guidelines/3-tier-Architecture.md)
 2. Review [Code Styling Guidelines](Guidelines/Code-Styling.md)
 3. Explore domain-specific README files in `/src/`
 4. Check test files in `/tests/` for code patterns
 
-### 🏗️ Architects
-1. Understand [Hydrogen Framework Overview](Architecture/Hydrogen.md)
+### ðŸ—ï¸ Architects
+1. Understand [Sphere10 Framework Framework Overview](Architecture/Sphere10.Framework.md)
 2. Study [3-Tier Architecture & Design Patterns](Guidelines/3-tier-Architecture.md)
 3. Review [Domains Reference](Architecture/Domains.md)
 4. Examine [Runtime Model](Architecture/Runtime.md)
 
-### 🔗 DApp/Blockchain Builders
+### ðŸ”— DApp/Blockchain Builders
 1. Start with [What is Blockchain?](Education/What-is-Blockchain.md)
-2. Review [Hydrogen DApp Framework Components](Architecture/Hydrogen.md#3-hydrogen-dapp-framework)
+2. Review [Sphere10 Framework DApp Framework Components](Architecture/Sphere10.Framework.md#3-Sphere10 Framework-dapp-framework)
 3. Study [Runtime Model - HAP Lifecycle](Architecture/Runtime.md#hap-lifecycle)
-4. Explore [Hydrogen.DApp.Core](../src/Hydrogen.DApp.Core/README.md)
+4. Explore [Sphere10.Framework.DApp.Core](../src/Sphere10.Framework.DApp.Core/README.md)
 
-### 🎨 UI/Frontend Developers
-1. Review [Presentation Layer Requirements](PresentationLayer/Hydrogen-Requirements.md)
-2. Check [Blazor Component Guide](../src/Hydrogen.DApp.Presentation/README.md)
+### ðŸŽ¨ UI/Frontend Developers
+1. Review [Presentation Layer Requirements](PresentationLayer/Sphere10 Framework-Requirements.md)
+2. Check [Blazor Component Guide](../src/Sphere10.Framework.DApp.Presentation/README.md)
 3. Study responsive design in [Design docs](PresentationLayer/Design/)
 4. Explore widget library examples
 
-### 📚 System/Database Designers
+### ðŸ“š System/Database Designers
 1. Review [Data Tier Documentation](Guidelines/3-tier-Architecture.md#tier-3-data)
-2. Explore [Hydrogen.Data README](../src/Hydrogen.Data/README.md)
+2. Explore [Sphere10.Framework.Data README](../src/Sphere10.Framework.Data/README.md)
 3. Check database-specific READMEs (Sqlite, MSSQL, Firebird, NHibernate)
 4. Understand object spaces for distributed state
 
@@ -194,30 +194,30 @@ A: Absolutely! The base `Hydrogen.*` framework has no blockchain dependencies. U
 ### Path 1: General .NET Development
 ```
 3-Tier Architecture 
-  → Domains Overview
-  → Code Styling
-  → Project-specific READMEs
-  → Working Code Examples
+  â†’ Domains Overview
+  â†’ Code Styling
+  â†’ Project-specific READMEs
+  â†’ Working Code Examples
 ```
 
 ### Path 2: Blockchain DApp Development
 ```
 What is Blockchain
-  → Hydrogen Framework Overview
-  → Runtime Model
-  → Hydrogen.DApp.Core
-  → Hydrogen.DApp.Node
-  → DApp Development Guide
-  → Building Your First DApp
+  â†’ Sphere10 Framework Framework Overview
+  â†’ Runtime Model
+  â†’ Sphere10.Framework.DApp.Core
+  â†’ Sphere10.Framework.DApp.Node
+  â†’ DApp Development Guide
+  â†’ Building Your First DApp
 ```
 
 ### Path 3: Distributed Systems
 ```
-Hydrogen Overview
-  → Helium Framework
-  → Messaging Patterns
-  → Event Sourcing
-  → Building Distributed Systems
+Sphere10 Framework Overview
+  â†’ Helium Framework
+  â†’ Messaging Patterns
+  â†’ Event Sourcing
+  â†’ Building Distributed Systems
 ```
 
 ## Key Concepts to Understand
@@ -227,7 +227,7 @@ Hydrogen Overview
 | **Domain** | [3-Tier Architecture - Domains](Guidelines/3-tier-Architecture.md#domain) |
 | **Module** | [3-Tier Architecture - Modules](Guidelines/3-tier-Architecture.md#module) |
 | **3-Tier Architecture** | [Complete Guide](Guidelines/3-tier-Architecture.md) |
-| **HAP (Hydrogen Application Package)** | [Runtime Model](Architecture/Runtime.md#hydrogen-application-package-hap) |
+| **HAP (Sphere10 Framework Application Package)** | [Runtime Model](Architecture/Runtime.md#Sphere10 Framework-application-package-hap) |
 | **Host Protocol** | [Runtime Model - Host Protocol](Architecture/Runtime.md#host-protocol) |
 | **Plugin System** | [Runtime Model - Plugins](Architecture/Runtime.md#plugin-system) |
 | **Consensus Mechanisms** | [Runtime Model & Blockchain Ed](Education/What-is-Blockchain.md) |
@@ -252,10 +252,11 @@ Documentation is maintained alongside code. When code changes, documentation is 
 
 ## Copyright & License
 
-Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+Copyright Â© 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
 
 Licensed under the MIT NON-AI License. See LICENSE file for details.
 
 ---
 
-**Ready to dive in?** Start with [What is Hydrogen?](Architecture/Hydrogen.md)
+**Ready to dive in?** Start with [What is Sphere10 Framework?](Architecture/Sphere10.Framework.md)
+

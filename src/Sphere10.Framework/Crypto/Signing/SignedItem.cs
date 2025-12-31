@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public abstract record SignedItem {
 
@@ -34,7 +34,7 @@ public record SignedItem<T> : SignedItem {
 		set => base.Item = value;
 	}
 
-	public bool Verify(IItemSerializer<T> serializer, CHF chf, DSS dss, byte[] publicKey, ulong signerNonce = 0, Endianness endianness = HydrogenDefaults.Endianness)
+	public bool Verify(IItemSerializer<T> serializer, CHF chf, DSS dss, byte[] publicKey, ulong signerNonce = 0, Endianness endianness = Sphere10FrameworkDefaults.Endianness)
 		=> Verify(new ItemSigner<T>(new ItemDigestor<T>(chf, serializer, endianness), dss), publicKey);
 
 	public bool Verify(IItemHasher<T> digestor, IDigitalSignatureScheme dss, IPublicKey publicKey)
@@ -47,3 +47,5 @@ public record SignedItem<T> : SignedItem {
 		=> signer.Verify(Item, publicKey, Signature);
 
 }
+
+

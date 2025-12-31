@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Used to manage versioned serialization of objects by simply registering <see cref="SerializerFactory"/> instances
@@ -26,3 +26,4 @@ public class VersionedSerializers {
 		_versions[version] = serializer;
 	}
 }
+

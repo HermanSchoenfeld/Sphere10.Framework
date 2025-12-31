@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <AssemblyName>Hydrogen.Web.AspNetCore</AssemblyName>
-    <RootNamespace>Hydrogen.Web.AspNetCore</RootNamespace>
+    <AssemblyName>Sphere10.Framework.Web.AspNetCore</AssemblyName>
+    <RootNamespace>Sphere10.Framework.Web.AspNetCore</RootNamespace>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
@@ -30,9 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
-    <ProjectReference Include="..\..\..\Hydrogen\src\Hydrogen\Hydrogen.csproj" />
-    <ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Drawing\Sphere10.Framework.Drawing.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

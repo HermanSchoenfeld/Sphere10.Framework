@@ -27,7 +27,7 @@
 
 using System;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// A class that contains system defined settings for an XPExplorerBar
@@ -157,3 +157,4 @@ public class ExplorerBarInfo : IDisposable {
 
 
 }
+

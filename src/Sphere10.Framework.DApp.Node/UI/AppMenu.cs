@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.ComponentModel;
 
-namespace Hydrogen.DApp.Node.UI;
+namespace Sphere10.Framework.DApp.Node.UI;
 
 public enum AppMenu {
 	[Description("_File")] File,
@@ -23,3 +23,4 @@ public enum AppMenu {
 
 	[Description("_Development")] Development,
 }
+

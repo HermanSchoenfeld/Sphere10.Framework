@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections;
-using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public interface IStreamMappedCollection {
 	ObjectStream ObjectStream { get; }
@@ -14,3 +14,4 @@ public interface IStreamMappedCollection<TItem> : IStreamMappedCollection {
 	new ObjectStream<TItem> ObjectStream { get; }
 
 }
+

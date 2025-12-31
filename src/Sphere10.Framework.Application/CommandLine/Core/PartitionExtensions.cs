@@ -18,3 +18,4 @@ static class PartitionExtensions {
 		return Tuple.Create<IEnumerable<T>, IEnumerable<T>>(yes, no);
 	}
 }
+

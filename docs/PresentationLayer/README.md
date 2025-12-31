@@ -1,10 +1,10 @@
-# Hydrogen Presentation Layer Framework 🎨
+# Sphere10 Framework Presentation Layer Framework 🎨
 
 **Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.**
 
 ## Overview
 
-The **Hydrogen Presentation Layer** is an enterprise-grade Blazor-based UI framework for building blockchain applications. It provides:
+The **Sphere10 Framework Presentation Layer** is an enterprise-grade Blazor-based UI framework for building blockchain applications. It provides:
 
 - **Reusable Component Library** - Pre-built UI controls optimized for blockchain applications
 - **Plugin Architecture** - Extensible system for third-party UI extensions
@@ -25,18 +25,18 @@ The **Hydrogen Presentation Layer** is an enterprise-grade Blazor-based UI frame
 @inject INotificationService Notifications
 
 <div class="container">
-    <HydrogenCard Title="Wallet Balance">
+    <Sphere10Card Title="Wallet Balance">
         <div class="balance">
             <Amount Value="@Balance" Currency="HYD" />
         </div>
         
-        <HydrogenButton OnClick="@RefreshBalance">
+        <Sphere10Button OnClick="@RefreshBalance">
             Refresh Balance
-        </HydrogenButton>
-    </HydrogenCard>
+        </Sphere10Button>
+    </Sphere10Card>
     
-    <HydrogenDataGrid Items="@Transactions" Columns="@TransactionColumns">
-    </HydrogenDataGrid>
+    <Sphere10DataGrid Items="@Transactions" Columns="@TransactionColumns">
+    </Sphere10DataGrid>
 </div>
 
 @code {
@@ -66,7 +66,7 @@ The **Hydrogen Presentation Layer** is an enterprise-grade Blazor-based UI frame
 
 | Component | Purpose | Example |
 |-----------|---------|---------|
-| **HydrogenShell** | Main application frame | Hosts navigation, content, notifications |
+| **Sphere10Shell** | Main application frame | Hosts navigation, content, notifications |
 | **Sidebar** | Navigation menu | Links to different screens |
 | **TopBar** | Header with user info | Account selector, settings |
 | **Breadcrumb** | Navigation path | Shows current location |
@@ -75,7 +75,7 @@ The **Hydrogen Presentation Layer** is an enterprise-grade Blazor-based UI frame
 
 | Component | Purpose | Example |
 |-----------|---------|---------|
-| **HydrogenDataGrid** | Pageable data table | Transaction list, account directory |
+| **Sphere10DataGrid** | Pageable data table | Transaction list, account directory |
 | **RapidDataGrid** | High-frequency updates | Real-time price ticker |
 | **Chart** | Data visualization | Price history, consensus metrics |
 | **StatCard** | KPI display | Total supply, active nodes |
@@ -115,11 +115,11 @@ The **Hydrogen Presentation Layer** is an enterprise-grade Blazor-based UI frame
 
 ### Plugin System
 
-The Hydrogen framework uses a plugin architecture to allow third-party developers to extend functionality:
+The Sphere10 Framework framework uses a plugin architecture to allow third-party developers to extend functionality:
 
 ```
 ┌─────────────────────────────────────┐
-│  Hydrogen Presentation Shell        │
+│  Sphere10 Framework Presentation Shell        │
 ├─────────────────────────────────────┤
 │ Plugin Host (loads/manages plugins) │
 ├──────────┬──────────┬──────────────┤
@@ -132,7 +132,7 @@ The Hydrogen framework uses a plugin architecture to allow third-party developer
 
 ```csharp
 // Create plugin
-public class MyPlugin : IHydrogenPlugin {
+public class MyPlugin : ISphere10Plugin {
     public string Name => "My Custom Plugin";
     public Version Version => new Version(1, 0, 0);
     
@@ -156,14 +156,14 @@ public class MyPlugin : IHydrogenPlugin {
 // Register plugin in shell
 public class AppStartup {
     public void ConfigureServices(IServiceCollection services) {
-        services.AddHydrogenPlugin<MyPlugin>();
+        services.AddSphere10Plugin<MyPlugin>();
     }
 }
 ```
 
 ### Data Binding & Reactivity
 
-Hydrogen uses reactive data binding for automatic UI updates:
+Sphere10 Framework uses reactive data binding for automatic UI updates:
 
 ```csharp
 // Define reactive data
@@ -175,10 +175,10 @@ public class AccountViewModel {
 }
 
 // Use in component
-<HydrogenCard>
+<Sphere10Card>
     <p>Balance: <Amount Value="@Account.Balance" /></p>
     <p>@if (Account.IsLoading) { <Spinner /> }</p>
-</HydrogenCard>
+</Sphere10Card>
 
 @code {
     private AccountViewModel Account = new();
@@ -202,8 +202,8 @@ public class AccountViewModel {
 @inject IWalletService Wallet
 @inject INotificationService Notifications
 
-<HydrogenShell>
-    <HydrogenCard Title="Wallet" Icon="wallet">
+<Sphere10Shell>
+    <Sphere10Card Title="Wallet" Icon="wallet">
         
         <!-- Balance Section -->
         <div class="balance-section">
@@ -213,21 +213,21 @@ public class AccountViewModel {
         
         <!-- Actions Section -->
         <div class="actions-section">
-            <HydrogenButton OnClick="@ShowSendDialog">
+            <Sphere10Button OnClick="@ShowSendDialog">
                 Send
-            </HydrogenButton>
+            </Sphere10Button>
             
-            <HydrogenButton OnClick="@ShowReceiveDialog">
+            <Sphere10Button OnClick="@ShowReceiveDialog">
                 Receive
-            </HydrogenButton>
+            </Sphere10Button>
             
-            <HydrogenButton OnClick="@RefreshBalance">
+            <Sphere10Button OnClick="@RefreshBalance">
                 Refresh
-            </HydrogenButton>
+            </Sphere10Button>
         </div>
         
         <!-- Transactions List -->
-        <HydrogenDataGrid Items="@Transactions" 
+        <Sphere10DataGrid Items="@Transactions" 
                          Columns="@TransactionColumns"
                          PageSize="10"
                          Sortable="true"
@@ -254,9 +254,9 @@ public class AccountViewModel {
                     Header="Hash" 
                     Template="@((Transaction tx) => 
                         $"{tx.Hash.Substring(0, 8)}...")" />
-        </HydrogenDataGrid>
-    </HydrogenCard>
-</HydrogenShell>
+        </Sphere10DataGrid>
+    </Sphere10Card>
+</Sphere10Shell>
 
 <!-- Send Dialog -->
 <Modal @ref="SendModal" Title="Send HYD">
@@ -279,9 +279,9 @@ public class AccountViewModel {
             <p>Total: <span>@(SendForm.Amount + EstimatedFee) HYD</span></p>
         </div>
         
-        <HydrogenButton OnClick="@SubmitSend" Disabled="@SendForm.IsInvalid">
+        <Sphere10Button OnClick="@SubmitSend" Disabled="@SendForm.IsInvalid">
             Send
-        </HydrogenButton>
+        </Sphere10Button>
     </div>
 </Modal>
 
@@ -291,7 +291,7 @@ public class AccountViewModel {
         <p>Your Address:</p>
         <div class="address-display">
             <code>@MyAddress</code>
-            <HydrogenButton OnClick="@CopyAddress">Copy</HydrogenButton>
+            <Sphere10Button OnClick="@CopyAddress">Copy</Sphere10Button>
         </div>
         
         <QRCode Value="@MyAddress" Size="200" />
@@ -415,14 +415,14 @@ public class AccountViewModel {
 ```csharp
 // ✅ DO: Use CSS Grid/Flexbox for responsive layout
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <HydrogenCard Title="Card 1" />
-    <HydrogenCard Title="Card 2" />
-    <HydrogenCard Title="Card 3" />
+    <Sphere10Card Title="Card 1" />
+    <Sphere10Card Title="Card 2" />
+    <Sphere10Card Title="Card 3" />
 </div>
 
 // ❌ DON'T: Use fixed widths
 <div style="width: 400px">
-    <HydrogenCard />
+    <Sphere10Card />
 </div>
 ```
 
@@ -444,7 +444,7 @@ private class TransferForm : IValidatable {
           Disabled="@!Form.IsValid" />
 
 // ❌ DON'T: Submit without validation
-<HydrogenButton OnClick="@Submit">Submit</HydrogenButton>
+<Sphere10Button OnClick="@Submit">Submit</Sphere10Button>
 ```
 
 ### 3. Loading States
@@ -454,7 +454,7 @@ private class TransferForm : IValidatable {
 @if (IsLoading) {
     <Spinner Message="Loading transactions..." />
 } else {
-    <HydrogenDataGrid Items="@Transactions" />
+    <Sphere10DataGrid Items="@Transactions" />
 }
 
 // ❌ DON'T: Leave UI unresponsive
@@ -487,7 +487,7 @@ await Notifications.ShowError("Error", ex.ToString());
 ## Resources
 
 - [DApp Development Guide](../DApp-Development-Guide.md)
-- [Hydrogen Requirements](Hydrogen-Requirements.md)
+- [Sphere10 Framework Requirements](Sphere10 Framework-Requirements.md)
 - [Architecture Guidelines](../Guidelines/3-tier-Architecture.md)
 
 ---
@@ -495,3 +495,6 @@ await Notifications.ShowError("Error", ex.ToString());
 **Version**: 2.0  
 **Last Updated**: December 2025  
 **Author**: Sphere 10 Software
+
+
+

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="LoadingCircleTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class LoadingCircleTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -40,7 +40,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             this._panel = new System.Windows.Forms.Panel();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.loadingCircle1 = new Hydrogen.Windows.Forms.LoadingCircle();
+            this.loadingCircle1 = new Sphere10.Framework.Windows.Forms.LoadingCircle();
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
             this.button2 = new System.Windows.Forms.Button();
             this._panel.SuspendLayout();
@@ -100,7 +100,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             this.loadingCircle1.RotationSpeed = 100;
             this.loadingCircle1.Size = new System.Drawing.Size(34, 30);
             this.loadingCircle1.SpokeThickness = 2;
-            this.loadingCircle1.StylePreset = Hydrogen.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
+            this.loadingCircle1.StylePreset = Sphere10.Framework.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
             this.loadingCircle1.TabIndex = 0;
             this.loadingCircle1.Text = "loadingCircle1";
             this.loadingCircle1.Visible = false;
@@ -148,10 +148,12 @@ namespace Hydrogen.Utils.WinFormsTester {
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.Panel _panel;
 		private System.Windows.Forms.Panel panel1;
-		private Hydrogen.Windows.Forms.LoadingCircle loadingCircle1;
+		private Sphere10.Framework.Windows.Forms.LoadingCircle loadingCircle1;
 		private System.Windows.Forms.Button button2;
 		private System.Windows.Forms.DataGridView dataGridView1;
 		private System.Windows.Forms.DataGridView dataGridView2;
 
 	}
 }
+
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Hydrogen.DApp.Presentation.Loader.Components;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Components;
 
 public partial class MainMenu {
 	// ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
@@ -24,3 +24,5 @@ public partial class MainMenu {
 		return base.OnAfterRenderAsync(firstRender);
 	}
 }
+
+

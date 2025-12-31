@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -28,12 +28,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using NUnit.Framework;
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 using Tools;
 using Object = Tools.Object;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.NUnit {
+namespace Sphere10.Framework.NUnit {
 	public abstract class DACTestFixture {
 		private const string MSSQLServer_Default = "localhost";
 		private const string MSSQLUser_Default = "sa";
@@ -228,3 +228,4 @@ namespace Hydrogen.NUnit {
 
 	}
 }
+

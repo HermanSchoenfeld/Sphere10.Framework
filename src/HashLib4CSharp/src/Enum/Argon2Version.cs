@@ -31,3 +31,4 @@ namespace HashLib4CSharp.Enum
         Nineteen = 0x13
     }
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Hydrogen.DApp.Presentation.ViewModels;
+using Sphere10.Framework.DApp.Presentation.ViewModels;
 
-namespace Hydrogen.DApp.Presentation.Components.Wizard;
+namespace Sphere10.Framework.DApp.Presentation.Components.Wizard;
 
 public class WizardHostViewModel : ComponentViewModelBase {
 	private WizardStepBase? _currentStepInstance;
@@ -155,3 +155,5 @@ public class WizardHostViewModel : ComponentViewModelBase {
 		};
 	}
 }
+
+

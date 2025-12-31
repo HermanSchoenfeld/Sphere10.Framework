@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 public static class IDACExtensions {
 
@@ -187,3 +187,4 @@ public static class IDACExtensions {
 	//    }
 	//}
 }
+

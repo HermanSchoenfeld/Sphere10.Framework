@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using Terminal.Gui;
 
-namespace Hydrogen.DApp.Node.UI;
+namespace Sphere10.Framework.DApp.Node.UI;
 
 public static class Dialogs {
 
@@ -38,3 +38,4 @@ public static class Dialogs {
 	}
 
 }
+

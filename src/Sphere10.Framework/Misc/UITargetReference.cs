@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 ///  A cross-platform reference to a target, typically a UI object. On some platforms the target and it's owner
@@ -24,3 +24,4 @@ public class UITargetReference {
 	public object TargetOwner { get; set; }
 
 }
+

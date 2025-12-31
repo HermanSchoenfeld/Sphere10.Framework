@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class CryptographicVRF : VRFAlgorithmBase {
 
@@ -54,3 +54,4 @@ public class CryptographicVRF : VRFAlgorithmBase {
 
 
 }
+

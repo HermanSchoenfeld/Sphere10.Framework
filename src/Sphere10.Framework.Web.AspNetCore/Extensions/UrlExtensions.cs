@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 public static class UrlExtensions {
 	public static string Content(this UrlHelper urlHelper, string contentPath, bool toAbsolute = false) {
@@ -19,3 +19,4 @@ public static class UrlExtensions {
 		return toAbsolute ? url.AbsoluteUri : path;
 	}
 }
+

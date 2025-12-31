@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ValidationIndicatorTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class ValidationIndicatorTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -42,8 +42,8 @@ namespace Hydrogen.Utils.WinFormsTester {
             this._errorButton = new System.Windows.Forms.Button();
             this._validatingButton = new System.Windows.Forms.Button();
             this._disabledButton = new System.Windows.Forms.Button();
-            this._validationIndicator1 = new Hydrogen.Windows.Forms.ValidationIndicator();
-            this._validationIndicator2 = new Hydrogen.Windows.Forms.ValidationIndicator();
+            this._validationIndicator1 = new Sphere10.Framework.Windows.Forms.ValidationIndicator();
+            this._validationIndicator2 = new Sphere10.Framework.Windows.Forms.ValidationIndicator();
             this._textBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this._enableDisableButton = new System.Windows.Forms.Button();
@@ -109,7 +109,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             this._validationIndicator1.Name = "_validationIndicator1";
             this._validationIndicator1.Size = new System.Drawing.Size(20, 20);
             this._validationIndicator1.TabIndex = 5;
-            this._validationIndicator1.ValidationStateChanged += new Hydrogen.EventHandlerEx<Hydrogen.Windows.Forms.ValidationIndicator, Hydrogen.Windows.Forms.ValidationState, Hydrogen.Windows.Forms.ValidationState>(this._validationIndicator1_ValidationStateChanged);
+            this._validationIndicator1.ValidationStateChanged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.ValidationIndicator, Sphere10.Framework.Windows.Forms.ValidationState, Sphere10.Framework.Windows.Forms.ValidationState>(this._validationIndicator1_ValidationStateChanged);
             // 
             // _validationIndicator2
             // 
@@ -121,8 +121,8 @@ namespace Hydrogen.Utils.WinFormsTester {
             this._validationIndicator2.RunValidatorWhenEnabled = true;
             this._validationIndicator2.Size = new System.Drawing.Size(20, 20);
             this._validationIndicator2.TabIndex = 6;
-            this._validationIndicator2.PerformValidation += new Hydrogen.EventHandlerEx<Hydrogen.Windows.Forms.ValidationIndicator, Hydrogen.Windows.Forms.ValidationIndicatorEvent>(this._validationIndicator2_PerformValidation);
-            this._validationIndicator2.ValidationStateChanged += new Hydrogen.EventHandlerEx<Hydrogen.Windows.Forms.ValidationIndicator, Hydrogen.Windows.Forms.ValidationState, Hydrogen.Windows.Forms.ValidationState>(this._validationIndicator2_ValidationStateChanged);
+            this._validationIndicator2.PerformValidation += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.ValidationIndicator, Sphere10.Framework.Windows.Forms.ValidationIndicatorEvent>(this._validationIndicator2_PerformValidation);
+            this._validationIndicator2.ValidationStateChanged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.ValidationIndicator, Sphere10.Framework.Windows.Forms.ValidationState, Sphere10.Framework.Windows.Forms.ValidationState>(this._validationIndicator2_ValidationStateChanged);
             // 
             // _textBox
             // 
@@ -180,10 +180,12 @@ namespace Hydrogen.Utils.WinFormsTester {
 		private System.Windows.Forms.Button _errorButton;
 		private System.Windows.Forms.Button _validatingButton;
 		private System.Windows.Forms.Button _disabledButton;
-		private Hydrogen.Windows.Forms.ValidationIndicator _validationIndicator1;
-        private Hydrogen.Windows.Forms.ValidationIndicator _validationIndicator2;
+		private Sphere10.Framework.Windows.Forms.ValidationIndicator _validationIndicator1;
+        private Sphere10.Framework.Windows.Forms.ValidationIndicator _validationIndicator2;
 		private System.Windows.Forms.TextBox _textBox;
 		private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button _enableDisableButton;
 	}
 }
+
+

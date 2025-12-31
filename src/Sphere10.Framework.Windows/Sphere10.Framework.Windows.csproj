@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
-    <ProjectReference Include="..\Hydrogen.NET\Hydrogen.NET.csproj" />
+    <ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.NET\Sphere10.Framework.NET.csproj" />
   </ItemGroup>
 
 </Project>

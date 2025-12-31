@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class Signers {
 	private static readonly Func<IDigitalSignatureScheme>[] Factories;
@@ -79,7 +79,8 @@ public class Signers {
 	public static void RegisterDefaultAlgorithms() {
 		Register(DSS.PQC_WAMS, () => new WAMS());
 		Register(DSS.PQC_WAMSSharp, () => new WAMSSharp());
-		// Rest of DSS's are registered via Hydrogen.CryptoEx ModuleConfiguration
+		// Rest of DSS's are registered via Sphere10.Framework.CryptoEx ModuleConfiguration
 	}
 
 }
+

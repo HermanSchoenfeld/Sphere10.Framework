@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,9 +13,9 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
-using Hydrogen.CryptoEx.IES;
+using Sphere10.Framework.CryptoEx.IES;
 
-namespace Hydrogen.CryptoEx.PascalCoin;
+namespace Sphere10.Framework.CryptoEx.PascalCoin;
 
 public class PascalCoinIesEngine : CustomIesEngine {
 	// Structure for Compatibility with PascalCoin Original Implementation.
@@ -206,3 +206,4 @@ public class PascalCoinIesEngine : CustomIesEngine {
 		}
 	}
 }
+

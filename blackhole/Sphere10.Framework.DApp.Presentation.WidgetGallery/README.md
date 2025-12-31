@@ -1,12 +1,12 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# Hydrogen.DApp.Presentation.WidgetGallery
+# Sphere10.Framework.DApp.Presentation.WidgetGallery
 
-Component showcase and plugin demonstrating reusable Blazor widgets and UI patterns for Hydrogen DApps.
+Component showcase and plugin demonstrating reusable Blazor widgets and UI patterns for Sphere10 Framework DApps.
 
 ## 📋 Overview
 
-`Hydrogen.DApp.Presentation.WidgetGallery` is both a plugin and showcase application that demonstrates all available Blazor components and widgets in the Hydrogen framework. It serves as both documentation and a working example of how to build DApp UIs.
+`Sphere10.Framework.DApp.Presentation.WidgetGallery` is both a plugin and showcase application that demonstrates all available Blazor components and widgets in the Sphere10 Framework framework. It serves as both documentation and a working example of how to build DApp UIs.
 
 ## 🏗️ Architecture
 
@@ -45,7 +45,7 @@ The widget gallery demonstrates a wizard for creating new widgets:
 
 ## 📦 Dependencies
 
-- **Hydrogen.DApp.Presentation**: Component library
+- **Sphere10.Framework.DApp.Presentation**: Component library
 - **Microsoft.AspNetCore.Components**: Blazor framework
 - **IRandomNumberService**: Example service for dependency injection
 
@@ -68,5 +68,7 @@ Access the widget gallery in the loaded application by navigating to `/widget-ga
 
 ## 📄 Related Projects
 
-- [Hydrogen.DApp.Presentation](./Hydrogen.DApp.Presentation) - Component library being showcased
-- [Hydrogen.DApp.Presentation.Loader](./Hydrogen.DApp.Presentation.Loader) - Host application
+- [Sphere10.Framework.DApp.Presentation](./Sphere10.Framework.DApp.Presentation) - Component library being showcased
+- [Sphere10.Framework.DApp.Presentation.Loader](./Sphere10.Framework.DApp.Presentation.Loader) - Host application
+
+

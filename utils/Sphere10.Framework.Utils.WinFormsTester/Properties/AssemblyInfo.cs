@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,13 +8,13 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-//[assembly: AssemblyTitle("Hydrogen Framework Tester")]
-//[assembly: AssemblyDescription("Tests Hydrogen Framework")]
+//[assembly: AssemblyTitle("Sphere10.Framework Framework Tester")]
+//[assembly: AssemblyDescription("Tests Sphere10.Framework Framework")]
 //[assembly: AssemblyConfiguration("")]
 //[assembly: AssemblyCompany("Sphere 10 Software")]
 [assembly: AssemblyProductSecret("7cb63ab9cedd8465cf5dad3417c78e5241ada42f460e65b80492fce89b10667a")]
@@ -44,3 +44,5 @@ using Hydrogen.Application;
 // [assembly: AssemblyVersion("1.0.*")]
 //[assembly: AssemblyVersion("1.0.0.0")]
 //[assembly: AssemblyFileVersion("1.0.0.0")]
+
+

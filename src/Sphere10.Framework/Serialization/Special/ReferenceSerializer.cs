@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Serializer wrapper for handling reference types. This serializes a prefix byte that indicates whether the item is null, not null, or a reference to an object
@@ -125,3 +125,4 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		//IsExternalReference = 3,   // serializers a pointer to an external object and places external object in the context for serialization by user
 	}
 }
+

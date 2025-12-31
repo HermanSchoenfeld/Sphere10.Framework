@@ -1,4 +1,4 @@
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class Critical<T> : CriticalObject {
 	private T _value;
@@ -18,3 +18,4 @@ public sealed class Critical<T> : CriticalObject {
 		}
 	}
 }
+

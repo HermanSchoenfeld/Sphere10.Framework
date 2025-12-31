@@ -1,22 +1,22 @@
-# Real-World Usage Examples from Hydrogen Test Suite
+﻿# Real-World Usage Examples from Sphere10 Framework Test Suite
 
-A comprehensive guide to using Hydrogen libraries based on analysis of test code. This document provides concrete, working examples of how developers actually use these libraries.
+A comprehensive guide to using Sphere10 Framework libraries based on analysis of test code. This document provides concrete, working examples of how developers actually use these libraries.
 
 ---
 
 ## Table of Contents
 
-1. [Hydrogen Core (Collections, Serialization, Extensions)](#hydrogen-core)
-2. [Hydrogen Data Access Layer](#hydrogen-data-access-layer)
-3. [Hydrogen Communications & RPC](#hydrogen-communications-and-rpc)
-4. [Hydrogen CryptoEx (Cryptography)](#hydrogen-cryptoex)
+1. [Sphere10 Framework Core (Collections, Serialization, Extensions)](#Sphere10 Framework-core)
+2. [Sphere10 Framework Data Access Layer](#Sphere10 Framework-data-access-layer)
+3. [Sphere10 Framework Communications & RPC](#Sphere10 Framework-communications-and-rpc)
+4. [Sphere10 Framework CryptoEx (Cryptography)](#Sphere10 Framework-cryptoex)
 5. [HashLib4CSharp (Hash Functions)](#hashlib4csharp)
-6. [Hydrogen Windows LevelDB](#hydrogen-windows-leveldb)
-7. [Hydrogen Windows Security & Registry](#hydrogen-windows-security-and-registry)
+6. [Sphere10 Framework Windows LevelDB](#Sphere10 Framework-windows-leveldb)
+7. [Sphere10 Framework Windows Security & Registry](#Sphere10 Framework-windows-security-and-registry)
 
 ---
 
-## Hydrogen Core
+## Sphere10 Framework Core
 
 ### 1. Serialization - Serializer Factory
 
@@ -325,7 +325,7 @@ for (int i = 0; i < 1000000; i++) {
 
 ---
 
-## Hydrogen Data Access Layer
+## Sphere10 Framework Data Access Layer
 
 ### 1. Basic Database Operations (DAC - Data Access Component)
 
@@ -483,7 +483,7 @@ public async Task AsyncDatabaseOperations(DBMSType dbmsType) {
 
 ---
 
-## Hydrogen Communications and RPC
+## Sphere10 Framework Communications and RPC
 
 ### 1. RPC Service Definition (Currently Disabled)
 
@@ -599,7 +599,7 @@ public enum FreeEnum { First, Second, Third }
 
 ---
 
-## Hydrogen CryptoEx
+## Sphere10 Framework CryptoEx
 
 ### 1. ECDSA Operations
 
@@ -810,7 +810,7 @@ using (var stream = File.OpenRead("path/to/file")) {
 
 ---
 
-## Hydrogen Windows LevelDB
+## Sphere10 Framework Windows LevelDB
 
 ### 1. Basic CRUD Operations
 
@@ -1011,7 +1011,7 @@ using (var db = new DB(testPath, new Options { CreateIfMissing = true })) {
 
 ---
 
-## Hydrogen Windows Security and Registry
+## Sphere10 Framework Windows Security and Registry
 
 ### 1. NT (Windows) Objects
 
@@ -1143,9 +1143,10 @@ Assert.That(restored, Is.TypeOf<ConcreteType>());
 | **VarInt** | Efficient integer encoding | 1-9 byte variable encoding |
 | **DAC** | Database operations | Use scopes for connection mgmt |
 | **Transactions** | ACID operations | Explicit Commit/Rollback |
-| **ECDSA** | Digital signatures | Key generation → Sign → Verify |
+| **ECDSA** | Digital signatures | Key generation â†’ Sign â†’ Verify |
 | **LevelDB** | Key-value storage | Simple Put/Get/Delete interface |
 | **HashLib** | Data hashing | ComputeString/ComputeBytes |
 | **Windows Security** | Domain/local accounts | Resolve SIDs and principals |
 
 All examples are from actual production test code and demonstrate real-world usage patterns.
+

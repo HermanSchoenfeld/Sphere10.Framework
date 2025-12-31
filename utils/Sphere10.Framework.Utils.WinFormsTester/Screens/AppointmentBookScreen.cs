@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using Hydrogen.Windows.Forms;
-using Hydrogen.Windows.Forms.AppointmentBook;
+using Sphere10.Framework.Windows.Forms;
+using Sphere10.Framework.Windows.Forms.AppointmentBook;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class AppointmentBookScreen : ApplicationScreen {
 	static readonly string[] Subjects = new string[] { "Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5", "Subject 6", "Subject 7", "Subject 8", "Subject 9", "Subject 10" };
@@ -461,3 +461,5 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 	#endregion
 
 }
+
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using FluentValidation;
-using Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Models;
+using Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.Models;
 
-namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.Validators;
+namespace Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.Validators;
 
 public class NewWidgetModelValidator : AbstractValidator<NewWidgetModel> {
 	public NewWidgetModelValidator() {
@@ -18,3 +18,5 @@ public class NewWidgetModelValidator : AbstractValidator<NewWidgetModel> {
 		RuleFor(x => x.Description).NotEmpty();
 	}
 }
+
+

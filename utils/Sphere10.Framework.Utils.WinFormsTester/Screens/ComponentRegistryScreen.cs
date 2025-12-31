@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -17,12 +17,12 @@
 //using System.Text;
 //using System.Threading.Tasks;
 //using System.Windows.Forms;
-//using Hydrogen;
-//using Hydrogen.Application;
-//using Hydrogen.Data;
-//using Hydrogen.Windows.Forms;
+//using Sphere10.Framework;
+//using Sphere10.Framework.Application;
+//using Sphere10.Framework.Data;
+//using Sphere10.Framework.Windows.Forms;
 
-//namespace Hydrogen.Utils.WinFormsTester {
+//namespace Sphere10.Framework.Utils.WinFormsTester {
 //    public partial class ComponentRegistryScreen : ApplicationScreen {
 //        private readonly ILogger _outputTextLogger;
 //        public ComponentRegistryScreen() {
@@ -54,7 +54,7 @@
 //        private ComponentRegistryDefinition CreateComponentRegistry() {
 //            return new ComponentRegistryDefinition {
 //                RegistrationsDefinition = new ComponentRegistryDefinition.RegistrationDefinition[] {
-//                        new ComponentRegistryDefinition.AssemblyRegistrationDefinition() { Dll = "Hydrogen.Application"},
+//                        new ComponentRegistryDefinition.AssemblyRegistrationDefinition() { Dll = "Sphere10.Framework.Application"},
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IBackgroundLicenseVerifier", Implementation = "StandardBackgroundLicenseVerifier"},
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ISettingsServices", Implementation = "StandardUserSettingsProvider", Name = "UserSettings", Activation = ActivationType.Singleton },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ISettingsServices", Implementation = "StandardSystemSettingsProvider", Name = "SystemSettings", Activation = ActivationType.Singleton },
@@ -142,7 +142,7 @@
 //        private void _loadConfigButton_Click(object sender, EventArgs e) {
 //            try {
 //                throw new NotSupportedException();
-//                //HydrogenFramework.Instance.RegisterAppConfig();
+//                //Sphere10Framework.Instance.RegisterAppConfig();
 //                //_outputTextBox.AppendText("Passed");
 //            } catch (Exception error) {
 //                _outputTextBox.Clear();
@@ -153,5 +153,7 @@
 //        #endregion
 //    }
 //}
+
+
 
 

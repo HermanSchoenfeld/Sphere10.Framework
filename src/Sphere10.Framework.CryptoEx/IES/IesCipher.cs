@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,9 +13,9 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
-using Hydrogen.CryptoEx.EC.IES;
+using Sphere10.Framework.CryptoEx.EC.IES;
 
-namespace Hydrogen.CryptoEx.IES;
+namespace Sphere10.Framework.CryptoEx.IES;
 
 public class IesCipher {
 	private readonly CustomIesEngine _customIesEngine;
@@ -143,3 +143,4 @@ public class IesCipher {
 		return buf.Length;
 	}
 }
+

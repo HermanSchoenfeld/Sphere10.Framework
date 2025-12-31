@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// An index that only stores the projection of the projection rather than the projection itself and relies on fetching the projection from the objectStream when needed for comparisons.
@@ -181,6 +181,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 	}
 
 }
+
 
 
 

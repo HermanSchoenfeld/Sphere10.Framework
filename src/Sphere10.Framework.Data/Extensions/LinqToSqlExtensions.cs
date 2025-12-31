@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 // Stefan Cruysberghs, July 2008, http://www.scip.be
 /// <summary>
@@ -122,3 +122,4 @@ public static class LinqToSqlExtensionMethods {
 		return CreateHierarchy(allItems, null, propertyNameId, propertyNameParentId, rootItemId, maxDepth, 0);
 	}
 }
+

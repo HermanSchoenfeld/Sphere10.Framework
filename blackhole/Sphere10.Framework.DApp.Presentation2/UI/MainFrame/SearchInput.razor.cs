@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Hydrogen;
+using Sphere10.Framework;
 
-namespace Hydrogen.DApp.Presentation2.UI.MainFrame {
+namespace Sphere10.Framework.DApp.Presentation2.UI.MainFrame {
 
 	/// <summary>
 	/// Search input component
@@ -85,3 +85,5 @@ namespace Hydrogen.DApp.Presentation2.UI.MainFrame {
 		}
 	}
 }
+
+

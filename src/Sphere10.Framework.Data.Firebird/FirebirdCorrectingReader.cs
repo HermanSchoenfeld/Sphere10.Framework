@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Data;
 
-namespace Hydrogen.Data.Firebird;
+namespace Sphere10.Framework.Data.Firebird;
 
 public class FirebirdCorrectingReader : DataReaderDecorator {
 
@@ -38,3 +38,4 @@ public class FirebirdCorrectingReader : DataReaderDecorator {
 		return new Guid(rfc4122bytes);
 	}
 }
+

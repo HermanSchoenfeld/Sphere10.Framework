@@ -31,7 +31,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class LoadingCircle : Control {
 	// Constants =========================================================
@@ -620,3 +620,4 @@ public partial class LoadingCircle : Control {
 
 
 }
+

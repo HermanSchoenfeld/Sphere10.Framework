@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class KnownSubTypeAttribute(Type subType) : Attribute {
@@ -18,3 +18,4 @@ public class KnownSubTypeAttribute(Type subType) : Attribute {
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class KnownSubTypeAttribute<T>() : KnownSubTypeAttribute(typeof(T));
+

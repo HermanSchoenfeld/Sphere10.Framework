@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class FormEx : Form, IUpdatable {
 	private bool _updating;
@@ -199,3 +199,4 @@ public partial class FormEx : Form, IUpdatable {
 
 	}
 }
+

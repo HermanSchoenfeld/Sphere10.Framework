@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities.Encoders;
 
-namespace Hydrogen.CryptoEx;
+namespace Sphere10.Framework.CryptoEx;
 
 public class KeyTypeOrderAttribute : Attribute {
 	public KeyTypeOrderAttribute(string bigIntHexValue) {
@@ -20,3 +20,4 @@ public class KeyTypeOrderAttribute : Attribute {
 	public BigInteger Value { get; }
 
 }
+

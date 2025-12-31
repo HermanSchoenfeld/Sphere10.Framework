@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.DApp.Core.Consensus;
+namespace Sphere10.Framework.DApp.Core.Consensus;
 
 [Serializable]
 public class BlockChainTransaction {
@@ -20,3 +20,4 @@ public class BlockChainTransaction {
 	public UInt64 Fees { get; set; }
 	public byte[] Data { get; set; }
 }
+

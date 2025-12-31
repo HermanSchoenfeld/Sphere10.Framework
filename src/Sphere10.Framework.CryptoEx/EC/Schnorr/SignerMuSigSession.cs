@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using Org.BouncyCastle.Math;
 
-namespace Hydrogen.CryptoEx.EC;
+namespace Sphere10.Framework.CryptoEx.EC;
 
 public class SignerMuSigSession {
 	public bool InternalKeyParity { get; internal set; }
@@ -17,3 +17,4 @@ public class SignerMuSigSession {
 	public byte[] PublicNonce { get; internal set; }
 	public byte[] PrivateNonce { get; internal set; }
 }
+

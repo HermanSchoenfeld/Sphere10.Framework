@@ -20,7 +20,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\HashLib4CSharp\HashLib4CSharp.csproj" />
-		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 
 </Project>

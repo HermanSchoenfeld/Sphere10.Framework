@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,11 +10,11 @@ using System;
 using NUnit.Framework;
 using System.Threading.Tasks;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.None)]
-// Similar to RaceConditionTests in Hydrogen.Tests except for all CHF values
+// Similar to RaceConditionTests in Sphere10.Framework.Tests except for all CHF values
 public class RaceConditionTests {
 
 	[Test]
@@ -93,3 +93,4 @@ public class RaceConditionTests {
 
 
 }
+

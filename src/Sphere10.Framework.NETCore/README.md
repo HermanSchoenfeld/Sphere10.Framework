@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🌐 Hydrogen.NETCore
+# 🌐 Sphere10.Framework.NETCore
 
 **.NET Core and modern .NET runtime utilities** providing configuration integration, dependency injection support, async patterns, and built-in service discovery for .NET 5+ applications.
 
-Hydrogen.NETCore bridges Hydrogen with Microsoft's **modern .NET ecosystem**, enabling seamless integration with `IServiceCollection`, configuration systems, and async/await patterns while providing utilities for performance monitoring and diagnostics.
+Sphere10.Framework.NETCore bridges Sphere10 Framework with Microsoft's **modern .NET ecosystem**, enabling seamless integration with `IServiceCollection`, configuration systems, and async/await patterns while providing utilities for performance monitoring and diagnostics.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 
@@ -19,9 +19,9 @@ var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
-// Add Hydrogen services
+// Add Sphere10 Framework services
 services.AddSingleton<IConfiguration>(config);
-services.AddHydrogenServices();  // Extension method
+services.AddSphere10Services();  // Extension method
 
 // Build and use
 var provider = services.BuildServiceProvider();
@@ -31,9 +31,9 @@ logger.Info("Initialized");
 
 ## 🏗️ Core Concepts
 
-**Service Collection Extensions**: Extension methods for registering Hydrogen services in IServiceCollection following .NET conventions.
+**Service Collection Extensions**: Extension methods for registering Sphere10 Framework services in IServiceCollection following .NET conventions.
 
-**Configuration Integration**: Bridge between Hydrogen configuration and Microsoft.Extensions.Configuration for seamless settings management.
+**Configuration Integration**: Bridge between Sphere10 Framework configuration and Microsoft.Extensions.Configuration for seamless settings management.
 
 **Async Patterns**: Modern async/await utilities and async initialization patterns for .NET Core applications.
 
@@ -46,8 +46,8 @@ logger.Info("Initialized");
 ### Service Registration & Dependency Injection
 
 ```csharp
-using Hydrogen;
-using Hydrogen.NETCore;
+using Sphere10.Framework;
+using Sphere10.Framework.NETCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -59,7 +59,7 @@ services.AddSingleton<IUserRepository, UserRepository>();
 services.AddTransient<IUserService, UserService>();
 services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// Hydrogen service registration
+// Sphere10 Framework service registration
 services.TryAddSingleton<IApplicationContext, ApplicationContext>();
 services.TryAddSingleton<ILogger, ConsoleLogger>();
 
@@ -116,7 +116,7 @@ Console.WriteLine($"App: {appSettings.Name} v{appSettings.Version}");
 ### Async Initialization & Startup Patterns
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -162,8 +162,8 @@ await host.RunAsync();
 ### Performance Monitoring & Diagnostics
 
 ```csharp
-using Hydrogen;
-using Hydrogen.NETCore;
+using Sphere10.Framework;
+using Sphere10.Framework.NETCore;
 using System.Diagnostics;
 
 // Create diagnostics collector
@@ -195,7 +195,7 @@ Console.WriteLine($"Memory allocated: {allocated / 1024.0}KB");
 ### Async Task Coordination
 
 ```csharp
-using Hydrogen;
+using Sphere10.Framework;
 using System.Threading.Tasks;
 
 // Execute multiple async operations in parallel
@@ -230,8 +230,8 @@ try {
 
 ## 🏗️ Architecture & Modules
 
-**Service Collection Extensions**: Methods for registering Hydrogen types with IServiceCollection
-- AddHydrogenServices: Register core Hydrogen services
+**Service Collection Extensions**: Methods for registering Sphere10 Framework types with IServiceCollection
+- AddSphere10Services: Register core Sphere10 Framework services
 - AddLogging: Logger integration
 - AddConfiguration: Configuration integration
 
@@ -261,8 +261,8 @@ try {
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
-- **Hydrogen.NET**: .NET framework utilities
+- **Sphere10 Framework**: Core framework
+- **Sphere10.Framework.NET**: .NET framework utilities
 - **Microsoft.Extensions.DependencyInjection**: Dependency injection abstraction
 - **Microsoft.Extensions.Configuration**: Configuration system
 - **Microsoft.Extensions.Logging.Abstractions**: Logging abstraction
@@ -286,10 +286,10 @@ try {
 
 ## 📖 Related Projects
 
-- [Hydrogen.NET](../Hydrogen.NET) - .NET Framework utilities
-- [Hydrogen.Application](../Hydrogen.Application) - Application lifecycle framework
-- [Hydrogen.Web.AspNetCore](../Hydrogen.Web.AspNetCore) - ASP.NET Core integration
-- [Hydrogen.Communications](../Hydrogen.Communications) - Network communication using async patterns
+- [Sphere10.Framework.NET](../Sphere10.Framework.NET) - .NET Framework utilities
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application lifecycle framework
+- [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core integration
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network communication using async patterns
 
 ## ⚖️ License
 
@@ -304,3 +304,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+
+

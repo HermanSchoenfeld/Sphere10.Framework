@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 #warning Add icons
 #warning Add menus
@@ -466,7 +466,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 							if (linkItem.ShowOnToolStrip) {
 								ToolStripButton button = new ToolStripButton(
 									string.Empty,
-									item.Image16x16 != null ? item.Image16x16 : Hydrogen.Windows.Forms.Resources.DefaultToolStripImage,
+									item.Image16x16 != null ? item.Image16x16 : Sphere10.Framework.Windows.Forms.Resources.DefaultToolStripImage,
 									ToolStripItemActivate
 								);
 								button.ToolTipText = linkItem.Text;
@@ -522,7 +522,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 		ToolStripItem contextHelpButton = ToolStrip.Items.Add(
 			string.Empty,
-			Hydrogen.Windows.Forms.Resources.Help_16x16x32,
+			Sphere10.Framework.Windows.Forms.Resources.Help_16x16x32,
 			ContextHelp_Click
 		);
 		contextHelpButton.ToolTipText = "Get help for currently opened screen";
@@ -709,7 +709,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	#region Misc
 
 	public virtual void ShowActiveScreenContextHelp() {
-		var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+		var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 		if (helpServices == null)
 			return;
 
@@ -760,3 +760,4 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	#endregion
 
 }
+

@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class TestObjectEqualityComparer : IEqualityComparer<TestObject> {
 
@@ -22,3 +22,4 @@ public class TestObjectEqualityComparer : IEqualityComparer<TestObject> {
 		return HashCode.Combine(obj.A, obj.B, obj.C);
 	}
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Decorator pattern for an IExtendedList, but calls to non-range get routed to the range-based methods.
@@ -80,3 +80,4 @@ public abstract class ExtendedListDecorator<TItem> : ExtendedListDecorator<TItem
 		: base(internalExtendedList) {
 	}
 }
+

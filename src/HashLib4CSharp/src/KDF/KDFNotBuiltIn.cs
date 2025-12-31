@@ -33,3 +33,4 @@ namespace HashLib4CSharp.KDF
         public abstract IKDFNotBuiltIn Clone();
     }
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -46,3 +46,4 @@ public class MemoryMetricTests {
 		ClassicAssert.AreEqual(1 * 8, Tools.Memory.ConvertMemoryMetric(1000, MemoryMetric.Kilobyte, MemoryMetric.Megabit));
 	}
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,10 +13,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Linq;
-using Hydrogen.Communications;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Communications;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class CommunicationsTestScreen : ApplicationScreen {
 	const int NodeDiscoveryPort = 21000;
@@ -292,3 +292,5 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 		}
 	}
 }
+
+

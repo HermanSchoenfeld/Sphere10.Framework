@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 public static class MemberExtensions {
 	public static Member ToMember(this PropertyInfo propertyInfo) {
@@ -70,3 +70,4 @@ public static class MemberExtensions {
 		return members;
 	}
 }
+

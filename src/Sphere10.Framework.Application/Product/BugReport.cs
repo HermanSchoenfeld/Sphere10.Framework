@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Reflection;
 
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 [Obfuscation(Exclude = true)]
 public class BugReport : ClientRequest {
@@ -31,3 +31,4 @@ public class BugReport : ClientRequest {
 	public string[] LogEntries { get; set; }
 
 }
+

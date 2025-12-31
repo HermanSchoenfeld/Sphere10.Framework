@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A stream that writes to an underlying <see cref="IBuffer"/> rather than a byte array (as <see cref="MemoryStream"/> does).
@@ -20,7 +20,7 @@ namespace Hydrogen;
 /// is decoupled from "contiguous block of memory". Example use cases include the ability to construct an arbitrarily large memory stream (by passing in an <see cref="MemoryPagedBuffer"/>) whose
 /// contents are file-swapped automatically. The ability to construct a logical memory stream from a multitude of byte-fragments (via <see cref="FragmentedStream"/>).
 /// </summary>
-/// <remarks><see cref="ExtendedMemoryStream"/>'s are used extensively throughout the Hydrogen Framework in particular as an internal mechanism to facilitate
+/// <remarks><see cref="ExtendedMemoryStream"/>'s are used extensively throughout the Sphere10.Framework Framework in particular as an internal mechanism to facilitate
 /// memory paged, clustered, stream mapped and merkleized collections.
 /// </remarks>
 public class ExtendedMemoryStream : Stream, ILoadable {
@@ -169,3 +169,4 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 	}
 
 }
+

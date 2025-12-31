@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,9 +11,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Hydrogen.DApp.Presentation.Models;
+using Sphere10.Framework.DApp.Presentation.Models;
 
-namespace Hydrogen.DApp.Presentation.Components.Tables;
+namespace Sphere10.Framework.DApp.Presentation.Components.Tables;
 
 public class VirtualPagedTable<TItem> : ComponentWithViewModel<VirtualPagedTableViewModel<TItem>> {
 	/// <summary>
@@ -123,3 +123,5 @@ public class VirtualPagedTable<TItem> : ComponentWithViewModel<VirtualPagedTable
 
 	}
 }
+
+

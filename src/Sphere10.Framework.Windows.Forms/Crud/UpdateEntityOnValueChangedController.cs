@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Linq;
 using SourceGrid;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 internal class UpdateEntityOnValueChangedController : SourceGrid.Cells.Controllers.ControllerBase {
 	private readonly CrudGrid _grid;
@@ -40,3 +40,4 @@ internal class UpdateEntityOnValueChangedController : SourceGrid.Cells.Controlle
 		_grid.NotifyEntityUpdated(_entity);
 	}
 }
+

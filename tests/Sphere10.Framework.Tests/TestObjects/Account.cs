@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using Hydrogen.ObjectSpaces;
+using System.Collections;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [EqualityComparer(typeof(AccountEqualityComparer))]
 public class Account {
@@ -20,3 +20,4 @@ public class Account {
 	public bool Dirty { get; set; }
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class StreamExtensions {
 
@@ -68,7 +68,7 @@ public static class StreamExtensions {
 		stream.WriteBytes(buffer);
 	}
 
-	public static byte[] ReadAll(this Stream stream, int blockSize = HydrogenDefaults.DefaultBufferOperationBlockSize) {
+	public static byte[] ReadAll(this Stream stream, int blockSize = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize) {
 		// TODO: remove this seek resetting (anti-pattern)
 		long originalPosition = 0L;
 		if (stream.CanSeek) {
@@ -84,7 +84,7 @@ public static class StreamExtensions {
 		}
 	}
 
-	public static byte[] ReadAllAndDispose(this Stream stream, int blockSize = HydrogenDefaults.DefaultBufferOperationBlockSize) {
+	public static byte[] ReadAllAndDispose(this Stream stream, int blockSize = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize) {
 		try {
 			return stream.ReadAll(blockSize);
 		} finally {
@@ -93,7 +93,7 @@ public static class StreamExtensions {
 	}
 
 
-	public static T RouteTo<T>(this Stream stream, T writeStream, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize) where T : Stream {
+	public static T RouteTo<T>(this Stream stream, T writeStream, int blockSizeInBytes = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize) where T : Stream {
 		long originalPosition = 0;
 		if (stream.CanSeek) {
 			originalPosition = stream.Position;
@@ -126,3 +126,5 @@ public static class StreamExtensions {
 		}
 	}
 }
+
+

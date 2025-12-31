@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ArrayTool.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
 // LICENSE or visit https://sphere10.com/legal/NON-AI-MIT.
@@ -31,3 +31,4 @@ public static class Spans {
 	public static Span<T> Empty<T>() => System.Array.Empty<T>().AsSpan();
 
 }
+

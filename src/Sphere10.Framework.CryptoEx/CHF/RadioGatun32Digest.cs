@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 
-namespace Hydrogen.CryptoEx;
+namespace Sphere10.Framework.CryptoEx;
 
 public class RadioGatun32Digest : IDigest, IMemoable {
 
@@ -211,3 +211,4 @@ public class RadioGatun32Digest : IDigest, IMemoable {
 		_processedBytes = originalDigest._processedBytes;
 	}
 }
+

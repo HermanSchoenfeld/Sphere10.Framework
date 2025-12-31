@@ -1,4 +1,4 @@
-# AMS - Abstract Merkle Signature Scheme
+﻿# AMS - Abstract Merkle Signature Scheme
 
 <pre>
   Author: Herman Schoenfeld <i>&lt;herman@sphere10.com&gt;</i>
@@ -254,7 +254,7 @@ The `VerMerkleProof` term ensures that the OTS key used by the signature was com
 
 ## 3. Reference Implementation
 
-This section contains snippets for the full [reference implementation](https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC)[^3] . The reference implementation is part of the PQC library within the [Hydrogen Framework](https://github.com/Sphere10/Hydrogen)[^4] .
+This section contains snippets for the full [reference implementation](https://github.com/Sphere10/Sphere10 Framework/tree/master/src/Sphere10 Framework/Crypto/PQC)[^3] . The reference implementation is part of the PQC library within the [Sphere10 Framework Framework](https://github.com/Sphere10/Sphere10 Framework)[^4] .
 
 ### 3.1 OTS Interface
 
@@ -628,6 +628,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 
 [^2]: IRTF.  "XMSS: eXtended Merkle Signature Scheme". Accessed: 2020-07-01, URL: https://tools.ietf.org/html/rfc8391
 
-[^3]:   Sphere 10 Software. PQC Library. Accessed 2023-05-09, Url: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC
+[^3]:   Sphere 10 Software. PQC Library. Accessed 2023-05-09, Url: https://github.com/Sphere10/Sphere10 Framework/tree/master/src/Sphere10 Framework/Crypto/PQC
 
-[^4]:   Sphere 10 Software. Hydrogen Framework. Accessed 2023-05-09, Url: https://github.com/Sphere10/Hydrogen
+[^4]:   Sphere 10 Software. Sphere10 Framework Framework. Accessed 2023-05-09, Url: https://github.com/Sphere10/Sphere10 Framework
+

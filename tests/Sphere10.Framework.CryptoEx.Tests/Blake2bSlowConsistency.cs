@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,23 +9,23 @@
 using System;
 using NUnit.Framework;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.None)]
-// Tests the slow Blake2b hasher in Hydrogen proj
+// Tests the slow Blake2b hasher in Sphere10.Framework proj
 public class Blake2bSlowConsistency {
 
 	[Test]
 	public void Empty() {
-		var slowHasher = new Hydrogen.Blake2b(Hydrogen.Blake2b._512Config);
+		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
 		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
 		Assert.That(slowHasher.GetResult(), Is.EqualTo(fastHasher.GetResult()));
 	}
 
 	[Test]
 	public void Empty_2() {
-		var slowHasher = new Hydrogen.Blake2b(Hydrogen.Blake2b._512Config);
+		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
 		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
 		slowHasher.Transform(Array.Empty<byte>());
 		fastHasher.Transform(Array.Empty<byte>());
@@ -35,7 +35,7 @@ public class Blake2bSlowConsistency {
 
 	[Test]
 	public void Random() {
-		var slowHasher = new Hydrogen.Blake2b(Hydrogen.Blake2b._512Config);
+		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
 		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
 		var bytes = new Random(31337).NextBytes(100);
 		slowHasher.Transform(bytes);
@@ -47,7 +47,7 @@ public class Blake2bSlowConsistency {
 	[Test]
 	public void Complex() {
 		var rng = new Random(31337);
-		var slowHasher = new Hydrogen.Blake2b(Hydrogen.Blake2b._512Config);
+		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
 		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
 
 		for (var i = 0; i < rng.Next(0, 100); i++) {
@@ -64,3 +64,4 @@ public class Blake2bSlowConsistency {
 
 
 }
+

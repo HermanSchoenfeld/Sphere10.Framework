@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using SourceGrid.Selection;
 using System;
 using System.ComponentModel;
 using DevAge.ComponentModel;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
 namespace SourceGrid;
 
@@ -526,3 +526,4 @@ public class EndEditingException : SourceGridException {
 		base(p_Info, p_StreamingContext) {
 	}
 }
+

@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 using System.Security.Permissions;
 
 
-namespace Hydrogen.Windows.BITS;
+namespace Sphere10.Framework.Windows.BITS;
 // InteropBits.cs
 // COM Interop C# classes for accessing BITS API.
 // Refer to MSDN for Details: 
@@ -1229,3 +1229,4 @@ internal struct BG_FILE_PROGRESS {
 	/// </summary>
 	public int Completed;
 }
+

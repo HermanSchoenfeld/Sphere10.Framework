@@ -1,7 +1,7 @@
-﻿using System;
-using Hydrogen.Mapping;
+using System;
+using Sphere10.Framework.Mapping;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Encapsulates how change tracking is performed on objects, optionally mapping to a boolean property for automatic dirty flagging.
@@ -45,3 +45,4 @@ internal class ObjectChangeTracker {
 	public static ObjectChangeTracker Default { get; } = new ();
 
 }
+

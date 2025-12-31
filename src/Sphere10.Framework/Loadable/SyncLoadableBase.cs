@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// An <see cref="ILoadable"/> base imlementation, following from <see cref="LoadableBase"/>, that implements it's asynchronous members using <see cref="Task.Run(Action)"/>.
@@ -21,3 +21,4 @@ public abstract class SyncLoadableBase : LoadableBase {
 
 	protected sealed override Task OnLoadedAsync() => Task.Run(OnLoaded);
 }
+

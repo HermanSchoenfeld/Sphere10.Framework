@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Threading;
 
-namespace Hydrogen.Maths;
+namespace Sphere10.Framework.Maths;
 
 /// <summary>
 /// A random number generator based on the Mersenne Twister algorithm.
@@ -65,3 +65,4 @@ public sealed class Mersenne32 : IRandomNumberGenerator {
 		EndianBitConverter.Little.WriteTo(randomUInt, _data);
 	}
 }
+

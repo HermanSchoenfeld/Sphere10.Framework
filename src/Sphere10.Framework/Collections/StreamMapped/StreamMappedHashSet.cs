@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A set whose items are mapped over a stream as a <see cref="StreamMappedList{TItem}"/>. A digest of the items are kept in the clustered record for fast lookup. 
@@ -82,3 +82,4 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public void Dispose() => InternalDictionary.Dispose();
 }
+

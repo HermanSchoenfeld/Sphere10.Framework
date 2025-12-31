@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Hydrogen.DApp.Presentation": {
+    "Sphere10.Framework.DApp.Presentation.Loader": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

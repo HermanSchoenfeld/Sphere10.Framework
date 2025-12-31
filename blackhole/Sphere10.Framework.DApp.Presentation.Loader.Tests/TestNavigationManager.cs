@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using Microsoft.AspNetCore.Components;
 
-namespace Hydrogen.DApp.Presentation.Loader.Tests;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Tests;
 
 public class TestNavigationManager : NavigationManager {
 	public TestNavigationManager() {
@@ -28,3 +28,5 @@ public class TestNavigationManager : NavigationManager {
 		NotifyLocationChanged(forceLoad);
 	}
 }
+
+

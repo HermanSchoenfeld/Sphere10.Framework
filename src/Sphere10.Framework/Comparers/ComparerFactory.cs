@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
-using Hydrogen.Collections;
+using Sphere10.Framework.Collections;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 public class ComparerFactory {
 	private IDictionary<Type, object> _equalityComparers;
 	private IDictionary<Type, object> _comparers;
@@ -223,3 +223,4 @@ public class ComparerFactory {
 	}
 
 }
+

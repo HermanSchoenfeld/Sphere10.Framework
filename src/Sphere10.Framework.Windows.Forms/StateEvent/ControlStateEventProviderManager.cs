@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public class ControlStateEventProviderManager {
 	private readonly HashSet<Type> _controlStateEventProviders;
@@ -73,7 +73,7 @@ public class ControlStateEventProviderManager {
 	public bool TryGetControlStateProvider(Type controlType, out IControlStateEventProvider provider) {
 
 		if (FindControlStateEventProvider(controlType, true, out var actualType)) {
-			provider = HydrogenFramework.Instance.ServiceProvider.GetNamedService<IControlStateEventProvider>(actualType.FullName);
+			provider = Sphere10Framework.Instance.ServiceProvider.GetNamedService<IControlStateEventProvider>(actualType.FullName);
 			return true;
 		}
 		provider = null;
@@ -81,3 +81,4 @@ public class ControlStateEventProviderManager {
 	}
 
 }
+

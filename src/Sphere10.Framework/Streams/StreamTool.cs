@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
-using Hydrogen;
+using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -20,7 +20,7 @@ namespace Tools;
 public static class Streams {
 
 
-	public static void ShiftBytes(Stream stream, long fromIndex, long count, long toIndex, int blockSize = HydrogenDefaults.DefaultBufferOperationBlockSize) {
+	public static void ShiftBytes(Stream stream, long fromIndex, long count, long toIndex, int blockSize = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentGT(blockSize, 0, nameof(blockSize));
 		if (count == 0)
@@ -74,7 +74,7 @@ public static class Streams {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void RouteStream(Stream readStream, Stream writeStream, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
+	public static void RouteStream(Stream readStream, Stream writeStream, int blockSizeInBytes = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
 		Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 		// Optimized for reading a stream of unknown length
 		var buffer = new byte[blockSizeInBytes];
@@ -89,7 +89,7 @@ public static class Streams {
 			writeStream.Close();
 	}
 
-	public static void RouteStream(Stream readStream, Stream writeStream, long length, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
+	public static void RouteStream(Stream readStream, Stream writeStream, long length, int blockSizeInBytes = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
 		Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 		// Optimized for reading a known length of bytes
 		var buffer = new byte[blockSizeInBytes];
@@ -119,14 +119,14 @@ public static class Streams {
 			writeStream.Close();
 	}
 
-	public static byte[] ReadByteArray(Stream stream, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeStream = true) {
+	public static byte[] ReadByteArray(Stream stream, int blockSizeInBytes = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize, bool closeStream = true) {
 		using (var memoryStream = new MemoryStream()) {
 			RouteStream(stream, memoryStream, blockSizeInBytes, closeStream, true);
 			return memoryStream.ToArray();
 		}
 	}
 
-	public static void WriteStreamToFile(Stream readStream, string filePath, FileMode fileMode = FileMode.Create, bool createDirectories = false, int blockSizeInBytes = HydrogenDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = true) {
+	public static void WriteStreamToFile(Stream readStream, string filePath, FileMode fileMode = FileMode.Create, bool createDirectories = false, int blockSizeInBytes = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = true) {
 
 		#region Argument Validaton
 
@@ -218,13 +218,13 @@ public static class Streams {
 
 	public static void GZipCompress(Stream input, Stream output) {
 		using (var compressor = new GZipStream(output, CompressionMode.Compress, true))
-			RouteStream(input, compressor, blockSizeInBytes: HydrogenDefaults.OptimalCompressWriteBlockSize);
+			RouteStream(input, compressor, blockSizeInBytes: Sphere10FrameworkDefaults.OptimalCompressWriteBlockSize);
 	}
 
 	public static void GZipDecompress(Stream input, Stream output) {
 		using (var decompressor = new GZipStream(input, CompressionMode.Decompress, true)) {
 			// WARNING: do not seek to beginnning here! Client code responsible for that
-			RouteStream(decompressor, output, blockSizeInBytes: HydrogenDefaults.OptimalCompressWriteBlockSize);
+			RouteStream(decompressor, output, blockSizeInBytes: Sphere10FrameworkDefaults.OptimalCompressWriteBlockSize);
 		}
 	}
 
@@ -239,3 +239,5 @@ public static class Streams {
 		Tools.Crypto.DecryptStream(input, output, Crypto.PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(password, salt, paddingMode, cipherMode));
 	}
 }
+
+

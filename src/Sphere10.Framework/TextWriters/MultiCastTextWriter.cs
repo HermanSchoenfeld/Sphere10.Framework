@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// TextWriter which routes to a list of other TextWriters.
@@ -105,3 +105,4 @@ public class MulticastTextWriter : TextWriter {
 	/// <remarks></remarks>
 	public override Encoding Encoding => System.Text.Encoding.Default;
 }
+

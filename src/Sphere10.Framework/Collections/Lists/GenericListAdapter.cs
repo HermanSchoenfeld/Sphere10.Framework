@@ -1,7 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class GenericListAdapter<T> : IList<T> {
 
@@ -51,3 +51,4 @@ public sealed class GenericListAdapter<T> : IList<T> {
 		set => _legacyList[index] = value;
 	}
 }
+

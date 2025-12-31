@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ObservableExtendedCollection<TItem, TConcrete> : ObservableCollection<TItem, TConcrete>, IExtendedCollection<TItem>
 	where TConcrete : IExtendedCollection<TItem> {
@@ -95,3 +95,4 @@ public class ObservableExtendedCollection<TItem> : ObservableExtendedCollection<
 	}
 
 }
+

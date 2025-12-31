@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,14 +11,14 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Windows.LevelDB;
+namespace Sphere10.Framework.Windows.LevelDB;
 
 public static class LevelDBInterop {
 	static LevelDBInterop() {
 		var assembly = Assembly.GetAssembly(typeof(LevelDBInterop)).GetName();
 		var directory = Path.Combine(
 			Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create),
-			$"Hydrogen Framework{Path.DirectorySeparatorChar}{assembly.Name}-{assembly.Version}{Path.DirectorySeparatorChar}{(IntPtr.Size == 4 ? "x32" : "x64")}"
+			$"Sphere10.Framework Framework{Path.DirectorySeparatorChar}{assembly.Name}-{assembly.Version}{Path.DirectorySeparatorChar}{(IntPtr.Size == 4 ? "x32" : "x64")}"
 		);
 		if (!Directory.Exists(directory))
 			Directory.CreateDirectory(directory);
@@ -269,3 +269,4 @@ public static class LevelDBInterop {
 	#endregion
 
 }
+

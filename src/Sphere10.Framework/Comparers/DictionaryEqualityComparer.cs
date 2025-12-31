@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<Dictionary<TKey, TValue>>
 {
@@ -53,3 +53,4 @@ public class DictionaryEqualityComparer<TKey, TValue> : IEqualityComparer<Dictio
 		return hash;
 	}
 }
+

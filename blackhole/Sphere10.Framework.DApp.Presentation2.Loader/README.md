@@ -1,12 +1,12 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# Hydrogen.DApp.Presentation2.Loader
+# Sphere10.Framework.DApp.Presentation2.Loader
 
-WebAssembly host for the alternative Hydrogen DApp presentation layer, providing an alternative web application shell for running advanced presentation implementations.
+WebAssembly host for the alternative Sphere10 Framework DApp presentation layer, providing an alternative web application shell for running advanced presentation implementations.
 
 ## 📋 Overview
 
-`Hydrogen.DApp.Presentation2.Loader` is a Blazor WebAssembly host application for the experimental Hydrogen.DApp.Presentation2 library, allowing exploration of advanced UI patterns in the browser.
+`Sphere10.Framework.DApp.Presentation2.Loader` is a Blazor WebAssembly host application for the experimental Sphere10.Framework.DApp.Presentation2 library, allowing exploration of advanced UI patterns in the browser.
 
 ## 🏗️ Architecture
 
@@ -29,15 +29,17 @@ The application structure includes:
 
 ## 📦 Dependencies
 
-- **Hydrogen.DApp.Presentation2**: Alternative presentation components
+- **Sphere10.Framework.DApp.Presentation2**: Alternative presentation components
 - **Microsoft.AspNetCore.Components.WebAssembly**: WebAssembly runtime
 - **Blazored.LocalStorage**: Client-side storage
 
 ## 📄 Related Projects
 
-- [Hydrogen.DApp.Presentation2](./Hydrogen.DApp.Presentation2) - Component library
-- [Hydrogen.DApp.Presentation.Loader](./Hydrogen.DApp.Presentation.Loader) - Standard presentation host
+- [Sphere10.Framework.DApp.Presentation2](./Sphere10.Framework.DApp.Presentation2) - Component library
+- [Sphere10.Framework.DApp.Presentation.Loader](./Sphere10.Framework.DApp.Presentation.Loader) - Standard presentation host
 
 ## 📖 Status
 
-This is an experimental/alternative implementation. Use Hydrogen.DApp.Presentation.Loader for production applications.
+This is an experimental/alternative implementation. Use Sphere10.Framework.DApp.Presentation.Loader for production applications.
+
+

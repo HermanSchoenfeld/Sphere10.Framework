@@ -264,8 +264,8 @@ public
 	#endregion
 
 	/// <summary>
-	/// Equivalent to monadic <see cref="Hydrogen.Either.Return{TRight}"/> operation.
-	/// Builds a <see cref="Hydrogen.Right{TLeft, TRight}"/> value in case <paramref name="value"/> by default.
+	/// Equivalent to monadic <see cref="Sphere10.Framework.Either.Return{TRight}"/> operation.
+	/// Builds a <see cref="Sphere10.Framework.Right{TLeft, TRight}"/> value in case <paramref name="value"/> by default.
 	/// </summary>
 	public static Either<string, TRight> ToEither<TRight>(this TRight value) {
 		return Either.Return<TRight>(value);
@@ -298,3 +298,4 @@ public
 		return either.Tag == EitherType.Right;
 	}
 }
+

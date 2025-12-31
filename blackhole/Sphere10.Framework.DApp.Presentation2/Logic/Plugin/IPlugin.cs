@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.DApp.Presentation2.Logic {
+namespace Sphere10.Framework.DApp.Presentation2.Logic {
 
 	public interface IPlugin {
 		event EventHandlerEx Loaded;
@@ -27,3 +27,5 @@ namespace Hydrogen.DApp.Presentation2.Logic {
 
 	}
 }
+
+

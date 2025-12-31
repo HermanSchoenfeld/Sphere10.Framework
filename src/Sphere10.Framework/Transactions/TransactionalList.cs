@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A list whose items are stored on a file and which has ACID transactional commit/rollback capability as well as built-in memory caching for efficiency. There are
@@ -27,7 +27,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 	private readonly ITransactionalObject _transactionalObject;
 
 	public TransactionalList(
-		HydrogenFileDescriptor fileDescriptor, 
+		Sphere10FrameworkFileDescriptor fileDescriptor, 
 		IItemSerializer<T> serializer = null,
 		IEqualityComparer<T> comparer = null,
 		IItemChecksummer<T> itemChecksummer = null,
@@ -57,11 +57,11 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		IItemSerializer<T> serializer = null, 
 		IEqualityComparer<T> comparer = null, 
 		IItemChecksummer<T> itemChecksummer = null,
-		int clusterSize = HydrogenDefaults.ClusterSize, 
+		int clusterSize = Sphere10FrameworkDefaults.ClusterSize, 
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		long reservedStreams = 0,
 		string optionalItemChecksumIndexName = null,
-		Endianness endianness = HydrogenDefaults.Endianness,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness,
 		bool autoLoad = false
 	) : this(
 			new ClusteredStreams(
@@ -146,3 +146,5 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			InternalCollection.Dispose();
 	}
 }
+
+

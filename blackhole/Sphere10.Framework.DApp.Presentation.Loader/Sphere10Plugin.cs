@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,17 +9,17 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Hydrogen.DApp.Presentation.Plugins;
+using Sphere10.Framework.DApp.Presentation.Plugins;
 
-namespace Hydrogen.DApp.Presentation.Loader;
+namespace Sphere10.Framework.DApp.Presentation.Loader;
 
-public class HydrogenPlugin : Plugin {
+public class Sphere10Plugin : Plugin {
 	public override IEnumerable<IApp> Apps { get; } = new List<IApp> {
-		new Hydrogen.DApp.Presentation.Plugins.App("/",
-			"Hydrogen",
+		new Sphere10.Framework.DApp.Presentation.Plugins.App("/",
+			"Sphere10.Framework",
 			"./img/heading-solid.svg",
 			new[] {
-				new AppBlock("Hydrogen",
+				new AppBlock("Sphere10.Framework",
 					"fa-link",
 					new[] {
 						new AppBlockPage("/",
@@ -39,6 +39,8 @@ public class HydrogenPlugin : Plugin {
 	};
 
 	protected override void ConfigureServicesInternal(IServiceCollection serviceCollection) {
-		serviceCollection.AddViewModelsFromAssembly(Assembly.Load("Hydrogen.DApp.Presentation"));
+		serviceCollection.AddViewModelsFromAssembly(Assembly.Load("Sphere10.Framework.DApp.Presentation"));
 	}
 }
+
+

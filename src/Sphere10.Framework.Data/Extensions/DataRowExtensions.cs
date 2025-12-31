@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 // TODO: there is useful code  https://github.com/dotnet/corefx/tree/master/src/System.Data.DataSetExtensions/src/System/Data
 
@@ -58,3 +58,4 @@ public static class DataRowExtensions {
 		return Tools.Object.ToSQLString(o).Trim('\'');
 	}
 }
+

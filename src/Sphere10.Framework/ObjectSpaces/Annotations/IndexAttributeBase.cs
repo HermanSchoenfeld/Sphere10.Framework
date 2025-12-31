@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
 public abstract class IndexAttributeBase : Attribute {
@@ -8,3 +8,4 @@ public abstract class IndexAttributeBase : Attribute {
 
 	public IndexNullPolicy NullPolicy { get; set; } = IndexNullPolicy.IgnoreNull;
 }
+

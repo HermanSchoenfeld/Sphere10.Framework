@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,11 +10,11 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Hydrogen.DApp.Presentation.Loader.Plugins;
-using Hydrogen.DApp.Presentation.Loader.Tests.PluginManagerTests;
+using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+using Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginManagerTests;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.DApp.Presentation.Loader.Tests.NavigationTests;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.NavigationTests;
 
 public class DefaultPluginManagerTests {
 	[Test]
@@ -36,3 +36,5 @@ public class DefaultPluginManagerTests {
 		ClassicAssert.AreEqual(1, collection.Count);
 	}
 }
+
+

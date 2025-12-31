@@ -1,4 +1,4 @@
-﻿function ConsoleWrite(data) {
+function ConsoleWrite(data) {
     console.log(data);
 }
 

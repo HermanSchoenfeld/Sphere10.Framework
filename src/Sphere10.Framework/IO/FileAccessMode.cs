@@ -1,7 +1,7 @@
 using System;
 using System.CodeDom;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 [Flags]
 public enum FileAccessMode {
@@ -28,3 +28,4 @@ public static class FileAccessModeExtensions {
 		=> accessMode.CopyAndClearFlags(FileAccessMode.AutoLoad);
 
 }
+

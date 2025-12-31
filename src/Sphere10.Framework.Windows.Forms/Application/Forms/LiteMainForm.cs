@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,10 +11,10 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class LiteMainForm : ApplicationForm, IMainForm {
 	public event EventHandler FirstActivation;
@@ -60,7 +60,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 			#region Fire First Time Use Events
 
-			var productUsageServices = HydrogenFramework.Instance.ServiceProvider.GetService<IProductUsageServices>();
+			var productUsageServices = Sphere10Framework.Instance.ServiceProvider.GetService<IProductUsageServices>();
 			var usageInfo = productUsageServices.ProductUsageInformation;
 			if (usageInfo.NumberOfUsesBySystem == 1) {
 				FireFirstTimeExecutedBySystemEvent();
@@ -98,7 +98,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				FireApplicationExitingEvent(cancelArgs);
 				// If no aborts, ask framework to confirm exit
 				if (!cancelArgs.Cancel)
-					HydrogenFramework.Instance.TerminateApplication(0);
+					Sphere10Framework.Instance.TerminateApplication(0);
 			} else {
 				cancelArgs.Cancel = true;
 			}
@@ -166,7 +166,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				SuppressExitConfirmation = force;
 				//System.Environment.Exit(-1);
 				if (SuppressExitConfirmation) 
-					HydrogenFramework.Instance.TerminateApplication(0);
+					Sphere10Framework.Instance.TerminateApplication(0);
 
 				CloseAction = FormCloseAction.Close;
 				Close();
@@ -175,7 +175,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				try {
 					System.Windows.Forms.Application.Exit();
 				} catch {
-					HydrogenFramework.Instance.TerminateApplication(0);
+					Sphere10Framework.Instance.TerminateApplication(0);
 				}
 			} finally {
 				// This runs if close is aborted
@@ -199,7 +199,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	public virtual void ShowNagScreen(string nagMessage) {
 		ExecuteInUIFriendlyContext(() => {
-			var nagDialogInstance = HydrogenFramework.Instance.ServiceProvider.GetService<INagDialog>();
+			var nagDialogInstance = Sphere10Framework.Instance.ServiceProvider.GetService<INagDialog>();
 			if (WindowState == FormWindowState.Minimized) {
 				nagDialogInstance.StartPosition = FormStartPosition.CenterScreen;
 			}
@@ -218,22 +218,22 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	#region IUserNotificationServices Implementation
 
 	public virtual void ShowSendCommentDialog() {
-		var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IProductSendCommentsDialog>();
+		var dialog = Sphere10Framework.Instance.ServiceProvider.GetService<IProductSendCommentsDialog>();
 		dialog.ShowDialog();
 	}
 
 	public virtual void ShowSubmitBugReportDialog() {
-		var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IProductReportBugDialog>();
+		var dialog = Sphere10Framework.Instance.ServiceProvider.GetService<IProductReportBugDialog>();
 		dialog.ShowDialog();
 	}
 
 	public virtual void ShowRequestFeatureDialog() {
-		var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IProductRequestFeatureDialog>();
+		var dialog = Sphere10Framework.Instance.ServiceProvider.GetService<IProductRequestFeatureDialog>();
 		dialog.ShowDialog();
 	}
 
 	public virtual void ShowAboutBox() {
-		var dialog = HydrogenFramework.Instance.ServiceProvider.GetService<IAboutBox>();
+		var dialog = Sphere10Framework.Instance.ServiceProvider.GetService<IAboutBox>();
 		dialog.ShowDialog();
 	}
 
@@ -300,7 +300,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	#region Auxillary Methods
 
 	private void EnforceLicense() {
-		var licenseEnforcer = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
+		var licenseEnforcer = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
 		licenseEnforcer.EnforceLicense(false);
 	}
 
@@ -363,3 +363,4 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	#endregion
 
 }
+

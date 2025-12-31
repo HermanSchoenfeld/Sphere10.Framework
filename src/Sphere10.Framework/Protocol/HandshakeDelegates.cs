@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 // common handshake delegates
 public delegate THandshake GenerateHandshakeDelegate<out THandshake>(ProtocolOrchestrator orchestrator);
@@ -24,3 +24,4 @@ public delegate HandshakeOutcome Verify3WayHandshakeDelegate<in THandshake, in T
 
 
 public delegate bool Acknowledge3WayHandshakeDelegate<in THandshake, in TAck, in TVerack>(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, TVerack verifyAcknowledgement);
+

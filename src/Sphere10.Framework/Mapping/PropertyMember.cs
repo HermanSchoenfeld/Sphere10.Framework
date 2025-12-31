@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Reflection;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 [Serializable]
 internal class PropertyMember : Member {
@@ -89,3 +89,4 @@ internal class PropertyMember : Member {
 		return "{Property: " + _member.Name + "}";
 	}
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Hydrogen.Mapping;
+using Sphere10.Framework.Mapping;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	protected readonly ObjectSpaceBuilder _parent;
@@ -147,7 +147,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		_indexes.Add(
 			new ObjectSpaceDefinition.IndexDefinition { 
 				Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
-				Name = indexName ?? HydrogenDefaults.DefaultReyclableIndexIndexName
+				Name = indexName ?? Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName
 			}
 		);
 		return this;
@@ -157,7 +157,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		_indexes.Add(
 			new ObjectSpaceDefinition.IndexDefinition { 
 				Type = ObjectSpaceDefinition.IndexType.MerkleTree,
-				Name = indexName ?? HydrogenDefaults.DefaultMerkleTreeIndexName
+				Name = indexName ?? Sphere10FrameworkDefaults.DefaultMerkleTreeIndexName
 			}
 		);
 		return this;
@@ -202,3 +202,5 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		=> OptimizeAssumingAverageItemSize(bytes);
 
 }
+
+

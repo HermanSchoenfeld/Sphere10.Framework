@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ControlExtensions.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -17,9 +17,9 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class ControlExtensions {
 	// TKey is control to drag, TValue is a flag used while dragging
@@ -231,3 +231,4 @@ public static class ControlExtensions {
 		}
 	}
 }
+

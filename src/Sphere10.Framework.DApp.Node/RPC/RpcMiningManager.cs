@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,12 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Hydrogen.Communications.RPC;
-using Hydrogen.DApp.Core;
-using Hydrogen.DApp.Core.Consensus;
-using Hydrogen.DApp.Core.Mining;
+using Sphere10.Framework.Communications.RPC;
+using Sphere10.Framework.DApp.Core;
+using Sphere10.Framework.DApp.Core.Consensus;
+using Sphere10.Framework.DApp.Core.Mining;
 
-namespace Hydrogen.DApp.Node.RPC;
+namespace Sphere10.Framework.DApp.Node.RPC;
 
 //anonymous api for getwork/submit 
 [RpcAPIService("Miner")]
@@ -307,3 +307,4 @@ public class RpcMiningManager : MiningManagerBase, IMiningBlockProducer {
 	}
 
 }
+

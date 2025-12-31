@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -13,9 +13,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Stream-mapped recyclable list that maintains merkle integrity data alongside recyclable index metadata.
@@ -58,8 +58,8 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		IItemChecksummer<TItem> itemChecksummer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 2,
-		string merkleTreeIndexName = HydrogenDefaults.DefaultMerkleTreeIndexName,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string merkleTreeIndexName = Sphere10FrameworkDefaults.DefaultMerkleTreeIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
 		string optionalItemChecksumIndexName = null,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false
@@ -189,3 +189,5 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 	}
 
 }
+
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,12 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Communications;
+using Sphere10.Framework.Communications;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen.DApp.Core.Runtime;
+namespace Sphere10.Framework.DApp.Core.Runtime;
 
 public class Node : INode {
 	public event EventHandlerEx GuiStarted;
@@ -53,3 +53,4 @@ public class Node : INode {
 		throw new NotImplementedException();
 	}
 }
+

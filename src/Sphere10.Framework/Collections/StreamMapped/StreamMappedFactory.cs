@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class StreamMappedFactory {
 
@@ -80,7 +80,7 @@ public static class StreamMappedFactory {
 		IItemChecksummer<TItem> itemChecksummer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 1,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
 		string optionalItemChecksumIndexName = null,
 		Endianness endianness = Endianness.LittleEndian, 
 		bool autoLoad = false
@@ -110,7 +110,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer = null,
 		IEqualityComparer<TItem> itemComparer = null,
 		IItemChecksummer<TItem> itemChecksummer = null,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
 		string optionalItemChecksumIndexName = null,
 		bool autoLoad = false
 	) {
@@ -142,12 +142,12 @@ public static class StreamMappedFactory {
 		IItemChecksummer<TKey> keyChecksum,
 		IEqualityComparer<TKey> keyComparer,
 		IEqualityComparer<TValue> valueComparer,
-		int clusterSize = HydrogenDefaults.ClusterSize,
+		int clusterSize = Sphere10FrameworkDefaults.ClusterSize,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 2,
-		string recylableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string recylableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
 		string keyIndexName = null,
-		Endianness endianness = HydrogenDefaults.Endianness,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness,
 		bool readOnly = false,
 		bool autoLoad = false,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
@@ -199,7 +199,7 @@ public static class StreamMappedFactory {
 				autoLoad,
 				reservedStreams,
 				recylableIndexIndexName,
-				keyIndexName ?? HydrogenDefaults.DefaultKeyStoreAttachmentName
+				keyIndexName ?? Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName
 			);
 		} else {
 			return CreateDictionaryKvp(
@@ -215,7 +215,7 @@ public static class StreamMappedFactory {
 				autoLoad,
 				reservedStreams,
 				recylableIndexIndexName,
-				keyIndexName ?? HydrogenDefaults.DefaultKeyChecksumIndexName
+				keyIndexName ?? Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName
 			);
 		}
 
@@ -238,8 +238,8 @@ public static class StreamMappedFactory {
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false,
 		long reservedStreamCount = 2,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName
 	) {
 		var dict = CreateDictionaryKvp (
 			new ClusteredStreams(
@@ -271,8 +271,8 @@ public static class StreamMappedFactory {
 		IEqualityComparer<TValue> valueComparer = null,
 		IItemChecksummer<TKey> keyChecksummer = null,
 		bool autoLoad = false,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = Sphere10FrameworkDefaults.DefaultKeyChecksumIndexName
 	) {
 
 		var container = CreateKvpObjectContainer(
@@ -313,8 +313,8 @@ public static class StreamMappedFactory {
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false,
 		long reservedStreamCount = 2,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyStoreName = HydrogenDefaults.DefaultKeyStoreAttachmentName
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyStoreName = Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName
 	) {
 		var container = new ClusteredStreams(
 			rootStream,
@@ -348,8 +348,8 @@ public static class StreamMappedFactory {
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		bool autoLoad = false,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
-		string keyStoreName = HydrogenDefaults.DefaultKeyStoreAttachmentName
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
+		string keyStoreName = Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName
 	) {
 		var container = CreateClkContainer(
 			streams,
@@ -587,3 +587,5 @@ public static class StreamMappedFactory {
 
 	#endregion
 }
+
+

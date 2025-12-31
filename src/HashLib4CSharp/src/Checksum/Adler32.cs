@@ -130,3 +130,4 @@ namespace HashLib4CSharp.Checksum
         }
     }
 }
+

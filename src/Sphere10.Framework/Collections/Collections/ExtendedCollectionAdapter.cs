@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ExtendedCollectionAdapter<T> : ExtendedCollectionBase<T> {
 	private readonly ICollection<T> _source;
@@ -36,3 +36,4 @@ public class ExtendedCollectionAdapter<T> : ExtendedCollectionBase<T> {
 	public override IEnumerator<T> GetEnumerator() =>_source.GetEnumerator();
 
 }
+

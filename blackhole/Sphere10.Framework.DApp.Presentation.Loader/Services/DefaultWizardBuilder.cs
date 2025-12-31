@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.Components.Wizard;
-using Hydrogen.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.Components.Wizard;
+using Sphere10.Framework.DApp.Presentation.Services;
 
-namespace Hydrogen.DApp.Presentation.Loader.Services;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Services;
 
 /// <summary>
 /// Wizard builder - constructs wizard component and produces render fragment delegate
@@ -118,3 +118,5 @@ internal class WizardBuilderParameters<TModel> {
 	/// </summary>
 	internal List<Type> Steps { get; } = new();
 }
+
+

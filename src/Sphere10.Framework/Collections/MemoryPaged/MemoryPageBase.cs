@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem> {
 	internal readonly IExtendedList<TItem> MemoryStore;
@@ -127,3 +127,4 @@ public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem
 	protected abstract Stream OpenWriteStream();
 
 }
+

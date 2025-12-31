@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,10 +13,10 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Security;
-using Hydrogen.CryptoEx.IES;
-using Hydrogen.CryptoEx.PascalCoin;
+using Sphere10.Framework.CryptoEx.IES;
+using Sphere10.Framework.CryptoEx.PascalCoin;
 
-namespace Hydrogen.CryptoEx.EC.IES;
+namespace Sphere10.Framework.CryptoEx.EC.IES;
 
 public sealed class ECIES : IIESAlgorithm {
 
@@ -77,3 +77,4 @@ public sealed class ECIES : IIESAlgorithm {
 
 
 }
+

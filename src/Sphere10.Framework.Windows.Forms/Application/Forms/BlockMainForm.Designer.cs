@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms
+namespace Sphere10.Framework.Windows.Forms
 {
     partial class BlockMainForm
     {
@@ -41,7 +41,7 @@ namespace Hydrogen.Windows.Forms
 			this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
 			this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
 			this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
-			this._applicationBar = new Hydrogen.Windows.Forms.ApplicationBar();
+			this._applicationBar = new Sphere10.Framework.Windows.Forms.ApplicationBar();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer)).BeginInit();
 			this._splitContainer.Panel1.SuspendLayout();
 			this._splitContainer.Panel2.SuspendLayout();
@@ -138,3 +138,4 @@ namespace Hydrogen.Windows.Forms
 		private ApplicationBar _applicationBar;
 	}
 }
+

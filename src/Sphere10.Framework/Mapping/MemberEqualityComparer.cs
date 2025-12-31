@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 public class MemberEqualityComparer : IEqualityComparer<Member>
 {
@@ -14,3 +14,4 @@ public class MemberEqualityComparer : IEqualityComparer<Member>
 		return obj.MemberInfo.MetadataToken.GetHashCode() & obj.MemberInfo.Module.GetHashCode();
 	}
 }
+

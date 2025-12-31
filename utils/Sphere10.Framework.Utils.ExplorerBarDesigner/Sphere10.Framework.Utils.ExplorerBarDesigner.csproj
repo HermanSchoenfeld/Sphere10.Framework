@@ -4,12 +4,12 @@
     <OutputType>WinExe</OutputType>
 	  <TargetFramework>net8.0-windows</TargetFramework>
 	  <UseWindowsForms>true</UseWindowsForms>
-	  <AssemblyName>Hydrogen.Utils.ExplorerBarDesigner</AssemblyName>
-	  <RootNamespace>Hydrogen.Utils.ExplorerBarDesigner</RootNamespace>
+      <AssemblyName>Sphere10.Framework.Utils.ExplorerBarDesigner</AssemblyName>
+      <RootNamespace>Sphere10.Framework.Utils.ExplorerBarDesigner</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Hydrogen.Windows.Forms\Hydrogen.Windows.Forms.csproj" />
+	<ProjectReference Include="..\..\src\Sphere10.Framework.Windows.Forms\Sphere10.Framework.Windows.Forms.csproj" />
   </ItemGroup>
   
   <ItemGroup>
@@ -24,7 +24,7 @@
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Hydrogen.Utils.ExplorerBarDesigner</CustomToolNamespace>
+	  <CustomToolNamespace>Sphere10.Framework.Utils.ExplorerBarDesigner</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 

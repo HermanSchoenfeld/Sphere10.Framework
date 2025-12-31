@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,11 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Hydrogen.Application;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Windows.Forms;
 using Newtonsoft.Json.Linq;
 
-namespace HydrogenTester.WinForms.Screens;
+namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 public partial class EmailTestScreen : ApplicationScreen {
 	private EmailerSettings _settings;
@@ -150,4 +150,6 @@ public partial class EmailTestScreen : ApplicationScreen {
 
 	}
 }
+
+
 

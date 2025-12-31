@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,8 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen;
-using Hydrogen.Web.AspNetCore.AnimateCss;
+using Sphere10.Framework;
+using Sphere10.Framework.Web.AspNetCore.AnimateCss;
 
 // ReSharper disable CheckNamespace
 namespace Tools.Web;
@@ -176,3 +176,4 @@ public static partial class Html {
 	}
 
 }
+

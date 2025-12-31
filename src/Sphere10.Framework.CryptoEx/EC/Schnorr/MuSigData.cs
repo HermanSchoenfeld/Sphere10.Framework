@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using Org.BouncyCastle.Math.EC;
 
-namespace Hydrogen.CryptoEx.EC;
+namespace Sphere10.Framework.CryptoEx.EC;
 
 public class MuSigData {
 	public byte[] AggregatedPublicKey { get; internal set; }
@@ -20,3 +20,4 @@ public class AggregatedPublicKeyData {
 	public ECPoint CombinedPoint { get; internal set; }
 	public bool PublicKeyParity { get; internal set; }
 }
+

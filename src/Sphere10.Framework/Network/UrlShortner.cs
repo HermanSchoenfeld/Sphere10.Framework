@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class UrlShortner {
 	public static async Task<string> TinyUrlAsync(string url, string apiKey, string provider = "0_mk") {
@@ -115,3 +115,4 @@ public static class UrlShortner {
 				.Trim();
 	}
 }
+

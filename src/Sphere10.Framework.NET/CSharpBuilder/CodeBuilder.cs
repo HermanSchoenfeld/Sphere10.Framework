@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Hydrogen.CodeBuilder;
+namespace Sphere10.Framework.CodeBuilder;
 
 public enum ProtectionLevel {
 	Private,
@@ -448,3 +448,4 @@ public class ParameterBuilder {
 		return string.Format("{0} {1}", TypeName, ParameterName);
 	}
 }
+

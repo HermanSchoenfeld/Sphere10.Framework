@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="PlaceHolderTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class PlaceHolderTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -43,12 +43,12 @@ namespace Hydrogen.Utils.WinFormsTester {
 			this.comboBox1 = new System.Windows.Forms.ComboBox();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.searchTextBox2 = new Hydrogen.Windows.Forms.SearchTextBox();
-			this.moneyBox1 = new Hydrogen.Windows.Forms.MoneyBox();
-			this.textBoxEx1 = new Hydrogen.Windows.Forms.TextBoxEx();
-			this.searchTextBox1 = new Hydrogen.Windows.Forms.SearchTextBox();
-			this.cueTextExtender1 = new Hydrogen.Windows.Forms.PlaceHolderTextExtender(this.components);
-			this.comboBoxEx1 = new Hydrogen.Windows.Forms.ComboBoxEx();
+			this.searchTextBox2 = new Sphere10.Framework.Windows.Forms.SearchTextBox();
+			this.moneyBox1 = new Sphere10.Framework.Windows.Forms.MoneyBox();
+			this.textBoxEx1 = new Sphere10.Framework.Windows.Forms.TextBoxEx();
+			this.searchTextBox1 = new Sphere10.Framework.Windows.Forms.SearchTextBox();
+			this.cueTextExtender1 = new Sphere10.Framework.Windows.Forms.PlaceHolderTextExtender(this.components);
+			this.comboBoxEx1 = new Sphere10.Framework.Windows.Forms.ComboBoxEx();
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -188,16 +188,18 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.ComboBox comboBox1;
-		private Hydrogen.Windows.Forms.PlaceHolderTextExtender cueTextExtender1;
+		private Sphere10.Framework.Windows.Forms.PlaceHolderTextExtender cueTextExtender1;
 		private System.Windows.Forms.TextBox textBox1;
 		private System.Windows.Forms.RichTextBox richTextBox1;
 		private System.Windows.Forms.MaskedTextBox maskedTextBox1;
-		private Hydrogen.Windows.Forms.SearchTextBox searchTextBox1;
+		private Sphere10.Framework.Windows.Forms.SearchTextBox searchTextBox1;
 		private System.Windows.Forms.GroupBox groupBox2;
-		private Hydrogen.Windows.Forms.SearchTextBox searchTextBox2;
-		private Hydrogen.Windows.Forms.MoneyBox moneyBox1;
-		private Hydrogen.Windows.Forms.TextBoxEx textBoxEx1;
-		private Hydrogen.Windows.Forms.ComboBoxEx comboBoxEx1;
+		private Sphere10.Framework.Windows.Forms.SearchTextBox searchTextBox2;
+		private Sphere10.Framework.Windows.Forms.MoneyBox moneyBox1;
+		private Sphere10.Framework.Windows.Forms.TextBoxEx textBoxEx1;
+		private Sphere10.Framework.Windows.Forms.ComboBoxEx comboBoxEx1;
 
 	}
 }
+
+

@@ -15,9 +15,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
-      <ProjectReference Include="..\..\src\Hydrogen.NUnit\Hydrogen.NUnit.csproj" />
-      <ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
+      <ProjectReference Include="..\..\src\Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj" />
+      <ProjectReference Include="..\..\src\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
+      <ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 internal class StreamMappedDictionaryKeyValueHasher : IItemHasher<long> {
 	private readonly IStreamMappedDictionary _smpDict;
@@ -25,3 +25,4 @@ internal class StreamMappedDictionaryKeyValueHasher : IItemHasher<long> {
 	}
 	
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A memory buffer whose entire contents reside in a contiguous block of memory. Operations are batch optimized thus suitable for image/data manipulations of small - mid size.
@@ -231,3 +231,4 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	}
 
 }
+

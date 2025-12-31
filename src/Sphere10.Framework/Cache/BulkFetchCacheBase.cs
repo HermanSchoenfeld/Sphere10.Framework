@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Base class for caches that populate all entries in a single bulk fetch operation.
@@ -95,3 +95,4 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 	protected abstract IDictionary<TKey, TValue> BulkFetch();
 
 }
+

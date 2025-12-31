@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,10 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.DApp.Core.Runtime;
+namespace Sphere10.Framework.DApp.Core.Runtime;
 
 /// <summary>
-/// Class that provides the folders for the Hydrogen Application. It can also create them if they don't exist.
+/// Class that provides the folders for the Sphere10.Framework Application. It can also create them if they don't exist.
 /// </summary>
 public interface IApplicationPaths {
 	string HapFolder { get; }
@@ -26,3 +26,4 @@ public interface IApplicationPaths {
 	string GUILog { get; }
 
 }
+

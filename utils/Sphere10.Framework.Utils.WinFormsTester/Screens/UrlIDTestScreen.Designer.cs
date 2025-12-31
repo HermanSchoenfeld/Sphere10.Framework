@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="UrlIDTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
     partial class UrlIDTestScreen {
         /// <summary>
         /// Required designer variable.
@@ -37,7 +37,7 @@ namespace Hydrogen.Utils.WinFormsTester {
         /// </summary>
         private void InitializeComponent() {
             this._generateButton = new System.Windows.Forms.Button();
-            this._textBoxEx = new Hydrogen.Windows.Forms.TextBoxEx();
+            this._textBoxEx = new Sphere10.Framework.Windows.Forms.TextBoxEx();
             this.SuspendLayout();
             // 
             // _generateButton
@@ -78,6 +78,8 @@ namespace Hydrogen.Utils.WinFormsTester {
         #endregion
 
         private System.Windows.Forms.Button _generateButton;
-        private Hydrogen.Windows.Forms.TextBoxEx _textBoxEx;
+        private Sphere10.Framework.Windows.Forms.TextBoxEx _textBoxEx;
     }
 }
+
+

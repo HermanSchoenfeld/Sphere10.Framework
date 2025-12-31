@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -35,3 +35,4 @@ public static class Debugger {
 	public static void AddMessage(string message) => Messages.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}");
 
 }
+

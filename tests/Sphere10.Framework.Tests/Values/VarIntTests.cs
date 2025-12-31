@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests.Values;
+namespace Sphere10.Framework.Tests.Values;
 
 public class VarIntTests {
 	[Test]
@@ -80,3 +80,4 @@ public class VarIntTests {
 	}
 
 }
+

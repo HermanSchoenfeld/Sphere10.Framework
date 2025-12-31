@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,10 +11,10 @@ using System.ComponentModel;
 using System.Data.SQLite;
 using System.IO;
 using System.Threading.Tasks;
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 
-namespace Hydrogen.Windows.Forms.Sqlite;
+namespace Sphere10.Framework.Windows.Forms.Sqlite;
 
 public partial class SqliteConnectionPanel : ConnectionPanelBase, IDatabaseConnectionProvider {
 	public SqliteConnectionPanel() {
@@ -98,3 +98,4 @@ public partial class SqliteConnectionPanel : ConnectionPanelBase, IDatabaseConne
 
 
 }
+

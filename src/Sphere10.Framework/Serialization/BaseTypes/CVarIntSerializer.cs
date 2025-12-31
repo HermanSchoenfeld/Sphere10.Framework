@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class CVarIntSerializer : ItemSerializerBase<CVarInt> {
 
@@ -14,3 +14,4 @@ public sealed class CVarIntSerializer : ItemSerializerBase<CVarInt> {
 		=> CVarInt.Read(reader.BaseStream);
 
 }
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 
 namespace CommandLine.Infrastructure;
@@ -44,3 +44,4 @@ internal class LocalizableAttributeProperty {
 		return _localizationPropertyInfo.GetValue(null, null).Cast<string>();
 	}
 }
+

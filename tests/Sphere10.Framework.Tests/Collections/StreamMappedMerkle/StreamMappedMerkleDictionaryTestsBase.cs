@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Hydrogen.NUnit;
+using Sphere10.Framework.NUnit;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 	protected abstract IDisposable CreateTestObjectDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> merkleDictionary);
@@ -191,7 +191,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void AddOne([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void AddOne([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			clusteredDictionary.Add(key, new TestObject(rng));
@@ -200,7 +200,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void ReuseRecord([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ReuseRecord([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			clusteredDictionary.Add(key, new TestObject(rng));
@@ -211,7 +211,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void ContainsKey([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKey([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			clusteredDictionary.Add(key, new TestObject(rng));
@@ -220,7 +220,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void NotContainsKey([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void NotContainsKey([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			clusteredDictionary.Add(key, new TestObject(rng));
@@ -230,7 +230,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void DoesNotContainKeyAfterRemove([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyAfterRemove([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			clusteredDictionary.Add(key, new TestObject(rng));
@@ -240,7 +240,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void ContainsKeyValuePair([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKeyValuePair([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			var value = new TestObject(rng);
@@ -251,7 +251,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			var value = new TestObject(rng);
@@ -263,7 +263,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void RemoveByKey([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void RemoveByKey([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			clusteredDictionary.Add(key, new TestObject(rng));
@@ -273,7 +273,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 	[Test]
-	public void RemoveByKeyValuePair([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode😊😊😊", "")] string key, [Values(23)] int maxItems) {
+	public void RemoveByKeyValuePair([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, [Values("alpha", "Unicode??????", "")] string key, [Values(23)] int maxItems) {
 		var rng = new Random(31337);
 		using (CreateTestObjectDictionary(chf, out var clusteredDictionary)) {
 			clusteredDictionary.Add(key, new TestObject(rng));
@@ -331,3 +331,4 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 	}
 
 }
+

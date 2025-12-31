@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Determines the byte-size of a "size" long which can can be serialized in a variety of strategies (<see cref="SizeDescriptorStrategy"/>).
@@ -30,3 +30,4 @@ public class SizeDescriptorSizer : ItemSizerBase<long> {
 		_ => throw new ArgumentOutOfRangeException()
 	};
 }
+

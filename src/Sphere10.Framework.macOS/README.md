@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🍎 Hydrogen.macOS
+# 🍎 Sphere10.Framework.macOS
 
 **macOS platform abstraction** layer providing native macOS APIs, Xamarin.Mac integration, and Swift interoperability for building native desktop applications on Apple's macOS platform.
 
-Hydrogen.macOS enables **cross-platform desktop development** with seamless integration to macOS native capabilities including file system, notifications, clipboard, menubar, dock, accessibility features, and system services while maintaining compatibility with Hydrogen framework abstractions.
+Sphere10.Framework.macOS enables **cross-platform desktop development** with seamless integration to macOS native capabilities including file system, notifications, clipboard, menubar, dock, accessibility features, and system services while maintaining compatibility with Sphere10 Framework framework abstractions.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using AppKit;
 
 // Access system information
@@ -20,14 +20,14 @@ Console.WriteLine($"Processor: {systemInfo.ProcessorCount} cores");
 // Show notification
 var notification = new macOSNotification {
     Title = "Hello macOS",
-    Subtitle = "From Hydrogen Framework",
+    Subtitle = "From Sphere10 Framework Framework",
     Message = "This is a notification"
 };
 await notification.ShowAsync();
 
 // Work with pasteboard
 var pasteboard = macOSPasteboard.General;
-await pasteboard.SetStringAsync("Hello from Hydrogen");
+await pasteboard.SetStringAsync("Hello from Sphere10 Framework");
 ```
 
 ## 🏗️ Core Concepts
@@ -47,7 +47,7 @@ await pasteboard.SetStringAsync("Hello from Hydrogen");
 ### System Information & Capabilities
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using Foundation;
 using AppKit;
 
@@ -77,7 +77,7 @@ macOSAppearance.AppearanceChanged += (sender, isDarkMode) => {
 ### File Dialogs & Operations
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using AppKit;
 
 // Open file dialog
@@ -136,7 +136,7 @@ Console.WriteLine($"Modified: {modDate}");
 ### Notifications
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using UserNotifications;
 
 // Request notification permission
@@ -187,7 +187,7 @@ if (permission == NotificationPermissionStatus.Granted) {
 ### Pasteboard (Clipboard) Management
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using AppKit;
 
 // General pasteboard (system clipboard)
@@ -222,7 +222,7 @@ await pasteboard.ClearAsync();
 ### Window Management
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using AppKit;
 
 // Get main window
@@ -268,7 +268,7 @@ foreach (var w in allWindows) {
 ### Dock Integration
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using AppKit;
 
 // Get dock menu
@@ -305,7 +305,7 @@ macOSDock.RegisterFileTypesHandler((files) => {
 ### Menu Bar Applications
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using AppKit;
 
 // Create status bar item
@@ -339,7 +339,7 @@ NSApplication.SharedApplication.ActivationPolicy =
 ### System Services & Gestures
 
 ```csharp
-using Hydrogen.macOS;
+using Sphere10.Framework.macOS;
 using AppKit;
 
 // Access system services
@@ -413,14 +413,16 @@ macOSScreen.ScreensChanged += () => {
 
 ## 📚 Related Projects
 
-- [Hydrogen.iOS](../Hydrogen.iOS) - iOS platform implementation
-- [Hydrogen.Android](../Hydrogen.Android) - Android platform implementation
-- [Hydrogen.Windows](../Hydrogen.Windows) - Windows desktop implementation
-- [Hydrogen.Application](../Hydrogen.Application) - Cross-platform application abstraction
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests) - Test patterns and examples
+- [Sphere10.Framework.iOS](../Sphere10.Framework.iOS) - iOS platform implementation
+- [Sphere10.Framework.Android](../Sphere10.Framework.Android) - Android platform implementation
+- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows desktop implementation
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Cross-platform application abstraction
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

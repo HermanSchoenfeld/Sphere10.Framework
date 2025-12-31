@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using NUnit.Framework;
 using System.IO;
-using Hydrogen.Collections;
-using Hydrogen.NUnit;
+using Sphere10.Framework.Collections;
+using Sphere10.Framework.NUnit;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -47,7 +47,7 @@ public class StreamMappedBufferTests {
 
 	[Test]
 	public void IntegrationTests(
-		[Values(1, 3, 11, 111, HydrogenDefaults.DefaultBufferOperationBlockSize)]
+		[Values(1, 3, 11, 111, Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize)]
 		int blockSize,
 		[Values(1, 2, 3, 11, 111, 1111, 11111)]
 		int maxCapacity) {
@@ -56,3 +56,5 @@ public class StreamMappedBufferTests {
 		AssertEx.BufferIntegrationTest(buffer, maxCapacity);
 	}
 }
+
+

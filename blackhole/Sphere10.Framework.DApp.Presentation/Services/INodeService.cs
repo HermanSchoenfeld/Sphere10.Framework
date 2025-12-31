@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.Models;
+using Sphere10.Framework.DApp.Presentation.Models;
 
-namespace Hydrogen.DApp.Presentation.Services;
+namespace Sphere10.Framework.DApp.Presentation.Services;
 
 /// <summary>
 /// Node service -- example data service
@@ -30,3 +30,5 @@ public interface INodeService {
 	/// <returns> response</returns>
 	Task<ItemsResponse<Block>> GetBlocksAsync(ItemRequest itemRequest);
 }
+
+

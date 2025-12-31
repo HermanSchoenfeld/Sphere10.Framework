@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 public class ObjectSpaceBuilder {
 
@@ -47,14 +47,14 @@ public class ObjectSpaceBuilder {
 		_type = null;
 		_filepath = null;
 		_memoryStream = null;
-		_pagesPath = HydrogenDefaults.TransactionalPageFolder;
-		_maxMemory = HydrogenDefaults.MaxMemoryPerCollection;
-		_pageSize = HydrogenDefaults.TransactionalPageSize;
-		_clusterSize = HydrogenDefaults.ClusterSize;
+		_pagesPath = Sphere10FrameworkDefaults.TransactionalPageFolder;
+		_maxMemory = Sphere10FrameworkDefaults.MaxMemoryPerCollection;
+		_pageSize = Sphere10FrameworkDefaults.TransactionalPageSize;
+		_clusterSize = Sphere10FrameworkDefaults.ClusterSize;
 		_merkleized = false;
-		_hashFunction = HydrogenDefaults.HashFunction;
-		_clusteredStreamsPolicy = HydrogenDefaults.ContainerPolicy;
-		_endianness = HydrogenDefaults.Endianness;
+		_hashFunction = Sphere10FrameworkDefaults.HashFunction;
+		_clusteredStreamsPolicy = Sphere10FrameworkDefaults.ContainerPolicy;
+		_endianness = Sphere10FrameworkDefaults.Endianness;
 		_accessMode = FileAccessMode.OpenOrCreate;
 		_dimensions = new List<IObjectSpaceDimensionBuilder>();
 
@@ -270,7 +270,7 @@ public class ObjectSpaceBuilder {
 
 	public ObjectSpace Build() {
 		var definition = BuildDefinition();
-		var fileDescriptor = HydrogenFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, _clusterSize, _clusteredStreamsPolicy, _endianness);
+		var fileDescriptor = Sphere10FrameworkFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, _clusterSize, _clusteredStreamsPolicy, _endianness);
 		switch(_type) {
 			case ObjectSpaceType.FileMapped:
 				return new FileObjectSpace(fileDescriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
@@ -292,3 +292,5 @@ public class ObjectSpaceBuilder {
 	}
 
 }
+
+

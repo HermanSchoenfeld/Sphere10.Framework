@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class ComplexObjectEqualityComparer : IEqualityComparer<ComplexObject> {
 	private readonly ListEqualityComparer<ComplexObject> _listComparer;
@@ -31,3 +31,4 @@ public class ComplexObjectEqualityComparer : IEqualityComparer<ComplexObject> {
 		return HashCode.Combine(obj.ObjectProperty, obj.RecursiveProperty, obj.TestProperty, obj.ManyRecursiveProperty);
 	}
 }
+

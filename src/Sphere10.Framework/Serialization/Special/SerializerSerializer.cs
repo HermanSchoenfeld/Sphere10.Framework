@@ -1,8 +1,8 @@
-﻿using Hydrogen.FastReflection;
+using Sphere10.Framework.FastReflection;
 using System;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Used to serialize a reference to serializer in a <see cref="SerializerFactory"/>. Used predominantly by <see cref="PolymorphicSerializer{TBase}"/>
@@ -49,3 +49,4 @@ internal class SerializerSerializer : ItemSerializerBase<IItemSerializer>{
 	}
 
 }
+

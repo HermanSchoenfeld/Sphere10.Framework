@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,8 +13,8 @@ using System.Linq;
 using System.ServiceProcess;
 using System.Text;
 using Microsoft.Win32;
-using Hydrogen;
-using Hydrogen.Windows;
+using Sphere10.Framework;
+using Sphere10.Framework.Windows;
 
 namespace Tools;
 
@@ -253,3 +253,4 @@ public class WinTool {
 	#endregion
 
 }
+

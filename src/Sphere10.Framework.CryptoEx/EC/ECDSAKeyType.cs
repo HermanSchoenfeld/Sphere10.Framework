@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.CryptoEx;
+namespace Sphere10.Framework.CryptoEx;
 
 public enum ECDSAKeyType {
 
@@ -29,3 +29,4 @@ public enum ECDSAKeyType {
 	[BouncyCastleCurve("SECT283K1")] [OpenSSLID(729)] [KeyTypeOrder("01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE9AE2ED07577265DFF7F94451E061E163C61")]
 	SECT283K1
 }
+

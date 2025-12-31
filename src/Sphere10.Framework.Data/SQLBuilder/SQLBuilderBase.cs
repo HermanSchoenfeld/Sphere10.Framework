@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -13,7 +13,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 // Need to change implementation
 // - InternalStatements gets appended on statement finish/tostring/iteration 
@@ -592,3 +592,4 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 	#endregion
 
 }
+

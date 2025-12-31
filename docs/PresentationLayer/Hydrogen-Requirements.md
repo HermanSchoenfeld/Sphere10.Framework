@@ -1,4 +1,4 @@
-<pre>
+﻿<pre>
   Author: Herman Schoenfeld <herman@sphere10.com>
   Version: 0.1
   Date: 2020-12-14
@@ -6,9 +6,9 @@
   License: Confidential and not for public disclosure
 </pre>
 
-# Hydrogen - Presentation-tier Requirements
+# Sphere10 Framework - Presentation-tier Requirements
 
-Sphere 10 Software is building a next-generation cryptocurrency project involving proprietary new technology VelocityNET. The project is architecturally composed of two main sub-systems, the backend node node and the front-end progressive web app codenamed "Hydrogen". The backend will be a console-based application and will act as a P2P node within VelocityNET. The backend takes care of all computational, cryptographic, consensus aspects and networking of the system.  The frontend provides the high-quality presentation layer for the system. The frontend allows layer-2 application builders to extend the UI. 
+Sphere 10 Software is building a next-generation cryptocurrency project involving proprietary new technology VelocityNET. The project is architecturally composed of two main sub-systems, the backend node node and the front-end progressive web app codenamed "Sphere10 Framework". The backend will be a console-based application and will act as a P2P node within VelocityNET. The backend takes care of all computational, cryptographic, consensus aspects and networking of the system.  The frontend provides the high-quality presentation layer for the system. The frontend allows layer-2 application builders to extend the UI. 
 
 
 
@@ -16,7 +16,7 @@ Sphere 10 Software is building a next-generation cryptocurrency project involvin
 
 
 
-## Hydrogen
+## Sphere10 Framework
 
 The presentation-tier will be composed of a Blazor-based .NET application utilizing cutting edge patterns and approaches. The presentation-tier will allow users to interact with the core VelocityNET system as well as the Layer-2 "pluggable apps" that will integrate into the system.  As those specific application requirements are still in development, the presentation-tier will be developed in phases.
 
@@ -32,7 +32,7 @@ In this phase we will develop the application theme/style and a set of re-usable
 
 #### 1. Core UI:
 
-- **1.1 Hydrogen Skeleton**: The core UI frame that hosts all application screens, etc and bootstraps the application.
+- **1.1 Sphere10 Framework Skeleton**: The core UI frame that hosts all application screens, etc and bootstraps the application.
 -  **1.2 Navigation Pattern**: The navigation for transitioning screens, showing pop ups and dialogs, etc.
 
 - **1.3 Dynamic Data-Source Pattern**: the URI of the server backend which provides the data-sources can be changed at any time, and the UI will provide a drop-down list of available servers.
@@ -41,7 +41,7 @@ In this phase we will develop the application theme/style and a set of re-usable
 
 ##### Plugin architecture
 
-Initially, the application can distribute the plugins as strongly-referenced assemblies by the Hydrogen skeleton. This ensures that the web-server distributes those DLL's to the web-browser. The first plugin (which will be the wallet in Hydrogen) should always be distributed this way.
+Initially, the application can distribute the plugins as strongly-referenced assemblies by the Sphere10 Framework skeleton. This ensures that the web-server distributes those DLL's to the web-browser. The first plugin (which will be the wallet in Sphere10 Framework) should always be distributed this way.
 
 However, at some point there will need to be a pattern where subsequent plugins are loaded dynamically after the initial plugin loads. This will require some R&D to determine how a Blazor Web Assembly app can receive a "/plugins/" folder and then load up via reflection those plugins.  This distribution mechanism isn't relevant after our first launch (i.e. phase 4).
 
@@ -52,13 +52,13 @@ However, from Phase 1, the plugin architecture should be structured as follows:
 4. An Application Block Menu Option has a 1-1 connection to a Screen
 5. An Application Block defines a "top menu".
 
-##### Diagram 1: Hydrogen Skeleton
+##### Diagram 1: Sphere10 Framework Skeleton
 
-![](resources/Hydrogen-UI-Frame.png)
+![](resources/Sphere10 Framework-UI-Frame.png)
 
-##### Diagram 2: Hydrogen Main-Frame w/ annotations
+##### Diagram 2: Sphere10 Framework Main-Frame w/ annotations
 
-![](resources/Hydrogen-UI-Frame-Annotations.png)
+![](resources/Sphere10 Framework-UI-Frame-Annotations.png)
 
 
 #### UI Controls:
@@ -91,3 +91,4 @@ However, from Phase 1, the plugin architecture should be structured as follows:
 ## Deliverable 
 
 The final deliverable for Phase 1 will be a Blazor Web Assembly app called "VelocityNET Widgets". This app will show-case all the above controls and elements in action. This app will also serve as a reference for Layer-2 app developers to build apps over VelocityNET. The app will subdivide the above widgets into 2 plugins which will be dynamically loaded as a proof-of-concept that the plugin architecture works as expected.
+

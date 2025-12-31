@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Data;
 using System.Threading.Tasks;
 using NHibernate;
 
-namespace Hydrogen.Data.NHibernate;
+namespace Sphere10.Framework.Data.NHibernate;
 
 public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	private const string DefaultContextPrefix = "A8BFD7F5-FB72-4105-9E2C-A924E903500F";
@@ -123,3 +123,4 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	}
 
 }
+

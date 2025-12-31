@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen.Tests.ObjectSpaces;
+namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [Flags]
 public enum TestTraits {
@@ -9,3 +9,4 @@ public enum TestTraits {
 	Merklized,
 	PersistentIgnorant
 }
+

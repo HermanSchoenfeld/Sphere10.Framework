@@ -45,3 +45,4 @@ namespace HashLib4CSharp.Utils
         internal static ulong RotateRight64(ulong value, int offset) => (value >> offset) | (value << (64 - offset));
     }
 }
+

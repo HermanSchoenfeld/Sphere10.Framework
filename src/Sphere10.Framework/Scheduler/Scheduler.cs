@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class Scheduler<TJob, TJobSchedule> : SyncDisposable where TJob : class, IJob where TJobSchedule : class, IJobSchedule, IComparable<TJobSchedule> {
 	private readonly object _threadLock; // only used for start, stop & interrupt method
@@ -459,3 +459,4 @@ public class Scheduler : Scheduler<IJob, IJobSchedule> {
 	public static Scheduler Asynchronous => _asynchronousScheduler;
 	public static Scheduler Synchronous => _synchronousScheduler;
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,8 +10,8 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using Hydrogen;
-using Hydrogen.Maths;
+using Sphere10.Framework;
+using Sphere10.Framework.Maths;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -70,3 +70,4 @@ public class Crypto {
 		=> Encryptor.PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(password, salt, paddingMode, cipherMode);
 
 }
+

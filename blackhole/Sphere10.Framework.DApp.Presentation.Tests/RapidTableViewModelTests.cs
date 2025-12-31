@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,10 +9,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Hydrogen.DApp.Presentation.Components.Tables;
+using Sphere10.Framework.DApp.Presentation.Components.Tables;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.DApp.Presentation.Tests;
+namespace Sphere10.Framework.DApp.Presentation.Tests;
 
 public class RapidTableViewModelTests {
 #pragma warning disable 1998
@@ -49,3 +49,5 @@ public class RapidTableViewModelTests {
 		ClassicAssert.AreEqual(2, vm.Items.Count);
 	}
 }
+
+

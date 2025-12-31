@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,10 +9,10 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using Hydrogen.Collections;
-using Hydrogen.NUnit;
+using Sphere10.Framework.Collections;
+using Sphere10.Framework.NUnit;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class ColumnarListTests {
 
@@ -42,3 +42,4 @@ public class ColumnarListTests {
 		AssertEx.ListIntegrationTest<object[]>(columnarList, maxCapacity, Gen, itemComparer: new ArrayEqualityComparer<object>());
 	}
 }
+

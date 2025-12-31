@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,9 +12,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
-using Hydrogen.Mapping;
+using Sphere10.Framework.Mapping;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Core implementation of an object space that orchestrates clustered streams, dimensions, serializers, and indexes for persisted objects.
@@ -194,9 +194,6 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 		// flush the underlying stream that maps entire object-space
 		Streams.RootStream.Flush();
-
-		// Reset instance tracker
-		_instanceTracker.Clear();
 	}
 
 	public virtual void Dispose() {
@@ -256,8 +253,8 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			var spaceTree = new ObjectSpaceMerkleTreeIndex(
 				this,
 				_streams,
-				HydrogenDefaults.DefaultSpatialMerkleTreeIndexName,
-				HydrogenDefaults.DefaultMerkleTreeIndexName,
+				Sphere10FrameworkDefaults.DefaultSpatialMerkleTreeIndexName,
+				Sphere10FrameworkDefaults.DefaultMerkleTreeIndexName,
 				Definition.HashFunction, 
 				isFirstTimeLoad
 			);
@@ -469,8 +466,8 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	protected virtual int SanitizeContainerClusterSize(int? clusterSizeB)
 		=> Tools.Values.ClipValue(
 			clusterSizeB.GetValueOrDefault(), 
-			HydrogenDefaults.SmallestRecommendedClusterSize, 
-			HydrogenDefaults.LargestRecommendedClusterSize
+			Sphere10FrameworkDefaults.SmallestRecommendedClusterSize, 
+			Sphere10FrameworkDefaults.LargestRecommendedClusterSize
 		);
 
 	private Dimension<TItem> GetDimension<TItem>() 
@@ -494,3 +491,5 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	#endregion
 
 }
+
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,12 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using Hydrogen.CryptoEx.PascalCoin;
-using Hydrogen.NUnit;
+using Sphere10.Framework.CryptoEx.PascalCoin;
+using Sphere10.Framework.NUnit;
 using System.Linq;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -176,3 +176,4 @@ public class Pascal64EncodingTests {
 	#endregion
 
 }
+

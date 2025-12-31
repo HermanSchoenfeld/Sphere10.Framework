@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class TransactionalScopeDecorator<TTransactionalScope> : ContextScopeDecorator<TTransactionalScope>, ITransactionalScope where TTransactionalScope : ITransactionalScope {
 	public event EventHandlerEx Committing { add => Internal.Committing += value; remove => Internal.Committing -= value; }
@@ -36,3 +36,4 @@ public class TransactionalScopeDecorator<TTransactionalScope> : ContextScopeDeco
 	public virtual Task RollbackAsync() => Internal.RollbackAsync();
 
 }
+

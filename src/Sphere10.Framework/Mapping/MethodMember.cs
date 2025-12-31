@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 [Serializable]
 internal class MethodMember : Member {
@@ -82,3 +82,4 @@ internal class MethodMember : Member {
 		return "{Method: " + _member.Name + "}";
 	}
 }
+

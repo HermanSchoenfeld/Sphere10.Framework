@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,9 +8,9 @@
 
 using System;
 using System.Collections.Generic;
-using Hydrogen.DApp.Presentation.Plugins;
+using Sphere10.Framework.DApp.Presentation.Plugins;
 
-namespace Hydrogen.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
 
 /// <summary>
 /// Finds available plugin types.
@@ -22,3 +22,5 @@ public interface IPluginLocator {
 	/// <returns> <see cref="IPlugin"/> implementing plugin types.</returns>
 	IEnumerable<Type> LocatePlugins();
 }
+
+

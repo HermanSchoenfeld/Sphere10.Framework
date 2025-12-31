@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,10 +8,11 @@
 
 using System;
 using System.Collections.Generic;
-using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public interface IStreamMappedHashSet<TItem> : ISet<TItem>, IStreamMappedCollection, ILoadable, IDisposable {
 	new void Clear();
 }
+

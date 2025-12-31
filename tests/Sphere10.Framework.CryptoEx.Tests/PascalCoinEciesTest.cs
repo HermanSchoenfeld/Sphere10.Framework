@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -20,11 +20,11 @@ using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.Encoders;
 using System;
-using Hydrogen.CryptoEx.IES;
-using Hydrogen.CryptoEx.PascalCoin;
+using Sphere10.Framework.CryptoEx.IES;
+using Sphere10.Framework.CryptoEx.PascalCoin;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 /// <remarks>Test for PascalCoin Ecies - PascalCoin Elliptic Curve Integrated Encryption Scheme</remarks>
 /// Test vectors were gotten from the PascalCoin TESTNET Wallet.
@@ -296,3 +296,4 @@ public class PascalCoinEciesTest {
 			LongMessage);
 	}
 }
+

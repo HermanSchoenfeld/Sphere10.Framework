@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: David Price
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -15,7 +15,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.IO;
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 public class WebSocketsChannel : ProtocolChannel, IDisposable {
 
@@ -162,3 +162,4 @@ public class WebSocketsChannel : ProtocolChannel, IDisposable {
 		}
 	}
 }
+

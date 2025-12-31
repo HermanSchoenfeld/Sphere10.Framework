@@ -28,7 +28,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// RadioGroupBox is a GroupBox with an embeded RadioButton.
@@ -180,3 +180,4 @@ public partial class RadioGroupBox : GroupBox {
 	#endregion Events
 
 }
+

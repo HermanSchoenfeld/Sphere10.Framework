@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using Org.BouncyCastle.Utilities;
 
-namespace Hydrogen.CryptoEx.IES;
+namespace Sphere10.Framework.CryptoEx.IES;
 
 /**
     * Parameter spec for an integrated encryptor, as in IEEE P1363a
@@ -123,3 +123,4 @@ public class IesParameterSpec : IAlgorithmParameterSpec {
 		return _usePointCompression;
 	}
 }
+

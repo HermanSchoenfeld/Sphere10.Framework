@@ -99,3 +99,4 @@ namespace HashLib4CSharp.NullDigest
         }
     }
 }
+

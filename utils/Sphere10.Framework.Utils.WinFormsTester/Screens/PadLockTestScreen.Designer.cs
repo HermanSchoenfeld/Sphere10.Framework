@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="PadLockTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class PadLockTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -39,8 +39,8 @@ namespace Hydrogen.Utils.WinFormsTester {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PadLockTestScreen));
 			this._outputTextBox = new System.Windows.Forms.TextBox();
 			this.textBox2 = new System.Windows.Forms.TextBox();
-			this.padLockButton2 = new Hydrogen.Windows.Forms.PadLockButton();
-			this.padLockButton1 = new Hydrogen.Windows.Forms.PadLockButton();
+			this.padLockButton2 = new Sphere10.Framework.Windows.Forms.PadLockButton();
+			this.padLockButton1 = new Sphere10.Framework.Windows.Forms.PadLockButton();
 			this.SuspendLayout();
 			// 
 			// _outputTextBox
@@ -86,7 +86,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 			this.padLockButton1.Size = new System.Drawing.Size(20, 20);
 			this.padLockButton1.TabIndex = 6;
 			this.padLockButton1.UseVisualStyleBackColor = true;
-			this.padLockButton1.PadLockStateChanged += new Hydrogen.EventHandlerEx<Hydrogen.Windows.Forms.PadLockButton, Hydrogen.Windows.Forms.PadLockButton.PadLockState>(this.padLockButton1_PadLockStateChanged);
+			this.padLockButton1.PadLockStateChanged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.PadLockButton, Sphere10.Framework.Windows.Forms.PadLockButton.PadLockState>(this.padLockButton1_PadLockStateChanged);
 			// 
 			// PadLockTestForm
 			// 
@@ -109,9 +109,11 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 		private System.Windows.Forms.TextBox _outputTextBox;
 		private System.Windows.Forms.TextBox textBox2;
-		private Hydrogen.Windows.Forms.PadLockButton padLockButton1;
-		private Hydrogen.Windows.Forms.PadLockButton padLockButton2;
+		private Sphere10.Framework.Windows.Forms.PadLockButton padLockButton1;
+		private Sphere10.Framework.Windows.Forms.PadLockButton padLockButton2;
 
 
 	}
 }
+
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.ComponentModel;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// A base class for all controls in the application. Provides access to application services and 
@@ -22,8 +22,8 @@ public partial class ApplicationControl : UserControlEx {
 
 	public ApplicationControl() {
 		if (!Tools.Runtime.IsDesignMode) {
-			SettingsServices = HydrogenFramework.Instance.ServiceProvider.GetService<ISettingsServices>();
-			_userInterfaceServices = Tools.Values.Future.LazyLoad(() => HydrogenFramework.Instance.ServiceProvider.GetService<IUserInterfaceServices>());
+			SettingsServices = Sphere10Framework.Instance.ServiceProvider.GetService<ISettingsServices>();
+			_userInterfaceServices = Tools.Values.Future.LazyLoad(() => Sphere10Framework.Instance.ServiceProvider.GetService<IUserInterfaceServices>());
 		}
 	}
 
@@ -35,3 +35,4 @@ public partial class ApplicationControl : UserControlEx {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	protected IUserInterfaceServices UserInterfaceServices => _userInterfaceServices.Value;
 }
+

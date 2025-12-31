@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Resizable list backed by a contiguous array with long indexing support.
@@ -19,7 +19,7 @@ namespace Hydrogen;
 /// <typeparam name="T">Item type.</typeparam>
 /// <remarks>
 /// Used widely in tests for capacity growth and range operations.
-/// See tests/Hydrogen.Tests/Collections/Lists/ExtendedListTests.cs.
+/// See tests/Sphere10.Framework.Tests/Collections/Lists/ExtendedListTests.cs.
 /// </remarks>
 public class ExtendedList<T> : RangedListBase<T> {
 	private const long DefaultCapacityGrowthSize = 4096;
@@ -252,3 +252,4 @@ public class ExtendedList<T> : RangedListBase<T> {
 	}
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,11 +8,11 @@
 
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Hydrogen;
-using Hydrogen.CryptoEx.PascalCoin;
+using Sphere10.Framework;
+using Sphere10.Framework.CryptoEx.PascalCoin;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 public class PascalBase58EncodingTests {
 	[SetUp]
@@ -29,3 +29,4 @@ public class PascalBase58EncodingTests {
 	}
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 // Note: needs refactoring to support async impl
 public abstract class SyncTransactionalScope<TTransaction> : TransactionalScopeBase<TTransaction> {
@@ -39,3 +39,4 @@ public abstract class SyncTransactionalScope<TTransaction> : TransactionalScopeB
 	protected sealed override Task OnRolledBackAsync() => Task.Run(OnRolledBack);
 
 }
+

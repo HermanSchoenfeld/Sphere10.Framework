@@ -1,18 +1,18 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 💾 Hydrogen.Data.NHibernate
+# 💾 Sphere10.Framework.Data.NHibernate
 
-**NHibernate ORM integration** for Hydrogen.Data abstraction layer, providing object-relational mapping with support for multiple databases while maintaining LINQ query capabilities and advanced persistence patterns.
+**NHibernate ORM integration** for Sphere10.Framework.Data abstraction layer, providing object-relational mapping with support for multiple databases while maintaining LINQ query capabilities and advanced persistence patterns.
 
-Hydrogen.Data.NHibernate bridges **NHibernate's powerful ORM capabilities** with Hydrogen.Data abstraction, enabling domain-driven design patterns, lazy loading, change tracking, and complex queries across SQLite, SQL Server, Firebird, and other supported databases.
+Sphere10.Framework.Data.NHibernate bridges **NHibernate's powerful ORM capabilities** with Sphere10.Framework.Data abstraction, enabling domain-driven design patterns, lazy loading, change tracking, and complex queries across SQLite, SQL Server, Firebird, and other supported databases.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Data.NHibernate;
+using Sphere10.Framework.Data.NHibernate;
 using NHibernate;
 
-// Configure NHibernate with Hydrogen
+// Configure NHibernate with Sphere10 Framework
 var sessionFactory = new NHibernateSessionFactory()
     .UseSqlite("myapp.db")  // or UseSqlServer(), UseFirebird(), etc.
     .AddMapping(typeof(User).Assembly)
@@ -48,7 +48,7 @@ using (var session = sessionFactory.OpenSession()) {
 ### Configuration & Session Management
 
 ```csharp
-using Hydrogen.Data.NHibernate;
+using Sphere10.Framework.Data.NHibernate;
 using NHibernate;
 using NHibernate.Cfg;
 
@@ -88,7 +88,7 @@ using (var session = sessionFactory.OpenSession()) {
 ### Entity Mapping & Persistence
 
 ```csharp
-using Hydrogen.Data.NHibernate;
+using Sphere10.Framework.Data.NHibernate;
 using NHibernate;
 using NHibernate.Mapping.ByCode;
 
@@ -142,7 +142,7 @@ mapper.Class<Order>(cm => {
 ### LINQ Queries & HQL
 
 ```csharp
-using Hydrogen.Data.NHibernate;
+using Sphere10.Framework.Data.NHibernate;
 
 var sessionFactory = new NHibernateSessionFactory()
     .UseSqlite(":memory:")
@@ -195,7 +195,7 @@ using (var session = sessionFactory.OpenSession()) {
 ### Relationship Management & Cascading
 
 ```csharp
-using Hydrogen.Data.NHibernate;
+using Sphere10.Framework.Data.NHibernate;
 
 var sessionFactory = new NHibernateSessionFactory()
     .UseSqlite(":memory:")
@@ -253,7 +253,7 @@ using (var session = sessionFactory.OpenSession()) {
 ### Transactions & Batch Operations
 
 ```csharp
-using Hydrogen.Data.NHibernate;
+using Sphere10.Framework.Data.NHibernate;
 
 var sessionFactory = new NHibernateSessionFactory()
     .UseSqlite(":memory:")
@@ -307,7 +307,7 @@ using (var session = sessionFactory.OpenSession()) {
 
 ## 🏗️ Architecture
 
-**NHibernateSessionFactory**: Factory for creating NHibernate sessions configured for Hydrogen.Data.
+**NHibernateSessionFactory**: Factory for creating NHibernate sessions configured for Sphere10.Framework.Data.
 
 **Mapping Configuration**: Supports both fluent and attribute-based entity mappings.
 
@@ -338,21 +338,23 @@ using (var session = sessionFactory.OpenSession()) {
 
 ## 📦 Dependencies
 
-- **Hydrogen.Data**: Data abstraction layer
+- **Sphere10.Framework.Data**: Data abstraction layer
 - **NHibernate**: ORM framework
 - **Database provider**: SQLite, SQL Server, Firebird, etc.
 - **.NET Standard 2.1+**: Cross-platform compatibility
 
 ## 📚 Related Projects
 
-- [Hydrogen.Data](../Hydrogen.Data) - Core data abstraction layer
-- [Hydrogen.Data.Sqlite](../Hydrogen.Data.Sqlite) - SQLite support for NHibernate
-- [Hydrogen.Data.MSSQL](../Hydrogen.Data.MSSQL) - SQL Server support for NHibernate
-- [Hydrogen.Data.Firebird](../Hydrogen.Data.Firebird) - Firebird support for NHibernate
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests) - Test patterns and examples
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Core data abstraction layer
+- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) - SQLite support for NHibernate
+- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) - SQL Server support for NHibernate
+- [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird) - Firebird support for NHibernate
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

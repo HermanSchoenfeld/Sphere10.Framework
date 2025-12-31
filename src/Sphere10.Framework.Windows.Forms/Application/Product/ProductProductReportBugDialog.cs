@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,16 +7,16 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class ProductProductReportBugDialog : ApplicationForm, IProductReportBugDialog {
 
 	public ProductProductReportBugDialog() {
 		InitializeComponent();
-		UserInterfaceServices = HydrogenFramework.Instance.ServiceProvider.GetService<IUserInterfaceServices>();
+		UserInterfaceServices = Sphere10Framework.Instance.ServiceProvider.GetService<IUserInterfaceServices>();
 	}
 
 	protected IUserInterfaceServices UserInterfaceServices { get; }
@@ -30,7 +30,7 @@ public partial class ProductProductReportBugDialog : ApplicationForm, IProductRe
 		try {
 			throw new NotImplementedException();
 			// HS: 2019-02-24 need updating
-			//ISphere10SoftwareService2 webService = HydrogenFramework.Instance.ServiceProvider.GetService<ISphere10SoftwareService2>();
+			//ISphere10SoftwareService2 webService = Sphere10Framework.Instance.ServiceProvider.GetService<ISphere10SoftwareService2>();
 			//string email = _basicContactDetailsControl.ContactEmail;
 			//if (email.ToUpper() != "ANONYMOUS" && !Tools.Mail.IsValidEmail(email)) {
 			//    WinFormsWinFormsApplicationProvider.ReportError("Malformed Email", "Please enter a correct email");
@@ -55,3 +55,4 @@ public partial class ProductProductReportBugDialog : ApplicationForm, IProductRe
 		}
 	}
 }
+

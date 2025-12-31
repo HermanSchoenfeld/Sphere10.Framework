@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using Org.BouncyCastle.Crypto;
 
-namespace Hydrogen.CryptoEx.IES;
+namespace Sphere10.Framework.CryptoEx.IES;
 
 public class EphemeralKeyPair {
 	private readonly AsymmetricCipherKeyPair _keyPair;
@@ -27,3 +27,4 @@ public class EphemeralKeyPair {
 		return _publicKeyEncoder.GetEncoded(_keyPair.Public);
 	}
 }
+

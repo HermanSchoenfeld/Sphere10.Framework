@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public static class FileAccessHelper {
 
@@ -22,3 +22,4 @@ public static class FileAccessHelper {
 
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class StreamMappedProperty<T> {
 
@@ -28,7 +28,7 @@ public class StreamMappedProperty<T> {
 		
 	private T _lastValue;
 
-	public StreamMappedProperty(Stream stream, long offset, long size, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, ICriticalObject @lock = null, Endianness endianess = HydrogenDefaults.Endianness) 
+	public StreamMappedProperty(Stream stream, long offset, long size, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, ICriticalObject @lock = null, Endianness endianess = Sphere10FrameworkDefaults.Endianness) 
 		: this(stream, offset, size, serializer, new EndianBinaryReader(EndianBitConverter.For(endianess), stream), new EndianBinaryWriter(EndianBitConverter.For(endianess), stream), comparer, @lock) {
 	}
 
@@ -74,3 +74,5 @@ public class StreamMappedProperty<T> {
 
 	public void ClearListeners() => ValueChanged = null;
 }
+
+

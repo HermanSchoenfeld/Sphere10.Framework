@@ -42,3 +42,4 @@ namespace HashLib4CSharp.Interfaces
         string ToBase64String(Base64FormattingOptions options = Base64FormattingOptions.None);
     }
 }
+

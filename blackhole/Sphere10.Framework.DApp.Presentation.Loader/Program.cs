@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,11 +11,11 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Hydrogen.DApp.Presentation.Loader.Plugins;
-using Hydrogen.DApp.Presentation.Loader.Services;
-using Hydrogen.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+using Sphere10.Framework.DApp.Presentation.Loader.Services;
+using Sphere10.Framework.DApp.Presentation.Services;
 
-namespace Hydrogen.DApp.Presentation.Loader;
+namespace Sphere10.Framework.DApp.Presentation.Loader;
 
 public class Program {
 	private static IConfiguration Configuration { get; set; } = null!;
@@ -62,3 +62,5 @@ public class Program {
 		manager.ConfigureServices(serviceCollection);
 	}
 }
+
+

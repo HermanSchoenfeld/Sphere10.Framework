@@ -1,4 +1,4 @@
-﻿namespace CommandLine;
+namespace CommandLine;
 #if NET40
 	internal static class IntrospectionExtensions
 	{
@@ -8,3 +8,4 @@
 		}
 	}
 #endif
+

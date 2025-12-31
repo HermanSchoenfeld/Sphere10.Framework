@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,16 +6,17 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.Application;
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Web.AspNetCore;
 
 namespace Microsoft.Extensions.Hosting;
 
 public static class IHostExtensions {
-	public static IHost StartHydrogenFramework(this IHost host, HydrogenFrameworkOptions options = HydrogenFrameworkOptions.Default) {
-		HydrogenFramework.Instance.SetAspNetCoreHost(host);
-		HydrogenFramework.Instance.StartFramework(host.Services, options);
+	public static IHost StartSphere10Framework(this IHost host, Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default) {
+		Sphere10Framework.Instance.SetAspNetCoreHost(host);
+		Sphere10Framework.Instance.StartFramework(host.Services, options);
 		return host;
 	}
 
 }
+

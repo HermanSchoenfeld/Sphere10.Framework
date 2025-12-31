@@ -34,3 +34,4 @@ namespace HashLib4CSharp.Params
             new Blake2XBConfig(config, treeConfig);
     }
 }
+

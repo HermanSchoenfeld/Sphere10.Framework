@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
     partial class ListMerger {
         /// <summary> 
         /// Required designer variable.
@@ -58,7 +58,7 @@ namespace Hydrogen.Windows.Forms {
             // _moveRightButton
             // 
             this._moveRightButton.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this._moveRightButton.Image = global::Hydrogen.Windows.Forms.Resources.RArrow;
+            this._moveRightButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.RArrow;
             this._moveRightButton.Location = new System.Drawing.Point(11, 130);
             this._moveRightButton.Margin = new System.Windows.Forms.Padding(6);
             this._moveRightButton.Name = "_moveRightButton";
@@ -70,7 +70,7 @@ namespace Hydrogen.Windows.Forms {
             // _moveLeftButton
             // 
             this._moveLeftButton.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this._moveLeftButton.Image = global::Hydrogen.Windows.Forms.Resources.LArrow;
+            this._moveLeftButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.LArrow;
             this._moveLeftButton.Location = new System.Drawing.Point(11, 188);
             this._moveLeftButton.Margin = new System.Windows.Forms.Padding(6);
             this._moveLeftButton.Name = "_moveLeftButton";
@@ -176,3 +176,4 @@ namespace Hydrogen.Windows.Forms {
         private System.Windows.Forms.Panel panel1;
     }
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,15 +8,15 @@
 
 using System.IO;
 
-namespace Hydrogen.DApp.Core.Runtime;
+namespace Sphere10.Framework.DApp.Core.Runtime;
 
 /// <summary>
-/// Provides directories and file paths for all artefacts of a Hydrogen Application (and can create them).
+/// Provides directories and file paths for all artefacts of a Sphere10.Framework Application (and can create them).
 /// </summary>
 /// <remarks>
 ///  The underlying structure in the file-system is:
 ///  
-///  %root%/hap                      ; root folder of current Hydrogen Application Package (HAP)
+///  %root%/hap                      ; root folder of current Sphere10.Framework Application Package (HAP)
 ///  %root%/hap/node                 ; extracted node application from the currently deployed HAP
 ///  %root%/hap/gui                  ; extracted GUI application from the currently deployed HAP
 ///  %root%/hap/plugins              ; repository of all user downloaded plugins
@@ -29,10 +29,10 @@ namespace Hydrogen.DApp.Core.Runtime;
 /// </remarks>
 public class ApplicationPaths : IApplicationPaths {
 	internal const string AppDirectoryName = "hap";
-	internal const string NodeExecutableFilename = "Hydrogen.DApp.Node.exe";
+	internal const string NodeExecutableFilename = "Sphere10.Framework.DApp.Node.exe";
 	internal const string NodeDirectoryName = "node";
 	internal const string GuiDirectoryName = "gui";
-	internal const string GuiExecutableFilename = "Hydrogen.DApp.Presentation2.Loader.exe";
+	internal const string GuiExecutableFilename = "Sphere10.Framework.DApp.Presentation2.Loader.exe";
 	internal const string ChainDirectoryName = "chain";
 	internal const string LogsDirectoryName = "logs";
 	internal const string TempDirectoryName = "temp";
@@ -110,3 +110,4 @@ public class ApplicationPaths : IApplicationPaths {
 		Guard.DirectoryExists(ArchivesFolder);
 	}
 }
+

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="ConnectionBarTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
     partial class ConnectionBarTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -37,10 +37,10 @@ namespace Hydrogen.Utils.WinFormsTester {
 		/// </summary>
 		private void InitializeComponent() {
             this._testConnectionButton = new System.Windows.Forms.Button();
-            this._loadingCircle = new Hydrogen.Windows.Forms.LoadingCircle();
+            this._loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
-            this._databaseConnectionBar = new Hydrogen.Windows.Forms.DatabaseConnectionBar();
+            this._databaseConnectionBar = new Sphere10.Framework.Windows.Forms.DatabaseConnectionBar();
             this.SuspendLayout();
             // 
             // _testConnectionButton
@@ -99,7 +99,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             this._databaseConnectionBar.Margin = new System.Windows.Forms.Padding(0);
             this._databaseConnectionBar.MinimumSize = new System.Drawing.Size(500, 40);
             this._databaseConnectionBar.Name = "_databaseConnectionBar";
-            this._databaseConnectionBar.SelectedDBMSType = Hydrogen.Data.DBMSType.SQLServer;
+            this._databaseConnectionBar.SelectedDBMSType = Sphere10.Framework.Data.DBMSType.SQLServer;
             this._databaseConnectionBar.Size = new System.Drawing.Size(771, 40);
             this._databaseConnectionBar.TabIndex = 5;
             // 
@@ -122,9 +122,11 @@ namespace Hydrogen.Utils.WinFormsTester {
 		#endregion
 
         private System.Windows.Forms.Button _testConnectionButton;
-		private Hydrogen.Windows.Forms.LoadingCircle _loadingCircle;
+		private Sphere10.Framework.Windows.Forms.LoadingCircle _loadingCircle;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.Button button2;
-        private Hydrogen.Windows.Forms.DatabaseConnectionBar _databaseConnectionBar;
+        private Sphere10.Framework.Windows.Forms.DatabaseConnectionBar _databaseConnectionBar;
 	}
 }
+
+

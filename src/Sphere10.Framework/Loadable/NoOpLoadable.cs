@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class NoOpLoadable : ILoadable {
 	public event EventHandlerEx<object> Loading;
@@ -14,3 +14,4 @@ public class NoOpLoadable : ILoadable {
 
 	public Task LoadAsync() => Task.CompletedTask;
 }
+

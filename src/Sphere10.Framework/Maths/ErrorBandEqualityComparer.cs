@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
 
-namespace Hydrogen.Maths;
+namespace Sphere10.Framework.Maths;
 
 public class ErrorBandEqualityComparer : IEqualityComparer<decimal> {
 	private readonly decimal _tolerance;
@@ -20,3 +20,4 @@ public class ErrorBandEqualityComparer : IEqualityComparer<decimal> {
 
 	public int GetHashCode(decimal obj) => throw new NotSupportedException("Reason: loss of equivalence under transitivity due to the inexact nature of the comparison");
 }
+

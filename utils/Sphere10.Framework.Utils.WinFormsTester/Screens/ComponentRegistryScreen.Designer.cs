@@ -1,7 +1,7 @@
 ////-----------------------------------------------------------------------
 //// <copyright file="ComponentRegistryForm.Designer.cs" company="Sphere 10 Software">
 ////
-//// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+//// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 ////
 //// Distributed under the MIT software license, see the accompanying file
 //// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 //// </copyright>
 ////-----------------------------------------------------------------------
 
-//namespace Hydrogen.Utils.WinFormsTester {
+//namespace Sphere10.Framework.Utils.WinFormsTester {
 //    partial class ComponentRegistryScreen {
 //        /// <summary>
 //        /// Required designer variable.
@@ -36,7 +36,7 @@
 //        /// the contents of this method with the code editor.
 //        /// </summary>
 //        private void InitializeComponent() {
-//			this._outputTextBox = new Hydrogen.Windows.Forms.TextBoxEx();
+//			this._outputTextBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
 //			this._serializeButton = new System.Windows.Forms.Button();
 //			this._deserializeButton = new System.Windows.Forms.Button();
 //			this._registerButton = new System.Windows.Forms.Button();
@@ -113,10 +113,12 @@
 
 //        #endregion
 
-//        private Hydrogen.Windows.Forms.TextBoxEx _outputTextBox;
+//        private Sphere10.Framework.Windows.Forms.TextBoxEx _outputTextBox;
 //        private System.Windows.Forms.Button _serializeButton;
 //        private System.Windows.Forms.Button _deserializeButton;
 //        private System.Windows.Forms.Button _registerButton;
 //        private System.Windows.Forms.Button _loadConfigButton;
 //    }
 //}
+
+

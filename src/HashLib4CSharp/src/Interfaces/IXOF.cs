@@ -36,3 +36,4 @@ namespace HashLib4CSharp.Interfaces
         }
     }
 }
+

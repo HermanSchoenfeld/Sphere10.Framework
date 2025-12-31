@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen.Collections;
+namespace Sphere10.Framework.Collections;
 
 /// <summary>
 /// A buffer whose contents are mapped onto a stream.
@@ -26,7 +26,7 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 	private readonly int _streamOperationBlockSize;
 
 	public StreamMappedBuffer(Stream stream)
-		: this(stream, HydrogenDefaults.DefaultBufferOperationBlockSize) {
+		: this(stream, Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize) {
 	}
 
 	public StreamMappedBuffer(Stream stream, int streamOperationBlockSize) {
@@ -100,3 +100,5 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 
 
 }
+
+

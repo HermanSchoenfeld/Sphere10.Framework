@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="EncryptedCompressionTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class EncryptedCompressionTestScreen {
 		/// <summary>
 		/// Required designer variable.
@@ -38,8 +38,8 @@ namespace Hydrogen.Utils.WinFormsTester {
 		private void InitializeComponent() {
 			this._testButton = new System.Windows.Forms.Button();
 			this.textBox1 = new System.Windows.Forms.TextBox();
-			this.fileSelectorControl1 = new Hydrogen.Windows.Forms.PathSelectorControl();
-			this._passwordTextBox = new Hydrogen.Windows.Forms.TextBoxEx();
+			this.fileSelectorControl1 = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+			this._passwordTextBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
 			this.SuspendLayout();
 			// 
 			// _testButton
@@ -70,7 +70,7 @@ namespace Hydrogen.Utils.WinFormsTester {
 			this.fileSelectorControl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.fileSelectorControl1.Location = new System.Drawing.Point(12, 12);
-			this.fileSelectorControl1.Mode = Hydrogen.Windows.Forms.PathSelectionMode.OpenFile;
+			this.fileSelectorControl1.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.OpenFile;
 			this.fileSelectorControl1.Name = "fileSelectorControl1";
 			this.fileSelectorControl1.Size = new System.Drawing.Size(392, 20);
 			this.fileSelectorControl1.TabIndex = 0;
@@ -101,10 +101,12 @@ namespace Hydrogen.Utils.WinFormsTester {
 
 		#endregion
 
-		private Hydrogen.Windows.Forms.PathSelectorControl fileSelectorControl1;
+		private Sphere10.Framework.Windows.Forms.PathSelectorControl fileSelectorControl1;
 		private System.Windows.Forms.Button _testButton;
 		private System.Windows.Forms.TextBox textBox1;
-		private Hydrogen.Windows.Forms.TextBoxEx _passwordTextBox;
+		private Sphere10.Framework.Windows.Forms.TextBoxEx _passwordTextBox;
 
 	}
 }
+
+

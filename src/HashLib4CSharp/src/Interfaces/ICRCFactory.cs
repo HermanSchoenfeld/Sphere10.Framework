@@ -22,3 +22,4 @@ namespace HashLib4CSharp.Interfaces
         string[] Names { get; }
     }
 }
+

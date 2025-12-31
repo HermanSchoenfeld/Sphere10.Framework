@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,11 +10,11 @@ using System;
 using System.Data;
 using NUnit.Framework;
 using System.IO;
-using Hydrogen.Data.Tests.Properties;
+using Sphere10.Framework.Data.Tests.Properties;
 using NUnit.Framework.Legacy;
 
 
-namespace Hydrogen.Data.Tests;
+namespace Sphere10.Framework.Data.Tests;
 
 [TestFixture]
 public class SqliteDACTests {
@@ -129,3 +129,4 @@ public class SqliteDACTests {
 	}
 
 }
+

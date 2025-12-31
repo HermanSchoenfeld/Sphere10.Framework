@@ -1,4 +1,4 @@
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public record PagedFileDescriptor {
 
@@ -11,9 +11,9 @@ public record PagedFileDescriptor {
 	public long MaxMemory { get; init; }
 
 	public static PagedFileDescriptor From(string path) 
-		=> From(path, HydrogenDefaults.TransactionalPageSize, HydrogenDefaults.MaxMemoryPerCollection);
+		=> From(path, Sphere10FrameworkDefaults.TransactionalPageSize, Sphere10FrameworkDefaults.MaxMemoryPerCollection);
 
-	public static PagedFileDescriptor From(string path, long pageSize = HydrogenDefaults.TransactionalPageSize, long maxMemory = HydrogenDefaults.MaxMemoryPerCollection) 
+	public static PagedFileDescriptor From(string path, long pageSize = Sphere10FrameworkDefaults.TransactionalPageSize, long maxMemory = Sphere10FrameworkDefaults.MaxMemoryPerCollection) 
 		=> new() { 
 			Path = path,
 			PageSize = pageSize,
@@ -21,3 +21,5 @@ public record PagedFileDescriptor {
 		};
 
 }
+
+

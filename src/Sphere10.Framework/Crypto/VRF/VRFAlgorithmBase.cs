@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public abstract class VRFAlgorithmBase : IVRFAlgorithm {
 	public abstract int OutputLength { get; }
@@ -37,3 +37,4 @@ public abstract class VRFAlgorithmBase : IVRFAlgorithm {
 		return output;
 	}
 }
+

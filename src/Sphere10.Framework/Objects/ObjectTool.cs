@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using Hydrogen;
+using Sphere10.Framework;
 
 #if USE_FAST_REFLECTION
 #endif
@@ -161,3 +161,4 @@ namespace Tools {
 
 	}
 }
+

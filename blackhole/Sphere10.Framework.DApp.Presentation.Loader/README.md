@@ -1,10 +1,10 @@
-# 🌐 Hydrogen.DApp.Presentation.Loader
+# 🌐 Sphere10.Framework.DApp.Presentation.Loader
 
-**Blazor WebAssembly host application** for running Hydrogen DApp presentations in the browser with full service configuration and plugin support.
+**Blazor WebAssembly host application** for running Sphere10 Framework DApp presentations in the browser with full service configuration and plugin support.
 
 ## 📋 Overview
 
-`Hydrogen.DApp.Presentation.Loader` is a Blazor WebAssembly application that hosts the Hydrogen DApp presentation components. It provides the web application shell, service configuration, and runtime environment for running blockchain DApp UIs in modern browsers.
+`Sphere10.Framework.DApp.Presentation.Loader` is a Blazor WebAssembly application that hosts the Sphere10 Framework DApp presentation components. It provides the web application shell, service configuration, and runtime environment for running blockchain DApp UIs in modern browsers.
 
 ## 🏗️ Architecture
 
@@ -38,8 +38,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Add Hydrogen services
-builder.Services.AddHydrogenDAppPresentation();
+// Add Sphere10 Framework services
+builder.Services.AddSphere10DAppPresentation();
 
 // Add your plugins
 builder.Services.AddYourPlugin();
@@ -47,8 +47,8 @@ builder.Services.AddYourPlugin();
 
 ## 📦 Dependencies
 
-- **Hydrogen.DApp.Presentation**: Blazor component library
-- **Hydrogen.DApp.Presentation.WidgetGallery**: Demo widget gallery
+- **Sphere10.Framework.DApp.Presentation**: Blazor component library
+- **Sphere10.Framework.DApp.Presentation.WidgetGallery**: Demo widget gallery
 - **Microsoft.AspNetCore.Components.WebAssembly**: Blazor WebAssembly runtime
 - **Blazored.LocalStorage**: Client-side storage
 
@@ -76,7 +76,10 @@ The output in `bin/Release/net8.0/publish/wwwroot` contains the static site read
 
 ## 📄 Related Projects
 
-- [Hydrogen.DApp.Presentation](./Hydrogen.DApp.Presentation) - Component library
-- [Hydrogen.DApp.Presentation.WidgetGallery](./Hydrogen.DApp.Presentation.WidgetGallery) - Component showcase
-- [Hydrogen.DApp.Node](../src/Hydrogen.DApp.Node) - Backend node API
-- [Hydrogen.DApp.Core](../src/Hydrogen.DApp.Core) - Core DApp framework
+- [Sphere10.Framework.DApp.Presentation](./Sphere10.Framework.DApp.Presentation) - Component library
+- [Sphere10.Framework.DApp.Presentation.WidgetGallery](./Sphere10.Framework.DApp.Presentation.WidgetGallery) - Component showcase
+- [Sphere10.Framework.DApp.Node](../src/Sphere10.Framework.DApp.Node) - Backend node API
+- [Sphere10.Framework.DApp.Core](../src/Sphere10.Framework.DApp.Core) - Core DApp framework
+
+
+

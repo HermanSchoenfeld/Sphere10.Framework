@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class HexEncoding {
 	public const string CharSet = "0123456789abcdefABCDEF";
@@ -109,3 +109,4 @@ public class HexEncoding {
 		return numNibble / 2;
 	}
 }
+

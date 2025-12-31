@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class RepositoryDecorator<TEntity, TIdentity, TConcrete> : IRepository<TEntity, TIdentity> where TConcrete : IRepository<TEntity, TIdentity> {
 	protected TConcrete InternalCollection;
@@ -104,3 +104,4 @@ public class RepositoryDecorator<TEntity, TIdentity> : RepositoryDecorator<TEnti
 	public RepositoryDecorator(IRepository<TEntity, TIdentity> innerRepository) : base(innerRepository) {
 	}
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.Forms {
+namespace Sphere10.Framework.Windows.Forms {
 
     partial class DRMProductActivationForm {
         /// <summary>
@@ -37,8 +37,8 @@ namespace Hydrogen.Windows.Forms {
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this._licenseKeyTextBox = new System.Windows.Forms.TextBox();
-			this._applicationBanner = new Hydrogen.Windows.Forms.ApplicationBanner();
-			this._loadingCircle = new Hydrogen.Windows.Forms.LoadingCircle();
+			this._applicationBanner = new Sphere10.Framework.Windows.Forms.ApplicationBanner();
+			this._loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
 			this.groupBox1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -164,3 +164,4 @@ namespace Hydrogen.Windows.Forms {
 		private LoadingCircle _loadingCircle;
 	}
 }
+

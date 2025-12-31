@@ -1,10 +1,10 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 public class CloudflareConnectingIPMiddleware {
 	private readonly RequestDelegate _next;
@@ -24,3 +24,4 @@ public class CloudflareConnectingIPMiddleware {
 		await _next(context);
 	}
 }
+

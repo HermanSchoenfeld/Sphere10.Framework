@@ -13,8 +13,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Hydrogen.Windows\Hydrogen.Windows.csproj" />
-		<ProjectReference Include="..\..\src\Hydrogen\Hydrogen.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Windows\Sphere10.Framework.Windows.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class CriticalObject : ICriticalObject {
 	
@@ -41,3 +41,4 @@ public class CriticalObject : ICriticalObject {
 	}
 
 }
+

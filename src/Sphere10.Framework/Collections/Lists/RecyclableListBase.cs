@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Base implementation of <see cref="IRecyclableList{T}"/>. 
@@ -111,3 +111,4 @@ public abstract class RecyclableListBase<T> : SingularListBase<T>, IRecyclableLi
 	protected abstract void ClearInternal();
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using NUnit.Framework;
 using System.IO;
-using Hydrogen.Maths.Compiler;
+using Sphere10.Framework.Maths.Compiler;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.UnitTests;
+namespace Sphere10.Framework.UnitTests;
 
 [TestFixture]
 public class MathCompilerScannerTests {
@@ -360,3 +360,4 @@ public class MathCompilerScannerTests {
 		ClassicAssert.AreEqual(TokenType.EndOfCode, token.TokenType);
 	}
 }
+

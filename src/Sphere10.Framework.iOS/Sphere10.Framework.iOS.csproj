@@ -9,9 +9,9 @@
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TemplateGuid>{a52b8a63-bc84-4b47-910d-692533484892}</TemplateGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Hydrogen.iOS</RootNamespace>
+    <RootNamespace>Sphere10.Framework.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>Hydrogen.iOS</AssemblyName>
+    <AssemblyName>Sphere10.Framework.iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -210,21 +210,21 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj">
+    <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj">
       <Project>{143386e8-8873-42c1-8284-4105213dac94}</Project>
-      <Name>Hydrogen.Application</Name>
+      <Name>Sphere10.Framework.Application</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hydrogen.Data\Hydrogen.Data.csproj">
+    <ProjectReference Include="..\Sphere10.Framework.Data\Sphere10.Framework.Data.csproj">
       <Project>{50ce7b59-6c51-413e-adb3-2fa3e8102813}</Project>
-      <Name>Hydrogen.Data</Name>
+      <Name>Sphere10.Framework.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hydrogen.Drawing\Hydrogen.Drawing.csproj">
+    <ProjectReference Include="..\Sphere10.Framework.Drawing\Sphere10.Framework.Drawing.csproj">
       <Project>{6601d944-f150-4578-a14e-604b4eec9867}</Project>
-      <Name>Hydrogen.Drawing</Name>
+      <Name>Sphere10.Framework.Drawing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hydrogen\Hydrogen.csproj">
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj">
       <Project>{a2192000-1bde-4657-ac90-289cf096c674}</Project>
-      <Name>Hydrogen</Name>
+      <Name>Sphere10.Framework</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

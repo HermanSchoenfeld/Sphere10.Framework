@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 	private Func<TItem> _activator;
@@ -126,3 +126,4 @@ public static class CompositeSerializer {
 
 
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,11 +8,11 @@
 
 using System;
 using System.Windows.Forms;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class DRMNagDialog : ApplicationForm, INagDialog {
 
@@ -31,7 +31,7 @@ public partial class DRMNagDialog : ApplicationForm, INagDialog {
 	}
 
 	private void SetLicenseMessage() {
-		var productLicenseEnforcer = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
+		var productLicenseEnforcer = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
 		productLicenseEnforcer.CalculateRights(out var nag);
 		NagMessage = nag;
 	}
@@ -52,9 +52,10 @@ public partial class DRMNagDialog : ApplicationForm, INagDialog {
 	}
 
 	private void _buyNowLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-		var websiteLauncher = HydrogenFramework.Instance.ServiceProvider.GetService<IWebsiteLauncher>();
+		var websiteLauncher = Sphere10Framework.Instance.ServiceProvider.GetService<IWebsiteLauncher>();
 		websiteLauncher.LaunchProductPurchaseWebsite();
 	}
 
 
 }
+

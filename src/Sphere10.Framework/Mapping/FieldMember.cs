@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Reflection;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 [Serializable]
 internal class FieldMember : Member {
@@ -58,3 +58,4 @@ internal class FieldMember : Member {
 		return "{Field: " + _member.Name + "}";
 	}
 }
+

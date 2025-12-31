@@ -52,3 +52,4 @@ namespace HashLib4CSharp.Enum
         HybridAddressing = 2
     }
 }
+

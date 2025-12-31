@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ProjectedEnumerator<TFrom, TTo> : IEnumerator<TTo>  {
 	private readonly Func<TFrom, TTo> _projection;
@@ -31,3 +31,4 @@ public class ProjectedEnumerator<TFrom, TTo> : IEnumerator<TTo>  {
 	}
 
 }
+

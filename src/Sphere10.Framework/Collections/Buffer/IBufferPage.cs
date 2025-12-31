@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public interface IBufferPage : IMemoryPage<byte> {
 	ReadOnlySpan<byte> ReadSpan(long index, long count);
@@ -17,3 +17,4 @@ public interface IBufferPage : IMemoryPage<byte> {
 
 	void UpdateSpan(long index, ReadOnlySpan<byte> items);
 }
+

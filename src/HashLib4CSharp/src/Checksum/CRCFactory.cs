@@ -233,3 +233,4 @@ namespace HashLib4CSharp.Checksum
         public string[] Names => _crcModel.Names;
     }
 }
+

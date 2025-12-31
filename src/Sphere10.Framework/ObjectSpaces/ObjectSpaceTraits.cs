@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Flags describing optional behaviors for an object space.
@@ -24,3 +24,4 @@ public enum ObjectSpaceTraits {
 	AutoSave = 1 << 1,
 
 }
+

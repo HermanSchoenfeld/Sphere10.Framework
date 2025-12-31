@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ProcessSentry {
 	//private readonly SynchronizedObject _lock;
@@ -109,3 +109,4 @@ public class ProcessSentry {
 		process.StandardInput.Close(); // sends ctrl-c (but doesn't work 99% of time)
 	}
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 public abstract class ResponseHandlerBase<TRequest, TResponse> : ResponseHandlerBase, IResponseHandler<TRequest, TResponse> {
 	public sealed override void Execute(ProtocolOrchestrator orchestrator, object request, object response) {
@@ -18,3 +18,4 @@ public abstract class ResponseHandlerBase<TRequest, TResponse> : ResponseHandler
 	public abstract void Execute(ProtocolOrchestrator orchestrator, TRequest request, TResponse response);
 
 }
+

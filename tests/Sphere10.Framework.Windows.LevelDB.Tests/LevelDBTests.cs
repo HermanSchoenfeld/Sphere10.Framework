@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -11,13 +11,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Hydrogen.Windows.LevelDB;
+using Sphere10.Framework.Windows.LevelDB;
 using NUnit.Framework.Legacy;
 
 
 // ReSharper disable CheckNamespace
 
-namespace Hydrogen.UnitTests;
+namespace Sphere10.Framework.UnitTests;
 
 [TestFixture]
 public class LevelDBTests {
@@ -197,3 +197,4 @@ public class LevelDBTests {
 		}
 	}
 }
+

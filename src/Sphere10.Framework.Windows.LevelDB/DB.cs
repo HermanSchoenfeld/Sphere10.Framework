@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Hydrogen.Windows.LevelDB;
+namespace Sphere10.Framework.Windows.LevelDB;
 
 /// <summary>
 /// A DB is a persistent ordered map from keys to values.
@@ -302,3 +302,4 @@ public class DB : LevelDBHandle, IEnumerable<KeyValuePair<string, string>>, IEnu
 		}
 	}
 }
+

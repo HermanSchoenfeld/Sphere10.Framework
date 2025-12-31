@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -14,8 +14,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Hydrogen;
-using Hydrogen.FastReflection;
+using Sphere10.Framework;
+using Sphere10.Framework.FastReflection;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -600,3 +600,4 @@ public static class FileSystem {
 		fileName = Path.GetFileName(filepath);
 	}
 }
+

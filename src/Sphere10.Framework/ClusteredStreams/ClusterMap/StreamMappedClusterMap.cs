@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 
@@ -25,7 +25,7 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 
 	private record ClusterHeader(ClusterTraits Traits, long Prev , long Next);
 
-	public StreamMappedClusterMap(Stream rootStream, long offset, ClusterSerializer clusterSerializer, bool enableCache, Endianness endianness = HydrogenDefaults.Endianness, bool autoLoad = false) {
+	public StreamMappedClusterMap(Stream rootStream, long offset, ClusterSerializer clusterSerializer, bool enableCache, Endianness endianness = Sphere10FrameworkDefaults.Endianness, bool autoLoad = false) {
 		_clusters = new StreamPagedList<Cluster>(
 			clusterSerializer,
 			rootStream
@@ -187,3 +187,5 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 	
 	
 }
+
+

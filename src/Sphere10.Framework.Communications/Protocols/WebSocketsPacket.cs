@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 public class WebSocketsPacket {
 	public string Id { get; set; }
@@ -49,3 +49,4 @@ public class WebSocketsPacket {
 		return Encoding.ASCII.GetBytes(jsonData);
 	}
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class ValueTupleSerializer<T1>(IItemSerializer<T1> s1) : ItemSerializerBase<ValueTuple<T1>> {
 	public override bool IsConstantSize => s1.IsConstantSize;
@@ -179,3 +179,4 @@ public sealed class ValueTupleSerializer<T1, T2, T3, T4, T5, T6, T7, TRest>(IIte
 			sRest.Deserialize(reader, context)
 		);
 }
+

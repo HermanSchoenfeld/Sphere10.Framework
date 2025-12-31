@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ using System;
 using NUnit.Framework;
 using System.Linq;
 using System.Text;
-using Hydrogen;
+using Sphere10.Framework;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests.Merkle;
+namespace Sphere10.Framework.Tests.Merkle;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -141,3 +141,4 @@ public class MerkleProofTests {
 
 	}
 }
+

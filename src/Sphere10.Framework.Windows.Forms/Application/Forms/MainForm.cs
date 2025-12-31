@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,10 +9,10 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using Hydrogen.Application;
+using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 public partial class MainForm : LiteMainForm {
 
@@ -40,7 +40,7 @@ public partial class MainForm : LiteMainForm {
 		base.OnFirstActivated();
 		if (!Tools.Runtime.IsDesignMode && !ApplicationExiting) {
 			try {
-				var licenseProvider = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseProvider>();
+				var licenseProvider = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseProvider>();
 				// Show/Hide register menu item based on what's happened with the user nag screen
 				if (licenseProvider.TryGetLicense(out var license) && license.License.Item.FeatureLevel == ProductLicenseFeatureLevelDTO.Free) {
 					if (PurchaseFullVersionToolStripMenuItem != null)
@@ -103,7 +103,7 @@ public partial class MainForm : LiteMainForm {
 
 	protected virtual void ContextHelp_Click(object sender, EventArgs e) {
 		try {
-			var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 			helpServices.ShowHelp();
 		} catch (Exception error) {
 			ReportError(error);
@@ -112,7 +112,7 @@ public partial class MainForm : LiteMainForm {
 
 	protected virtual void UserGuide_Click(object sender, EventArgs e) {
 		try {
-			var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 			helpServices.ShowHelp();
 		} catch (Exception error) {
 			ReportError(error);
@@ -121,7 +121,7 @@ public partial class MainForm : LiteMainForm {
 
 	protected virtual void PurchaseFullVersion_Click(object sender, EventArgs e) {
 		try {
-			var productLicenseEnforcer = HydrogenFramework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
+			var productLicenseEnforcer = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
 			productLicenseEnforcer.CalculateRights(out var nagMessage);
 			ShowNagScreen(nagMessage);
 		} catch (Exception error) {
@@ -139,7 +139,7 @@ public partial class MainForm : LiteMainForm {
 
 	protected virtual void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
 		try {
-			var helpServices = HydrogenFramework.Instance.ServiceProvider.GetService<IHelpServices>();
+			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 			helpServices.ShowHelp();
 		} catch (Exception error) {
 			ReportError(error);
@@ -149,3 +149,4 @@ public partial class MainForm : LiteMainForm {
 	#endregion
 
 }
+

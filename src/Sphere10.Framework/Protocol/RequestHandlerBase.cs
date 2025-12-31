@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 public abstract class RequestHandlerBase : IRequestHandler {
 	public abstract object Execute(ProtocolOrchestrator orchestrator, object request);
@@ -16,3 +16,4 @@ public abstract class RequestHandlerBase : IRequestHandler {
 	public abstract Type RequestType { get; }
 	public abstract Type ResponseType { get; }
 }
+

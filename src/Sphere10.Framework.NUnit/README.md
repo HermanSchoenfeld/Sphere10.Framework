@@ -1,14 +1,14 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# Hydrogen.NUnit
+# Sphere10.Framework.NUnit
 
-**NUnit testing framework extensions** for the Hydrogen framework providing utilities, helpers, and test infrastructure for unit testing.
+**NUnit testing framework extensions** for the Sphere10 Framework framework providing utilities, helpers, and test infrastructure for unit testing.
 
 Core testing utilities including assertion extensions, test fixtures, and helper methods for test development.
 
 ## Overview
 
-`Hydrogen.NUnit` provides NUnit-based testing utilities and infrastructure for Hydrogen framework projects.
+`Sphere10.Framework.NUnit` provides NUnit-based testing utilities and infrastructure for Sphere10 Framework framework projects.
 
 ### What's Included
 
@@ -20,10 +20,12 @@ Core testing utilities including assertion extensions, test fixtures, and helper
 ## Dependencies
 
 - **NUnit**: NUnit testing framework
-- **Hydrogen**: Core Hydrogen framework
+- **Sphere10 Framework**: Core Sphere10 Framework framework
 
 ## License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

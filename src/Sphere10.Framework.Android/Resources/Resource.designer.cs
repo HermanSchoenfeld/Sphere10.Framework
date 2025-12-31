@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("Hydrogen.Android.Resource", IsApplication=false)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("Sphere10.Framework.Android.Resource", IsApplication=false)]
 
-namespace Hydrogen.Android
+namespace Sphere10.Framework.Android
 {
 	
 	
@@ -5076,3 +5076,4 @@ namespace Hydrogen.Android
 	}
 }
 #pragma warning restore 1591
+

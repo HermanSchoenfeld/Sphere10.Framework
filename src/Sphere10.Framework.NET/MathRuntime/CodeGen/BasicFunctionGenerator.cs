@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -14,7 +14,7 @@ using System.CodeDom.Compiler;
 using Microsoft.CSharp;
 using System.Diagnostics;
 
-namespace Hydrogen.Maths.Compiler;
+namespace Sphere10.Framework.Maths.Compiler;
 
 /// <summary>
 /// Compiles a function declaration and returns an object which can be evaluated as such
@@ -94,7 +94,7 @@ public class BasicFunctionGenerator {
 		string expSrc = EmitExpression(expression);
 		string src =
 			@"  using System;
-                    using Hydrogen.Maths.Compiler;
+                    using Sphere10.Framework.Maths.Compiler;
                     namespace SchoenfeldSoftware.Mathematics {
 
                         public class " + strongName + @" : IDynamicallyCompiledFunction {
@@ -350,3 +350,4 @@ public class BasicFunctionGenerator {
 		return string.Format("Function{0}", classid);
 	}
 }
+

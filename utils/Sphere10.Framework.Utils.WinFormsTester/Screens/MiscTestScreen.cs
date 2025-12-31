@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,10 +12,10 @@ using System.Linq;
 using System.Text;
 using System.Transactions;
 using System.Xml.Serialization;
-using Hydrogen.Data;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Data;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class MiscTestScreen : ApplicationScreen {
 	public MiscTestScreen() {
@@ -429,7 +429,7 @@ public partial class MiscTestScreen : ApplicationScreen {
 	private async void button3_Click(object sender, EventArgs e) {
 		try {
 			//var writer = new TextBoxWriter(_clipTestTextBox);
-			//var shortnedUrl = await Hydrogen.UrlShortner.GoogleAsync("https://sphere10.com", "AIzaSyCt4dKG_UgO8qeusgM0BtrxB1Pb_-7KKDw");
+			//var shortnedUrl = await Sphere10.Framework.UrlShortner.GoogleAsync("https://sphere10.com", "AIzaSyCt4dKG_UgO8qeusgM0BtrxB1Pb_-7KKDw");
 			//writer.WriteLine("TinyURL: " + shortnedUrl);
 			var xxx =
 				@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -649,3 +649,5 @@ public partial class MiscTestScreen : ApplicationScreen {
 		}
 	}
 }
+
+

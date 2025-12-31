@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace Hydrogen.Generators {
+namespace Sphere10.Framework.Generators {
 	
 	public interface IObjectSpaceObject : INotifyPropertyChanging, INotifyPropertyChanged {
 		bool Dirty { get; set; }
@@ -12,3 +12,4 @@ namespace Hydrogen.Generators {
 		public event PropertyChangedEventHandler? PropertyChanged;
 	}
 }
+

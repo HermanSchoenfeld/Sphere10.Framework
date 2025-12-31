@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,10 +10,10 @@ public class Program {
 	static void Main(string[] args) {
 	}
 }
-//using Hydrogen;
-//using Hydrogen.Communications;
-//using Hydrogen.DApp.Core.Runtime;
-//using Hydrogen.DApp.Core.Streams;
+//using Sphere10.Framework;
+//using Sphere10.Framework.Communications;
+//using Sphere10.Framework.DApp.Core.Runtime;
+//using Sphere10.Framework.DApp.Core.Streams;
 //using System;
 //using System.Configuration;
 //using System.Diagnostics;
@@ -26,23 +26,23 @@ public class Program {
 //using System.Threading.Tasks;
 
 
-//namespace Hydrogen.DApp.Host {
+//namespace Sphere10.Framework.DApp.Host {
 
 
 //	class Program {
 //		private static CommandLineParameters Arguments = new CommandLineParameters() {
 //			Header = new[] {
-//				"HydrogenP2P Host {CurrentVersion}",
+//				"Sphere10.FrameworkP2P Host {CurrentVersion}",
 //				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 //			},
 
 //			Footer = new[] {
-//				"NOTE: The Hydrogen Host will forward all arguments marked [N] above to the Hydrogen Node which is launched as a child-process."
+//				"NOTE: The Sphere10.Framework Host will forward all arguments marked [N] above to the Sphere10.Framework Node which is launched as a child-process."
 //			},
 
 //			Parameters = new CommandLineParameter[] {
-//				new("path", "Root path for Hydrogen Application and location of where deployments occur", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
-//				new("deploy", "Path to an Hydrogen Application Package (HAP) to deploy ", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
+//				new("path", "Root path for Sphere10.Framework Application and location of where deployments occur", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
+//				new("deploy", "Path to an Sphere10.Framework Application Package (HAP) to deploy ", CommandLineParameterOptions.Optional | CommandLineParameterOptions.RequiresValue),
 //				new("verbose", "Logs DEBUG and INFO messages which is useful for diagnostic", CommandLineParameterOptions.Optional),
 //				new("development", "Used for development and internal use only", CommandLineParameterOptions.Optional),
 //			},
@@ -77,7 +77,7 @@ public class Program {
 //					}
 //				}
 
-//				// Determine Hydrogen Application Paths
+//				// Determine Sphere10.Framework Application Paths
 //				IApplicationPaths applicationPaths;
 //				if (userArgs.Arguments.Contains("development")) {
 //					applicationPaths = new DevelopmentApplicationPaths();
@@ -98,7 +98,7 @@ public class Program {
 //				// Setup the host
 //				IHost host = userArgs.Arguments.Contains("development")
 //					? new DevelopmentHost(logger, applicationPaths)
-//					: new Hydrogen.DApp.Core.Runtime.Host(logger, applicationPaths);
+//					: new Sphere10.Framework.DApp.Core.Runtime.Host(logger, applicationPaths);
 
 
 //				// Deploy user specified HAP (if applicable)
@@ -108,11 +108,12 @@ public class Program {
 
 //				// Run the host
 //				await host.Run();
-//				Console.WriteLine("Hydrogen host terminated succesfully");
+//				Console.WriteLine("Sphere10.Framework host terminated succesfully");
 //			} catch (Exception error) {
-//				Console.WriteLine($"Hydrogen host terminated abnormally");
+//				Console.WriteLine($"Sphere10.Framework host terminated abnormally");
 //				Console.Write(error.ToDiagnosticString());
 //			}
 //		}
 //	}
 //}
+

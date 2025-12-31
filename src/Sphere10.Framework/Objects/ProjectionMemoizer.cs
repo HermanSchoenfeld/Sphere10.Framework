@@ -1,5 +1,5 @@
 using System;
-using Hydrogen;
+using Sphere10.Framework;
 
 
 public class ProjectionMemoizer {
@@ -28,3 +28,4 @@ public class ProjectionMemoizer {
 		}
 	}
 }
+

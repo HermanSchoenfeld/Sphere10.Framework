@@ -1,17 +1,17 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 📡 Hydrogen.Communications
+# 📡 Sphere10.Framework.Communications
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Multi-protocol networking and RPC framework for .NET 8.0+** providing type-safe remote procedure calls, protocol abstraction, and distributed system communication patterns.
 
-Hydrogen.Communications enables **seamless remote service invocation** through attribute-based RPC definitions with automatic JSON serialization, type conversion, and protocol agnosticism.
+Sphere10.Framework.Communications enables **seamless remote service invocation** through attribute-based RPC definitions with automatic JSON serialization, type conversion, and protocol agnosticism.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Communications.RPC;
+using Sphere10.Framework.Communications.RPC;
 using System.Text;
 
 // Define RPC service with attributes
@@ -50,7 +50,7 @@ Console.WriteLine(greeting);  // "Hello, World!"
 ### Primitive Type Services
 
 ```csharp
-using Hydrogen.Communications.RPC;
+using Sphere10.Framework.Communications.RPC;
 
 // Define RPC service with multiple primitive type methods
 [RpcAPIService("math")]
@@ -82,7 +82,7 @@ public class MathService {
 ### Custom Parameter Naming
 
 ```csharp
-using Hydrogen.Communications.RPC;
+using Sphere10.Framework.Communications.RPC;
 
 // Use [RpcAPIArgument] to map C# names to JSON field names
 [RpcAPIService("strings")]
@@ -109,7 +109,7 @@ public class StringService {
 ### Complex Objects & Collections
 
 ```csharp
-using Hydrogen.Communications.RPC;
+using Sphere10.Framework.Communications.RPC;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -143,7 +143,7 @@ public class PeopleService {
 ### Enum Serialization
 
 ```csharp
-using Hydrogen.Communications.RPC;
+using Sphere10.Framework.Communications.RPC;
 
 public enum Status { Active = 1, Inactive = 2, Pending = 3 }
 
@@ -168,7 +168,7 @@ public class StatusService {
 ### Byte Array Handling
 
 ```csharp
-using Hydrogen.Communications.RPC;
+using Sphere10.Framework.Communications.RPC;
 using System.Text.Json.Serialization;
 
 public class DataPayload {
@@ -229,11 +229,11 @@ Services defined with attributes work unchanged across different transport imple
 
 ## 📖 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework
-- [Hydrogen.Web.AspNetCore](../Hydrogen.Web.AspNetCore) - ASP.NET Core RPC transport implementation
-- [Hydrogen.Application](../Hydrogen.Application) - Application framework with RPC support
-- [Hydrogen.Communications](../Hydrogen.Communications) - This library
-- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node) - Blockchain node with RPC API
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core RPC transport implementation
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework with RPC support
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - This library
+- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node) - Blockchain node with RPC API
 
 ## ✅ Status & Maturity
 
@@ -245,7 +245,7 @@ Services defined with attributes work unchanged across different transport imple
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
+- **Sphere10 Framework**: Core framework
 - **Newtonsoft.Json**: JSON serialization (handles custom converters for hex, enums)
 - **System.Reflection**: Service discovery and method invocation
 - **System.Net**: Networking utilities (protocol-specific implementations)
@@ -263,4 +263,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+
 

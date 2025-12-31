@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Org.BouncyCastle.Crypto;
 
-namespace Hydrogen.CryptoEx.Tests;
+namespace Sphere10.Framework.CryptoEx.Tests;
 
 /**
  * Test vectors for Grindahl512Digest
@@ -49,3 +49,4 @@ public class Grindahl512DigestTest
 		digestTest.PerformTest();
 	}
 }
+

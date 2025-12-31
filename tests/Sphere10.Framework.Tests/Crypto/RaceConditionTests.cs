@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,14 +10,14 @@ using System;
 using NUnit.Framework;
 using System.Threading.Tasks;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.None)]
 public class RaceConditionTests {
 
 	[Test]
-	public void EmptyPreImage([Values(100)] int parallelRuns, [StandardHydrogenCHFValues] CHF chf) {
+	public void EmptyPreImage([Values(100)] int parallelRuns, [StandardSphere10CHFValues] CHF chf) {
 		Parallel.For(0, parallelRuns, _ => RaceConditionScenario());
 
 		void RaceConditionScenario() {
@@ -30,7 +30,7 @@ public class RaceConditionTests {
 	}
 
 	[Test]
-	public void EmptyPreImage_MultipleGetResult([Values(100)] int parallelRuns, [StandardHydrogenCHFValues] CHF chf) {
+	public void EmptyPreImage_MultipleGetResult([Values(100)] int parallelRuns, [StandardSphere10CHFValues] CHF chf) {
 		Parallel.For(0, parallelRuns, _ => RaceConditionScenario());
 
 		void RaceConditionScenario() {
@@ -48,7 +48,7 @@ public class RaceConditionTests {
 
 
 	[Test]
-	public void RandomPreImage([Values(100)] int parallelRuns, [StandardHydrogenCHFValues] CHF chf) {
+	public void RandomPreImage([Values(100)] int parallelRuns, [StandardSphere10CHFValues] CHF chf) {
 		Parallel.For(0, parallelRuns, RaceConditionScenario);
 
 		void RaceConditionScenario(int x) {
@@ -68,7 +68,7 @@ public class RaceConditionTests {
 
 
 	[Test]
-	public void RandomPreImage_MultipleGetResult([Values(100)] int parallelRuns, [StandardHydrogenCHFValues] CHF chf) {
+	public void RandomPreImage_MultipleGetResult([Values(100)] int parallelRuns, [StandardSphere10CHFValues] CHF chf) {
 		Parallel.For(0, parallelRuns, RaceConditionScenario);
 
 		void RaceConditionScenario(int x) {
@@ -92,3 +92,4 @@ public class RaceConditionTests {
 
 
 }
+

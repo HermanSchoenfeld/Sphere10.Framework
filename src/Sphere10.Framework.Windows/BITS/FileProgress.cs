@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Windows.BITS;
+namespace Sphere10.Framework.Windows.BITS;
 
 public class FileProgress {
 	private BG_FILE_PROGRESS fileProgress;
@@ -33,3 +33,4 @@ public class FileProgress {
 		get { return Convert.ToBoolean(this.fileProgress.Completed); }
 	}
 }
+

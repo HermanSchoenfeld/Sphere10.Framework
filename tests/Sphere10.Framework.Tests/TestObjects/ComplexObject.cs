@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class ComplexObject {
 
@@ -24,3 +24,4 @@ public class ComplexObject {
 			{nameof(ManyRecursiveProperty)}: {(ManyRecursiveProperty is not null ? ManyRecursiveProperty.Select(x => x.ToString()).ToDelimittedString(", ") : "NULL") }
 		""";
 }
+

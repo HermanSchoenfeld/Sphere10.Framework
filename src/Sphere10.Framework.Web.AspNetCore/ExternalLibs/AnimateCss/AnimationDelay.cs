@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 // ReSharper disable InconsistentNaming
 
-namespace Hydrogen.Web.AspNetCore.AnimateCss;
+namespace Sphere10.Framework.Web.AspNetCore.AnimateCss;
 
 public enum AnimationDelay {
 	[Description("")] Seconds_0_0 = 0,
@@ -75,3 +75,4 @@ public enum AnimationDelay {
 
 	[Description("animation-delay-30")] Seconds_3_0 = 30,
 }
+

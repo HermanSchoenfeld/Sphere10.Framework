@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="PathSelectorTestForm.Designer.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -11,7 +11,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Hydrogen.Utils.WinFormsTester {
+namespace Sphere10.Framework.Utils.WinFormsTester {
     partial class PathSelectorTestScreen {
         /// <summary>
         /// Required designer variable.
@@ -36,17 +36,17 @@ namespace Hydrogen.Utils.WinFormsTester {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            this.pathSelectorControl4 = new Hydrogen.Windows.Forms.PathSelectorControl();
-            this.pathSelectorControl3 = new Hydrogen.Windows.Forms.PathSelectorControl();
-            this.pathSelectorControl2 = new Hydrogen.Windows.Forms.PathSelectorControl();
-            this.pathSelectorControl1 = new Hydrogen.Windows.Forms.PathSelectorControl();
+            this.pathSelectorControl4 = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+            this.pathSelectorControl3 = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+            this.pathSelectorControl2 = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
+            this.pathSelectorControl1 = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // pathSelectorControl4
             // 
             this.pathSelectorControl4.Location = new System.Drawing.Point(12, 104);
-            this.pathSelectorControl4.Mode = Hydrogen.Windows.Forms.PathSelectionMode.Folder;
+            this.pathSelectorControl4.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.Folder;
             this.pathSelectorControl4.Name = "pathSelectorControl4";
             this.pathSelectorControl4.Path = "";
             this.pathSelectorControl4.PlaceHolderText = "Folder";
@@ -57,7 +57,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             // pathSelectorControl3
             // 
             this.pathSelectorControl3.Location = new System.Drawing.Point(12, 78);
-            this.pathSelectorControl3.Mode = Hydrogen.Windows.Forms.PathSelectionMode.File;
+            this.pathSelectorControl3.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.File;
             this.pathSelectorControl3.Name = "pathSelectorControl3";
             this.pathSelectorControl3.Path = "";
             this.pathSelectorControl3.PlaceHolderText = "File";
@@ -68,7 +68,7 @@ namespace Hydrogen.Utils.WinFormsTester {
             // pathSelectorControl2
             // 
             this.pathSelectorControl2.Location = new System.Drawing.Point(12, 52);
-            this.pathSelectorControl2.Mode = Hydrogen.Windows.Forms.PathSelectionMode.SaveFile;
+            this.pathSelectorControl2.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.SaveFile;
             this.pathSelectorControl2.Name = "pathSelectorControl2";
             this.pathSelectorControl2.Path = "";
             this.pathSelectorControl2.PlaceHolderText = "Save File";
@@ -116,10 +116,12 @@ namespace Hydrogen.Utils.WinFormsTester {
 
         #endregion
 
-        private Hydrogen.Windows.Forms.PathSelectorControl pathSelectorControl1;
-        private Hydrogen.Windows.Forms.PathSelectorControl pathSelectorControl2;
-        private Hydrogen.Windows.Forms.PathSelectorControl pathSelectorControl3;
-        private Hydrogen.Windows.Forms.PathSelectorControl pathSelectorControl4;
+        private Sphere10.Framework.Windows.Forms.PathSelectorControl pathSelectorControl1;
+        private Sphere10.Framework.Windows.Forms.PathSelectorControl pathSelectorControl2;
+        private Sphere10.Framework.Windows.Forms.PathSelectorControl pathSelectorControl3;
+        private Sphere10.Framework.Windows.Forms.PathSelectorControl pathSelectorControl4;
         private System.Windows.Forms.CheckBox checkBox1;
     }
 }
+
+

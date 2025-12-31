@@ -1,4 +1,4 @@
-﻿window.showModal = () => {
+window.showModal = () => {
     $("#modal").modal({
         backdrop: "static",
         keyboard: false

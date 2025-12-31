@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# ⛓️ Hydrogen.DApp.Node
+# ⛓️ Sphere10.Framework.DApp.Node
 
-**Reference blockchain node implementation** for Hydrogen DApps providing a complete, production-ready node with consensus, mining, network synchronization, and plugin support.
+**Reference blockchain node implementation** for Sphere10 Framework DApps providing a complete, production-ready node with consensus, mining, network synchronization, and plugin support.
 
-Hydrogen.DApp.Node is a **runnable blockchain node** that implements the full Hydrogen DApp protocol, connecting to peer networks, validating transactions and blocks, mining, and maintaining blockchain state while supporting plugin-based DApps.
+Sphere10.Framework.DApp.Node is a **runnable blockchain node** that implements the full Sphere10 Framework DApp protocol, connecting to peer networks, validating transactions and blocks, mining, and maintaining blockchain state while supporting plugin-based DApps.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.DApp.Node;
+using Sphere10.Framework.DApp.Node;
 
 // Start a node with default configuration
 var nodeConfig = new NodeConfiguration {
@@ -19,7 +19,7 @@ var nodeConfig = new NodeConfiguration {
     MiningEnabled = true
 };
 
-var node = new HydrogenNode(nodeConfig);
+var node = new Sphere10Node(nodeConfig);
 await node.StartAsync();
 
 Console.WriteLine($"Node started: {node.NodeId}");
@@ -51,14 +51,14 @@ Console.WriteLine($"Mining: {node.IsMining}");
 ### Initialize & Start a Node
 
 ```csharp
-using Hydrogen.DApp.Node;
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Node;
+using Sphere10.Framework.DApp.Core;
 using System.Net;
 
 // Create node configuration
 var config = new NodeConfiguration {
     NetworkId = 1,                          // Network identifier
-    NetworkName = "hydrogen-testnet",
+    NetworkName = "Sphere10 Framework-testnet",
     NodeName = "my-node-1",
     DataDirectory = "./blockchain-data",
     Port = 8080,
@@ -82,7 +82,7 @@ var config = new NodeConfiguration {
 };
 
 // Create and start node
-var node = new HydrogenNode(config);
+var node = new Sphere10Node(config);
 
 // Start background services
 await node.StartAsync();
@@ -97,7 +97,7 @@ Console.WriteLine($"Current Difficulty: {node.CurrentDifficulty}");
 ### Connect to Network Peers
 
 ```csharp
-using Hydrogen.DApp.Node;
+using Sphere10.Framework.DApp.Node;
 
 var node = // ... initialized node ...
 
@@ -129,7 +129,7 @@ foreach (var peer in peers) {
 ### Mining & Block Creation
 
 ```csharp
-using Hydrogen.DApp.Node;
+using Sphere10.Framework.DApp.Node;
 
 var node = // ... initialized node ...
 
@@ -160,8 +160,8 @@ await node.StartMiningAsync();
 ### Transaction Processing
 
 ```csharp
-using Hydrogen.DApp.Node;
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Node;
+using Sphere10.Framework.DApp.Core;
 
 var node = // ... initialized node ...
 
@@ -206,7 +206,7 @@ Console.WriteLine($"Pending transactions: {mempoolTxs.Count}");
 ### Blockchain State & Query
 
 ```csharp
-using Hydrogen.DApp.Node;
+using Sphere10.Framework.DApp.Node;
 
 var node = // ... initialized node ...
 
@@ -247,8 +247,8 @@ Console.WriteLine($"Nonce: {nonce}");
 ### Plugin Management
 
 ```csharp
-using Hydrogen.DApp.Node;
-using Hydrogen.DApp.Core;
+using Sphere10.Framework.DApp.Node;
+using Sphere10.Framework.DApp.Core;
 
 var node = // ... initialized node ...
 
@@ -282,7 +282,7 @@ await node.UnloadPluginAsync<CustomDApp>();
 ### Synchronization & Catching Up
 
 ```csharp
-using Hydrogen.DApp.Node;
+using Sphere10.Framework.DApp.Node;
 
 var node = // ... initialized node ...
 
@@ -351,12 +351,12 @@ Console.WriteLine($"Synced blocks: {syncStatus.BlocksSynced}");
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
-- **Hydrogen.DApp.Core**: DApp framework and types
-- **Hydrogen.Application**: Application lifecycle
-- **Hydrogen.Communications**: Network communication
-- **Hydrogen.CryptoEx**: Cryptographic operations
-- **Hydrogen.Data**: Persistent storage
+- **Sphere10 Framework**: Core framework
+- **Sphere10.Framework.DApp.Core**: DApp framework and types
+- **Sphere10.Framework.Application**: Application lifecycle
+- **Sphere10.Framework.Communications**: Network communication
+- **Sphere10.Framework.CryptoEx**: Cryptographic operations
+- **Sphere10.Framework.Data**: Persistent storage
 
 ## ⚠️ Best Practices
 
@@ -378,10 +378,10 @@ Console.WriteLine($"Synced blocks: {syncStatus.BlocksSynced}");
 
 ## 📖 Related Projects
 
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - Core blockchain framework
-- [Hydrogen.DApp.Host](../Hydrogen.DApp.Host) - Node hosting and process management
-- [Hydrogen.Communications](../Hydrogen.Communications) - Network layer
-- [Hydrogen.CryptoEx](../Hydrogen.CryptoEx) - Cryptographic functions
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Core blockchain framework
+- [Sphere10.Framework.DApp.Host](../Sphere10.Framework.DApp.Host) - Node hosting and process management
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network layer
+- [Sphere10.Framework.CryptoEx](../Sphere10.Framework.CryptoEx) - Cryptographic functions
 
 ## ⚖️ License
 
@@ -396,3 +396,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+
+

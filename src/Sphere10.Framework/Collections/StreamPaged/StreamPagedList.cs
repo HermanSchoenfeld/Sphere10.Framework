@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A list whose items are mapped onto a stream via contiguous pages. Items can only be added/removed from the end of the stream (unlike <see cref="StreamMappedList{TItem}"/>).
@@ -61,7 +61,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 	public const byte FormatVersion = 1;
 	public const int ListHeaderSize = 256;
 
-	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = HydrogenDefaults.Endianness, bool includeListHeader = true, bool autoLoad = false)
+	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = Sphere10FrameworkDefaults.Endianness, bool includeListHeader = true, bool autoLoad = false)
 		: this(
 			serializer.IsConstantSize ? StreamPagedListType.Static : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			serializer,
@@ -73,11 +73,11 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		) {
 	}
 
-	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = HydrogenDefaults.Endianness, bool includeListHeader = true, bool autoLoad = false)
+	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Sphere10FrameworkDefaults.Endianness, bool includeListHeader = true, bool autoLoad = false)
 		: this(serializer.IsConstantSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness, includeListHeader, autoLoad) {
 	}
 
-	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = HydrogenDefaults.Endianness, bool includeListHeader = true,  bool autoLoad = false) 
+	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Sphere10FrameworkDefaults.Endianness, bool includeListHeader = true,  bool autoLoad = false) 
 		: base(false) {
 		PageSize = pageSize;
 		Serializer = serializer;
@@ -248,3 +248,5 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Guard.Ensure(Stream.Position == ListHeaderSize, "Head size inconsistency");
 	}
 }
+
+

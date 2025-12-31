@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -25,7 +25,7 @@ public static class Utilities {
 	/// <returns></returns>
 	public static object BinDeserialize(Stream p_Stream) {
 		// BinaryFormattter Deprecated in .NET 7
-		// TODO use GenericSerializer from Hydrogen, test for Stream's
+		// TODO use GenericSerializer from Sphere10.Framework, test for Stream's
 		throw new NotImplementedException("BinaryFormattter Deprecated in .NET 7");
 		//BinaryFormatter f = new BinaryFormatter();
 		//object tmp;
@@ -40,7 +40,7 @@ public static class Utilities {
 	/// <param name="p_Object"></param>
 	public static void BinSerialize(Stream p_Stream, object p_Object) {
 		// BinaryFormattter Deprecated in .NET 7
-		// TODO use GenericSerializer from Hydrogen, test for Stream's
+		// TODO use GenericSerializer from Sphere10.Framework, test for Stream's
 		throw new NotImplementedException("BinaryFormattter Deprecated in .NET 7");
 		//BinaryFormatter f = new BinaryFormatter();
 		//f.Serialize(p_Stream,p_Object);
@@ -75,3 +75,4 @@ public static class Utilities {
 	#endregion
 
 }
+

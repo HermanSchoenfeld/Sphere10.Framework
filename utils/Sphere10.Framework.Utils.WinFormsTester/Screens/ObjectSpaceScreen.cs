@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,11 +8,11 @@
 
 using System;
 using System.IO;
-using Hydrogen.Application;
-using Hydrogen.ObjectSpaces;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.ObjectSpaces;
+using Sphere10.Framework.Windows.Forms;
 
-namespace Hydrogen.Utils.WinFormsTester;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class ObjectSpaceScreen : ApplicationScreen {
 	private ScreenSettings _settings;
@@ -82,8 +82,8 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 	//	//public IRepository<Identity, long> IdentitiesByKey => throw new NotImplementedException();
 
-	//	private static HydrogenFileDescriptor BuildFileDefinition(string filePath) 
-	//		=> HydrogenFileDescriptor.From(
+	//	private static Sphere10FrameworkFileDescriptor BuildFileDefinition(string filePath) 
+	//		=> Sphere10FrameworkFileDescriptor.From(
 	//			filePath, 
 	//			8192, 
 	//			Tools.Memory.ToBytes(50, MemoryMetric.Megabyte), 
@@ -152,5 +152,8 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 		public string FilePath { get; set; }
 	}
 }
+
+
+
 
 

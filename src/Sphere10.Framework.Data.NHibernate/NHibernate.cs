@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -16,3 +16,4 @@ public static class NHibernate {
 	public static int NVarCharMaxValue = 4001; // NHibernate has weird rule that defaults int.MaxValue -> 255, this works around it
 
 }
+

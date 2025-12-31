@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,9 +8,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.Components.Wizard;
+using Sphere10.Framework.DApp.Presentation.Components.Wizard;
 
-namespace Hydrogen.DApp.Presentation.Services;
+namespace Sphere10.Framework.DApp.Presentation.Services;
 
 /// <summary>
 /// Wizard builder
@@ -28,3 +28,5 @@ public interface IWizardBuilder<TModel> {
 
 	IWizard<TModel> Build();
 }
+
+

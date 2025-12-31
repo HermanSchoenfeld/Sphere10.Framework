@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
-using Hydrogen;
+using Sphere10.Framework;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using IPNetwork = System.Net.IPNetwork;
@@ -68,3 +68,4 @@ public static partial class AspNetCore {
 		return new SelectList(items, "Value", "Text");
 	}
 }
+

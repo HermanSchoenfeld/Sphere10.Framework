@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.DApp.Presentation.Plugins;
+namespace Sphere10.Framework.DApp.Presentation.Plugins;
 
 /// <summary>
 /// VelocityNET application plugin. VelocityNET client application will locate implementations of this
@@ -27,3 +27,5 @@ public interface IPlugin {
 	/// <param name="serviceCollection"> services</param>
 	IServiceCollection ConfigureServices(IServiceCollection serviceCollection);
 }
+
+

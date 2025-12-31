@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Components;
 
-namespace Hydrogen.DApp.Presentation.Components.Wizard;
+namespace Sphere10.Framework.DApp.Presentation.Components.Wizard;
 
 /// <summary>
 /// Wizard component.
@@ -79,3 +79,5 @@ public partial class WizardHost {
 		}
 	}
 }
+
+

@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Xml;
 using System.Diagnostics;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 /// <summary>
 /// Serializes arbitrary objects to XML.
@@ -690,3 +690,4 @@ public class XmlDeepSerializer : IDisposable {
 	#endregion Misc
 
 }
+

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Delegate that retrieves a leaf value by index as a byte span.
@@ -29,3 +29,4 @@ public delegate int MerkleTreeLeafCounter();
 /// Delegate that yields sub-roots representing independent merkle subtrees.
 /// </summary>
 public delegate IEnumerable<MerkleSubRoot> MerkleTreeSubRootsGetter();
+

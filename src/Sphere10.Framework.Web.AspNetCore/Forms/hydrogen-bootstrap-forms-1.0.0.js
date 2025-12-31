@@ -1,5 +1,5 @@
 /* 
- * hydrogen-bootstrap-forms-1.0.0.js
+ * sphere10-framework-bootstrap-forms-1.0.0.js
  *
  * Author: Herman Schoenfeld 2022
  * Version: 1.0.0

@@ -25,7 +25,7 @@ using System;
 using System.Windows.Forms;
 
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// This class oversees the checkin/unchecking when mixing RadioButton objects with RadioGroupBox objects within the same objectStream.
@@ -119,3 +119,4 @@ public class RadioButtonPanel : Panel {
 		}
 	}
 }
+

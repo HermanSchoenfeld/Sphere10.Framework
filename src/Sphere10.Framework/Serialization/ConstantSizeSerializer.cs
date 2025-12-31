@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 internal class ConstantSizeSerializer<T> : ItemSerializerDecorator<T> {
 	public ConstantSizeSerializer(IItemSerializer<T> internalSerializer) 
@@ -7,3 +7,4 @@ internal class ConstantSizeSerializer<T> : ItemSerializerDecorator<T> {
 	}
 
 }
+

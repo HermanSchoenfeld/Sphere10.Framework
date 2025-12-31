@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Text;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class RegexPattern {
 	readonly StringBuilder _content;
@@ -202,3 +202,4 @@ public class RegexPattern {
 
 	public RegexAlternation Choice => new RegexAlternation(this);
 }
+

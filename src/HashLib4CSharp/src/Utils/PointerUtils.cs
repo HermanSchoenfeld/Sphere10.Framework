@@ -26,3 +26,4 @@ namespace HashLib4CSharp.Utils
             Unsafe.InitBlockUnaligned(dest, filler, (uint) byteCount);
     }
 }
+

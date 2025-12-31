@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Extension methods for all types.
@@ -18,7 +18,7 @@ namespace Hydrogen;
 /// <remarks></remarks>
 public static class UniversalExtensions {
 
-	public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemSerializer<TItem> serializer, CHF chf, DSS dss, byte[] privateKey, ulong signerNonce = 0, Endianness endianness = HydrogenDefaults.Endianness) {
+	public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemSerializer<TItem> serializer, CHF chf, DSS dss, byte[] privateKey, ulong signerNonce = 0, Endianness endianness = Sphere10FrameworkDefaults.Endianness) {
 		var scheme = Signers.Create(dss);
 		var key = scheme.ParsePrivateKey(privateKey);
 		var digestor = new ItemDigestor<TItem>(chf, serializer, endianness);
@@ -66,3 +66,5 @@ public static class UniversalExtensions {
 	public static IEnumerable<T> UnionWith<T>(this T head, T tail) => UnionWith(head, new[] { tail });
 
 }
+
+

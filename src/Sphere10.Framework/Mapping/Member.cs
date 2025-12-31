@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Reflection;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 [Serializable]
 public abstract class Member : IEquatable<Member> {
@@ -67,3 +67,4 @@ public abstract class Member : IEquatable<Member> {
 	}
 
 }
+

@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class PureObjectSerializer : ItemSerializerBase<object> {
 
@@ -12,3 +12,4 @@ public sealed class PureObjectSerializer : ItemSerializerBase<object> {
 		=> new (); // No state to deserialize
 		
 }
+

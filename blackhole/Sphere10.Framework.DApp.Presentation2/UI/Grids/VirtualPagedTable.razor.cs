@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Hydrogen.DApp.Presentation2.UI.Grids {
+namespace Sphere10.Framework.DApp.Presentation2.UI.Grids {
 
 	public partial class VirtualPagedTable<TItem> {
 		/// <summary>
@@ -184,3 +184,5 @@ namespace Hydrogen.DApp.Presentation2.UI.Grids {
 	}
 
 }
+
+

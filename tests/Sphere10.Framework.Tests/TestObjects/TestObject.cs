@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class TestObject {
 
@@ -30,3 +30,4 @@ public class TestObject {
 	public override string ToString() => $"[TestObject] A: '{A}', B: {B}, C: {C}";
 
 }
+

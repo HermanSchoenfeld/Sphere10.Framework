@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 /// <summary>
 /// Insert method will always return the primary key value. It can also generate a primary key for you using a variety of strategies.
@@ -168,3 +168,4 @@ public class AutoIdentityDAC : DACDecorator {
 		Default = ID | Id | Numeric | Guid,
 	}
 }
+

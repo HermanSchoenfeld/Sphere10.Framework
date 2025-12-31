@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Security.Principal;
 
 
-namespace Hydrogen.Windows.Security;
+namespace Sphere10.Framework.Windows.Security;
 
 /// <summary>
 /// Base class for objects which have a SID and name and host machine they are on.
@@ -71,3 +71,4 @@ public abstract class NTObject {
 
 
 }
+

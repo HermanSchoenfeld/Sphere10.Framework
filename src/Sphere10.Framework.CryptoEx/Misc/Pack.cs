@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen.CryptoEx;
+namespace Sphere10.Framework.CryptoEx;
 
 /* This class is property of the BouncyCastle Cryptographic Library Project and was borrowed from 
 <a href="https://github.com/bcgit/bc-csharp/blob/master/crypto/src/crypto/util/Pack.cs">https://github.com/bcgit/bc-csharp/blob/master/crypto/src/crypto/util/Pack.cs</a>
@@ -341,3 +341,4 @@ internal sealed class Pack {
 		}
 	}
 }
+

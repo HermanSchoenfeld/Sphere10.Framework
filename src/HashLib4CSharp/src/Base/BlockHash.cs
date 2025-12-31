@@ -97,3 +97,4 @@ namespace HashLib4CSharp.Base
         protected abstract byte[] GetResult();
     }
 }
+

@@ -1,6 +1,6 @@
-﻿using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class Identity {
 
@@ -16,3 +16,4 @@ public class Identity {
 	public bool Dirty { get; set; }
 
 }
+

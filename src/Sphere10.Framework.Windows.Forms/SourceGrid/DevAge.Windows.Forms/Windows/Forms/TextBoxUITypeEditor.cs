@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Dev Age
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing.Design;
-using Hydrogen.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
 namespace DevAge.Windows.Forms;
 
@@ -164,3 +164,4 @@ public class TextBoxUITypeEditor : DevAgeTextBoxButton, IServiceProvider, System
 	#endregion
 
 }
+

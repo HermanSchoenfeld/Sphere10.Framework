@@ -1,4 +1,4 @@
-# WAMS - Winternitz Abstract Merkle Signature Scheme
+﻿# WAMS - Winternitz Abstract Merkle Signature Scheme
 
 <pre>
   Author: Herman Schoenfeld <herman@sphere10.com>
@@ -315,7 +315,7 @@ A C# implementation in .NET 7 was developed and object lengths and performance m
 
 ## 5. Reference Implementation
 
-This section contains snippets for the full [reference implementation](https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC)[^6] . The reference implementation is part of the PQC library within the [Hydrogen Framework](https://github.com/Sphere10/Hydrogen)[^7] .
+This section contains snippets for the full [reference implementation](https://github.com/Sphere10/Sphere10 Framework/tree/master/src/Sphere10 Framework/Crypto/PQC)[^6] . The reference implementation is part of the PQC library within the [Sphere10 Framework Framework](https://github.com/Sphere10/Sphere10 Framework)[^7] .
 
 ### 5.1 AMS-Compatible W-OTS
 
@@ -630,6 +630,6 @@ public class WOTSSharp : WOTS {
 
 [^5]:  L. Lamport. "Constructing digital signatures from a one-way function". Technical Report SRI-CSL-98, SRI International Computer Science Laboratory, Oct. 1979.
 
-[^6]:   Sphere 10 Software. PQC Library. Url: https://github.com/Sphere10/Hydrogen/tree/master/src/Hydrogen/Crypto/PQC. Accessed 2023-05-09.
+[^6]:   Sphere 10 Software. PQC Library. Url: https://github.com/Sphere10/Sphere10 Framework/tree/master/src/Sphere10 Framework/Crypto/PQC. Accessed 2023-05-09.
 
-[^7]:   Sphere 10 Software. Hydrogen Framework. Url: https://github.com/Sphere10/Hydrogen. Accessed 2023-05-09
+[^7]:   Sphere 10 Software. Sphere10 Framework Framework. Url: https://github.com/Sphere10/Sphere10.Framework. Accessed 2023-05-09

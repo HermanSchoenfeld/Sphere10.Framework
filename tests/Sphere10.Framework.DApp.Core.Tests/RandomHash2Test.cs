@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,13 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using Hydrogen.CryptoEx;
-using Hydrogen.DApp.Core.Maths;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.DApp.Core.Maths;
 using System;
 using System.Text;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.DApp.Core.Tests;
+namespace Sphere10.Framework.DApp.Core.Tests;
 
 internal abstract class RandomHash2TestBase {
 	protected struct TestItem<TInput, TExpected> {
@@ -97,7 +97,7 @@ internal class RandomHash2Test : RandomHash2TestBase {
 
 	[OneTimeSetUp]
 	public void Setup() {
-		Hydrogen.CryptoEx.ModuleConfiguration.InitializeInternal();
+		Sphere10.Framework.CryptoEx.ModuleConfiguration.InitializeInternal();
 	}
 
 	[Test]
@@ -144,7 +144,7 @@ internal class RandomHash2FastTest : RandomHash2TestBase {
 	
 	[OneTimeSetUp]
 	public void Setup() {
-		Hydrogen.CryptoEx.ModuleConfiguration.InitializeInternal();
+		Sphere10.Framework.CryptoEx.ModuleConfiguration.InitializeInternal();
 	}
 
 	[Test]
@@ -199,3 +199,4 @@ internal class RandomHash2FastTest : RandomHash2TestBase {
 		}
 	}
 }
+

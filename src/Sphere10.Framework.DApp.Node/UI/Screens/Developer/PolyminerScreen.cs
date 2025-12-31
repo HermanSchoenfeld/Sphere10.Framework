@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,17 +7,17 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Terminal.Gui;
-using Hydrogen.DApp.Node.UI.Components;
+using Sphere10.Framework.DApp.Node.UI.Components;
 using System.ComponentModel;
-using Hydrogen.DApp.Node.RPC;
-using Hydrogen.DApp.Core.Mining;
-using Hydrogen.DApp.Core.Maths;
-using Hydrogen.DApp.Core.Consensus.Serializers;
+using Sphere10.Framework.DApp.Node.RPC;
+using Sphere10.Framework.DApp.Core.Mining;
+using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.DApp.Core.Consensus.Serializers;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Hydrogen.DApp.Node.UI;
+namespace Sphere10.Framework.DApp.Node.UI;
 
 [Title("Polyminer's Screen")]
 [Lifetime(ScreenLifetime.WhenVisible)]
@@ -186,7 +186,7 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 	}
 
 
-	//TODO: maybe bring that logger to Hydrogen.Logging
+	//TODO: maybe bring that logger to Sphere10.Framework.Logging
 	public class MainThreadActionLogger : ActionLogger {
 		public MainThreadActionLogger(Action<string> action)
 			: base(action) {
@@ -275,3 +275,4 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 
 	}
 }
+

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Reflection;
-using Hydrogen.Mapping;
+using Sphere10.Framework.Mapping;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
 public class ReferenceModeAttribute : Attribute {
@@ -32,3 +32,4 @@ public class ReferenceModeAttribute : Attribute {
 
 	}
 }
+

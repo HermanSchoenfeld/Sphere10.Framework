@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Data;
+namespace Sphere10.Framework.Data;
 
 public static class DACFactory {
 
@@ -16,16 +16,17 @@ public static class DACFactory {
 		switch (dbmsType) {
 
 			case DBMSType.SQLServer:
-				return (IDAC)TypeActivator.Activate("Hydrogen.Data.MSSQLDAC", "Hydrogen.Data.MSSQL", connectionString, logger);
+				return (IDAC)TypeActivator.Activate("Sphere10.Framework.Data.MSSQLDAC", "Sphere10.Framework.Data.MSSQL", connectionString, logger);
 
 			case DBMSType.Sqlite:
-				return (IDAC)TypeActivator.Activate("Hydrogen.Data.SqliteDAC", "Hydrogen.Data.Sqlite", connectionString, logger);
+				return (IDAC)TypeActivator.Activate("Sphere10.Framework.Data.SqliteDAC", "Sphere10.Framework.Data.Sqlite", connectionString, logger);
 
 			case DBMSType.Firebird:
 			case DBMSType.FirebirdFile:
-				return (IDAC)TypeActivator.Activate("Hydrogen.Data.FirebirdDAC", "Hydrogen.Data.Firebird", connectionString, logger);
+				return (IDAC)TypeActivator.Activate("Sphere10.Framework.Data.FirebirdDAC", "Sphere10.Framework.Data.Firebird", connectionString, logger);
 			default:
 				throw new NotSupportedException(dbmsType.ToString());
 		}
 	}
 }
+

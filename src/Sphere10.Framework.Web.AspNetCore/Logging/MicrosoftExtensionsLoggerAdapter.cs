@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,21 +9,21 @@
 using System;
 
 
-public class MicrosoftExtensionsLoggerAdapter : Hydrogen.LoggerDecorator, Microsoft.Extensions.Logging.ILogger {
-	public MicrosoftExtensionsLoggerAdapter(Hydrogen.ILogger decoratedLogger)
+public class MicrosoftExtensionsLoggerAdapter : Sphere10.Framework.LoggerDecorator, Microsoft.Extensions.Logging.ILogger {
+	public MicrosoftExtensionsLoggerAdapter(Sphere10.Framework.ILogger decoratedLogger)
 		: base(decoratedLogger) {
 	}
 
-	public IDisposable BeginScope<TState>(TState state) => Hydrogen.Disposables.None; // 
+	public IDisposable BeginScope<TState>(TState state) => Sphere10.Framework.Disposables.None; // 
 
 	public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
 		=> logLevel switch {
-			Microsoft.Extensions.Logging.LogLevel.Trace => Options.HasFlag(Hydrogen.LogOptions.DebugEnabled),
-			Microsoft.Extensions.Logging.LogLevel.Debug => Options.HasFlag(Hydrogen.LogOptions.DebugEnabled),
-			Microsoft.Extensions.Logging.LogLevel.Information => Options.HasFlag(Hydrogen.LogOptions.InfoEnabled),
-			Microsoft.Extensions.Logging.LogLevel.Warning => Options.HasFlag(Hydrogen.LogOptions.WarningEnabled),
-			Microsoft.Extensions.Logging.LogLevel.Error => Options.HasFlag(Hydrogen.LogOptions.ErrorEnabled),
-			Microsoft.Extensions.Logging.LogLevel.Critical => Options.HasFlag(Hydrogen.LogOptions.ErrorEnabled),
+			Microsoft.Extensions.Logging.LogLevel.Trace => Options.HasFlag(Sphere10.Framework.LogOptions.DebugEnabled),
+			Microsoft.Extensions.Logging.LogLevel.Debug => Options.HasFlag(Sphere10.Framework.LogOptions.DebugEnabled),
+			Microsoft.Extensions.Logging.LogLevel.Information => Options.HasFlag(Sphere10.Framework.LogOptions.InfoEnabled),
+			Microsoft.Extensions.Logging.LogLevel.Warning => Options.HasFlag(Sphere10.Framework.LogOptions.WarningEnabled),
+			Microsoft.Extensions.Logging.LogLevel.Error => Options.HasFlag(Sphere10.Framework.LogOptions.ErrorEnabled),
+			Microsoft.Extensions.Logging.LogLevel.Critical => Options.HasFlag(Sphere10.Framework.LogOptions.ErrorEnabled),
 			Microsoft.Extensions.Logging.LogLevel.None => false,
 			_ => throw new NotSupportedException($"{logLevel}")
 		};
@@ -55,3 +55,4 @@ public class MicrosoftExtensionsLoggerAdapter : Hydrogen.LoggerDecorator, Micros
 
 
 }
+

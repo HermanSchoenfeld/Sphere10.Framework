@@ -1,6 +1,6 @@
 using System.Windows.Forms.Design;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// A custom designer used by TaskPanes to remove unwanted 
@@ -31,3 +31,4 @@ internal class TaskPaneDesigner : ScrollableControlDesigner {
 		properties.Remove("ForeColor");
 	}
 }
+

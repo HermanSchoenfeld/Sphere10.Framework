@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Hydrogen.DApp.Presentation.Services;
-using Hydrogen.DApp.Presentation.ViewModels;
+using Sphere10.Framework.DApp.Presentation.Services;
+using Sphere10.Framework.DApp.Presentation.ViewModels;
 
-namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.ViewModels;
+namespace Sphere10.Framework.DApp.Presentation.WidgetGallery.Widgets.ViewModels;
 
 public class TablesViewModel : ExtendedComponentViewModel {
 	public INodeService NodeService { get; }
@@ -24,3 +24,5 @@ public class TablesViewModel : ExtendedComponentViewModel {
 		await Task.Delay(3000);
 	}
 }
+
+

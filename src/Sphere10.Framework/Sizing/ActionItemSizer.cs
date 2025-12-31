@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ActionItemSizer<T> : IItemSizer<T> {
 	private readonly Func<T, long> _sizer;
@@ -35,3 +35,4 @@ public class ActionItemSizer<T> : IItemSizer<T> {
 
 	public long CalculateSize(SerializationContext context, T item) => _sizer(item);
 }
+

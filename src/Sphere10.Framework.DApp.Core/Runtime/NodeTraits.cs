@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using System;
 
-namespace Hydrogen.DApp.Core.Runtime;
+namespace Sphere10.Framework.DApp.Core.Runtime;
 
 /// <summary>
-/// Describes the characteristics of a Hydrogen node.
+/// Describes the characteristics of a Sphere10.Framework node.
 /// </summary>
 [Flags]
 public enum NodeTraits {
@@ -41,7 +41,8 @@ public enum NodeTraits {
 	GUIServer,
 
 	/// <summary>
-	/// Node is hosted by a Hydrogen Host, which permits auto-upgrading.
+	/// Node is hosted by a Sphere10.Framework Host, which permits auto-upgrading.
 	/// </summary>
 	Hosted
 }
+

@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Classes;
+using Sphere10.Framework.DApp.Presentation2.UI.Controls.BlazorGrid.Classes;
 
-namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components {
+namespace Sphere10.Framework.DApp.Presentation2.UI.Controls.BlazorGrid.Components {
 	partial class Component2Test : IGridComponent<bool> {
 		[Parameter] public bool Checked { get; set; }
 
@@ -20,3 +20,5 @@ namespace Hydrogen.DApp.Presentation2.UI.Controls.BlazorGrid.Components {
 		}
 	}
 }
+
+

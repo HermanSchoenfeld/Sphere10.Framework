@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Reflection;
 
 
-namespace Hydrogen.CodeBuilder;
+namespace Sphere10.Framework.CodeBuilder;
 
 public abstract class CodeBuilderAttribute : Attribute {
 	public abstract void InjectCode(ClassBuilder ownerClass, MethodBuilder method);
@@ -336,3 +336,4 @@ public class ComponentFactory {
 
 
 }
+

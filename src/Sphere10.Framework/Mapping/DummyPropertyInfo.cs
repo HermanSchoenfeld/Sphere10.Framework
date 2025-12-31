@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Reflection;
 
-namespace Hydrogen.Mapping;
+namespace Sphere10.Framework.Mapping;
 
 [Serializable]
 public sealed class DummyPropertyInfo : PropertyInfo {
@@ -53,3 +53,4 @@ public sealed class DummyPropertyInfo : PropertyInfo {
 
 	public override object[] GetCustomAttributes(Type attributeType, bool inherit) => Array.Empty<object>();
 }
+

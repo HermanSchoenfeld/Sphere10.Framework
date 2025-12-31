@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,9 +9,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hydrogen.Mapping;
+using Sphere10.Framework.Mapping;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Defines the structure and policies for an <see cref="ObjectSpace"/>, including dimensions, indexes, and optional merkle/autosave traits.
@@ -35,7 +35,7 @@ public class ObjectSpaceDefinition {
 	/// <summary>
 	/// Hash function used for merkle-enabled object spaces.
 	/// </summary>
-	public CHF HashFunction { get; set; } = HydrogenDefaults.HashFunction;
+	public CHF HashFunction { get; set; } = Sphere10FrameworkDefaults.HashFunction;
 
 	/// <summary>
 	/// Dimensions (tables) that compose the object space.
@@ -188,3 +188,5 @@ public class ObjectSpaceDefinition {
 	}
 
 }
+
+

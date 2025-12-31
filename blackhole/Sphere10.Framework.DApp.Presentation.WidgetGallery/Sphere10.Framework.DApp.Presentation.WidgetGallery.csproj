@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hydrogen.DApp.Presentation\Hydrogen.DApp.Presentation.csproj" />
-    <ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.DApp.Presentation\Sphere10.Framework.DApp.Presentation.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
   </ItemGroup>
 
   <ItemGroup>

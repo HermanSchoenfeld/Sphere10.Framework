@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // <copyright file="UserDefaultsSettingsProvider.cs" company="Sphere 10 Software">
 //
-// Copyright (c) Sphere 10 Software. All rights reserved. (http://www.sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (http://www.sphere10.com)
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
@@ -29,10 +29,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Foundation;
-using Hydrogen;
-using Hydrogen.Application;
+using Sphere10.Framework;
+using Sphere10.Framework.Application;
 
-namespace Hydrogen.iOS {
+namespace Sphere10.Framework.iOS {
 
 	public class UserDefaultsSettingsProvider : BaseSettingsProvider {
 		private const string NullValueString = "NULL!8be93b18-cecb-4be0-8d05-d6c43123aa4e";
@@ -248,3 +248,4 @@ namespace Hydrogen.iOS {
 
 
 #endif
+

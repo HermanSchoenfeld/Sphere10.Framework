@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 💾 Hydrogen.Data.Firebird
+# 💾 Sphere10.Framework.Data.Firebird
 
-**Firebird database implementation** for Hydrogen.Data abstraction layer, providing open-source relational database access with ACID compliance and advanced SQL features.
+**Firebird database implementation** for Sphere10.Framework.Data abstraction layer, providing open-source relational database access with ACID compliance and advanced SQL features.
 
-Hydrogen.Data.Firebird brings **powerful open-source database capabilities** to the Hydrogen framework while maintaining database-agnostic abstraction. Supports both **embedded (single-file) and server architectures**, making it ideal for desktop applications, small-to-medium enterprises, and resource-constrained environments.
+Sphere10.Framework.Data.Firebird brings **powerful open-source database capabilities** to the Sphere10 Framework framework while maintaining database-agnostic abstraction. Supports both **embedded (single-file) and server architectures**, making it ideal for desktop applications, small-to-medium enterprises, and resource-constrained environments.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // Connect to Firebird database
 var dac = Tools.Firebird.Open(
@@ -52,7 +52,7 @@ var users = dac.ExecuteQuery(
 ### Connection Strings & Database Setup
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 // Local server connection (server-based Firebird)
 var serverDac = Tools.Firebird.Open(
@@ -74,7 +74,7 @@ var pooledDac = Tools.Firebird.Open(
 ### CRUD Operations with Generator Keys
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.Firebird.Open(
     "DataSource=shop.fdb;User=sysdba;Password=masterkey");
@@ -126,7 +126,7 @@ dac.ExecuteNonQuery(
 ### Transactions & ACID Properties
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.Firebird.Open(
     "DataSource=bank.fdb;User=sysdba;Password=masterkey");
@@ -197,7 +197,7 @@ Console.WriteLine($"Account 2: {acc2Balance}");  // 6000.00
 ### Stored Procedures & Triggers
 
 ```csharp
-using Hydrogen.Data;
+using Sphere10.Framework.Data;
 
 var dac = Tools.Firebird.Open(
     "DataSource=app.fdb;User=sysdba;Password=masterkey");
@@ -278,21 +278,23 @@ dac.Update("Products",
 
 ## 📦 Dependencies
 
-- **Hydrogen.Data**: Data abstraction layer
+- **Sphere10.Framework.Data**: Data abstraction layer
 - **FirebirdSql.Data.FirebirdClient**: Firebird .NET provider
 - **.NET Standard 2.1+**: Cross-platform compatibility
 
 ## 📚 Related Projects
 
-- [Hydrogen.Data](../Hydrogen.Data) - Core data abstraction layer
-- [Hydrogen.Data.Sqlite](../Hydrogen.Data.Sqlite) - SQLite embedded implementation
-- [Hydrogen.Data.MSSQL](../Hydrogen.Data.MSSQL) - SQL Server implementation
-- [Hydrogen.Data.NHibernate](../Hydrogen.Data.NHibernate) - NHibernate ORM integration
-- [Hydrogen.Windows.Forms.Firebird](../Hydrogen.Windows.Forms.Firebird) - WinForms data binding for Firebird
-- [Hydrogen.Tests](../../tests/Hydrogen.Tests) - Test patterns and examples
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Core data abstraction layer
+- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) - SQLite embedded implementation
+- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) - SQL Server implementation
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate) - NHibernate ORM integration
+- [Sphere10.Framework.Windows.Forms.Firebird](../Sphere10.Framework.Windows.Forms.Firebird) - WinForms data binding for Firebird
+- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+
+

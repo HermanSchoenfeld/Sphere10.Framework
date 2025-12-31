@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public interface ISortedList<T> : IExtendedCollection<T>,  IReadOnlyExtendedList<T> {
 }
+

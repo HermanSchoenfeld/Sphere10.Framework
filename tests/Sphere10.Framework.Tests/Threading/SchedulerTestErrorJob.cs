@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 /// <summary>
 /// Scheduler job that will throw an exception when executed.
@@ -20,3 +20,4 @@ public class SchedulerTestErrorJob : ISchedulerJob {
 		throw new Exception(Errormessage);
 	}
 }
+

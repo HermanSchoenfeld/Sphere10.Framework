@@ -10,8 +10,8 @@
     <TemplateGuid>{9ef11e43-1701-4396-8835-8392d57abb70}</TemplateGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Hydrogen.Android</RootNamespace>
-    <AssemblyName>Hydrogen.Android</AssemblyName>
+    <RootNamespace>Sphere10.Framework.Android</RootNamespace>
+    <AssemblyName>Sphere10.Framework.Android</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
@@ -62,13 +62,13 @@
     <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj">
+    <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj">
       <Project>{143386e8-8873-42c1-8284-4105213dac94}</Project>
-      <Name>Hydrogen.Application</Name>
+      <Name>Sphere10.Framework.Application</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hydrogen\Hydrogen.csproj">
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj">
       <Project>{a2192000-1bde-4657-ac90-289cf096c674}</Project>
-      <Name>Hydrogen</Name>
+      <Name>Sphere10.Framework</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

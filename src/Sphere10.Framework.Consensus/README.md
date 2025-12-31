@@ -1,18 +1,18 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# ⛓️ Hydrogen.Consensus
+# ⛓️ Sphere10.Framework.Consensus
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Blockchain consensus mechanism framework** providing pluggable consensus implementations, real-time difficulty adjustment, and distributed ledger validation infrastructure.
 
-Hydrogen.Consensus enables **protocol-agnostic consensus** with support for Proof-of-Work variants, adaptive difficulty adjustment algorithms, block validation rules, and merkle-tree based proofs.
+Sphere10.Framework.Consensus enables **protocol-agnostic consensus** with support for Proof-of-Work variants, adaptive difficulty adjustment algorithms, block validation rules, and merkle-tree based proofs.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Consensus;
-using Hydrogen.CryptoEx;
+using Sphere10.Framework.Consensus;
+using Sphere10.Framework.CryptoEx;
 
 // Initialize consensus mechanism
 var consensusRules = new ConsensusRules {
@@ -54,8 +54,8 @@ Console.WriteLine($"Next difficulty: {difficulty}");
 ### Block Validation
 
 ```csharp
-using Hydrogen.Consensus;
-using Hydrogen.CryptoEx;
+using Sphere10.Framework.Consensus;
+using Sphere10.Framework.CryptoEx;
 
 // Define consensus rules
 var rules = new ConsensusRules {
@@ -92,7 +92,7 @@ if (isStructureValid && isChainValid && isMerkleValid && isPoWValid) {
 ### Difficulty Adjustment
 
 ```csharp
-using Hydrogen.Consensus;
+using Sphere10.Framework.Consensus;
 using System;
 
 var consensusRules = new ConsensusRules {
@@ -122,8 +122,8 @@ Console.WriteLine($"Next difficulty: {nextDifficulty}");
 ### Block Production
 
 ```csharp
-using Hydrogen.Consensus;
-using Hydrogen.CryptoEx;
+using Sphere10.Framework.Consensus;
+using Sphere10.Framework.CryptoEx;
 
 // Get pending transactions
 var pendingTransactions = mempool.GetTransactions();
@@ -157,7 +157,7 @@ while (true) {
 ### Real-Time Difficulty Adjustment (RTTA)
 
 ```csharp
-using Hydrogen.Consensus;
+using Sphere10.Framework.Consensus;
 using System;
 
 // Real-Time Targeted Adjustment (RTTA) - adjusts every block, not every N blocks
@@ -185,7 +185,7 @@ var nextDifficulty = rttaValidator.AdjustDifficulty(
 ### Validation Rule Composition
 
 ```csharp
-using Hydrogen.Consensus;
+using Sphere10.Framework.Consensus;
 
 // Create composable validators
 var structureValidator = new BlockStructureValidator();
@@ -244,9 +244,9 @@ if (!isValid) {
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
-- **Hydrogen.CryptoEx**: Cryptographic primitives (hashing, signatures)
-- **Hydrogen.DApp.Core**: Blockchain core types (Block, Transaction, Chain)
+- **Sphere10 Framework**: Core framework
+- **Sphere10.Framework.CryptoEx**: Cryptographic primitives (hashing, signatures)
+- **Sphere10.Framework.DApp.Core**: Blockchain core types (Block, Transaction, Chain)
 
 ## ✅ Status & Maturity
 
@@ -258,10 +258,10 @@ if (!isValid) {
 
 ## 📄 Related Projects
 
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - Blockchain core types and chain management
-- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node) - Node implementation using consensus layer
-- [Hydrogen.CryptoEx](../Hydrogen.CryptoEx) - Cryptographic primitives (hashing, signatures)
-- [Hydrogen.Consensus](../Hydrogen.Consensus) - This library
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain core types and chain management
+- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node) - Node implementation using consensus layer
+- [Sphere10.Framework.CryptoEx](../Sphere10.Framework.CryptoEx) - Cryptographic primitives (hashing, signatures)
+- [Sphere10.Framework.Consensus](../Sphere10.Framework.Consensus) - This library
 
 ## ⚖️ License
 
@@ -276,3 +276,5 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+

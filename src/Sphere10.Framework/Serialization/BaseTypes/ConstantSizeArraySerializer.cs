@@ -1,4 +1,4 @@
-﻿namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class ConstantSizeArraySerializer<T> : ConstantSizeItemSerializerBase<T[]> {
 	private readonly IItemSerializer<T> _valueSerializer;
@@ -26,3 +26,4 @@ public class ConstantSizeArraySerializer<T> : ConstantSizeItemSerializerBase<T[]
 		return array;
 	}
 }
+

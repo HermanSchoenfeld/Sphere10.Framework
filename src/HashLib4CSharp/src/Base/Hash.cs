@@ -57,3 +57,4 @@ namespace HashLib4CSharp.Base
         public abstract IHashResult TransformFinal();
     }
 }
+

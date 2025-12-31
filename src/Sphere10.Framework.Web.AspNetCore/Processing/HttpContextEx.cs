@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Web.AspNetCore;
+namespace Sphere10.Framework.Web.AspNetCore;
 
 // https://stackoverflow.com/questions/38571032/how-to-get-httpcontext-current-in-asp-net-core
 public static class HttpContextEx {
@@ -20,3 +20,4 @@ public static class HttpContextEx {
 		get { return m_httpContextAccessor.HttpContext; }
 	}
 }
+

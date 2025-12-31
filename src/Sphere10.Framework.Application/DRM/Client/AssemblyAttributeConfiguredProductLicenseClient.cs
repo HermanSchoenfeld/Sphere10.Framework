@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 internal class AssemblyAttributeConfiguredProductLicenseClient : RestProductLicenseClient {
 	public AssemblyAttributeConfiguredProductLicenseClient()
@@ -16,9 +16,10 @@ internal class AssemblyAttributeConfiguredProductLicenseClient : RestProductLice
 	}
 
 	private static string GetDrmBaseUrl() {
-		var url = HydrogenAssemblyAttributesHelper.GetProductDrmApi();
+		var url = Sphere10AssemblyAttributesHelper.GetProductDrmApi();
 		if (string.IsNullOrEmpty(url))
 			throw new InvalidOleVariantTypeException($"Application is missing assembly-wide {nameof(AssemblyProductDrmApi)} attribute");
 		return url;
 	}
 }
+

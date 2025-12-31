@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.Maths;
+using Sphere10.Framework.Maths;
 
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class VerfiableRandom : IRandomNumberGenerator {
 
@@ -27,7 +27,7 @@ public class VerfiableRandom : IRandomNumberGenerator {
 	public byte[] VRFOutput { get; }
 
 	public VerfiableRandom(CHF chf, DSS dss, ReadOnlySpan<byte> seed, IPrivateKey privateKey, ulong nonce = 0L) 
-		: this(Hydrogen.VRF.CreateCryptographicVRF(chf, dss), seed, privateKey, nonce) {
+		: this(Sphere10.Framework.VRF.CreateCryptographicVRF(chf, dss), seed, privateKey, nonce) {
 	}
 
 	public VerfiableRandom(CryptographicVRF vrf, ReadOnlySpan<byte> seed, IPrivateKey privateKey, ulong nonce = 0L) 
@@ -44,7 +44,7 @@ public class VerfiableRandom : IRandomNumberGenerator {
 	}
 	
 	public VerfiableRandom(CHF chf, DSS dss, ReadOnlySpan<byte> seed, IPublicKey publicKey, ReadOnlySpan<byte> unverifiedProof)
-		: this(Hydrogen.VRF.CreateCryptographicVRF(chf, dss), seed, publicKey, unverifiedProof) { 
+		: this(Sphere10.Framework.VRF.CreateCryptographicVRF(chf, dss), seed, publicKey, unverifiedProof) { 
 	}
 
 	public VerfiableRandom(CryptographicVRF vrf, ReadOnlySpan<byte> seed, IPublicKey publicKey, ReadOnlySpan<byte> unverifiedProof) 
@@ -63,3 +63,4 @@ public class VerfiableRandom : IRandomNumberGenerator {
 
 	public void NextBytes(Span<byte> result) => _rng.NextBytes(result);
 }
+

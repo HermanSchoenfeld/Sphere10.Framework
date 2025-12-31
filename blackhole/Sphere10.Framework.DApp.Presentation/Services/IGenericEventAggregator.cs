@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Hydrogen.DApp.Presentation.Services;
+namespace Sphere10.Framework.DApp.Presentation.Services;
 
 public interface IGenericEventAggregator {
 	void Subscribe<T>(Action<T> handler);
@@ -18,3 +18,5 @@ public interface IGenericEventAggregator {
 
 	Task PublishAsync<T>(T data);
 }
+
+

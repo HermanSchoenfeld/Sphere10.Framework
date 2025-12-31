@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Hydrogen;
-using Hydrogen.DApp.Presentation2.Logic.Wizard;
+using Sphere10.Framework;
+using Sphere10.Framework.DApp.Presentation2.Logic.Wizard;
 
-namespace Hydrogen.DApp.Presentation2.UI.Wizard {
+namespace Sphere10.Framework.DApp.Presentation2.UI.Wizard {
 
 	/// <summary>
 	/// Wizard component.
@@ -175,3 +175,5 @@ namespace Hydrogen.DApp.Presentation2.UI.Wizard {
 	}
 
 }
+
+

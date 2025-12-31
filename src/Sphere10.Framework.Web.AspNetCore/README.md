@@ -1,30 +1,30 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 💻 Hydrogen.Web.AspNetCore
+# 💻 Sphere10.Framework.Web.AspNetCore
 
-**ASP.NET Core integration library** providing middleware, extensions, and utilities for building high-performance web applications and APIs with Hydrogen framework.
+**ASP.NET Core integration library** providing middleware, extensions, and utilities for building high-performance web applications and APIs with Sphere10 Framework framework.
 
-Hydrogen.Web.AspNetCore bridges Hydrogen with **ASP.NET Core ecosystem**, enabling seamless integration of logging, configuration, dependency injection, routing, and custom middleware while following .NET best practices.
+Sphere10.Framework.Web.AspNetCore bridges Sphere10 Framework with **ASP.NET Core ecosystem**, enabling seamless integration of logging, configuration, dependency injection, routing, and custom middleware while following .NET best practices.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Hydrogen services
-builder.Services.AddHydrogenWebServices();
+// Add Sphere10 Framework services
+builder.Services.AddSphere10WebServices();
 
 var app = builder.Build();
 
-// Add Hydrogen middleware
-app.UseHydrogenLogging();
-app.UseHydrogenErrorHandling();
+// Add Sphere10 Framework middleware
+app.UseSphere10Logging();
+app.UseSphere10ErrorHandling();
 
 app.MapGet("/api/hello", () => Results.Ok(new { 
-    message = "Hello from Hydrogen!",
+    message = "Hello from Sphere10 Framework!",
     timestamp = DateTime.UtcNow 
 }));
 
@@ -35,7 +35,7 @@ app.Run();
 
 **Middleware Pipeline**: Custom middleware components for logging, error handling, and cross-cutting concerns.
 
-**Service Registration**: Extension methods for configuring Hydrogen services in ASP.NET Core.
+**Service Registration**: Extension methods for configuring Sphere10 Framework services in ASP.NET Core.
 
 **Routing Extensions**: Enhanced routing helpers and conventions.
 
@@ -49,10 +49,10 @@ app.Run();
 
 ## 🔧 Core Examples
 
-### Configure Hydrogen Web Services
+### Configure Sphere10 Framework Web Services
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -61,25 +61,25 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure services
 builder.Services
     .AddControllers()
-    .AddHydrogenSerializationSupport();
+    .AddSphere10SerializationSupport();
 
-// Add Hydrogen web services
-builder.Services.AddHydrogenWebServices(options => {
+// Add Sphere10 Framework web services
+builder.Services.AddSphere10WebServices(options => {
     options.EnableDetailedErrors = builder.Environment.IsDevelopment();
     options.LogHttpRequests = true;
     options.CompressResponses = true;
 });
 
 // Add logging
-builder.Services.AddHydrogenLogging(builder.Configuration.GetSection("Logging"));
+builder.Services.AddSphere10Logging(builder.Configuration.GetSection("Logging"));
 
 // Build app
 var app = builder.Build();
 
 // Configure middleware
-app.UseHydrogenErrorHandling();
-app.UseHydrogenLogging();
-app.UseHydrogenResponseCompression();
+app.UseSphere10ErrorHandling();
+app.UseSphere10Logging();
+app.UseSphere10ResponseCompression();
 
 app.MapControllers();
 app.Run();
@@ -88,15 +88,15 @@ app.Run();
 ### Custom Middleware & Filters
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 // Create custom action filter
-public class HydrogenValidationFilter : IAsyncActionFilter {
-    private readonly ILogger<HydrogenValidationFilter> _logger;
+public class Sphere10ValidationFilter : IAsyncActionFilter {
+    private readonly ILogger<Sphere10ValidationFilter> _logger;
     
-    public HydrogenValidationFilter(ILogger<HydrogenValidationFilter> logger) {
+    public Sphere10ValidationFilter(ILogger<Sphere10ValidationFilter> logger) {
         _logger = logger;
     }
     
@@ -132,7 +132,7 @@ public class HydrogenValidationFilter : IAsyncActionFilter {
 public class Startup {
     public void ConfigureServices(IServiceCollection services) {
         services.AddControllers(options => {
-            options.Filters.Add<HydrogenValidationFilter>();
+            options.Filters.Add<Sphere10ValidationFilter>();
         });
     }
 }
@@ -141,7 +141,7 @@ public class Startup {
 ### HTML Processing & Generation
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Tools;  // HtmlTool namespace
 
 // Parse HTML
@@ -175,7 +175,7 @@ string generatedHtml = builder.ToString();
 ### XML Processing
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Tools;  // XmlTool namespace
 
 // Parse XML
@@ -222,7 +222,7 @@ string generatedXml = xmlBuilder.ToString();
 ### Form Handling & Validation
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -282,7 +282,7 @@ public class CreateProductRequest {
 ### Sitemap Generation
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Tools;  // SitemapTool namespace
 
 [ApiController]
@@ -331,14 +331,14 @@ public class SitemapController : ControllerBase {
 ### Error Handling & Exception Filters
 
 ```csharp
-using Hydrogen.Web.AspNetCore;
+using Sphere10.Framework.Web.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-public class HydrogenExceptionFilter : IExceptionFilter {
-    private readonly ILogger<HydrogenExceptionFilter> _logger;
+public class Sphere10ExceptionFilter : IExceptionFilter {
+    private readonly ILogger<Sphere10ExceptionFilter> _logger;
     
-    public HydrogenExceptionFilter(ILogger<HydrogenExceptionFilter> logger) {
+    public Sphere10ExceptionFilter(ILogger<Sphere10ExceptionFilter> logger) {
         _logger = logger;
     }
     
@@ -377,7 +377,7 @@ public class HydrogenExceptionFilter : IExceptionFilter {
 
 // Register
 builder.Services.AddControllers(options => {
-    options.Filters.Add<HydrogenExceptionFilter>();
+    options.Filters.Add<Sphere10ExceptionFilter>();
 });
 ```
 
@@ -390,7 +390,7 @@ builder.Services.AddControllers(options => {
 - CORS support
 
 **Controller Support**: Base controller classes
-- HydrogenController: Enhanced controller base
+- Sphere10Controller: Enhanced controller base
 - API controller conventions
 - Result mapping utilities
 
@@ -416,8 +416,8 @@ builder.Services.AddControllers(options => {
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
-- **Hydrogen.NETCore**: .NET Core utilities
+- **Sphere10 Framework**: Core framework
+- **Sphere10.Framework.NETCore**: .NET Core utilities
 - **Microsoft.AspNetCore.App**: ASP.NET Core runtime (.NET built-in)
 - **Microsoft.AspNetCore.Mvc**: Controller and view support
 - **System.Xml.XPath**: XPath support
@@ -442,10 +442,10 @@ builder.Services.AddControllers(options => {
 
 ## 📖 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework
-- [Hydrogen.NETCore](../Hydrogen.NETCore) - .NET Core integration
-- [Hydrogen.Data](../Hydrogen.Data) - Data access for web applications
-- [Hydrogen.DApp.Presentation](../../blackhole/Hydrogen.DApp.Presentation) - UI components
+- [Sphere10 Framework](../Sphere10 Framework) - Core framework
+- [Sphere10.Framework.NETCore](../Sphere10.Framework.NETCore) - .NET Core integration
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Data access for web applications
+- [Sphere10.Framework.DApp.Presentation](../../blackhole/Sphere10.Framework.DApp.Presentation) - UI components
 
 ## ⚖️ License
 
@@ -460,3 +460,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+
+

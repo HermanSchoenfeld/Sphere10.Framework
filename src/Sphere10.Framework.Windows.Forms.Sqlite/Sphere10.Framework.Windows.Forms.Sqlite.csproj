@@ -8,8 +8,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Hydrogen.Data.Sqlite\Hydrogen.Data.Sqlite.csproj" />
-    <ProjectReference Include="..\Hydrogen.Windows.Forms\Hydrogen.Windows.Forms.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Data.Sqlite\Sphere10.Framework.Data.Sqlite.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Windows.Forms\Sphere10.Framework.Windows.Forms.csproj" />
   </ItemGroup>
 
 </Project>

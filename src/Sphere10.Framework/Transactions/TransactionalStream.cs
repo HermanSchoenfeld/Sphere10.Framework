@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// A stream that can be committed or rolled back.
@@ -62,3 +62,4 @@ public class TransactionalStream : TransactionalStream<ExtendedMemoryStream>, IL
 
 	public Task LoadAsync() => InnerStream.LoadAsync();
 }
+

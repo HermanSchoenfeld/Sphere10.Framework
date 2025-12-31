@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-# 🚀 Hydrogen.DApp.Host
+# 🚀 Sphere10.Framework.DApp.Host
 
-**Host process for running Hydrogen DApp nodes** as standalone services with process management, lifecycle control, and graceful shutdown.
+**Host process for running Sphere10 Framework DApp nodes** as standalone services with process management, lifecycle control, and graceful shutdown.
 
-Hydrogen.DApp.Host provides the **entry point for blockchain nodes**, handling child process spawning, configuration loading, logging aggregation, and error recovery for production Hydrogen DApp deployments.
+Sphere10.Framework.DApp.Host provides the **entry point for blockchain nodes**, handling child process spawning, configuration loading, logging aggregation, and error recovery for production Sphere10 Framework DApp deployments.
 
 ## ⚡ 10-Second Example
 
 ```csharp
-using Hydrogen.DApp.Host;
+using Sphere10.Framework.DApp.Host;
 
 // Program.cs - the host launcher
 var hostBuilder = Host.CreateDefaultBuilder(args)
@@ -25,9 +25,9 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
 var host = hostBuilder.Build();
 await host.RunAsync();
 
-// This launches Hydrogen.DApp.Node as child process
+// This launches Sphere10.Framework.DApp.Node as child process
 // Console output:
-// info: Hydrogen.DApp.Node starting...
+// info: Sphere10.Framework.DApp.Node starting...
 // info: Listening on port 8080
 ```
 
@@ -35,7 +35,7 @@ await host.RunAsync();
 
 **Host Process**: Main process managing the lifecycle of child node process.
 
-**Child Process Management**: Spawn and monitor Hydrogen.DApp.Node executable.
+**Child Process Management**: Spawn and monitor Sphere10.Framework.DApp.Node executable.
 
 **Configuration Loading**: Load node settings from configuration files.
 
@@ -50,7 +50,7 @@ await host.RunAsync();
 ### Basic Node Host Startup
 
 ```csharp
-using Hydrogen.DApp.Host;
+using Sphere10.Framework.DApp.Host;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -73,7 +73,7 @@ await host.RunAsync();
 // This will:
 // 1. Load configuration from appsettings.json
 // 2. Start the host
-// 3. Spawn Hydrogen.DApp.Node.exe as child process
+// 3. Spawn Sphere10.Framework.DApp.Node.exe as child process
 // 4. Monitor child process
 // 5. Shutdown gracefully on CTRL+C
 ```
@@ -81,7 +81,7 @@ await host.RunAsync();
 ### Custom Node Configuration
 
 ```csharp
-using Hydrogen.DApp.Host;
+using Sphere10.Framework.DApp.Host;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -91,7 +91,7 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true)
-            .AddEnvironmentVariables("HYDROGENNODE_");
+            .AddEnvironmentVariables("Sphere10NODE_");
     })
     .ConfigureServices((context, services) => {
         // Bind configuration to options
@@ -134,7 +134,7 @@ Console.WriteLine($"Network: {nodeOptions.NetworkName}");
   "Logging": {
     "LogLevel": {
       "Default": "Information",
-      "Hydrogen": "Debug"
+      "Sphere10 Framework": "Debug"
     }
   }
 }
@@ -143,7 +143,7 @@ Console.WriteLine($"Network: {nodeOptions.NetworkName}");
 ### Process Lifecycle Management
 
 ```csharp
-using Hydrogen.DApp.Host;
+using Sphere10.Framework.DApp.Host;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 
@@ -197,7 +197,7 @@ public class NodeLifecycleService : IHostedService {
 ### Error Handling & Recovery
 
 ```csharp
-using Hydrogen.DApp.Host;
+using Sphere10.Framework.DApp.Host;
 using Microsoft.Extensions.Hosting;
 
 public class NodeMonitoringService : IHostedService {
@@ -247,7 +247,7 @@ public class NodeMonitoringService : IHostedService {
 ### Logging & Output Capture
 
 ```csharp
-using Hydrogen.DApp.Host;
+using Sphere10.Framework.DApp.Host;
 using Microsoft.Extensions.Hosting;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -283,7 +283,7 @@ await host.RunAsync();
 ### Child Process Debugging Setup
 
 ```csharp
-using Hydrogen.DApp.Host;
+using Sphere10.Framework.DApp.Host;
 using System.Diagnostics;
 
 // Program.cs - Configure for debugging
@@ -292,7 +292,7 @@ var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
 if (isDevelopment && Debugger.IsAttached) {
     // Enable child process debugging attachment
     var processStartInfo = new ProcessStartInfo {
-        FileName = "Hydrogen.DApp.Node.exe",
+        FileName = "Sphere10.Framework.DApp.Node.exe",
         UseShellExecute = false,
         RedirectStandardOutput = true,
         RedirectStandardError = true,
@@ -302,8 +302,8 @@ if (isDevelopment && Debugger.IsAttached) {
     // Note: To debug child process:
     // 1. Install Microsoft Child Process Debugging Power Tool extension
     // 2. Debug menu -> Other Debug Targets -> Child Process Debugging Settings
-    // 3. Enable child process debugging and add Hydrogen.DApp.Node.exe
-    // 4. Right-click Hydrogen.DApp.Node project -> Properties -> Debug -> Enable native debugging
+    // 3. Enable child process debugging and add Sphere10.Framework.DApp.Node.exe
+    // 4. Right-click Sphere10.Framework.DApp.Node project -> Properties -> Debug -> Enable native debugging
 }
 ```
 
@@ -341,9 +341,9 @@ if (isDevelopment && Debugger.IsAttached) {
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core framework
-- **Hydrogen.Application**: Application lifecycle
-- **Hydrogen.DApp.Core**: DApp core functionality
+- **Sphere10 Framework**: Core framework
+- **Sphere10.Framework.Application**: Application lifecycle
+- **Sphere10.Framework.DApp.Core**: DApp core functionality
 - **Microsoft.Extensions.Hosting**: Generic host pattern
 - **Microsoft.Extensions.DependencyInjection**: Service injection
 - **Microsoft.Extensions.Configuration**: Configuration system
@@ -368,10 +368,10 @@ if (isDevelopment && Debugger.IsAttached) {
 
 ## 📖 Related Projects
 
-- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node) - Node implementation
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - DApp framework
-- [Hydrogen.Application](../Hydrogen.Application) - Application framework
-- [Hydrogen.Communications](../Hydrogen.Communications) - Network layer
+- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node) - Node implementation
+- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - DApp framework
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework
+- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network layer
 
 ## ⚖️ License
 
@@ -386,3 +386,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ---
 
 **Version**: 2.0+
+
+
+

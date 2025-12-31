@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Ugochukwu Mmaduekwe, Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using Blake2Fast;
 
-namespace Hydrogen.CryptoEx;
+namespace Sphere10.Framework.CryptoEx;
 
 public class Blake2bFastAdapter : HashFunctionBase {
 	IBlake2Incremental _hasher;
@@ -71,3 +71,4 @@ public class Blake2sFastAdapter : HashFunctionBase {
 		throw new NotSupportedException();
 	}
 }
+

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -7,11 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Hydrogen.CryptoEx.EC;
-using Hydrogen.CryptoEx.EC.Schnorr;
+using Sphere10.Framework.CryptoEx.EC;
+using Sphere10.Framework.CryptoEx.EC.Schnorr;
 using static HashLib4CSharp.Base.HashFactory.Crypto;
 
-namespace Hydrogen.CryptoEx;
+namespace Sphere10.Framework.CryptoEx;
 
 public class ModuleConfiguration : CoreModuleConfigurationBase {
 
@@ -133,3 +133,4 @@ public class ModuleConfiguration : CoreModuleConfigurationBase {
 	public static void FinalizeInternal() {
 	}
 }
+

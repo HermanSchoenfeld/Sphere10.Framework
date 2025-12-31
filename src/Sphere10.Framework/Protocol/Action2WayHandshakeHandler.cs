@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Communications;
+namespace Sphere10.Framework.Communications;
 
 public class Action2WayHandshakeHandler<THandshake, TAck> : HandshakeHandlerBase<THandshake, TAck, Void> {
 
@@ -41,3 +41,4 @@ public class Action2WayHandshakeHandler<THandshake, TAck> : HandshakeHandlerBase
 		=> throw new NotSupportedException("2-way handshakes do not involve acknowledgement verifications");
 
 }
+

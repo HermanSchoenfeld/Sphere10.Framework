@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Polyminer
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,13 +10,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Hydrogen.Communications.RPC;
-using Hydrogen.DApp.Core.Configuration;
-using Hydrogen.DApp.Core.Consensus.Serializers;
-using Hydrogen.DApp.Core.Maths;
-using Hydrogen.DApp.Core.Mining;
+using Sphere10.Framework.Communications.RPC;
+using Sphere10.Framework.DApp.Core.Configuration;
+using Sphere10.Framework.DApp.Core.Consensus.Serializers;
+using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.DApp.Core.Mining;
 
-namespace Hydrogen.DApp.Node.RPC;
+namespace Sphere10.Framework.DApp.Node.RPC;
 
 public class RpcSingleThreadedMiner : IDisposable {
 	private JsonRpcClient _rpcClient;
@@ -119,3 +119,4 @@ public class RpcSingleThreadedMiner : IDisposable {
 		}
 	}
 }
+

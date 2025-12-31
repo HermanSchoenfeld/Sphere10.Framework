@@ -1,4 +1,4 @@
-//// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+//// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //// Author: Herman Schoenfeld
 ////
 //// Distributed under the MIT software license, see the accompanying file
@@ -13,13 +13,13 @@
 //using System.Net.NetworkInformation;
 //using System.IO;
 //using System.Reflection;
-//using Hydrogen.Application;
-//using Hydrogen;
-//using Hydrogen.Windows.BITS;
-//using Hydrogen.Application;
+//using Sphere10.Framework.Application;
+//using Sphere10.Framework;
+//using Sphere10.Framework.Windows.BITS;
+//using Sphere10.Framework.Application;
 
 
-//namespace Hydrogen.Windows.Forms {
+//namespace Sphere10.Framework.Windows.Forms {
 
 //    public class BITSLicenseCommandDownloadJob : JobEx {
 
@@ -104,5 +104,6 @@
 //        }
 //    }
 //}
+
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace Hydrogen.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms;
 
 [ToolboxItem(false)]
 public abstract class NumericBoxBase<T> : TextBoxEx where T : struct {
@@ -166,3 +166,4 @@ public abstract class NumericBoxBase<T> : TextBoxEx where T : struct {
 	public virtual string FormatString { get; set; }
 
 }
+

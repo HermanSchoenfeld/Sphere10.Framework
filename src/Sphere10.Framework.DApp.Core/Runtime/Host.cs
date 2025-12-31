@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,10 +8,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Hydrogen.Communications;
-using Hydrogen.DApp.Core.Storage;
+using Sphere10.Framework.Communications;
+using Sphere10.Framework.DApp.Core.Storage;
 
-namespace Hydrogen.DApp.Core.Runtime;
+namespace Sphere10.Framework.DApp.Core.Runtime;
 
 public class Host : IHost {
 	public event EventHandlerEx<AnonymousPipe> NodeStarted;
@@ -38,7 +38,7 @@ public class Host : IHost {
 	private Protocol BuildProtocol()
 		=> new ProtocolBuilder()
 			.AddRequestResponse<PingMessage, PongMessage>(() => new PongMessage(), () => Logger.Info("Received Pong"))
-			.AddCommand<UpgradeMessage>( async upgradeMessage => await UpgradeApplication(upgradeMessage.HydrogenApplicationPackagePath))
+			.AddCommand<UpgradeMessage>( async upgradeMessage => await UpgradeApplication(upgradeMessage.Sphere10FrameworkApplicationPackagePath))
 			.AddCommand<ShutdownMessage>(async () => await RequestShutdown())
 			.AutoBuildSerializers()
 			.Build();
@@ -129,3 +129,4 @@ public class Host : IHost {
 	}
 
 }
+

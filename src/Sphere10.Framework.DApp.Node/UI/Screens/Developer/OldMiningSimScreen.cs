@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,14 +8,14 @@
 
 //using System;
 //using System.Collections.Generic;
-//using Hydrogen;
+//using Sphere10.Framework;
 //using Terminal.Gui;
-//using Hydrogen.DApp.Core.Configuration;
-//using Hydrogen.DApp.Core.Consensus.Serializers;
-//using Hydrogen.DApp.Core.Maths;
-//using Hydrogen.DApp.Core.Mining;
+//using Sphere10.Framework.DApp.Core.Configuration;
+//using Sphere10.Framework.DApp.Core.Consensus.Serializers;
+//using Sphere10.Framework.DApp.Core.Maths;
+//using Sphere10.Framework.DApp.Core.Mining;
 
-//namespace Hydrogen.DApp.Node.UI {
+//namespace Sphere10.Framework.DApp.Node.UI {
 
 //	[Title("Old Mining Simulator")]
 //	[Lifetime(ScreenLifetime.WhenVisible)]
@@ -172,5 +172,6 @@
 
 
 //}
+
 
 

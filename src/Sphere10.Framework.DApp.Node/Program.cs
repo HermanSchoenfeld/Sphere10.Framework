@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -12,7 +12,7 @@ public class Program {
 }
 
 
-//using Hydrogen;
+//using Sphere10.Framework;
 //using System;
 //using System.IO;
 //using System.IO.Pipes;
@@ -22,26 +22,26 @@ public class Program {
 //using System.Security.Policy;
 //using System.Threading;
 //using System.Threading.Tasks;
-//using Hydrogen.DApp.Node;
-//using Hydrogen.Application;
-//using Hydrogen.DApp.Node.UI;
-//using Hydrogen.DApp.Node.RPC;
-//using Hydrogen.DApp.Core.Maths;
-//using Hydrogen.DApp.Core.Mining;
-//using Hydrogen.DApp.Core.Consensus.Serializers;
-//using Hydrogen.DApp.Node.UI.Components;
+//using Sphere10.Framework.DApp.Node;
+//using Sphere10.Framework.Application;
+//using Sphere10.Framework.DApp.Node.UI;
+//using Sphere10.Framework.DApp.Node.RPC;
+//using Sphere10.Framework.DApp.Core.Maths;
+//using Sphere10.Framework.DApp.Core.Mining;
+//using Sphere10.Framework.DApp.Core.Consensus.Serializers;
+//using Sphere10.Framework.DApp.Node.UI.Components;
 
-//using Hydrogen.CryptoEx;
-//using Hydrogen.DApp.Core.Runtime;
+//using Sphere10.Framework.CryptoEx;
+//using Sphere10.Framework.DApp.Core.Runtime;
 
-//namespace Hydrogen.DApp.Node {
+//namespace Sphere10.Framework.DApp.Node {
 
 //	class Program {
 
 
 //		private static CommandLineParameters Arguments = new CommandLineParameters() {
 //			Header = new[] {
-//				"HydrogenP2P Node {CurrentVersion}",
+//				"Sphere10.FrameworkP2P Node {CurrentVersion}",
 //				"Copyright (c) Sphere 10 Software 2021 - {CurrentYear}"
 //			},
 
@@ -65,7 +65,7 @@ public class Program {
 //				return;
 //			}
 
-//			HydrogenFramework.Instance.StartFramework();
+//			Sphere10Framework.Instance.StartFramework();
 
 //			var stopNodeTokenSource = new CancellationTokenSource();
 
@@ -78,7 +78,7 @@ public class Program {
 //					Console.WriteLine("Invalid format for host read/write port");
 //					return;
 //				}
-//				//hostedNode = new Hydrogen.DApp.Core.Runtime.Node()
+//				//hostedNode = new Sphere10.Framework.DApp.Core.Runtime.Node()
 //				//hostedNodeRunner = hostedNode.Run(stopNodeTokenSource.Token);
 //			}
 
@@ -91,3 +91,4 @@ public class Program {
 //		}
 //	}
 //}
+

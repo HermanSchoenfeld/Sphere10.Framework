@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,15 +8,16 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public class ModuleConfiguration : ModuleConfigurationBase {
 	
 	public override void RegisterComponents(IServiceCollection serviceCollection) {
 
-		if (HydrogenFramework.Instance.Options.HasFlag(HydrogenFrameworkOptions.EnsureSystemDataDirGloballyAccessible)) {
+		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)) {
 			serviceCollection.AddInitializer<EnsureSystemDataDirGloballyAccessibleInitializer>();
 		}
 	}
 
 }
+

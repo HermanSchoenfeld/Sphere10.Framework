@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.Windows.BITS;
+namespace Sphere10.Framework.Windows.BITS;
 
 public class ProxySettings {
 	private BG_JOB_PROXY_USAGE proxyUsage;
@@ -38,3 +38,4 @@ public class ProxySettings {
 		this.job.SetProxySettings(this.proxyUsage, this.proxyList, this.proxyBypassList);
 	}
 }
+

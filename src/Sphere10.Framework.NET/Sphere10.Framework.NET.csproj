@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
-    <ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
   </ItemGroup>
 
 </Project>

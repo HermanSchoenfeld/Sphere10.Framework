@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public sealed class TypeCollectionSerializer : ProjectedSerializer<IEnumerable<(Type, Void)>, IEnumerable<Type>> {
 	
@@ -22,3 +22,4 @@ public sealed class TypeCollectionSerializer : ProjectedSerializer<IEnumerable<(
 		: base(new TaggedTypeCollectionSerializer<Void>(VoidSerializer.Instance, sizeDescriptorStrategy), taggedTypes => taggedTypes.Select(x => x.Item1), types => types.Select(type => (type, Void.Value))) {
 	}
 }
+

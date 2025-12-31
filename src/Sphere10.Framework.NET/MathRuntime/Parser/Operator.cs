@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.Maths.Compiler;
+namespace Sphere10.Framework.Maths.Compiler;
 
 public enum Operator {
 
@@ -102,3 +102,4 @@ public class OpAttr : Attribute {
 		set { _aryness = value; }
 	}
 }
+

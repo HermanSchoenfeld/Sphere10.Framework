@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.DApp.Core.Keys;
+using Sphere10.Framework.DApp.Core.Keys;
 
-namespace Hydrogen.DApp.Core.Wallets;
+namespace Sphere10.Framework.DApp.Core.Wallets;
 
 public interface IWalletKey {
 	public string Name { get; set; }
@@ -17,3 +17,4 @@ public interface IWalletKey {
 	public byte[] PublicKey { get; }
 	public WalletKeyCapability Capability { get; }
 }
+

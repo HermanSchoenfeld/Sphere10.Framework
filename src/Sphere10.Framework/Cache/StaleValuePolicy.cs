@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 /// <summary>
 /// Indicates how cached items are checked for staleness beyond expiration rules.
@@ -25,3 +25,4 @@ public enum StaleValuePolicy {
 	/// </summary>
 	BackgroundCheck,
 }
+

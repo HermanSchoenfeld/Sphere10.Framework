@@ -1,4 +1,4 @@
-//	Hydrogen.Data.Csv.CsvReader.RecordEnumerator
+//	Sphere10.Framework.Data.Csv.CsvReader.RecordEnumerator
 //	Copyright (c) 2005 Sébastien Lorion
 //
 //	MIT license (http://en.wikipedia.org/wiki/MIT_License)
@@ -22,9 +22,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Hydrogen.Data.Csv.Resources;
+using Sphere10.Framework.Data.Csv.Resources;
 
-namespace Hydrogen.Data.Csv;
+namespace Sphere10.Framework.Data.Csv;
 
 public partial class CsvReader {
 	/// <summary>
@@ -150,3 +150,4 @@ public partial class CsvReader {
 
 	}
 }
+

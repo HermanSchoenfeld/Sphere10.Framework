@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class HashSetSerializer<TItem> : CollectionSerializerBase<HashSet<TItem>, TItem> {
 
@@ -27,3 +27,4 @@ public class HashSetSerializer<TItem> : CollectionSerializerBase<HashSet<TItem>,
 			throw new SerializationException("Duplicate item in sorted set");
 	}
 }
+

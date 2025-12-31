@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Reflection;
 
-namespace Hydrogen.FastReflection;
+namespace Sphere10.Framework.FastReflection;
 
 public static class FastReflectionExtensions {
 	public static object FastInvoke(this MethodInfo methodInfo, object instance, params object[] parameters) {
@@ -41,3 +41,4 @@ public static class FastReflectionExtensions {
 		return FastReflectionCaches.IsSubTypeCache[(type, other)];
 	}
 }
+

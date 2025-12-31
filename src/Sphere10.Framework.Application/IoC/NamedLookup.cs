@@ -1,4 +1,4 @@
-﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.Application;
+namespace Sphere10.Framework.Application;
 
 public class NamedLookup<T> : INamedLookup<T> {
 	private readonly IReadOnlyDictionary<string, Type> _serviceMap;
@@ -26,3 +26,4 @@ public class NamedLookup<T> : INamedLookup<T> {
 	public T this[string name]
 		=> _serviceMap.TryGetValue(name, out var serviceType) ? (T)_serviceProvider.GetService(serviceType) : default;
 }
+

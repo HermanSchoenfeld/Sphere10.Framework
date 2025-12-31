@@ -1,6 +1,6 @@
-﻿using System.Text;
+using System.Text;
 
-namespace Hydrogen.Tests;
+namespace Sphere10.Framework.Tests;
 
 public class TestObjectSerializer : ItemSerializerBase<TestObject> {
 	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseVarInt).AsReferenceSerializer();
@@ -21,3 +21,4 @@ public class TestObjectSerializer : ItemSerializerBase<TestObject> {
 		=> new(_stringSerializer.Deserialize(reader, context), reader.ReadInt32(), reader.ReadBoolean());
 
 }
+

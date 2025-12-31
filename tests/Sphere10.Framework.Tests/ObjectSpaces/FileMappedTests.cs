@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using Hydrogen.ObjectSpaces;
+using Sphere10.Framework.ObjectSpaces;
 using NUnit.Framework;
-using Hydrogen;
+using Sphere10.Framework;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Hydrogen.Tests.ObjectSpaces;
+namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 [TestFixture]
 public class FileMappedTests {
@@ -141,3 +141,4 @@ public class FileMappedTests {
 
 	#endregion
 }
+

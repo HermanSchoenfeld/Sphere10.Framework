@@ -1,4 +1,4 @@
-// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, TValue, IStreamMappedDictionary<TKey, TValue>>, ITransactionalDictionary<TKey, TValue> {
 
@@ -23,14 +23,14 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 	private readonly ITransactionalObject _transactionalObject;
 
 	public TransactionalDictionary(
-		HydrogenFileDescriptor fileDescriptor,
+		Sphere10FrameworkFileDescriptor fileDescriptor,
 		IItemSerializer<TKey> keySerializer = null,
 		IItemSerializer<TValue> valueSerializer = null,
 		IItemChecksummer<TKey> keyChecksum = null,
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		int reservedStreamCount = 2,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
 		string keyIndexName = null,
 		FileAccessMode accessMode = FileAccessMode.Default,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
@@ -61,12 +61,12 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		IItemChecksummer<TKey> keyChecksum = null, 
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null, 
-		int clusterSize = HydrogenDefaults.ClusterSize,
+		int clusterSize = Sphere10FrameworkDefaults.ClusterSize,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		int reservedStreamCount = 2,
-		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
 		string keyIndexName = null,
-		Endianness endianness = HydrogenDefaults.Endianness,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness,
 		bool readOnly = false,
 		bool autoLoad = false,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
@@ -145,3 +145,5 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 	public void RemoveAt(long index) => InternalDictionary.RemoveAt(index);
 
 }
+
+

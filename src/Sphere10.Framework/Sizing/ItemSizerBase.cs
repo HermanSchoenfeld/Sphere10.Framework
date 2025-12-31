@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen;
+namespace Sphere10.Framework;
 
 public abstract class ItemSizerBase<TItem> : IItemSizer<TItem> {
 
@@ -20,3 +20,4 @@ public abstract class ItemSizerBase<TItem> : IItemSizer<TItem> {
 
 	public abstract long CalculateSize(SerializationContext context, TItem item);
 }
+
