@@ -49,7 +49,7 @@ resources/                    # Branding, fonts, presentations
 The **Tools namespace** is a defining architectural feature providing global, IntelliSense-discoverable static utility methods:
 
 - **Tools.Array, Tools.Collection, Tools.Text, Tools.Crypto** – Framework-wide utilities
-- **Tools.Sqlite, Tools.MSSql, Tools.NHibernate** – Database-specific tools
+- **Tools.Sqlite, Tools.MSSQL, Tools.NHibernate** – Database-specific tools
 - **Tools.WinTool, Tools.iOSTool, Tools.Web.AspNetCore** – Platform-specific extensions
 - **Discovery Pattern**: Type `Tools.` to explore all available operations
 - **Extensibility**: Each project adds its own Tool class to the Tools namespace

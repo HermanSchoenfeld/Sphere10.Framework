@@ -413,11 +413,11 @@ Tools.Sqlite.Drop(Tools.Sqlite.GetFilePathFromConnectionString(connStr));
 bool exists = Tools.Sqlite.Exists(connectionString);
 ```
 
-### **Tools.MSSql** (Sphere10.Framework.Data.MSSQL)
+### **Tools.MSSQL** (Sphere10.Framework.Data.MSSQL)
 SQL Server-specific utilities.
 ```csharp
-var adapter = Tools.MSSql.CreateAdapter(connectionString);
-var connection = Tools.MSSql.CreateConnection(connectionString);
+var adapter = Tools.MSSQL.CreateAdapter(connectionString);
+var connection = Tools.MSSQL.CreateConnection(connectionString);
 ```
 
 ### **Tools.Firebird** (Sphere10.Framework.Data.Firebird)

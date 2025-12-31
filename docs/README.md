@@ -2,71 +2,49 @@
 
 **Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.**
 
-Complete documentation for the Sphere10 Framework — a comprehensive .NET 8.0 framework for building blockchain applications, DApps, and distributed systems.
+Complete documentation for **Sphere10 Framework** — a comprehensive .NET 8.0 framework for building full-stack applications across desktop, mobile, and web platforms with advanced data structures, cryptography, persistence, and networking capabilities.
 
 ---
 
 ## 📖 Quick Navigation
 
-### Essential Reading
+### Essential Resources
 
-- **[START-HERE.md](START-HERE.md)** — Begin here for framework overview and quick navigation
-- **[Tools-Reference.md](Tools-Reference.md)** — Complete catalog of Tools.* namespace
-- **[DApp-Development-Guide.md](DApp-Development-Guide.md)** — Complete guide for building blockchain applications
+- **[START-HERE.md](START-HERE.md)** — New to Sphere10 Framework? Begin here
+- **[Tools-Reference.md](Tools-Reference.md)** — Complete catalog of Tools.* namespace utilities
+- **[REAL_WORLD_USAGE_EXAMPLES.md](REAL_WORLD_USAGE_EXAMPLES.md)** — Practical examples and patterns
 
 ### Architecture & Design
 
 - **[Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md)** — Framework composition and core concepts
-- **[Architecture/Runtime.md](Architecture/Runtime.md)** — Deployment model, lifecycle, and HAP system
-- **[Architecture/Domains.md](Architecture/Domains.md)** — Catalog of all framework domains
+- **[Architecture/Domains.md](Architecture/Domains.md)** — Catalog of 30+ framework domains
 - **[Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md)** — Architectural patterns and design principles
 - **[Guidelines/Code-Styling.md](Guidelines/Code-Styling.md)** — Coding standards and conventions
 
-### Component Documentation
+### Component-Specific Docs
 
-- **[PresentationLayer/README.md](PresentationLayer/README.md)** — Blazor-based UI framework and components
+See individual project READMEs in `src/` for component-specific documentation:
+- Collections, serialization, persistence: [src/Sphere10.Framework/README.md](../src/Sphere10.Framework/README.md)
+- Database access: [src/Sphere10.Framework.Data/README.md](../src/Sphere10.Framework.Data/README.md)
+- Cryptography: [src/Sphere10.Framework.CryptoEx/README.md](../src/Sphere10.Framework.CryptoEx/README.md)
+- Networking & RPC: [src/Sphere10.Framework.Communications/README.md](../src/Sphere10.Framework.Communications/README.md)
+- Windows integration: [src/Sphere10.Framework.Windows/README.md](../src/Sphere10.Framework.Windows/README.md)
+- Web & ASP.NET Core: [src/Sphere10.Framework.Web.AspNetCore/README.md](../src/Sphere10.Framework.Web.AspNetCore/README.md)
 
 ---
 
-## 🎯 By Role
+## 🎯 By Use Case
 
-### Developers
-
-**Building a DApp?**
-1. Start with [START-HERE.md](START-HERE.md)
-2. Read [DApp-Development-Guide.md](DApp-Development-Guide.md)
-3. Reference [src/Sphere10.Framework.DApp.Core/README.md](../src/Sphere10.Framework.DApp.Core/README.md)
-4. Review [src/Sphere10.Framework.DApp.Node/README.md](../src/Sphere10.Framework.DApp.Node/README.md)
-
-**Working with Collections?**
-- [src/Sphere10 Framework/README.md](../src/Sphere10 Framework/README.md)
-- [src/Sphere10.Framework.Data/README.md](../src/Sphere10.Framework.Data/README.md)
-
-**Implementing Cryptography?**
-- [src/Sphere10.Framework.CryptoEx/README.md](../src/Sphere10.Framework.CryptoEx/README.md)
-
-**Building Networking/RPC?**
-- [src/Sphere10.Framework.Communications/README.md](../src/Sphere10.Framework.Communications/README.md)
-
-### Architects
-
-**Designing a system?**
-1. [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md) — Understand framework composition
-2. [Architecture/Runtime.md](Architecture/Runtime.md) — Learn deployment model
-3. [Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md) — Study architectural patterns
-4. [DApp-Development-Guide.md](DApp-Development-Guide.md) — Review integration patterns
-
-**Planning infrastructure?**
-- [Architecture/Runtime.md](Architecture/Runtime.md) — Node, Host, and HAP architecture
-- [src/Sphere10.Framework.DApp.Host/README.md](../src/Sphere10.Framework.DApp.Host/README.md) — Host process management
-- [src/Sphere10.Framework.DApp.Node/README.md](../src/Sphere10.Framework.DApp.Node/README.md) — Node architecture
-
-### UI Developers
-
-**Building a UI?**
-1. [PresentationLayer/README.md](PresentationLayer/README.md) — Component library and patterns
-2. [src/Sphere10.Framework.DApp.Presentation/README.md](../src/Sphere10.Framework.DApp.Presentation/README.md) — Presentation framework
-3. [DApp-Development-Guide.md](DApp-Development-Guide.md#plugin-architecture) — Plugin system
+| Goal | Start Here |
+|------|-----------|
+| **New to the framework?** | [START-HERE.md](START-HERE.md) |
+| **Learn Tools.* namespace** | [Tools-Reference.md](Tools-Reference.md) |
+| **Build with collections** | [src/Sphere10.Framework/README.md](../src/Sphere10.Framework/README.md) |
+| **Implement database access** | [src/Sphere10.Framework.Data/README.md](../src/Sphere10.Framework.Data/README.md) |
+| **Use cryptography** | [src/Sphere10.Framework.CryptoEx/README.md](../src/Sphere10.Framework.CryptoEx/README.md) |
+| **Build networking/RPC** | [src/Sphere10.Framework.Communications/README.md](../src/Sphere10.Framework.Communications/README.md) |
+| **Windows development** | [src/Sphere10.Framework.Windows/README.md](../src/Sphere10.Framework.Windows/README.md) |
+| **Web application (ASP.NET)** | [src/Sphere10.Framework.Web.AspNetCore/README.md](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
 
 ---
 
@@ -75,199 +53,137 @@ Complete documentation for the Sphere10 Framework — a comprehensive .NET 8.0 f
 ```
 docs/
 ├── README.md (you are here)
-├── START-HERE.md
-├── DApp-Development-Guide.md
+├── START-HERE.md — Quick start guide
+├── Tools-Reference.md — Tools.* namespace catalog
+├── REAL_WORLD_USAGE_EXAMPLES.md — Practical examples
 ├── Architecture/
-│   ├── Sphere10.Framework.md
-│   ├── Runtime.md
-│   ├── Domains.md
+│   ├── Sphere10.Framework.md — Framework overview
+│   ├── Domains.md — Domain catalog
 │   └── resources/
 ├── Guidelines/
-│   ├── 3-tier-Architecture.md
-│   ├── Code-Styling.md
+│   ├── 3-tier-Architecture.md — Architecture patterns
+│   ├── Code-Styling.md — Code standards
 │   └── resources/
 ├── Education/
-│   └── README.md
+│   └── README.md — Learning resources
 └── PresentationLayer/
-    ├── README.md
-    ├── Sphere10 Framework-Requirements.md
-    ├── Design/
+    ├── README.md — Blazor UI framework
     └── resources/
 ```
 
 ---
 
-## 🔍 By Topic
+## 🔍 Documentation by Topic
 
-| Topic | Documentation |
-|-------|-----------------|
-| **Framework Overview** | [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md) |
-| **DApp Development** | [DApp-Development-Guide.md](DApp-Development-Guide.md) |
-| **Deployment & Runtime** | [Architecture/Runtime.md](Architecture/Runtime.md) |
-| **Architecture Patterns** | [Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md) |
-| **Code Standards** | [Guidelines/Code-Styling.md](Guidelines/Code-Styling.md) |
-| **Domain Catalog** | [Architecture/Domains.md](Architecture/Domains.md) |
-| **UI Components** | [PresentationLayer/README.md](PresentationLayer/README.md) |
-| **Collections & Data** | [src/Sphere10 Framework/README.md](../src/Sphere10 Framework/README.md) |
-| **Cryptography** | [src/Sphere10.Framework.CryptoEx/README.md](../src/Sphere10.Framework.CryptoEx/README.md) |
-| **Consensus** | [DApp-Development-Guide.md](DApp-Development-Guide.md#consensus-integration) |
-| **Networking** | [src/Sphere10.Framework.Communications/README.md](../src/Sphere10.Framework.Communications/README.md) |
+### Framework Fundamentals
 
----
+**What is Sphere10 Framework?**
+- A comprehensive, production-ready .NET 8.0 framework
+- 45+ interconnected projects
+- Low-level, high-performance utilities
+- No external dependencies for core functionality
+- Full-stack support: desktop, mobile, web
 
-## 📚 Core Domains
+See: [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md)
 
-The Sphere10 Framework provides 30+ domains across multiple categories:
+### Data Structures & Collections
 
-### Collections & Data Structures
-- Collections (maps, lists, sets, trees)
-- Serialization and deserialization
-- Data access (SQL, NoSQL, file-based)
-- Object spaces and consensus streams
+Sphere10 Framework provides 50+ collection types:
+- Extended lists, stream-mapped, paged, recyclable, observable
+- Merkle-tree implementations
+- Clustered streams for multi-stream storage
+- Thread-safe concurrent collections
+
+See: [src/Sphere10.Framework/README.md](../src/Sphere10.Framework/README.md)
+
+### Data Access & Persistence
+
+Universal database abstraction layer supporting:
+- SQL Server, SQLite, Firebird, NHibernate
+- Transactional scopes with ACID semantics
+- Parameterized queries (SQL injection safe)
+- Type mapping and conversion
+
+See: [src/Sphere10.Framework.Data/README.md](../src/Sphere10.Framework.Data/README.md)
 
 ### Cryptography & Security
-- Signatures (ECDSA, EdDSA, DSS, RSA)
-- Encryption (AES, RSA, ECC)
-- Hashing (SHA256, Keccak, Blake)
+
+Comprehensive cryptographic support:
+- Hashing algorithms (SHA, BLAKE2, etc.)
+- Digital signatures and verification
 - Key derivation and management
-- Zero-knowledge proofs
+- Post-quantum resistance
+- VRF (Verifiable Random Function)
+
+See: [src/Sphere10.Framework.CryptoEx/README.md](../src/Sphere10.Framework.CryptoEx/README.md)
 
 ### Networking & Communication
-- P2P protocols
-- JSON RPC services
-- WebSocket support
-- Message routing
 
-### Blockchain & Consensus
-- Block validation
-- Transaction processing
-- Consensus mechanisms (PoW, PoS)
-- Merkle trees and proofs
-- Smart contracts
+Multi-protocol networking:
+- TCP, UDP, WebSockets
+- JSON-RPC framework
+- Service-oriented RPC with attributes
+- Protocol abstraction for extensibility
 
-### Application Framework
-- Dependency injection
-- Configuration management
-- Plugin architecture
-- Lifecycle management
-- Event system
+See: [src/Sphere10.Framework.Communications/README.md](../src/Sphere10.Framework.Communications/README.md)
 
-See [Architecture/Domains.md](Architecture/Domains.md) for the complete catalog.
+### Platform Integration
 
----
+- **Windows**: Registry, services, event logging, security
+- **Web**: ASP.NET Core middleware, HTML utilities
+- **Mobile**: iOS, Android, macOS integration
+- **Cross-platform**: .NET Core, Xamarin
 
-## 🚀 Getting Started
+See individual platform project READMEs in `src/`
 
-### First Time?
+### Testing & Quality
 
-1. Read [START-HERE.md](START-HERE.md) for orientation
-2. Review [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md) for framework overview
-3. Choose your path:
-   - **Building a DApp**: [DApp-Development-Guide.md](DApp-Development-Guide.md)
-   - **Designing a system**: [Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md)
-   - **Building a UI**: [PresentationLayer/README.md](PresentationLayer/README.md)
+Comprehensive testing support:
+- NUnit testing framework integration
+- Database testing utilities
+- Test fixtures and helpers
+- 2000+ framework tests included
 
-### Project-Specific Documentation
-
-Each project in `/src` has its own README with examples and usage patterns:
-
-**Core Framework**
-- [Sphere10 Framework](../src/Sphere10 Framework/README.md) — Collections, utilities, core types
-- [Sphere10.Framework.NET](../src/Sphere10.Framework.NET/README.md) — .NET-specific utilities
-- [Sphere10.Framework.NETCore](../src/Sphere10.Framework.NETCore/README.md) — .NET Core extensions
-
-**Data & Storage**
-- [Sphere10.Framework.Data](../src/Sphere10.Framework.Data/README.md) — Database abstraction
-- [Sphere10.Framework.Data.Sqlite](../src/Sphere10.Framework.Data.Sqlite/README.md) — SQLite implementation
-- [Sphere10.Framework.Data.MSSQL](../src/Sphere10.Framework.Data.MSSQL/README.md) — SQL Server implementation
-- [Sphere10.Framework.Data.Firebird](../src/Sphere10.Framework.Data.Firebird/README.md) — Firebird implementation
-
-**Cryptography**
-- [Sphere10.Framework.CryptoEx](../src/Sphere10.Framework.CryptoEx/README.md) — Advanced cryptography
-
-**DApp Framework**
-- [Sphere10.Framework.DApp.Core](../src/Sphere10.Framework.DApp.Core/README.md) — Blockchain core
-- [Sphere10.Framework.DApp.Node](../src/Sphere10.Framework.DApp.Node/README.md) — Node implementation
-- [Sphere10.Framework.DApp.Host](../src/Sphere10.Framework.DApp.Host/README.md) — Host management
-- [Sphere10.Framework.DApp.Presentation](../blackhole/Sphere10.Framework.DApp.Presentation/README.md) — UI framework
-
-**UI & Presentation**
-- [Sphere10.Framework.DApp.Presentation](../blackhole/Sphere10.Framework.DApp.Presentation/README.md) — Blazor components
-- [Sphere10.Framework.DApp.Presentation.Loader](../blackhole/Sphere10.Framework.DApp.Presentation.Loader/README.md) — Web app loader
-
-**Networking**
-- [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) — RPC and messaging
-- [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) — ASP.NET Core integration
-
-**Platform-Specific**
-- [Sphere10.Framework.Windows](../src/Sphere10.Framework.Windows/README.md) — Windows integration
-- [Sphere10.Framework.Drawing](../src/Sphere10.Framework.Drawing/README.md) — Graphics and drawing
+See: [src/Sphere10.Framework.NUnit/README.md](../src/Sphere10.Framework.NUnit/README.md)
 
 ---
 
-## ❓ Common Questions
+## 🛠️ Tools.* Namespace
 
-**Where do I start?**
-→ [START-HERE.md](START-HERE.md)
+The **Tools namespace** provides global, IntelliSense-discoverable utilities:
 
-**How do I build a DApp?**
-→ [DApp-Development-Guide.md](DApp-Development-Guide.md)
+```csharp
+using Tools;
 
-**What's the framework architecture?**
-→ [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md)
+// Discovery-first pattern
+byte[] hash = Tools.Crypto.SHA256(data);
+string sanitized = Tools.Text.RemoveWhitespace(input);
+var connection = Tools.Sqlite.Create(connectionString);
+```
 
-**How does deployment work?**
-→ [Architecture/Runtime.md](Architecture/Runtime.md)
-
-**What design patterns should I use?**
-→ [Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md)
-
-**How do I structure my code?**
-→ [Guidelines/Code-Styling.md](Guidelines/Code-Styling.md)
-
-**What UI components are available?**
-→ [PresentationLayer/README.md](PresentationLayer/README.md)
+See: [Tools-Reference.md](Tools-Reference.md) for complete catalog
 
 ---
 
-## 📖 Reading Guide
+## 📚 Related Resources
 
-### For Understanding the Framework
-
-1. [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md) — What Sphere10 Framework is and how it's organized
-2. [Architecture/Domains.md](Architecture/Domains.md) — What domains are available
-3. [Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md) — How to structure applications
-
-### For Building Applications
-
-1. [DApp-Development-Guide.md](DApp-Development-Guide.md) — Complete DApp development reference
-2. Project-specific READMEs in `/src` — Domain-specific guidance
-3. [Guidelines/Code-Styling.md](Guidelines/Code-Styling.md) — Code standards
-
-### For System Design
-
-1. [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md) — Framework composition
-2. [Architecture/Runtime.md](Architecture/Runtime.md) — Deployment and runtime model
-3. [Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md) — Architectural patterns
-4. [DApp-Development-Guide.md](DApp-Development-Guide.md) — Integration patterns
-
-### For UI Development
-
-1. [PresentationLayer/README.md](PresentationLayer/README.md) — Component library
-2. [src/Sphere10.Framework.DApp.Presentation/README.md](../src/Sphere10.Framework.DApp.Presentation/README.md) — Framework details
+- **[README.md](../README.md)** — Project overview and structure
+- **[PUBLISHING.md](../PUBLISHING.md)** — Package and publish guide
+- **[Architecture/Domains.md](Architecture/Domains.md)** — Complete domain reference
+- **[Guidelines/Code-Styling.md](Guidelines/Code-Styling.md)** — Coding standards
 
 ---
 
-## 🔗 Related Resources
+## ⚖️ License
 
-- **[GitHub Repository](https://github.com/HermanSchoenfeld/Sphere10 Framework)** — Source code
-- **[NuGet Packages](https://www.nuget.org/packages?q=Sphere10 Framework)** — Published packages
-- **[Source Code Documentation](../src/README.md)** — Project structure
+Sphere10 Framework is distributed under the **MIT NON-AI License**.
+
+See [LICENSE](../LICENSE) file for details. This license protects the codebase from AI model training.
 
 ---
 
-**Version**: 2.0  
-**Last Updated**: December 2025  
-**Author**: Sphere 10 Software
+**Version**: 3.0.0  
+**Target Framework**: .NET 8.0  
+**Last Updated**: December 31, 2025
 
 

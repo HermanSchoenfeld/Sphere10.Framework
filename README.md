@@ -50,7 +50,7 @@ The **Tools namespace** is a defining architectural feature providing a **global
 - **Tools.WinTool** (Windows) — Registry, services, event logging, privileges
 - **Tools.Web.Html** / **Tools.Web.AspNetCore** (Web) — HTML utilities, ASP.NET Core integration
 - **Tools.iOSTool** (iOS) — iOS-specific operations
-- **Tools.Data** / **Tools.Sqlite** / **Tools.MSSql** (Database) — Database provider utilities
+- **Tools.Data** / **Tools.Sqlite** / **Tools.MSSQL** (Database) – Database provider utilities
 
 ### Design Pattern
 ```csharp
@@ -149,15 +149,28 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 ## 🎨 Presentation & UI Layer
 
-The `blackhole/` directory contains the Blazor-based presentation layer and alternative implementations:
+### Desktop (Windows Forms)
+| Project | Purpose |
+|---------|---------|
+| [**Sphere10.Framework.Windows.Forms**](src/Sphere10.Framework.Windows.Forms/README.md) | Comprehensive Windows Forms UI framework with data binding, validation, and component library |
+| [**Sphere10.Framework.Windows.Forms.Sqlite**](src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) | Windows Forms with SQLite data binding and persistence |
+| [**Sphere10.Framework.Windows.Forms.MSSQL**](src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) | Windows Forms with SQL Server data binding and persistence |
+| [**Sphere10.Framework.Windows.Forms.Firebird**](src/Sphere10.Framework.Windows.Forms.Firebird/README.md) | Windows Forms with Firebird data binding and persistence |
 
+### Web & Cross-Platform UI
+| Project | Purpose |
+|---------|---------|
+| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | ASP.NET Core integration with middleware, filters, routing, and form components |
+| [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities for all platforms |
+
+### DApp Presentation Layer (Blazor)
 | Project | Purpose |
 |---------|---------|
 | [**Sphere10.Framework.DApp.Presentation**](blackhole/Sphere10.Framework.DApp.Presentation/README.md) | Blazor component library with wizards, modals, grids, and UI components |
-| [**Sphere10.Framework.DApp.Presentation.Loader**](blackhole/Sphere10.Framework.DApp.Presentation.Loader/README.md) | Blazor WebAssembly host for the presentation layer |
+| [**Sphere10.Framework.DApp.Presentation.Loader**](blackhole/Sphere10.Framework.DApp.Presentation.Loader/README.md) | Blazor WebAssembly host for the DApp presentation layer |
 | [**Sphere10.Framework.DApp.Presentation.WidgetGallery**](blackhole/Sphere10.Framework.DApp.Presentation.WidgetGallery/README.md) | Component showcase and demonstration plugin |
-| [**Sphere10.Framework.DApp.Presentation2**](blackhole/Sphere10.Framework.DApp.Presentation2/README.md) | Alternative presentation implementation with advanced patterns |
-| [**Sphere10.Framework.DApp.Presentation2.Loader**](blackhole/Sphere10.Framework.DApp.Presentation2.Loader/README.md) | WebAssembly host for the alternative presentation |
+| [**Sphere10.Framework.DApp.Presentation2**](blackhole/Sphere10.Framework.DApp.Presentation2/README.md) | Alternative DApp presentation implementation with advanced patterns |
+| [**Sphere10.Framework.DApp.Presentation2.Loader**](blackhole/Sphere10.Framework.DApp.Presentation2.Loader/README.md) | WebAssembly host for the alternative DApp presentation |
 
 ## 📚 Documentation & Learning
 
@@ -182,9 +195,13 @@ The `blackhole/` directory contains the Blazor-based presentation layer and alte
 
 ## 🔗 Quick Navigation & Resources
 
-- **Getting Started**: See [Sphere10.Framework.DApp.Node](src/Sphere10.Framework.DApp.Node/README.md) to run a blockchain node
-- **Web UI**: See [Sphere10.Framework.DApp.Presentation.Loader](blackhole/Sphere10.Framework.DApp.Presentation.Loader/README.md) for the web interface
-- **Building DApps**: See [Sphere10.Framework.DApp.Core](src/Sphere10.Framework.DApp.Core/README.md) for core DApp development
-- **Database Access**: See [Sphere10.Framework.Data](src/Sphere10.Framework.Data/README.md) for data layer patterns
-- **Networking**: See [Sphere10.Framework.Communications](src/Sphere10.Framework.Communications/README.md) for network protocols
+- **Quick Start**: See [docs/START-HERE.md](docs/START-HERE.md) for getting started with the framework
+- **Tools Reference**: See [docs/Tools-Reference.md](docs/Tools-Reference.md) for the complete Tools.* namespace catalog
+- **Desktop Applications**: See [Sphere10.Framework.Windows.Forms](src/Sphere10.Framework.Windows.Forms/README.md) for building Windows applications
+- **Web Applications**: See [Sphere10.Framework.Web.AspNetCore](src/Sphere10.Framework.Web.AspNetCore/README.md) for ASP.NET Core integration
+- **Database Access**: See [Sphere10.Framework.Data](src/Sphere10.Framework.Data/README.md) for multi-database support (SQLite, SQL Server, Firebird)
+- **Networking & RPC**: See [Sphere10.Framework.Communications](src/Sphere10.Framework.Communications/README.md) for network protocols
+- **Cryptography**: See [Sphere10.Framework.CryptoEx](src/Sphere10.Framework.CryptoEx/README.md) for advanced crypto implementations
+- **Blockchain/DApps**: See [Sphere10.Framework.DApp.Core](src/Sphere10.Framework.DApp.Core/README.md) for blockchain and DApp development
+- **Cross-Platform**: See [Sphere10.Framework.iOS](src/Sphere10.Framework.iOS/README.md), [Sphere10.Framework.Android](src/Sphere10.Framework.Android/README.md), [Sphere10.Framework.macOS](src/Sphere10.Framework.macOS/README.md) for native apps
 
