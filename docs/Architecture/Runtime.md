@@ -1,71 +1,256 @@
-﻿# Sphere10 Framework Runtime
+﻿# Sphere10 Framework Runtime Model
 
-A Sphere10 Framework application is a blockchain-based P2P application based on .NET 5+ stack. Sphere10 Framework applications comprise of the usual Node and GUI design common in existing cryptocurrency applications (like Bitcoin) except they have a crucial distinction. Unlike those applications, Sphere10 Framework Nodes and GUI's can be upgraded by the Blockchain using an arbitrary consensus mechanism. This allows Sphere10 Framework applications to evolve over-time in completely arbitrary manner. Technically, this is achieved by running a Node and GUI within a "Host" that manages their lifecycles.  
+## Overview
 
+The **Sphere10 Framework Runtime** describes how blockchain-based applications (DApps) execute within the framework's specialized deployment model. This is specific to **DApp/blockchain development** and does not apply to general desktop, web, or mobile applications using the core framework.
 
+For general application development, see [Sphere10.Framework](Sphere10.Framework.md).
 
+---
 
+## DApp Application Architecture
 
-![Deployment Model](resources/Sphere10 Framework-Deployment-Host-AppPackage.png)
+A Sphere10 Framework DApp application consists of a distributed system with three core components:
 
+### 1. Host
 
-## Runtime Model
+The **Host** is a lightweight top-level application installed by the user that manages the lifecycle of a **Sphere10 Framework Application Package (HAP)**.
 
-A Sphere10 Framework application consists of the following sub-systems:
+**Responsibilities**:
+- Deployment and initialization of HAPs
+- Lifecycle management (start, stop, upgrade)
+- Process supervision of Node and GUI
+- Maintenance of upgrade channels
 
-1. **Host**: a top-level application installed by the user that hosts a Sphere10 Framework Application Package (HAP). The purpose of a Host is to manage the lifecycle of a HAP including it's deployment, archival, execution, shutdown and upgrade.  A Host is the only sub-system that remains constant throughout the lifetime of the application and is never upgraded. It is thus a maximally thin, light-weight application that bootstraps the primary application contained within a HAP. Without a Host, it would not be possible for a HAP to completely auto-upgrade itself. 
+**Key Property**: The Host remains constant throughout the application lifetime and is never upgraded. This ensures the application can completely auto-upgrade itself through the blockchain consensus mechanism.
 
-2. **Sphere10 Framework Application Package (HAP)**: A distribution of a Sphere10 Framework application which typically comprises of a Node and a GUI. A HAP is structured as a ZIP file with a specific folder structure which is unzipped during it's deployment phase.  Once a HAP is deployed, the Host can load the extracted application as part of it's start-up sequence (which in turn may load sub-processes as part of it's own start-up). Although not strictly required, a HAP will typically bundle both a Node and a GUI application. The Host will (typically) launch the Node as a sub-process which in turn loads the GUI as a sub-process. Anonymous pipes between the Host and Nodes are maintained which govern the lifecycle via the [Host Protocol](#host-protocol).
-   *  **Node:** a console-based application that runs as sub-process of the Host. The node does the core P2P consensus and processing for the Sphere10 Framework application (as Nodes commonly do for other cryptocurrencies). Nodes offer integration points via JSON APIs, such as mining servers or explorers. For driving GUI's, a Node offers secure web-sockets (WSS) which can be connected to from local **and remote** GUI's. A Node maintains an anonymous pipe to it's Host for maintaining the lifecycle of the HAP. A Node will also (typically) run a GUI as a sub-process and maintain an anonymous pipe to it as well.
-   
-   * **GUI**: is a process launched by the Node which offers a Graphical User Interface (GUI) to the user. The GUI is (typically) a Kestrel web-server that hosts a Blazor based application based on an extensible and SPA design. This web-application can be accessed via localhost URL. It's important to note that the Blazor GUI can choose to connect to remote public Node for data, not necessarily the localnode.
-   
-3. **Consensus Databases**: These are file artefacts which reside in a separate directory to the HAP and Host. Files in these folders comprise the consensus data which is constructed by the HAP in the course of it's operation. These files can be anything, from blockchains to SQL databases, and are available to the HAP. These files are not modified by the Host and only the HAP, thus during an upgrade the HAP must be aware of prior file versions and upgrade them within the HAP. The Sphere10 Framework framework provides components for high-frequency blockchains (consensus streams) and state-databases (object spaces) which in the data folders.
+### 2. Sphere10 Framework Application Package (HAP)
 
+A **HAP** is a distribution unit containing a complete DApp implementation (Node + GUI).
 
-
-![Sphere10 Framework Sub-Systems](resources/Sphere10 Framework-Deployment-SubSystems.png)
-
-### HAP Lifecycle
-
-A HAP lifecycle can be in one of the following states.
-
-* Ready: the HAP is sitting in the `in` folder and ready for deployment.
-* Deploying: the existing HAP is being archived and the new HAP is being unzipped into the `hap` folder.
-* Stopped: the application is deployed, but not running.
-* Loading: the host is loading the application. Any upgrades can occur in this phase.
-* Started: the node and GUI are running.
-* Archiving: the hap is being zipped and archived.
-
-![Sphere10 Framework Application (HAP) Lifecycle](resources/HAP-Lifecycle.png)
-
-### Application Folder Structure
-
-The directory structures which govern a HAP are as follows. 
-
+**Structure**:
 ```
-%root%               ; root folder dedicated to the application
-%root%/hap           ; where the current Sphere10 Framework Application Package (HAP) is deployed to 
-%root%/hap/node      ; the Node of the currently deployed HAP
-%root%/hap/gui       ; the GUI of the currently deployed HAP
-%root%/plugins       ; repository of all user downloaded plugins that extend the current HAP
-%root%/content       ; content directory that stores all files used across system, organized by content-hash
-%root%/chain         ; blockchain directory where blockchain is stored
-%root%/objectspace   ; object-space directory that stores the consensus object space built by the blockchain
-%root%/logs          ; all logs for host, node and gui
-%root%/temp          ; temp files that persist between application loads (primarily for transactional file pages)
-%root%/archive       ; archive of previous HAP's
+%root%/
+├── hap/                 # Current HAP deployment
+│   ├── node/           # Blockchain node executable and libraries
+│   └── gui/            # GUI application (Blazor/web-based)
+├── consensus-data/     # Blockchain state (blocks, wallets, state DB)
+└── logs/               # Application logs
 ```
 
+**Composition**:
+- **Node** — Console application running as Host sub-process, handles blockchain consensus and P2P networking
+- **GUI** — Web application (Blazor + Kestrel) running as Node sub-process, provides user interface
+- **Consensus Data** — Persistent blockchain files (separate from HAP, survives upgrades)
 
+### 3. Consensus Databases
+
+**Purpose**: Store application state constructed during operation (blocks, transactions, wallet data, state snapshots).
+
+**Key Property**: Not modified by the Host. During HAP upgrades, the application must handle schema changes to existing consensus data.
+
+**Storage Types**:
+- **Blockchain streams** — Immutable append-only consensus logs
+- **Object spaces** — Mutable state databases with merkle tree tracking
+- **SQL databases** — Traditional relational data storage (SQLite, SQL Server, Firebird)
+
+---
+
+## Component Interaction Model
+
+### Process Hierarchy
+
+```
+┌─────────────────────────┐
+│  Host (User-Installed)  │  ← Never upgraded, maximally thin
+└──────────────┬──────────┘
+               │ stdin/stdout/IPC pipes
+               ↓
+        ┌──────────────┐
+        │ HAP Node     │  ← Blockchain consensus engine
+        │ Process      │  ← Upgradeable via consensus
+        └──────┬───────┘
+               │ WebSocket / IPC pipes
+               ↓
+        ┌──────────────┐
+        │ HAP GUI      │  ← Blazor web UI
+        │ Process      │  ← Upgradeable via consensus
+        └──────────────┘
+```
+
+### Communication Channels
+
+| Channel | Direction | Purpose |
+|---------|-----------|---------|
+| **Host → Node (Anonymous Pipe)** | Bidirectional | Lifecycle control, upgrade notification, shutdown coordination |
+| **Node → GUI (WebSocket)** | Bidirectional | RPC calls, state updates, event subscription |
+| **Node → Consensus Data** | Read/Write | Block validation, transaction processing, wallet state |
+| **Remote GUI → Node (WSS)** | Bidirectional | Optional: Remote GUI can connect to public node APIs |
+
+---
+
+## Application Lifecycle
+
+### HAP States
+
+```
+Ready → Deploying → Stopped → Loading → Started → Archiving
+   ↑                           ↑                         ↓
+   └─────────────────────────────────────────────────────┘
+              (Upgrade cycle)
+```
+
+| State | Description |
+|-------|-------------|
+| **Ready** | New HAP waiting in `in/` folder for deployment |
+| **Deploying** | Previous HAP archived, new HAP unzipped into `hap/` folder |
+| **Stopped** | HAP deployed but not running (after shutdown) |
+| **Loading** | Host is initializing Node process, upgrades can occur here |
+| **Started** | Node and GUI are actively running and processing |
+| **Archiving** | Current HAP being compressed for backup/history |
+
+### Upgrade Mechanism
+
+1. **Blockchain Consensus**: Consensus rules determine when an application upgrade should occur
+2. **HAP Distribution**: New HAP is distributed to all nodes (via P2P protocol or download URLs)
+3. **Host Activation**: Host is notified of pending upgrade via anonymous pipe
+4. **Graceful Shutdown**: Current HAP is stopped cleanly, consensus data persisted
+5. **Deployment**: New HAP unzipped, old HAP archived
+6. **Reinitialization**: New Node process loaded, consensus data migrated if needed
+7. **Resume**: New GUI starts and reconnects to resumed blockchain state
+
+**Key Advantage**: Application logic evolves through consensus, not manual deployment.
+
+---
+
+## Process Supervision Model
 
 ### Host Protocol
 
-The protocol which governs a HAP lifecycle is called the Host Protocol. It comprises of Request-Response and Command style messages between the Host, Node and GUI processes. The underlying channel for the Host Protocol are Anonymous Pipes, although Sphere10 Framework Framework permits other channels. The below sequence diagram documents the core aspects of the Host Protocol, although the code serves as the [reference documentation][1].
+The Host maintains anonymous pipes to the Node for lifecycle supervision:
 
-![Sphere10 Framework Application (HAP) Lifecycle](resources/host-protocol.svg)
+**Messages**:
+- `READY` — Node has started and is ready to accept connections
+- `UPGRADE_AVAILABLE` — New HAP available, prepare for update
+- `SHUTDOWN` — Graceful shutdown request
+- `HEARTBEAT` — Periodic health check
 
+**Automatic Recovery**:
+- If Node crashes, Host detects via pipe closure and attempts restart
+- If GUI crashes, Node detects and restarts it
+- Maximum restart attempts prevent infinite crash loops
 
-[1]: https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10.Framework.DApp.Core/Runtime "Sphere10 Framework Host Protocol source-code"
+---
+
+## Consensus Data Migration
+
+When a HAP is upgraded, the new version must handle any changes to consensus data format:
+
+**Approach 1: In-Place Migration**
+```csharp
+// New version checks consensus data version
+if (dataVersion < 2) {
+    // Migrate blocks to new format
+    // Update merkle trees
+    // Reindex state database
+}
+```
+
+**Approach 2: Snapshot & Replay**
+```csharp
+// Export current state
+ExportBlockchain(current);
+
+// Import into new version with migration rules applied
+ImportBlockchain(migrationRules);
+```
+
+**Approach 3: Genesis from Snapshot**
+```csharp
+// For major version changes, create new blockchain state
+// from current snapshot, ignoring old consensus history
+```
+
+The framework provides utilities in `Sphere10.Framework.DApp.Core` for all three patterns.
+
+---
+
+## Network Topology
+
+### Node-to-Node (P2P)
+
+Nodes communicate via the framework's P2P protocol (TCP or custom transport):
+
+```
+Node A ←→ Node B ←→ Node C ←→ Node D
+     \↓       ↓       ↓       ↓/
+      └─────  Consensus  ──────┘
+         (Block propagation, transaction gossip)
+```
+
+### Node-to-GUI
+
+Local GUI connects via WebSocket to local Node:
+
+```
+  Browser (localhost:8080)
+         ↓
+    Blazor App
+         ↓
+    WebSocket
+         ↓
+    Local Node (localhost:5000)
+```
+
+Remote GUI can optionally connect to a public Node:
+
+```
+  Remote Browser
+         ↓
+    Remote Blazor App
+         ↓
+    WSS/HTTPS
+         ↓
+    Public Node (network-accessible)
+```
+
+---
+
+## Storage Layout
+
+### Filesystem Structure
+
+```
+/application/
+├── Sphere10FrameworkHost.exe         ← Host executable (never updates)
+├── hap/                              ← Current HAP
+│   ├── node/
+│   │   ├── Sphere10.Framework.DApp.Node.exe
+│   │   ├── Sphere10.Framework.DApp.Core.dll
+│   │   └── [other dependencies]
+│   └── gui/
+│       ├── wwwroot/
+│       ├── appsettings.json
+│       └── [Blazor files]
+├── consensus-data/
+│   ├── blockchain.stream             ← Immutable block ledger
+│   ├── wallets.db                    ← Wallet state database
+│   ├── state.merkletree              ← State merkle tree index
+│   └── [other consensus artefacts]
+├── archives/
+│   ├── hap-v1.0.zip                 ← Previous versions
+│   ├── hap-v1.1.zip
+│   └── hap-v2.0.zip
+└── logs/
+    └── application.log
+```
+
+---
+
+## Related Documentation
+
+- [Sphere10.Framework Architecture](Sphere10.Framework.md) — Core framework design
+- [Framework Domains](Domains.md) — Detailed domain breakdown
+- [DApp Development Guide](../DApp-Development-Guide.md) — Building DApps with the framework
 
 

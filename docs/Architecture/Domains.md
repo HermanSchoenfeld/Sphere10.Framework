@@ -1,71 +1,203 @@
-﻿# Domains
+﻿# Framework Domains
 
-The Sphere10 Framework framework comprises of a variety of [modules](../Guidelines/3-tier-Architecture.md#module) and domains. A [domain](../Guidelines/3-tier-Architecture.md#domain) comprises of a collection of code artefacts that are all logically related in the abstraction they model. Whereas a module is a horizontal-slice of a single-tier, a domain can span across multiple tiers. This is so since a domain may comprise of UI, Business Logic and Data components.  A domain can be visualized as a vertical slice through the [3-tier architecture](../Guidelines/3-tier-Architecture.md). Modules are a .NET project that typically contain multiple domains each under a sub-folder.  Below are domains available in the Sphere10 Framework framework.
+The Sphere10 Framework comprises a variety of interconnected projects and domains. A **domain** is a collection of code artifacts that are logically related in the abstraction they model. Domains can span multiple architectural tiers (UI, Business Logic, Data) and represent a vertical slice through the architecture.
 
-## Sphere10 Framework Framework Domains
+For complete architecture overview, see [Sphere10.Framework](Sphere10.Framework.md).
 
-Sphere10 Framework Framework provides modules across all 3 tiers of the architecture. Of significance is the `Sphere10 Framework` module which provides system-tier functionality that can be used anywhere in an application (from server-end to front-end including within Blazor web-assembly code). This module should be considered like an extension to the system .NET library.
-
-| Domain            | Tiers              | Module / Location                                            | Functionality                                                |
-| ----------------- | ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| **Cache**         | System             | [Sphere10 Framework/Cache](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Cache) | Caching abstractions, batch caching, caching policies (least-used, largest, smallest, etc), bulk caching, session caching. |
-| **Collections**   | System             | [Sphere10 Framework/Collections](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Collections) | Arrays, buffers, paged collections, transactional collections, stream mapped collections, transactional collections, observable collections, dictionary implementations (b-tree, etc) as well as merkle trees. |
-| **Comparers**     | System             | [Sphere10 Framework/Comparers](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Comparers) | Assortment of Comparers                                      |
-| **Conversion**    | System             | [Sphere10 Framework/Conversion](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Conversion) | Primarily Endian-based conversion and other.                 |
-| **Cryptography**  | System             | [Sphere10 Framework/Crypto](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Crypto) | Cryptographic primitives, checksums, encryption, key-derivation functions, post-quantum cryptography. |
-| **Encoding**      | System             | [Sphere10 Framework/Encoding](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Encoding) | Hexadecimal.                                                 |
-| **Environment**   | System             | [Sphere10 Framework/Environment](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Environment) | Support for OS and runtime-level concerns.                   |
-| **Events**        | System             | [Sphere10 Framework/Events](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Events) | Support for all things `event`.                              |
-| **Exceptions**    | System             | [Sphere10 Framework/Exceptions](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Exceptions) | Collection of exceptions and exception tools.                |
-| **Extensions**    | System             | [Sphere10 Framework/Extensions](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Extensions) | Vast collection of extension methods for .NET framework.     |
-| **Functional**    | System             | [Sphere10 Framework/Functional](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Functional) | Support for functional programming including tools for expressions, lambdas, operators. |
-| **Introspection** | System             | [Sphere10 Framework/Conversion](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Conversion) | Fast reflection library and tools.                           |
-| **IO**            | System             | [Sphere10 Framework/IO](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/IO) | Endian-aware IO, file stores and file-system tools.          |
-| **IoC**           | System, Processing | [Sphere10 Framework/IoC](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/IoC)<br />[Sphere10.Framework.Application/ComponentRegistry](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10.Framework.Application/ComponentRegistry) | Framework-wide Inversion of Control container (uses [TinyIoC](https://github.com/grumpydev/TinyIoC) under the hood). |
-| **Logging**       | System             | [Sphere10 Framework/Logging](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Logging) | Support for all things logging.                              |
-| **Math**          | System             | [Sphere10 Framework/Maths](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Maths) | Math abstractions and tools, bloom filters, fixed point math, random number generators and other interesting math artefacts. |
-| **Memory**        | System             | [Sphere10 Framework/Memory](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Memory) | Minor tooling for memory unit conversion and other obscure tools. |
-| **Misc**          | System             | [Sphere10 Framework/Misc](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Misc) | Miscellaneous tools that don't belong in known domain.       |
-| **Networking**    | System             | [Sphere10 Framework/Network](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Network) | All things networking, a full P2P abstraction library (TODO) as well tools for URL's, Mimes and POP3. |
-| **Objects**       | System             | [Sphere10 Framework/Objects](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Objects) | Assortment of tools that deal with Objects.                  |
-| **ObjectSpaces**  | System             | [Sphere10 Framework/ObjectSpace](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/ObjectSpace) | A storage-engine for objects, used within Sphere10.Framework.          |
-| **Peripherals**   | System             | [Sphere10 Framework/Peripherals](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Peripherals) | Tooling and abstractions for keyboard, mouse and hooks.      |
-| **Scheduler**     | System             | [Sphere10 Framework/Scheduler](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Scheduler) | A background scheduler to run code based on time rules.      |
-| **Scopes**        | System             | [Sphere10 Framework/Scopes](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Scopes) | Broad support for scope-based patterns.                      |
-| **Serialization** | System             | [Sphere10 Framework/Serialization](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Serialization) | Broad support for object serialization.                      |
-| **Streams**       | System             | [Sphere10 Framework/Streams](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Streams) | Tooling for Streams including bit streams, blocking streams, bounded streams, stream pipelines. |
-| **Text**          | System             | [Sphere10 Framework/Text](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Text) | All things text including parsers, inflectors, fast string builder, fluent regex builders, obscure html tools. |
-| **TextWriters**   | System             | [Sphere10 Framework/TextWriters](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/TextWriters) | Assortment of `TextWriter`'s including console, debug, file-based, etc. |
-| **Threading**     | System             | [Sphere10 Framework/Threading](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Threading) | Threading tools for multi-threaded applications.             |
-| **Types**         | System             | [Sphere10 Framework/Types](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Types) | Tools for `Type` including activation, resolution and switches. |
-| **Values**        | System             | [Sphere10 Framework/Values](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/Values) | Tools for futures, GUIDs, Enums, Results, Value Ranges.      |
-| **XML**           | System             | [Sphere10 Framework/XML](https://github.com/HermanSchoenfeld/Sphere10 Framework/tree/master/src/Sphere10 Framework/XML) | Tools for XML including deep object serialization.           |
-
-
+---
 
 ## Sphere10 Framework Domains
 
-| Domain            | Tier               | Module/Area | Notes                                                        |
-| ----------------- | ------------------ | ----------- | ------------------------------------------------------------ |
-| **Host**          | Presentation, Core |             | Handles the execution and lifecycle of Sphere10 Framework application packages |
-| **GUI Core**      | Presentation       |             | The core Blazor-based UI. UI Skeleton, bootstrap, navigation, modals, etc |
-| **Wizards**       | Presentation       |             | Collection of components to compose wizard UI flows via Blazor |
-| **Grids**         | Presentation       |             | Collection of components for grids in Blazor                 |
-| **Plugins**       | Presentation, Core |             | Plugin extensions for node and GUI                           |
-| **Node**          | Presentation, Core |             | The node daemon/service                                      |
-| **Consensus**     | Core               |             | Components for consensus rules                               |
-| **Cryptography**  | Core               |             | Digital signature schemes for ECDSA and PQC                  |
-| **Object Spaces** | Core               |             | Decentralized database technology                            |
-| **Blockchain**    | Core               |             | Consensus-stream based blockchain components                 |
-| **Wallet**        | Core               |             | Managing and organizing user keys                            |
-| **Networking**    | Core               |             | P2P networking library                                       |
+The core framework provides **40+ domains** across system, processing, data, and presentation tiers.
 
- 
+### System Tier Domains (Sphere10.Framework)
 
-## Helium Domains
+Core utilities usable across any .NET application (desktop, web, mobile, server, embedded).
 
-**Conceptual Overview (Technical)**
+| Domain | Purpose | Tools | 
+|--------|---------|-------|
+| **Collections** | Advanced collection types: B-trees, merkle trees, paged collections, transactional, observable | Tools.Collection |
+| **Cryptography** | Hashing, signatures, encryption, key derivation, post-quantum algorithms | Tools.Crypto |
+| **Encoding** | Hex, Base64, endian conversion | Tools.Encoding |
+| **Extensions** | 200+ extension methods for .NET core types | Tools.Extensions |
+| **Exceptions** | Custom exception types and exception handling utilities | Tools.Exceptions |
+| **Functional** | Functional programming support: expressions, lambdas, operators | Tools.Functional |
+| **Introspection** | Fast reflection library, type discovery, member inspection | Tools.Reflection |
+| **IO** | Endian-aware file I/O, stream tools, temporary file management | Tools.FileSystem, Tools.IO |
+| **IoC** | Dependency injection container (TinyIoC-based), service registration | Tools.IoC |
+| **Logging** | Multi-target logging framework with filtering and formatting | Tools.Logging |
+| **Math** | Mathematical utilities: RNG, bloom filters, fixed-point math | Tools.Maths |
+| **Memory** | Buffer operations, memory allocation, unit conversion | Tools.Memory |
+| **Networking** | URL parsing, MIME types, socket utilities, P2P abstractions | Tools.Network |
+| **Objects** | Clone, compare, merge, introspection tools | Tools.Objects |
+| **ObjectSpaces** | Stream-mapped persistent collections with merkle tree tracking | Tools.ObjectSpace |
+| **Serialization** | Object serialization across binary, JSON, XML formats | Tools.Serialization |
+| **Streams** | Bit streams, blocking streams, bounded streams, stream pipelines | Tools.Streams |
+| **Text** | String parsers, inflectors, regex builders, HTML utilities | Tools.Text |
+| **TextWriters** | Console, debug, file-based, and custom TextWriter implementations | Tools.TextWriters |
+| **Threading** | Multi-threading utilities, synchronization primitives | Tools.Threading |
+| **Types** | Type activation, resolution, type-based switches | Tools.Types |
+| **Values** | Futures, GUIDs, enums, results, value ranges | Tools.Values |
+| **XML** | Deep XML serialization, XPath support | Tools.XML |
 
-This is a technial overview that shows the basic internal components of the Helium system.
-![ConceptualOverview](https://user-images.githubusercontent.com/79815312/116169619-79548c00-a748-11eb-8448-ff332d33b445.jpeg)
+### Processing Tier Domains (Sphere10.Framework.Application)
+
+Application lifecycle, DI, configuration, and plugin management.
+
+| Domain | Purpose | Tools |
+|--------|---------|-------|
+| **Component Registry** | IoC container, dependency injection, service resolution | Tools.ComponentRegistry |
+| **Configuration** | Settings management, environment-aware configuration | Tools.Configuration |
+| **Plugin System** | Dynamic plugin loading, lifecycle management, plugin discovery | Tools.Plugins |
+| **Command-Line** | CLI argument parsing, command execution, help text generation | Tools.CommandLine |
+
+### Data Tier Domains (Sphere10.Framework.Data.*)
+
+Multi-database abstraction layer with support for SQL Server, SQLite, Firebird, NHibernate.
+
+| Domain | Purpose | Tools |
+|--------|---------|-------|
+| **Database Abstraction** | Unified ADO.NET abstraction across multiple databases | Tools.Data |
+| **Query Building** | Fluent SQL query construction, parameter binding | Tools.Query |
+| **SQL Server Provider** | Microsoft SQL Server-specific implementations | Tools.MSSQL |
+| **SQLite Provider** | Embedded SQLite implementations | Tools.Sqlite |
+| **Firebird Provider** | Firebird database-specific features | Tools.Firebird |
+| **NHibernate Provider** | NHibernate ORM integration layer | Tools.NHibernate |
+| **CSV Support** | CSV file reading/writing with type conversion | Tools.CSV |
+| **Object Spaces** | Stream-mapped persistent collections with auto-tracking | Tools.ObjectSpace |
+
+### Presentation Tier Domains
+
+UI frameworks for desktop, web, and cross-platform applications.
+
+| Domain | Purpose | Tools |
+|--------|---------|-------|
+| **Windows Forms** | Data binding, validation, component library | Tools.WinForms |
+| **Windows Forms + SQLite** | Windows Forms with SQLite data binding | Tools.WinForms.Sqlite |
+| **Windows Forms + SQL Server** | Windows Forms with SQL Server data binding | Tools.WinForms.MSSQL |
+| **Windows Forms + Firebird** | Windows Forms with Firebird data binding | Tools.WinForms.Firebird |
+| **Web / ASP.NET Core** | ASP.NET Core middleware, routing, form components | Tools.Web.AspNetCore |
+| **Blazor Components** | Web UI components (modals, grids, wizards, etc.) | Tools.Blazor |
+| **Drawing** | Cross-platform graphics, image manipulation | Tools.Drawing |
+
+### Windows Integration Domains (Sphere10.Framework.Windows.*)
+
+Windows platform-specific functionality.
+
+| Domain | Purpose | Tools |
+|--------|---------|-------|
+| **Registry** | Windows registry access and manipulation | Tools.WinTool |
+| **Services** | Windows service management and queries | Tools.WinTool |
+| **Event Logging** | Windows event log reading/writing | Tools.WinTool |
+| **Privileges** | User privilege elevation and checking | Tools.WinTool |
+| **LevelDB** | LevelDB key-value storage integration | Tools.LevelDB |
+
+### Platform-Specific Domains
+
+Native integration for mobile and alternative platforms.
+
+| Domain | Purpose | Tools |
+|--------|---------|-------|
+| **iOS Integration** | Xamarin.iOS utilities and native API wrappers | Tools.iOSTool |
+| **Android Integration** | Xamarin.Android utilities and native API wrappers | Tools.AndroidTool |
+| **macOS Integration** | Xamarin.macOS utilities and native API wrappers | Tools.macOSTool |
+| **.NET Framework** | .NET Framework 4.8 specific utilities | Tools.NETFramework |
+| **.NET Core / Modern .NET** | .NET 5.0+ specific utilities | Tools.NETCore |
+
+### DApp Specialization Domains (Sphere10.Framework.DApp.*)
+
+Blockchain and decentralized application functionality (optional, specialized use only).
+
+| Domain | Purpose | Tools |
+|--------|---------|-------|
+| **Blocks & Transactions** | Block validation, transaction processing, headers | Tools.DApp.Blocks |
+| **Wallets** | Key management, address generation, transaction signing | Tools.DApp.Wallet |
+| **Consensus** | Plugin-based consensus mechanisms, validation rules | Tools.DApp.Consensus |
+| **Persistence** | Blockchain storage with merkle trees, archival | Tools.DApp.Storage |
+| **Mining** | Proof-of-work mining, difficulty adjustment | Tools.DApp.Mining |
+| **Node** | Full blockchain node with JSON APIs, terminal UI | Tools.DApp.Node |
+| **Presentation** | Blazor GUI for DApp interfaces and management | Tools.DApp.Presentation |
+
+---
+
+## Domain Relationships
+
+### Dependency Hierarchy
+
+```
+System Tier (Sphere10.Framework)
+├── Collections, Crypto, Serialization, Networking, etc.
+│   ↑ (all depend on core utilities)
+│
+Processing Tier (Sphere10.Framework.Application)
+├── Component Registry, Configuration, Plugins
+│   ↑ (depends on System Tier)
+│
+Data Tier (Sphere10.Framework.Data.*)
+├── Database Abstraction, Providers (SQLite, MSSQL, etc.)
+│   ↑ (depends on System Tier)
+│
+Presentation Tier
+├── Windows Forms, Web/Blazor, Drawing
+│   ↑ (depends on System + Data Tiers)
+│
+DApp Tier (Sphere10.Framework.DApp.*)
+├── Core, Node, Consensus
+│   ↑ (depends on System + Data + Communications Tiers)
+```
+
+### Cross-Cutting Concerns
+
+| Concern | Implemented Via | Tools |
+|---------|-----------------|-------|
+| **Logging** | System.Logging domain | Tools.Logging |
+| **Caching** | System.Cache domain | Tools.Cache |
+| **Configuration** | Application.Configuration domain | Tools.Configuration |
+| **Dependency Injection** | Application.ComponentRegistry domain | Tools.ComponentRegistry |
+| **Persistence** | Data.ObjectSpaces domain | Tools.ObjectSpace |
+| **Cryptography** | System.Cryptography domain | Tools.Crypto |
+
+---
+
+## When to Use Each Domain
+
+### Building a Desktop Application (Windows Forms)
+
+1. **System Tier**: Collections, Serialization, Logging, Threading
+2. **Processing Tier**: Component Registry, Configuration
+3. **Data Tier**: Database Abstraction + Provider (SQLite/MSSQL)
+4. **Presentation Tier**: Windows Forms + Windows (for registry/services)
+
+### Building a Web Application (ASP.NET Core + Blazor)
+
+1. **System Tier**: All core utilities as needed
+2. **Processing Tier**: Component Registry, Configuration, Plugins
+3. **Data Tier**: Database Abstraction + Provider
+4. **Presentation Tier**: Web/Blazor, Drawing (for charts/graphics)
+
+### Building a Blockchain DApp
+
+1. **System Tier**: All core utilities (Collections, Crypto, Networking, Serialization)
+2. **Processing Tier**: Component Registry, Configuration, Plugins
+3. **Data Tier**: Database Abstraction, ObjectSpaces
+4. **Presentation Tier**: Blazor components, Drawing
+5. **DApp Tier**: Blocks, Wallets, Consensus, Node
+
+### Building a Mobile App (iOS/Android)
+
+1. **System Tier**: Core utilities (Collections, Crypto, Serialization)
+2. **Processing Tier**: Component Registry, Configuration
+3. **Data Tier**: Database Abstraction + Provider (SQLite)
+4. **Platform Tier**: iOS/Android specific tools
+5. **Communications**: Networking for remote APIs
+
+---
+
+## Related Documentation
+
+- [Sphere10.Framework Architecture](Sphere10.Framework.md) — Complete architecture overview
+- [Runtime Model](Runtime.md) — DApp deployment and lifecycle (blockchain-specific)
+- [Tools Reference](../Tools-Reference.md) — Complete Tools.* namespace catalog
+- [3-Tier Architecture](../Guidelines/3-tier-Architecture.md) — Architecture pattern
+- [Code Styling Guidelines](../Guidelines/Code-Styling.md) — Coding conventions
 

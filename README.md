@@ -176,9 +176,9 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 ### 🏗️ Architecture
 
-1. [What is the Sphere10 Framework?](docs/Architecture/Sphere10.Framework.md)
-2. [Sphere10 Framework Runtime](docs/Architecture/Runtime.md)
-3. [Framework Domains](docs/Architecture/Domains.md)
+1. [Sphere10 Framework: Complete Architecture & Overview](docs/Architecture/Sphere10.Framework.md)
+2. [Framework Domains](docs/Architecture/Domains.md)
+3. [DApp Runtime Model](docs/Architecture/Runtime.md)
 
 ### ⛓️ Blockchain Technology
 
