@@ -13,7 +13,6 @@
 		<RepositoryUrl>https://github.com/Sphere10/Framework.git</RepositoryUrl>
 		<PackageReleaseNotes>Initial public release</PackageReleaseNotes>
 		<PackageTags>Collections, Comparers, Conversion, IO, Network, Cache, Logging, Threading, Scheduling, Math</PackageTags>
-		<Version>2.0.2</Version>
 		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
