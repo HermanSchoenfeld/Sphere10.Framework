@@ -234,9 +234,9 @@ All utilities are accessible through `Tools.*` namespace for maximum IntelliSens
 
 ## Related Documentation
 
-- [Framework Domains](Domains.md) — Detailed breakdown of all framework domains
-- [Runtime Model](Runtime.md) — DApp host and application lifecycle (for blockchain applications)
-- [Tools Reference](../Tools-Reference.md) — Complete Tools.* namespace catalog
-- [3-Tier Architecture](../Guidelines/3-tier-Architecture.md) — Architecture pattern documentation
-- [Code Styling Guidelines](../Guidelines/Code-Styling.md) — Coding conventions and standards
-- [DApp Development Guide](../DApp-Development-Guide.md) — Blockchain-specific guidance
+- [Framework Domains](domains.md) — Detailed breakdown of all framework domains
+- [Runtime Model](runtime.md) — DApp host and application lifecycle (for blockchain applications)
+- [Tools Reference](../tools-reference.md) — Complete Tools.* namespace catalog
+- [3-Tier Architecture](../Guidelines/3-tier-architecture.md) — Architecture pattern documentation
+- [Code Styling Guidelines](../Guidelines/code-styling.md) — Coding conventions and standards
+- [DApp Development Guide](../dapp-development-guide.md) — Blockchain-specific guidance

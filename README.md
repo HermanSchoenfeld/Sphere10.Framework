@@ -176,9 +176,9 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 ### 🏗️ Architecture
 
-1. [Sphere10 Framework: Complete Architecture & Overview](docs/Architecture/Sphere10.Framework.md)
-2. [Framework Domains](docs/Architecture/Domains.md)
-3. [DApp Runtime Model](docs/Architecture/Runtime.md)
+1. [Sphere10 Framework: Complete Architecture & Overview](docs/Architecture/sphere10-framework.md)
+2. [Framework Domains](docs/Architecture/domains.md)
+3. [DApp Runtime Model](docs/Architecture/runtime.md)
 
 ### ⛓️ Blockchain Technology
 
@@ -190,13 +190,13 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 ### 📋 Guidelines
 
-9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
-10. [Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)
+9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-architecture.md)
+10. [Code-Styling Guidelines](docs/Guidelines/code-styling.md)
 
 ## 🔗 Quick Navigation & Resources
 
-- **Quick Start**: See [docs/START-HERE.md](docs/START-HERE.md) for getting started with the framework
-- **Tools Reference**: See [docs/Tools-Reference.md](docs/Tools-Reference.md) for the complete Tools.* namespace catalog
+- **Quick Start**: See [docs/start-here.md](docs/start-here.md) for getting started with the framework
+- **Tools Reference**: See [docs/tools-reference.md](docs/tools-reference.md) for the complete Tools.* namespace catalog
 - **Desktop Applications**: See [Sphere10.Framework.Windows.Forms](src/Sphere10.Framework.Windows.Forms/README.md) for building Windows applications
 - **Web Applications**: See [Sphere10.Framework.Web.AspNetCore](src/Sphere10.Framework.Web.AspNetCore/README.md) for ASP.NET Core integration
 - **Database Access**: See [Sphere10.Framework.Data](src/Sphere10.Framework.Data/README.md) for multi-database support (SQLite, SQL Server, Firebird)

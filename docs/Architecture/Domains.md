@@ -195,9 +195,9 @@ DApp Tier (Sphere10.Framework.DApp.*)
 
 ## Related Documentation
 
-- [Sphere10.Framework Architecture](Sphere10.Framework.md) — Complete architecture overview
-- [Runtime Model](Runtime.md) — DApp deployment and lifecycle (blockchain-specific)
-- [Tools Reference](../Tools-Reference.md) — Complete Tools.* namespace catalog
-- [3-Tier Architecture](../Guidelines/3-tier-Architecture.md) — Architecture pattern
-- [Code Styling Guidelines](../Guidelines/Code-Styling.md) — Coding conventions
+- [Sphere10 Framework Architecture](sphere10-framework.md) — Complete architecture overview
+- [Runtime Model](runtime.md) — DApp deployment and lifecycle (blockchain-specific)
+- [Tools Reference](../tools-reference.md) — Complete Tools.* namespace catalog
+- [3-Tier Architecture](../Guidelines/3-tier-architecture.md) — Architecture pattern
+- [Code Styling Guidelines](../Guidelines/code-styling.md) — Coding conventions
 

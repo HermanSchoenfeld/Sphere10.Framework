@@ -4,7 +4,7 @@
 
 The **Sphere10 Framework Runtime** describes how blockchain-based applications (DApps) execute within the framework's specialized deployment model. This is specific to **DApp/blockchain development** and does not apply to general desktop, web, or mobile applications using the core framework.
 
-For general application development, see [Sphere10.Framework](Sphere10.Framework.md).
+For general application development, see [Sphere10 Framework Architecture](sphere10-framework.md).
 
 ---
 
@@ -249,8 +249,8 @@ Remote GUI can optionally connect to a public Node:
 
 ## Related Documentation
 
-- [Sphere10.Framework Architecture](Sphere10.Framework.md) — Core framework design
-- [Framework Domains](Domains.md) — Detailed domain breakdown
-- [DApp Development Guide](../DApp-Development-Guide.md) — Building DApps with the framework
+- [Sphere10 Framework Architecture](sphere10-framework.md) — Core framework design
+- [Framework Domains](domains.md) — Detailed domain breakdown
+- [DApp Development Guide](../dapp-development-guide.md) — Building DApps with the framework
 
 

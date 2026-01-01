@@ -68,7 +68,7 @@ var adapter = Tools.MSSQL.CreateAdapter(connString);
 string json = Tools.Json.Serialize(obj);
 ```
 
-**Complete Reference**: See [Tools-Reference.md](Tools-Reference.md)
+**Complete Reference**: See [Tools Reference](tools-reference.md)
 
 ### 3. Pick Your Use Case
 
@@ -215,7 +215,7 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 | Document | Purpose |
 |----------|---------|
 | [README.md](README.md) | Documentation home and topic index |
-| [Tools-Reference.md](Tools-Reference.md) | Complete Tools.* namespace catalog |
+| [Tools Reference](tools-reference.md) | Complete Tools.* namespace catalog |
 | [REAL_WORLD_USAGE_EXAMPLES.md](REAL_WORLD_USAGE_EXAMPLES.md) | Practical examples and patterns |
 | [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md) | Framework architecture and design |
 | [Architecture/Domains.md](Architecture/Domains.md) | Catalog of 30+ framework domains |
@@ -227,7 +227,7 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 ## Next Steps
 
 1. **Explore project README files** in `src/` for component-specific guidance
-2. **Review [Tools-Reference.md](Tools-Reference.md)** for utility catalog
+2. **Review [Tools Reference](tools-reference.md)** for utility catalog
 3. **Study [REAL_WORLD_USAGE_EXAMPLES.md](REAL_WORLD_USAGE_EXAMPLES.md)** for practical patterns
 4. **Read architecture docs** to understand design decisions
 5. **Run the test suite** to see examples in action
@@ -238,7 +238,7 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 
 - **[README.md](../README.md)** — Project overview and project list
 - **[PUBLISHING.md](../PUBLISHING.md)** — Package and publish guide
-- **[Tools-Reference.md](Tools-Reference.md)** — Tools.* namespace guide
+- **[Tools Reference](tools-reference.md)** — Tools.* namespace guide
 - **Individual project READMEs** in `src/` — Component-specific docs
 
 ---
@@ -246,7 +246,7 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 ## Questions?
 
 - Check the project README in `src/` for your component
-- Review [Tools-Reference.md](Tools-Reference.md) for utility patterns
+- Review [Tools Reference](tools-reference.md) for utility patterns
 - See [REAL_WORLD_USAGE_EXAMPLES.md](REAL_WORLD_USAGE_EXAMPLES.md) for practical examples
 - Read [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md) for design context
 
