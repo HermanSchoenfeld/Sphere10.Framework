@@ -20,7 +20,7 @@ public static class Dialogs {
 		Guard.Argument(currIndex >= 0, nameof(currentSelection), "Not a value of enumeration");
 		var datasource = new ListDataSource<T>(enumValues, x => Enum.GetName(x), x => Tools.Enums.GetDescription(x));
 		var dlg = new ListDialog<T>(title, description, datasource, currIndex);
-		Terminal.Gui.Application.Run(dlg);
+		TGApplication.Run((IRunnable)dlg, null);
 		if (!dlg.Cancelled) {
 			selection = dlg.SelectedValue;
 			return true;
@@ -30,7 +30,7 @@ public static class Dialogs {
 	}
 
 	public static void Error(string title, string message) {
-		MessageBox.ErrorQuery(title, message);
+		MessageBox.ErrorQuery(TGApplication.Instance, title, message, "Ok");
 	}
 
 	public static void Exception(Exception error) {

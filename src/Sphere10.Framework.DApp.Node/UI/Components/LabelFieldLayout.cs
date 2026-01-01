@@ -8,6 +8,8 @@
 
 using System;
 using Terminal.Gui;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 
 namespace Sphere10.Framework.DApp.Node.UI;
 
@@ -31,12 +33,13 @@ public class LabelFieldLayout : View {
 	}
 
 	public void AddField(string label, View field, Dim fieldWidth) {
-		var lbl = new Label(label) {
+		var lbl = new Label {
+			Text = label,
 			X = _leftPadding,
 			Y = _topPadding + _fieldCount++ * (_vspacing + 1),
 			Width = _labelLength,
 			Height = 1,
-			TextAlignment = TextAlignment.Right
+			TextAlignment = Alignment.End
 		};
 		this.Add(lbl);
 
@@ -48,12 +51,18 @@ public class LabelFieldLayout : View {
 	}
 
 	public void AddTextBox(string label, string preText, Func<string, bool> validate = null, Action<string> changed = null, Dim textWidth = null) {
-		var txt = new TextField(preText) { Width = Dim.Fill() };
+		var txt = new TextField { Text = preText, Width = Dim.Fill() };
 		if (validate != null)
-			txt.TextChanging += args => { args.Cancel = !validate.Invoke(args.NewText.ToString()); };
+			txt.TextChanging += (sender, args) => {
+				var proposed = args.Result?.ToString() ?? string.Empty;
+				if (!validate.Invoke(proposed)) {
+					args.Handled = true;
+					args.Result = txt.Text?.ToString() ?? string.Empty;
+				}
+			};
 
 		if (changed != null)
-			txt.TextChanged += x => changed.Invoke(x.ToString());
+			txt.TextChanged += (sender, args) => changed.Invoke(txt.Text?.ToString() ?? string.Empty);
 
 		AddField(label, txt, textWidth ?? Dim.Fill());
 	}
@@ -63,8 +72,11 @@ public class LabelFieldLayout : View {
 	}
 
 	public void AddButton(string label, string buttonText, out Button button, Action pressed) {
-		button = new Button(buttonText) { AutoSize = true, HotKeySpecifier = '\xffff' };
-		button.Clicked += pressed;
+		button = new Button { Text = buttonText };
+		button.Accepting += (sender, args) => {
+			pressed();
+			args.Handled = true;
+		};
 		AddField(label, button, null);
 	}
 

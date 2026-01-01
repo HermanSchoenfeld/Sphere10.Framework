@@ -20,7 +20,8 @@ public class LogView : FrameView {
 
 	private int _maxLines;
 
-	public LogView(string title) : base(title) {
+	public LogView(string title) : base() {
+		Title = title;
 		MaxLines = 250;
 		_lines = new List<string>(MaxLines);
 		_textView = new TextView {
@@ -56,13 +57,13 @@ public class LogView : FrameView {
 			_textView.MoveEnd();
 
 		//TODO: avoid invoke if on main thread
-		Terminal.Gui.Application.MainLoop.Invoke(() => _textView.SetNeedsDisplay());
+		TGApplication.Invoke(() => _textView.SetNeedsDraw());
 	}
 
 	public void ClearLog() {
 		_lines.Clear();
 		_textView.Text = string.Empty;
-		Terminal.Gui.Application.MainLoop.Invoke(() => _textView.SetNeedsDisplay());
+		TGApplication.Invoke(() => _textView.SetNeedsDraw());
 	}
 
 }

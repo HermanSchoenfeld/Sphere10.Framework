@@ -6,20 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Terminal.Gui;
+global using Terminal.Gui.App;
+global using Terminal.Gui.Input;
+global using Terminal.Gui.ViewBase;
+global using Terminal.Gui.Views;
 
-namespace Sphere10.Framework.DApp.Node.UI;
-
-public class TextViewWriter : SyncTextWriter {
-	private readonly TextView _textBox;
-
-	public TextViewWriter(TextView textBox) {
-		_textBox = textBox;
-	}
-
-	protected override void InternalWrite(string value) {
-		_textBox.Text += value;
-		_textBox.SetNeedsDraw();
-	}
-}
-
+global using TGApplication = Terminal.Gui.App.Application;
+global using TGKey = Terminal.Gui.Input.Key;

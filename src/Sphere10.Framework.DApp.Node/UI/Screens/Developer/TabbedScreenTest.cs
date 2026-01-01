@@ -70,14 +70,14 @@ public class TabbedScreenTest : TabbedScreen<TabbedScreenTest.Model> {
 		protected override void LoadInternal() {
 			base.LoadInternal();
 			var labelFieldLayout = new LabelFieldLayout(2, 2, 1, 25);
-			labelFieldLayout.AddField("Label 1", new TextField("test text"), Dim.Fill());
+			labelFieldLayout.AddField("Label 1", new TextField { Text = "test text" }, Dim.Fill());
 			labelFieldLayout.AddTextBox("Longer Label 2", "UPPER ONLY", s => s.All(c => char.IsUpper(c) || char.IsWhiteSpace(c)));
-			labelFieldLayout.AddButton("Some other large label", "Button Label", () => MessageBox.Query("Title", "Message", "Button1", "Button2"));
+			labelFieldLayout.AddButton("Some other large label", "Button Label", () => MessageBox.Query(TGApplication.Instance, "Title", "Message", "Button1", "Button2"));
 			labelFieldLayout.AddButton("Enum Selection",
 				"Button Label",
 				() => {
 					if (Dialogs.SelectEnum<EnumOption>("Select EnumOption", "Please select the value from this enum", EnumOption.Option2, out var selection))
-						MessageBox.Query("Title", $"Selected '{selection.ToString()}'");
+						MessageBox.Query(TGApplication.Instance, "Title", $"Selected '{selection.ToString()}'", "Ok");
 				});
 			this.Add(labelFieldLayout);
 		}

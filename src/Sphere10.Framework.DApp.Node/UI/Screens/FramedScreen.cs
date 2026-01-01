@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Collections.Generic;
 using Terminal.Gui;
 
 namespace Sphere10.Framework.DApp.Node.UI;
@@ -24,16 +25,16 @@ public abstract class FramedScreen<T> : Screen<T> {
 		base.Add(Frame);
 	}
 
-	public override void Add(View view) {
+	public new void Add(View view) {
 		Frame.Add(view);
 	}
 
-	public override void Remove(View view) {
+	public new void Remove(View view) {
 		Frame.Remove(view);
 	}
 
-	public override void RemoveAll() {
-		Frame.RemoveAll();
+	public new IReadOnlyCollection<View> RemoveAll() {
+		return Frame.RemoveAll();
 	}
 }
 

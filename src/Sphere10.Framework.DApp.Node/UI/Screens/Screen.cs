@@ -64,8 +64,8 @@ public abstract class Screen : View {
 		NotifyLoaded();
 	}
 
-	public virtual IEnumerable<StatusItem> BuildStatusItems()
-		=> Enumerable.Empty<StatusItem>();
+	public virtual IEnumerable<Shortcut> BuildStatusItems()
+		=> Enumerable.Empty<Shortcut>();
 
 	protected abstract void LoadInternal();
 
@@ -144,22 +144,20 @@ public abstract class Screen : View {
 		foreach (var view in _viewCouldFocus.Keys)
 			view.CanFocus = _viewCouldFocus[view];
 		_viewCouldFocus.Clear();
-		this.ColorScheme = Terminal.Gui.Application.Current.ColorScheme;
-		this.SetNeedsDisplay();
+		this.SetNeedsDraw();
 	}
 
 	private void DisableControls() {
 		void LearnViewCanFocus(View view) {
 			_viewCouldFocus[view] = view.CanFocus;
-			foreach (var child in view.Subviews)
+			foreach (var child in view.SubViews)
 				LearnViewCanFocus(child);
 		}
 
 		LearnViewCanFocus(this);
 		foreach (var view in _viewCouldFocus.Keys)
 			view.CanFocus = false;
-		this.ColorScheme = Colors.Error;
-		this.SetNeedsDisplay();
+		this.SetNeedsDraw();
 	}
 
 }

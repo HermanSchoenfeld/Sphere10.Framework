@@ -7,7 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Terminal.Gui;
+using Terminal.Gui.ViewBase;
 
 namespace Sphere10.Framework.DApp.Node.UI;
 
@@ -19,7 +22,9 @@ public class ListDialog<T> : Dialog {
 	private const int DescriptionHeight = 2;
 
 	public ListDialog(string title, string description, ListDataSource<T> datasource, int selected = 0)
-		: base(title) {
+		: base() {
+
+		this.Title = title;
 
 
 		var txt = new TextView {
@@ -27,7 +32,7 @@ public class ListDialog<T> : Dialog {
 			Y = TopPadding,
 			Width = Dim.Fill(),
 			Height = DescriptionHeight,
-			TextAlignment = TextAlignment.Centered,
+			TextAlignment = Alignment.Center,
 			Text = description,
 			CanFocus = false
 		};
@@ -39,18 +44,15 @@ public class ListDialog<T> : Dialog {
 			Width = Dim.Fill(),
 			Height = Dim.Fill()
 		};
-		list.SetSource(datasource.Labels);
-		list.SelectedItemChanged += args => {
-			SelectedIndex = args.Item;
-			SelectedValue = datasource.Items[args.Item];
+		list.SetSource<string>(new System.Collections.ObjectModel.ObservableCollection<string>(datasource.Labels.Cast<string>().ToList()));
+		list.SelectedItemChanged += (sender, args) => {
+			var item = args.Item ?? 0;
+			SelectedIndex = item;
+			SelectedValue = datasource.Items[item];
 		};
-
-		list.KeyPress += args => {
-			if (args.KeyEvent.Key.HasFlag(Terminal.Gui.Key.Esc))
-				Cancelled = true;
-
-			if (args.KeyEvent.Key.HasFlag(Terminal.Gui.Key.Enter))
-				Terminal.Gui.Application.RequestStop();
+		list.OpenSelectedItem += (sender, args) => {
+			Cancelled = false;
+			TGApplication.RequestStop((IRunnable)TGApplication.TopRunnable);
 		};
 		list.SelectedItem = selected;
 		list.SetFocus();

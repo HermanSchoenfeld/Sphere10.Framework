@@ -6,25 +6,28 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using NStack;
-using Terminal.Gui;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 
 namespace Sphere10.Framework.DApp.Node.UI;
 
 public class MockScreen : Screen {
 
 	protected override void LoadInternal() {
-		var login = new Label("Login: ") { X = 3, Y = 2 };
-		var password = new Label("Password: ") {
+		var login = new Label { Text = "Login: ", X = 3, Y = 2 };
+		var password = new Label {
+			Text = "Password: ",
 			X = Pos.Left(login),
 			Y = Pos.Top(login) + 1
 		};
-		var loginText = new TextField("") {
+		var loginText = new TextField {
+			Text = string.Empty,
 			X = Pos.Right(password),
 			Y = Pos.Top(login),
 			Width = 40
 		};
-		var passText = new TextField("") {
+		var passText = new TextField {
+			Text = string.Empty,
 			Secret = true,
 			X = Pos.Left(loginText),
 			Y = Pos.Top(password),
@@ -32,19 +35,13 @@ public class MockScreen : Screen {
 		};
 
 		// Add some controls, 
-		this.Add(
-			// The ones with my favorite layout system
-			login,
-			password,
-			loginText,
-			passText,
+		this.Add(login, password, loginText, passText);
 
-			// The ones laid out like an australopithecus, with absolute positions:
-			new CheckBox(3, 6, "Remember me"),
-			new RadioGroup(3, 8, new ustring[] { "_Personal", "_Company" }),
-			new Button(3, 14, "Ok"),
-			new Button(10, 14, "Cancel"),
-			new Label(3, 18, "Press F9 or ESC plus 9 to activate the menubar"));
+		var remember = new CheckBox { X = 3, Y = 6, Text = "Remember me" };
+		var ok = new Button { X = 3, Y = 14, Text = "Ok" };
+		var cancel = new Button { X = 10, Y = 14, Text = "Cancel" };
+		var info = new Label { X = 3, Y = 18, Text = "Press F9 or ESC plus 9 to activate the menubar" };
+		this.Add(remember, ok, cancel, info);
 	}
 
 }

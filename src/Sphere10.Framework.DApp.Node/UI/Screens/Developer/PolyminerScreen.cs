@@ -28,8 +28,8 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 		: base(MiningServerModel.Default, new ConfigScreen(), new OutputScreen()) {
 	}
 
-	protected override IEnumerable<StatusItem> BuildStatusItemsInternal() {
-		yield return new StatusItem(Terminal.Gui.Key.F1,
+	protected override IEnumerable<Shortcut> BuildStatusItemsInternal() {
+		yield return new Shortcut(TGKey.F1,
 			"~[F1]~ Start/Stop",
 			() => {
 				if (Model.IsStarted) {
@@ -37,7 +37,8 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 				} else {
 					Model.Start();
 				}
-			});
+		},
+		null);
 	}
 
 
@@ -49,11 +50,11 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 
 			var labelFieldLayout = new LabelFieldLayout(2, 2, 1, 25);
 			_RpcServerPort = new IntegerField(Model.RpcServerPort, 255, 32000, x => { Model.RpcServerPort = (int)x; });
-			labelFieldLayout.AddField("Rpc server port", _RpcServerPort, Dim.Sized(10));
+			labelFieldLayout.AddField("Rpc server port", _RpcServerPort, Dim.Absolute(10));
 			labelFieldLayout.AddEnum("Hash Algorithm", "Select the hash algorithm which the simulation will use", () => Model.Hash, x => { Model.Hash = x; });
-			labelFieldLayout.AddField("Block Time", new IntegerField(this.Model.BlockTime, 1, 10 * 60, x => { Model.BlockTime = (int)x; }), Dim.Sized(10));
-			labelFieldLayout.AddField("Relaxation Time", new IntegerField(this.Model.RelaxationTime, 1, 99999, x => { Model.RelaxationTime = (int)x; }), Dim.Sized(10));
-			labelFieldLayout.AddField("Real-Time Interval", new IntegerField(this.Model.RTTInterval, 1, 99999, x => { Model.RTTInterval = (int)x; }), Dim.Sized(10));
+			labelFieldLayout.AddField("Block Time", new IntegerField(this.Model.BlockTime, 1, 10 * 60, x => { Model.BlockTime = (int)x; }), Dim.Absolute(10));
+			labelFieldLayout.AddField("Relaxation Time", new IntegerField(this.Model.RelaxationTime, 1, 99999, x => { Model.RelaxationTime = (int)x; }), Dim.Absolute(10));
+			labelFieldLayout.AddField("Real-Time Interval", new IntegerField(this.Model.RTTInterval, 1, 99999, x => { Model.RTTInterval = (int)x; }), Dim.Absolute(10));
 			this.Add(labelFieldLayout);
 		}
 
@@ -97,7 +98,8 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 			_outputLogger.Options = LogOptions.VerboseProfile;
 			this.Add(_log);
 
-			var statsFrame = new FrameView("Statistics") {
+			var statsFrame = new FrameView {
+				Title = "Statistics",
 				X = 0,
 				Y = Pos.Bottom(_log),
 				Width = Dim.Fill(),
@@ -107,42 +109,42 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 
 			const int labelWidth = 15;
 			const int valueWidth = 6;
-			var targetLabel = new Label("Target: ") { X = 0, Y = 0, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var targetValue = new Label("N/A") { X = Pos.Right(targetLabel), Y = 0, AutoSize = false, Width = valueWidth };
-			var blockCountLabel = new Label("Blocks: ") { X = Pos.Right(targetValue), Y = 0, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var blockCountValue = new Label("0") { X = Pos.Right(blockCountLabel), Y = 0, Width = valueWidth, TextAlignment = TextAlignment.Left };
+			var targetLabel = new Label { Text = "Target: ", X = 0, Y = 0, Width = labelWidth, TextAlignment = Alignment.End };
+			var targetValue = new Label { Text = "N/A", X = Pos.Right(targetLabel), Y = 0, Width = valueWidth };
+			var blockCountLabel = new Label { Text = "Blocks: ", X = Pos.Right(targetValue), Y = 0, Width = labelWidth, TextAlignment = Alignment.End };
+			var blockCountValue = new Label { Text = "0", X = Pos.Right(blockCountLabel), Y = 0, Width = valueWidth, TextAlignment = Alignment.Start };
 			statsFrame.Add(targetLabel, targetValue, blockCountLabel, blockCountValue);
 
-			var avgBlockTimeLabel = new Label("Avg: ") { X = 0, Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var avgBlockTimeValue = new Label("N/A") { X = Pos.Right(avgBlockTimeLabel), Y = 1, AutoSize = false, Width = valueWidth };
-			var stdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(avgBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var stdBlockTimeValue = new Label("N/A") { X = Pos.Right(stdBlockTimeLabel), Y = 1, AutoSize = false, Width = valueWidth };
-			var minMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(stdBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var minMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(minMaxBlockTimeLabel), Y = 1, AutoSize = false, Width = Dim.Fill() };
+			var avgBlockTimeLabel = new Label { Text = "Avg: ", X = 0, Y = 1, Width = labelWidth, TextAlignment = Alignment.End };
+			var avgBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(avgBlockTimeLabel), Y = 1, Width = valueWidth };
+			var stdBlockTimeLabel = new Label { Text = "Std: ", X = Pos.Right(avgBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = Alignment.End };
+			var stdBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(stdBlockTimeLabel), Y = 1, Width = valueWidth };
+			var minMaxBlockTimeLabel = new Label { Text = "Min/Max: ", X = Pos.Right(stdBlockTimeValue), Y = 1, Width = labelWidth, TextAlignment = Alignment.End };
+			var minMaxBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(minMaxBlockTimeLabel), Y = 1, Width = Dim.Fill() };
 			statsFrame.Add(avgBlockTimeLabel, avgBlockTimeValue, stdBlockTimeLabel, stdBlockTimeValue, minMaxBlockTimeLabel, minMaxBlockTimeValue);
 
-			var last5AvgBlockTimeLabel = new Label("Last 5 Avg: ") { X = 0, Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last5AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last5AvgBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = TextAlignment.Left };
-			var last5StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last5AvgBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last5StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last5StdBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = TextAlignment.Left };
-			var last5MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last5StdBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last5MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last5MinMaxBlockTimeLabel), Y = 2, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+			var last5AvgBlockTimeLabel = new Label { Text = "Last 5 Avg: ", X = 0, Y = 2, Width = labelWidth, TextAlignment = Alignment.End };
+			var last5AvgBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last5AvgBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = Alignment.Start };
+			var last5StdBlockTimeLabel = new Label { Text = "Std: ", X = Pos.Right(last5AvgBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = Alignment.End };
+			var last5StdBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last5StdBlockTimeLabel), Y = 2, Width = valueWidth, TextAlignment = Alignment.Start };
+			var last5MinMaxBlockTimeLabel = new Label { Text = "Min/Max: ", X = Pos.Right(last5StdBlockTimeValue), Y = 2, Width = labelWidth, TextAlignment = Alignment.End };
+			var last5MinMaxBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last5MinMaxBlockTimeLabel), Y = 2, Width = Dim.Fill(), TextAlignment = Alignment.Start };
 			statsFrame.Add(last5AvgBlockTimeLabel, last5AvgBlockTimeValue, last5StdBlockTimeLabel, last5StdBlockTimeValue, last5MinMaxBlockTimeLabel, last5MinMaxBlockTimeValue);
 
-			var last10AvgBlockTimeLabel = new Label("Last 10 Avg: ") { X = 0, Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last10AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last10AvgBlockTimeLabel), Y = 3, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
-			var last10StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last10AvgBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last10StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last10StdBlockTimeLabel), Y = 3, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
-			var last10MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last10StdBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last10MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last10MinMaxBlockTimeLabel), Y = 3, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+			var last10AvgBlockTimeLabel = new Label { Text = "Last 10 Avg: ", X = 0, Y = 3, Width = labelWidth, TextAlignment = Alignment.End };
+			var last10AvgBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last10AvgBlockTimeLabel), Y = 3, Width = valueWidth, TextAlignment = Alignment.Start };
+			var last10StdBlockTimeLabel = new Label { Text = "Std: ", X = Pos.Right(last10AvgBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = Alignment.End };
+			var last10StdBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last10StdBlockTimeLabel), Y = 3, Width = valueWidth, TextAlignment = Alignment.Start };
+			var last10MinMaxBlockTimeLabel = new Label { Text = "Min/Max: ", X = Pos.Right(last10StdBlockTimeValue), Y = 3, Width = labelWidth, TextAlignment = Alignment.End };
+			var last10MinMaxBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last10MinMaxBlockTimeLabel), Y = 3, Width = Dim.Fill(), TextAlignment = Alignment.Start };
 			statsFrame.Add(last10AvgBlockTimeLabel, last10AvgBlockTimeValue, last10StdBlockTimeLabel, last10StdBlockTimeValue, last10MinMaxBlockTimeLabel, last10MinMaxBlockTimeValue);
 
-			var last100AvgBlockTimeLabel = new Label("Last 100 Avg: ") { X = 0, Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last100AvgBlockTimeValue = new Label("N/A") { X = Pos.Right(last100AvgBlockTimeLabel), Y = 4, Width = valueWidth, TextAlignment = TextAlignment.Left };
-			var last100StdBlockTimeLabel = new Label("Std: ") { X = Pos.Right(last100AvgBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last100StdBlockTimeValue = new Label("N/A") { X = Pos.Right(last100StdBlockTimeLabel), Y = 4, AutoSize = false, Width = valueWidth, TextAlignment = TextAlignment.Left };
-			var last100MinMaxBlockTimeLabel = new Label("Min/Max: ") { X = Pos.Right(last100StdBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = TextAlignment.Right };
-			var last100MinMaxBlockTimeValue = new Label("N/A") { X = Pos.Right(last100MinMaxBlockTimeLabel), Y = 4, Width = Dim.Fill(), TextAlignment = TextAlignment.Left };
+			var last100AvgBlockTimeLabel = new Label { Text = "Last 100 Avg: ", X = 0, Y = 4, Width = labelWidth, TextAlignment = Alignment.End };
+			var last100AvgBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last100AvgBlockTimeLabel), Y = 4, Width = valueWidth, TextAlignment = Alignment.Start };
+			var last100StdBlockTimeLabel = new Label { Text = "Std: ", X = Pos.Right(last100AvgBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = Alignment.End };
+			var last100StdBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last100StdBlockTimeLabel), Y = 4, Width = valueWidth, TextAlignment = Alignment.Start };
+			var last100MinMaxBlockTimeLabel = new Label { Text = "Min/Max: ", X = Pos.Right(last100StdBlockTimeValue), Y = 4, Width = labelWidth, TextAlignment = Alignment.End };
+			var last100MinMaxBlockTimeValue = new Label { Text = "N/A", X = Pos.Right(last100MinMaxBlockTimeLabel), Y = 4, Width = Dim.Fill(), TextAlignment = Alignment.Start };
 			statsFrame.Add(last100AvgBlockTimeLabel, last100AvgBlockTimeValue, last100StdBlockTimeLabel, last100StdBlockTimeValue, last100MinMaxBlockTimeLabel, last100MinMaxBlockTimeValue);
 
 			// Handlers for stats update
@@ -196,7 +198,7 @@ public class MiningServerScreen : TabbedScreen<MiningServerScreen.MiningServerMo
 #if DEBUG
 				System.Diagnostics.Debug.WriteLine(message);
 #endif
-				Terminal.Gui.Application.MainLoop.Invoke(() => action(message));
+				TGApplication.Invoke(() => action(message));
 			} catch {
 			}
 		}

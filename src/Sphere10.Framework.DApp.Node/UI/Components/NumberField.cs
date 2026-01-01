@@ -21,13 +21,20 @@ public class IntegerField : TextField {
 		Value = value;
 		AutoClip = true;
 		this.Text = $"{Value}";
-		base.TextChanging += args => {
-			args.Cancel = !TryParse(args.NewText.ToString(), out var newText, out _);
-			if (!args.Cancel)
-				args.NewText = newText;
+		base.TextChanging += (sender, args) => {
+			var proposed = args.Result?.ToString() ?? string.Empty;
+			if (!TryParse(proposed, out var normalized, out _)) {
+				args.Handled = true;
+				args.Result = this.Text?.ToString() ?? string.Empty;
+				return;
+			}
+			if (!string.Equals(proposed, normalized, StringComparison.Ordinal)) {
+				args.Handled = true;
+				args.Result = normalized;
+			}
 		};
-		base.TextChanged += x => {
-			Value = Parse(x.ToString());
+		base.TextChanged += (sender, args) => {
+			Value = Parse(this.Text?.ToString() ?? string.Empty);
 			changed?.Invoke(Value);
 		};
 	}

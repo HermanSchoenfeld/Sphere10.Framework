@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Terminal.Gui;
 
@@ -27,14 +28,15 @@ public abstract class TabbedScreen : Screen {
 		_componentScreens = componentScreens.ToArray();
 	}
 
-	public sealed override IEnumerable<StatusItem> BuildStatusItems()
+	public sealed override IEnumerable<Shortcut> BuildStatusItems()
 		=> base.BuildStatusItems().Concat(BuildStatusItemsInternal()).Concat(_activeComponentScreen.BuildStatusItems());
 
-	protected virtual IEnumerable<StatusItem> BuildStatusItemsInternal()
-		=> Enumerable.Empty<StatusItem>();
+	protected virtual IEnumerable<Shortcut> BuildStatusItemsInternal()
+		=> Enumerable.Empty<Shortcut>();
 
 	protected sealed override void LoadInternal() {
-		_componentScreenFrame = new FrameView(this.Title) {
+		_componentScreenFrame = new FrameView {
+			Title = this.Title,
 			X = 0,
 			Y = 0,
 			Width = 50,
@@ -48,8 +50,8 @@ public abstract class TabbedScreen : Screen {
 			Width = Dim.Fill(),
 			Height = Dim.Fill()
 		};
-		_componentScreenList.SetSource(_componentScreens.Select(x => x.Title).ToList());
-		_componentScreenList.SelectedItemChanged += args => ShowScreen(_componentScreens[args.Item]);
+		_componentScreenList.SetSource<string>(new System.Collections.ObjectModel.ObservableCollection<string>(_componentScreens.Select(x => x.Title).ToList()));
+		_componentScreenList.SelectedItemChanged += (sender, args) => ShowScreen(_componentScreens[args.Item ?? 0]);
 		_componentScreenFrame.Add(_componentScreenList);
 
 		foreach (var screen in _componentScreens)
@@ -60,7 +62,8 @@ public abstract class TabbedScreen : Screen {
 	protected override void OnAppearing() {
 		base.OnAppearing();
 		if (AppearCount == 1 && _componentScreens.Any()) {
-			_componentScreenList.FocusFirst();
+			_componentScreenList.SelectedItem = 0;
+			_componentScreenList.SetFocus();
 		}
 	}
 

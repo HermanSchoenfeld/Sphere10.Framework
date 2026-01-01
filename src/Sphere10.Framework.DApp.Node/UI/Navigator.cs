@@ -11,13 +11,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Terminal.Gui;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 
 namespace Sphere10.Framework.DApp.Node.UI;
 
 // change to IOC
 public static class Navigator {
 	private const string TitlePrefix = "VelocityNET";
+	private static View _top;
 	private static FrameView _screenFrame;
 	private static Screen _currentScreen;
 	private static StatusBar _statusBar;
@@ -25,7 +27,8 @@ public static class Navigator {
 	private static IDictionary<Type, Screen> _activatedScreens;
 
 	public static void Start(CancellationToken stopRunningToken) {
-		Terminal.Gui.Application.Init();
+		TGApplication.Init();
+		_top = TGApplication.TopRunnableView;
 		stopRunningToken.Register(Quit);
 		_activatedScreens = new Dictionary<Type, Screen>();
 		_applicationScreenTypes = ScanApplicationScreens().ToArray();
@@ -35,12 +38,12 @@ public static class Navigator {
 				.Where(x => x.GetCustomAttributeOfType<LifetimeAttribute>().Lifetime == ScreenLifetime.Application)
 				.ToDictionary(x => x, CreateScreen);
 
-		Terminal.Gui.Application.Top.Add(BuildMenu());
+		_top.Add(BuildMenu());
 		Show<DashboardScreen>();
 		_statusBar = BuildStatusBar();
-		Terminal.Gui.Application.Top.Add(_statusBar);
+		_top.Add(_statusBar);
 		RunApplication(
-			Terminal.Gui.Application.Top,
+			(IRunnable)_top,
 			error => {
 				SystemLog.Exception(nameof(Navigator), nameof(Start), error);
 				Dialogs.Exception(error);
@@ -50,13 +53,13 @@ public static class Navigator {
 	}
 
 	public static void Quit() {
-		Terminal.Gui.Application.Top.Running = false;
+		TGApplication.RequestStop((IRunnable)TGApplication.TopRunnable);
 	}
 
 	public static void NotifyStatusBarChanged() {
-		Terminal.Gui.Application.Top.Remove(_statusBar);
+		_top.Remove(_statusBar);
 		_statusBar = BuildStatusBar();
-		Terminal.Gui.Application.Top.Add(_statusBar);
+		_top.Add(_statusBar);
 	}
 
 	private static IEnumerable<Type> ScanApplicationScreens() {
@@ -129,12 +132,12 @@ public static class Navigator {
 	}
 
 	private static StatusBar BuildStatusBar() {
-		var screenItems = _currentScreen?.BuildStatusItems() ?? Enumerable.Empty<StatusItem>();
-		var statusBar = new StatusBar(screenItems.Concat(BuildGlobalStatusItems()).ToArray());
+		var screenItems = _currentScreen?.BuildStatusItems() ?? Enumerable.Empty<Shortcut>();
+		var statusBar = new StatusBar(screenItems.Concat(BuildGlobalStatusItems()));
 		return statusBar;
 	}
 
-	private static IEnumerable<StatusItem> BuildGlobalStatusItems() => Enumerable.Empty<StatusItem>();
+	private static IEnumerable<Shortcut> BuildGlobalStatusItems() => Enumerable.Empty<Shortcut>();
 
 	private static void Show<TScreen>() where TScreen : Screen, new() {
 		ShowScreen(typeof(TScreen));
@@ -167,13 +170,13 @@ public static class Navigator {
 			// Remove/destroy current screen
 
 			if (_screenFrame != null) {
-				_screenFrame.Subviews[0].Remove(priorScreen); // remove for not disposing
-				Terminal.Gui.Application.Top.Remove(_screenFrame);
+				_screenFrame.Remove(priorScreen); // remove for not disposing
+				_top.Remove(_screenFrame);
 				_screenFrame.Dispose();
 				_screenFrame = null;
 			}
 			if (priorScreen != null) {
-				Terminal.Gui.Application.Top.Remove(priorScreen);
+				_top.Remove(priorScreen);
 			}
 			priorScreen.NotifyDisappeared();
 
@@ -199,19 +202,20 @@ public static class Navigator {
 			newScreen.Y = 1;
 			newScreen.Width = Dim.Fill();
 			newScreen.Height = Dim.Fill(1);
-			Terminal.Gui.Application.Top.Add(newScreen);
+			_top.Add(newScreen);
 		} else {
-			_screenFrame = new FrameView($"{TitlePrefix} {newScreen.Title}") {
+			_screenFrame = new FrameView {
+				Title = $"{TitlePrefix} {newScreen.Title}",
 				X = 0,
 				Y = 1, // 1 for menu  
 				Width = Dim.Fill(),
 				Height = Dim.Fill(1) // 1 for statusbar
 			};
 			_screenFrame.Add(newScreen);
-			Terminal.Gui.Application.Top.Add(_screenFrame);
+			_top.Add(_screenFrame);
 		}
 		NotifyStatusBarChanged();
-		Terminal.Gui.Application.Top.LayoutSubviews();
+		_top.SetNeedsDraw();
 		_currentScreen.NotifyAppeared();
 	}
 
@@ -222,21 +226,8 @@ public static class Navigator {
 		return screen;
 	}
 
-	private static void RunApplication(Toplevel view, Func<Exception, bool> errorHandler = null) {
-		// Error-handling loop wrapper
-		var resume = true;
-		while (resume) {
-			try {
-				resume = false;
-				var runToken = Terminal.Gui.Application.Begin(view);
-				Terminal.Gui.Application.RunLoop(runToken);
-				Terminal.Gui.Application.End(runToken);
-			} catch (Exception error) {
-				if (errorHandler == null)
-					throw;
-				resume = errorHandler(error);
-			}
-		}
+	private static void RunApplication(IRunnable runnable, Func<Exception, bool> errorHandler = null) {
+		TGApplication.Run(runnable, errorHandler);
 	}
 
 }
