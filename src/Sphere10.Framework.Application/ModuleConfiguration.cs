@@ -79,6 +79,11 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 
 		// Initializers/Finalizers
 		serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
+
+		// EnsureSystemDataDirGloballyAccessibleInitializer
+		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)) {
+			serviceCollection.AddInitializer<Sphere10.Framework.NET.EnsureSystemDataDirGloballyAccessibleInitializer>();
+		}
 	}
 
 	private void EnableDRM(IServiceCollection serviceCollection) {
@@ -139,5 +144,6 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 	public override void OnFinalize(IServiceProvider serviceProvider) {
 		base.OnFinalize(serviceProvider);
 	}
+
 }
 

@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Reflection;
 
 
-namespace Sphere10.Framework.CodeBuilder;
+namespace Sphere10.Framework.NET;
 
 public abstract class CodeBuilderAttribute : Attribute {
 	public abstract void InjectCode(ClassBuilder ownerClass, MethodBuilder method);

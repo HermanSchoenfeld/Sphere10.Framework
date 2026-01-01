@@ -15,7 +15,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Sphere10.Framework.NET\Sphere10.Framework.NET.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>

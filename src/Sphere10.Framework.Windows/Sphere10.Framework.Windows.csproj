@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <Description>Windows platform integration for Sphere10 Framework.</Description>
+    <PackageTags>sphere10 framework windows</PackageTags>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
@@ -25,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
-    <ProjectReference Include="..\Sphere10.Framework.NET\Sphere10.Framework.NET.csproj" />
   </ItemGroup>
 
 </Project>

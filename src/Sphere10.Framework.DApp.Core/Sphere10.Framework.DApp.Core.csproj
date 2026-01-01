@@ -4,6 +4,8 @@
 		<LangVersion>latest</LangVersion>
 		<OutputType>Library</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
+		<Description>Blockchain and DApp primitives for Sphere10 Framework.</Description>
+		<PackageTags>sphere10 framework blockchain dapp</PackageTags>
 		<ApplicationIcon />
 		<StartupObject />
 	</PropertyGroup>
@@ -33,11 +35,6 @@
 		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Attributes\" />
-		<Folder Include="Encoding\" />
-		<Folder Include="Host\" />
-		<Folder Include="Node\" />
-	</ItemGroup>
+
 
 </Project>

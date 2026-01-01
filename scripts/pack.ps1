@@ -37,7 +37,13 @@ $InformationPreference = "Continue"
 # Resolve paths
 $SolutionRoot = Split-Path -Parent $PSScriptRoot
 $SrcPath = Join-Path $SolutionRoot "src"
-$OutputFullPath = Join-Path $SolutionRoot $OutputPath
+$OutputFullPath = if ([System.IO.Path]::IsPathRooted($OutputPath)) {
+    $OutputPath
+} else {
+    Join-Path $SolutionRoot $OutputPath
+}
+
+$OutputFullPath = [System.IO.Path]::GetFullPath($OutputFullPath)
 
 Write-Information "[PACK] Sphere10 Framework NuGet Pack Script"
 Write-Information "========================================="
@@ -110,10 +116,7 @@ $Projects | ForEach-Object {
     Write-Information "[PACK] $ProjectName..."
     
     try {
-        # Build project first to ensure DLLs exist
-        & dotnet build $ProjectPath -c $Configuration -nologo | Out-Null
-        
-        # Then pack with appropriate reference mode
+        # Pack (dotnet pack will build by default)
         $PackArgs = @(
             "pack"
             $ProjectPath

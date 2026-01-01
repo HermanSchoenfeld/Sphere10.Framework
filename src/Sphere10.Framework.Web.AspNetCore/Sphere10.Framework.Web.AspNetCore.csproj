@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <Description>ASP.NET Core integration for Sphere10 Framework.</Description>
+    <PackageTags>sphere10 framework aspnetcore web</PackageTags>
     <AssemblyName>Sphere10.Framework.Web.AspNetCore</AssemblyName>
     <RootNamespace>Sphere10.Framework.Web.AspNetCore</RootNamespace>
     <LangVersion>preview</LangVersion>

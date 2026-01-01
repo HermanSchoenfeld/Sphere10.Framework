@@ -21,13 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NUnit", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.Communications", "Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj", "{B9BAB6BC-4023-4689-B2F0-F15473547DA2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashLib4CSharp", "HashLib4CSharp\HashLib4CSharp.csproj", "{CD719561-BE76-460D-BC34-48791D1C43D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HashLib4CSharp", "Sphere10.HashLib4CSharp\Sphere10.HashLib4CSharp.csproj", "{CD719561-BE76-460D-BC34-48791D1C43D2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.CryptoEx", "Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj", "{5F913C77-3FD5-4E05-BA61-ECF81BB5BA09}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E7705E7B-D04B-488C-8442-149A029F34B8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NET.Tests", "..\tests\Sphere10.Framework.NET.Tests\Sphere10.Framework.NET.Tests.csproj", "{DC1A39A3-2156-4FE2-BA44-4551905E4795}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.DApp.Core.Tests", "..\tests\Sphere10.Framework.DApp.Core.Tests\Sphere10.Framework.DApp.Core.Tests.csproj", "{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}"
 EndProject
@@ -49,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.AnonymousP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbstractProtocol.UDPSimple", "..\recipes\AbstractProtocol.UPDSimple\AbstractProtocol.UDPSimple.csproj", "{0A67216B-D8E4-4C72-A461-DE260E5DBF95}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sphere10.Framework.NET", "Sphere10.Framework.NET\Sphere10.Framework.NET.csproj", "{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Runtime", "Sphere10.Framework.Runtime\Sphere10.Framework.Runtime.csproj", "{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -147,14 +145,6 @@ Global
 		{5F913C77-3FD5-4E05-BA61-ECF81BB5BA09}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5F913C77-3FD5-4E05-BA61-ECF81BB5BA09}.Release|x86.ActiveCfg = Release|Any CPU
 		{5F913C77-3FD5-4E05-BA61-ECF81BB5BA09}.Release|x86.Build.0 = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Debug|x86.Build.0 = Debug|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|x86.ActiveCfg = Release|Any CPU
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795}.Release|x86.Build.0 = Release|Any CPU
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -227,20 +217,19 @@ Global
 		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|x86.ActiveCfg = Release|Any CPU
 		{0A67216B-D8E4-4C72-A461-DE260E5DBF95}.Release|x86.Build.0 = Release|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Debug|x86.Build.0 = Debug|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|x86.ActiveCfg = Release|Any CPU
-		{C7E0ACD1-B692-4A16-9516-01CF2717B5B3}.Release|x86.Build.0 = Release|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Debug|x86.Build.0 = Debug|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Release|x86.ActiveCfg = Release|Any CPU
+		{4ED43D42-C7BD-4F8A-91DE-2311AFE1C2A2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{DC1A39A3-2156-4FE2-BA44-4551905E4795} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{884F4D63-17A6-4253-A3A8-CDFC7994F1D6} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{A1206153-4D43-4A74-82FE-60B1A1C00AF9} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416} = {E7705E7B-D04B-488C-8442-149A029F34B8}

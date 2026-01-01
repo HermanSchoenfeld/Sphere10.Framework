@@ -2,6 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
+		<Description>Extended cryptography utilities for Sphere10 Framework.</Description>
+		<PackageTags>sphere10 framework cryptography hashing blake2 bouncycastle</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
@@ -19,7 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\HashLib4CSharp\HashLib4CSharp.csproj" />
+		<ProjectReference Include="..\Sphere10.HashLib4CSharp\Sphere10.HashLib4CSharp.csproj" />
 		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 

@@ -2,6 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
+		<Description>NHibernate integration for Sphere10 Framework.Data.</Description>
+		<PackageTags>sphere10 framework data database nhibernate orm</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 

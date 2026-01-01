@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sphere10.Framework.CodeBuilder;
+namespace Sphere10.Framework.NET;
 
 public enum ProtectionLevel {
 	Private,

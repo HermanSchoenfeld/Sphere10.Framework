@@ -9,8 +9,9 @@
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Sphere10.Framework.Application;
 
-namespace Sphere10.Framework.Application;
+namespace Sphere10.Framework.NET;
 
 public class EnsureSystemDataDirGloballyAccessibleInitializer : ApplicationInitializerBase {
 

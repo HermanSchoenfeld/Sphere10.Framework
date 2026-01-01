@@ -2,7 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Description>Firebird database provider for Sphere10 Framework.Data.</Description>
+		<PackageTags>sphere10 framework data database firebird ado.net</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 

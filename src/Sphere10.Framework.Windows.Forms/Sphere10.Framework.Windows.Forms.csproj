@@ -4,6 +4,8 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
+		<Description>Windows Forms UI components for Sphere10 Framework.</Description>
+		<PackageTags>sphere10 framework winforms windows ui</PackageTags>
 		<UseWindowsForms>true</UseWindowsForms>
 		<AssemblyName>Sphere10.Framework.Windows.Forms</AssemblyName>
 		<RootNamespace>Sphere10.Framework.Windows.Forms</RootNamespace>

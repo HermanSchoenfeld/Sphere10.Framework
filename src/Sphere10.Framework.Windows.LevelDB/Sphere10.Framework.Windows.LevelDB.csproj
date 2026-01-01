@@ -2,11 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Authors>Herman Schoenfeld</Authors>
-		<Company>Sphere 10 Software</Company>
-		<Copyright>Sphere 10 Software Pty Ltd</Copyright>
-		<LangVersion>latest</LangVersion>
+		<Description>Windows LevelDB integration for Sphere10 Framework.</Description>
+		<PackageTags>sphere10 framework windows leveldb database</PackageTags>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

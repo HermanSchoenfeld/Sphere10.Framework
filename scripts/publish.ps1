@@ -27,7 +27,13 @@ if (-not $PackOnly -and -not $Local -and -not $NuGetOrg) {
 
 $SolutionRoot = Split-Path -Parent $PSScriptRoot
 $SolutionFullPath = Join-Path $SolutionRoot $SolutionFile
-$OutputFullPath = Join-Path $SolutionRoot $OutputPath
+$OutputFullPath = if ([System.IO.Path]::IsPathRooted($OutputPath)) {
+    $OutputPath
+} else {
+    Join-Path $SolutionRoot $OutputPath
+}
+
+$OutputFullPath = [System.IO.Path]::GetFullPath($OutputFullPath)
 
 Write-Information ""
 Write-Information "======================================================================"
