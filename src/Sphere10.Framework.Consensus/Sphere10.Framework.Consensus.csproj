@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Description>Consensus and difficulty-adjustment algorithms for Sphere10 Framework.</Description>
+		<PackageTags>sphere10 framework consensus difficulty adjustment pow</PackageTags>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+	</ItemGroup>
+
+</Project>

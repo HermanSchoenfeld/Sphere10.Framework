@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Sphere10.Framework.Communications.RPC;
 using Sphere10.Framework.DApp.Core.Configuration;
 using Sphere10.Framework.DApp.Core.Consensus.Serializers;
-using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.Consensus;
 using Sphere10.Framework.DApp.Core.Mining;
 
 namespace Sphere10.Framework.DApp.Node.RPC;

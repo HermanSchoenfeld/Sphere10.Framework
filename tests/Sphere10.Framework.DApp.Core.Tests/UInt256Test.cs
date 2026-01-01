@@ -14,7 +14,7 @@
 //using NUnit.Framework;
 //using Sphere10.Framework;
 //using Sphere10.Framework.DApp.Core.Encoding;
-//using Sphere10.Framework.DApp.Core.Maths;
+//using Sphere10.Framework.Consensus;
 
 //namespace VelocityNET.Processing.Tests.Core {
 

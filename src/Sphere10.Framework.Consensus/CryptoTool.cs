@@ -12,7 +12,7 @@
 //using System.Text;
 //using Sphere10.Framework;
 
-//namespace Sphere10.Framework.DApp.Core.Maths {
+//namespace Sphere10.Framework.Consensus {
 //    public static class CryptoTool {
 
 //        /// <summary>

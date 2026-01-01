@@ -9,8 +9,9 @@
 using System;
 using System.Globalization;
 using System.Numerics;
+using Sphere10.Framework;
 
-namespace Sphere10.Framework.DApp.Core.Maths;
+namespace Sphere10.Framework.Consensus;
 
 /// <summary>
 /// Represent the challenge that miners must solve for finding a new block. The Target/CompactTarget algorithm is

@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using Sphere10.Framework.Communications;
 using Sphere10.Framework.DApp.Core;
 using Sphere10.Framework.DApp.Core.Consensus;
-using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.Consensus;
 
 namespace Sphere10.Framework.DApp.Node.RPC;
 

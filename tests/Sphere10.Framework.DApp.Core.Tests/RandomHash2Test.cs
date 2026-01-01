@@ -8,7 +8,7 @@
 
 using NUnit.Framework;
 using Sphere10.Framework.CryptoEx;
-using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.Consensus;
 using System;
 using System.Text;
 using NUnit.Framework.Legacy;

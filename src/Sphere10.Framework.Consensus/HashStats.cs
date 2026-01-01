@@ -8,8 +8,9 @@
 
 using System;
 using System.Collections.Generic;
+using Sphere10.Framework;
 
-namespace Sphere10.Framework.DApp.Core.Maths;
+namespace Sphere10.Framework.Consensus;
 
 public class PeriodicStatistics {
 

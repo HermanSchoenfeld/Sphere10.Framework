@@ -9,7 +9,7 @@
 using System;
 using System.Numerics;
 
-namespace Sphere10.Framework.DApp.Core.Maths;
+namespace Sphere10.Framework.Consensus;
 
 public interface ICompactTargetAlgorithm {
 

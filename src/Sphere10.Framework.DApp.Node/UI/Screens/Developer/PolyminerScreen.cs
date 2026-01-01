@@ -11,7 +11,7 @@ using Sphere10.Framework.DApp.Node.UI.Components;
 using System.ComponentModel;
 using Sphere10.Framework.DApp.Node.RPC;
 using Sphere10.Framework.DApp.Core.Mining;
-using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.Consensus;
 using Sphere10.Framework.DApp.Core.Consensus.Serializers;
 using System;
 using System.Collections.Generic;

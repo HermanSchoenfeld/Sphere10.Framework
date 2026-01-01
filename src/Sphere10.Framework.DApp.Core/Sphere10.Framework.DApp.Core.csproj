@@ -31,6 +31,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
 		<ProjectReference Include="..\Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj" />
+		<ProjectReference Include="..\Sphere10.Framework.Consensus\Sphere10.Framework.Consensus.csproj" />
 		<ProjectReference Include="..\Sphere10.Framework.CryptoEx\Sphere10.Framework.CryptoEx.csproj" />
 		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>

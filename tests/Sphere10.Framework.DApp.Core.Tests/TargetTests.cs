@@ -8,7 +8,7 @@
 
 using NUnit.Framework;
 using Sphere10.Framework;
-using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.Consensus;
 using NUnit.Framework.Legacy;
 
 namespace VelocityNET.Processing.Tests.Core;

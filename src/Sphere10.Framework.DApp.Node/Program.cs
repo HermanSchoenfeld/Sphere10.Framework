@@ -26,7 +26,7 @@ public class Program {
 //using Sphere10.Framework.Application;
 //using Sphere10.Framework.DApp.Node.UI;
 //using Sphere10.Framework.DApp.Node.RPC;
-//using Sphere10.Framework.DApp.Core.Maths;
+//using Sphere10.Framework.Consensus;
 //using Sphere10.Framework.DApp.Core.Mining;
 //using Sphere10.Framework.DApp.Core.Consensus.Serializers;
 //using Sphere10.Framework.DApp.Node.UI.Components;

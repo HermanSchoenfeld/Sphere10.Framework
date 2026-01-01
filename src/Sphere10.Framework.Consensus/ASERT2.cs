@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sphere10.Framework.DApp.Core.Maths;
+namespace Sphere10.Framework.Consensus;
 
 public class ASERT2 : ASERT_RTT {
 

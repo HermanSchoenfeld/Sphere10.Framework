@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.DApp.Core.Maths;
+using Sphere10.Framework.Consensus;
 
 namespace Sphere10.Framework.DApp.Core.Mining;
 
