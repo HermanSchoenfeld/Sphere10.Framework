@@ -43,9 +43,7 @@ public class PascalBase58Encoding {
 			number += j * radix;
 			radix *= 58;
 		}
-		result = number
-			.ToByteArray() // Converts to BigInteger hex-format (ends with sign byte)
-			.Reverse()
+		result = System.Linq.Enumerable.Reverse(number.ToByteArray()) // Converts to BigInteger hex-format (ends with sign byte)
 			.Skip(1) // Skip sign byte
 			.ToArray();
 		return true;
@@ -54,8 +52,7 @@ public class PascalBase58Encoding {
 	public static string Encode(byte[] bytes) {
 		var result = String.Empty;
 		var number = new BigInteger(
-			bytes
-				.Reverse()
+			System.Linq.Enumerable.Reverse(bytes)
 				.Concat((byte)1) // add sign byte post-fix					
 				.ToArray()
 		);
