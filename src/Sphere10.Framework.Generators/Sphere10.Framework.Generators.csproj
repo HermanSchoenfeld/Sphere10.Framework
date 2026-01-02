@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Description>Code generators for Sphere10 Framework.</Description>
+	<Description>C# source generators for Sphere10 Framework that generate boilerplate at compile time. Includes generator implementations and shared helper code to support framework conventions and improve developer ergonomics.</Description>
     <PackageTags>sphere10 framework code-generation source-generator</PackageTags>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

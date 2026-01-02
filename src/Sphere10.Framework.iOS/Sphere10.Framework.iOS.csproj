@@ -13,7 +13,7 @@
     <RootNamespace>Sphere10.Framework.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>Sphere10.Framework.iOS</AssemblyName>
-    <Description>iOS platform integration for Sphere10 Framework.</Description>
+  	<Description>Xamarin.iOS platform integration for Sphere10 Framework. Provides iOS-specific services and helpers intended to support configuration, settings persistence, and native app integration.</Description>
     <PackageTags>sphere10 framework ios xamarin mobile</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

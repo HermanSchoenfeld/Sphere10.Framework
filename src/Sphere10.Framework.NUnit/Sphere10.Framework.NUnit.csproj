@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<Description>NUnit test utilities for Sphere10 Framework.</Description>
+		<Description>NUnit extensions and test helpers for Sphere10 Framework projects. Provides reusable utilities intended to simplify writing unit and integration tests across framework components.</Description>
 		<PackageTags>sphere10 framework nunit testing</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

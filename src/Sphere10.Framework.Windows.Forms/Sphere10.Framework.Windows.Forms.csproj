@@ -5,7 +5,7 @@
 		<OutputType>Library</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>Windows Forms UI components for Sphere10 Framework.</Description>
+		<Description>Windows Forms UI framework and component library for building desktop applications with Sphere10 Framework. Provides reusable WinForms controls, dialogs, layout/helpers, and common UI utilities intended to integrate cleanly with the framework's application and data layers.</Description>
 		<PackageTags>sphere10 framework winforms windows ui</PackageTags>
 		<UseWindowsForms>true</UseWindowsForms>
 		<AssemblyName>Sphere10.Framework.Windows.Forms</AssemblyName>

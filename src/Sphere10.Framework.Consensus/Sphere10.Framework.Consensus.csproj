@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>Consensus and difficulty-adjustment algorithms for Sphere10 Framework.</Description>
+		<Description>Consensus primitives focused on proof-of-work target and difficulty algorithms. Includes compact target encoding/decoding and ASERT-style real-time difficulty adjustment (ASERT_RTT/ASERT2) with configuration helpers.</Description>
 		<PackageTags>sphere10 framework consensus difficulty adjustment pow</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

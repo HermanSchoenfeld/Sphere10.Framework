@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>Application-layer abstractions and services for Sphere10 Framework.</Description>
+		<Description>Application framework and lifecycle management for Sphere10 Framework-based apps. Provides dependency injection integration, settings persistence, command-line argument parsing, product/version metadata, and builder-based startup/shutdown hooks.</Description>
 		<PackageTags>sphere10 framework application dependency-injection configuration</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

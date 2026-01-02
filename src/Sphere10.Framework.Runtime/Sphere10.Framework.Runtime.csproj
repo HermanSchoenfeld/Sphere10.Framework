@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
+	<Description>Internal runtime/compiler support assembly shared across Sphere10 Framework. Not intended for NuGet publishing; contains shared types and compatibility shims used by multiple framework components.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.CodeDom" Version="10.0.1" />

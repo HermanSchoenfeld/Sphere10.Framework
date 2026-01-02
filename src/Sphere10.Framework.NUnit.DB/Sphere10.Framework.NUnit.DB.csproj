@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<Description>Database test utilities for Sphere10 Framework using NUnit.</Description>
+		<Description>Database testing helpers for Sphere10.Framework.Data and provider packages using NUnit. Includes utilities intended for repeatable integration tests against supported databases such as SQLite and SQL Server.</Description>
 		<PackageTags>sphere10 framework nunit testing database</PackageTags>
 	</PropertyGroup>
 

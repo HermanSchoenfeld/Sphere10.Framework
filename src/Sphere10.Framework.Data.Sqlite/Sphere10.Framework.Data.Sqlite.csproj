@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>SQLite database provider for Sphere10 Framework.Data.</Description>
+		<Description>SQLite provider for Sphere10.Framework.Data enabling embedded and in-memory databases through the shared DAC abstractions. Includes SQLite-specific helpers and Tools.Sqlite utilities for opening connections and working with the provider.</Description>
 		<PackageTags>sphere10 framework data database sqlite ado.net</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

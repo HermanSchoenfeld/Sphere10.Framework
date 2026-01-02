@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <Description>ASP.NET Core integration for Sphere10 Framework.</Description>
+	<Description>ASP.NET Core integration library providing middleware, extensions, and utilities for building web applications and APIs with Sphere10 Framework. Bridges the framework into the ASP.NET Core ecosystem for logging, configuration, dependency injection, routing, HTML/XML processing, sitemap support, and server-side form handling.</Description>
     <PackageTags>sphere10 framework aspnetcore web</PackageTags>
     <AssemblyName>Sphere10.Framework.Web.AspNetCore</AssemblyName>
     <RootNamespace>Sphere10.Framework.Web.AspNetCore</RootNamespace>

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>Cross-platform drawing utilities for Sphere10 Framework.</Description>
+		<Description>Unified 2D graphics abstraction layer providing drawing utilities, color manipulation, image processing, and shape rendering for desktop and cross-platform applications. Includes platform-agnostic graphics helpers over GDI+ with support for gradients, geometric utilities, and common visual effects.</Description>
 		<PackageTags>sphere10 framework drawing graphics</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

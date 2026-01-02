@@ -237,7 +237,6 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 ## Resources
 
 - **[README.md](../README.md)** — Project overview and project list
-- **[PUBLISHING.md](../PUBLISHING.md)** — Package and publish guide
 - **[Tools Reference](tools-reference.md)** — Tools.* namespace guide
 - **Individual project READMEs** in `src/` — Component-specific docs
 

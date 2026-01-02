@@ -168,7 +168,6 @@ See: [Tools-Reference.md](Tools-Reference.md) for complete catalog
 ## 📚 Related Resources
 
 - **[README.md](../README.md)** — Project overview and structure
-- **[PUBLISHING.md](../PUBLISHING.md)** — Package and publish guide
 - **[Architecture/Domains.md](Architecture/Domains.md)** — Complete domain reference
 - **[Guidelines/Code-Styling.md](Guidelines/Code-Styling.md)** — Coding standards
 

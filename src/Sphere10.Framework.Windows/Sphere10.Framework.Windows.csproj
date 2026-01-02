@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <Description>Windows platform integration for Sphere10 Framework.</Description>
+	<Description>Windows platform integration layer providing secure, type-safe access to Windows-specific APIs and system integration features. Includes abstractions for NT security objects (users/groups/SIDs), services, event logging, registry access, privileges, and related Windows utilities.</Description>
     <PackageTags>sphere10 framework windows</PackageTags>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>

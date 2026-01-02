@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>Windows LevelDB integration for Sphere10 Framework.</Description>
+		<Description>LevelDB integration for Windows providing high-performance embedded key-value storage for indices, caches, and persistent application data. Includes native LevelDB binaries, batch operations, iteration helpers, snapshots, and maintenance utilities (repair/destroy) for Sphere10 Framework-based apps.</Description>
 		<PackageTags>sphere10 framework windows leveldb database</PackageTags>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

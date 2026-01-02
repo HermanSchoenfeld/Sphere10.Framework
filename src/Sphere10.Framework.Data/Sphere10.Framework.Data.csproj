@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>General-purpose library covering Data-aspect of applications. This library provides ADO.NET enhancements, Schema support, SQL query building, CSV support and many extensions.</Description>
+		<Description>Universal data access abstraction layer providing ADO.NET enhancements, schema management, connection/transaction scoping, and database-agnostic persistence. Includes DAC helpers, parameterized query APIs, SQL query building, CSV support, and common extensions used by provider packages (SQLite, SQL Server, Firebird, NHibernate).</Description>
 		<PackageReleaseNotes>Initial public release</PackageReleaseNotes>
 		<PackageTags>ado.net dac sql sql-builder database schema csv</PackageTags>
 	</PropertyGroup>

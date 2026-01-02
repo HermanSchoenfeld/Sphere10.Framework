@@ -13,7 +13,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Sphere10.Framework.Android</RootNamespace>
     <AssemblyName>Sphere10.Framework.Android</AssemblyName>
-    <Description>Android platform integration for Sphere10 Framework.</Description>
+  	<Description>Xamarin.Android platform integration for Sphere10 Framework. Provides Android-specific services and helpers intended to support configuration, settings persistence, and native app integration.</Description>
     <PackageTags>sphere10 framework android xamarin mobile</PackageTags>
     <FileAlignment>512</FileAlignment>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>

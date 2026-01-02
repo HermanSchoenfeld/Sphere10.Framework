@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
-		<Description>Networking and communications primitives for Sphere10 Framework.</Description>
+		<Description>Multi-protocol networking and RPC framework for Sphere10 Framework. Provides attribute-based, type-safe RPC with JSON serialization, protocol abstraction, and reusable client/server communication primitives for building distributed systems.</Description>
 		<PackageTags>sphere10 framework networking communications tcp udp rpc</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
