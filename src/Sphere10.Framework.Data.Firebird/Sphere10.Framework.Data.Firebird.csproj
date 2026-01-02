@@ -3,10 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Firebird provider for Sphere10.Framework.Data enabling vendor-independent access through the shared DAC abstractions. Includes Firebird-specific helpers and Tools.Firebird utilities for opening connections and working with the provider.</Description>
 		<PackageTags>sphere10 framework data database firebird ado.net</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 	<ItemGroup>
 		<Compile Remove="Properties\**" />
 		<EmbeddedResource Remove="Properties\**" />

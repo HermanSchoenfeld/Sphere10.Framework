@@ -3,10 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>true</IsPackable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<Description>Windows platform integration layer providing secure, type-safe access to Windows-specific APIs and system integration features. Includes abstractions for NT security objects (users/groups/SIDs), services, event logging, registry access, privileges, and related Windows utilities.</Description>
     <PackageTags>sphere10 framework windows</PackageTags>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -18,12 +23,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Win32.Registry.AccessControl" Version="10.0.1" />
-    <PackageReference Include="System.CodeDom" Version="10.0.1" />
-    <PackageReference Include="System.Diagnostics.EventLog" Version="10.0.1" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Win32.Registry.AccessControl" Version="8.0.0" />
+    <PackageReference Include="System.CodeDom" Version="8.0.0" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
     <PackageReference Include="System.Security.AccessControl" Version="6.0.1" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.1" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

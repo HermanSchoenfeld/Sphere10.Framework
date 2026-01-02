@@ -3,10 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Multi-protocol networking and RPC framework for Sphere10 Framework. Provides attribute-based, type-safe RPC with JSON serialization, protocol abstraction, and reusable client/server communication primitives for building distributed systems.</Description>
 		<PackageTags>sphere10 framework networking communications tcp udp rpc</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />

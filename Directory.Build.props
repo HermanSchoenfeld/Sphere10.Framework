@@ -8,17 +8,17 @@
     <Copyright>Herman Schoenfeld</Copyright>
     <RepositoryUrl>https://github.com/HermanSchoenfeld/Sphere10.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://github.com/HermanSchoenfeld/Sphere10.Framework</PackageProjectUrl>
+    <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://sphere10.com/tech/framework</PackageProjectUrl>
     <PackageLicenseExpression Condition="'$(PackageLicenseFile)' == ''">MIT</PackageLicenseExpression>
     <PackageIcon>sphere10-icon.png</PackageIcon>
     <IsPackable>false</IsPackable>
     
     <!-- Version Management -->
-    <Version>3.0.0</Version>
-    <VersionPrefix>3.0.0</VersionPrefix>
-    <AssemblyVersion>3.0.0</AssemblyVersion>
-    <FileVersion>3.0.0</FileVersion>
-    <InformationalVersion>3.0.0</InformationalVersion>
+    <Version>3.0.2</Version>
+    <VersionPrefix>3.0.2</VersionPrefix>
+    <AssemblyVersion>3.0.2</AssemblyVersion>
+    <FileVersion>3.0.2</FileVersion>
+    <InformationalVersion>3.0.2</InformationalVersion>
 
     <!-- Build Configuration -->
     <LangVersion>latest</LangVersion>

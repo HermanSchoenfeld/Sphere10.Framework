@@ -489,11 +489,3 @@ await Notifications.ShowError("Error", ex.ToString());
 - [Sphere10 Framework Requirements](Sphere10 Framework-Requirements.md)
 - [Architecture Guidelines](../Guidelines/3-tier-Architecture.md)
 
----
-
-**Version**: 2.0  
-**Last Updated**: December 2025  
-**Author**: Sphere 10 Software
-
-
-

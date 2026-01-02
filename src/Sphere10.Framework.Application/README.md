@@ -315,9 +315,3 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 
 **Herman Schoenfeld** - Software Engineer
 
----
-
-**Version**: 2.0+
-
-
-

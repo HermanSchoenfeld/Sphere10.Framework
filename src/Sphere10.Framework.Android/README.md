@@ -378,7 +378,6 @@ public class SyncWorker : Worker {
 
 ## 📊 Status & Compatibility
 
-- **Version**: 2.0+
 - **Framework**: Xamarin.Android / .NET for Android
 - **Android Versions**: API 21 (Android 5.0) - API 34 (Android 14)
 - **Target Devices**: Phones, tablets, wearables

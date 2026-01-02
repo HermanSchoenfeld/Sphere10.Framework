@@ -3,10 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Unified 2D graphics abstraction layer providing drawing utilities, color manipulation, image processing, and shape rendering for desktop and cross-platform applications. Includes platform-agnostic graphics helpers over GDI+ with support for gradients, geometric utilities, and common visual effects.</Description>
 		<PackageTags>sphere10 framework drawing graphics</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 	<ItemGroup>
 		<Compile Remove="Properties\**" />
 		<EmbeddedResource Remove="Properties\**" />
@@ -14,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="System.Drawing.Common" Version="10.0.1" />
+	  <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

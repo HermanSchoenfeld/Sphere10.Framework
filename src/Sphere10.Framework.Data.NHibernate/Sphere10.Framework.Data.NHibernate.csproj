@@ -3,10 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>NHibernate ORM integration for Sphere10.Framework.Data. Provides configuration and integration helpers for using NHibernate alongside the framework's data abstractions and utilities.</Description>
 		<PackageTags>sphere10 framework data database nhibernate orm</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="FluentNHibernate" Version="3.4.1" />
 		<PackageReference Include="NHibernate" Version="5.6.0" />

@@ -240,7 +240,6 @@ var product = dac.ExecuteQuery("SELECT * FROM Products WHERE ID = 1");
 
 ## 📊 Status & Compatibility
 
-- **Version**: 2.0+
 - **Framework**: .NET 5.0+, .NET Framework 4.7+
 - **Platform**: Windows, Linux, macOS (cross-platform via System.Data.SQLite or Microsoft.Data.Sqlite)
 - **Performance**: Embedded, zero-configuration, no external service required

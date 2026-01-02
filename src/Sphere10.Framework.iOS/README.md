@@ -338,7 +338,6 @@ private void ScheduleNextBackgroundTask() {
 
 ## 📊 Status & Compatibility
 
-- **Version**: 2.0+
 - **Framework**: Xamarin.iOS / .NET for iOS
 - **iOS Versions**: iOS 13.0+ (13.4+ recommended)
 - **Target Devices**: iPhone, iPad, iPod Touch

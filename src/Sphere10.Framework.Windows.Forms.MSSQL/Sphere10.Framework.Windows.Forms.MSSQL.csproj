@@ -4,11 +4,16 @@
     <OutputType>Library</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <IsPackable>true</IsPackable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<Description>Windows Forms integration for Sphere10.Framework.Data.MSSQL. Provides desktop UI helpers and components intended to work with Sphere10 Framework WinForms and the SQL Server provider for data-driven applications.</Description>
     <PackageTags>sphere10 framework winforms mssql sqlserver database</PackageTags>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
   <ItemGroup>
     <Compile Remove="Properties\**" />
     <EmbeddedResource Remove="Properties\**" />

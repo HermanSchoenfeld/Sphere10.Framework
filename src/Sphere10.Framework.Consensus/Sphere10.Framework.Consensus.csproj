@@ -3,10 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Consensus primitives focused on proof-of-work target and difficulty algorithms. Includes compact target encoding/decoding and ASERT-style real-time difficulty adjustment (ASERT_RTT/ASERT2) with configuration helpers.</Description>
 		<PackageTags>sphere10 framework consensus difficulty adjustment pow</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>

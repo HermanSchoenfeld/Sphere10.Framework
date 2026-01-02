@@ -330,7 +330,6 @@ using (var session = sessionFactory.OpenSession()) {
 
 ## 📊 Status & Compatibility
 
-- **Version**: 2.0+
 - **Framework**: .NET 5.0+, .NET Framework 4.7+
 - **NHibernate Version**: 5.0+
 - **Supported Databases**: SQLite, SQL Server, Firebird, PostgreSQL, MySQL, Oracle (via dialect)

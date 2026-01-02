@@ -270,7 +270,6 @@ dac.Update("Products",
 
 ## 📊 Status & Compatibility
 
-- **Version**: 2.0+
 - **Framework**: .NET 5.0+, .NET Framework 4.7+
 - **Firebird Versions**: 2.5+, 3.0+, 4.0+
 - **Performance**: Good for small-to-medium databases, embedded and server deployments

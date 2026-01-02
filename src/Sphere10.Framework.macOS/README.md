@@ -398,7 +398,6 @@ macOSScreen.ScreensChanged += () => {
 
 ## 📊 Status & Compatibility
 
-- **Version**: 2.0+
 - **Framework**: Xamarin.Mac / .NET for macOS
 - **macOS Versions**: 10.13 (High Sierra) - 13+ (Ventura)
 - **Architectures**: Intel (x86_64), Apple Silicon (arm64)

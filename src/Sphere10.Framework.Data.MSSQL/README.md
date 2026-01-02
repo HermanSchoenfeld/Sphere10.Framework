@@ -260,7 +260,6 @@ dac.ExecuteNonQuery("EXECUTE spProcessMonthlyBilling");
 
 ## 📊 Status & Compatibility
 
-- **Version**: 2.0+
 - **Framework**: .NET 5.0+, .NET Framework 4.7+
 - **SQL Server Versions**: 2016+, Azure SQL Database, SQL Express
 - **Performance**: Enterprise-grade, supports thousands of concurrent connections

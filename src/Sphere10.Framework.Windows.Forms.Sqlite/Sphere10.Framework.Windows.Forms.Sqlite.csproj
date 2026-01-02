@@ -4,11 +4,16 @@
     <OutputType>Library</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <IsPackable>true</IsPackable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<Description>Windows Forms integration for Sphere10.Framework.Data.Sqlite. Provides desktop UI helpers and components intended to work with Sphere10 Framework WinForms and the SQLite provider for data-driven applications.</Description>
     <PackageTags>sphere10 framework winforms sqlite database</PackageTags>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sphere10.Framework.Data.Sqlite\Sphere10.Framework.Data.Sqlite.csproj" />
     <ProjectReference Include="..\Sphere10.Framework.Windows.Forms\Sphere10.Framework.Windows.Forms.csproj" />

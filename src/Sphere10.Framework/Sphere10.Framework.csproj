@@ -3,12 +3,17 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>General-purpose library for full-stack use. Provides support for Caching, Collections, Comparers, Converion, Environment, Events, Exceptions, IO, FileSystem, Lambdas, Logging, Math, Memory, Scopes, Text, Threading, Scheduling and many other aspects.</Description>
 		<!--<DefineConstants>ENABLE_CLUSTER_DIAGNOSTICS</DefineConstants>--> <!-- Enable this only for diagnosing clustered storage errors. Extremely slow. -->
 		<PackageReleaseNotes>Initial public release</PackageReleaseNotes>
 		<PackageTags>sphere10 framework collections comparers conversion io network cache logging threading scheduling math</PackageTags>
 		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 	<ItemGroup>
 	  <None Remove="Text\StopWordList.txt" />

@@ -1,9 +1,9 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 # 🧪 Sphere10 Framework
 
 **Developer**: Herman Schoenfeld  
-**Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software  
+**Copyright**: © 2018-Present Herman Schoenfeld  
 **License**: MIT NON-AI  
 **Status**: Production-Ready (v2.0.2)
 
@@ -1712,15 +1712,9 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 
 ## 📖 Resources
 
-- **GitHub**: [HermanSchoenfeld/Sphere10 Framework](https://github.com/HermanSchoenfeld/Sphere10 Framework)
-- **Website**: [sphere10.com](https://sphere10.com)
-- **Company**: Sphere 10 Software Pty Ltd
+- **GitHub**: [Herman Schoenfeld](https://github.com/HermanSchoenfeld/Sphere10 Framework)
+- **Website**: [sphere10.com](https://sphere10.com/tech/framework)
 
 ## 👤 Author
 
 **Herman Schoenfeld** - Software Engineer
-
----
-
-**Version**: 2.0.2
-
