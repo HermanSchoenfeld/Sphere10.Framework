@@ -98,6 +98,25 @@ try {
         if ($csprojFile.DirectoryName -like "*Tests*" -or $csprojFile.DirectoryName -like "*tests*") {
             continue
         }
+
+        # Skip DApp projects (moved to separate repo)
+        if ($projectName -match "\.DApp\.") {
+            continue
+        }
+
+        # Skip projects not intended for NuGet publishing
+        if ($projectName -match "^Sphere10\.Framework\.Generators$") {
+            continue
+        }
+        if ($projectName -match "^Sphere10\.Framework\.NUnit") {
+            continue
+        }
+        if ($projectName -match "^Sphere10\.Framework\.Android$") {
+            continue
+        }
+        if ($projectName -match "^Sphere10\.Framework\.iOS$") {
+            continue
+        }
         
         # Match pattern
         if ($projectName -like $ProjectPattern) {
