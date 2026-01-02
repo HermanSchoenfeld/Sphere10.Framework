@@ -23,13 +23,19 @@ public static class Enums {
 
 	public static string[] GetSerializableOrientedNames(Type enumType)
 		// here we reverse the set to pick EnumValueAttribute/Description names with precedence
-		=> GetNameCandidates(!enumType.IsNullable() ? enumType : Nullable.GetUnderlyingType(enumType)).Select(x => x.Reverse().First()).ToArray();
+			=> GetNameCandidates(!enumType.IsNullable() ? enumType : Nullable.GetUnderlyingType(enumType)).Select(x => x[x.Length - 1]).ToArray();
 
-	public static string GetSerializableOrientedName(Enum @enum)
-		=> GetEnumNameCandidates(@enum).Reverse().First();
+	public static string GetSerializableOrientedName(Enum @enum) {
+		var candidates = GetEnumNameCandidates(@enum).ToArray();
+		return candidates[candidates.Length - 1];
+	}
 
-	public static string GetSerializableOrientedNameOrDefault(Enum @enum, string @default = "Unknown")
-		=> @enum != null ? GetEnumNameCandidates(@enum).Reverse().First() : @default;
+	public static string GetSerializableOrientedNameOrDefault(Enum @enum, string @default = "Unknown") {
+		if (@enum == null)
+			return @default;
+		var candidates = GetEnumNameCandidates(@enum).ToArray();
+		return candidates[candidates.Length - 1];
+	}
 
 	public static string GetHumanReadableName(Enum @enum)
 		=> GetDescription(@enum) ?? GetDisplayName(@enum) ?? @enum.ToString();
