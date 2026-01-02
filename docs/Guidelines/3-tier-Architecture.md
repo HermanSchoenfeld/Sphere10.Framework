@@ -63,8 +63,9 @@ McDonalds.PointOfSale.Data.SAP;
 Naming conventions are not strict and can vary reasonable and intuitively given the context. For example, the use of `.Core` as a catch-all tier for processing, communications and  data-tier is employed by Sphere10.Framework.
 
 ```
-Sphere10.Framework.DApp.Core     ; Includes processing, networking, data
+Sphere10.Framework.Communications     ; Includes networking and protocols
 ```
+
 
 ## Framework
 

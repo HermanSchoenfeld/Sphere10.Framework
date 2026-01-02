@@ -4,13 +4,13 @@ Blazor is based around .NET Core dependency injection and the Microsoft `IServic
 
 ## Framework Services
 
-Framework services are registered in `Sphere10.Framework.DApp.Presentation.Loader` `Program.cs` as part of the `Host` build up process. 
+Framework services are registered in the hosting application's `Program.cs` as part of the host build up process.
 
 
 
 ## View Model registration
 
-View Model automatic registration is supported through a naming convention-based type scanning process. A extension method to `IServiceCollection` is available in the `Sphere10.Framework.DApp.Presentation ` namespace:
+View Model automatic registration is supported through a naming convention-based type scanning process. An extension method to `IServiceCollection` can be used:
 
 ```c#
 public static IServiceCollection AddViewModelsFromAssembly(this IServiceCollection serviceCollection,

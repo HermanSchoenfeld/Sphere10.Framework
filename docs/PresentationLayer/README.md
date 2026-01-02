@@ -486,7 +486,6 @@ await Notifications.ShowError("Error", ex.ToString());
 
 ## Resources
 
-- [DApp Development Guide](../DApp-Development-Guide.md)
 - [Sphere10 Framework Requirements](Sphere10 Framework-Requirements.md)
 - [Architecture Guidelines](../Guidelines/3-tier-Architecture.md)
 

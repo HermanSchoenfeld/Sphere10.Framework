@@ -11,12 +11,6 @@
 ### 1. Core Documentation Created/Enhanced âœ…
 
 **Files Created**:
-- âœ… [DApp-Development-Guide.md](DApp-Development-Guide.md) (1,700+ lines)
-  - Complete guide for building Sphere10 Framework DApps
-  - Architecture overview, core components, consensus integration
-  - Plugin system, custom domains, testing & deployment
-  - 6 comprehensive code examples
-
 - âœ… [Helium/README.md](Helium/README.md) (800+ lines)
   - Enterprise Service Bus framework documentation
   - Pub-Sub, Saga patterns, Event Sourcing
@@ -47,7 +41,6 @@
 ### 2. Documentation Ecosystem Now Includes
 
 **Architecture Documentation**:
-- âœ… Architecture/Runtime.md - HAP lifecycle, deployment model
 - âœ… Architecture/Sphere10.Framework.md - Framework overview
 - âœ… Architecture/Domains.md - Domain catalog (30+ domains)
 
@@ -63,25 +56,10 @@
 **Framework Documentation**:
 - âœ… Helium/README.md - Service bus framework (comprehensive rewrite)
 - âœ… PresentationLayer/README.md - Presentation layer (comprehensive rewrite)
-- âœ… DApp-Development-Guide.md - DApp development complete guide
 
 ---
 
 ## Content Quality Metrics
-
-### DApp Development Guide
-- **Lines of Code**: 1,700+
-- **Examples**: 6 complete, production-ready examples
-- **Sections**: 
-  - Introduction & architecture
-  - Core components (Sphere10.Framework.DApp.Core, Node, Host, Presentation)
-  - Step-by-step DApp building (4 main steps)
-  - Plugin architecture
-  - Custom domain creation
-  - Consensus integration (PoW & PoS examples)
-  - State management
-  - Testing & deployment
-  - 5 best practices sections
 
 ### Helium Framework
 - **Lines**: 800+
@@ -127,10 +105,8 @@
 ```
 docs/
 â”œâ”€â”€ START-HERE.md ........................... Master navigation (1,000+ lines)
-â”œâ”€â”€ DApp-Development-Guide.md .............. Complete DApp reference (1,700+ lines)
 â”œâ”€â”€ Architecture/
 â”‚   â”œâ”€â”€ Sphere10.Framework.md ........................ Framework overview
-â”‚   â”œâ”€â”€ Runtime.md ......................... HAP lifecycle & deployment
 â”‚   â””â”€â”€ Domains.md ......................... Domain catalog
 â”œâ”€â”€ Guidelines/
 â”‚   â”œâ”€â”€ 3-tier-Architecture.md ............ Architecture principles
@@ -165,7 +141,7 @@ Presentation Layer
     â””â”€â”€ Web UI components
 
 Processing Layer
-    â”œâ”€â”€ Consensus rules (DApp-Development-Guide.md)
+  â”œâ”€â”€ Consensus rules
     â”œâ”€â”€ State transitions
     â””â”€â”€ Business logic
 
@@ -182,11 +158,7 @@ Ancillary Tiers
 
 ### Sphere10 Framework Ecosystem
 - **Sphere10 Framework Framework** - Core framework (30+ domains)
-- **Sphere10.Framework.DApp** - Blockchain DApp framework
-  - Core (transaction/block handling)
-  - Node (P2P consensus)
-  - Host (process lifecycle)
-  - Presentation (Blazor UI)
+- **Consensus/Blockchain stack** - Special-purpose blockchain components (moved out of this repository)
 - **Helium Framework** - Enterprise service bus for messaging
 - **Collections** - Specialized data structures (Merkle trees, streams)
 - **Cryptography** - 100+ algorithms
@@ -199,17 +171,10 @@ All documentation includes proper cross-references:
 
 **START-HERE.md** links to:
 - Architecture/Sphere10.Framework.md
-- DApp-Development-Guide.md
 - Education/INDEX.md
 - Helium/README.md
 - PresentationLayer/README.md
 - Guidelines/3-tier-Architecture.md
-
-**DApp-Development-Guide.md** references:
-- Helium integration patterns
-- Database persistence options
-- Security best practices
-- Testing approaches
 
 **Helium/README.md** shows:
 - Inter-DApp communication
@@ -254,7 +219,6 @@ All documentation includes proper cross-references:
 - Performance optimization tips
 
 ### 5. **Comprehensive Coverage**
-- DApp development from scratch
 - Consensus mechanism implementation
 - Plugin architecture
 - Enterprise messaging patterns
@@ -265,13 +229,12 @@ All documentation includes proper cross-references:
 
 ## Verification Checklist
 
-- âœ… DApp-Development-Guide.md created (1,700+ lines)
 - âœ… Helium/README.md rewritten (800+ lines)
 - âœ… Education/INDEX.md created (400+ lines)
 - âœ… PresentationLayer/README.md rewritten (800+ lines)
 - âœ… START-HERE.md created as master navigation (1,000+ lines)
 - âœ… All existing docs preserved (What-is-Blockchain.md, etc.)
-- âœ… Architecture files maintained (Runtime.md, Domains.md)
+- âœ… Architecture files maintained (Domains.md)
 - âœ… Guidelines preserved (3-tier-Architecture.md, Code-Styling.md)
 - âœ… Cross-references validated
 - âœ… Image references preserved
@@ -286,18 +249,16 @@ All documentation includes proper cross-references:
 
 ### For New Users
 1. Start with [START-HERE.md](START-HERE.md)
-2. Choose your role (Developer, Architect, DApp Builder)
+2. Choose your role (Developer, Architect)
 3. Follow the recommended learning path
 
 ### For Developers
-1. Read [DApp-Development-Guide.md](DApp-Development-Guide.md)
-2. Study [Helium/README.md](Helium/README.md) for messaging
-3. Review [Education/INDEX.md](Education/INDEX.md) for foundation topics
+1. Study [Helium/README.md](Helium/README.md) for messaging
+2. Review [Education/INDEX.md](Education/INDEX.md) for foundation topics
 
 ### For Architects
 1. Review [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md)
 2. Study [Guidelines/3-tier-Architecture.md](Guidelines/3-tier-Architecture.md)
-3. Read [DApp-Development-Guide.md](DApp-Development-Guide.md) for patterns
 
 ### For UI Developers
 1. Review [PresentationLayer/README.md](PresentationLayer/README.md)
@@ -310,7 +271,7 @@ All documentation includes proper cross-references:
 
 | Metric | Value |
 |--------|-------|
-| **New Documentation Files** | 4 major files |
+| **New Documentation Files** | 3 major files |
 | **Total New Lines** | 6,000+ lines |
 | **Code Examples** | 15+ complete examples |
 | **Learning Paths** | 3 structured paths |
@@ -328,13 +289,12 @@ All documentation includes proper cross-references:
 The comprehensive documentation rewrite is now **COMPLETE**. The framework is fully documented with:
 
 1. âœ… Master navigation hub (START-HERE.md)
-2. âœ… Complete DApp development guide
-3. âœ… Enterprise messaging framework (Helium)
-4. âœ… Presentation layer framework
-5. âœ… Structured education/learning center
-6. âœ… Architecture documentation
-7. âœ… Guidelines & best practices
-8. âœ… Cross-referenced components
+2. âœ… Enterprise messaging framework (Helium)
+3. âœ… Presentation layer framework
+4. âœ… Structured education/learning center
+5. âœ… Architecture documentation
+6. âœ… Guidelines & best practices
+7. âœ… Cross-referenced components
 
 All documentation:
 - Follows professional standards

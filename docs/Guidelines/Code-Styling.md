@@ -106,11 +106,9 @@ For system-tier modules that is acceptable, however for other tiers the namespac
 ```
 Sphere10 Framework
 Sphere10.Framework.Application
-Sphere10.Framework.DApp.Core
-Sphere10.Framework.DApp.Core.Kademlia
-Sphere10.Framework.DApp.Presentation.Host
-Sphere10.Framework.DApp.Presentation.Node
-Sphere10.Framework.DApp.Presentation.UI
+Sphere10.Framework.Communications
+Sphere10.Framework.Data
+Sphere10.Framework.Web.AspNetCore
 ```
 
 

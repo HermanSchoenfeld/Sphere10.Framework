@@ -57,7 +57,7 @@ The framework follows a **5-layer architectural model**:
 2. **Processing Tier** — Application lifecycle, DI, configuration, business logic (Sphere10.Framework.Application)
 3. **Data Tier** — Database abstraction, multi-DB support, ORM integration (Sphere10.Framework.Data.*)
 4. **Presentation Tier** — UI components, Windows Forms, Blazor, drawing (Sphere10.Framework.Windows.Forms, Sphere10.Framework.Web.AspNetCore, Sphere10.Framework.Drawing)
-5. **Specialization Tier** — Blockchain, DApps, consensus (Sphere10.Framework.DApp.*)
+5. **Specialization Tier** — Optional specializations (e.g., consensus) (Sphere10.Framework.Consensus)
 
 ### 4. Plugin Architecture
 
@@ -88,7 +88,7 @@ Sphere10.Framework/
 ├── Web/Blazor           (Sphere10.Framework.Web.AspNetCore)
 ├── Graphics             (Sphere10.Framework.Drawing)
 ├── Cross-Platform       (Sphere10.Framework.iOS/Android/macOS)
-└── Blockchain/DApps     (Sphere10.Framework.DApp.*)
+└── Consensus            (Sphere10.Framework.Consensus)
 ```
 
 ### Dependency Graph (Simplified)
@@ -110,11 +110,8 @@ Presentation Layers
 ├── Sphere10.Framework.Web.AspNetCore
 └── Sphere10.Framework.Drawing
 
-DApp Framework (Optional Specialization)
-├── Sphere10.Framework.DApp.Core
-├── Sphere10.Framework.DApp.Node
-├── Sphere10.Framework.DApp.Host
-└── Sphere10.Framework.DApp.Presentation
+Consensus Framework (Optional Specialization)
+└── Sphere10.Framework.Consensus
 ```
 
 ---
@@ -195,19 +192,6 @@ The core framework provides **40+ domains** of specialized functionality:
 | **Web/Blazor** | ASP.NET Core middleware, Blazor components |
 | **Drawing** | Cross-platform graphics and image manipulation |
 
-### DApp Specialization Domains (Sphere10.Framework.DApp.*)
-
-| Domain | Purpose |
-|--------|---------|
-| **Blocks & Transactions** | Block validation, transaction processing |
-| **Wallet** | Key management, transaction signing |
-| **Consensus** | Plugin-based consensus mechanisms |
-| **Persistence** | Blockchain storage with merkle trees |
-| **Node** | Full blockchain node with JSON APIs |
-| **Presentation** | Blazor GUI for DApp interfaces |
-
----
-
 ## Design Patterns
 
 ### Pattern 1: Dependency Injection
@@ -216,7 +200,7 @@ All framework components support constructor-based dependency injection via the 
 
 ### Pattern 2: Plugin Architecture
 
-Blockchain consensus rules and DApp components can be dynamically loaded as plugins, allowing applications to evolve without recompilation.
+Consensus rules and other components can be dynamically loaded as plugins, allowing applications to evolve without recompilation.
 
 ### Pattern 3: Stream-Backed Collections
 
@@ -235,8 +219,6 @@ All utilities are accessible through `Tools.*` namespace for maximum IntelliSens
 ## Related Documentation
 
 - [Framework Domains](domains.md) — Detailed breakdown of all framework domains
-- [Runtime Model](runtime.md) — DApp host and application lifecycle (for blockchain applications)
 - [Tools Reference](../tools-reference.md) — Complete Tools.* namespace catalog
 - [3-Tier Architecture](../Guidelines/3-tier-architecture.md) — Architecture pattern documentation
 - [Code Styling Guidelines](../Guidelines/code-styling.md) — Coding conventions and standards
-- [DApp Development Guide](../dapp-development-guide.md) — Blockchain-specific guidance

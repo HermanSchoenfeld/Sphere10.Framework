@@ -104,22 +104,6 @@ Native integration for mobile and alternative platforms.
 | **.NET Framework** | .NET Framework 4.8 specific utilities | Tools.NETFramework |
 | **.NET Core / Modern .NET** | .NET 5.0+ specific utilities | Tools.NETCore |
 
-### DApp Specialization Domains (Sphere10.Framework.DApp.*)
-
-Blockchain and decentralized application functionality (optional, specialized use only).
-
-| Domain | Purpose | Tools |
-|--------|---------|-------|
-| **Blocks & Transactions** | Block validation, transaction processing, headers | Tools.DApp.Blocks |
-| **Wallets** | Key management, address generation, transaction signing | Tools.DApp.Wallet |
-| **Consensus** | Plugin-based consensus mechanisms, validation rules | Tools.DApp.Consensus |
-| **Persistence** | Blockchain storage with merkle trees, archival | Tools.DApp.Storage |
-| **Mining** | Proof-of-work mining, difficulty adjustment | Tools.DApp.Mining |
-| **Node** | Full blockchain node with JSON APIs, terminal UI | Tools.DApp.Node |
-| **Presentation** | Blazor GUI for DApp interfaces and management | Tools.DApp.Presentation |
-
----
-
 ## Domain Relationships
 
 ### Dependency Hierarchy
@@ -141,8 +125,8 @@ Presentation Tier
 ├── Windows Forms, Web/Blazor, Drawing
 │   ↑ (depends on System + Data Tiers)
 │
-DApp Tier (Sphere10.Framework.DApp.*)
-├── Core, Node, Consensus
+Consensus Tier (Sphere10.Framework.Consensus)
+├── Consensus rules, validation primitives
 │   ↑ (depends on System + Data + Communications Tiers)
 ```
 
@@ -196,7 +180,6 @@ DApp Tier (Sphere10.Framework.DApp.*)
 ## Related Documentation
 
 - [Sphere10 Framework Architecture](sphere10-framework.md) — Complete architecture overview
-- [Runtime Model](runtime.md) — DApp deployment and lifecycle (blockchain-specific)
 - [Tools Reference](../tools-reference.md) — Complete Tools.* namespace catalog
 - [3-Tier Architecture](../Guidelines/3-tier-architecture.md) — Architecture pattern
 - [Code Styling Guidelines](../Guidelines/code-styling.md) — Coding conventions

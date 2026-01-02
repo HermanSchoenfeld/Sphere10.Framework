@@ -262,6 +262,7 @@ When a new domain adds its own tool class, it automatically becomes discoverable
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore/) – ASP.NET Core integration and middleware
 
 **Cryptography & Consensus**
+- [Sphere10.HashLib4CSharp](../Sphere10.HashLib4CSharp/) – Hashes & checksums (SHA-1/2/3, BLAKE2, CRC; stream/file APIs)
 - [Sphere10.Framework.CryptoEx](../Sphere10.Framework.CryptoEx/) – Extended cryptography (ECDSA, ECIES, Schnorr, post-quantum)
 - [Sphere10.Framework.Consensus](../Sphere10.Framework.Consensus/) – Blockchain consensus mechanisms
 
@@ -289,11 +290,6 @@ When a new domain adds its own tool class, it automatically becomes discoverable
 - [Sphere10.Framework.macOS](../Sphere10.Framework.macOS/) – macOS platform integration
 - [Sphere10.Framework.Generators](../Sphere10.Framework.Generators/) – Code generation utilities
 
-**Blockchain & DApps**
-- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core/) – Decentralized app core functionality
-- [Sphere10.Framework.DApp.Host](../Sphere10.Framework.DApp.Host/) – DApp hosting infrastructure
-- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node/) – DApp node implementation
-
 ### Test Suites
 
 **Core Library Tests**
@@ -305,7 +301,6 @@ When a new domain adds its own tool class, it automatically becomes discoverable
 - [Sphere10.Framework.Data.Tests](../../tests/Sphere10.Framework.Data.Tests/) – Database integration tests
 - [Sphere10.Framework.Windows.Tests](../../tests/Sphere10.Framework.Windows.Tests/) – Windows utilities tests
 - [Sphere10.Framework.Windows.LevelDB.Tests](../../tests/Sphere10.Framework.Windows.LevelDB.Tests/) – LevelDB integration tests
-- [Sphere10.Framework.DApp.Core.Tests](../../tests/Sphere10.Framework.DApp.Core.Tests/) – DApp core tests
 - [Sphere10.Framework.NET.Tests](../../tests/Sphere10.Framework.NET.Tests/) – .NET platform tests
 - [Sphere10.Framework.NETCore.Tests](../../tests/Sphere10.Framework.NETCore.Tests/) – .NET Core tests
 - [HashLib4CSharp.Tests](../../tests/HashLib4CSharp.Tests/) – Cryptographic hash tests
