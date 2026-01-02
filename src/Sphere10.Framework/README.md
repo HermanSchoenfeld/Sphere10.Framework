@@ -5,7 +5,7 @@
 **Developer**: Herman Schoenfeld  
 **Copyright**: © 2018-Present Herman Schoenfeld  
 **License**: MIT NON-AI  
-**Status**: Production-Ready (v2.0.2)
+**Status**: Production-Ready
 
 ---
 
@@ -462,7 +462,7 @@ A job scheduling framework with support for various triggers:
 - **Schedules**: Interval-based, day-of-week, and day-of-month schedules trigger job execution.
 - **Policies**: Control job behavior on failure, completion, and rescheduling.
 
-### � Text Extensions & String Utilities
+### :pencil2: Text Extensions & String Utilities
 
 Comprehensive string manipulation and validation helpers:
 
@@ -728,7 +728,7 @@ Extensions and helpers for `TextWriter`:
 - **Indented Writers**: Automatic indentation for hierarchical data.
 - **Buffered Writers**: Batch write operations for efficiency.
 
-### �🛠️ Extensions & Utilities
+### :hammer_and_wrench: Extensions & Utilities
 
 **50+ Extension Methods** covering:
 - `StringExtensions`: Truncation, case handling, validation, parsing, formatting
@@ -1712,7 +1712,7 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 
 ## 📖 Resources
 
-- **GitHub**: [Herman Schoenfeld](https://github.com/HermanSchoenfeld/Sphere10 Framework)
+- **GitHub**: [Herman Schoenfeld](https://github.com/HermanSchoenfeld/Sphere10.Framework)
 - **Website**: [sphere10.com](https://sphere10.com/tech/framework)
 
 ## 👤 Author
