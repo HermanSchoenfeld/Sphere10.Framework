@@ -79,7 +79,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 			var maxItems = (long)Reader.ReadUInt64();
 			_previousPagePosition = (long)Reader.ReadUInt64();
 			_nextPagePosition = (long)Reader.ReadUInt64();
-			_itemSizes = Tools.Collection.Generate(Reader.ReadUInt64).Cast<long>().TakeL(maxItems).ToArray();
+			_itemSizes = Tools.Collection.Generate(Reader.ReadUInt64).Select(x => checked((long)x)).TakeL(maxItems).ToArray();
 		} else if (startPosition == parent.Stream.Length) {
 			// CASE: Page begins end of streams as it is newly appended, so write out default header
 			StartPosition = startPosition;
@@ -244,8 +244,10 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		oldItemsSize = _itemSizes.SkipL(index).TakeL(sizes.LongLength).Sum();
 		Array.Copy(sizes, 0, _itemSizes, index, sizes.Length);
 		Stream.Seek(StartPosition + Object0SizeFieldOffset + index * ObjectSizeFieldSize, SeekOrigin.Begin);
-		foreach (var size in sizes.Cast<ulong>())
-			Writer.Write(size);
+		foreach (var size in sizes) {
+			Guard.Ensure(size >= 0, "Sizes cannot be negative");
+			Writer.Write(checked((ulong)size));
+		}
 
 		// Calculate the updated offsets if opened
 		if (State == PageState.Loaded)
