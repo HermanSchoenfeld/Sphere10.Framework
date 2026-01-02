@@ -47,7 +47,7 @@ app.Run();
 
 **Product Management**: Product identification, versioning, and licensing support.
 
-## � Core Examples
+## :bulb: Core Examples
 
 ### Basic Application Setup
 

@@ -63,7 +63,7 @@ await ViewService.DialogAsync(content, "Dialog Title");
 - **Microsoft.AspNetCore.Components**: Blazor component framework
 - **Microsoft.JSInterop**: JavaScript interop for interactive features
 
-## � Related Projects
+## :link: Related Projects
 
 - [Sphere10.Framework.DApp.Presentation.Loader](./Sphere10.Framework.DApp.Presentation.Loader) - WebAssembly host for this library
 - [Sphere10.Framework.DApp.Presentation2](./Sphere10.Framework.DApp.Presentation2) - Alternative presentation implementation
