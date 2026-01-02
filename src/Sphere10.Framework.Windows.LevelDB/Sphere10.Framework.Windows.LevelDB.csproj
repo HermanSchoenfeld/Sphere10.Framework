@@ -2,10 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
+		<IsPackable>true</IsPackable>
 		<Description>Windows LevelDB integration for Sphere10 Framework.</Description>
 		<PackageTags>sphere10 framework windows leveldb database</PackageTags>
 	</PropertyGroup>
-
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>

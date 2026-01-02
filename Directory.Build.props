@@ -6,14 +6,12 @@
     <Company>Sphere 10 Software</Company>
     <Product>Sphere10 Framework</Product>
     <Copyright>Herman Schoenfeld</Copyright>
-    <RepositoryRootUser>HermanSchoenfeld</RepositoryRootUser>
-    <RepositoryBranch Condition="'$(RepositoryBranch)' == ''">master</RepositoryBranch>
-    <RepositoryUrl>https://github.com/$(RepositoryRootUser)/Sphere10.Framework</RepositoryUrl>
+    <RepositoryUrl>https://github.com/HermanSchoenfeld/Sphere10.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl Condition="'$(PackageProjectUrl)' == '' and $([System.String]::Copy('$(MSBuildProjectDirectory)').StartsWith('$(MSBuildThisFileDirectory)src\'))">https://github.com/$(RepositoryRootUser)/Sphere10.Framework/tree/$(RepositoryBranch)/src/$(MSBuildProjectName)</PackageProjectUrl>
-    <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://github.com/$(RepositoryRootUser)/Sphere10.Framework</PackageProjectUrl>
+    <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://github.com/HermanSchoenfeld/Sphere10.Framework</PackageProjectUrl>
     <PackageLicenseExpression Condition="'$(PackageLicenseFile)' == ''">MIT</PackageLicenseExpression>
     <PackageIcon>sphere10-icon.png</PackageIcon>
+    <IsPackable>false</IsPackable>
     
     <!-- Version Management -->
     <Version>3.0.0</Version>
@@ -21,7 +19,7 @@
     <AssemblyVersion>3.0.0</AssemblyVersion>
     <FileVersion>3.0.0</FileVersion>
     <InformationalVersion>3.0.0</InformationalVersion>
-    
+
     <!-- Build Configuration -->
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -31,10 +29,6 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    
-    <!-- Development vs Production References -->
-    <!-- Set to false in CI/CD release builds to use NuGet references -->
-    <UseLocalProjects Condition="'$(UseLocalProjects)' == ''">true</UseLocalProjects>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)resources\branding\sphere10-icon.png')">

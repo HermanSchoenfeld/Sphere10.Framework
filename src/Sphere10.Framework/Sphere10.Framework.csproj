@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
+		<IsPackable>true</IsPackable>
 		<Description>General-purpose library for full-stack use. Provides support for Caching, Collections, Comparers, Converion, Environment, Events, Exceptions, IO, FileSystem, Lambdas, Logging, Math, Memory, Scopes, Text, Threading, Scheduling and many other aspects.</Description>
 		<!--<DefineConstants>ENABLE_CLUSTER_DIAGNOSTICS</DefineConstants>--> <!-- Enable this only for diagnosing clustered storage errors. Extremely slow. -->
 		<PackageReleaseNotes>Initial public release</PackageReleaseNotes>

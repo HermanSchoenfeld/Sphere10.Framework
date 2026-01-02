@@ -3,12 +3,12 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <IsPackable>true</IsPackable>
     <Description>WinForms Firebird integration for Sphere10 Framework.</Description>
     <PackageTags>sphere10 framework winforms firebird database</PackageTags>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\Sphere10.Framework.Data.Firebird\Sphere10.Framework.Data.Firebird.csproj" />
     <ProjectReference Include="..\Sphere10.Framework.Windows.Forms\Sphere10.Framework.Windows.Forms.csproj" />

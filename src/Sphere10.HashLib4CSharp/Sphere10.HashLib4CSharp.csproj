@@ -2,21 +2,18 @@
 
     <PropertyGroup>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<IsPackable>true</IsPackable>
         <LangVersion>latest</LangVersion>
         <TargetFramework>netstandard2.1</TargetFramework>
         <Title>HashLib4CSharp</Title>
         <Authors>Ugochukwu Mmaduekwe</Authors>
-        <Description>HashLib4CSharp is a C# library that provides an easy to use interface for computing hashes and checksums of strings (with a specified encoding), files, streams, byte arrays and untyped data.</Description>
+        <Description>Sphere10 fork of HashLib4CSharp. A C# library that provides an easy to use interface for computing hashes and checksums of strings (with a specified encoding), files, streams, byte arrays and untyped data.</Description>
         <Copyright>Copyright (c) 2020 Ugochukwu Mmaduekwe</Copyright>
         <RepositoryType>git</RepositoryType>
-        <PackageReleaseNotes>v1.5.0 release</PackageReleaseNotes>
-        <Company>StugSoft</Company>
         <PackageTags>hash crypto cryptography</PackageTags>
         <RepositoryUrl>https://github.com/Xor-el/HashLib4CSharp.git</RepositoryUrl>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <PackageLicenseExpression>Apache-2.0 OR MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/Xor-el/HashLib4CSharp</PackageProjectUrl>
-        <PackageVersion>1.5.0</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

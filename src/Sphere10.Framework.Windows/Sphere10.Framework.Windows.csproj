@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>true</IsPackable>
     <Description>Windows platform integration for Sphere10 Framework.</Description>
     <PackageTags>sphere10 framework windows</PackageTags>
     <LangVersion>latest</LangVersion>

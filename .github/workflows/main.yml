@@ -3,16 +3,16 @@ on: push
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     env:
       GITHUB_ACTIONS: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup .NET 8 SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
-      - name: Build Hydrogen solution
-        run: dotnet build "./src/Hydrogen (CrossPlatform).sln" --verbosity minimal
+      - name: Build solution
+        run: dotnet build "./src/Sphere10.Framework (CrossPlatform).sln" --verbosity minimal
       - name: Run tests
-        run: dotnet test "./src/Hydrogen (CrossPlatform).sln" --verbosity minimal
+        run: dotnet test "./src/Sphere10.Framework (CrossPlatform).sln" --verbosity minimal

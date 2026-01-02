@@ -4,6 +4,7 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
+		<IsPackable>true</IsPackable>
 		<Description>Windows Forms UI components for Sphere10 Framework.</Description>
 		<PackageTags>sphere10 framework winforms windows ui</PackageTags>
 		<UseWindowsForms>true</UseWindowsForms>
@@ -11,7 +12,6 @@
 		<RootNamespace>Sphere10.Framework.Windows.Forms</RootNamespace>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ButtonMultiSelection.resources" />
 		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ColorPicker.resources" />

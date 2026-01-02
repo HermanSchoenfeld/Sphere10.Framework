@@ -103,11 +103,11 @@ git push origin v1.0.0
 Builds and packages projects.
 
 Parameters:
+
 - `-Configuration`: Build config (default: Release)
 - `-OutputPath`: Output directory (default: ./nuget-packages)
-- `-UseNugetReferences`: Switch to production mode (uses NuGet packages instead of local projects)
+- `-VerifyNugetDependencies`: Verifies packed nuspec dependency metadata matches `ProjectReference` graphs
 - `-Clean`: Remove old artifacts before packing
-- `-Verbose`: Detailed output
 
 Example:
 ```powershell
@@ -119,12 +119,6 @@ Example:
 Publishes packages to nuget.org.
 
 Parameters:
-- `-ApiKey`: NuGet API key (uses `NUGET_API_KEY` env var if not specified)
-- `-Source`: NuGet source URL
-- `-PackagesPath`: Package directory (default: ./nuget-packages)
-- `-PackagePattern`: Package filter (default: *.nupkg)
-- `-DryRun`: Preview without uploading
-- `-SkipSymbols`: Skip `.snupkg` symbol packages
 
 Example:
 ```powershell
@@ -134,18 +128,11 @@ Example:
 
 ## Development vs Production Mode
 
-**Development Mode** (`UseLocalProjects=true`, default):
-- Projects reference each other via `.csproj` files
-- Fast builds and debugging
+The framework uses standard SDK-style `<ProjectReference>` during development, and `dotnet pack` automatically emits proper NuGet dependencies when producing packages.
 
-**Production Mode** (`UseLocalProjects=false`):
-- Projects reference each other via NuGet packages
-- Tests that dependencies are properly declared
-- Use before publishing to nuget.org
-
-Test production mode:
+To validate dependency metadata before publishing:
 ```powershell
-./scripts/pack.ps1 -UseNugetReferences
+./scripts/pack.ps1 -VerifyNugetDependencies
 ```
 
 ## Best Practices
@@ -170,8 +157,8 @@ Test production mode:
    git push origin v1.0.0
    ```
 
-5. **Test production mode** before publishing to catch missing dependencies:
+5. **Verify dependencies** before publishing to catch missing dependencies:
    ```powershell
-   ./scripts/pack.ps1 -UseNugetReferences
+   ./scripts/pack.ps1 -VerifyNugetDependencies
    ```
 
