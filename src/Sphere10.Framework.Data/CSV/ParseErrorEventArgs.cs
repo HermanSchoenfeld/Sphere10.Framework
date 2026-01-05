@@ -1,5 +1,4 @@
-//-----------------------------------------------------------------------
-// <copyright file="ParseErrorEventArgs.cs" company="Sphere 10 Software">
+﻿//-----------------------------------------------------------------------
 //
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 //
@@ -8,7 +7,6 @@
 //
 // <author>Herman Schoenfeld</author>
 // <date>2018</date>
-// </copyright>
 //-----------------------------------------------------------------------
 
 //	Sphere10.Framework.Data.Csv.ParseErrorEventArgs

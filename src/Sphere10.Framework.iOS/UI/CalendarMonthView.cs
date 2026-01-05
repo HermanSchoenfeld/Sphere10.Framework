@@ -1,22 +1,11 @@
-//-----------------------------------------------------------------------
-// <copyright file="CalendarMonthView.cs" company="Sphere 10 Software">
-//
-// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (http://www.sphere10.com)
+﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
-// <author>Herman Schoenfeld</author>
-// <date>2018</date>
-// </copyright>
-//-----------------------------------------------------------------------
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-//
-//  CalendarMonthView.cs
-//
-//  Converted to iOS on 1/22/09 - Eduardo Scoz || http://escoz.com
-//  Originally reated by Devin Ross on 7/28/09  - tapku.com || http://github.com/devinross/tapkulibrary
-//
 /*
  
  Permission is hereby granted, free of charge, to any person
