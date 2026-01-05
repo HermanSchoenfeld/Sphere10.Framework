@@ -245,9 +245,8 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		Array.Copy(sizes, 0, _itemSizes, index, sizes.Length);
 		Stream.Seek(StartPosition + Object0SizeFieldOffset + index * ObjectSizeFieldSize, SeekOrigin.Begin);
 		foreach (var size in sizes) {
-			if (size < 0)
-				throw new InvalidDataException("Sizes cannot be negative");
-			Writer.Write(unchecked((ulong)size));
+			//Guard.Ensure(size >= 0, "Sizes cannot be negative"); // performance critical
+			Writer.Write(checked((ulong)size));
 		}
 
 		// Calculate the updated offsets if opened
