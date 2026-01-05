@@ -15,6 +15,7 @@ namespace Sphere10.Framework.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class TextFileCacheTests {
+	private const int SleepDurationForStorageEventTriggerCycleMS = 250;
 
 	[Test]
 	public void ReloadsStaleFile() {
@@ -37,7 +38,7 @@ public class TextFileCacheTests {
 		Assert.That(fetchedCount, Is.EqualTo(1));
 
 		File.WriteAllText(file, "BETA");
-		Thread.Sleep(100);
+		Thread.Sleep(SleepDurationForStorageEventTriggerCycleMS);
 		Assert.That(cache[file], Is.EqualTo("BETA"));
 		Assert.That(fetchedCount, Is.EqualTo(2));
 		Assert.That(cache[file], Is.EqualTo("BETA"));
@@ -63,7 +64,7 @@ public class TextFileCacheTests {
 		Assert.That(cache[file], Is.EqualTo("ALPHA"));
 		Assert.That(fetchedCount, Is.EqualTo(1));
 		File.WriteAllText(file, "BETA");
-		Thread.Sleep(100);
+		Thread.Sleep(SleepDurationForStorageEventTriggerCycleMS);
 		Assert.That(cache[file], Is.EqualTo("BETA"));
 		Assert.That(fetchedCount, Is.EqualTo(2));
 	}
@@ -79,9 +80,12 @@ public class TextFileCacheTests {
 		var fetchedCount = 0;
 		var cache = new TextFileCache { RetainCacheOnDelete = false };
 		cache.ItemFetching += _ => fetchedCount++;
-
+		
+		Thread.Sleep(SleepDurationForStorageEventTriggerCycleMS);
 		Assert.That(cache[file], Is.EqualTo("ALPHA"));
+		
 		File.Delete(file);
+		Thread.Sleep(SleepDurationForStorageEventTriggerCycleMS);
 		Assert.That(() => cache[file], Throws.Exception);
 	}
 
