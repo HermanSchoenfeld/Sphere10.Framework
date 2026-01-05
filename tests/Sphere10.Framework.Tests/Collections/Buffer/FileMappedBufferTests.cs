@@ -222,7 +222,7 @@ public class FileMappedBufferTests {
 	public void ReadOnly_Update() {
 		var expected = Enumerable.Range(0, 256).Select(x => (byte)x).ToArray();
 		var fileName = Tools.FileSystem.GetTempFileName(true);
-		Tools.FileSystem.AppendAllBytes(fileName, expected.Reverse().ToArray());
+		Tools.FileSystem.AppendAllBytes(fileName, System.Linq.Enumerable.Reverse(expected).ToArray());
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 			// first load the file and sort them
 			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 8, 4 * 8))) {
