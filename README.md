@@ -63,7 +63,7 @@ var connection = Tools.Sqlite.Create(connectionString);
 bool running = Tools.WinTool.IsServiceRunning("MyService");
 ```
 
-For the complete Tools reference, see [docs/Tools-Reference.md](docs/Tools-Reference.md).
+For the complete Tools reference, see [docs/tools-reference.md](docs/tools-reference.md).
 
 
 
@@ -79,7 +79,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, command-line interface, and presentation framework |
 | [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes |
 | [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation |
-| [**HashLib4CSharp**](src/HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more |
+| [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more |
 
 ### :lock: Cryptography & Security
 
@@ -115,8 +115,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 |---------|---------|
 | [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | ASP.NET Core integration: middleware, filters, routing, forms |
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities |
-| [**Sphere10.Framework.NET**](src/Sphere10.Framework.NET/README.md) | .NET Framework-specific utilities and type introspection |
-| [**Sphere10.Framework.NETCore**](src/Sphere10.Framework.NETCore/README.md) | .NET Core and modern .NET utilities |
+| [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support |
 | [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Xamarin.iOS integration for native iOS apps |
 | [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Xamarin.Android integration for native Android apps |
 | [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Xamarin.macOS integration for native macOS apps |
@@ -128,12 +127,10 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 | Test Project | Purpose |
 |--------------|---------|
-| **HashLib4CSharp.Tests** | Tests for hashing algorithms |
+| **Sphere10.HashLib4CSharp.Tests** | Tests for hashing algorithms |
 | **Sphere10.Framework.Communications.Tests** | Networking and RPC tests |
 | **Sphere10.Framework.CryptoEx.Tests** | Cryptography implementation tests |
 | **Sphere10.Framework.Data.Tests** | Database access layer tests |
-| **Sphere10.Framework.NET.Tests** | .NET framework utility tests |
-| **Sphere10.Framework.NETCore.Tests** | .NET Core utility tests |
 | **Sphere10.Framework.Tests** | Core framework tests |
 | **Sphere10.Framework.Windows.LevelDB.Tests** | LevelDB integration tests |
 | **Sphere10.Framework.Windows.Tests** | Windows platform tests |

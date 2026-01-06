@@ -2,7 +2,7 @@
 
 The Sphere10 Framework comprises a variety of interconnected projects and domains. A **domain** is a collection of code artifacts that are logically related in the abstraction they model. Domains can span multiple architectural tiers (UI, Business Logic, Data) and represent a vertical slice through the architecture.
 
-For complete architecture overview, see [Sphere10.Framework](Sphere10.Framework.md).
+For complete architecture overview, see [Sphere10 Framework Architecture](sphere10-framework.md).
 
 ---
 

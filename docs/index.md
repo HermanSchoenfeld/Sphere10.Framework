@@ -52,17 +52,17 @@ See individual project READMEs in `src/` for component-specific documentation:
 
 ```
 docs/
-├── README.md (you are here)
-├── START-HERE.md — Quick start guide
-├── Tools-Reference.md — Tools.* namespace catalog
-├── REAL_WORLD_USAGE_EXAMPLES.md — Practical examples
+├── index.md (you are here)
+├── start-here.md — Quick start guide
+├── tools-reference.md — Tools.* namespace catalog
+├── real-world-usage-examples.md — Practical examples
 ├── Architecture/
-│   ├── Sphere10.Framework.md — Framework overview
-│   ├── Domains.md — Domain catalog
+│   ├── sphere10-framework.md — Framework overview
+│   ├── domains.md — Domain catalog
 │   └── resources/
 ├── Guidelines/
-│   ├── 3-tier-Architecture.md — Architecture patterns
-│   ├── Code-Styling.md — Code standards
+│   ├── 3-tier-architecture.md — Architecture patterns
+│   ├── code-styling.md — Code standards
 │   └── resources/
 ├── Education/
 │   └── README.md — Learning resources
@@ -84,7 +84,7 @@ docs/
 - No external dependencies for core functionality
 - Full-stack support: desktop, mobile, web
 
-See: [Architecture/Sphere10.Framework.md](Architecture/Sphere10.Framework.md)
+See: [Architecture/sphere10-framework.md](Architecture/sphere10-framework.md)
 
 ### Data Structures & Collections
 
@@ -161,15 +161,15 @@ string sanitized = Tools.Text.RemoveWhitespace(input);
 var connection = Tools.Sqlite.Create(connectionString);
 ```
 
-See: [Tools-Reference.md](Tools-Reference.md) for complete catalog
+See: [tools-reference.md](tools-reference.md) for complete catalog
 
 ---
 
 ## 📚 Related Resources
 
 - **[README.md](../README.md)** — Project overview and structure
-- **[Architecture/Domains.md](Architecture/Domains.md)** — Complete domain reference
-- **[Guidelines/Code-Styling.md](Guidelines/Code-Styling.md)** — Coding standards
+- **[Architecture/domains.md](Architecture/domains.md)** — Complete domain reference
+- **[Guidelines/code-styling.md](Guidelines/code-styling.md)** — Coding standards
 
 ---
 

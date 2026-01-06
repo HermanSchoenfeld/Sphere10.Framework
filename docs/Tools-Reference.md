@@ -542,14 +542,14 @@ public static class MyFeatureTool {
 2. Use `namespace Tools;` (or `Tools.[Domain]`)
 3. Add static methods for related operations
 4. Update project README to list available tools
-5. Document in the global [docs/Tools-Reference.md](../Tools-Reference.md) file
+5. Document in the global [docs/tools-reference.md](tools-reference.md) file
 
 ---
 
 ## Related Documentation
 
 - [Sphere10.Framework README](../src/Sphere10.Framework/README.md) – Architecture and project overview
-- [Code Styling Guide](../Guidelines/Code-Styling.md) – Conventions for Tools implementations
+- [Code Styling Guide](Guidelines/code-styling.md) – Conventions for Tools implementations
 - Individual project READMEs – Domain-specific tool documentation
 
 ---

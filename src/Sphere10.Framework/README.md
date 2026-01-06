@@ -275,16 +275,13 @@ When a new domain adds its own tool class, it automatically becomes discoverable
 - [Sphere10.Framework.Drawing](../Sphere10.Framework.Drawing/) – Graphics and drawing utilities
 
 **Application Framework**
-- [Sphere10.Framework.Application](../Sphere10.Framework.Application/) – Lifecycle management, DI, configuration
-- [Sphere10.Framework.Application.Settings](../Sphere10.Framework.Application.Settings/) – Persistent settings management
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application/) – Lifecycle management, DI, configuration, settings
 
 **Testing & Quality**
 - [Sphere10.Framework.NUnit](../Sphere10.Framework.NUnit/) – NUnit testing utilities
 - [Sphere10.Framework.NUnit.DB](../Sphere10.Framework.NUnit.DB/) – Database testing utilities
 
 **Cross-Platform & Generators**
-- [Sphere10.Framework.NET](../Sphere10.Framework.NET/) – .NET platform abstractions
-- [Sphere10.Framework.NETCore](../Sphere10.Framework.NETCore/) – .NET Core-specific implementations
 - [Sphere10.Framework.Android](../Sphere10.Framework.Android/) – Android platform integration
 - [Sphere10.Framework.iOS](../Sphere10.Framework.iOS/) – iOS platform integration
 - [Sphere10.Framework.macOS](../Sphere10.Framework.macOS/) – macOS platform integration
@@ -301,9 +298,7 @@ When a new domain adds its own tool class, it automatically becomes discoverable
 - [Sphere10.Framework.Data.Tests](../../tests/Sphere10.Framework.Data.Tests/) – Database integration tests
 - [Sphere10.Framework.Windows.Tests](../../tests/Sphere10.Framework.Windows.Tests/) – Windows utilities tests
 - [Sphere10.Framework.Windows.LevelDB.Tests](../../tests/Sphere10.Framework.Windows.LevelDB.Tests/) – LevelDB integration tests
-- [Sphere10.Framework.NET.Tests](../../tests/Sphere10.Framework.NET.Tests/) – .NET platform tests
-- [Sphere10.Framework.NETCore.Tests](../../tests/Sphere10.Framework.NETCore.Tests/) – .NET Core tests
-- [HashLib4CSharp.Tests](../../tests/HashLib4CSharp.Tests/) – Cryptographic hash tests
+- [Sphere10.HashLib4CSharp.Tests](../../tests/Sphere10.HashLib4CSharp.Tests/) – Cryptographic hash tests
 
 ---
 
