@@ -112,12 +112,22 @@ docs/
 ├── architecture/
 │   ├── sphere10-framework.md — Framework architecture
 │   └── domains.md            — Domain catalog
-├── guidelines/
-│   ├── 3-tier-architecture.md
-│   └── code-styling.md
-└── education/
-    └── README.md
+└── guidelines/
+    ├── 3-tier-architecture.md — Architectural patterns
+    └── code-styling.md       — Coding standards
 ```
+
+### All Documentation Files
+
+| Document | Description |
+|----------|-------------|
+| [start-here.md](start-here.md) | Quick start guide |
+| [tools-reference.md](tools-reference.md) | Tools.* namespace catalog |
+| [real-world-usage-examples.md](real-world-usage-examples.md) | Practical patterns from tests |
+| [architecture/sphere10-framework.md](architecture/sphere10-framework.md) | Framework architecture |
+| [architecture/domains.md](architecture/domains.md) | Domain catalog |
+| [guidelines/3-tier-architecture.md](guidelines/3-tier-architecture.md) | Architectural patterns |
+| [guidelines/code-styling.md](guidelines/code-styling.md) | Coding standards |
 
 ---
 

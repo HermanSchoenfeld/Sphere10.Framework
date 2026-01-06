@@ -193,28 +193,36 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 ## :books: Documentation & Learning
 
+### :open_book: Getting Started
+
+- [**Documentation Home**](docs/README.md) — Complete documentation index
+- [**Getting Started Guide**](docs/start-here.md) — Quick orientation for new developers
+- [**Tools Reference**](docs/tools-reference.md) — Complete Tools.* namespace catalog
+- [**Real-World Examples**](docs/real-world-usage-examples.md) — Practical patterns from test suite
+
 ### :triangular_ruler: Architecture
 
-1. [Sphere10 Framework: Complete Architecture & Overview](docs/architecture/sphere10-framework.md)
-2. [Framework Domains](docs/architecture/domains.md)
-
-### :chains: Blockchain Technology
-
-4. [Blockchain: Dynamic Merkle Trees](https://sphere10.com/tech/dynamic-merkle-trees)
-5. [Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](blackhole/docs/Blockchain/rtt-asert.pdf)
-6. [Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](https://sphere10.com/tech/ams)
-7. [Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](https://sphere10.com/tech/wams)
-8. [Post-Quantum Cryptography: Faster and Smaller Winternitz Signatures](https://sphere10.com/tech/wots-sharp)
+- [Framework Architecture](docs/architecture/sphere10-framework.md) — Design philosophy, layers, subsystems
+- [Framework Domains](docs/architecture/domains.md) — Catalog of 40+ specialized domains
 
 ### :bookmark_tabs: Guidelines
 
-9. [What is a 3-tier Architecture?](docs/guidelines/3-tier-architecture.md)
-10. [Code-Styling Guidelines](docs/guidelines/code-styling.md)
+- [3-Tier Architecture](docs/guidelines/3-tier-architecture.md) — Architectural patterns
+- [Code Styling](docs/guidelines/code-styling.md) — Coding standards and conventions
+
+### :chains: Technical Papers
+
+- [Dynamic Merkle Trees](https://sphere10.com/tech/dynamic-merkle-trees)
+- [Abstract Merkle Signatures (AMS)](https://sphere10.com/tech/ams)
+- [Winternitz Abstracted Merkle Signatures (WAMS)](https://sphere10.com/tech/wams)
+- [Faster and Smaller Winternitz Signatures](https://sphere10.com/tech/wots-sharp)
 
 ## :link: Quick Navigation & Resources
 
+- **Documentation Home**: See [docs/README.md](docs/README.md) for complete documentation index
 - **Quick Start**: See [docs/start-here.md](docs/start-here.md) for getting started with the framework
 - **Tools Reference**: See [docs/tools-reference.md](docs/tools-reference.md) for the complete Tools.* namespace catalog
+- **Real-World Examples**: See [docs/real-world-usage-examples.md](docs/real-world-usage-examples.md) for practical patterns
 - **Desktop Applications**: See [Sphere10.Framework.Windows.Forms](src/Sphere10.Framework.Windows.Forms/README.md) for building Windows applications
 - **Web Applications**: See [Sphere10.Framework.Web.AspNetCore](src/Sphere10.Framework.Web.AspNetCore/README.md) for ASP.NET Core integration
 - **Database Access**: See [Sphere10.Framework.Data](src/Sphere10.Framework.Data/README.md) for multi-database support (SQLite, SQL Server, Firebird)
