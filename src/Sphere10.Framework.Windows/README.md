@@ -416,7 +416,6 @@ For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-ref
 ## 📦 Dependencies
 
 - **Sphere10 Framework**: Core framework
-- **Sphere10.Framework.NET**: .NET framework utilities
 - **System.ServiceProcess.ServiceController**: Service management (.NET built-in)
 - **System.Diagnostics.EventLog**: Event logging (.NET built-in)
 - **System.Security.AccessControl**: Security and ACL (.NET built-in)
@@ -450,7 +449,7 @@ For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-ref
 
 ## 📖 Related Projects
 
-- [Sphere10.Framework.NET](../Sphere10.Framework.NET) - .NET framework utilities
+- [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - Windows Forms UI framework
 - [Sphere10.Framework.Windows.LevelDB](../Sphere10.Framework.Windows.LevelDB) - Windows LevelDB integration
 - [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework

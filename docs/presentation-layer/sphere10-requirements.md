@@ -54,11 +54,11 @@ However, from Phase 1, the plugin architecture should be structured as follows:
 
 ##### Diagram 1: Sphere10 Framework Skeleton
 
-![](resources/Sphere10 Framework-UI-Frame.png)
+![](resources/Hydrogen-UI-Frame.png)
 
 ##### Diagram 2: Sphere10 Framework Main-Frame w/ annotations
 
-![](resources/Sphere10 Framework-UI-Frame-Annotations.png)
+![](resources/Hydrogen-UI-Frame-Annotations.png)
 
 
 #### UI Controls:

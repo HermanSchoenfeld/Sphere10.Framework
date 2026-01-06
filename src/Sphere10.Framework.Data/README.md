@@ -310,7 +310,6 @@ Implement `IDataAccessContext` to create custom DAC implementations for unsuppor
 
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - WinForms integration with DAC support
-- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain persistence using this layer
 - [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework with data access patterns
 
 ## ⚖️ License

@@ -258,7 +258,6 @@ Bitcoin-specific cryptography is available through `DSS.ECDSA_SECP256k1` with sp
 
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework with basic cryptography
 - [Sphere10.Framework.Consensus](../Sphere10.Framework.Consensus) - Consensus mechanisms using VRF and signatures
-- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain DApp core with cryptographic security
 - [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network protocols with cryptographic authentication
 
 ## 🏆 Advanced Topics

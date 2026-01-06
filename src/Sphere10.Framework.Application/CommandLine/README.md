@@ -310,7 +310,7 @@ let main args =
 
 # Release History
 
-See the [changelog](CHANGELOG.md)
+See the [changelog](https://github.com/commandlineparser/commandline/blob/master/CHANGELOG.md)
 
 # Contributors
 First off, _Thank you!_  All contributions are welcome.  

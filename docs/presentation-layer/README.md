@@ -486,6 +486,6 @@ await Notifications.ShowError("Error", ex.ToString());
 
 ## Resources
 
-- [Sphere10 Framework Requirements](Sphere10 Framework-Requirements.md)
-- [Architecture Guidelines](../Guidelines/3-tier-Architecture.md)
+- [Sphere10 Framework Requirements](sphere10-requirements.md)
+- [Architecture Guidelines](../guidelines/3-tier-architecture.md)
 

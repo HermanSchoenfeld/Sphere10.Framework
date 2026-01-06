@@ -417,7 +417,6 @@ builder.Services.AddControllers(options => {
 ## 📦 Dependencies
 
 - **Sphere10 Framework**: Core framework
-- **Sphere10.Framework.NETCore**: .NET Core utilities
 - **Microsoft.AspNetCore.App**: ASP.NET Core runtime (.NET built-in)
 - **Microsoft.AspNetCore.Mvc**: Controller and view support
 - **System.Xml.XPath**: XPath support
@@ -443,9 +442,7 @@ builder.Services.AddControllers(options => {
 ## 📖 Related Projects
 
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework
-- [Sphere10.Framework.NETCore](../Sphere10.Framework.NETCore) - .NET Core integration
 - [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Data access for web applications
-- [Sphere10.Framework.DApp.Presentation](../../blackhole/Sphere10.Framework.DApp.Presentation) - UI components
 
 ## ⚖️ License
 

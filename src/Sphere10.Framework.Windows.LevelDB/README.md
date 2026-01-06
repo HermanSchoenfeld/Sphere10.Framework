@@ -150,6 +150,5 @@ For complete license details, see: https://github.com/google/leveldb/blob/master
 ## 📄 Related Projects
 
 - [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Data access abstraction
-- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Blockchain using storage
 
 

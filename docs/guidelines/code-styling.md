@@ -2,7 +2,7 @@
 
 Sphere 10 Software employs it's own code-styling approach which all contributions must adhere to. This document provides styling guidelines for common situations. To help contributors, Visual Studio and Resharper code-styling definitions are also provided and which can be adopted quickly by simply copying the `.editorconfig` file to the solution folder. However, the guidelines in this document go beyond what can be auto-formatted and contributors are required to read, understand and apply these guidelines. 
 
-[Visual Studio & Resharper Editor Config)](resources/.editorconfig)
+[Visual Studio & Resharper Editor Config](../../src/.editorconfig)
 
 **NOTE:** This document is still evolving and contributors should refresh themselves periodically.
 

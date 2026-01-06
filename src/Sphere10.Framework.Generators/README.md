@@ -10,8 +10,6 @@ Sphere10.Framework.Generators is intended to provide **C# source generators** fo
 ## Related Projects
 
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework
-- [Sphere10.Framework.NET](../Sphere10.Framework.NET) - Reflection-based alternatives
-- [Sphere10.Framework.DApp.Core](../Sphere10.Framework.DApp.Core) - Plugin system
 
 ## License
 
