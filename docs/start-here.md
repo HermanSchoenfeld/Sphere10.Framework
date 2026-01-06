@@ -19,6 +19,24 @@ Welcome! This guide gets you oriented with Sphere10 Framework quickly.
 
 ---
 
+## Installation
+
+Install via NuGet:
+
+```bash
+# Core framework
+dotnet add package Sphere10.Framework
+
+# Additional packages as needed
+dotnet add package Sphere10.Framework.Data.Sqlite
+dotnet add package Sphere10.Framework.CryptoEx
+dotnet add package Sphere10.Framework.Communications
+```
+
+See the [main README](../README.md#package-installation) for the complete list of available packages.
+
+---
+
 ## Quick Start
 
 ### 1. Explore the Codebase
