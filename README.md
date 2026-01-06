@@ -127,13 +127,13 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 | Test Project | Purpose |
 |--------------|---------|
-| **Sphere10.HashLib4CSharp.Tests** | Tests for hashing algorithms |
-| **Sphere10.Framework.Communications.Tests** | Networking and RPC tests |
-| **Sphere10.Framework.CryptoEx.Tests** | Cryptography implementation tests |
-| **Sphere10.Framework.Data.Tests** | Database access layer tests |
-| **Sphere10.Framework.Tests** | Core framework tests |
-| **Sphere10.Framework.Windows.LevelDB.Tests** | LevelDB integration tests |
-| **Sphere10.Framework.Windows.Tests** | Windows platform tests |
+| [**Sphere10.HashLib4CSharp.Tests**](tests/Sphere10.HashLib4CSharp.Tests) | Tests for hashing algorithms |
+| [**Sphere10.Framework.Communications.Tests**](tests/Sphere10.Framework.Communications.Tests) | Networking and RPC tests |
+| [**Sphere10.Framework.CryptoEx.Tests**](tests/Sphere10.Framework.CryptoEx.Tests) | Cryptography implementation tests |
+| [**Sphere10.Framework.Data.Tests**](tests/Sphere10.Framework.Data.Tests) | Database access layer tests |
+| [**Sphere10.Framework.Tests**](tests/Sphere10.Framework.Tests) | Core framework tests |
+| [**Sphere10.Framework.Windows.LevelDB.Tests**](tests/Sphere10.Framework.Windows.LevelDB.Tests) | LevelDB integration tests |
+| [**Sphere10.Framework.Windows.Tests**](tests/Sphere10.Framework.Windows.Tests) | Windows platform tests |
 
 ## :art: Presentation & UI Layer
 
