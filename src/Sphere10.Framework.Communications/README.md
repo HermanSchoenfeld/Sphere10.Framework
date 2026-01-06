@@ -223,7 +223,7 @@ Services defined with attributes work unchanged across different transport imple
 
 This project does not define project-specific Tools classes. Refer to related projects:
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) provides **Tools.Web** namespace for HTTP/RPC over ASP.NET Core
-- [docs/Tools-Reference.md](../../docs/Tools-Reference.md) for complete Tools catalog
+- [docs/tools-reference.md](../../docs/tools-reference.md) for complete Tools catalog
 
 ## ⚠️ Design Considerations
 

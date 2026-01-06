@@ -155,8 +155,8 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 ### :triangular_ruler: Architecture
 
-1. [Sphere10 Framework: Complete Architecture & Overview](docs/Architecture/sphere10-framework.md)
-2. [Framework Domains](docs/Architecture/domains.md)
+1. [Sphere10 Framework: Complete Architecture & Overview](docs/architecture/sphere10-framework.md)
+2. [Framework Domains](docs/architecture/domains.md)
 
 ### :chains: Blockchain Technology
 
@@ -168,8 +168,8 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 
 ### :bookmark_tabs: Guidelines
 
-9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-architecture.md)
-10. [Code-Styling Guidelines](docs/Guidelines/code-styling.md)
+9. [What is a 3-tier Architecture?](docs/guidelines/3-tier-architecture.md)
+10. [Code-Styling Guidelines](docs/guidelines/code-styling.md)
 
 ## :link: Quick Navigation & Resources
 

@@ -181,6 +181,6 @@ Consensus Tier (Sphere10.Framework.Consensus)
 
 - [Sphere10 Framework Architecture](sphere10-framework.md) — Complete architecture overview
 - [Tools Reference](../tools-reference.md) — Complete Tools.* namespace catalog
-- [3-Tier Architecture](../Guidelines/3-tier-architecture.md) — Architecture pattern
-- [Code Styling Guidelines](../Guidelines/code-styling.md) — Coding conventions
+- [3-Tier Architecture](../guidelines/3-tier-architecture.md) — Architecture pattern
+- [Code Styling Guidelines](../guidelines/code-styling.md) — Coding conventions
 

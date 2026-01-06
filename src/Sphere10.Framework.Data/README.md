@@ -285,7 +285,7 @@ string xml = Tools.Xml.Serialize(data);
 var deserialized = Tools.Xml.Deserialize<T>(xml);
 ```
 
-For complete Tools reference, see [docs/Tools-Reference.md](../../docs/Tools-Reference.md)
+For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-reference.md)
 
 ## 🔌 Extensibility
 

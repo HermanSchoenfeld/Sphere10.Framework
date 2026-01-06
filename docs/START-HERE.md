@@ -217,10 +217,10 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 | [index.md](index.md) | Documentation home and topic index |
 | [Tools Reference](tools-reference.md) | Complete Tools.* namespace catalog |
 | [real-world-usage-examples.md](real-world-usage-examples.md) | Practical examples and patterns |
-| [Architecture/sphere10-framework.md](Architecture/sphere10-framework.md) | Framework architecture and design |
-| [Architecture/domains.md](Architecture/domains.md) | Catalog of 30+ framework domains |
-| [Guidelines/3-tier-architecture.md](Guidelines/3-tier-architecture.md) | Architectural patterns |
-| [Guidelines/code-styling.md](Guidelines/code-styling.md) | Coding standards and conventions |
+| [architecture/sphere10-framework.md](architecture/sphere10-framework.md) | Framework architecture and design |
+| [architecture/domains.md](architecture/domains.md) | Catalog of 30+ framework domains |
+| [guidelines/3-tier-architecture.md](guidelines/3-tier-architecture.md) | Architectural patterns |
+| [guidelines/code-styling.md](guidelines/code-styling.md) | Coding standards and conventions |
 
 ---
 
@@ -247,7 +247,7 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 - Check the project README in `src/` for your component
 - Review [Tools Reference](tools-reference.md) for utility patterns
 - See [real-world-usage-examples.md](real-world-usage-examples.md) for practical examples
-- Read [Architecture/sphere10-framework.md](Architecture/sphere10-framework.md) for design context
+- Read [architecture/sphere10-framework.md](architecture/sphere10-framework.md) for design context
 
 ---
 

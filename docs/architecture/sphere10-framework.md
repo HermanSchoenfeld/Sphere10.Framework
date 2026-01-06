@@ -220,5 +220,5 @@ All utilities are accessible through `Tools.*` namespace for maximum IntelliSens
 
 - [Framework Domains](domains.md) — Detailed breakdown of all framework domains
 - [Tools Reference](../tools-reference.md) — Complete Tools.* namespace catalog
-- [3-Tier Architecture](../Guidelines/3-tier-architecture.md) — Architecture pattern documentation
-- [Code Styling Guidelines](../Guidelines/code-styling.md) — Coding conventions and standards
+- [3-Tier Architecture](../guidelines/3-tier-architecture.md) — Architecture pattern documentation
+- [Code Styling Guidelines](../guidelines/code-styling.md) — Coding conventions and standards

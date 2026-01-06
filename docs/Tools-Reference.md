@@ -549,7 +549,7 @@ public static class MyFeatureTool {
 ## Related Documentation
 
 - [Sphere10.Framework README](../src/Sphere10.Framework/README.md) – Architecture and project overview
-- [Code Styling Guide](Guidelines/code-styling.md) – Conventions for Tools implementations
+- [Code Styling Guide](guidelines/code-styling.md) – Conventions for Tools implementations
 - Individual project READMEs – Domain-specific tool documentation
 
 ---

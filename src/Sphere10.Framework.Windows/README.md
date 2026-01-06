@@ -378,7 +378,7 @@ Tools.WinShell.CreateShortcutForApplication(executable, shortcutPath, arguments)
 string shortcutPath = Tools.WinShell.DetermineStartupShortcutFilename(appName);
 ```
 
-For complete Tools reference, see [docs/Tools-Reference.md](../../docs/Tools-Reference.md)
+For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-reference.md)
 
 ## 🏗️ Architecture & Modules
 

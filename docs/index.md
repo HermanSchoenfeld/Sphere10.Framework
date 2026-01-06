@@ -16,10 +16,10 @@ Complete documentation for **Sphere10 Framework** — a comprehensive .NET 8.0 f
 
 ### Architecture & Design
 
-- **[Sphere10 Framework Architecture](Architecture/sphere10-framework.md)** — Framework composition and core concepts
-- **[Framework Domains](Architecture/domains.md)** — Catalog of 40+ framework domains
-- **[3-Tier Architecture Pattern](Guidelines/3-tier-architecture.md)** — Architectural patterns and design principles
-- **[Code Styling Standards](Guidelines/code-styling.md)** — Coding standards and conventions
+- **[Sphere10 Framework Architecture](architecture/sphere10-framework.md)** — Framework composition and core concepts
+- **[Framework Domains](architecture/domains.md)** — Catalog of 40+ framework domains
+- **[3-Tier Architecture Pattern](guidelines/3-tier-architecture.md)** — Architectural patterns and design principles
+- **[Code Styling Standards](guidelines/code-styling.md)** — Coding standards and conventions
 
 ### Component-Specific Docs
 
@@ -56,17 +56,17 @@ docs/
 ├── start-here.md — Quick start guide
 ├── tools-reference.md — Tools.* namespace catalog
 ├── real-world-usage-examples.md — Practical examples
-├── Architecture/
+├── architecture/
 │   ├── sphere10-framework.md — Framework overview
 │   ├── domains.md — Domain catalog
 │   └── resources/
-├── Guidelines/
+├── guidelines/
 │   ├── 3-tier-architecture.md — Architecture patterns
 │   ├── code-styling.md — Code standards
 │   └── resources/
-├── Education/
+├── education/
 │   └── README.md — Learning resources
-└── PresentationLayer/
+└── presentation-layer/
     ├── README.md — Blazor UI framework
     └── resources/
 ```
@@ -84,7 +84,7 @@ docs/
 - No external dependencies for core functionality
 - Full-stack support: desktop, mobile, web
 
-See: [Architecture/sphere10-framework.md](Architecture/sphere10-framework.md)
+See: [architecture/sphere10-framework.md](architecture/sphere10-framework.md)
 
 ### Data Structures & Collections
 
@@ -168,8 +168,8 @@ See: [tools-reference.md](tools-reference.md) for complete catalog
 ## 📚 Related Resources
 
 - **[README.md](../README.md)** — Project overview and structure
-- **[Architecture/domains.md](Architecture/domains.md)** — Complete domain reference
-- **[Guidelines/code-styling.md](Guidelines/code-styling.md)** — Coding standards
+- **[architecture/domains.md](architecture/domains.md)** — Complete domain reference
+- **[guidelines/code-styling.md](guidelines/code-styling.md)** — Coding standards
 
 ---
 
