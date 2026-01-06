@@ -8,6 +8,12 @@
 
 Sphere10.Framework.CryptoEx extends [Sphere10.Framework](../Sphere10.Framework)'s core cryptography with advanced primitives used in distributed systems and blockchain protocols, supporting **post-quantum resistance, multiple elliptic curves, and advanced digital signatures**.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.CryptoEx
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

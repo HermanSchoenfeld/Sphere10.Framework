@@ -3,7 +3,11 @@
 # 💾 Sphere10.Framework.Windows.LevelDB
 
 **LevelDB integration for Windows** providing high-performance embedded key-value storage for blockchain data, indices, and persistent caches.
+## 📦 Installation
 
+```bash
+dotnet add package Sphere10.Framework.Windows.LevelDB
+```
 ## 📋 Overview
 
 `Sphere10.Framework.Windows.LevelDB` integrates Google's LevelDB into Sphere10 Framework applications, providing high-performance key-value storage suitable for blockchain ledgers, indices, and persistent caches on Windows platforms.

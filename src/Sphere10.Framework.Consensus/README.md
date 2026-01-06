@@ -4,6 +4,12 @@
 
 This project contains consensus-related primitives that are currently focused on **difficulty / target** algorithms.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Consensus
+```
+
 ## Contents
 
 - `ICompactTargetAlgorithm` + `MolinaTargetAlgorithm`: Compact target encoding/decoding utilities.

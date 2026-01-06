@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Web.AspNetCore bridges Sphere10 Framework with **ASP.NET Core ecosystem**, enabling seamless integration of logging, configuration, dependency injection, routing, and custom middleware while following .NET best practices.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Web.AspNetCore
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

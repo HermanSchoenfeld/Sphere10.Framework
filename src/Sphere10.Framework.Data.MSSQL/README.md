@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Data.MSSQL brings **enterprise SQL Server capabilities** to the Sphere10 Framework while maintaining database-agnostic abstraction. Fully compatible with **Azure SQL Database**, on-premises SQL Server, and SQL Express instances.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Data.MSSQL
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

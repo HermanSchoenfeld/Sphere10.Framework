@@ -5,7 +5,11 @@ HashLib4CSharp is a C# library that provides an easy to use interface for comput
 ## 📋 Overview
 
 `HashLib4CSharp` is a comprehensive hashing library providing implementations of multiple hash algorithms and checksums. It offers a unified interface for computing and verifying cryptographic hashes across various input sources.
+## 📦 Installation
 
+```bash
+dotnet add package Sphere10.HashLib4CSharp
+```
 ## 🚀 Key Features
 
 - **Multiple Algorithms**: MD5, SHA-1, SHA-2, SHA-3, BLAKE2, and many more

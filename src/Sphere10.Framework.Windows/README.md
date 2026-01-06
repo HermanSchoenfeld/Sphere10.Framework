@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Windows enables **secure Windows system programming** through abstractions over Windows APIs, handling NT security objects, Windows services, event logging, and registry access while maintaining safety and compatibility.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Windows
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

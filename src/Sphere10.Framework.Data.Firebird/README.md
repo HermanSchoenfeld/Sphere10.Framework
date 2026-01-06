@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Data.Firebird brings **powerful open-source database capabilities** to the Sphere10 Framework while maintaining database-agnostic abstraction. Supports both **embedded (single-file) and server architectures**, making it ideal for desktop applications, small-to-medium enterprises, and resource-constrained environments.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Data.Firebird
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Data.NHibernate bridges **NHibernate's powerful ORM capabilities** with Sphere10.Framework.Data abstraction, enabling domain-driven design patterns, lazy loading, change tracking, and complex queries across SQLite, SQL Server, Firebird, and other supported databases.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Data.NHibernate
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

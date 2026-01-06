@@ -8,6 +8,12 @@
 
 Sphere10.Framework.Application enables **rapid application development** with built-in **service configuration, CLI argument parsing, settings persistence, and application lifecycle hooks** integrated with Microsoft.Extensions.DependencyInjection.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Application
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

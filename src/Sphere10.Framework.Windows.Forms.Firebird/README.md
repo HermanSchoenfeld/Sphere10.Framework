@@ -6,6 +6,12 @@
 
 This library provides control implementations (ConnectionBar and ConnectionPanel) for Firebird database connections. These controls are used dynamically by `Sphere10.Framework.Windows.Forms` when Firebird is selected as the database type.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Windows.Forms.Firebird
+```
+
 ## Overview
 
 `Sphere10.Framework.Windows.Forms.Firebird` contains UI control implementations specific to Firebird database connectivity. The controls are designed to be loaded dynamically by the base `Sphere10.Framework.Windows.Forms` library based on the selected database provider.

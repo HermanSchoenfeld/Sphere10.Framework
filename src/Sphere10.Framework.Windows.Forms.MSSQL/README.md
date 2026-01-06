@@ -6,6 +6,12 @@
 
 This library provides control implementations (ConnectionBar and ConnectionPanel) for SQL Server database connections. These controls are used dynamically by `Sphere10.Framework.Windows.Forms` when SQL Server is selected as the database type.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Windows.Forms.MSSQL
+```
+
 ## Overview
 
 `Sphere10.Framework.Windows.Forms.MSSQL` contains UI control implementations specific to SQL Server database connectivity. The controls are designed to be loaded dynamically by the base `Sphere10.Framework.Windows.Forms` library based on the selected database provider.

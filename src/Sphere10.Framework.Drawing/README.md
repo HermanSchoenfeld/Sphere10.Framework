@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Drawing enables **platform-agnostic graphics operations** through a high-level abstraction over GDI+, with utilities for color gradients, image manipulation, geometric transformations, and visual effects.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Drawing
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

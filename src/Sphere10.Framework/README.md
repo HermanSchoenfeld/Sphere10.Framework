@@ -32,7 +32,13 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 - **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
 - **Maturity**: Production-ready (v2.0.2) with battle-tested core subsystems
 
-## 🛠️ Tools.* Namespace — Global Tooling Framework
+## � Installation
+
+```bash
+dotnet add package Sphere10.Framework
+```
+
+## �🛠️ Tools.* Namespace — Global Tooling Framework
 
 The **Tools namespace** is a defining feature of Sphere10 Framework, providing a **global, IntelliSense-discoverable collection of static utility methods** organized by domain. This acts as a single point of discovery for developers—instead of searching for the right helper class, simply type `Tools.` and explore available operations across the entire framework.
 

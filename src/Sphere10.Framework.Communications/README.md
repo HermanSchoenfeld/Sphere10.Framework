@@ -8,6 +8,12 @@
 
 Sphere10.Framework.Communications enables **seamless remote service invocation** through attribute-based RPC definitions with automatic JSON serialization, type conversion, and protocol agnosticism.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Communications
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

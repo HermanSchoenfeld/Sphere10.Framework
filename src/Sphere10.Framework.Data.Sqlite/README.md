@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Data.Sqlite enables **zero-configuration database access** with in-memory and file-based SQLite databases, ideal for embedded scenarios, testing, and resource-constrained environments. Seamlessly integrates with the Sphere10.Framework.Data abstraction for database-agnostic applications.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Data.Sqlite
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp

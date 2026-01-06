@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Data enables **vendor-independent database access** through a unified API while supporting **SQLite, SQL Server, Firebird, and NHibernate**. Core abstractions handle connection pooling, transactions, type mapping, and bulk operations.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Data
+```
+
 ## ⚡ 10-Second Example
 
 ```csharp
