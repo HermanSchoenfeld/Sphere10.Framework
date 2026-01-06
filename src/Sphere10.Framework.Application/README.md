@@ -2,11 +2,9 @@
 
 # 💫 Sphere10.Framework.Application
 
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+**Complete application framework** providing dependency injection, modular architecture, settings management, lifecycle hooks, and product information for building production-ready Sphere10 Framework-based applications.
 
-**Application framework and lifecycle management** providing dependency injection integration, settings management, command-line argument parsing, and foundation for building full-featured Sphere10 Framework-based applications.
-
-Sphere10.Framework.Application enables **rapid application development** with built-in **service configuration, CLI argument parsing, settings persistence, and application lifecycle hooks** integrated with Microsoft.Extensions.DependencyInjection.
+Sphere10.Framework.Application enables **rapid application development** by providing a complete infrastructure for **service composition, settings persistence, initialization/finalization pipelines, and modular configuration**—all integrated with Microsoft.Extensions.DependencyInjection.
 
 ## 📦 Installation
 
@@ -14,285 +12,457 @@ Sphere10.Framework.Application enables **rapid application development** with bu
 dotnet add package Sphere10.Framework.Application
 ```
 
-## ⚡ 10-Second Example
+## ⚡ Quick Start
+
+Here's a complete Windows Forms application using the framework (from [AutoMouse](https://github.com/HermanSchoenfeld/AutoMouse)):
 
 ```csharp
+using Sphere10.Framework;
 using Sphere10.Framework.Application;
-using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Windows.Forms;
 
-// Build application with framework
-var app = Sphere10App.CreateBuilder()
-    .ConfigureServices(services => {
-        services.AddSingleton<IRepository, DatabaseRepository>();
-        services.AddSingleton<ILogger, ConsoleLogger>();
-    })
-    .Build();
-
-// Access configured services
-var repo = app.ServiceProvider.GetRequiredService<IRepository>();
-var logger = app.ServiceProvider.GetRequiredService<ILogger>();
-
-logger.Info("Application started");
-repo.SaveData("important", data);
-
-// Application runs until disposal
-app.Run();
+static class Program {
+    static void Main(params string[] args) {
+        // Single instance enforcement
+        using (new SingleApplicationInstanceScope()) {
+            Application.EnableVisualStyles();
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+            Application.SetCompatibleTextRenderingDefault(false);
+            
+            // Start the framework and run the application
+            Sphere10Framework.Instance.StartWinFormsApplication<MainForm>();
+        }
+    }
+}
 ```
 
-## 🏗️ Core Concepts
+## 🏗️ Core Architecture
 
-**Application Builder Pattern**: Fluent builder API for configuring services, settings, and lifecycle hooks.
+### The Framework Singleton
 
-**Dependency Injection**: Full integration with Microsoft.Extensions.DependencyInjection for service composition.
-
-**Settings Management**: Type-safe application settings with persistence and validation.
-
-**Lifecycle Hooks**: Startup, configuration, and shutdown extensions for custom initialization.
-
-**Command-Line Parsing**: Attribute-based CLI argument parsing with validation and help generation.
-
-**Product Management**: Product identification, versioning, and licensing support.
-
-## :bulb: Core Examples
-
-### Basic Application Setup
+`Sphere10Framework.Instance` is the central orchestrator that:
+- Discovers and registers all `ModuleConfiguration` classes in your assemblies
+- Builds the DI container with all registered services
+- Executes initialization and finalization pipelines
+- Provides access to the `IServiceProvider`
 
 ```csharp
-using Sphere10.Framework.Application;
-using Microsoft.Extensions.DependencyInjection;
-
-// Create application with service configuration
-var app = Sphere10App.CreateBuilder()
-    .AddLogging()  // Add console logging
-    .ConfigureServices(services => {
-        // Register custom services
-        services.AddSingleton<IUserRepository, UserRepository>();
-        services.AddSingleton<IEmailService, SmtpEmailService>();
-        services.AddSingleton<IDataProcessor, DataProcessor>();
-    })
-    .Build();
-
-// Get configured service
-var userRepo = app.ServiceProvider.GetRequiredService<IUserRepository>();
-var users = userRepo.GetAllUsers();
-
-Console.WriteLine($"Loaded {users.Count} users");
+// Access services anywhere in your application
+var settings = Sphere10Framework.Instance.ServiceProvider.GetService<IProductInformationProvider>();
+var controller = Sphere10Framework.Instance.ServiceProvider.GetService<IAutoMouseController>();
 ```
 
-### Settings Management
+### Framework Lifecycle
+
+```
+Sphere10Framework.Instance.StartFramework()
+    ↓
+    1. Discover ModuleConfiguration classes (via reflection)
+    2. Call RegisterComponents() on each module (priority order)
+    3. Build ServiceProvider
+    4. Call OnInitialize() on each module
+    5. Execute IApplicationInitializer instances
+    ↓
+Application runs...
+    ↓
+Sphere10Framework.Instance.EndFramework()
+    ↓
+    1. Execute IApplicationFinalizer instances  
+    2. Call OnFinalize() on each module
+    3. Dispose ServiceProvider (if owned)
+```
+
+## 🧩 ModuleConfiguration Pattern
+
+The `ModuleConfiguration` pattern is the **core architectural pattern** for organizing your application into cohesive, self-contained modules. Each module registers its services, initializers, and configuration.
+
+### Creating a Module
 
 ```csharp
+using Sphere10.Framework;
 using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-// Define typed settings
-public class AppSettings {
-    public string DatabaseConnection { get; set; }
-    public int MaxConnections { get; set; }
-    public bool EnableLogging { get; set; }
-    public List<string> AllowedOrigins { get; set; }
+namespace MyApp;
+
+public class ModuleConfiguration : ModuleConfigurationBase {
+    
+    public override void RegisterComponents(IServiceCollection services) {
+        // Register application services
+        services.AddTransient<ISoundMaker, DefaultSoundMaker>();
+        services.AddTransient<IMouseHook, WindowsMouseHook>();
+        services.AddTransient<IKeyboardHook, WindowsKeyboardHook>();
+        services.AddTransient<IAutoMouseController, WindowsAutoMouseController>();
+        
+        // Register help and UI services
+        services.AddTransient<IHelpServices, CHMHelpProvider>();
+        services.AddTransient<IAutoRunServices, StartupFolderAutoRunServicesProvider>();
+        
+        // Register initializers (run at startup)
+        services.AddInitializer<FirstTimeSetWindowsStartupTask>();
+        services.AddInitializer<DatabaseMigrationInitializer>();
+        
+        // Register control state providers for UI binding
+        services.AddControlStateEventProvider<ClickRadiusSelector, ClickRadiusSelector.StateEventProvider>();
+    }
+    
+    public override void OnInitialize(IServiceProvider serviceProvider) {
+        base.OnInitialize(serviceProvider);
+        // Custom initialization logic
+    }
+    
+    public override void OnFinalize(IServiceProvider serviceProvider) {
+        base.OnFinalize(serviceProvider);
+        // Custom cleanup logic
+    }
+}
+```
+
+### Module Priority
+
+Modules are executed in priority order. Set `Priority` to control execution order:
+
+```csharp
+public class ModuleConfiguration : ModuleConfigurationBase {
+    public override int Priority => int.MinValue;  // Execute last (lowest priority)
+    // or
+    public override int Priority => int.MaxValue;  // Execute first (highest priority)
+}
+```
+
+## ⚙️ Settings Management
+
+### Defining Settings Classes
+
+Settings inherit from `SettingsObject` and use `[DefaultValue]` attributes:
+
+```csharp
+using System.ComponentModel;
+using Sphere10.Framework.Application;
+
+public class AutoMouseSettings : SettingsObject {
+    
+    [DefaultValue(true)]
+    public bool AutoStartProgram { get; set; }
+    
+    [DefaultValue(Key.LControlKey)]
+    public Key ScreenMouseActivationKey { get; set; }
+    
+    [DefaultValue(1000)]
+    public int ScreenMouseTimeoutMS { get; set; }
+    
+    // Computed property wrapping the stored value
+    public TimeSpan ScreenMouseTimeout {
+        get => TimeSpan.FromMilliseconds(ScreenMouseTimeoutMS);
+        set => ScreenMouseTimeoutMS = (int)value.TotalMilliseconds;
+    }
+    
+    [DefaultValue(true)]
+    public bool MakeClickSound { get; set; }
+    
+    [DefaultValue(50)]
+    public int ClickFreeZoneRadius { get; set; }
+}
+```
+
+### Using Settings
+
+```csharp
+// Get settings (creates with defaults if not exists)
+var settings = UserSettings.Get<AutoMouseSettings>();
+
+// Modify and save
+settings.AutoStartProgram = false;
+settings.ScreenMouseTimeoutMS = 2000;
+settings.Save();
+
+// Reset to defaults
+settings.RestoreDefaultValues();
+settings.Save();
+
+// Check if settings exist
+bool hasSettings = UserSettings.Has<AutoMouseSettings>();
+```
+
+### Settings Scopes
+
+- **`UserSettings`**: Per-user settings stored in `{UserDataDir}/{ProductName}/`
+- **`GlobalSettings`**: System-wide settings stored in `{SystemDataDir}/{ProductName}/`
+
+```csharp
+// User-specific settings
+var userPrefs = UserSettings.Get<UserPreferences>();
+
+// System-wide settings (shared by all users)
+var globalConfig = GlobalSettings.Get<SystemConfiguration>();
+```
+
+### Settings in UI Controls
+
+Use the `[UseSettings]` attribute on controls to automatically bind settings:
+
+```csharp
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Windows.Forms;
+
+[UseSettings(typeof(AutoMouseSettings))]
+public partial class AutoMouseSettingsControl : ApplicationControl {
+    
+    public AutoMouseSettings Settings => UserSettings.Get<AutoMouseSettings>();
+    
+    protected override void CopyModelToUI() {
+        // Copy settings to UI controls
+        _autoStartCheckBox.Checked = Settings.AutoStartProgram;
+        _timeoutNumeric.Value = Settings.ScreenMouseTimeoutMS;
+        _soundCheckBox.Checked = Settings.MakeClickSound;
+    }
+    
+    protected override void CopyUIToModel() {
+        // Copy UI values back to settings
+        Settings.AutoStartProgram = _autoStartCheckBox.Checked;
+        Settings.ScreenMouseTimeoutMS = (int)_timeoutNumeric.Value;
+        Settings.MakeClickSound = _soundCheckBox.Checked;
+        Settings.Save();
+    }
+}
+```
+
+## 🚀 Application Initializers
+
+Initializers run automatically at framework startup. They're perfect for one-time setup tasks.
+
+### Creating an Initializer
+
+```csharp
+using Sphere10.Framework.Application;
+
+public class FirstTimeSetWindowsStartupTask : ApplicationInitializerBase {
+    
+    public FirstTimeSetWindowsStartupTask(
+        IProductInformationProvider productInformationProvider,
+        IProductUsageServices productUsageServices,
+        IAutoRunServices autoRunServices) {
+        ProductInformationProvider = productInformationProvider;
+        ProductUsageServices = productUsageServices;
+        AutoRunServices = autoRunServices;
+    }
+    
+    public IProductInformationProvider ProductInformationProvider { get; }
+    public IProductUsageServices ProductUsageServices { get; }
+    public IAutoRunServices AutoRunServices { get; }
+    
+    public override void Initialize() {
+        // Only on first launch
+        if (ProductUsageServices.ProductUsageInformation.NumberOfUsesByUser == 1) {
+            // Set the app to autorun on Windows startup
+            AutoRunServices.SetAutoRun(
+                AutoRunType.CurrentUser,
+                ProductInformationProvider.ProductInformation.ProductName,
+                Application.ExecutablePath,
+                null);
+        }
+    }
+}
+```
+
+### Registering Initializers
+
+```csharp
+public override void RegisterComponents(IServiceCollection services) {
+    services.AddInitializer<FirstTimeSetWindowsStartupTask>();
+    services.AddInitializer<DatabaseMigrationInitializer>();
+    services.AddInitializer<CacheWarmupInitializer>();
+}
+```
+
+### Initializer Options
+
+```csharp
+public class ParallelInitializer : ApplicationInitializerBase {
+    public override int Priority => 50;  // Lower = runs earlier
+    public override bool Parallelizable => true;  // Can run in parallel with others
+    
+    public override void Initialize() {
+        // Initialization logic
+    }
+}
+```
+
+## 📋 Product Information
+
+Product information is extracted from assembly attributes:
+
+### Assembly Attributes
+
+```csharp
+// Properties/AssemblyInfo.cs
+using Sphere10.Framework.Application;
+
+[assembly: AssemblyCopyright("Copyright © Herman Schoenfeld 2008 - {CurrentYear}")]
+[assembly: AssemblyProductDistribution(ProductDistribution.ReleaseCandidate)]
+[assembly: AssemblyCompanyNumber("herman@sphere10.com")]
+[assembly: AssemblyCompanyLink("https://sphere10.com")]
+[assembly: AssemblyProductCode("2fbd6040-dece-45df-9f7a-7d2b562141ad")]
+[assembly: AssemblyProductLink("https://sphere10.com/products/automouse")]
+[assembly: AssemblyProductPurchaseLink("https://sphere10.com/products/automouse")]
+[assembly: AssemblyProductHelpCHM("{StartPath}/AutoMouse.CHM")]
+```
+
+### Using Product Information
+
+```csharp
+var productInfo = Sphere10Framework.Instance.ServiceProvider
+    .GetService<IProductInformationProvider>();
+
+Console.WriteLine($"Product: {productInfo.ProductInformation.ProductName}");
+Console.WriteLine($"Version: {productInfo.ProductInformation.ProductVersion}");
+Console.WriteLine($"Company: {productInfo.ProductInformation.CompanyName}");
+```
+
+### Product Usage Tracking
+
+```csharp
+var usageServices = Sphere10Framework.Instance.ServiceProvider
+    .GetService<IProductUsageServices>();
+
+var usage = usageServices.ProductUsageInformation;
+Console.WriteLine($"Times launched: {usage.NumberOfUsesByUser}");
+Console.WriteLine($"First used: {usage.DateOfFirstUse}");
+Console.WriteLine($"Last used: {usage.DateOfLastUse}");
+```
+
+## 📝 Command-Line Parsing
+
+Built-in command-line parser with attribute-based configuration:
+
+### Defining Options
+
+```csharp
+using Sphere10.Framework.Application;
+
+public class Options {
+    [Option('v', "verbose", HelpText = "Enable verbose output")]
+    public bool Verbose { get; set; }
+    
+    [Option('i', "input", Required = true, HelpText = "Input file path")]
+    public string InputFile { get; set; }
+    
+    [Option('o', "output", Default = "output.txt", HelpText = "Output file path")]
+    public string OutputFile { get; set; }
+    
+    [Option('n', "count", Default = 10, HelpText = "Number of items to process")]
+    public int Count { get; set; }
+}
+```
+
+### Parsing Arguments
+
+```csharp
+var result = Parser.Default.ParseArguments<Options>(args);
+
+result.WithParsed(options => {
+    Console.WriteLine($"Input: {options.InputFile}");
+    Console.WriteLine($"Output: {options.OutputFile}");
+    Console.WriteLine($"Verbose: {options.Verbose}");
+});
+
+result.WithNotParsed(errors => {
+    foreach (var error in errors) {
+        Console.WriteLine($"Error: {error}");
+    }
+});
+```
+
+### Verb Commands
+
+```csharp
+[Verb("add", HelpText = "Add items to the list")]
+public class AddOptions {
+    [Value(0, Required = true, HelpText = "Item to add")]
+    public string Item { get; set; }
 }
 
-var app = Sphere10App.CreateBuilder()
-    .ConfigureSettings<AppSettings>(settings => {
-        settings.DatabaseConnection = "Server=localhost;Database=mydb";
-        settings.MaxConnections = 100;
-        settings.EnableLogging = true;
-        settings.AllowedOrigins = new[] { "http://localhost:3000", "https://myapp.com" }.ToList();
-    })
-    .ConfigureServices((services, settings) => {
-        // Use settings in service configuration
-        services.AddSingleton(new DatabaseConnection(settings.DatabaseConnection, settings.MaxConnections));
-    })
-    .Build();
-
-// Access settings anywhere via DI
-var appSettings = app.ServiceProvider.GetRequiredService<AppSettings>();
-Console.WriteLine($"Database: {appSettings.DatabaseConnection}");
-Console.WriteLine($"Max connections: {appSettings.MaxConnections}");
-```
-
-### Lifecycle Hooks
-
-```csharp
-using Sphere10.Framework.Application;
-using Microsoft.Extensions.DependencyInjection;
-
-var app = Sphere10App.CreateBuilder()
-    .ConfigureServices(services => {
-        services.AddSingleton<IInitializer, DatabaseInitializer>();
-    })
-    .OnStarting(async (app, cancellation) => {
-        Console.WriteLine("Application starting...");
-        
-        // Initialize database
-        var initializer = app.ServiceProvider.GetRequiredService<IInitializer>();
-        await initializer.InitializeAsync(cancellation);
-        
-        Console.WriteLine("Application initialized");
-    })
-    .OnStopping(async (app, cancellation) => {
-        Console.WriteLine("Application stopping...");
-        
-        // Cleanup resources
-        var connection = app.ServiceProvider.GetRequiredService<IDbConnection>();
-        connection?.Close();
-        
-        Console.WriteLine("Application stopped");
-    })
-    .Build();
-
-// Run application until cancellation
-await app.RunAsync();
-```
-
-### Command-Line Argument Parsing
-
-```csharp
-using Sphere10.Framework.Application;
-
-// Define CLI arguments with attributes
-[CommandLineOptions]
-public class AppOptions {
-    [CommandLineArgument("--database", "-d")]
-    public string DatabasePath { get; set; } = "data.db";
-    
-    [CommandLineArgument("--verbose", "-v")]
-    public bool Verbose { get; set; } = false;
-    
-    [CommandLineArgument("--threads", "-t")]
-    public int ThreadCount { get; set; } = Environment.ProcessorCount;
-    
-    [CommandLineArgument("--config", "-c", Required = true)]
-    public string ConfigFile { get; set; }
+[Verb("remove", HelpText = "Remove items from the list")]
+public class RemoveOptions {
+    [Value(0, Required = true, HelpText = "Item to remove")]
+    public string Item { get; set; }
 }
 
-// Parse command-line arguments
-var args = new[] { "--database", "custom.db", "--verbose", "--config", "app.json" };
-var options = CommandLineParser.Parse<AppOptions>(args);
-
-Console.WriteLine($"Database: {options.DatabasePath}");    // custom.db
-Console.WriteLine($"Verbose: {options.Verbose}");          // true
-Console.WriteLine($"Threads: {options.ThreadCount}");      // logical CPU count
-Console.WriteLine($"Config: {options.ConfigFile}");        // app.json
-
-// Get help message
-string help = CommandLineParser.GetHelpText<AppOptions>();
-Console.WriteLine(help);
+// Parse with verbs
+Parser.Default.ParseArguments<AddOptions, RemoveOptions>(args)
+    .WithParsed<AddOptions>(opts => AddItem(opts.Item))
+    .WithParsed<RemoveOptions>(opts => RemoveItem(opts.Item));
 ```
 
-### Service Factories & Scoping
+## 🌐 Token Resolution
+
+String tokens like `{ProductName}` and `{UserDataDir}` are automatically resolved:
 
 ```csharp
-using Sphere10.Framework.Application;
-using Microsoft.Extensions.DependencyInjection;
+// Tokens are resolved in paths and strings
+string logPath = Tools.Text.FormatEx("{UserDataDir}/{ProductName}/logs");
+// Result: "C:\Users\John\AppData\Local\AutoMouse\logs"
 
-// Create scoped services for request-like patterns
-var app = Sphere10App.CreateBuilder()
-    .ConfigureServices(services => {
-        // Singleton: one instance for entire application
-        services.AddSingleton<IConfigurationService, ConfigurationService>();
-        
-        // Transient: new instance every time requested
-        services.AddTransient<IRequestHandler, RequestHandler>();
-        
-        // Scoped: one instance per scope (e.g., per request)
-        services.AddScoped<IDbContext, DbContext>();
-    })
-    .Build();
-
-// Use services with scoping
-using (var scope = app.ServiceProvider.CreateScope()) {
-    var dbContext = scope.ServiceProvider.GetRequiredService<IDbContext>();
-    var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler>();
-    
-    handler.Process(dbContext);
-}  // IDbContext disposed here
+string configPath = Tools.Text.FormatEx("{SystemDataDir}/{ProductName}/config.json");
+// Result: "C:\ProgramData\AutoMouse\config.json"
 ```
 
-### REST API Integration
+Available tokens include:
+- `{ProductName}` - Application name
+- `{ProductVersion}` - Application version
+- `{UserDataDir}` - User's local app data folder
+- `{SystemDataDir}` - System-wide program data folder
+- `{StartPath}` - Application startup directory
+- `{CurrentYear}` - Current year
+
+## 🔧 Built-in Services
+
+The framework registers these services by default:
+
+| Service | Description |
+|---------|-------------|
+| `ISettingsServices` | Settings save/load operations |
+| `IProductInformationProvider` | Product metadata from assembly |
+| `IProductUsageServices` | Usage tracking and statistics |
+| `IHelpServices` | Help file/URL launching |
+| `IWebsiteLauncher` | Open URLs in default browser |
+| `IDuplicateProcessDetector` | Detect multiple instances |
+| `IProductInstancesCounter` | Count running instances |
+| `IAutoRunServices` | Windows startup registration |
+
+## 🎯 Framework Options
+
+Configure framework behavior with options:
 
 ```csharp
-using Sphere10.Framework.Application;
-using Microsoft.Extensions.DependencyInjection;
-
-public interface IUserService {
-    Task<User> GetUserAsync(int id);
-    Task CreateUserAsync(User user);
-}
-
-public class UserService : IUserService {
-    private readonly IUserRepository _repo;
-    
-    public UserService(IUserRepository repo) => _repo = repo;
-    
-    public async Task<User> GetUserAsync(int id) => await _repo.GetAsync(id);
-    public async Task CreateUserAsync(User user) => await _repo.SaveAsync(user);
-}
-
-// Build application with REST support
-var app = Sphere10App.CreateBuilder()
-    .ConfigureServices(services => {
-        services.AddSingleton<IUserRepository, UserRepository>();
-        services.AddSingleton<IUserService, UserService>();
-        services.AddRestApi();  // Configure REST helpers
-    })
-    .Build();
-
-// Use service through REST framework (in ASP.NET Core or similar)
-var userService = app.ServiceProvider.GetRequiredService<IUserService>();
-var user = await userService.GetUserAsync(42);
+Sphere10Framework.Instance.StartFramework(
+    Sphere10FrameworkOptions.EnableDrm | 
+    Sphere10FrameworkOptions.BackgroundLicenseVerify |
+    Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible
+);
 ```
 
-## 🎯 Module Organization
-
-- **Core**: `Sphere10App`, `Sphere10AppBuilder` - Application creation and configuration
-- **Lifecycle**: Startup/shutdown hooks with async cancellation support
-- **IoC/DI**: Integration with `Microsoft.Extensions.DependencyInjection`
-- **CommandLine**: `CommandLineParser`, `CommandLineArgument` attributes for CLI parsing
-- **Settings**: Typed settings classes with validation and persistence
-- **Product**: `ProductInfo`, versioning, and license management
-- **Presentation**: Base classes for MVVM, view models, and UI bindings
-- **Rest**: Helper utilities for REST API development
-
-## 🔧 Application Builder Pattern
-
-The builder pattern provides fluent configuration:
-
-```csharp
-Sphere10App.CreateBuilder()
-    .AddLogging()
-    .AddSettings<AppSettings>()
-    .ConfigureServices(services => {/* ... */})
-    .OnStarting(async (app, ct) => {/* ... */})
-    .OnInitialized(async (app, ct) => {/* ... */})
-    .OnStopping(async (app, ct) => {/* ... */})
-    .Build()
-    .Run();
-```
-
-## 🌐 Dependency Injection Container
-
-Full Microsoft.Extensions.DependencyInjection support:
-
-- **Singleton**: Application-wide single instance (configuration, loggers)
-- **Transient**: New instance per request (handlers, processors)
-- **Scoped**: Instance per logical scope (request, transaction)
-- **Factory**: Custom factory methods for complex object creation
-
-## ⚠️ Design Patterns
-
-- **Composition Root**: All service configuration in one place at startup
-- **Dependency Inversion**: Depend on abstractions, not implementations
-- **Service Locator**: Get services from `ServiceProvider` when needed
-- **Middleware Pattern**: Apply transformations/cross-cutting concerns
-- **Settings by Convention**: Type-safe settings with strong validation
+| Option | Description |
+|--------|-------------|
+| `EnableDrm` | Enable DRM/licensing support |
+| `BackgroundLicenseVerify` | Verify license in background |
+| `EnsureSystemDataDirGloballyAccessible` | Make system data dir accessible to all users |
 
 ## 📖 Related Projects
 
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework
+- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - Windows Forms integration
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core integration
 - [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - RPC services with DI
+
+## 🌍 Real-World Example
+
+See [AutoMouse](https://github.com/HermanSchoenfeld/AutoMouse) for a complete production application using this framework, demonstrating:
+- ModuleConfiguration for service registration
+- SettingsObject with complex settings
+- ApplicationInitializer for first-run tasks
+- Product attributes for app metadata
+- Windows Forms integration with LiteMainForm
 
 ## ✅ Status & Maturity
 
@@ -300,14 +470,6 @@ Full Microsoft.Extensions.DependencyInjection support:
 - **DI Integration**: Full support for Microsoft.Extensions.DependencyInjection
 - **.NET Target**: .NET 8.0+ (primary)
 - **Thread Safety**: Application-wide; services should handle their own thread safety
-- **Async Support**: Full async/await support throughout lifecycle hooks
-
-## 📦 Dependencies
-
-- **Sphere10 Framework**: Core framework
-- **Microsoft.Extensions.DependencyInjection**: Service composition
-- **System.Configuration.ConfigurationManager**: Configuration support
-- **System.Reflection**: Service discovery and attribute processing
 
 ## ⚖️ License
 

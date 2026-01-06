@@ -2,9 +2,7 @@
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-**Universal data access abstraction layer** providing ADO.NET enhancements, schema management, transaction scopes, and database-agnostic persistence.
-
-Sphere10.Framework.Data enables **vendor-independent database access** through a unified API while supporting **SQLite, SQL Server, Firebird, and NHibernate**. Core abstractions handle connection pooling, transactions, type mapping, and bulk operations.
+**Database-agnostic data access layer** providing the `IDAC` interface, SQL builders, transaction scopes, schema introspection, and data format utilities for CSV, JSON, and XML.
 
 ## 📦 Installation
 
@@ -12,311 +10,488 @@ Sphere10.Framework.Data enables **vendor-independent database access** through a
 dotnet add package Sphere10.Framework.Data
 ```
 
-## ⚡ 10-Second Example
+For database-specific support, also install the appropriate provider package:
+
+```bash
+dotnet add package Sphere10.Framework.Data.Sqlite    # SQLite
+dotnet add package Sphere10.Framework.Data.MSSQL     # SQL Server  
+dotnet add package Sphere10.Framework.Data.Firebird  # Firebird
+```
+
+## 🏗️ Core Architecture
+
+### IDAC Interface
+
+The **Data Access Context (DAC)** is the central abstraction for database operations. The `IDAC` interface provides:
+
+| Member | Description |
+|--------|-------------|
+| `CreateConnection()` | Creates a new `IDbConnection` to the database |
+| `CreateSQLBuilder()` | Creates a database-specific `ISQLBuilder` |
+| `ExecuteNonQuery(query)` | Executes DDL/DML returning affected row count |
+| `ExecuteScalar(query)` | Executes query returning single value |
+| `ExecuteReader(query)` | Executes query returning `IDataReader` |
+| `ExecuteBatch(sqlBuilder)` | Executes batched statements from SQL builder |
+| `Insert(table, values)` | Inserts row returning identity (if applicable) |
+| `Update(table, setValues, whereValues)` | Updates matching rows |
+| `Delete(table, matchColumns)` | Deletes matching rows |
+| `GetSchema()` | Returns complete `DBSchema` with tables, columns, keys |
+| `BulkInsert(table, options, timeout)` | Bulk inserts from DataTable |
+
+### DACScope - Connection and Transaction Management
+
+The `DACScope` provides automatic connection and transaction management using the `using` pattern:
 
 ```csharp
 using Sphere10.Framework.Data;
 
-// SQLite in-memory database
-var dac = Tools.Sqlite.Open(":memory:");
+// Opens a connection scope (reuses connection if nested)
+using (var scope = dac.BeginScope(openConnection: true)) {
+    // All operations share this connection
+    dac.Insert("Users", new[] { new ColumnValue("ID", 1) });
+    dac.Insert("Users", new[] { new ColumnValue("ID", 2) });
+}
+// Connection automatically closed when scope disposes
+```
 
-// Insert records
-dac.Insert("Users", new[] {
-    new ColumnValue("ID", 1),
-    new ColumnValue("Name", "Alice")
-});
+**Transaction Support:**
 
-// Query with parameters (safe from injection)
-dac.ExecuteScalar<int>("SELECT COUNT(*) FROM Users WHERE Name = @name",
-    new ColumnValue("@name", "Alice"));  // Returns 1
+```csharp
+using (var scope = dac.BeginScope()) {
+    scope.BeginTransaction();
+    
+    dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
+    dac.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
+    
+    scope.Commit();  // Explicit commit required
+}
+// Uncommitted transaction auto-rollbacks on dispose
+```
 
-// Transactional scope
-using (var scope = dac.BeginTransactionScope()) {
-    dac.Update("Users", new[] { new ColumnValue("Name", "Alice Smith") }, "WHERE ID = 1");
-    scope.Commit();  // Atomic persist
+**Nested Scopes:**
+
+Scopes reuse the same underlying connection when nested:
+
+```csharp
+using (var outerScope = dac.BeginScope()) {
+    outerScope.BeginTransaction();
+    
+    using (var innerScope = dac.BeginScope()) {
+        // Same connection as outerScope
+        innerScope.BeginTransaction();  // Nested transaction
+        dac.Insert("Table", new[] { new ColumnValue("ID", 1) });
+        innerScope.Commit();
+    }
+    
+    outerScope.Rollback();  // Rolls back everything including inner commits
 }
 ```
 
-## 🏗️ Core Concepts
+**TransactionScope Integration:**
 
-**Data Access Context (DAC)**: Wrapper around `IDbConnection` providing transaction scoping, parameterized queries, and connection reuse.
-
-**Connection Pooling**: Connections are automatically managed and reused within a scope for efficiency.
-
-**Column Values**: Named parameter approach using `ColumnValue` objects prevents SQL injection.
-
-**Transaction Scopes**: Atomic boundaries for ACID operations; auto-rollback on exception.
-
-## 🔧 Core Examples
-
-### Connection & Basic Operations
+DACScope integrates with `System.Transactions.TransactionScope` for distributed transaction support:
 
 ```csharp
-using Sphere10.Framework.Data;
-
-// Open SQLite database
-var dac = Tools.Sqlite.Open("mydata.db");
-
-// Create and open connection
-using (var conn = dac.CreateOpenConnection()) {
-    var state = conn.State;  // ConnectionState.Open
-}
-
-// Create unopened connection (for lazy initialization)
-using (var conn = dac.CreateConnection()) {
-    var state = conn.State;  // ConnectionState.Closed
+using (var txn = new TransactionScope(TransactionScopeOption.Required)) {
+    using (dac.BeginScope(true)) {
+        dac.Insert("Table", new[] { new ColumnValue("ID", 1) });
+        txn.Complete();  // Enlists automatically
+    }
 }
 ```
 
-### Insert & Retrieve
+### ColumnValue - Type-Safe Parameters
+
+The `ColumnValue` struct represents a column name and value pair for CRUD operations:
 
 ```csharp
-using Sphere10.Framework.Data;
-
-var dac = Tools.Sqlite.Open(":memory:");
-
-// Insert with named columns
-dac.Insert("BasicTable", new[] {
-    new ColumnValue("ID", 1),
-    new ColumnValue("Text", "Hello World")
-});
-
-// Read all records
-var results = dac.ExecuteQuery("SELECT * FROM BasicTable");
-
-// Count records with parameterized safety
-int count = dac.ExecuteScalar<int>(
-    "SELECT COUNT(*) FROM BasicTable WHERE Text = @text",
-    new ColumnValue("@text", "Hello World")
-);  // Returns 1
-```
-
-### Transactions with Scopes
-
-```csharp
-var dac = Tools.Sqlite.Open(":memory:");
-
-// Create table
-dac.ExecuteNonQuery(@"CREATE TABLE Accounts (
-    ID INTEGER PRIMARY KEY,
-    Name TEXT,
-    Balance REAL
-)");
-
-// Transactional scope ensures atomicity
-using (var scope = dac.BeginTransactionScope()) {
-    dac.Insert("Accounts", new[] {
-        new ColumnValue("ID", 1),
-        new ColumnValue("Name", "Alice"),
-        new ColumnValue("Balance", 1000.0)
-    });
-    
-    dac.Insert("Accounts", new[] {
-        new ColumnValue("ID", 2),
-        new ColumnValue("Name", "Bob"),
-        new ColumnValue("Balance", 500.0)
-    });
-    
-    // Transfer: withdraw from Alice
-    dac.Update("Accounts",
-        new[] { new ColumnValue("Balance", 900.0) },
-        "WHERE ID = 1");
-    
-    // Transfer: deposit to Bob
-    dac.Update("Accounts",
-        new[] { new ColumnValue("Balance", 600.0) },
-        "WHERE ID = 2");
-    
-    // Commit atomically (rollback auto-occurs on exception)
-    scope.Commit();
-}
-
-// Verify final state
-var aliceBalance = dac.ExecuteScalar<double>(
-    "SELECT Balance FROM Accounts WHERE ID = 1");
-Console.WriteLine($"Alice: {aliceBalance}");  // 900.0
-```
-
-### Multi-Database Support
-
-```csharp
-// SQLite (embedded, in-memory)
-var sqliteDac = Tools.Sqlite.Open(":memory:");
-
-// SQL Server
-var sqlServerDac = Tools.MSSQL.Open(
-    "Server=localhost;Database=mydb;Trusted_Connection=true");
-
-// Firebird
-var firebirdDac = Tools.Firebird.Open(
-    "ServerType=1;DataSource=localhost;Database=mydb.fdb;User=sysdba;Password=masterkey");
-
-// All use same DAC interface
-sqliteDac.ExecuteScalar("SELECT COUNT(*) FROM Users");
-sqlServerDac.ExecuteScalar("SELECT COUNT(*) FROM Users");
-firebirdDac.ExecuteScalar("SELECT COUNT(*) FROM Users");
-```
-
-### Type Mapping & GUIDs
-
-```csharp
-var dac = Tools.Sqlite.Open(":memory:");
-
-// Define table with GUID column
-dac.ExecuteNonQuery(@"CREATE TABLE [Items] (
-    ID INTEGER PRIMARY KEY,
-    UniqueKey UNIQUEIDENTIFIER NOT NULL
-)");
-
-// Write GUID
-var guid = Guid.NewGuid();
-dac.Insert("Items", new[] {
-    new ColumnValue("ID", 1),
-    new ColumnValue("UniqueKey", guid)
-});
-
-// Read GUID back (automatic type conversion)
-var retrieved = dac.ExecuteScalar<Guid>(
-    "SELECT UniqueKey FROM Items WHERE ID = 1");
-
-Console.WriteLine($"Written: {guid}");
-Console.WriteLine($"Retrieved: {retrieved}");
-Console.WriteLine($"Match: {guid == retrieved}");  // true
-```
-
-### Parameterized Queries (SQL Injection Safe)
-
-```csharp
-var dac = Tools.Sqlite.Open(":memory:");
-
-dac.ExecuteNonQuery(@"CREATE TABLE [Users] (
-    ID INTEGER PRIMARY KEY,
-    Name TEXT,
-    Email TEXT
-)");
-
+// Insert with ColumnValue array
 dac.Insert("Users", new[] {
     new ColumnValue("ID", 1),
     new ColumnValue("Name", "Alice"),
     new ColumnValue("Email", "alice@example.com")
 });
 
-// Safe parameterized query - prevents SQL injection
-string userInput = "Alice"; // Could be malicious
-var results = dac.ExecuteQuery(
-    "SELECT * FROM Users WHERE Name = @name",
-    new ColumnValue("@name", userInput));
+// Update using setValues and whereValues
+dac.Update("Users",
+    setValues: new[] { new ColumnValue("Name", "Alice Smith") },
+    whereValues: new[] { new ColumnValue("ID", 1) }
+);
 
-// Multiple parameters
-results = dac.ExecuteQuery(
-    "SELECT * FROM Users WHERE Name = @name AND Email = @email",
-    new ColumnValue("@name", "Alice"),
-    new ColumnValue("@email", "alice@example.com"));
+// Delete matching rows
+dac.Delete("Users", new[] { new ColumnValue("ID", 1) });
 ```
 
-## 📊 Database-Specific Implementations
+## 🔧 DAC Extension Methods
 
-Sphere10.Framework.Data provides database-specific projects with optimized implementations:
+The `IDACExtensions` class provides convenience methods for common operations:
 
-- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) - SQLite support (embedded, in-memory)
-- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) - SQL Server support
-- [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird) - Firebird database support
-- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate) - NHibernate ORM integration
+### Query Methods
 
-Corresponding WinForms projects available for GUI applications:
-- [Sphere10.Framework.Windows.Forms.Sqlite](../Sphere10.Framework.Windows.Forms.Sqlite)
-- [Sphere10.Framework.Windows.Forms.MSSQL](../Sphere10.Framework.Windows.Forms.MSSQL)
-- [Sphere10.Framework.Windows.Forms.Firebird](../Sphere10.Framework.Windows.Forms.Firebird)
-
-## 🔧 Usage
-
-## 📦 Dependencies
-
-- **Sphere10 Framework**: Core framework
-- **System.Data**: ADO.NET abstraction (.NET built-in)
-- **Database-specific drivers**: Installed by platform-specific packages (SQLite, SQL Server, Firebird, NHibernate)
-
-## ⚠️ Best Practices
-
-- **Always use `using` statements** for scopes to ensure proper connection cleanup and transaction handling
-- **Use `ColumnValue` for all parameters** to prevent SQL injection
-- **Keep transaction scopes small** - only operations that must be atomic
-- **Parameterized queries only** - never concatenate user input into SQL strings
-- **Handle exceptions properly** - transaction scopes auto-rollback on exception; explicit `Commit()` required for success
-- **Test with multiple databases** - Sphere10.Framework.Data is database-agnostic, but specific DBMS edge cases may exist
-
-## 🧬 Architecture Layers
-
-- **ADO.NET Extensions**: `IDbConnection`, `IDbCommand`, `IDbReader` helpers
-- **DAC (Data Access Context)**: Transaction and connection management (`IDataAccessContext`)
-- **Schema Support**: Database introspection and DDL operations
-- **Type Mapping**: CLR ↔ Database type conversion
-- **Bulk Operations**: Efficient batch insert/update patterns
-- **CSV/XML Support**: Data import/export utilities
-
-## 🛠️ Tools.* Namespace
-
-This project extends the global Tools namespace with database-specific utilities:
-
-### **Tools.Data**
-Generic database operations across all providers.
 ```csharp
-var connection = Tools.Data.CreateConnection(connectionString);
-var adapter = Tools.Data.CreateDataAdapter(connection);
+// Execute query returning DataTable
+DataTable result = dac.ExecuteQuery("SELECT * FROM Users");
+
+// With format arguments (uses SQLBuilder)
+DataTable result = dac.ExecuteQuery("SELECT * FROM {0}", SQLBuilderCommand.TableName("Users"));
+
+// Generic scalar
+int count = dac.ExecuteScalar<int>("SELECT COUNT(*) FROM Users");
 ```
 
-### **Tools.Sqlite** (via Sphere10.Framework.Data.Sqlite)
-SQLite-specific utilities.
+### Select with Filtering
+
 ```csharp
-var dac = Tools.Sqlite.Open(":memory:");
-var dac = Tools.Sqlite.Create(filename, pageSize: 4096);
-Tools.Sqlite.Drop(Tools.Sqlite.GetFilePathFromConnectionString(connStr));
-bool exists = Tools.Sqlite.Exists(connectionString);
+// Select with column matches
+DataTable users = dac.Select("Users",
+    columns: new[] { "ID", "Name" },
+    columnMatches: new[] { new ColumnValue("Status", "Active") }
+);
+
+// Select with limit and offset
+DataTable page = dac.Select("Users",
+    limit: 10,
+    offset: 20,
+    orderByClause: "Name ASC"
+);
+
+// Count records
+long count = dac.Count("Users", columnMatches: new[] { new ColumnValue("Status", "Active") });
+
+// Check existence
+bool hasUsers = dac.Any("Users");
 ```
 
-### **Tools.MSSql** (via Sphere10.Framework.Data.MSSQL)
-SQL Server-specific utilities.
+### DataRow Operations
+
 ```csharp
-var adapter = Tools.MSSql.CreateAdapter(connectionString);
-var connection = Tools.MSSql.CreateConnection(connectionString);
+// Save DataRow (auto-detects Insert vs Update)
+long result = dac.Save(dataRow);
+
+// Insert DataRow
+long identity = dac.Insert(dataRow, ommitAutoIncrementPK: true);
+
+// Update DataRow
+dac.Update(dataRow);
 ```
 
-### **Tools.Json** & **Tools.Xml**
-Data format conversion utilities.
+### Dirty Read Scope
+
+For read-uncommitted isolation:
+
 ```csharp
-string json = Tools.Json.Serialize(data);
-var deserialized = Tools.Json.Deserialize<T>(json);
-
-string xml = Tools.Xml.Serialize(data);
-var deserialized = Tools.Xml.Deserialize<T>(xml);
+using (var scope = dac.BeginDirtyReadScope()) {
+    var data = dac.ExecuteQuery("SELECT * FROM LargeTable");
+}
 ```
 
-For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-reference.md)
+## 🔨 SQL Builder
 
-## 🔌 Extensibility
+The `ISQLBuilder` interface provides database-agnostic SQL generation with dialect-specific implementations:
 
-Implement `IDataAccessContext` to create custom DAC implementations for unsupported databases or specialized persistence needs. All database-specific projects (SQLite, MSSQL, Firebird) extend the abstract `DataAccessContext` base class.
+| Implementation | Database |
+|---------------|----------|
+| `SqliteSQLBuilder` | SQLite |
+| `MSSQLBuilder` | SQL Server |
+| `FirebirdSQLBuilder` | Firebird |
+| `ANSI2003SQLBuilder` | ANSI SQL 2003 |
 
-## ⚡ Performance Considerations
+### Building Queries
 
-- **Connection Pooling**: Reuse connections within transaction scopes for efficiency
-- **Batch Operations**: Use bulk insert patterns for large datasets
-- **Parameterized Queries**: Cached query plans improve execution speed
-- **Type Mapping**: Constant-size types (int, long, GUID) faster than variable-size (string, byte[])
-- **Database Selection**: SQLite optimal for single-process/embedded; MSSQL/Firebird for multi-user/distributed
+```csharp
+var builder = dac.CreateSQLBuilder();
 
-## ✅ Status & Compatibility
+// SELECT statement
+builder.Select("Users",
+    columns: new object[] { "ID", "Name" },
+    distinct: true,
+    limit: 10,
+    whereClause: "Status = 'Active'",
+    orderByClause: "Name ASC"
+);
 
-- **Maturity**: Production-tested, core abstraction stable
-- **.NET Target**: .NET 8.0+ (primary), .NET Standard 2.0 compatibility for some components
-- **Thread Safety**: Each DAC instance should be used single-threaded; create separate instances for concurrent access
-- **Backward Compatibility**: Database schemas may require migration between Sphere10 Framework versions
+string sql = builder.ToString();
+```
 
-## 📖 Related Projects
+### Building Statements
 
-- [Sphere10.Framework](../Sphere10.Framework) - Core framework
-- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - WinForms integration with DAC support
-- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework with data access patterns
+```csharp
+var builder = dac.CreateSQLBuilder();
+
+// Insert
+builder.Insert("Users", new[] {
+    new ColumnValue("Name", "Alice"),
+    new ColumnValue("Email", "alice@example.com")
+});
+
+// Update
+builder.Update("Users",
+    setColumns: new[] { new ColumnValue("Name", "Alice Smith") },
+    matchColumns: new[] { new ColumnValue("ID", 1) }
+);
+
+// Delete
+builder.Delete("Users", new[] { new ColumnValue("ID", 1) });
+
+// Execute batch
+DataTable[] results = dac.ExecuteBatch(builder);
+```
+
+### DDL Operations
+
+```csharp
+var builder = dac.CreateSQLBuilder();
+
+// Create table
+builder.CreateTable(new TableSpecification {
+    Name = "Products",
+    Type = TableType.Persistent,
+    PrimaryKey = new PrimaryKeySpecification { Columns = new[] { "ID" } },
+    Columns = new[] {
+        new ColumnSpecification { Name = "ID", Type = typeof(int), Nullable = false },
+        new ColumnSpecification { Name = "Name", Type = typeof(string), Nullable = false },
+        new ColumnSpecification { Name = "Price", Type = typeof(decimal), Nullable = true }
+    }
+});
+
+dac.ExecuteBatch(builder);
+
+// Or use extension method
+dac.CreateTable(tableSpecification);
+```
+
+### Transaction Control
+
+```csharp
+var builder = dac.CreateSQLBuilder();
+builder.BeginTransaction();
+builder.Insert("Users", new[] { new ColumnValue("ID", 1) });
+builder.CommitTransaction();  // or RollbackTransaction()
+dac.ExecuteBatch(builder);
+```
+
+## 📋 Schema Introspection
+
+The `GetSchema()` method returns a complete `DBSchema` object:
+
+```csharp
+DBSchema schema = dac.GetSchema();
+
+// Tables
+foreach (var table in schema.Tables) {
+    Console.WriteLine($"Table: {table.Name}");
+    
+    // Columns
+    foreach (var column in table.Columns) {
+        Console.WriteLine($"  {column.Name}: {column.DataType} " +
+            $"(PK: {column.IsPrimaryKey}, Nullable: {column.IsNullable})");
+    }
+    
+    // Primary key
+    if (table.PrimaryKey != null) {
+        Console.WriteLine($"  PK: {string.Join(", ", table.PrimaryKey.ColumnNames)}");
+    }
+    
+    // Foreign keys
+    foreach (var fk in table.ForeignKeys) {
+        Console.WriteLine($"  FK: {fk.Name} -> {fk.ReferenceTable}");
+    }
+}
+```
+
+### Schema Objects
+
+| Class | Description |
+|-------|-------------|
+| `DBSchema` | Complete database schema |
+| `DBTableSchema` | Table definition with columns, keys, constraints |
+| `DBColumnSchema` | Column definition with type, nullability, auto-increment |
+| `DBPrimaryKeySchema` | Primary key definition |
+| `DBForeignKeySchema` | Foreign key with cascade rules |
+| `DBUniqueConstraintSchema` | Unique constraint definition |
+| `DBTriggerSchema` | Trigger definition |
+
+### Artificial Keys
+
+For databases lacking native foreign key support, `ArtificialKeys` can define relationships programmatically:
+
+```csharp
+dac.ArtificialKeys = ArtificialKeys.FromXml(xmlConfig);
+var schema = dac.GetSchema();  // Includes artificial FK definitions
+```
+
+## 📁 Data Format Utilities
+
+### Tools.Data - General Utilities
+
+```csharp
+// Read CSV to DataTable
+DataTable data = Tools.Data.ReadCsv("data.csv", hasHeaders: true);
+
+// Create DataTable from type
+DataTable table = Tools.Data.CreateDataTableForType<MyEntity>();
+```
+
+### Tools.Json - JSON Serialization
+
+```csharp
+// Serialize to string
+string json = Tools.Json.WriteToString(myObject);
+
+// Deserialize from string
+MyClass obj = Tools.Json.ReadFromString<MyClass>(json);
+
+// File operations
+Tools.Json.WriteToFile("data.json", myObject);
+MyClass loaded = Tools.Json.ReadFromFile<MyClass>("data.json");
+```
+
+### Tools.Xml - XML Serialization
+
+```csharp
+// Serialize to string
+using StringWriter writer = new StringWriter();
+Tools.Xml.Write(myObject, Encoding.Unicode, writer);
+string xml = writer.ToString();
+
+// Deserialize from string
+MyClass obj = Tools.Xml.ReadFromString<MyClass>(xml);
+
+// File operations
+Tools.Xml.WriteToFile("data.xml", myObject);
+MyClass loaded = Tools.Xml.ReadFromFile<MyClass>("data.xml");
+```
+
+### CSV Reader
+
+Full-featured CSV parser with streaming support:
+
+```csharp
+using Sphere10.Framework.Data.Csv;
+
+using (var reader = new CsvReader(new StreamReader("data.csv"), hasHeaders: true)) {
+    while (reader.ReadNextRecord()) {
+        string name = reader["Name"];
+        string email = reader["Email"];
+    }
+}
+```
+
+## 🗃️ File Store
+
+The `IFileStore<TFileKeyType>` interface provides a key-based file storage abstraction:
+
+```csharp
+// GUID-based file store
+IFileStore<Guid> store = new GuidFileStore("/path/to/storage");
+
+// Create new file
+Guid key = store.NewFile();
+
+// Write content
+store.WriteAllText(key, "Hello, World!");
+
+// Read content
+string content = store.ReadAllText(key);
+
+// Stream operations
+using Stream stream = store.Open(key, FileMode.Open, FileAccess.Read);
+```
+
+**Implementations:**
+- `GuidFileStore` - Uses GUIDs as file keys
+- `SimpleFileStore` - Uses string keys (filename-based)
+- `TempFileStore` - Temporary file storage
+- `GuidStringFileStore` - GUID-based with string key interface
+
+## 🔌 Database-Specific Packages
+
+| Package | Description |
+|---------|-------------|
+| [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) | SQLite with `Tools.Sqlite` |
+| [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) | SQL Server with `Tools.MSSQL` |
+| [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird) | Firebird with `Tools.Firebird` |
+| [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate) | NHibernate ORM integration |
+
+### Example: SQLite
+
+```csharp
+// Create new database
+var dac = Tools.Sqlite.Create("mydb.sqlite", pageSize: 4096);
+
+// Open existing database  
+var dac = Tools.Sqlite.Open("mydb.sqlite");
+
+// Check existence
+bool exists = Tools.Sqlite.ExistsByPath("mydb.sqlite");
+
+// Drop database
+Tools.Sqlite.Drop("mydb.sqlite");
+```
+
+### Example: SQL Server
+
+```csharp
+// Open connection
+var dac = Tools.MSSQL.Open("localhost", "MyDatabase", "sa", "password");
+
+// Create database
+Tools.MSSQL.CreateDatabase("localhost", "NewDb", "sa", "password", useWindowsAuth: false);
+
+// Drop database
+Tools.MSSQL.DropDatabase("localhost", "NewDb", "sa", "password", useWindowsAuth: false);
+```
+
+## 🧩 Extending IDAC
+
+Create custom DAC implementations by extending `DACBase`:
+
+```csharp
+public class CustomDAC : DACBase {
+    public CustomDAC(string connectionString, ILogger logger = null)
+        : base(connectionString, logger) { }
+    
+    public override DBMSType DBMSType => DBMSType.Other;
+    
+    public override IDbConnection CreateConnection() {
+        return new CustomDbConnection(ConnectionString);
+    }
+    
+    public override ISQLBuilder CreateSQLBuilder() {
+        return new CustomSQLBuilder();
+    }
+    
+    public override void EnlistInSystemTransaction(
+        IDbConnection connection, 
+        System.Transactions.Transaction transaction) {
+        // Enlist connection in distributed transaction
+    }
+    
+    public override void BulkInsert(
+        DataTable table, 
+        BulkInsertOptions options, 
+        TimeSpan timeout) {
+        // Implement bulk insert
+    }
+    
+    protected override DataTable GetDenormalizedTableDescriptions() {
+        // Return schema metadata
+    }
+    
+    protected override DataTable GetDenormalizedTriggerDescriptions() {
+        // Return trigger metadata
+    }
+}
+```
+
+## ✅ Best Practices
+
+- **Always use `DACScope`** - Ensures proper connection cleanup and transaction handling
+- **Use `ColumnValue` for parameters** - Prevents SQL injection and ensures type safety
+- **Explicit Commit** - Transactions require explicit `Commit()`; uncommitted transactions auto-rollback
+- **Nested scope behavior** - Inner scope commits don't persist if outer scope rolls back
+- **One DAC per thread** - DAC instances are not thread-safe; create separate instances for concurrent access
+- **Use `ISQLBuilder` for complex queries** - Provides database-agnostic SQL generation
 
 ## ⚖️ License
 
