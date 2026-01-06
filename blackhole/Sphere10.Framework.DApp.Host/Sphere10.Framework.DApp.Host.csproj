@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Description>Hosting utilities for Sphere10 Framework DApps.</Description>
+    <PackageTags>sphere10 framework blockchain dapp host</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0-beta.98" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.DApp.Core\Sphere10.Framework.DApp.Core.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+  </ItemGroup>
+
+</Project>

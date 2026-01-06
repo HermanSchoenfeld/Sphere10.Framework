@@ -238,8 +238,6 @@ This project does not define project-specific Tools classes. Refer to related pr
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core RPC transport implementation
 - [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework with RPC support
-- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - This library
-- [Sphere10.Framework.DApp.Node](../Sphere10.Framework.DApp.Node) - Blockchain node with RPC API
 
 ## ✅ Status & Maturity
 
