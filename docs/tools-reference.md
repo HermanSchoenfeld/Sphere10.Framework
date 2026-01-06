@@ -503,9 +503,31 @@ try {
 
 ---
 
-## Adding New Tools
+## Using the Tools Namespace
 
-When creating a new project in Sphere10 Framework, add a Tools class to the Tools namespace:
+To use the Tools namespace in your project:
+
+1. **Add a reference** to the appropriate Sphere10 Framework package (e.g., `Sphere10.Framework`, `Sphere10.Framework.Data`, etc.)
+2. **Add the namespace** to your code:
+   ```csharp
+   using Sphere10.Framework;
+   // or for specific domains:
+   using Sphere10.Framework.Data;
+   ```
+3. **Use IntelliSense discovery** - type `Tools.` and browse available tools via autocomplete
+
+```csharp
+// Example: After adding 'using Sphere10.Framework;'
+Tools.Crypto.SHA256(data);      // Cryptography tools
+Tools.Text.ToTitleCase(str);    // Text manipulation
+Tools.Collection.Shuffle(list); // Collection utilities
+```
+
+---
+
+## Adding New Tools (For Contributors)
+
+When extending Sphere10 Framework with new tools:
 
 ### Naming Convention
 - **File**: `[Feature]Tool.cs` (e.g., `MyFeatureTool.cs`)
@@ -536,13 +558,6 @@ public static class MyFeatureTool {
     }
 }
 ```
-
-### Integration Steps
-1. Add `[Feature]Tool.cs` to your project
-2. Use `namespace Tools;` (or `Tools.[Domain]`)
-3. Add static methods for related operations
-4. Update project README to list available tools
-5. Document in the global [docs/tools-reference.md](tools-reference.md) file
 
 ---
 
