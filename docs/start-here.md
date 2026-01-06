@@ -13,9 +13,9 @@ Welcome! This guide gets you oriented with Sphere10 Framework quickly.
 - **Data access abstraction** — Multi-database support (SQL Server, SQLite, Firebird, NHibernate)
 - **Cryptography** — Hashing, signatures, key derivation, post-quantum algorithms
 - **Networking** — TCP, UDP, WebSockets, JSON-RPC frameworks
-- **Cross-platform** — Windows, macOS, iOS, Android, .NET Core
-- **50+ utility tools** — Tools.* namespace for global discovery
-- **Complete testing** — 2000+ tests, NUnit utilities, test fixtures
+- **Cross-platform** — Windows, macOS, iOS, Android, .NET 8.0+
+- **Tools.* utilities** — Global IntelliSense-discoverable helpers
+- **Comprehensive testing** — 2000+ tests, NUnit utilities
 
 ---
 
@@ -25,18 +25,21 @@ Welcome! This guide gets you oriented with Sphere10 Framework quickly.
 
 **Project Structure**:
 ```
-src/                          # 45+ framework projects
-├── Sphere10.Framework/       # Core library
-├── Sphere10.Framework.Data/  # Database access
-├── Sphere10.Framework.Communications/  # Networking
-├── Sphere10.Framework.CryptoEx/        # Cryptography
-├── Sphere10.Framework.Windows/         # Windows integration
+src/                              # 45+ framework projects
+├── Sphere10.Framework/           # Core library
+├── Sphere10.Framework.Application/  # App lifecycle, DI, settings
+├── Sphere10.Framework.Data/      # Database abstraction
+├── Sphere10.Framework.Data.Sqlite/  # SQLite provider
+├── Sphere10.Framework.Data.MSSQL/   # SQL Server provider
+├── Sphere10.Framework.Communications/  # Networking & RPC
+├── Sphere10.Framework.CryptoEx/  # Advanced cryptography
+├── Sphere10.Framework.Windows/   # Windows integration
 ├── Sphere10.Framework.Web.AspNetCore/  # Web framework
-└── ... (more platforms and utilities)
+├── Sphere10.Framework.Drawing/   # Graphics utilities
+└── ... (more platforms)
 
-tests/                        # 2000+ unit & integration tests
-blackhole/                    # Blazor UI components
-docs/                         # This documentation
+tests/                            # 2000+ unit & integration tests
+docs/                             # This documentation
 ```
 
 ### 2. Learn the Tools.* Namespace
@@ -61,8 +64,7 @@ byte[] hash = Tools.Crypto.SHA256(data);
 string tempFile = Tools.FileSystem.GenerateTempFilename();
 
 // Database operations
-var connection = Tools.Sqlite.Create(":memory:");
-var adapter = Tools.MSSQL.CreateAdapter(connString);
+var dac = Tools.Sqlite.Open(":memory:");
 
 // JSON/XML
 string json = Tools.Json.Serialize(obj);
@@ -72,29 +74,18 @@ string json = Tools.Json.Serialize(obj);
 
 ### 3. Pick Your Use Case
 
-**Working with Collections & Data?**
-- Read: [src/Sphere10.Framework/README.md](../src/Sphere10.Framework/README.md)
-- Key topics: Extended lists, Merkle trees, stream-backed collections, serialization
-
-**Need Database Access?**
-- Read: [src/Sphere10.Framework.Data/README.md](../src/Sphere10.Framework.Data/README.md)
-- Key topics: Multi-database abstraction, transactions, parameterized queries
-
-**Implementing Cryptography?**
-- Read: [src/Sphere10.Framework.CryptoEx/README.md](../src/Sphere10.Framework.CryptoEx/README.md)
-- Key topics: Hashing, signatures, key derivation, post-quantum algorithms
-
-**Building Networking/RPC?**
-- Read: [src/Sphere10.Framework.Communications/README.md](../src/Sphere10.Framework.Communications/README.md)
-- Key topics: TCP, UDP, WebSockets, JSON-RPC, attribute-based service definition
-
-**Windows Desktop Development?**
-- Read: [src/Sphere10.Framework.Windows/README.md](../src/Sphere10.Framework.Windows/README.md)
-- Key topics: Registry, services, security, event logging
-
-**Web Application (ASP.NET)?**
-- Read: [src/Sphere10.Framework.Web.AspNetCore/README.md](../src/Sphere10.Framework.Web.AspNetCore/README.md)
-- Key topics: Middleware, controllers, HTML utilities, routing
+| Use Case | Documentation |
+|----------|---------------|
+| Collections & Data Structures | [Sphere10.Framework](../src/Sphere10.Framework/README.md) |
+| Database Access | [Sphere10.Framework.Data](../src/Sphere10.Framework.Data/README.md) |
+| Cryptography | [Sphere10.Framework.CryptoEx](../src/Sphere10.Framework.CryptoEx/README.md) |
+| Networking & RPC | [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) |
+| Windows Desktop | [Sphere10.Framework.Windows](../src/Sphere10.Framework.Windows/README.md) |
+| Windows Forms UI | [Sphere10.Framework.Windows.Forms](../src/Sphere10.Framework.Windows.Forms/README.md) |
+| Web (ASP.NET Core) | [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
+| Graphics & Drawing | [Sphere10.Framework.Drawing](../src/Sphere10.Framework.Drawing/README.md) |
+| iOS Development | [Sphere10.Framework.iOS](../src/Sphere10.Framework.iOS/README.md) |
+| Android Development | [Sphere10.Framework.Android](../src/Sphere10.Framework.Android/README.md) |
 
 ---
 
@@ -105,58 +96,74 @@ string json = Tools.Json.Serialize(obj);
 All framework projects extend the global `Tools` namespace:
 
 ```csharp
-// Core framework tools
-Tools.Text, Tools.Crypto, Tools.Collection, Tools.FileSystem
+using Sphere10.Framework;
 
-// Database tools
-Tools.Data, Tools.Sqlite, Tools.MSSQL, Tools.Firebird
+// Core framework tools
+Tools.Text       // String manipulation
+Tools.Crypto     // Cryptography
+Tools.Collection // Collection operations
+Tools.FileSystem // File I/O
+
+// Database tools  
+Tools.Sqlite     // SQLite operations
+Tools.MSSQL      // SQL Server operations
 
 // Platform tools
-Tools.WinTool, Tools.Web.Html, Tools.iOSTool
-
-// Discovery pattern: Type Tools. to see all available operations
+Tools.WinTool    // Windows registry, services
+Tools.Drawing    // Graphics operations
 ```
 
 ### Layered Architecture
 
-1. **Core Framework** — Utilities, collections, serialization
-2. **Data Access** — Multi-database abstraction layer
-3. **Networking** — TCP, UDP, WebSockets, RPC
-4. **Cryptography** — Hashing, signatures, key derivation
-5. **Platform Integration** — Windows, Web, Mobile
-6. **Testing** — NUnit utilities, test fixtures
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PRESENTATION — Windows Forms, ASP.NET Core, Drawing        │
+├─────────────────────────────────────────────────────────────┤
+│  DATA — Database abstraction, SQLite, MSSQL, Firebird       │
+├─────────────────────────────────────────────────────────────┤
+│  APPLICATION — DI, settings, lifecycle, CLI                 │
+├─────────────────────────────────────────────────────────────┤
+│  CORE — Collections, serialization, crypto, streams         │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Design Patterns
+### Design Principles
 
-- **Composability** — Small, focused abstractions that compose predictably
-- **Explicit Control** — Fine-grained configuration over magic defaults
-- **Performance** — Batch operations, memory efficiency, zero-allocation variants
-- **Extensibility** — Interface-based design for decoration and adaptation
-- **Correctness** — Transaction-aware structures, cryptographic correctness
+- **Composability** — Small, focused components that work together
+- **Explicit Control** — No magic defaults; you control the lifecycle
+- **Performance** — Memory-efficient, zero-allocation where possible
+- **Extensibility** — Interface-based design for customization
+- **Correctness** — ACID transactions, cryptographic correctness
 
 ---
 
 ## Common Tasks
 
-### Reading a Database
+### Database Access
 
 ```csharp
-using Sphere10.Framework.Data;
+using Sphere10.Framework;
 
 // SQLite
 var dac = Tools.Sqlite.Open(":memory:");
 
-// SQL Server
-var dac = Tools.MSSQL.CreateAdapter(connectionString);
+// Insert
+dac.Insert("Users", new[] {
+    new ColumnValue("ID", 1),
+    new ColumnValue("Name", "Alice")
+});
 
-// Execute query
-var results = dac.ExecuteQuery("SELECT * FROM Users");
-
-// With parameters (SQL injection safe)
+// Query with parameters (SQL injection safe)
 var count = dac.ExecuteScalar<int>(
     "SELECT COUNT(*) FROM Users WHERE Name = @name",
     new ColumnValue("@name", "Alice")
 );
+
+// Transaction
+using (var scope = dac.BeginTransactionScope()) {
+    dac.Update("Users", values, "WHERE ID = 1");
+    scope.Commit();
+}
 ```
 
 ### Hashing Data
@@ -168,10 +175,7 @@ using Sphere10.Framework;
 byte[] hash = Tools.Crypto.SHA256(data);
 
 // BLAKE2
-byte[] hash256 = Tools.Crypto.BLAKE2B(data);
-
-// Verify signature
-bool valid = Tools.Crypto.VerifySignature(publicKey, message, signature);
+byte[] blake = Tools.Crypto.BLAKE2B(data);
 ```
 
 ### String Manipulation
@@ -185,11 +189,8 @@ string clean = Tools.Text.RemoveWhitespace(text);
 // Generate random string
 string random = Tools.Text.GenerateRandomString(32);
 
-// Safe email validation
+// Validate email
 bool valid = Tools.Text.IsValidEmail(email);
-
-// Parse safely
-int parsed = Tools.Parse.ToInt32(input, defaultValue);
 ```
 
 ### File Operations
@@ -203,9 +204,6 @@ string temp = Tools.FileSystem.GenerateTempFilename();
 // Read/write files
 Tools.FileSystem.WriteAllText(path, content);
 string content = Tools.FileSystem.ReadAllText(path);
-
-// List files
-var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 ```
 
 ---
@@ -214,45 +212,28 @@ var files = Tools.FileSystem.GetFiles(directory, "*.txt");
 
 | Document | Purpose |
 |----------|---------|
-| [index.md](index.md) | Documentation home and topic index |
+| [README.md](README.md) | Documentation home |
 | [Tools Reference](tools-reference.md) | Complete Tools.* namespace catalog |
-| [real-world-usage-examples.md](real-world-usage-examples.md) | Practical examples and patterns |
-| [architecture/sphere10-framework.md](architecture/sphere10-framework.md) | Framework architecture and design |
-| [architecture/domains.md](architecture/domains.md) | Catalog of 30+ framework domains |
-| [guidelines/3-tier-architecture.md](guidelines/3-tier-architecture.md) | Architectural patterns |
-| [guidelines/code-styling.md](guidelines/code-styling.md) | Coding standards and conventions |
+| [Real-World Examples](real-world-usage-examples.md) | Practical patterns from tests |
+| [Framework Architecture](architecture/sphere10-framework.md) | Design and architecture |
+| [Framework Domains](architecture/domains.md) | Catalog of 40+ domains |
+| [3-Tier Architecture](guidelines/3-tier-architecture.md) | Architectural patterns |
+| [Code Styling](guidelines/code-styling.md) | Coding standards |
 
 ---
 
 ## Next Steps
 
-1. **Explore project README files** in `src/` for component-specific guidance
+1. **Explore project READMEs** in `src/` for component-specific guidance
 2. **Review [Tools Reference](tools-reference.md)** for utility catalog
-3. **Study [real-world-usage-examples.md](real-world-usage-examples.md)** for practical patterns
-4. **Read architecture docs** to understand design decisions
+3. **Study [Real-World Examples](real-world-usage-examples.md)** for practical patterns
+4. **Read [Framework Architecture](architecture/sphere10-framework.md)** to understand design decisions
 5. **Run the test suite** to see examples in action
 
 ---
 
-## Resources
+## Quick Links
 
-- **[README.md](../README.md)** — Project overview and project list
-- **[Tools Reference](tools-reference.md)** — Tools.* namespace guide
-- **Individual project READMEs** in `src/` — Component-specific docs
-
----
-
-## Questions?
-
-- Check the project README in `src/` for your component
-- Review [Tools Reference](tools-reference.md) for utility patterns
-- See [real-world-usage-examples.md](real-world-usage-examples.md) for practical examples
-- Read [architecture/sphere10-framework.md](architecture/sphere10-framework.md) for design context
-
----
-
-**Version**: 3.0.0  
-**Framework**: Sphere10 Framework  
-**Target**: .NET 8.0  
-**License**: MIT NON-AI
-
+- [Main README](../README.md) — Project overview
+- [Documentation Home](README.md) — Full documentation index
+- [Tools Reference](tools-reference.md) — Tools.* namespace guide

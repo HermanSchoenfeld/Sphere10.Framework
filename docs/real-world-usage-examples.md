@@ -6,13 +6,15 @@ A comprehensive guide to using Sphere10 Framework libraries based on analysis of
 
 ## Table of Contents
 
-1. [Sphere10 Framework Core (Collections, Serialization, Extensions)](#Sphere10 Framework-core)
-2. [Sphere10 Framework Data Access Layer](#Sphere10 Framework-data-access-layer)
-3. [Sphere10 Framework Communications & RPC](#Sphere10 Framework-communications-and-rpc)
-4. [Sphere10 Framework CryptoEx (Cryptography)](#Sphere10 Framework-cryptoex)
-5. [HashLib4CSharp (Hash Functions)](#hashlib4csharp)
-6. [Sphere10 Framework Windows LevelDB](#Sphere10 Framework-windows-leveldb)
-7. [Sphere10 Framework Windows Security & Registry](#Sphere10 Framework-windows-security-and-registry)
+1. [Sphere10 Framework Core](#sphere10-framework-core)
+2. [Sphere10 Framework Data Access Layer](#sphere10-framework-data-access-layer)
+3. [Sphere10 Framework Communications and RPC](#sphere10-framework-communications-and-rpc)
+4. [Sphere10 Framework CryptoEx](#sphere10-framework-cryptoex)
+5. [HashLib4CSharp](#hashlib4csharp)
+6. [Sphere10 Framework Windows LevelDB](#sphere10-framework-windows-leveldb)
+7. [Sphere10 Framework Windows Security and Registry](#sphere10-framework-windows-security-and-registry)
+8. [Integration Patterns](#integration-patterns)
+9. [Summary of Key Takeaways](#summary-of-key-takeaways)
 
 ---
 
