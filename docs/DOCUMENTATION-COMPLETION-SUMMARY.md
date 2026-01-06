@@ -17,7 +17,7 @@
   - 6 complete working examples
   - Load balancing and dead letter queue patterns
 
-- ✅ [education/INDEX.md](education/INDEX.md) (400+ lines)
+- ✅ [education/README.md](education/README.md) (400+ lines)
   - Learning center with organized pathways
   - 3 complete learning paths (12 weeks, 8 weeks, 10 weeks)
   - Topic reference and common questions
@@ -42,14 +42,14 @@
 
 **Architecture Documentation**:
 - ✅ architecture/Sphere10.Framework.md - Framework overview
-- ✅ architecture/Domains.md - Domain catalog (30+ domains)
+- ✅ architecture/domains.md - Domain catalog (30+ domains)
 
 **Guidelines Documentation**:
-- ✅ guidelines/3-tier-Architecture.md - Architecture principles
-- ✅ guidelines/Code-Styling.md - Code standards
+- ✅ guidelines/3-tier-architecture.md - Architecture principles
+- ✅ guidelines/code-styling.md - Code standards
 
 **Education Documentation**:
-- ✅ education/INDEX.md - Learning center (created)
+- ✅ education/README.md - Learning center (created)
 - ✅ education/README.md - Original (preserved)
 - ✅ education/What-is-Blockchain.md - Blockchain fundamentals
 
@@ -107,10 +107,10 @@ docs/
 ├── START-HERE.md ........................... Master navigation (1,000+ lines)
 ├── architecture/
 │   ├── Sphere10.Framework.md ........................ Framework overview
-│   └── Domains.md ......................... Domain catalog
+│   └── domains.md ......................... Domain catalog
 ├── guidelines/
-│   ├── 3-tier-Architecture.md ............ Architecture principles
-│   └── Code-Styling.md ................... Code standards
+│   ├── 3-tier-architecture.md ............ Architecture principles
+│   └── code-styling.md ................... Code standards
 ├── education/
 │   ├── INDEX.md ........................... Learning center index (400+ lines)
 │   ├── README.md .......................... Education home
@@ -171,10 +171,10 @@ All documentation includes proper cross-references:
 
 **START-HERE.md** links to:
 - architecture/Sphere10.Framework.md
-- education/INDEX.md
+- education/README.md
 - Helium/README.md
 - presentation-layer/README.md
-- guidelines/3-tier-Architecture.md
+- guidelines/3-tier-architecture.md
 
 **Helium/README.md** shows:
 - Inter-DApp communication
@@ -182,7 +182,7 @@ All documentation includes proper cross-references:
 - Message contracts
 - Saga patterns
 
-**education/INDEX.md** organizes:
+**education/README.md** organizes:
 - Blockchain fundamentals
 - DApp development
 - Architecture patterns
@@ -230,12 +230,12 @@ All documentation includes proper cross-references:
 ## Verification Checklist
 
 - ✅ Helium/README.md rewritten (800+ lines)
-- ✅ education/INDEX.md created (400+ lines)
+- ✅ education/README.md created (400+ lines)
 - ✅ presentation-layer/README.md rewritten (800+ lines)
 - ✅ START-HERE.md created as master navigation (1,000+ lines)
 - ✅ All existing docs preserved (What-is-Blockchain.md, etc.)
-- ✅ Architecture files maintained (Domains.md)
-- ✅ Guidelines preserved (3-tier-Architecture.md, Code-Styling.md)
+- ✅ Architecture files maintained (domains.md)
+- ✅ Guidelines preserved (3-tier-architecture.md, code-styling.md)
 - ✅ Cross-references validated
 - ✅ Image references preserved
 - ✅ Professional formatting applied
@@ -254,11 +254,11 @@ All documentation includes proper cross-references:
 
 ### For Developers
 1. Study [Helium/README.md](Helium/README.md) for messaging
-2. Review [education/INDEX.md](education/INDEX.md) for foundation topics
+2. Review [education/README.md](education/README.md) for foundation topics
 
 ### For Architects
-1. Review [architecture/Sphere10.Framework.md](architecture/Sphere10.Framework.md)
-2. Study [guidelines/3-tier-Architecture.md](guidelines/3-tier-Architecture.md)
+1. Review [architecture/sphere10-framework.md](architecture/sphere10-framework.md)
+2. Study [guidelines/3-tier-architecture.md](guidelines/3-tier-architecture.md)
 
 ### For UI Developers
 1. Review [presentation-layer/README.md](presentation-layer/README.md)
