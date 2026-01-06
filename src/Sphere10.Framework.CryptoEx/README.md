@@ -221,11 +221,43 @@ foreach (var dss in schemes) {
 
 **Traditional (Vulnerable to Quantum)**:
 - ECDSA with multiple curves
+- Schnorr signatures (BIP-340 compatible, SECP256K1)
+- MuSig multi-signatures
 - One-time signatures (W-OTS)
 
 **Post-Quantum Resistant**:
 - Winternitz AMS (W-AMS) - quantum-resistant alternatives
 - W-AMS-Sharp - optimized variant
+
+### Schnorr Signatures
+
+BIP-340 compatible Schnorr signatures:
+
+```csharp
+using Sphere10.Framework.CryptoEx.EC.Schnorr;
+
+var schnorr = new Schnorr(ECDSAKeyType.SECP256K1);
+
+var privateKey = schnorr.GeneratePrivateKey();
+var publicKey = schnorr.DerivePublicKey(privateKey);
+
+var message = Encoding.UTF8.GetBytes("Schnorr signature");
+var signature = schnorr.Sign(privateKey, message);
+bool isValid = schnorr.Verify(signature, message, publicKey);
+```
+
+### MuSig Multi-Signatures
+
+Aggregate multiple signatures into one:
+
+```csharp
+using Sphere10.Framework.CryptoEx.EC.Schnorr;
+
+// Multiple signers create a combined signature
+var muSig = new MuSigBuilder();
+// ... configure signers
+var combinedSignature = muSig.Build();
+```
 
 ## 🔧 Advanced Usage
 

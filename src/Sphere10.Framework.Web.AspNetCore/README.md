@@ -2,9 +2,9 @@
 
 # 💻 Sphere10.Framework.Web.AspNetCore
 
-**ASP.NET Core integration library** providing middleware, extensions, and utilities for building high-performance web applications and APIs with Sphere10 Framework.
+**ASP.NET Core integration library** providing framework bootstrapping, middleware, extensions, and utilities for building web applications and APIs with Sphere10 Framework.
 
-Sphere10.Framework.Web.AspNetCore bridges Sphere10 Framework with **ASP.NET Core ecosystem**, enabling seamless integration of logging, configuration, dependency injection, routing, and custom middleware while following .NET best practices.
+Sphere10.Framework.Web.AspNetCore bridges Sphere10 Framework with the **ASP.NET Core ecosystem**, enabling seamless integration of framework services, logging, lifecycle management, and custom middleware.
 
 ## 📦 Installation
 
@@ -15,19 +15,19 @@ dotnet add package Sphere10.Framework.Web.AspNetCore
 ## ⚡ 10-Second Example
 
 ```csharp
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Sphere10 Framework services
-builder.Services.AddSphere10WebServices();
+// Register Sphere10 Framework services
+builder.Services.AddSphere10Framework();
 
 var app = builder.Build();
 
-// Add Sphere10 Framework middleware
-app.UseSphere10Logging();
-app.UseSphere10ErrorHandling();
+// Start Sphere10 Framework with ASP.NET Core host
+app.StartSphere10Framework();
 
 app.MapGet("/api/hello", () => Results.Ok(new { 
     message = "Hello from Sphere10 Framework!",
@@ -39,251 +39,88 @@ app.Run();
 
 ## 🏗️ Core Concepts
 
-**Middleware Pipeline**: Custom middleware components for logging, error handling, and cross-cutting concerns.
+**Framework Integration**: `AddSphere10Framework()` and `StartSphere10Framework()` extension methods for bootstrapping.
 
-**Service Registration**: Extension methods for configuring Sphere10 Framework services in ASP.NET Core.
+**Middleware Pipeline**: Custom middleware components like `CloudflareConnectingIPMiddleware` for Cloudflare IP resolution.
 
-**Routing Extensions**: Enhanced routing helpers and conventions.
+**HTML Utilities**: Animation classes, value beautification, and formatting helpers via `Tools.Web.Html`.
 
-**HTML Processing**: HTML manipulation, parsing, and generation utilities.
+**Sitemap Support**: `SitemapXml` class for generating SEO sitemaps.
 
-**XML Processing**: XML document handling and transformation.
+**Form Processing**: Bootstrap form helpers and form result handling.
 
-**Sitemap Support**: Automatic sitemap generation for SEO.
-
-**Form Handling**: Server-side form processing and validation.
+**SelectList Helpers**: `Tools.Web.AspNetCore.ToSelectList<TEnum>()` for building dropdown lists from enums.
 
 ## 🔧 Core Examples
 
-### Configure Sphere10 Framework Web Services
+### Bootstrap Sphere10 Framework in ASP.NET Core
 
 ```csharp
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure services
-builder.Services
-    .AddControllers()
-    .AddSphere10SerializationSupport();
+// Register all Sphere10 Framework module services
+builder.Services.AddSphere10Framework();
 
-// Add Sphere10 Framework web services
-builder.Services.AddSphere10WebServices(options => {
-    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
-    options.LogHttpRequests = true;
-    options.CompressResponses = true;
-});
+// Optionally add Sphere10 Framework logger provider
+builder.Services.AddSphere10FrameworkLogger(myLogger);
 
-// Add logging
-builder.Services.AddSphere10Logging(builder.Configuration.GetSection("Logging"));
-
-// Build app
 var app = builder.Build();
 
-// Configure middleware
-app.UseSphere10ErrorHandling();
-app.UseSphere10Logging();
-app.UseSphere10ResponseCompression();
+// Start the framework with the ASP.NET Core host
+// This initializes all registered modules and lifecycle monitors
+app.StartSphere10Framework(Sphere10FrameworkOptions.Default);
 
 app.MapControllers();
 app.Run();
 ```
 
-### Custom Middleware & Filters
+### Cloudflare Connecting IP Middleware
+
+Resolve the real client IP when behind Cloudflare:
 
 ```csharp
 using Sphere10.Framework.Web.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 
-// Create custom action filter
-public class Sphere10ValidationFilter : IAsyncActionFilter {
-    private readonly ILogger<Sphere10ValidationFilter> _logger;
-    
-    public Sphere10ValidationFilter(ILogger<Sphere10ValidationFilter> logger) {
-        _logger = logger;
-    }
-    
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
-        // Pre-execution validation
-        var modelState = context.ModelState;
-        if (!modelState.IsValid) {
-            var errors = modelState
-                .Where(x => x.Value.Errors.Any())
-                .Select(x => new { 
-                    Field = x.Key,
-                    Errors = x.Value.Errors.Select(e => e.ErrorMessage)
-                })
-                .ToList();
-                
-            _logger.LogWarning("Model validation failed: {@Errors}", errors);
-            context.Result = new BadRequestObjectResult(new { 
-                message = "Validation failed",
-                errors = errors 
-            });
-            return;
-        }
-        
-        // Continue execution
-        var result = await next();
-        
-        // Post-execution processing
-        _logger.LogInformation("Action executed successfully");
-    }
-}
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
 
-// Register filter globally
-public class Startup {
-    public void ConfigureServices(IServiceCollection services) {
-        services.AddControllers(options => {
-            options.Filters.Add<Sphere10ValidationFilter>();
-        });
-    }
-}
+// Add middleware to extract real IP from Cloudflare header
+app.UseMiddleware<CloudflareConnectingIPMiddleware>();
+
+app.MapGet("/ip", (HttpContext context) => 
+    Results.Ok(new { ip = context.Connection.RemoteIpAddress?.ToString() }));
+
+app.Run();
 ```
 
-### HTML Processing & Generation
+### Enum to SelectList Conversion
+
+Generate dropdown options from enum values:
 
 ```csharp
-using Sphere10.Framework.Web.AspNetCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Sphere10.Framework;
 
-// Parse HTML
-string html = "<html><body><p>Hello</p></body></html>";
-var document = Tools.HtmlTool.ParseHtml(html);
+public enum Priority { Low, Medium, High, Critical }
 
-// Find elements
-var paragraphs = document.GetElementsByTagName("p");
-foreach (var p in paragraphs) {
-    Console.WriteLine(p.InnerText);  // "Hello"
-}
+// In a controller or Razor page:
+var selectList = Tools.Web.AspNetCore.ToSelectList<Priority>(
+    selectedItem: Priority.Medium,
+    sort: SortDirection.Ascending);
 
-// Generate HTML
-var builder = new HtmlBuilder();
-builder.StartTag("div").AddClass("container");
-{
-    builder.StartTag("h1").AddAttribute("id", "title");
-    builder.Text("Welcome");
-    builder.EndTag();
-    
-    builder.StartTag("p");
-    builder.Text("This is a paragraph");
-    builder.EndTag();
-}
-builder.EndTag();
-
-string generatedHtml = builder.ToString();
-// Output: <div class="container"><h1 id="title">Welcome</h1><p>This is a paragraph</p></div>
-```
-
-### XML Processing
-
-```csharp
-using Sphere10.Framework.Web.AspNetCore;
-
-// Parse XML
-string xml = @"
-<root>
-    <item id='1'>
-        <name>Product 1</name>
-        <price>29.99</price>
-    </item>
-    <item id='2'>
-        <name>Product 2</name>
-        <price>49.99</price>
-    </item>
-</root>";
-
-var xmlDoc = Tools.XmlTool.ParseXml(xml);
-
-// Query elements
-var items = xmlDoc.GetElementsByTagName("item");
-foreach (var item in items) {
-    var id = item.GetAttribute("id");
-    var name = item.GetElementsByTagName("name")[0].InnerText;
-    var price = item.GetElementsByTagName("price")[0].InnerText;
-    
-    Console.WriteLine($"[{id}] {name}: ${price}");
-}
-
-// Generate XML
-var xmlBuilder = new XmlBuilder("catalog");
-xmlBuilder.StartElement("products");
-{
-    xmlBuilder.StartElement("product").AddAttribute("id", "1");
-    {
-        xmlBuilder.Element("name", "Widget");
-        xmlBuilder.Element("price", "19.99");
-    }
-    xmlBuilder.EndElement();  // product
-}
-xmlBuilder.EndElement();  // products
-
-string generatedXml = xmlBuilder.ToString();
-```
-
-### Form Handling & Validation
-
-```csharp
-using Sphere10.Framework.Web.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController : ControllerBase {
-    [HttpPost]
-    public IActionResult CreateProduct([FromBody] CreateProductRequest request) {
-        // Model validation happens automatically
-        if (!ModelState.IsValid) {
-            return BadRequest(ModelState);
-        }
-        
-        // Validate business rules
-        if (request.Price < 0) {
-            return BadRequest(new { 
-                error = "Price must be positive",
-                field = "Price"
-            });
-        }
-        
-        // Process form
-        var product = new Product {
-            Name = request.Name,
-            Price = request.Price,
-            Description = request.Description
-        };
-        
-        // Save and return
-        return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
-    }
-    
-    [HttpGet("{id}")]
-    public IActionResult GetProduct(int id) {
-        var product = // ... fetch from database
-        if (product == null) {
-            return NotFound();
-        }
-        
-        return Ok(product);
-    }
-}
-
-public class CreateProductRequest {
-    [Required(ErrorMessage = "Name is required")]
-    [StringLength(100, MinimumLength = 3)]
-    public string Name { get; set; }
-    
-    [Required]
-    [Range(0.01, 99999.99)]
-    public decimal Price { get; set; }
-    
-    [StringLength(500)]
-    public string Description { get; set; }
-}
+// Or from a Type:
+var selectList2 = Tools.Web.AspNetCore.ToSelectList(
+    typeof(Priority), 
+    selectedItem: null, 
+    sort: null);
 ```
 
 ### Sitemap Generation
+
+Generate XML sitemaps for SEO:
 
 ```csharp
 using Sphere10.Framework.Web.AspNetCore;
@@ -294,164 +131,161 @@ public class SitemapController : ControllerBase {
     [HttpGet("sitemap.xml")]
     [Produces("application/xml")]
     public IActionResult GetSitemap() {
-        var sitemap = new SitemapBuilder("https://example.com");
+        var sitemap = new SitemapXml();
         
-        // Add pages
-        sitemap.AddUrl("/", ChangeFrequency.Weekly, 1.0);
-        sitemap.AddUrl("/about", ChangeFrequency.Monthly, 0.8);
-        sitemap.AddUrl("/products", ChangeFrequency.Daily, 0.9);
+        // Add pages with optional metadata
+        sitemap.Add("/", DateTime.UtcNow, SitemapXml.Frequency.Weekly, 1.0);
+        sitemap.Add("/about", DateTime.UtcNow, SitemapXml.Frequency.Monthly, 0.8);
+        sitemap.Add("/products", DateTime.UtcNow, SitemapXml.Frequency.Daily, 0.9);
         
         // Add dynamic product URLs
-        var products = // ... fetch from database
+        var products = GetProducts();
         foreach (var product in products) {
-            sitemap.AddUrl(
-                $"/products/{product.Id}",
-                ChangeFrequency.Weekly,
-                0.7,
-                product.UpdatedDate);
+            if (!sitemap.HasNode($"/products/{product.Id}")) {
+                sitemap.Add(
+                    $"/products/{product.Id}",
+                    product.UpdatedDate,
+                    SitemapXml.Frequency.Weekly,
+                    0.7);
+            }
         }
         
-        var sitemapXml = sitemap.GenerateXml();
-        return Content(sitemapXml, "application/xml");
-    }
-    
-    [HttpGet("sitemap-index.xml")]
-    [Produces("application/xml")]
-    public IActionResult GetSitemapIndex() {
-        // For large sites with multiple sitemaps
-        var index = new SitemapIndexBuilder("https://example.com");
-        
-        index.AddSitemapUrl("/sitemap-products.xml", DateTime.UtcNow);
-        index.AddSitemapUrl("/sitemap-posts.xml", DateTime.UtcNow);
-        index.AddSitemapUrl("/sitemap-static.xml", DateTime.UtcNow);
-        
-        var indexXml = index.GenerateXml();
-        return Content(indexXml, "application/xml");
+        // Serialize to XML
+        var xml = Tools.Xml.WriteToString(sitemap);
+        return Content(xml, "application/xml");
     }
 }
 ```
 
-### Error Handling & Exception Filters
+### HTML Animation Classes
+
+Use Animate.css classes via the Html helper:
 
 ```csharp
 using Sphere10.Framework.Web.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 
-public class Sphere10ExceptionFilter : IExceptionFilter {
-    private readonly ILogger<Sphere10ExceptionFilter> _logger;
-    
-    public Sphere10ExceptionFilter(ILogger<Sphere10ExceptionFilter> logger) {
-        _logger = logger;
-    }
-    
-    public void OnException(ExceptionContext context) {
-        var exception = context.Exception;
-        
-        _logger.LogError(exception, "Unhandled exception: {ExceptionType}", 
-            exception.GetType().Name);
-        
-        // Map exceptions to HTTP responses
-        var response = exception switch {
-            ArgumentException => new { 
-                status = StatusCodes.Status400BadRequest,
-                message = "Invalid argument",
-                error = exception.Message
-            },
-            KeyNotFoundException => new {
-                status = StatusCodes.Status404NotFound,
-                message = "Resource not found",
-                error = exception.Message
-            },
-            _ => new {
-                status = StatusCodes.Status500InternalServerError,
-                message = "Internal server error",
-                error = context.HttpContext.Request.Host.ToString()
-            }
-        };
-        
-        context.Result = new ObjectResult(response) {
-            StatusCode = (int?)response.GetType().GetProperty("status")?.GetValue(response)
-        };
-        
-        context.ExceptionHandled = true;
-    }
-}
+// Get a random entry animation class
+string entryAnimation = Tools.Web.Html.RandomEntryAnimationClass(AnimationDelay.Seconds_1_0);
+// Returns: "animated bounceIn delay-1s" (or similar)
 
-// Register
-builder.Services.AddControllers(options => {
-    options.Filters.Add<Sphere10ExceptionFilter>();
-});
+// Get a random exit animation class
+string exitAnimation = Tools.Web.Html.RandomExitAnimationClass();
+
+// Get a specific animation class
+string slideIn = Tools.Web.Html.AnimationClass(
+    Animation.slideInLeft, 
+    AnimationDelay.Seconds_0_5);
+// Returns: "animated slideInLeft delay-0.5s"
+
+// Beautify values for display
+string formatted = Tools.Web.Html.Beautify(DateTime.Now);
+// Returns: "2024-01-15 14:30:00"
+
+string hexBytes = Tools.Web.Html.Beautify(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF });
+// Returns: "0xDEADBEEF"
 ```
 
-## 🏗️ Architecture & Modules
+### Form Result Handling
 
-**Middleware Pipeline**: Custom middleware components
-- Request/response logging
-- Error handling
-- Response compression
-- CORS support
+Handle form submissions with typed results:
 
-**Controller Support**: Base controller classes
-- Sphere10Controller: Enhanced controller base
-- API controller conventions
-- Result mapping utilities
+```csharp
+using Sphere10.Framework.Web.AspNetCore;
 
-**HTML Processing**: HTML utilities
-- HTML parsing and generation
-- DOM manipulation
-- Tag builder API
+// Form result types
+public enum FormResultType {
+    Success,
+    Error,
+    Warning,
+    Info
+}
 
-**XML Processing**: XML utilities
-- XML parsing and generation
-- XPath queries
-- Namespace support
+// Return structured form results
+public class ProductController : Controller {
+    [HttpPost]
+    public IActionResult Create(ProductModel model) {
+        if (!ModelState.IsValid) {
+            return Json(new FormResult {
+                ResultType = FormResultType.Error,
+                Message = "Validation failed"
+            });
+        }
+        
+        // Process form...
+        return Json(new FormResult {
+            ResultType = FormResultType.Success,
+            Message = "Product created successfully"
+        });
+    }
+}
+```
 
-**Routing**: Enhanced routing
-- Attribute-based conventions
-- Route templates
-- Constraint validation
+## 📋 API Reference
 
-**Sitemap Generation**: SEO utilities
-- Sitemap generation
-- Sitemap indexes
-- Change frequency tracking
+### Extension Methods
+
+| Extension | Target | Description |
+|-----------|--------|-------------|
+| `AddSphere10Framework()` | `IServiceCollection` | Registers all Sphere10 Framework module services |
+| `AddSphere10FrameworkLogger()` | `IServiceCollection` | Adds Sphere10 logger as a provider |
+| `StartSphere10Framework()` | `IHost` | Initializes framework with ASP.NET Core host |
+
+### Tools.Web.AspNetCore
+
+| Method | Description |
+|--------|-------------|
+| `ParseNetwork(cidr)` | Parses CIDR notation into `IPNetwork` |
+| `ToSelectList<TEnum>()` | Converts enum to `SelectList` for dropdowns |
+| `ToSelectList(Type, ...)` | Converts enum type to `SelectList` |
+
+### Tools.Web.Html
+
+| Method | Description |
+|--------|-------------|
+| `Beautify(object)` | Formats values for HTML display |
+| `Percent(decimal)` | Formats decimal as percentage |
+| `AnimationClass(animation, delay)` | Gets CSS animation class string |
+| `RandomEntryAnimationClass()` | Gets random entry animation |
+| `RandomExitAnimationClass()` | Gets random exit animation |
+
+### SitemapXml
+
+| Member | Description |
+|--------|-------------|
+| `Add(url, lastModified?, frequency?, priority?)` | Adds URL to sitemap |
+| `HasNode(url)` | Checks if URL exists in sitemap |
+| `Nodes` | Gets array of sitemap nodes |
+| `Frequency` | Enum: `Never`, `Yearly`, `Monthly`, `Weekly`, `Daily`, `Hourly`, `Always` |
+
+### Middleware
+
+| Class | Description |
+|-------|-------------|
+| `CloudflareConnectingIPMiddleware` | Extracts real IP from `cf-connecting-ip` header |
 
 ## 📦 Dependencies
 
-- **Sphere10 Framework**: Core framework
-- **Microsoft.AspNetCore.App**: ASP.NET Core runtime (.NET built-in)
-- **Microsoft.AspNetCore.Mvc**: Controller and view support
-- **System.Xml.XPath**: XPath support
+- **Sphere10.Framework.Application**: Application framework and lifecycle management
+- **Microsoft.AspNetCore.App**: ASP.NET Core runtime
+- **Microsoft.AspNetCore.Mvc**: MVC and controller support
 
 ## ⚠️ Best Practices
 
+- **Call `StartSphere10Framework()` early**: Before mapping routes to ensure modules are initialized
+- **Use Cloudflare middleware first**: Add it early in the pipeline when behind Cloudflare
 - **Async all the way**: Use async/await throughout request handlers
-- **Error handling**: Implement proper exception filters and handlers
-- **Validation**: Validate input at multiple levels
-- **Caching**: Cache static content and expensive operations
-- **Security**: Use HTTPS, validate input, implement CSRF protection
-- **Logging**: Log request/response for debugging
-- **Performance**: Monitor request times and optimize slow endpoints
-- **API versioning**: Use URL-based or header-based versioning
+- **Validate input**: Use model validation attributes and check `ModelState`
 
 ## ✅ Status & Compatibility
 
 - **Maturity**: Production-ready for web applications and APIs
 - **.NET Target**: .NET 8.0+ (primary), .NET 6.0+ (compatible)
-- **Performance**: Optimized for high-throughput request processing
-- **Scalability**: Designed for distributed deployments with load balancing
+- **Platform Support**: Cross-platform (Windows, Linux, macOS)
 
 ## 📖 Related Projects
 
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework
-- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Data access for web applications
-
-## ⚖️ License
-
-Distributed under the **MIT NON-AI License**.
-
-See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application lifecycle management
 
 ## 👤 Author
 

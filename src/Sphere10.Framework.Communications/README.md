@@ -1,12 +1,8 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
-
 # 📡 Sphere10.Framework.Communications
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-**Multi-protocol networking and RPC framework for .NET 8.0+** providing type-safe remote procedure calls, protocol abstraction, and distributed system communication patterns.
-
-Sphere10.Framework.Communications enables **seamless remote service invocation** through attribute-based RPC definitions with automatic JSON serialization, type conversion, and protocol agnosticism.
+**Multi-protocol networking and RPC framework** providing JSON-RPC servers/clients, anonymous pipes, TCP endpoints, WebSockets, and protocol channel abstractions.
 
 ## 📦 Installation
 
@@ -14,51 +10,49 @@ Sphere10.Framework.Communications enables **seamless remote service invocation**
 dotnet add package Sphere10.Framework.Communications
 ```
 
-## ⚡ 10-Second Example
+## 🏗️ Core Architecture
+
+### IEndPoint Interface
+
+The `IEndPoint` interface abstracts communication endpoints for message-based protocols:
 
 ```csharp
-using Sphere10.Framework.Communications.RPC;
-using System.Text;
-
-// Define RPC service with attributes
-[RpcAPIService("calculator")]
-public class CalcService {
-    [RpcAPIMethod]
-    public int Add(int a, int b) => a + b;
-    
-    [RpcAPIMethod]
-    public string Greet([RpcAPIArgument("name")] string userName) 
-        => $"Hello, {userName}!";
+public interface IEndPoint {
+    string GetDescription();
+    ulong GetUID();
+    IEndPoint WaitForMessage();
+    EndpointMessage ReadMessage();
+    void WriteMessage(EndpointMessage message);
+    bool IsOpened();
+    void Start();
+    void Stop();
 }
-
-// Invoke remotely (framework handles serialization)
-var result = await rpcClient.InvokeAsync<int>("calculator.Add", new { a = 5, b = 3 });
-Console.WriteLine(result);  // 8
-
-var greeting = await rpcClient.InvokeAsync<string>("calculator.Greet", new { name = "World" });
-Console.WriteLine(greeting);  // "Hello, World!"
 ```
 
-## 🏗️ Core Concepts
+**Implementations:**
+- `TcpEndPoint` - TCP socket communication
+- `TcpEndPointListener` - TCP server that accepts connections
+- `AnonymousPipeEndpoint` - Inter-process pipe communication
 
-**RPC Service**: Method marked with `[RpcAPIService]` and `[RpcAPIMethod]` attributes that can be invoked remotely.
+### JSON-RPC Framework
 
-**Method Parameters**: Parameters automatically serialized from JSON with support for primitives, objects, collections, and enums.
+The RPC system uses attributes to define remote-callable services:
 
-**Type-Safe Invocation**: Call remote methods as if they were local, with automatic serialization and deserialization.
+| Attribute | Target | Description |
+|-----------|--------|-------------|
+| `[RpcAPIService("name")]` | Class | Defines a service namespace |
+| `[RpcAPIMethod]` | Method | Marks method as remotely callable |
+| `[RpcAPIMethod("alias")]` | Method | Marks method with custom RPC name |
+| `[RpcAPIArgument("name")]` | Parameter | Maps parameter to JSON field name |
 
-**Protocol Agnostic**: RPC framework separates protocol implementation from service definition—swap transports without changing service code.
+## 🔧 JSON-RPC Server
 
-**Custom Naming**: Use `[RpcAPIArgument("name")]` to map C# parameter names to JSON field names for API flexibility.
-
-## 🔧 Core Examples
-
-### Primitive Type Services
+Create a JSON-RPC server with TCP endpoint:
 
 ```csharp
 using Sphere10.Framework.Communications.RPC;
 
-// Define RPC service with multiple primitive type methods
+// Define service
 [RpcAPIService("math")]
 public class MathService {
     [RpcAPIMethod]
@@ -69,28 +63,80 @@ public class MathService {
     
     [RpcAPIMethod]
     public float Multiply(float a, float b) => a * b;
-    
-    [RpcAPIMethod]
-    public double Divide(double a, double b) => a / b;
-    
-    [RpcAPIMethod]
-    public string Concatenate(string a, string b) => a + b;
-    
-    [RpcAPIMethod]
-    public bool IsGreater(int a, int b) => a > b;
 }
 
-// JSON-RPC invocation format:
-// {"jsonrpc": "2.0", "method": "math.Add", "params": {"a": 5, "b": 3}, "id": 1}
-// Response: {"jsonrpc": "2.0", "result": 8, "id": 1}
+// Create server
+var endpoint = new TcpEndPointListener(port: 8080);
+var config = new JsonRpcConfig();
+var server = new JsonRpcServer(endpoint, config);
+
+// Register services
+var mathService = new MathService();
+config.ApiService.AddApi(mathService);
+
+// Start server
+server.Start();
+
+// Handle new clients
+server.OnNewClient += (handler) => {
+    Console.WriteLine($"Client connected: {handler}");
+};
 ```
 
-### Custom Parameter Naming
+### JsonRpcConfig
+
+Configuration for JSON-RPC servers and clients:
+
+```csharp
+var config = new JsonRpcConfig {
+    ConnectionMode = JsonRpcConfig.ConnectionModeEnum.Persistent,  // or Pulsed
+    Logger = new ConsoleLogger()
+};
+```
+
+## 🔧 JSON-RPC Client
+
+Connect to a JSON-RPC server:
 
 ```csharp
 using Sphere10.Framework.Communications.RPC;
 
-// Use [RpcAPIArgument] to map C# names to JSON field names
+// Connect to server
+var endpoint = new TcpEndPoint("localhost", 8080);
+var config = new JsonRpcConfig();
+var client = new JsonRpcClient(endpoint, config);
+
+// Make RPC calls using batch descriptor
+var batch = new ApiBatchCallDescriptor();
+batch.AddCall<int>("math.add", new { a = 5, b = 3 });
+batch.AddCall<float>("math.multiply", new { a = 2.5f, b = 4.0f });
+
+object[] results = client.RemoteCall(batch);
+int sum = (int)results[0];        // 8
+float product = (float)results[1]; // 10.0
+```
+
+## 🔧 ApiService - Service Registration
+
+The `ApiService` class manages RPC method bindings:
+
+```csharp
+var apiService = new ApiService();
+
+// Add service instance
+var mathService = new MathService();
+apiService.AddApi(mathService);
+
+// Remove service
+apiService.RemoveApi(mathService);
+
+// Check if instance is registered
+bool isRegistered = apiService.IsApi(mathService);
+```
+
+### Service with Custom Parameter Names
+
+```csharp
 [RpcAPIService("strings")]
 public class StringService {
     [RpcAPIMethod]
@@ -99,166 +145,173 @@ public class StringService {
         [RpcAPIArgument("second")] string text2) 
         => text1 + text2;
     
-    [RpcAPIMethod]
-    public int MixedTypes(
-        [RpcAPIArgument("num")] int number,
-        [RpcAPIArgument("text")] string str) 
-        => number + str.Length;
+    [RpcAPIMethod("explicit_args")]
+    public void ExplicitArguments([RpcAPIArgument("arg1")] uint value) {
+        // Custom method name and parameter name
+    }
 }
-
-// JSON-RPC invocation:
-// {"jsonrpc": "2.0", "method": "strings.Concat", 
-//  "params": {"first": "Hello", "second": "World"}, "id": 1}
-// Response: {"jsonrpc": "2.0", "result": "HelloWorld", "id": 1}
 ```
 
-### Complex Objects & Collections
+### Complex Types and Collections
+
+```csharp
+public class TestObject {
+    public int iVal;
+    public string sVal;
+    public float[] fArray;
+    [JsonConverter(typeof(ByteArrayHexConverter))]
+    public byte[] bytesArray;  // Serialized as hex string
+}
+
+[RpcAPIService("objects")]
+public class ObjectService {
+    [RpcAPIMethod]
+    public TestObject GetTestObject(TestObject input) {
+        return new TestObject {
+            iVal = input.iVal + 1,
+            sVal = input.sVal + "_processed"
+        };
+    }
+    
+    [RpcAPIMethod]
+    public TestObject[] GetTestObjectArray(TestObject input) {
+        return new[] { input, input };
+    }
+}
+```
+
+## 🔗 Anonymous Pipes
+
+For inter-process communication:
+
+```csharp
+using Sphere10.Framework.Communications;
+
+// Server side - spawn child process with pipe handles
+var serverPipe = AnonymousPipe.ToChildProcess(
+    processPath: "child.exe",
+    arguments: "",
+    argInjectorFunc: (args, readHandle, writeHandle) => 
+        $"{args} --read={readHandle} --write={writeHandle}"
+);
+
+await serverPipe.Open();
+await serverPipe.TrySendString("Hello from parent");
+var response = await serverPipe.ReceiveString(CancellationToken.None);
+
+// Client side - connect using handles from arguments
+var clientPipe = AnonymousPipe.FromChildProcess(
+    new AnonymousPipeEndpoint(readHandle, writeHandle)
+);
+
+await clientPipe.Open();
+var message = await clientPipe.ReceiveString(CancellationToken.None);
+await clientPipe.TrySendString("Hello from child");
+```
+
+### AnonymousPipe Events
+
+```csharp
+pipe.ReceivedString += (message) => Console.WriteLine($"Received: {message}");
+pipe.SentString += (message) => Console.WriteLine($"Sent: {message}");
+```
+
+## 🔗 TCP Endpoints
+
+### TcpEndPoint - Client Connection
 
 ```csharp
 using Sphere10.Framework.Communications.RPC;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
-// Define complex types for RPC parameters
-public class Person {
-    public string Name { get; set; }
-    public int Age { get; set; }
-    public string[] Tags { get; set; }
-}
+var endpoint = new TcpEndPoint("192.168.1.100", 8080);
+endpoint.MaxMessageSize = 8192;  // Default: 4096
 
-[RpcAPIService("people")]
-public class PeopleService {
-    [RpcAPIMethod]
-    public string GetInfo(Person person) 
-        => $"{person.Name} is {person.Age}, tags: {string.Join(",", person.Tags)}";
-    
-    [RpcAPIMethod]
-    public int CountTags(Person person) 
-        => person.Tags?.Length ?? 0;
-    
-    [RpcAPIMethod]
-    public List<Person> FilterByAge(List<Person> people, int minAge) 
-        => people.FindAll(p => p.Age >= minAge);
-}
+endpoint.Start();
 
-// JSON-RPC invocation:
-// {"jsonrpc": "2.0", "method": "people.GetInfo", 
-//  "params": {"person": {"name": "Alice", "age": 30, "tags": ["dev", "blockchain"]}}, "id": 1}
+// Send message
+endpoint.WriteMessage(new EndpointMessage("Hello Server"));
+
+// Receive message
+var response = endpoint.ReadMessage();
+Console.WriteLine(response.ToSafeString());
+
+endpoint.Stop();
 ```
 
-### Enum Serialization
+### TcpEndPointListener - Server
 
 ```csharp
-using Sphere10.Framework.Communications.RPC;
+var listener = new TcpEndPointListener(8080);
+listener.Start();
 
-public enum Status { Active = 1, Inactive = 2, Pending = 3 }
+// Wait for client connection
+IEndPoint clientEndpoint = listener.WaitForMessage();
+Console.WriteLine($"Client connected: {clientEndpoint.GetDescription()}");
 
-[RpcAPIService("status")]
-public class StatusService {
-    [RpcAPIMethod]
-    public string GetStatusName(Status status) => status.ToString();
-    
-    [RpcAPIMethod]
-    public bool IsActive(Status status) => status == Status.Active;
-    
-    [RpcAPIMethod]
-    public Status[] GetAllStatuses() => new[] { Status.Active, Status.Inactive, Status.Pending };
-}
-
-// JSON-RPC supports both numeric and string enum representation
-// {"jsonrpc": "2.0", "method": "status.IsActive", "params": {"status": "Active"}, "id": 1}
-// or
-// {"jsonrpc": "2.0", "method": "status.IsActive", "params": {"status": 1}, "id": 1}
+// Communicate with client
+var message = clientEndpoint.ReadMessage();
+clientEndpoint.WriteMessage(new EndpointMessage("Response"));
 ```
 
-### Byte Array Handling
+## 🔗 Protocol Channels
+
+Abstract base for bidirectional communication:
 
 ```csharp
-using Sphere10.Framework.Communications.RPC;
-using System.Text.Json.Serialization;
+using Sphere10.Framework.Communications;
 
-public class DataPayload {
-    public string Name { get; set; }
-    [JsonPropertyName("data_hex")]
-    public byte[] Data { get; set; }  // Serialized as hex string in JSON
-}
-
-[RpcAPIService("data")]
-public class DataService {
-    [RpcAPIMethod]
-    public int GetLength(DataPayload payload) 
-        => payload.Data?.Length ?? 0;
+public abstract class ProtocolChannel {
+    public ProtocolChannelState State { get; }
+    public CommunicationRole Initiator { get; }
     
-    [RpcAPIMethod]
-    public string GetDataHash(DataPayload payload) 
-        => Tools.Hashing.SHA256Hex(payload.Data);
+    public Task Open();
+    public Task Close();
+    public bool IsConnectionAlive();
+    
+    public Task<bool> TrySendBytes(ReadOnlyMemory<byte> bytes, CancellationToken ct);
+    public Task<byte[]> ReceiveBytes(CancellationToken ct);
 }
-
-// JSON-RPC invocation with hex-encoded bytes:
-// {"jsonrpc": "2.0", "method": "data.GetLength", 
-//  "params": {"payload": {"name": "test", "data_hex": "0102030405"}}, "id": 1}
-// Response: {"jsonrpc": "2.0", "result": 5, "id": 1}
 ```
 
-## 🎯 Service Registration & Discovery
+**States:** `Closed`, `Opening`, `Open`, `Closing`
 
-Services are automatically discovered via reflection from assemblies containing `[RpcAPIService]` attributes. The framework builds a method registry mapping RPC method names (service.method) to implementations.
+## 🛡️ Security Policies
 
-**Service Namespace**: `[RpcAPIService("namespace")]` organizes methods under a namespace for API organization.
+The `TcpSecurityPolicies` class provides connection-level security:
 
-**Method Overloading**: Not supported in RPC due to JSON-based parameter passing; use different method names or combine parameters into complex types.
+```csharp
+// Validate connection count
+TcpSecurityPolicies.ValidateConnectionCount(
+    TcpSecurityPolicies.MaxConnecitonPolicy.ConnectionOpen);
 
-## 🔌 Protocol Abstraction
+// Monitor for potential attacks
+TcpSecurityPolicies.MonitorPotentialAttack(
+    TcpSecurityPolicies.AttackType.ConnectionFlod, 
+    clientEndpoint);
 
-The RPC framework is protocol-agnostic:
-- **Transport**: Pluggable transport layer (HTTP, WebSocket, TCP, named pipes)
-- **Serialization**: JSON by default; can implement `IMessageSerializer` for alternatives
-- **Message Format**: JSON-RPC 2.0 compatible request/response structure
+// Validate JSON message quality
+TcpSecurityPolicies.ValidateJsonQuality(messageBytes, bytesRead);
+```
 
-Services defined with attributes work unchanged across different transport implementations.
+## 📁 Project Structure
 
-## 🏗️ Architecture
+| Directory | Description |
+|-----------|-------------|
+| `RPC/` | JSON-RPC server, client, attributes, service management |
+| `EndPoint/` | IEndPoint interface and TCP implementations |
+| `Pipes/` | Anonymous pipe communication |
+| `TCP/` | TCP channel implementation |
+| `UDP/` | UDP communication |
+| `WebSockets/` | WebSocket protocol support |
+| `DataSource/` | Data source abstractions for protocols |
 
-- **RPC Service Definition**: `[RpcAPIService]`, `[RpcAPIMethod]`, `[RpcAPIArgument]` attributes
-- **Service Registry**: Automatic discovery and method registration
-- **Parameter Binding**: JSON → C# object conversion with type safety
-- **Response Serialization**: C# return values → JSON
-- **Protocol Handlers**: Transport-specific implementations (HTTP, WebSocket, etc.)
+## ✅ Best Practices
 
-## 🛠️ Tools.* Namespace
-
-This project does not define project-specific Tools classes. Refer to related projects:
-- [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) provides **Tools.Web** namespace for HTTP/RPC over ASP.NET Core
-- [docs/tools-reference.md](../../docs/tools-reference.md) for complete Tools catalog
-
-## ⚠️ Design Considerations
-
-- **Stateless Services**: Design services as stateless when possible for distributed invocation
-- **Exception Handling**: Exceptions are serialized and returned as JSON-RPC error responses
-- **Parameter Validation**: Validate parameters in service methods; null checks recommended
-- **Return Type Support**: Primitive types, objects, collections, enums, byte arrays supported
-- **Async Support**: Methods can be async (Task, Task<T>) for non-blocking invocation
-
-## 📖 Related Projects
-
-- [Sphere10.Framework](../Sphere10.Framework) - Core framework
-- [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core RPC transport implementation
-- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Application framework with RPC support
-
-## ✅ Status & Maturity
-
-- **RPC Framework**: Core functionality stable, production-tested
-- **.NET Target**: .NET 8.0+ (primary)
-- **Thread Safety**: Service methods should be thread-safe if called concurrently
-- **Performance**: JSON serialization overhead minimal for typical RPC payload sizes
-- **Protocol Variants**: JSON-RPC 2.0 compatible; extending for additional protocols supported
-
-## 📦 Dependencies
-
-- **Sphere10 Framework**: Core framework
-- **Newtonsoft.Json**: JSON serialization (handles custom converters for hex, enums)
-- **System.Reflection**: Service discovery and method invocation
-- **System.Net**: Networking utilities (protocol-specific implementations)
+- **Stateless Services** - Design RPC services as stateless for scalability
+- **Exception Handling** - Exceptions are serialized as JSON-RPC error responses
+- **Thread Safety** - RPC service methods should be thread-safe
+- **Connection Mode** - Use `Persistent` for frequent calls, `Pulsed` for occasional
+- **Message Size** - Configure `MaxMessageSize` for your payload requirements
 
 ## ⚖️ License
 

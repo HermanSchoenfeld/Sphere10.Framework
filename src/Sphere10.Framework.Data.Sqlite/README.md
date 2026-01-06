@@ -226,13 +226,26 @@ var product = dac.ExecuteQuery("SELECT * FROM Products WHERE ID = 1");
 
 ## 🏗️ Architecture
 
-**SqliteDatabaseManager**: Core abstraction implementing IDataAccessContext for SQLite operations.
+**SqliteDAC**: Core class implementing `IDAC` for SQLite operations.
 
-**Connection Pooling**: Automatic connection reuse and lifecycle management through Sphere10.Framework.Data.
+**Tools.Sqlite API**:
 
-**SQLite Driver**: System.Data.SQLite (P/Invoke) or Microsoft.Data.Sqlite (managed) depending on platform.
+| Method | Description |
+|--------|-------------|
+| `Open(path, password?, journalMode?, syncMode?, logger?)` | Opens existing database |
+| `Create(path, password?, pageSize?, journalMode?, syncMode?, existsPolicy?, logger?)` | Creates new database |
+| `Drop(path, throwIfNotExists?)` | Deletes database file |
+| `ExistsByPath(path)` | Checks if database file exists |
+| `ExistsByConnectionString(connectionString)` | Checks existence by connection string |
+| `CreateConnectionString(...)` | Builds connection string with options |
+| `GetFilePathFromConnectionString(connectionString)` | Extracts file path from connection string |
+| `ClearAllPools()` | Clears all SQLite connection pools |
 
-**WAL Mode**: Optimized transaction handling with Write-Ahead Logging for concurrent access.
+**Journal Modes**: `Default`, `Delete`, `Truncate`, `Persist`, `Memory`, `Wal`, `Off`
+
+**Sync Modes**: `Normal`, `Full`, `Off`
+
+**AlreadyExistsPolicy**: `Error`, `Skip`, `Overwrite`
 
 ## 📋 Best Practices
 
