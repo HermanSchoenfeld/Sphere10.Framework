@@ -153,9 +153,9 @@ See: [src/Sphere10.Framework.NUnit/README.md](../src/Sphere10.Framework.NUnit/RE
 The **Tools namespace** provides global, IntelliSense-discoverable utilities:
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 
-// Discovery-first pattern
+// Discovery-first pattern — type Tools. to see all available operations
 byte[] hash = Tools.Crypto.SHA256(data);
 string sanitized = Tools.Text.RemoveWhitespace(input);
 var connection = Tools.Sqlite.Create(connectionString);

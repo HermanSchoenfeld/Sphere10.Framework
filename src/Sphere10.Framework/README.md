@@ -36,6 +36,8 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 
 The **Tools namespace** is a defining feature of Sphere10 Framework, providing a **global, IntelliSense-discoverable collection of static utility methods** organized by domain. This acts as a single point of discovery for developers—instead of searching for the right helper class, simply type `Tools.` and explore available operations across the entire framework.
 
+> 📖 **Getting Started**: See the [Tools Reference](../../docs/tools-reference.md) for the complete catalog and usage patterns.
+
 ### Core Tools Classes
 
 **Framework-Wide Utilities**
@@ -100,7 +102,7 @@ The **Tools namespace** is a defining feature of Sphere10 Framework, providing a
 ### Usage Pattern
 
 ```csharp
-using Tools;  // Import the global Tools namespace
+using Sphere10.Framework;  // Import the framework namespace to access Tools
 
 // String operations
 string sanitized = Tools.Text.RemoveWhitespace(userInput);

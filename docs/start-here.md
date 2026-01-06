@@ -44,7 +44,7 @@ docs/                         # This documentation
 The **Tools namespace** is your gateway to all utilities:
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 
 // String operations
 string sanitized = Tools.Text.RemoveWhitespace(input);
@@ -162,7 +162,7 @@ var count = dac.ExecuteScalar<int>(
 ### Hashing Data
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 
 // SHA256
 byte[] hash = Tools.Crypto.SHA256(data);
@@ -177,7 +177,7 @@ bool valid = Tools.Crypto.VerifySignature(publicKey, message, signature);
 ### String Manipulation
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 
 // Remove whitespace
 string clean = Tools.Text.RemoveWhitespace(text);
@@ -195,7 +195,7 @@ int parsed = Tools.Parse.ToInt32(input, defaultValue);
 ### File Operations
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 
 // Generate temp filename
 string temp = Tools.FileSystem.GenerateTempFilename();

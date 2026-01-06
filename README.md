@@ -54,7 +54,7 @@ The **Tools namespace** is a defining architectural feature providing a **global
 
 ### Design Pattern
 ```csharp
-using Tools;
+using Sphere10.Framework;
 
 // Discovery-first pattern — IntelliSense shows all available tools
 byte[] hash = Tools.Crypto.SHA256(data);

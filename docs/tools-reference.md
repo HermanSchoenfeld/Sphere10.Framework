@@ -464,7 +464,7 @@ var resized = Tools.DrawingTool.Resize(image, newWidth, newHeight);
 
 ### Discovery Pattern
 ```csharp
-using Tools;  // Import global Tools namespace
+using Sphere10.Framework;  // Import framework namespace to access Tools
 
 // Start typing Tools. and IntelliSense shows all available operations
 Tools.Crypto.

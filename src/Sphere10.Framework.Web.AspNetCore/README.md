@@ -142,11 +142,10 @@ public class Startup {
 
 ```csharp
 using Sphere10.Framework.Web.AspNetCore;
-using Tools;  // HtmlTool namespace
 
 // Parse HTML
 string html = "<html><body><p>Hello</p></body></html>";
-var document = HtmlTool.ParseHtml(html);
+var document = Tools.HtmlTool.ParseHtml(html);
 
 // Find elements
 var paragraphs = document.GetElementsByTagName("p");
@@ -176,7 +175,6 @@ string generatedHtml = builder.ToString();
 
 ```csharp
 using Sphere10.Framework.Web.AspNetCore;
-using Tools;  // XmlTool namespace
 
 // Parse XML
 string xml = @"
@@ -191,7 +189,7 @@ string xml = @"
     </item>
 </root>";
 
-var xmlDoc = XmlTool.ParseXml(xml);
+var xmlDoc = Tools.XmlTool.ParseXml(xml);
 
 // Query elements
 var items = xmlDoc.GetElementsByTagName("item");
@@ -283,7 +281,6 @@ public class CreateProductRequest {
 
 ```csharp
 using Sphere10.Framework.Web.AspNetCore;
-using Tools;  // SitemapTool namespace
 
 [ApiController]
 [Route("")]

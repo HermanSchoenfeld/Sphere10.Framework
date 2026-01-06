@@ -10,11 +10,10 @@ Sphere10.Framework.Drawing enables **platform-agnostic graphics operations** thr
 
 ```csharp
 using Sphere10.Framework;
-using Tools;
 using System.Drawing;
 
 // Create color gradient
-Color[] gradient = Drawing.CalculateColorGradient(
+Color[] gradient = Tools.Drawing.CalculateColorGradient(
     Color.Red, 
     Color.Blue, 
     10);  // 10 colors from red to blue
@@ -24,11 +23,11 @@ foreach (var color in gradient) {
 }
 
 // Convert string to color
-Color myColor = Drawing.ConvertStringToColor("255:0:128");
+Color myColor = Tools.Drawing.ConvertStringToColor("255:0:128");
 
 // Manipulate images
 Bitmap image = new Bitmap("photo.jpg");
-Bitmap rounded = Drawing.CreateRoundedImage(image, 20);  // 20px radius
+Bitmap rounded = Tools.Drawing.CreateRoundedImage(image, 20);  // 20px radius
 rounded.Save("rounded.jpg");
 ```
 
@@ -49,7 +48,7 @@ rounded.Save("rounded.jpg");
 ### Color Gradient Generation
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 using System.Drawing;
 
 // Generate gradient with interpolation between two colors
@@ -57,7 +56,7 @@ Color startColor = Color.FromArgb(255, 0, 0);      // Red
 Color endColor = Color.FromArgb(0, 0, 255);        // Blue
 int gradientSteps = 20;
 
-Color[] gradient = Drawing.CalculateColorGradient(
+Color[] gradient = Tools.Drawing.CalculateColorGradient(
     startColor, 
     endColor, 
     gradientSteps);
@@ -82,7 +81,7 @@ using (var brush = new LinearGradientBrush(
 ### String to Color Conversion
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 using System.Drawing;
 
 // Convert string formats to Color
@@ -94,21 +93,21 @@ string[] colorStrings = {
 };
 
 foreach (var colorStr in colorStrings) {
-    Color color = Drawing.ConvertStringToColor(colorStr);
+    Color color = Tools.Drawing.ConvertStringToColor(colorStr);
     Console.WriteLine($"{colorStr} -> ARGB({color.A}, {color.R}, {color.G}, {color.B})");
 }
 
 // Round-trip conversion
 Color original = Color.FromArgb(200, 100, 150, 50);
 string colorString = $"{original.A}:{original.R}:{original.G}:{original.B}";
-Color converted = Drawing.ConvertStringToColor(colorString);
+Color converted = Tools.Drawing.ConvertStringToColor(colorString);
 Console.WriteLine($"Match: {original == converted}");  // true
 ```
 
 ### Image Rounding & Corner Effects
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 using System.Drawing;
 
 // Load and process image
@@ -116,11 +115,11 @@ Bitmap originalImage = new Bitmap("photo.jpg");
 
 // Create rounded corners
 int cornerRadius = 30;
-Bitmap roundedImage = Drawing.CreateRoundedImage(originalImage, cornerRadius);
+Bitmap roundedImage = Tools.Drawing.CreateRoundedImage(originalImage, cornerRadius);
 roundedImage.Save("rounded_photo.jpg");
 
 // Create rounded image with border
-Bitmap borderedImage = Drawing.CreateRoundedImage(
+Bitmap borderedImage = Tools.Drawing.CreateRoundedImage(
     originalImage, 
     cornerRadius, 
     5,              // Border width
@@ -130,37 +129,37 @@ borderedImage.Save("rounded_with_border.jpg");
 
 // Create circular image (max corner radius)
 int maxRadius = Math.Min(originalImage.Width, originalImage.Height) / 2;
-Bitmap circularImage = Drawing.CreateRoundedImage(originalImage, maxRadius);
+Bitmap circularImage = Tools.Drawing.CreateRoundedImage(originalImage, maxRadius);
 circularImage.Save("circular_photo.jpg");
 ```
 
 ### Image Resizing & Scaling
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 using System.Drawing;
 
 Bitmap original = new Bitmap("large_image.jpg");
 
 // Resize to specific dimensions
 Size newSize = new Size(400, 300);
-Bitmap resized = Drawing.ResizeImage(original, newSize, ResizeMethod.HighQuality);
+Bitmap resized = Tools.Drawing.ResizeImage(original, newSize, ResizeMethod.HighQuality);
 resized.Save("resized.jpg");
 
 // Scale by percentage
-Bitmap scaled = Drawing.ScaleImage(original, 0.5);  // 50% of original
+Bitmap scaled = Tools.Drawing.ScaleImage(original, 0.5);  // 50% of original
 scaled.Save("scaled_50percent.jpg");
 
 // Maintain aspect ratio while fitting in bounds
 Size maxBounds = new Size(800, 600);
-Bitmap fitted = Drawing.FitImageInBounds(original, maxBounds);
+Bitmap fitted = Tools.Drawing.FitImageInBounds(original, maxBounds);
 fitted.Save("fitted.jpg");
 ```
 
 ### Point & Rectangle Extensions
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 using System.Drawing;
 
 // Point calculations
@@ -195,13 +194,13 @@ Console.WriteLine($"Expanded: {expanded}");
 ### Disabled/Grayed-Out Effects
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 using System.Drawing;
 
 Bitmap originalImage = new Bitmap("icon.png");
 
 // Create disabled (grayed-out) version
-Bitmap disabledImage = Drawing.CreateDisabledImage(originalImage);
+Bitmap disabledImage = Tools.Drawing.CreateDisabledImage(originalImage);
 disabledImage.Save("icon_disabled.png");
 
 // This is useful for UI states like:
@@ -213,7 +212,7 @@ disabledImage.Save("icon_disabled.png");
 ### Size & Scaling Extensions
 
 ```csharp
-using Tools;
+using Sphere10.Framework;
 using System.Drawing;
 
 Size original = new Size(800, 600);
