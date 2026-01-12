@@ -14,11 +14,11 @@
     <IsPackable>false</IsPackable>
     
     <!-- Version Management -->
-    <Version>3.0.2</Version>
-    <VersionPrefix>3.0.2</VersionPrefix>
-    <AssemblyVersion>3.0.2</AssemblyVersion>
-    <FileVersion>3.0.2</FileVersion>
-    <InformationalVersion>3.0.2</InformationalVersion>
+    <Version>3.0.3</Version>
+    <VersionPrefix>3.0.3</VersionPrefix>
+    <AssemblyVersion>3.0.3</AssemblyVersion>
+    <FileVersion>3.0.3</FileVersion>
+    <InformationalVersion>3.0.3</InformationalVersion>
 
     <!-- Build Configuration -->
     <LangVersion>latest</LangVersion>
