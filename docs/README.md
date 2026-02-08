@@ -35,6 +35,8 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 |---------|-------------|--------|
 | **Sphere10.Framework** | Collections, serialization, cryptography, streams, extensions | [View](../src/Sphere10.Framework/README.md) |
 | **Sphere10.Framework.Application** | DI integration, settings, lifecycle, CLI | [View](../src/Sphere10.Framework.Application/README.md) |
+| **Sphere10.Framework.Generators** | C# source generators for compile-time code generation | [View](../src/Sphere10.Framework.Generators/README.md) |
+| **Sphere10.Framework.Runtime** | Runtime environment detection and diagnostics | [View](../src/Sphere10.Framework.Runtime/README.md) |
 | **Sphere10.HashLib4CSharp** | Hashing algorithms (MD5, SHA, BLAKE2, CRC) | [View](../src/Sphere10.HashLib4CSharp/README.md) |
 
 ### Data Access
@@ -58,6 +60,7 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | Project | Description | README |
 |---------|-------------|--------|
 | **Sphere10.Framework.CryptoEx** | ECDSA, post-quantum algorithms, signatures | [View](../src/Sphere10.Framework.CryptoEx/README.md) |
+| **Sphere10.Framework.Consensus** | Blockchain consensus mechanisms and validation | [View](../src/Sphere10.Framework.Consensus/README.md) |
 
 ### Desktop & Windows
 
@@ -65,6 +68,9 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 |---------|-------------|--------|
 | **Sphere10.Framework.Windows** | Registry, services, event logging | [View](../src/Sphere10.Framework.Windows/README.md) |
 | **Sphere10.Framework.Windows.Forms** | UI components, data binding | [View](../src/Sphere10.Framework.Windows.Forms/README.md) |
+| **Sphere10.Framework.Windows.Forms.Sqlite** | WinForms with SQLite data binding | [View](../src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) |
+| **Sphere10.Framework.Windows.Forms.MSSQL** | WinForms with SQL Server data binding | [View](../src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) |
+| **Sphere10.Framework.Windows.Forms.Firebird** | WinForms with Firebird data binding | [View](../src/Sphere10.Framework.Windows.Forms.Firebird/README.md) |
 | **Sphere10.Framework.Windows.LevelDB** | LevelDB key-value storage | [View](../src/Sphere10.Framework.Windows.LevelDB/README.md) |
 
 ### Web & Cross-Platform
@@ -82,6 +88,7 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | Project | Description | README |
 |---------|-------------|--------|
 | **Sphere10.Framework.NUnit** | NUnit utilities and test helpers | [View](../src/Sphere10.Framework.NUnit/README.md) |
+| **Sphere10.Framework.NUnit.DB** | Database-specific NUnit testing utilities | [View](../src/Sphere10.Framework.NUnit.DB/README.md) |
 
 ---
 
