@@ -9,7 +9,7 @@
     <RepositoryUrl>https://github.com/HermanSchoenfeld/Sphere10.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://sphere10.com/tech/framework</PackageProjectUrl>
-    <PackageLicenseExpression Condition="'$(PackageLicenseFile)' == ''">MIT</PackageLicenseExpression>
+    <PackageLicenseFile Condition="'$(PackageLicenseFile)' == ''">LICENSE</PackageLicenseFile>
     <PackageIcon>sphere10-icon.png</PackageIcon>
     <IsPackable>false</IsPackable>
     
@@ -33,6 +33,10 @@
 
   <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)resources\branding\sphere10-icon.png')">
     <None Include="$(MSBuildThisFileDirectory)resources\branding\sphere10-icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)LICENSE')">
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
