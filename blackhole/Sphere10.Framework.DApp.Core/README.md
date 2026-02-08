@@ -1,5 +1,7 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
+> ⚠️ **ARCHIVED**: This project has been moved to the `blackhole/` directory and is no longer actively maintained. It is retained for reference only and is not included in NuGet packages.
+
 # ⛓️ Sphere10.Framework.DApp.Core
 
 **Core blockchain and distributed application framework** providing fundamental types, patterns, and infrastructure for building blockchain-based DApps with plugin support and in-protocol upgrades.
@@ -347,7 +349,7 @@ Console.WriteLine($"New Difficulty: {blockchain.GetCurrentDifficulty()}");
 
 ## ✅ Status & Compatibility
 
-- **Maturity**: Production-tested for blockchain applications
+- **Maturity**: Archived — formerly production-tested for blockchain applications
 - **.NET Target**: .NET 8.0+ (primary), .NET 6.0+ (compatible)
 - **Performance**: Optimized for high-throughput transaction processing
 - **Scalability**: Designed for blockchain networks with thousands of nodes
@@ -372,6 +374,6 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 
 ---
 
-**Version**: 2.0+
+**Version**: Archived (formerly 2.0+)
 
 
