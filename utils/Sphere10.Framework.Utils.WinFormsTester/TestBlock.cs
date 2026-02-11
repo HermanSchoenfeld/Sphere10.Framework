@@ -97,7 +97,7 @@ public class TestBlock : ApplicationBlock {
 				.WithText("Menu 2")
 				.AddScreenItem<ScreenA>("Option 1")
 				.AddScreenItem<ScreenB>("Option 2")
-				.AddScreenItem<ScreenC>("Option 2")
+				.AddScreenItem<ScreenC>("Option 3")
 			)
 			.Build();
 	}
