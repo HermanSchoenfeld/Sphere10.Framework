@@ -27,6 +27,11 @@ public static class IoCExtensions {
 	public static void AddApplicationBlock<T>(this IServiceCollection serviceCollection) where T : class, IApplicationBlock
 		=> serviceCollection.AddTransient<IApplicationBlock, T>();
 
+	public static void AddApplicationBlock(this IServiceCollection serviceCollection, IApplicationBlock block) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		serviceCollection.AddTransient<IApplicationBlock>(_ => block);
+	}
+
 	public static void AddControlStateEventProvider<TControl, TProvider>(this IServiceCollection servicesCollection)
 		where TControl : Control
 		where TProvider : class, IControlStateEventProvider {

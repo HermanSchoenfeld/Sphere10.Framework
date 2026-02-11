@@ -14,6 +14,94 @@ using Menu = Sphere10.Framework.Windows.Forms.Menu;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public class TestBlock : ApplicationBlock {
+	
+	public static ApplicationBlock Build() {
+		return new ApplicationBlockBuilder()
+			.WithName("Block 1")
+			.WithDefaultScreen<ObjectSpaceScreen>()
+			.AddMenu(mb => mb
+				.WithText("Wizard")
+				.AddActionItem("Wizard Demo",
+					async () => {
+						var wiz = new ActionWizard<DemoWizardModel>(
+							"Demo Wizard",
+							DemoWizardModel.Default,
+							new WizardScreen<DemoWizardModel>[] {
+								new EnterNameScreen(), new EnterAgeScreen(), new CantGoBackScreen(), new ConfirmScreen()
+							},
+							async (model) => {
+								// finish func
+								DialogEx.Show(BlockMainForm.ActiveForm,
+									SystemIconType.Information,
+									"Result",
+									$"Name: {model.Name}, Age: {model.Age}",
+									"OK");
+								return Result.Success;
+							},
+							(model) => {
+								// cancel func
+								return Result.Success;
+							}
+						);
+						await wiz.Start(BlockMainForm.ActiveForm);
+					})
+			)
+			.AddMenu(mb => mb
+				.WithText("Tests")
+				.AddScreenItem<ObjectSpaceScreen>("ObjectSpace")
+				.AddScreenItem<EmailTestScreen>("Emailer")
+				.AddScreenItem<TransactionalCollectionScreen>("TransactionalList Test")
+				.AddScreenItem<CommunicationsTestScreen>("WebSockets Test")
+				.AddScreenItem<MerkleTreeTestScreen>("Merkle Tree")
+				.AddScreenItem<WAMSTestScreen>("WAMS-8 Tests")
+				.AddScreenItem<ExpandoTesterScreen>("Expando Launcher")
+				.AddScreenItem<ApplicationServicesTestScreen>("ApplicationServicesTester")
+				.AddScreenItem<ParagraphBuilderScreen>("ParagraphBuilderForm")
+			)
+			.AddMenu(mb => mb
+				.WithText("Tests 2")
+				.AddScreenItem<VisualInheritanceFixerSubForm>("VisualInheritanceFixerSub")
+				.AddScreenItem<HooksScreen>("Hooks")
+				.AddScreenItem<TestSoundsScreen>("Test Sounds")
+				.AddScreenItem<DecayGaugeScreen>("Decay Gauge")
+				.AddScreenItem<TabControlTestScreen>("TabControl")
+				.AddScreenItem<TestArtificialKeysScreen>("ArtificialKeys")
+				.AddScreenItem<EnumComboScreen>("EnumCombo")
+				.AddScreenItem<CompressionTestScreen>("Compression")
+				.AddScreenItem<AppointmentBookScreen>("AppointmentBook")
+				.AddScreenItem<FlagsCheckedBoxListScreen>("FlagsCheckedBoxList")
+				.AddScreenItem<CrudTestScreen>("Crud")
+				.AddScreenItem<LoadingCircleTestScreen>("LoadingCircle")
+				.AddScreenItem<PlaceHolderTestScreen>("PlaceHolder")
+				.AddScreenItem<PadLockTestScreen>("PadLock")
+				.AddScreenItem<PasswordDialogTestScreen>("PasswordDialog")
+				.AddScreenItem<ValidationIndicatorTestScreen>("ValidationIndicator")
+				.AddScreenItem<RegionToolTestScreen>("RegionTool")
+				.AddScreenItem<CustomComboBoxScreen>("CustomComboBox")
+				.AddScreenItem("Misc", typeof(MiscTestScreen), null, false, false, true)
+				.AddScreenItem<ConnectionPanelTestScreen>("ConnectionPanel")
+				.AddScreenItem<DraggableControlsTestScreen>("DraggableControls")
+				.AddScreenItem<EncryptedCompressionTestScreen>("EncryptedCompression")
+				.AddScreenItem<CBACSVConverterScreen>("CBACSVConverter")
+				.AddScreenItem<SettingsTest>("Settings")
+				.AddScreenItem<ImageResizeScreen>("ImageResize")
+				.AddScreenItem<ScheduleTestScreen>("Schedule")
+				.AddScreenItem<ObservableCollectionsTestScreen>("ObservableCollections")
+				.AddScreenItem<PathSelectorTestScreen>("PathSelector")
+				.AddScreenItem<ConnectionBarTestScreen>("ConnectionBar")
+				.AddScreenItem<TextAreaTestsScreen>("TextAreaTests")
+				.AddScreenItem<BloomFilterAnalysisScreen>("BloomFilterAnalysisScreen")
+				.AddScreenItem<UrlIDTestScreen>("UrlID")
+			)
+			.AddMenu(mb => mb
+				.WithText("Menu 2")
+				.AddScreenItem<ScreenA>("Option 1")
+				.AddScreenItem<ScreenB>("Option 2")
+				.AddScreenItem<ScreenC>("Option 2")
+			)
+			.Build();
+	}
+
 	public TestBlock()
 		: base(
 			"Block 1",
@@ -126,6 +214,25 @@ public class TestBlock : ApplicationBlock {
 
 
 public class TestBlock2 : ApplicationBlock {
+	
+	public static ApplicationBlock Build() {
+		return new ApplicationBlockBuilder()
+			.WithName("Block 2")
+			.AddMenu(mb => mb
+				.WithText("Menu 1")
+				.AddScreenItem<ScreenA>("Opt 1")
+				.AddScreenItem<ScreenA>("Opt 2")
+			)
+			.AddMenu(mb => mb
+				.WithText("Menu 2")
+				.AddScreenItem<ScreenA>("Opt 1")
+				.AddScreenItem<ScreenA>("Opt 2")
+				.AddScreenItem<ScreenA>("Opt 3")
+				.AddScreenItem<ScreenA>("Opt 4")
+			)
+			.Build();
+	}
+
 	public TestBlock2()
 		: base(
 			"Block 2",

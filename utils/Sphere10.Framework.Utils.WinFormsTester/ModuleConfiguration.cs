@@ -17,8 +17,8 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 
 		serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
 
-		serviceCollection.AddApplicationBlock<TestBlock>();
-		serviceCollection.AddApplicationBlock<TestBlock2>();
+		serviceCollection.AddApplicationBlock(TestBlock.Build());
+		serviceCollection.AddApplicationBlock(TestBlock2.Build());
 
 	}
 
