@@ -61,7 +61,8 @@ public class Menu : IMenu {
 	}
 
 	public virtual string Text {
-		get { return _text; }
+		get { return _text; } 
+		set { _text = value; }
 	}
 
 	public virtual void AddItem(IMenuItem item) {

@@ -20,7 +20,7 @@ public class MenuBuilder {
 
 	public MenuBuilder WithText(string text) {
 		Guard.ArgumentNotNull(text, nameof(text));
-		Tools.Values.SetProperty(_menu, nameof(Menu.Text), text);
+		_menu.Text = text;
 		return this;
 	}
 

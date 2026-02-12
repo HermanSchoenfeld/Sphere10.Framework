@@ -86,7 +86,7 @@ public class ApplicationBlock : IApplicationBlock {
 		set { _helpFile = value; }
 	}
 
-	public Type DefaultScreen { get; init; }
+	public Type DefaultScreen { get; set; }
 
 	public virtual void AddMenu(IMenu menu) {
 		menu.Parent = this;

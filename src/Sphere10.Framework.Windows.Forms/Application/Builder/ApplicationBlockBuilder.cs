@@ -50,12 +50,12 @@ public class ApplicationBlockBuilder {
 
 	public ApplicationBlockBuilder WithDefaultScreen(Type screenType) {
 		Guard.ArgumentNotNull(screenType, nameof(screenType));
-		Tools.Values.SetProperty(_block, nameof(ApplicationBlock.DefaultScreen), screenType);
+		_block.DefaultScreen = screenType;
 		return this;
 	}
 
 	public ApplicationBlockBuilder WithDefaultScreen<TScreen>() {
-		Tools.Values.SetProperty(_block, nameof(ApplicationBlock.DefaultScreen), typeof(TScreen));
+		_block.DefaultScreen = typeof(TScreen);
 		return this;
 	}
 
