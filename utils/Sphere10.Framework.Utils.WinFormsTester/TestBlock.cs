@@ -26,26 +26,23 @@ public class TestBlock : ApplicationBlock {
 				.WithImage32x32(Resources.Wizard32x32)
 				.AddActionItem("Wizard Demo",
 					async () => {
-						var wiz = new ActionWizard<DemoWizardModel>(
-							"Demo Wizard",
-							DemoWizardModel.Default,
-							new WizardScreen<DemoWizardModel>[] {
-								new EnterNameScreen(), new EnterAgeScreen(), new CantGoBackScreen(), new ConfirmScreen()
-							},
-							async (model) => {
-								// finish func
+						var wiz = new ActionWizardBuilder<DemoWizardModel>()
+							.WithTitle("Demo Wizard")
+							.WithModel(DemoWizardModel.Default)
+							.AddScreen(new EnterNameScreen())
+							.AddScreen(new EnterAgeScreen())
+							.AddScreen(new CantGoBackScreen())
+							.AddScreen(new ConfirmScreen())
+							.OnFinished(async (model) => {
 								DialogEx.Show(BlockMainForm.ActiveForm,
 									SystemIconType.Information,
 									"Result",
 									$"Name: {model.Name}, Age: {model.Age}",
 									"OK");
 								return Result.Success;
-							},
-							(model) => {
-								// cancel func
-								return Result.Success;
-							}
-						);
+							})
+							.OnCancelled((model) => Result.Success)
+							.Build();
 						await wiz.Start(BlockMainForm.ActiveForm);
 					},
 					Resources.Wizard16x16)
@@ -122,26 +119,23 @@ public class TestBlock : ApplicationBlock {
 					new IMenuItem[] {
 						new ActionMenuItem("Wizard Demo",
 							async () => {
-								var wiz = new ActionWizard<DemoWizardModel>(
-									"Demo Wizard",
-									DemoWizardModel.Default,
-									new WizardScreen<DemoWizardModel>[] {
-										new EnterNameScreen(), new EnterAgeScreen(), new CantGoBackScreen(), new ConfirmScreen()
-									},
-									async (model) => {
-										// finish func
+								var wiz = new ActionWizardBuilder<DemoWizardModel>()
+									.WithTitle("Demo Wizard")
+									.WithModel(DemoWizardModel.Default)
+									.AddScreen(new EnterNameScreen())
+									.AddScreen(new EnterAgeScreen())
+									.AddScreen(new CantGoBackScreen())
+									.AddScreen(new ConfirmScreen())
+									.OnFinished(async (model) => {
 										DialogEx.Show(BlockMainForm.ActiveForm,
 											SystemIconType.Information,
 											"Result",
 											$"Name: {model.Name}, Age: {model.Age}",
 											"OK");
 										return Result.Success;
-									},
-									(model) => {
-										// cancel func
-										return Result.Success;
-									}
-								);
+									})
+									.OnCancelled((model) => Result.Success)
+									.Build();
 								await wiz.Start(BlockMainForm.ActiveForm);
 
 							})
