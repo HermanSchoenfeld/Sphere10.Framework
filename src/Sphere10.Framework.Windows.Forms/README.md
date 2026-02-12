@@ -195,6 +195,64 @@ Cursor rawCursor = WinForms.LoadRawCursor(cursorBytes);
 | `LoadingCircle` | Loading animation |
 | `ExplorerBar` | Explorer-style navigation bar |
 | `AppointmentBook` | Appointment/calendar UI |
+| `ApplicationBlock` | Modular application sections with menus |
+
+## 🏗️ Application Blocks
+
+Application blocks provide a modular way to organize application features with menu structures. The builder pattern provides a fluent API for construction:
+
+```csharp
+using Sphere10.Framework.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
+
+// Register an application block using the builder pattern
+serviceCollection.AddApplicationBlock(
+    new ApplicationBlockBuilder()
+        .WithName("My Block")
+        .WithDefaultScreen<MainScreen>()
+        .AddMenu(mb => mb
+            .WithText("File")
+            .AddActionItem("New", () => CreateNew())
+            .AddActionItem("Open", () => OpenFile())
+            .AddScreenItem<SettingsScreen>("Settings")
+        )
+        .AddMenu(mb => mb
+            .WithText("Tools")
+            .AddScreenItem<ToolA>("Tool A")
+            .AddScreenItem<ToolB>("Tool B")
+        )
+        .Build()
+);
+
+// Or create a reusable builder method
+public class MyApplicationBlock {
+    public static ApplicationBlock Build() {
+        return new ApplicationBlockBuilder()
+            .WithName("My Application")
+            .WithDefaultScreen<DashboardScreen>()
+            .AddMenu(mb => mb
+                .WithText("Main Menu")
+                .AddScreenItem<Screen1>("Option 1")
+                .AddScreenItem<Screen2>("Option 2")
+                .AddActionItem("Custom Action", async () => {
+                    // Custom action logic
+                    await DoSomethingAsync();
+                })
+            )
+            .Build();
+    }
+}
+
+// Register in ModuleConfiguration
+serviceCollection.AddApplicationBlock(MyApplicationBlock.Build());
+```
+
+The builder pattern supports:
+- **Screen items**: Navigate to specific forms/screens
+- **Action items**: Execute custom code when clicked
+- **Menu organization**: Group related features logically
+- **Fluent API**: Chain methods for clean, readable code
+- **Type-safe**: Compile-time checking with generics
 
 ## 📦 Dependencies
 
