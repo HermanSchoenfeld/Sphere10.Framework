@@ -26,7 +26,7 @@ public class TestBlock : ApplicationBlock {
 				.WithImage32x32(Resources.Wizard32x32)
 				.AddActionItem("Wizard Demo",
 					async () => {
-						var wiz = new ActionWizardBuilder<DemoWizardModel>()
+						var wiz = new WizardBuilder<DemoWizardModel>()
 							.WithTitle("Demo Wizard")
 							.WithModel(DemoWizardModel.Default)
 							.AddScreen(new EnterNameScreen())
@@ -119,7 +119,7 @@ public class TestBlock : ApplicationBlock {
 					new IMenuItem[] {
 						new ActionMenuItem("Wizard Demo",
 							async () => {
-								var wiz = new ActionWizardBuilder<DemoWizardModel>()
+								var wiz = new WizardBuilder<DemoWizardModel>()
 									.WithTitle("Demo Wizard")
 									.WithModel(DemoWizardModel.Default)
 									.AddScreen(new EnterNameScreen())

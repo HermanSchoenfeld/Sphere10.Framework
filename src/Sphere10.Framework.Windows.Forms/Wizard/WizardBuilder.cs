@@ -12,37 +12,37 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ActionWizardBuilder<T> {
+public class WizardBuilder<T> {
 	private string _title;
 	private T _model;
 	private readonly List<WizardScreen<T>> _screens = new();
 	private Func<T, Task<Result>> _finishFunc;
 	private Func<T, Result> _cancelFunc;
 
-	public ActionWizardBuilder<T> WithTitle(string title) {
+	public WizardBuilder<T> WithTitle(string title) {
 		Guard.ArgumentNotNull(title, nameof(title));
 		_title = title;
 		return this;
 	}
 
-	public ActionWizardBuilder<T> WithModel(T model) {
+	public WizardBuilder<T> WithModel(T model) {
 		_model = model;
 		return this;
 	}
 
-	public ActionWizardBuilder<T> AddScreen(WizardScreen<T> screen) {
+	public WizardBuilder<T> AddScreen(WizardScreen<T> screen) {
 		Guard.ArgumentNotNull(screen, nameof(screen));
 		_screens.Add(screen);
 		return this;
 	}
 
-	public ActionWizardBuilder<T> OnFinished(Func<T, Task<Result>> finishFunc) {
+	public WizardBuilder<T> OnFinished(Func<T, Task<Result>> finishFunc) {
 		Guard.ArgumentNotNull(finishFunc, nameof(finishFunc));
 		_finishFunc = finishFunc;
 		return this;
 	}
 
-	public ActionWizardBuilder<T> OnCancelled(Func<T, Result> cancelFunc) {
+	public WizardBuilder<T> OnCancelled(Func<T, Result> cancelFunc) {
 		Guard.ArgumentNotNull(cancelFunc, nameof(cancelFunc));
 		_cancelFunc = cancelFunc;
 		return this;
