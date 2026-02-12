@@ -4,9 +4,14 @@
   <img  src="resources/branding/sphere-10-framework-logo.jpg" alt="Sphere10 Framework logo">
 </p>
 
+![Version](https://img.shields.io/badge/version-3.0.3-blue)
+[![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework)
+![.NET](https://img.shields.io/badge/.NET-8.0-purple)
+![License](https://img.shields.io/badge/license-MIT%20NON--AI-green)
+
 # :rocket: Sphere10 Framework: Comprehensive .NET Application Framework
 
-Copyright © Herman Schoenfeld, Sphere 10 Software 2018 - Present
+Copyright © Herman Schoenfeld, Sphere 10 Software 2005 - Present
 
 **A mature, production-ready .NET framework** providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, Sphere10 Framework has evolved into a comprehensive general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and utilities for high-performance .NET development.
 
@@ -21,7 +26,7 @@ Copyright © Herman Schoenfeld, Sphere 10 Software 2018 - Present
 
 **Application Development**
 - **Desktop UI Framework**: Full-featured Windows Forms component library with data binding, validation, and plugin support
-- **Web UI**: Blazor-based component library with wizards, modals, grids, and responsive layouts for modern web applications
+- **Web Integration**: ASP.NET Core middleware, filters, routing, and form components for server-side web applications
 - **Cross-Platform**: Run applications on Windows, macOS, iOS, Android, or .NET Core/5+
 - **Plugin Architecture**: Dynamic plugin loading and lifecycle management for extensible applications
 
@@ -30,6 +35,15 @@ Copyright © Herman Schoenfeld, Sphere 10 Software 2018 - Present
 - **Graphics & Drawing**: Cross-platform drawing utilities and image manipulation
 - **Performance**: Caching, connection pooling, and optimized algorithms
 - **Testing**: Comprehensive testing framework and utilities for unit and integration testing
+
+## :wrench: Prerequisites
+
+- **.NET 8.0 SDK** or later
+- **Visual Studio 2022** (17.8+) or **JetBrains Rider** (2023.3+) recommended
+- **Windows** required for `Sphere10.Framework.Windows.*` projects
+- Two solution files available:
+  - `src/Sphere10.Framework (CrossPlatform).sln` — Cross-platform projects only
+  - `src/Sphere10.Framework (Win).sln` — All projects including Windows-specific
 
 ## :package: Installation
 
@@ -85,6 +99,8 @@ For the complete Tools reference, see [docs/tools-reference.md](docs/tools-refer
 
 ## :open_file_folder: Project Structure
 
+> **Note**: The `blackhole/` directory contains archived/experimental projects (DApp framework) that are not part of the active framework. These are retained for reference but are not maintained or included in NuGet packages.
+
 The Sphere10 Framework consists of **45+ projects** organized by category within `src/`, `tests/`, and `utils/`:
 
 ### :gear: Core Framework & Utilities
@@ -95,6 +111,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, command-line interface, and presentation framework | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
 | [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
 | [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation | |
+| [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/README.md) | Runtime environment detection, diagnostics, and platform utilities | |
 | [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) |
 
 ### :lock: Cryptography & Security
@@ -132,6 +149,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | ASP.NET Core integration: middleware, filters, routing, forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) |
 | [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | |
+| [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | |
 | [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Xamarin.iOS integration for native iOS apps | |
 | [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Xamarin.Android integration for native Android apps | |
 | [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Xamarin.macOS integration for native macOS apps | |
@@ -193,16 +211,23 @@ The `tests/` directory contains **2000+ comprehensive unit and integration tests
 - [Winternitz Abstracted Merkle Signatures (WAMS)](https://sphere10.com/tech/wams)
 - [Faster and Smaller Winternitz Signatures](https://sphere10.com/tech/wots-sharp)
 
-## :link: Quick Navigation & Resources
+## :handshake: Contributing
 
-- **Documentation Home**: See [docs/README.md](docs/README.md) for complete documentation index
-- **Quick Start**: See [docs/start-here.md](docs/start-here.md) for getting started with the framework
-- **Tools Reference**: See [docs/tools-reference.md](docs/tools-reference.md) for the complete Tools.* namespace catalog
-- **Real-World Examples**: See [docs/real-world-usage-examples.md](docs/real-world-usage-examples.md) for practical patterns
-- **Desktop Applications**: See [Sphere10.Framework.Windows.Forms](src/Sphere10.Framework.Windows.Forms/README.md) for building Windows applications
-- **Web Applications**: See [Sphere10.Framework.Web.AspNetCore](src/Sphere10.Framework.Web.AspNetCore/README.md) for ASP.NET Core integration
-- **Database Access**: See [Sphere10.Framework.Data](src/Sphere10.Framework.Data/README.md) for multi-database support (SQLite, SQL Server, Firebird)
-- **Networking & RPC**: See [Sphere10.Framework.Communications](src/Sphere10.Framework.Communications/README.md) for network protocols
-- **Cryptography**: See [Sphere10.Framework.CryptoEx](src/Sphere10.Framework.CryptoEx/README.md) for advanced crypto implementations
-- **Cross-Platform**: See [Sphere10.Framework.iOS](src/Sphere10.Framework.iOS/README.md), [Sphere10.Framework.Android](src/Sphere10.Framework.Android/README.md), [Sphere10.Framework.macOS](src/Sphere10.Framework.macOS/README.md) for native apps
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes
+4. Push to your branch
+5. Open a Pull Request
+
+Please follow the [Code Styling Guidelines](docs/guidelines/code-styling.md).
+
+## :balance_scale: License
+
+Sphere10 Framework is distributed under the **MIT NON-AI License** — standard MIT permissions with an additional restriction prohibiting use of the code for training machine learning / AI models.
+
+> :warning: This is **not** a standard MIT license. See [LICENSE](LICENSE) for the full terms.
+
+More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
 

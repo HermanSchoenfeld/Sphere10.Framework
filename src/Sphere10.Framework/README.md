@@ -30,15 +30,15 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 - **Platform Support**: Windows, Linux, macOS, iOS, Android
 - **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
 - **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
-- **Maturity**: Production-ready (v2.0.2) with battle-tested core subsystems
+- **Maturity**: Production-ready (v3.0.3) with battle-tested core subsystems
 
-## � Installation
+## 📦 Installation
 
 ```bash
 dotnet add package Sphere10.Framework
 ```
 
-## �🛠️ Tools.* Namespace — Global Tooling Framework
+## 🛠️ Tools.* Namespace — Global Tooling Framework
 
 The **Tools namespace** is a defining feature of Sphere10 Framework, providing a **global, IntelliSense-discoverable collection of static utility methods** organized by domain. This acts as a single point of discovery for developers—instead of searching for the right helper class, simply type `Tools.` and explore available operations across the entire framework.
 
@@ -833,7 +833,7 @@ Data typically flows from application code through collections or object spaces,
 
 ```bash
 # Core library
-dotnet add package Sphere10 Framework
+dotnet add package Sphere10.Framework
 
 # Platform-specific (optional)
 dotnet add package Sphere10.Framework.Windows              # Windows utilities
