@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
+		<AssemblyName>SystemExpert</AssemblyName>
+		<RootNamespace>SystemExpert</RootNamespace>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Windows.Forms\Sphere10.Framework.Windows.Forms.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
+	</ItemGroup>
+
+</Project>
