@@ -47,7 +47,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	#region Fields
 
 	private readonly object _threadLock;
-	private ICrudDataSource<object> _dataSource;
+	private IDataSource<object> _dataSource;
 	private CrudEntityEditorAdapter _entityEditorAdapter;
 	private Type _entityEditorType;
 	private int _sortColumnIndex;
@@ -243,8 +243,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	#region Public Methods
 
-	public void SetDataSource<TEntity>(ICrudDataSource<TEntity> dataSource) {
-		_dataSource = new CrudDataSourceAdapter<TEntity>(dataSource);
+	public void SetDataSource<TEntity>(IDataSource<TEntity> dataSource) {
+		_dataSource = new ProjectedDataSource<TEntity, object>(dataSource, e => e, o => (TEntity)o);
 	}
 
 	public void ClearDataSource() {
@@ -260,7 +260,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	public virtual async void CreateNewRecord() {
 		var newEntity = _dataSource.New();
-		if (ShowEntityEditor(newEntity, true) == CrudAction.Create) {
+		if (await ShowEntityEditor(newEntity, true) == CrudAction.Create) {
 			await RefreshGrid();
 			RaiseEntityCreatedEvent(newEntity);
 			if (AutoSelectOnCreate)
@@ -282,18 +282,21 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	public virtual async void DeleteEntity(object entity) {
 		if (DialogEx.Show(this, SystemIconType.Question, "Confirm Delete", "Are you sure you want to delete this record?", "&No", "&Yes") == DialogExResult.Button2) {
-			var deleteValidationErrors = _dataSource.Validate(_selectedEntity, CrudAction.Delete);
-			if (!deleteValidationErrors.Any()) {
-				_dataSource.Delete(entity);
-				await UpdateGridAfterDelete(entity);
-			} else {
-				DialogEx.Show(this, SystemIconType.Shield, "Validation Error", deleteValidationErrors.ToParagraphCase(), "OK");
+			using (EnterVisualState(VisualState.Loading))
+			using (LoadingCircle.EnterAnimationScope(this._gridContainerPanel, 1.0f, LoadingCircle.StylePresets.MacOSX)) {
+				var deleteValidationResult = await _dataSource.ValidateAsync(entity, CrudAction.Delete);
+				if (deleteValidationResult.IsSuccess) {
+					await _dataSource.DeleteAsync(entity);
+					await UpdateGridAfterDelete(entity);
+				} else {
+					DialogEx.Show(this, SystemIconType.Shield, "Validation Error", deleteValidationResult.ErrorMessages.ToParagraphCase(), "OK");
+				}
 			}
 		}
 	}
 
 	public virtual async void EditEntity(object entity) {
-		switch (ShowEntityEditor(_selectedEntity, false)) {
+		switch (await ShowEntityEditor(_selectedEntity, false)) {
 			case CrudAction.Update:
 				await RefreshGrid();
 				RaiseEntityUpdatedEvent(entity);
@@ -322,7 +325,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	protected virtual void OnEntityDeleted(object deletedEntity) {
 	}
 
-	private CrudAction? ShowEntityEditor(object entity, bool isNewEntity) {
+	private async Task<CrudAction?> ShowEntityEditor(object entity, bool isNewEntity) {
 		var entityEditorDialog = new CrudEntityEditorDialog();
 		var entityEditor = Tools.Object.Create(_entityEditorType);
 		_entityEditorAdapter.SetAdaptee(entityEditor);
@@ -516,13 +519,16 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 		// Read the data from the data source
 		_rowToEntityMap.Clear();
-		var data = await Task.Run(() => _dataSource.Read(searchText, pageSize, ref pageNumber, _sortColumnName, _sortDirection, out _totalRecords).ToArray());
+        var readResult = await _dataSource.ReadRangeAsync(searchText, pageSize, pageNumber, _sortColumnName, _sortDirection);
+		var data = readResult.Items.ToArray();
+		_totalRecords = readResult.TotalCount;
 		_endPageNumber = ((int)Math.Ceiling(_totalRecords / (decimal)_pageSize) - 1).ClipTo(0, int.MaxValue);
 
-		searchParametersChangedDuringSearch = searchText != _searchText || pageSize != _pageSize || pageNumber != _pageNumber;
-		if (pageNumber != _pageNumber) {
-			_pageNumber = pageNumber;
-			SetVisiblePageNumberText(pageNumber);
+		var resultPage = readResult.Page;
+		searchParametersChangedDuringSearch = searchText != _searchText || pageSize != _pageSize || resultPage != _pageNumber;
+		if (resultPage != _pageNumber) {
+			_pageNumber = resultPage;
+			SetVisiblePageNumberText(resultPage);
 		}
 
 		if (!searchParametersChangedDuringSearch) {

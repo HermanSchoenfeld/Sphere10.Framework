@@ -78,7 +78,7 @@ public class CrudComboBox : CustomComboBox {
 		await _crudGrid.RefreshGrid();
 	}
 
-	public void SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, ICrudDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
+	public void SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
 		try {
 			if (entityEditorType != null)
 				_crudGrid.SetEntityEditor<TEntity>(entityEditorType);

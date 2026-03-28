@@ -10,12 +10,13 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class CrudEntityEditorDialog : Form {
-	private ICrudDataSource<object>? _dataSource;
+	private IDataSource<object>? _dataSource;
 	private ICrudEntityEditor<object>? _crudEntityEditor;
 	private DataSourceCapabilities _capabilities;
 	private bool _isNewEntity;
@@ -30,7 +31,7 @@ public partial class CrudEntityEditorDialog : Form {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public CrudAction? UserAction { get; set; }
 
-	public void SetEntityEditor(ICrudDataSource<object> dataSource, ICrudEntityEditor<object> entityEditor, DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
+	public void SetEntityEditor(IDataSource<object> dataSource, ICrudEntityEditor<object> entityEditor, DataSourceCapabilities capabilities, object entity, bool isNewEntity) {
 		_isNewEntity = isNewEntity;
 		_entity = entity;
 		_dataSource = dataSource;
@@ -61,19 +62,19 @@ public partial class CrudEntityEditorDialog : Form {
 		RequiresGridRefresh = false;
 	}
 
-	public bool SaveChanges() {
+	public async Task<bool> SaveChanges() {
 		if (_isNewEntity) {
-			if (Validate(CrudAction.Create)) {
+			if (await Validate(CrudAction.Create)) {
 				_crudEntityEditor.AcceptChanges();
-				_dataSource.Create(_crudEntityEditor.GetEntityWithChanges());
+					await _dataSource.CreateAsync(_crudEntityEditor.GetEntityWithChanges());
 				UserAction = CrudAction.Create;
 				RequiresGridRefresh = true;
 				return true;
 			}
 		} else {
-			if (Validate(CrudAction.Update)) {
+			if (await Validate(CrudAction.Update)) {
 				_crudEntityEditor.AcceptChanges();
-				_dataSource.Update(_crudEntityEditor.GetEntityWithChanges());
+					await _dataSource.UpdateAsync(_crudEntityEditor.GetEntityWithChanges());
 				UserAction = CrudAction.Update;
 				RequiresGridRefresh = true;
 				return true;
@@ -84,12 +85,12 @@ public partial class CrudEntityEditorDialog : Form {
 		return false;
 	}
 
-	public bool DeleteEntity() {
+	public async Task<bool> DeleteEntity() {
 		if (DialogEx.Show(this, SystemIconType.Question, "Confirm Delete", "Are you sure you want to delete this record?", "&No", "&Yes") == DialogExResult.Button2) {
 			if (HasChanges)
 				CancelChanges();
-			if (Validate(CrudAction.Delete)) {
-				_dataSource.Delete(_entity);
+			if (await Validate(CrudAction.Delete)) {
+					await _dataSource.DeleteAsync(_entity);
 				UserAction = CrudAction.Delete;
 				RequiresGridRefresh = true;
 				return true;
@@ -98,10 +99,11 @@ public partial class CrudEntityEditorDialog : Form {
 		return false;
 	}
 
-	public bool Validate(CrudAction action) {
+	public async Task<bool> Validate(CrudAction action) {
 		const int rtfHeightPerLine = 20;
 		const int maxErrorsWithoutScrollbar = 5;
-		var errors = _dataSource.Validate(action != CrudAction.Delete ? _crudEntityEditor.GetEntityWithChanges() : _entity, action);
+		var result = await _dataSource.ValidateAsync(action != CrudAction.Delete ? _crudEntityEditor.GetEntityWithChanges() : _entity, action);
+		var errors = result.ErrorMessages;
 		var extraHeight = rtfHeightPerLine * errors.Count().ClipTo(0, maxErrorsWithoutScrollbar) - _tableLayoutPanel.RowStyles[1].Height;
 		this.Size = new Size(this.Size.Width, (int)(this.Size.Height + extraHeight));
 		_tableLayoutPanel.RowStyles[1].Height = (_tableLayoutPanel.RowStyles[1].Height + extraHeight).ClipTo(0.0f, float.MaxValue);
@@ -138,9 +140,9 @@ public partial class CrudEntityEditorDialog : Form {
 		}
 	}
 
-	private void _deleteButton_Click(object sender, EventArgs e) {
+	private async void _deleteButton_Click(object sender, EventArgs e) {
 		try {
-			if (DeleteEntity())
+			if (await DeleteEntity())
 				Close();
 		} catch (Exception error) {
 			ExceptionDialog.Show(this, error);
@@ -148,9 +150,9 @@ public partial class CrudEntityEditorDialog : Form {
 
 	}
 
-	private void _saveButton_Click(object sender, EventArgs e) {
+	private async void _saveButton_Click(object sender, EventArgs e) {
 		try {
-			if (!HasChanges || SaveChanges())
+			if (!HasChanges || await SaveChanges())
 				Close();
 		} catch (Exception error) {
 			ExceptionDialog.Show(this, error);

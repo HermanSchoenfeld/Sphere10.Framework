@@ -17,6 +17,6 @@ public interface ICrudGrid {
 	DataSourceCapabilities Capabilities { get; }
 	IEnumerable<ICrudGridColumn> GridBindings { get; }
 
-	void SetDataSource<TEntity>(ICrudDataSource<TEntity> dataSource);
+	void SetDataSource<TEntity>(IDataSource<TEntity> dataSource);
 }
 

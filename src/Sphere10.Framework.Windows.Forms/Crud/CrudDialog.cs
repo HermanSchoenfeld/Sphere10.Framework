@@ -25,26 +25,26 @@ public partial class CrudDialog : Form {
 		await _crudGrid.RefreshGrid();
 	}
 
-	public static void Show<TEntity>(IWin32Window window, string title, IEnumerable<ICrudGridColumn> gridBindings, DataSourceCapabilities capabilities, ICrudDataSource<TEntity> dataSource) {
+	public static void Show<TEntity>(IWin32Window window, string title, IEnumerable<ICrudGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		Show(window, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
 	}
 
-	public static void Show<TEntity>(string title, IEnumerable<ICrudGridColumn> gridBindings, DataSourceCapabilities capabilities, ICrudDataSource<TEntity> dataSource) {
+	public static void Show<TEntity>(string title, IEnumerable<ICrudGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		Show(null, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
 	}
 
-	public static void Show<TEntity>(string title, IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, ICrudDataSource<TEntity> dataSource) {
+	public static void Show<TEntity>(string title, IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		Show(null, title, gridBindings, entityEditorType, capabilities, dataSource);
 	}
 
-	public static void Show<TEntity>(IWin32Window window, string title, IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, ICrudDataSource<TEntity> dataSource) {
+	public static void Show<TEntity>(IWin32Window window, string title, IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		var crudDialog = new CrudDialog();
 		crudDialog.Text = title;
 		crudDialog.SetCrudParameters(gridBindings, entityEditorType, capabilities, dataSource);
 		crudDialog.ShowDialog(window);
 	}
 
-	public void SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, ICrudDataSource<TEntity> dataSource) {
+	public void SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		var initializationAction =
 			new Action(() => {
 				try {
