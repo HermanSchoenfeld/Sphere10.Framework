@@ -50,6 +50,14 @@ public class Reloadable<T> : SynchronizedObject, IFuture<T> {
 
 	public void Invalidate() {
 		using (EnterWriteScope()) {
+			if (Loaded) {
+				if (_value is IDisposable[] disposables)
+					foreach (var d in disposables)
+						d.Dispose();
+
+				if (_value is IDisposable disposable)
+					disposable.Dispose();
+			}
 			_loaded = false;
 		}
 	}
