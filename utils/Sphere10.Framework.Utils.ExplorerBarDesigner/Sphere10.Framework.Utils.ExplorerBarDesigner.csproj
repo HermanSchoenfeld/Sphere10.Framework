@@ -4,7 +4,8 @@
     <OutputType>WinExe</OutputType>
 	  <TargetFramework>net8.0-windows</TargetFramework>
 	  <UseWindowsForms>true</UseWindowsForms>
-      <AssemblyName>Sphere10.Framework.Utils.ExplorerBarDesigner</AssemblyName>
+	  <ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
+	  <AssemblyName>Sphere10.Framework.Utils.ExplorerBarDesigner</AssemblyName>
       <RootNamespace>Sphere10.Framework.Utils.ExplorerBarDesigner</RootNamespace>
   </PropertyGroup>
   

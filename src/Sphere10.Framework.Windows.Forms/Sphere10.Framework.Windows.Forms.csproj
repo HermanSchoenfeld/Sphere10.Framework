@@ -9,6 +9,7 @@
 		<Description>Windows Forms UI framework and component library for building desktop applications with Sphere10 Framework. Provides reusable WinForms controls, dialogs, layout/helpers, and common UI utilities intended to integrate cleanly with the framework's application and data layers.</Description>
 		<PackageTags>sphere10 framework winforms windows ui</PackageTags>
 		<UseWindowsForms>true</UseWindowsForms>
+		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
 		<AssemblyName>Sphere10.Framework.Windows.Forms</AssemblyName>
 		<RootNamespace>Sphere10.Framework.Windows.Forms</RootNamespace>
 		<LangVersion>latest</LangVersion>
