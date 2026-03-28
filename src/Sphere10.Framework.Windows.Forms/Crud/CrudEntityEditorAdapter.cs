@@ -12,6 +12,8 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public abstract class CrudEntityEditorAdapter : ICrudEntityEditor<object> {
+	public abstract event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged;
+
 	public abstract void SetAdaptee(object @object);
 
 	public abstract Control AsControl();
@@ -30,6 +32,11 @@ public abstract class CrudEntityEditorAdapter : ICrudEntityEditor<object> {
 
 public class CrudEntityEditorAdapter<TEntity> : CrudEntityEditorAdapter {
 	private ICrudEntityEditor<TEntity> _adaptee;
+
+	public override event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged {
+		add { _adaptee.PropertyChanged += (args) => value(args); }
+		remove { _adaptee.PropertyChanged -= (args) => value(args); }
+	}
 
 	public CrudEntityEditorAdapter() {
 		_adaptee = null;

@@ -222,6 +222,10 @@ public partial class CrudTestScreen : ApplicationScreen {
 		_textWriter.WriteLine("{0}: Entity Selected - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 	}
 
+	private void _crudGrid_EntityEditing(CrudGrid arg1, CrudEntityPropertyChangedEventArgs args) {
+		_textWriter.WriteLine("{0}: Entity Changing - ID: {1}, Property: {2}, Old Value: {3}, New Value: {4}", arg1.Name, ((Employee)args.Entity).ID, args.PropertyName, args.OldValue, args.NewValue);
+	}
+
 	private void _crudGrid_EntityDeleted(CrudGrid arg1, object arg2) {
 		_textWriter.WriteLine("{0}: Entity Deleted - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 	}
@@ -291,6 +295,8 @@ public partial class CrudTestScreen : ApplicationScreen {
 	private void _refreshEntireGridOnDeleteCheckBox_CheckedChanged(object sender, EventArgs e) {
 		_crudGrid.RefreshEntireGridOnDelete = _refreshEntireGridOnDeleteCheckBox.Checked;
 	}
+
+
 
 }
 

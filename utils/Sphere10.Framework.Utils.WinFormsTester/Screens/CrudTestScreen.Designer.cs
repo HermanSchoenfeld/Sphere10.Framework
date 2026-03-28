@@ -223,6 +223,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_crudGrid.EntityCreated += _crudGrid_EntityCreated;
 			_crudGrid.EntityUpdated += _crudGrid_EntityUpdated;
 			_crudGrid.EntityDeleted += _crudGrid_EntityDeleted;
+			_crudGrid.EntityPropertyChanged += _crudGrid_EntityEditing;
 			// 
 			// _allowCellEditingCheckBox
 			// 

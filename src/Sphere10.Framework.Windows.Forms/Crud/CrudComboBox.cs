@@ -59,10 +59,9 @@ public class CrudComboBox : CustomComboBox {
 	[DefaultValue(null)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object SelectedEntity {
-		get { return _crudGrid._selectedEntity; }
+		get { return _crudGrid.SelectedEntityDirect; }
 		set {
-			//_selectedEntity = value;
-			_crudGrid._selectedEntity = value;
+			_crudGrid.SelectedEntityDirect = value;
 			SetComboText(DetermineDisplayString(value));
 		}
 	}
@@ -75,14 +74,8 @@ public class CrudComboBox : CustomComboBox {
 
 
 	public override async void ShowDropDown() {
-		try {
-			_crudGrid._updating = true;
-			base.ShowDropDown();
-		} finally {
-			_crudGrid._updating = false;
-		}
+		base.ShowDropDown();
 		await _crudGrid.RefreshGrid();
-
 	}
 
 	public void SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, ICrudDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {

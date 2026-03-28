@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -18,11 +19,14 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 	private bool _isNewEntity;
 	private DataSourceCapabilities _crudCapabilities;
 
+	
+	public event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged;
 
 	public DefaultCrudEntityEditor() {
 		InitializeComponent();
 		_isNewEntity = false;
 	}
+
 
 	#region IEntityEditor<object> Implementation
 
@@ -58,6 +62,9 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 		return Enumerable.Empty<string>();
 	}
 
+	protected virtual void OnPropertyChanged(object entity,  object propertyName, object oldValue, object newValue) {
+	}
+
 	#endregion
 
 
@@ -72,6 +79,15 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 
 	private void CreateBackup() {
 		_backupEntity = Tools.Object.CloneObject(_entity, true);
+	}
+
+	#endregion
+
+	#region Internal Event Handlers
+	private void _propertyGrid_PropertyValueChanged(object source, PropertyValueChangedEventArgs e) {
+		var crudEntityChangedEvent = new CrudEntityPropertyChangedEventArgs(_entity, e.ChangedItem.PropertyDescriptor.Name, e.OldValue, e.ChangedItem.Value);
+		OnPropertyChanged(_entity, crudEntityChangedEvent.PropertyName, crudEntityChangedEvent.OldValue, crudEntityChangedEvent.NewValue);
+		PropertyChanged?.Invoke(crudEntityChangedEvent);
 	}
 
 	#endregion

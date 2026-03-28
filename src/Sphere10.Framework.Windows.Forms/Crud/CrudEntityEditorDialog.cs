@@ -15,11 +15,11 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class CrudEntityEditorDialog : Form {
-	private ICrudDataSource<object> _dataSource;
-	private ICrudEntityEditor<object> _crudEntityEditor;
+	private ICrudDataSource<object>? _dataSource;
+	private ICrudEntityEditor<object>? _crudEntityEditor;
 	private DataSourceCapabilities _capabilities;
 	private bool _isNewEntity;
-	private object _entity;
+	private object? _entity;
 
 	public CrudEntityEditorDialog() {
 		InitializeComponent();
@@ -150,7 +150,7 @@ public partial class CrudEntityEditorDialog : Form {
 
 	private void _saveButton_Click(object sender, EventArgs e) {
 		try {
-			if (SaveChanges())
+			if (!HasChanges || SaveChanges())
 				Close();
 		} catch (Exception error) {
 			ExceptionDialog.Show(this, error);

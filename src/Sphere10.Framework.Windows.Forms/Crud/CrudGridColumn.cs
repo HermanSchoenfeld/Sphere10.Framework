@@ -79,7 +79,7 @@ public class CrudGridColumn<TEntity> : ICrudGridColumn {
 		if (ButtonImage == null)
 			return null;
 
-		return GetButtonImage(row);
+		return ButtonImage((TEntity)row);
 	}
 
 	public string GetDateTimeFormat(object row) {

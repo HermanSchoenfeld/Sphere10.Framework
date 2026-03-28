@@ -11,6 +11,8 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public interface ICrudEntityEditor<TEntity> {
+	event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged;
+
 	Control AsControl();
 
 	void SetEntity(DataSourceCapabilities capabilities, TEntity entity, bool isNewEntity);
@@ -22,5 +24,6 @@ public interface ICrudEntityEditor<TEntity> {
 	void UndoChanges();
 
 	void AcceptChanges();
+
 }
 

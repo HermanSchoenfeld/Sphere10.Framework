@@ -30,12 +30,18 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	#region Events
 
+	[Category("Behavior")]
 	public event EventHandlerEx<CrudGrid, object> EntitySelected;
+	[Category("Behavior")]
 	public event EventHandlerEx<CrudGrid, object> EntityDeselected;
+	[Category("Behavior")]
 	public event EventHandlerEx<CrudGrid, object> EntityCreated;
+	[Category("Behavior")]
 	public event EventHandlerEx<CrudGrid, object> EntityUpdated;
+	[Category("Behavior")]
 	public event EventHandlerEx<CrudGrid, object> EntityDeleted;
-
+	[Category("Behavior")]
+	public event EventHandlerEx<CrudGrid, CrudEntityPropertyChangedEventArgs> EntityPropertyChanged;
 	#endregion
 
 	#region Fields
@@ -53,13 +59,12 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	private bool _autoPageSize;
 	private int _totalRecords;
 	private string _searchText;
-	internal bool _updating;
 	private string _gridTitle;
 	private DataSourceCapabilities _crudCapabilities;
 	private ICrudGridColumn[] _columnsBindings;
 	private readonly IDictionary<int, object> _rowToEntityMap;
 	private ILookup<object, int> _entityToRowLookup;
-	internal object _selectedEntity;
+	private object _selectedEntity;
 	private DateTime _selectedOn;
 	private readonly Throttle _refreshThrottle;
 
@@ -68,9 +73,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	#region Constructors
 
 	public CrudGrid() {
-		try {
-			_updating = true;
-			_threadLock = new object();
+		State = VisualState.Normal;
+		using (EnterVisualState(VisualState.Loading)) {
+		_threadLock = new object();
 			InitializeComponent();
 			//BorderStyle = BorderStyle.None;
 			_selectedEntity = null;
@@ -101,8 +106,6 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			_refreshThrottle = new Throttle(TimeSpan.FromMilliseconds(250));
 			_grid.MinimumHeight = DefaultRowHeight;
 			OrganizeLayout();
-		} finally {
-			_updating = false;
 		}
 	}
 
@@ -229,6 +232,13 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		get { return _rowToEntityMap.Keys.Select(row => _rowToEntityMap[row]); }
 	}
 
+	internal object SelectedEntityDirect {
+		get => _selectedEntity;
+		set => _selectedEntity = value;
+	}
+
+	private VisualState State { get; set; }
+
 	#endregion
 
 	#region Public Methods
@@ -250,7 +260,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	public virtual async void CreateNewRecord() {
 		var newEntity = _dataSource.New();
-		if (await ShowEntityEditor(newEntity, true) == CrudAction.Create) {
+		if (ShowEntityEditor(newEntity, true) == CrudAction.Create) {
+			await RefreshGrid();
 			RaiseEntityCreatedEvent(newEntity);
 			if (AutoSelectOnCreate)
 				SelectedEntity = newEntity;
@@ -269,12 +280,12 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		EditEntity(_selectedEntity);
 	}
 
-	public virtual void DeleteEntity(object entity) {
+	public virtual async void DeleteEntity(object entity) {
 		if (DialogEx.Show(this, SystemIconType.Question, "Confirm Delete", "Are you sure you want to delete this record?", "&No", "&Yes") == DialogExResult.Button2) {
 			var deleteValidationErrors = _dataSource.Validate(_selectedEntity, CrudAction.Delete);
 			if (!deleteValidationErrors.Any()) {
 				_dataSource.Delete(entity);
-				UpdateGridAfterDelete(entity);
+				await UpdateGridAfterDelete(entity);
 			} else {
 				DialogEx.Show(this, SystemIconType.Shield, "Validation Error", deleteValidationErrors.ToParagraphCase(), "OK");
 			}
@@ -282,9 +293,10 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	public virtual async void EditEntity(object entity) {
-		switch (await ShowEntityEditor(_selectedEntity, false)) {
+		switch (ShowEntityEditor(_selectedEntity, false)) {
 			case CrudAction.Update:
-				await UpdateGridAfterEdit(entity);
+				await RefreshGrid();
+				RaiseEntityUpdatedEvent(entity);
 				break;
 			case CrudAction.Delete:
 				await UpdateGridAfterDelete(entity);
@@ -297,6 +309,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	protected virtual void OnEntityDeselected(object deselectedEntity) {
 	}
+	
+	protected virtual void OnEntityEditing(object selectedEntity, string propertyName, object oldValue, object newValue) {
+	}
 
 	protected virtual void OnEntityCreated(object deselectedEntity) {
 	}
@@ -307,14 +322,13 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	protected virtual void OnEntityDeleted(object deletedEntity) {
 	}
 
-	private async Task<CrudAction?> ShowEntityEditor(object entity, bool isNewEntity) {
+	private CrudAction? ShowEntityEditor(object entity, bool isNewEntity) {
 		var entityEditorDialog = new CrudEntityEditorDialog();
 		var entityEditor = Tools.Object.Create(_entityEditorType);
 		_entityEditorAdapter.SetAdaptee(entityEditor);
+		_entityEditorAdapter.PropertyChanged += RaiseEntityEditingEvent;
 		entityEditorDialog.SetEntityEditor(_dataSource, _entityEditorAdapter, _crudCapabilities, entity, isNewEntity);
 		entityEditorDialog.ShowDialog(this);
-		if (entityEditorDialog.RequiresGridRefresh)
-			await RefreshGrid();
 		return entityEditorDialog.UserAction;
 	}
 
@@ -374,17 +388,15 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	public async Task RefreshGrid() {
-		if (DesignMode)
+		if (DesignMode || State.IsIn(VisualState.Loading))
 			return;
-
-		if (_updating)
-			return;
-
-		if (await _refreshThrottle.IsCallerFirstInStampede()) {
-			using (LoadingCircle.EnterAnimationScope(this._gridContainerPanel, 1.0f, LoadingCircle.StylePresets.MacOSX)) {
-				_grid.Enabled = false;
-				while (await BindInternal()) ;
-				_grid.Enabled = true;
+		using (EnterVisualState(VisualState.Loading)) {
+			if (await _refreshThrottle.IsCallerFirstInStampede()) {
+				using (LoadingCircle.EnterAnimationScope(this._gridContainerPanel, 1.0f, LoadingCircle.StylePresets.MacOSX)) {
+					_grid.Enabled = false;
+					while (await BindInternal()) ;
+					_grid.Enabled = true;
+				}
 			}
 		}
 	}
@@ -404,18 +416,16 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	private void HighlightSelectedEntity() {
-		try {
-			_updating = true;
+		using (EnterVisualState(VisualState.Loading)) {
 			_grid.Selection.ResetSelection(false);
 			if (_selectedEntity != null && _entityToRowLookup.Contains(_selectedEntity)) {
 				foreach (var rowNum in _entityToRowLookup[_selectedEntity]) {
 					_grid.Selection.SelectRow(rowNum, true);
 				}
 			}
-		} finally {
-			_updating = false;
 		}
 	}
+	
 
 	private void SetVisiblePageNumberText(int number) {
 		_pageNumberBox.Text = (number + 1).ToString();
@@ -497,75 +507,69 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			return false;
 		}
 
-		try {
-			_updating = true;
 
-			// Take care of null grid
-			if (_columnsBindings == null || _dataSource == null || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead)) {
-				_grid.Redim(0, 0);
-				return false;
-			}
-
-			// Read the data from the data source
-			_rowToEntityMap.Clear();
-			var data = await Task.Run(() => _dataSource.Read(searchText, pageSize, ref pageNumber, _sortColumnName, _sortDirection, out _totalRecords).ToArray());
-			_endPageNumber = ((int)Math.Ceiling(_totalRecords / (decimal)_pageSize) - 1).ClipTo(0, int.MaxValue);
-
-			searchParametersChangedDuringSearch = searchText != _searchText || pageSize != _pageSize || pageNumber != _pageNumber;
-			if (pageNumber != _pageNumber) {
-				_pageNumber = pageNumber;
-				SetVisiblePageNumberText(pageNumber);
-			}
-
-			if (!searchParametersChangedDuringSearch) {
-				try {
-					// Grid header
-					_titleLabel.Text = GridTitle;
-
-					// Redimension the grid
-					_grid.SuspendLayout();
-					_grid.Redim(Math.Min(_pageSize, data.Count()) + 1, _columnsBindings.Length);
-
-					// Bind header columns
-					for (var col = 0; col < _columnsBindings.Length; col++) {
-						BindColumnHeaders(col);
-					}
-					// Bind rows
-					foreach (var entity in data.WithDescriptions()) {
-						if (_pageSize <= entity.Index)
-							break;
-						BindRowInternal(entity.Index + 1, entity.Item);
-					}
-
-					// Calculate the entity-to-row lookup
-					CalculateEntityToRowLookup();
-
-					// Total records label
-					_totalRecordsLabel.Text = _totalRecords.ToString();
-
-					// Total pages label
-					_pageCountLabel.Text = string.Format("/ {0}", _endPageNumber + 1);
-
-					// Set the grid selection controllers
-					InitializeGridSelectionMode();
-
-					// Highlight the selected entity (if applicable)
-					HighlightSelectedEntity();
-
-					// Finalize the grid layout
-					_grid.AutoSizeCells();
-					_grid.AutoStretchColumnsToFitWidth = true;
-					_grid.Columns.StretchToFit();
-					_grid.ResumeLayout();
-				} catch (Exception error) {
-					ExceptionDialog.Show(this, error);
-				}
-			}
-		} catch (Exception error) {
-			ExceptionDialog.Show(this, error);
-		} finally {
-			_updating = false;
+		// Take care of null grid
+		if (_columnsBindings == null || _dataSource == null || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead)) {
+			_grid.Redim(0, 0);
+			return false;
 		}
+
+		// Read the data from the data source
+		_rowToEntityMap.Clear();
+		var data = await Task.Run(() => _dataSource.Read(searchText, pageSize, ref pageNumber, _sortColumnName, _sortDirection, out _totalRecords).ToArray());
+		_endPageNumber = ((int)Math.Ceiling(_totalRecords / (decimal)_pageSize) - 1).ClipTo(0, int.MaxValue);
+
+		searchParametersChangedDuringSearch = searchText != _searchText || pageSize != _pageSize || pageNumber != _pageNumber;
+		if (pageNumber != _pageNumber) {
+			_pageNumber = pageNumber;
+			SetVisiblePageNumberText(pageNumber);
+		}
+
+		if (!searchParametersChangedDuringSearch) {
+			// Grid header
+			_titleLabel.Text = GridTitle;
+
+			// Redimension the grid
+			_grid.SuspendLayout();
+			try {
+				_grid.Redim(Math.Min(_pageSize, data.Count()) + 1, _columnsBindings.Length);
+
+				// Bind header columns
+				for (var col = 0; col < _columnsBindings.Length; col++) {
+					BindColumnHeaders(col);
+				}
+				// Bind rows
+				foreach (var entity in data.WithDescriptions()) {
+					if (_pageSize <= entity.Index)
+						break;
+					BindRowInternal(entity.Index + 1, entity.Item);
+				}
+
+				// Calculate the entity-to-row lookup
+				CalculateEntityToRowLookup();
+
+				// Total records label
+				_totalRecordsLabel.Text = _totalRecords.ToString();
+
+				// Total pages label
+				_pageCountLabel.Text = string.Format("/ {0}", _endPageNumber + 1);
+
+				// Set the grid selection controllers
+				InitializeGridSelectionMode();
+
+				// Highlight the selected entity (if applicable)
+				HighlightSelectedEntity();
+
+				// Finalize the grid layout
+				_grid.AutoSizeCells();
+				_grid.AutoStretchColumnsToFitWidth = true;
+				_grid.Columns.StretchToFit();
+			} finally {
+				_grid.ResumeLayout();
+			}
+
+		}
+
 		return searchParametersChangedDuringSearch;
 	}
 
@@ -784,6 +788,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		}
 	}
 
+	protected void RaiseEntityEditingEvent(CrudEntityPropertyChangedEventArgs entityChangedEventArgs) {
+		if (this.CanRaiseEvents) {
+			OnEntityEditing(entityChangedEventArgs.Entity, entityChangedEventArgs.PropertyName, entityChangedEventArgs.OldValue, entityChangedEventArgs.NewValue);
+			if (EntityPropertyChanged != null)
+				EntityPropertyChanged(this, entityChangedEventArgs);
+		}
+	}
+
 	protected void RaiseEntityCreatedEvent(object createdEntity) {
 		if (this.CanRaiseEvents) {
 			OnEntityCreated(createdEntity);
@@ -813,65 +825,12 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	#region Event Handlers
 
 	async void _gridContainerPanel_Resize(object sender, EventArgs e) {
-		if (!_updating && _crudCapabilities.HasFlag(DataSourceCapabilities.CanPage) && AutoPageSize) {
-			_pageSize = CalculateAutoPageSize();
-			await RefreshGrid();
-		}
-	}
-
-	internal async void _grid_SortColumnPressed(int col) {
-		if (!_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort))
-			return;
-
-		_sortDirection =
-			_sortColumnName == null ? SortDirection.Ascending : (_sortColumnIndex == col ? (_sortDirection == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending) : SortDirection.Ascending);
-
-		_sortColumnIndex = col;
-		_sortColumnName = _columnsBindings[_sortColumnIndex].SortName;
-		await RefreshGrid();
-	}
-
-	private async void _pageSizeUpDown_ValueChanged(object sender, EventArgs e) {
-		_pageSize = (int)_pageSizeUpDown.Value;
-		await RefreshGrid();
-	}
-
-	private async void _searchTextBox_TextChanged(object sender, EventArgs e) {
-		_searchText = _searchTextBox.Text;
-		if (_pageNumber != 0)
-			SetVisiblePageNumberText(0);
-		else
-			await RefreshGrid();
-	}
-
-	private void _firstPageButton_Click(object sender, EventArgs e) {
-		if (!_updating) {
-			SetVisiblePageNumberText(0);
-		}
-	}
-
-	private void _previousPageButton_Click(object sender, EventArgs e) {
-		if (!_updating) {
-			SetVisiblePageNumberText((_pageNumber - 1).ClipTo(0, _endPageNumber));
-		}
-	}
-
-	private void _nextPageButton_Click(object sender, EventArgs e) {
-		if (!_updating) {
-			SetVisiblePageNumberText((_pageNumber + 1).ClipTo(0, _endPageNumber));
-		}
-	}
-
-	private void _lastPageButton_Click(object sender, EventArgs e) {
-		if (!_updating) {
-			SetVisiblePageNumberText(_endPageNumber);
-		}
-	}
-
-	private async void _pageNumberBox_ValueChanged(object sender, EventArgs e) {
 		try {
-			if (!_updating) {
-				_pageNumber = GetVisiblePageNumberText();
+			if (State != VisualState.Normal)
+				return;
+
+			if (_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage) && AutoPageSize) {
+				_pageSize = CalculateAutoPageSize();
 				await RefreshGrid();
 			}
 		} catch (Exception error) {
@@ -879,8 +838,104 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		}
 	}
 
+	internal async void _grid_SortColumnPressed(int col) {
+		try {
+			if (!_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort))
+				return;
+
+			_sortDirection =
+				_sortColumnName == null ? SortDirection.Ascending : (_sortColumnIndex == col ? (_sortDirection == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending) : SortDirection.Ascending);
+
+			_sortColumnIndex = col;
+			_sortColumnName = _columnsBindings[_sortColumnIndex].SortName;
+			await RefreshGrid();
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
+	private async void _pageSizeUpDown_ValueChanged(object sender, EventArgs e) {
+		try {
+			_pageSize = (int)_pageSizeUpDown.Value;
+			await RefreshGrid();
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
+	private async void _searchTextBox_TextChanged(object sender, EventArgs e) {
+		try {
+			_searchText = _searchTextBox.Text;
+			if (_pageNumber != 0)
+				SetVisiblePageNumberText(0);
+			else
+				await RefreshGrid();
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
+	private void _firstPageButton_Click(object sender, EventArgs e) {
+		try {
+			if (State != VisualState.Normal)
+				return;
+
+			SetVisiblePageNumberText(0);
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
+	private void _previousPageButton_Click(object sender, EventArgs e) {
+		try {
+			if (State != VisualState.Normal)
+				return;
+
+			SetVisiblePageNumberText((_pageNumber - 1).ClipTo(0, _endPageNumber));
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
+	private void _nextPageButton_Click(object sender, EventArgs e) {
+		try {
+			if (State != VisualState.Normal)
+				return;
+
+			SetVisiblePageNumberText((_pageNumber + 1).ClipTo(0, _endPageNumber));
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
+	private void _lastPageButton_Click(object sender, EventArgs e) {
+		try {
+			if (State != VisualState.Normal)
+				return;
+
+			SetVisiblePageNumberText(_endPageNumber);
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
+	private async void _pageNumberBox_ValueChanged(object sender, EventArgs e) {
+		try {
+			if (State != VisualState.Normal)
+				return;
+
+			_pageNumber = GetVisiblePageNumberText();
+			await RefreshGrid();
+		} catch (Exception error) {
+			ExceptionDialog.Show(this, error);
+		}
+	}
+
 	private void _createButton_Click(object sender, EventArgs e) {
 		try {
+			if (State != VisualState.Normal)
+				return;
+
 			CreateNewRecord();
 		} catch (Exception error) {
 			ExceptionDialog.Show(this, error);
@@ -889,6 +944,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	private void _deleteButton_Click(object sender, EventArgs e) {
 		try {
+			if (State != VisualState.Normal)
+				return;
+
 			DeleteSelectedRecord();
 		} catch (Exception error) {
 			ExceptionDialog.Show(this, error);
@@ -897,19 +955,20 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	private void _grid_Selection_SelectionChanged(object sender, SourceGrid.RangeRegionChangedEventArgs e) {
 		try {
-			if (!_updating) {
-				if (e.RemovedRange != null && _selectedEntity != null && _selectedOn.TimeElapsed().TotalMilliseconds > 50) {
-					RaiseEntityDeselectedEvent(_selectedEntity);
-					_selectedEntity = null;
-				}
+			if (State != VisualState.Normal)
+				return;
 
-				if (e.AddedRange != null) {
-					var addedRows = e.AddedRange.GetRowsIndex();
-					if (addedRows.Length > 0 && _selectedOn.TimeElapsed().TotalMilliseconds > 50) {
-						_selectedEntity = _rowToEntityMap[addedRows[0]];
-						_selectedOn = DateTime.Now;
-						RaiseEntitySelectedEvent(_selectedEntity);
-					}
+			if (e.RemovedRange != null && _selectedEntity != null && _selectedOn.TimeElapsed().TotalMilliseconds > 50) {
+				RaiseEntityDeselectedEvent(_selectedEntity);
+				_selectedEntity = null;
+			}
+
+			if (e.AddedRange != null) {
+				var addedRows = e.AddedRange.GetRowsIndex();
+				if (addedRows.Length > 0 && _selectedOn.TimeElapsed().TotalMilliseconds > 50) {
+					_selectedEntity = _rowToEntityMap[addedRows[0]];
+					_selectedOn = DateTime.Now;
+					RaiseEntitySelectedEvent(_selectedEntity);
 				}
 			}
 		} catch (Exception error) {
@@ -984,5 +1043,20 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	#endregion
 
+	#region Internal Types
+
+	private enum VisualState {
+		Normal,
+		Selecting,
+		Loading
+	}
+
+	private IDisposable EnterVisualState(VisualState newState) {
+		var previousState = State;
+		State = newState;
+		return new ActionDisposable(() => State = previousState);
+	}
+
+	#endregion
 }
 

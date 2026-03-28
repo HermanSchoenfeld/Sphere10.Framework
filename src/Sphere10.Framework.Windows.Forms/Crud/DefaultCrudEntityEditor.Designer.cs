@@ -41,6 +41,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._propertyGrid.Name = "_propertyGrid";
 			this._propertyGrid.Size = new System.Drawing.Size(476, 297);
 			this._propertyGrid.TabIndex = 1;
+			this._propertyGrid.PropertyValueChanged += _propertyGrid_PropertyValueChanged;
 			// 
 			// DefaultEntityEditorControl
 			// 
