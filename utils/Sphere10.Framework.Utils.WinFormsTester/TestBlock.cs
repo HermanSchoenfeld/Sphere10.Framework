@@ -63,7 +63,10 @@ public class TestBlock : ApplicationBlock {
 			.AddMenu(mb => mb
 				.WithText("Tests 2")
 				.WithImage32x32(Resources.Tests232x32)
-				.AddScreenItem<VisualInheritanceFixerSubForm>("VisualInheritanceFixerSub", Resources.Generic16x16)
+				.AddActionItem("Visual Inheritance Fixer", async () =>  {
+					var form = new VisualInheritanceFixerSubForm();
+					form.ShowDialog();
+				},Resources.Generic16x16)
 				.AddScreenItem<HooksScreen>("Hooks", Resources.Generic16x16)
 				.AddScreenItem<TestSoundsScreen>("Test Sounds", Resources.Generic16x16)
 				.AddScreenItem<DecayGaugeScreen>("Decay Gauge", Resources.Generic16x16)

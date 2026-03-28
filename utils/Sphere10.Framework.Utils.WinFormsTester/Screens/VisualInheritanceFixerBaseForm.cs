@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Windows.Forms;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;

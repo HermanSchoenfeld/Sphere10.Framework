@@ -9,11 +9,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public class DataSource1<TItem> : IDataSource<TestClass> {
+public class DataSource1<TItem> : SyncBatchDataSourceBase<TestClass> {
 	List<TestClass> AllItems = new List<TestClass>();
 
 	public event EventHandlerEx<IEnumerable<CrudActionItem<TestClass>>> MutatedItems;
@@ -45,18 +44,7 @@ public class DataSource1<TItem> : IDataSource<TestClass> {
 		return testData;
 	}
 
-	public async Task Create(IEnumerable<TestClass> entities) {
-		AllItems.AddRange(entities);
-	}
-
-	public async Task Delete(IEnumerable<TestClass> entities) {
-		foreach (var entity in entities) {
-			var index = AllItems.IndexOf(entity);
-			if (index >= 0) AllItems.RemoveAt(index);
-		}
-	}
-
-	public IEnumerable<TestClass> New(int count) {
+ public override IEnumerable<TestClass> NewRange(int count) {
 		var returnList = new List<TestClass>();
 		var newId = AllItems.Max(x => x.Id) + 1;
 
@@ -70,57 +58,58 @@ public class DataSource1<TItem> : IDataSource<TestClass> {
 		return returnList;
 	}
 
-	public Task<IEnumerable<TestClass>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+  public override void CreateRange(IEnumerable<TestClass> entities) {
+		AllItems.AddRange(entities);
+	}
+
+    public override DataSourceItems<TestClass> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		// make sure the requested page is logical
 		if (page < 0) page = 0;
 		else if (page > AllItems.Count / pageLength) page = AllItems.Count / pageLength;
 
 		var startIndex = pageLength * page;
 
-		// the last page might not have a full [page of data
+		// the last page might not have a full page of data
 		if (startIndex + pageLength >= AllItems.Count) pageLength = AllItems.Count - startIndex;
 
-		var items = (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength);
+		var items = AllItems.GetRange(startIndex, pageLength);
 
-		totalItems = AllItems.Count();
-		return Task.FromResult(items);
-
-		//return Task.Run(() => (IEnumerable<TestClass>)AllItems.GetRange(startIndex, pageLength));
+		return new DataSourceItems<TestClass> {
+			Items = items,
+			Page = page,
+			TotalCount = AllItems.Count
+		};
 	}
 
-	public Task Refresh(TestClass[] entity) {
+    public override void RefreshRange(TestClass[] entities) {
 		throw new NotImplementedException();
 	}
 
-	public Task Update(IEnumerable<TestClass> entities) {
-		var test = entities.ToArray()[0].ToString();
-
-		return Task.Run(() => {
-				foreach (var entity in entities) {
-					for (int i = 0; i < AllItems.Count; i++) {
-						if (AllItems[i].Id == entity.Id) {
-							AllItems[i] = entity;
-							break;
-						}
-					}
+  public override void UpdateRange(IEnumerable<TestClass> entities) {
+		foreach (var entity in entities) {
+			for (int i = 0; i < AllItems.Count; i++) {
+				if (AllItems[i].Id == entity.Id) {
+					AllItems[i] = entity;
+					break;
 				}
 			}
-		);
+		}
 	}
 
-	public Task<Result> Validate(IEnumerable<(TestClass entity, CrudAction action)> actions) {
+  public override void DeleteRange(IEnumerable<TestClass> entities) {
+		foreach (var entity in entities) {
+			var index = AllItems.IndexOf(entity);
+			if (index >= 0) AllItems.RemoveAt(index);
+		}
+	}
+
+   public override Result ValidateRange(IEnumerable<(TestClass entity, CrudAction action)> actions) {
 		throw new NotImplementedException();
 	}
 
-	public Task<DataSourceItems<TestClass>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-		throw new NotImplementedException();
-	}
+	public override int Count => AllItems.Count;
 
-	public Task<int> Count {
-		get { return Task.Run(() => AllItems.Count); }
-	}
-
-	public Task<DataSourceCapabilities> Capabilities => throw new NotImplementedException();
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.CanRead | DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanUpdate | DataSourceCapabilities.CanDelete;
 }
 
 

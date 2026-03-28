@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.Crud;
 
@@ -168,8 +169,8 @@ public partial class CrudTestScreen : ApplicationScreen {
 				};
 			}
 
-			dataSource.Create(employee);
-			foreach (var x in dataSource.AllEmployees)
+			dataSource.AddEmployee(employee);
+				foreach (var x in dataSource.AllEmployees)
 				x.Manager = dataSource.RandomEmployee();
 		}
 	}
@@ -301,7 +302,11 @@ public partial class CrudTestScreen : ApplicationScreen {
 }
 
 
-public class TestCrudDataSource : CrudDataSourceListBase<Employee> {
+public class TestCrudDataSource : ListDataSource<Employee> {
+
+	public TestCrudDataSource() : base(new ExtendedList<Employee>()) {
+		// Replace 'ExtendedList<Employee>' with the actual implementation type
+	}
 
 	public bool GenerateDeleteError { get; set; }
 	public bool GenerateCreateError { get; set; }
@@ -316,7 +321,7 @@ public class TestCrudDataSource : CrudDataSourceListBase<Employee> {
 	}
 
 	public Employee RandomEmployee() {
-		return List.Count == 0 ? null : List[Tools.Maths.RNG.Next(0, List.Count)];
+		return List.Count == 0 ? null : List[Tools.Maths.RNG.Next(0, (int)List.Count)];
 	}
 
 	public IEnumerable<Employee> RandomSet() {
@@ -325,14 +330,18 @@ public class TestCrudDataSource : CrudDataSourceListBase<Employee> {
 			yield return RandomEmployee();
 	}
 
-	public override Employee New() {
-		return new Employee() {
-			ID = base.List.Count + 1
-		};
+	public void AddEmployee(Employee employee) {
+		base.List.Add(employee);
+	}
+
+  public override IEnumerable<Employee> NewRange(int count) {
+		return Enumerable.Range(0, count).Select(_ => new Employee() {
+			ID = (int)base.List.Count + 1
+		});
 	}
 
 
-	public override IEnumerable<Employee> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems) {
+ public override DataSourceItems<Employee> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		var query =
 			from e in base.List
 			select e;
@@ -346,7 +355,7 @@ public class TestCrudDataSource : CrudDataSourceListBase<Employee> {
 				select e;
 		}
 
-		totalItems = query.Count();
+		var totalItems = query.Count();
 
 		switch (sortProperty) {
 			case "ID":
@@ -396,48 +405,53 @@ public class TestCrudDataSource : CrudDataSourceListBase<Employee> {
 			page = (int)Math.Ceiling(totalItems / (decimal)pageLength) - 1;
 
 		Thread.Sleep(Tools.Maths.RNG.Next(0, 2000));
-		return query.Skip(pageLength * page).Take(pageLength);
+		return new DataSourceItems<Employee> {
+			Items = query.Skip(pageLength * page).Take(pageLength),
+			Page = page,
+			TotalCount = totalItems
+		};
 	}
 
-	public override IEnumerable<string> Validate(Employee entity, CrudAction action) {
-		var errors = new List<string>();
-		switch (action) {
-			case CrudAction.Create:
-				if (GenerateCreateError) {
-					errors.Add("CREATE ERROR");
-				}
-				if (base.List.Any(i => i.ID == entity.ID && !Tools.Object.Compare(i, entity))) {
-					errors.Add("ID is already in use");
-				}
-				if (entity.ID < 0) {
-					errors.Add("ID cannot be negative");
-				}
+    public override Result ValidateRange(IEnumerable<(Employee entity, CrudAction action)> actions) {
+		var result = Result.Default;
+		foreach (var (entity, action) in actions) {
+			switch (action) {
+				case CrudAction.Create:
+					if (GenerateCreateError) {
+						result.AddError("CREATE ERROR");
+					}
+					if (base.List.Any(i => i.ID == entity.ID && !Tools.Object.Compare(i, entity))) {
+						result.AddError("ID is already in use");
+					}
+					if (entity.ID < 0) {
+						result.AddError("ID cannot be negative");
+					}
 
-				if (entity.DateOfBirth == DateTime.MinValue) {
-					errors.Add("DOB has not been set");
-				}
-				break;
-			case CrudAction.Update:
-				if (GenerateUpdateError) {
-					errors.Add("UPDATE ERROR");
-				}
+					if (entity.DateOfBirth == DateTime.MinValue) {
+						result.AddError("DOB has not been set");
+					}
+					break;
+				case CrudAction.Update:
+					if (GenerateUpdateError) {
+						result.AddError("UPDATE ERROR");
+					}
 
-				if (entity.ID < 0) {
-					errors.Add("ID cannot be negative");
-				}
+					if (entity.ID < 0) {
+						result.AddError("ID cannot be negative");
+					}
 
-				if (entity.DateOfBirth == DateTime.MinValue) {
-					errors.Add("DOB has not been set");
-				}
-				break;
-			case CrudAction.Delete:
-				if (GenerateDeleteError) {
-					errors.Add("DELETE ERROR");
-				}
-				break;
-
+					if (entity.DateOfBirth == DateTime.MinValue) {
+						result.AddError("DOB has not been set");
+					}
+					break;
+				case CrudAction.Delete:
+					if (GenerateDeleteError) {
+						result.AddError("DELETE ERROR");
+					}
+					break;
+			}
 		}
-		return errors;
+		return result;
 	}
 }
 
