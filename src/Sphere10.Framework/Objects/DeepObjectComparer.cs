@@ -59,7 +59,13 @@ public class DeepObjectComparer {
 	/// <summary>
 	/// Keep track of parent objects in the object hiearchy
 	/// </summary>
-	private readonly Dictionary<int, int> _parents = new Dictionary<int, int>();
+	private readonly HashSet<object> _parents = new HashSet<object>(ReferenceEqualityComparer.Instance);
+
+	/// <summary>
+	/// Track visited object pairs to prevent redundant comparisons via different traversal paths
+	/// </summary>
+	private readonly HashSet<(object, object)> _visitedPairs = new HashSet<(object, object)>(new TupleEqualityComparer<object, object>(ReferenceEqualityComparer.Instance, ReferenceEqualityComparer.Instance));
+
 
 	/// <summary>
 	/// Reflection Cache for property info
@@ -168,6 +174,7 @@ public class DeepObjectComparer {
 	/// Default is 1 for performance reasons.
 	/// </remarks>
 	public int MaxDifferences { get; set; }
+
 
 	/// <summary>
 	/// The differences found during the compare
@@ -306,6 +313,7 @@ public class DeepObjectComparer {
 		string defaultBreadCrumb = string.Empty;
 
 		Differences.Clear();
+		_visitedPairs.Clear();
 		Compare(object1, object2, defaultBreadCrumb);
 
 		if (AutoClearCache)
@@ -324,6 +332,7 @@ public class DeepObjectComparer {
 		_propertyCache.Clear();
 		_fieldCache.Clear();
 		_methodList.Clear();
+		_visitedPairs.Clear();
 	}
 
 	#endregion
@@ -385,6 +394,10 @@ public class DeepObjectComparer {
 			return;
 		}
 
+		//For reference types, skip pairs already compared (prevents infinite recursion in cyclic graphs)
+		if (!t1.IsValueType && !_visitedPairs.Add((object1, object2)))
+			return;
+
 		if (IsUseCustomTypeComparer(t1)) {
 			CompareWithCustomComparer(object1, object2, breadCrumb);
 		} else if (IsTypeOfType(t1)) {
@@ -425,7 +438,6 @@ public class DeepObjectComparer {
 		} else {
 			throw new NotSupportedException("Cannot compare object of type " + t1.Name);
 		}
-
 	}
 
 	private void CompareIpEndPoint(object object1, object object2, string breadCrumb) {
@@ -793,16 +805,16 @@ public class DeepObjectComparer {
 	/// <param name="breadCrumb"></param>
 	private void CompareStruct(object object1, object object2, string breadCrumb) {
 		try {
-			AddParent(object1.GetHashCode());
-			AddParent(object2.GetHashCode());
+			AddParent(object1);
+			AddParent(object2);
 
 			Type t1 = object1.GetType();
 
 			PerformCompareFields(t1, object1, object2, true, breadCrumb);
 			PerformCompareProperties(t1, object1, object2, true, breadCrumb);
 		} finally {
-			RemoveParent(object1.GetHashCode());
-			RemoveParent(object2.GetHashCode());
+			RemoveParent(object1);
+			RemoveParent(object2);
 		}
 	}
 
@@ -814,15 +826,18 @@ public class DeepObjectComparer {
 	/// <param name="breadCrumb"></param>
 	private void CompareClass(object object1, object object2, string breadCrumb) {
 		try {
-			//Custom classes that implement IEnumerable may have the same hash code
-			//Ignore objects with the same hash code
-			if (!(object1 is IEnumerable)
-			    && object1.GetHashCode() == object2.GetHashCode()) {
+			//Skip objects that are the same instance
+			if (ReferenceEquals(object1, object2)) {
 				return;
 			}
 
-			AddParent(object1.GetHashCode());
-			AddParent(object2.GetHashCode());
+			//Skip objects already being compared (cycle detection)
+			if (_parents.Contains(object1) || _parents.Contains(object2)) {
+				return;
+			}
+
+			AddParent(object1);
+			AddParent(object2);
 
 			Type t1 = object1.GetType();
 
@@ -842,8 +857,8 @@ public class DeepObjectComparer {
 			if (CompareFields)
 				PerformCompareFields(t1, object1, object2, false, breadCrumb);
 		} finally {
-			RemoveParent(object1.GetHashCode());
-			RemoveParent(object2.GetHashCode());
+			RemoveParent(object1);
+			RemoveParent(object2);
 		}
 	}
 
@@ -888,8 +903,8 @@ public class DeepObjectComparer {
 			object objectValue1 = item.GetValue(object1);
 			object objectValue2 = item.GetValue(object2);
 
-			bool object1IsParent = objectValue1 != null && (objectValue1 == object1 || _parents.ContainsKey(objectValue1.GetHashCode()));
-			bool object2IsParent = objectValue2 != null && (objectValue2 == object2 || _parents.ContainsKey(objectValue2.GetHashCode()));
+			bool object1IsParent = objectValue1 != null && (objectValue1 == object1 || _parents.Contains(objectValue1));
+			bool object2IsParent = objectValue2 != null && (objectValue2 == object2 || _parents.Contains(objectValue2));
 
 			//Skip fields that point to the parent
 			if (IsClass(item.FieldType)
@@ -1009,8 +1024,8 @@ public class DeepObjectComparer {
 				continue;
 			}
 
-			bool object1IsParent = objectValue1 != null && (objectValue1 == object1 || _parents.ContainsKey(objectValue1.GetHashCode()));
-			bool object2IsParent = objectValue2 != null && (objectValue2 == object2 || _parents.ContainsKey(objectValue2.GetHashCode()));
+			bool object1IsParent = objectValue1 != null && (objectValue1 == object1 || _parents.Contains(objectValue1));
+			bool object2IsParent = objectValue2 != null && (objectValue2 == object2 || _parents.Contains(objectValue2));
 
 			//Skip properties where both point to the corresponding parent
 			if ((IsClass(info.PropertyType) || IsStruct(info.PropertyType)) && (object1IsParent && object2IsParent)) {
@@ -1180,8 +1195,8 @@ public class DeepObjectComparer {
 			return;
 
 		try {
-			AddParent(object1.GetHashCode());
-			AddParent(object2.GetHashCode());
+			AddParent(object1);
+			AddParent(object2);
 
 			//Objects must be the same length
 			if (iDict1.Count != iDict2.Count) {
@@ -1223,13 +1238,13 @@ public class DeepObjectComparer {
 			}
 
 		} finally {
-			RemoveParent(object1.GetHashCode());
-			RemoveParent(object2.GetHashCode());
+			RemoveParent(object1);
+			RemoveParent(object2);
 		}
 	}
 
 	private void CompareDictionaryIgnoreOrder(string breadCrumb, IDictionaryEnumerator enumerator1,
-	                                          IDictionaryEnumerator enumerator2) {
+											  IDictionaryEnumerator enumerator2) {
 		var loopedBack = false;
 		var needLoopBack = false;
 		var enumerator2Index = 0;
@@ -1322,8 +1337,8 @@ public class DeepObjectComparer {
 			return;
 
 		try {
-			AddParent(object1.GetHashCode());
-			AddParent(object2.GetHashCode());
+			AddParent(object1);
+			AddParent(object2);
 
 			//Objects must be the same length
 			if (ilist1.Count != ilist2.Count) {
@@ -1361,8 +1376,8 @@ public class DeepObjectComparer {
 				}
 			}
 		} finally {
-			RemoveParent(object1.GetHashCode());
-			RemoveParent(object2.GetHashCode());
+			RemoveParent(object1);
+			RemoveParent(object2);
 		}
 	}
 
@@ -1447,8 +1462,8 @@ public class DeepObjectComparer {
 	/// <param name="breadCrumb"></param>
 	private void CompareHashSet(object object1, object object2, string breadCrumb) {
 		try {
-			AddParent(object1.GetHashCode());
-			AddParent(object2.GetHashCode());
+			AddParent(object1);
+			AddParent(object2);
 
 			Type t1 = object1.GetType();
 
@@ -1494,8 +1509,8 @@ public class DeepObjectComparer {
 				}
 			}
 		} finally {
-			RemoveParent(object1.GetHashCode());
-			RemoveParent(object2.GetHashCode());
+			RemoveParent(object1);
+			RemoveParent(object2);
 		}
 	}
 
@@ -1649,14 +1664,12 @@ public class DeepObjectComparer {
 
 	#region Supporting Methods
 
-	private void AddParent(int hash) {
-		if (!_parents.ContainsKey(hash))
-			_parents.Add(hash, hash);
+	private void AddParent(object obj) {
+		_parents.Add(obj);
 	}
 
-	private void RemoveParent(int hash) {
-		if (_parents.ContainsKey(hash))
-			_parents.Remove(hash);
+	private void RemoveParent(object obj) {
+		_parents.Remove(obj);
 	}
 
 	/// <summary>
