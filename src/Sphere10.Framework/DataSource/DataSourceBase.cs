@@ -12,46 +12,69 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
+/// <summary>
+/// Abstract base for all data source implementations. Declares all item, batch, sync, and async methods as abstract.
+/// </summary>
 public abstract class DataSourceBase<TItem> : IDataSource<TItem> {
-	public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
 
-	public abstract IEnumerable<TItem> New(int count);
+	// Sync item methods
+	public abstract TItem New();
 
-	public abstract void NewDelayed(int count);
+	public abstract void Create(TItem entity);
 
-	public abstract Task Create(IEnumerable<TItem> entities);
+	public abstract TItem Refresh(TItem entity);
 
-	public abstract void CreateDelayed(IEnumerable<TItem> entities);
+	public abstract void Update(TItem entity);
 
-	public abstract Task<IEnumerable<TItem>> Read(string searchTerm, int pageLength, ref int page, string sortProperty, SortDirection sortDirection, out int totalItems);
+	public abstract void Delete(TItem entity);
 
-	//public abstract Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection, out int totalItems);
-	public abstract Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
+	public abstract Result Validate(TItem entity, CrudAction action);
 
-	public abstract void ReadDelayed(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
+	// Sync batch methods
+  public abstract IEnumerable<TItem> NewRange(int count);
 
-	public abstract Task Refresh(TItem[] entities);
+   public abstract void CreateRange(IEnumerable<TItem> entities);
 
-	public abstract void RefreshDelayed(IEnumerable<TItem> entities);
+ public abstract DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
 
-	public abstract Task Update(IEnumerable<TItem> entities);
+ public abstract void RefreshRange(TItem[] entities);
 
-	public abstract void UpdateDelayed(IEnumerable<TItem> entities);
+   public abstract void UpdateRange(IEnumerable<TItem> entities);
 
-	public abstract Task Delete(IEnumerable<TItem> entities);
+   public abstract void DeleteRange(IEnumerable<TItem> entities);
 
-	public abstract void DeleteDelayed(IEnumerable<TItem> entities);
+    public abstract Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions);
 
-	public abstract Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions);
+	public abstract int Count { get; }
 
-	public abstract void ValidateDelayed(IEnumerable<(TItem entity, CrudAction action)> actions);
+	public abstract DataSourceCapabilities Capabilities { get; }
 
-	public abstract Task<int> Count { get; }
+	// Async item methods
+	public abstract Task CreateAsync(TItem entity);
 
-	public abstract void CountDelayed();
+	public abstract Task<TItem> RefreshAsync(TItem entity);
 
-	//Task<int> IDataSource<TItem>.Count => throw new NotImplementedException();
+	public abstract Task UpdateAsync(TItem entity);
 
-	public Task<DataSourceCapabilities> Capabilities { get; }
+	public abstract Task DeleteAsync(TItem entity);
+
+	public abstract Task<Result> ValidateAsync(TItem entity, CrudAction action);
+
+	// Async batch methods
+  public abstract Task CreateRangeAsync(IEnumerable<TItem> entities);
+
+  public abstract Task<DataSourceItems<TItem>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
+
+    public abstract Task RefreshRangeAsync(TItem[] entities);
+
+  public abstract Task UpdateRangeAsync(IEnumerable<TItem> entities);
+
+  public abstract Task DeleteRangeAsync(IEnumerable<TItem> entities);
+
+ public abstract Task<Result> ValidateRangeAsync(IEnumerable<(TItem entity, CrudAction action)> actions);
+
+	public abstract Task<int> CountAsync { get; }
+
+	public abstract Task<DataSourceCapabilities> CapabilitiesAsync { get; }
 }
 

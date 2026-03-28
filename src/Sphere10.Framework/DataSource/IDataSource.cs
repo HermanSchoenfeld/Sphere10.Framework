@@ -7,60 +7,71 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
 public interface IDataSource<TItem> {
 
-	IEnumerable<TItem> New(int count);
+	// Sync item methods
+	TItem New();
 
-	Task Create(IEnumerable<TItem> entities);
+	void Create(TItem entity);
 
-	Task<DataSourceItems<TItem>> Read(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
+	TItem Refresh(TItem entity);
 
-	Task Refresh(TItem[] entities);
+	void Update(TItem entity);
 
-	Task Update(IEnumerable<TItem> entities);
+	void Delete(TItem entity);
 
-	Task Delete(IEnumerable<TItem> entities);
+	Result Validate(TItem entity, CrudAction action);
 
-	Task<Result> Validate(IEnumerable<(TItem entity, CrudAction action)> actions);
+	// Sync batch methods
+  IEnumerable<TItem> NewRange(int count);
 
-	Task<int> Count { get; }
+   void CreateRange(IEnumerable<TItem> entities);
 
-	Task<DataSourceCapabilities> Capabilities { get; }
+ DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
 
-	#region Single access simplifications
+ void RefreshRange(TItem[] entities);
 
-	public TItem New() {
-		var results = New(1);
-		var enumerable = results as TItem[] ?? results.ToArray();
-		Guard.Ensure(enumerable.Count() == 1, "Unable to create entity");
-		return enumerable.Single();
-	}
+   void UpdateRange(IEnumerable<TItem> entities);
 
-	public Task Create(TItem item)
-		=> Create(new[] { item });
+   void DeleteRange(IEnumerable<TItem> entities);
 
+    Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions);
 
-	public async Task<TItem> Refresh(TItem entity) {
-		var entities = new[] { entity };
-		await Refresh(entities);
-		return entities[0];
-	}
+	int Count { get; }
 
-	public Task Update(TItem item)
-		=> Update(new[] { item });
+	DataSourceCapabilities Capabilities { get; }
 
-	public Task Delete(TItem entity)
-		=> Delete(new[] { entity });
+	// Async item methods
+	Task CreateAsync(TItem entity);
 
-	public Task<Result> Validate(TItem entity, CrudAction action)
-		=> Validate(new[] { (entity, action) });
+	Task<TItem> RefreshAsync(TItem entity);
 
-	#endregion
+	Task UpdateAsync(TItem entity);
+
+	Task DeleteAsync(TItem entity);
+
+	Task<Result> ValidateAsync(TItem entity, CrudAction action);
+
+	// Async batch methods
+  Task CreateRangeAsync(IEnumerable<TItem> entities);
+
+  Task<DataSourceItems<TItem>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection);
+
+    Task RefreshRangeAsync(TItem[] entities);
+
+  Task UpdateRangeAsync(IEnumerable<TItem> entities);
+
+  Task DeleteRangeAsync(IEnumerable<TItem> entities);
+
+ Task<Result> ValidateRangeAsync(IEnumerable<(TItem entity, CrudAction action)> actions);
+
+	Task<int> CountAsync { get; }
+
+	Task<DataSourceCapabilities> CapabilitiesAsync { get; }
 
 }
 
