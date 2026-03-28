@@ -59,7 +59,7 @@ public abstract class DataSourceDecorator<TItem, TConcrete> : DataSourceBase<TIt
 
 	public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions) => InternalDataSource.ValidateRange(actions);
 
-	public override int Count => InternalDataSource.Count;
+	public override long Count => InternalDataSource.Count;
 
 	public override DataSourceCapabilities Capabilities => InternalDataSource.Capabilities;
 
@@ -90,7 +90,7 @@ public abstract class DataSourceDecorator<TItem, TConcrete> : DataSourceBase<TIt
 
 	public override Task<Result> ValidateRangeAsync(IEnumerable<(TItem entity, CrudAction action)> actions) => InternalDataSource.ValidateRangeAsync(actions);
 
-	public override Task<int> CountAsync => InternalDataSource.CountAsync;
+	public override Task<long> CountAsync => InternalDataSource.CountAsync;
 
 	public override Task<DataSourceCapabilities> CapabilitiesAsync => InternalDataSource.CapabilitiesAsync;
 }

@@ -24,7 +24,7 @@ public class ServerWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem
 	private string ReceivedId { get; set; }
 	private ServerWebSocketsChannelHub Hub { get; set; }
 
-	public override Task<int> CountAsync => Task.FromResult(Items.Count);
+	public override Task<long> CountAsync => Task.FromResult((long)Items.Count);
 
 	public ServerWebSocketsDataSource(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, bool secure, InitializeDelegate initializeItem, UpdateDelegate updateItem, IdDelegate idItem)
 		: base(new ServerWebSocketsChannel(localEndpoint, remoteEndpoint, secure, true)) {

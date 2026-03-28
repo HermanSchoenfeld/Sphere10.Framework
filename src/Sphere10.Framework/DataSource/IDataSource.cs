@@ -41,7 +41,7 @@ public interface IDataSource<TItem> {
 
     Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions);
 
-	int Count { get; }
+	long Count { get; }
 
 	DataSourceCapabilities Capabilities { get; }
 
@@ -69,7 +69,7 @@ public interface IDataSource<TItem> {
 
  Task<Result> ValidateRangeAsync(IEnumerable<(TItem entity, CrudAction action)> actions);
 
-	Task<int> CountAsync { get; }
+	Task<long> CountAsync { get; }
 
 	Task<DataSourceCapabilities> CapabilitiesAsync { get; }
 

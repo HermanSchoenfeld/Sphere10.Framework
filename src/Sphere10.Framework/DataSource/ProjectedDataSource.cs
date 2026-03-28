@@ -85,7 +85,7 @@ public class ProjectedDataSource<TFrom, TTo> : IDataSource<TTo> {
     public Result ValidateRange(IEnumerable<(TTo entity, CrudAction action)> actions)
 		=> _source.ValidateRange(actions.Select(a => (ToSource(a.entity), a.action)));
 
-	public int Count => _source.Count;
+	public long Count => _source.Count;
 
 	public DataSourceCapabilities Capabilities => _source.Capabilities;
 
@@ -136,7 +136,7 @@ public class ProjectedDataSource<TFrom, TTo> : IDataSource<TTo> {
  public Task<Result> ValidateRangeAsync(IEnumerable<(TTo entity, CrudAction action)> actions)
 		=> _source.ValidateRangeAsync(actions.Select(a => (ToSource(a.entity), a.action)));
 
-	public Task<int> CountAsync => _source.CountAsync;
+	public Task<long> CountAsync => _source.CountAsync;
 
 	public Task<DataSourceCapabilities> CapabilitiesAsync => _source.CapabilitiesAsync;
 }

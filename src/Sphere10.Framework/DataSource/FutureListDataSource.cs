@@ -62,7 +62,7 @@ public class FutureListDataSource<TEntity> : SyncBatchDataSourceBase<TEntity> {
 
 	public override Result ValidateRange(IEnumerable<(TEntity entity, CrudAction action)> actions) => Result.Default;
 
-	public override int Count => checked((int)Future.Value.Count);
+	public override long Count => Future.Value.Count;
 
 	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.Default;
 }

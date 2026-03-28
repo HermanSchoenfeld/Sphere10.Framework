@@ -45,7 +45,7 @@ public abstract class DataSourceBase<TItem> : IDataSource<TItem> {
 
     public abstract Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions);
 
-	public abstract int Count { get; }
+	public abstract long Count { get; }
 
 	public abstract DataSourceCapabilities Capabilities { get; }
 
@@ -73,7 +73,7 @@ public abstract class DataSourceBase<TItem> : IDataSource<TItem> {
 
  public abstract Task<Result> ValidateRangeAsync(IEnumerable<(TItem entity, CrudAction action)> actions);
 
-	public abstract Task<int> CountAsync { get; }
+	public abstract Task<long> CountAsync { get; }
 
 	public abstract Task<DataSourceCapabilities> CapabilitiesAsync { get; }
 }

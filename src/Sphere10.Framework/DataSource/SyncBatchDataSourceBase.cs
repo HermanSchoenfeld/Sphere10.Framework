@@ -82,7 +82,7 @@ public abstract class SyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
   public override Task<Result> ValidateRangeAsync(IEnumerable<(TItem entity, CrudAction action)> actions)
 		=> Task.Run(() => ValidateRange(actions));
 
-	public override Task<int> CountAsync => Task.Run(() => Count);
+	public override Task<long> CountAsync => Task.Run(() => Count);
 
 	public override Task<DataSourceCapabilities> CapabilitiesAsync => Task.Run(() => Capabilities);
 }

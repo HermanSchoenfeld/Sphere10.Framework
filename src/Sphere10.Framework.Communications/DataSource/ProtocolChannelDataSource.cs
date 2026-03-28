@@ -41,7 +41,7 @@ public abstract class ProtocolChannelDataSource<TItem> : AsyncBatchDataSourceBas
 	//private void ProtocolChannel_ReceivedBytes(System.ReadOnlyMemory<byte> bytes) {
 	//}
 
- public abstract override Task<int> CountAsync { get; }
+ public abstract override Task<long> CountAsync { get; }
 
 	public override Task<DataSourceCapabilities> CapabilitiesAsync => Task.FromResult(
 		DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage

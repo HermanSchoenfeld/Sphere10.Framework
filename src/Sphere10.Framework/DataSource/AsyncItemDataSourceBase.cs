@@ -91,7 +91,7 @@ public abstract class AsyncItemDataSourceBase<TItem> : DataSourceBase<TItem> {
  public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions)
 		=> ValidateRangeAsync(actions).ResultSafe();
 
-	public override int Count => CountAsync.ResultSafe();
+	public override long Count => CountAsync.ResultSafe();
 
 	public override DataSourceCapabilities Capabilities => CapabilitiesAsync.ResultSafe();
 }

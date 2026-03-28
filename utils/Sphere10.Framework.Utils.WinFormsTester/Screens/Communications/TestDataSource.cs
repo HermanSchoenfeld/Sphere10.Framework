@@ -107,7 +107,7 @@ public class DataSource1<TItem> : SyncBatchDataSourceBase<TestClass> {
 		throw new NotImplementedException();
 	}
 
-	public override int Count => AllItems.Count;
+	public override long Count => AllItems.Count;
 
 	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.CanRead | DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanUpdate | DataSourceCapabilities.CanDelete;
 }

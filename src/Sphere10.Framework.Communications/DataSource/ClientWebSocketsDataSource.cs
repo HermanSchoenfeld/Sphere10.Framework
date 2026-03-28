@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 namespace Sphere10.Framework.Communications;
 
 public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem> {
-	public override Task<int> CountAsync => throw new NotImplementedException();
+	public override Task<long> CountAsync => throw new NotImplementedException();
 
 	public InitializeDelegate InitializeItem { get; init; }
 	public UpdateDelegate UpdateItem { get; set; }
