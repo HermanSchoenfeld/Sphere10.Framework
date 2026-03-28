@@ -170,7 +170,6 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 				CloseAction = FormCloseAction.Close;
 				Close();
-				System.Windows.Forms.Application.Exit();
 			} catch {
 				try {
 					System.Windows.Forms.Application.Exit();
