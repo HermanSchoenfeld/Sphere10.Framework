@@ -60,7 +60,7 @@ internal class StreamLockingList<TData> : ExtendedListDecorator<TData> {
 		return base.Contains(item);
 	}
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<TData> items) {
+	public override long[] IndexOfRange(IEnumerable<TData> items) {
 		CheckAttached();
 		using var _ = _attachment.Streams.EnterAccessScope();
 		return base.IndexOfRange(items);
@@ -114,7 +114,7 @@ internal class StreamLockingList<TData> : ExtendedListDecorator<TData> {
 		base.RemoveRange(index, count);
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<TData> items) {
+	public override bool[] RemoveRange(IEnumerable<TData> items) {
 		CheckAttached();
 		using var _ = _attachment.Streams.EnterAccessScope();
 		return base.RemoveRange(items);

@@ -93,7 +93,7 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 	
 	#region IndexOf
 
-	public IEnumerable<long> IndexOfRange(IEnumerable<TData> items) {
+	public long[] IndexOfRange(IEnumerable<TData> items) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
 		return PagedList.IndexOfRange(items);
@@ -182,7 +182,7 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		PagedList.RemoveRange(index, count);		
 	}
 
-	public IEnumerable<bool> RemoveRange(IEnumerable<TData> items) {
+	public bool[] RemoveRange(IEnumerable<TData> items) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
 		return PagedList.RemoveRange(items);

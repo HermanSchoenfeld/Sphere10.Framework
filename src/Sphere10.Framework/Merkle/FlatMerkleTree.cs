@@ -218,7 +218,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			_parent._size = MerkleSize.FromLeafCount(_parent._size.LeafCount + itemsArr.Length);
 		}
 
-		public override IEnumerable<long> IndexOfRange(IEnumerable<byte[]> items) {
+		public override long[] IndexOfRange(IEnumerable<byte[]> items) {
 			throw new NotImplementedException();
 		}
 

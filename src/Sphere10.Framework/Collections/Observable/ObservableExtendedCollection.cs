@@ -66,7 +66,7 @@ public class ObservableExtendedCollection<TItem, TConcrete> : ObservableCollecti
 			}
 		);
 
-	public virtual IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) =>
+	public virtual bool[] RemoveRange(IEnumerable<TItem> items) =>
 		DoOperation(
 			EventTraits.Remove,
 			() => InternalCollection.RemoveRange(items),

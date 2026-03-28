@@ -31,7 +31,7 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 
 	public abstract void AddRange(IEnumerable<T> items);
 
-	public abstract IEnumerable<bool> RemoveRange(IEnumerable<T> items);
+	public abstract bool[] RemoveRange(IEnumerable<T> items);
 
 	public abstract void Clear();
 

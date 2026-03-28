@@ -38,7 +38,7 @@ public class ColumnarList : RangedListBase<object[]> {
 		UpdateVersion();
 	}
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<object[]> items) {
+	public override long[] IndexOfRange(IEnumerable<object[]> items) {
 		throw new NotSupportedException();
 	}
 

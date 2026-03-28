@@ -45,7 +45,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 	);
 
 
-	public virtual IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => DoOperation(
+	public virtual long[] IndexOfRange(IEnumerable<TItem> items) => DoOperation(
 		EventTraits.Search,
 		() => InternalCollection.IndexOfRange(items),
 		() => new SearchingLocationEventArgs<TItem> { CallArgs = new ItemsCallArgs<TItem>(items) },

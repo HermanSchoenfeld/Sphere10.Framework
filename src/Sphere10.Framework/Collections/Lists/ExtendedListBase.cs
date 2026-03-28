@@ -20,7 +20,7 @@ public abstract class ExtendedListBase<T> : ExtendedCollectionBase<T>, IExtended
 
 	public abstract long IndexOfL(T item);
 
-	public abstract IEnumerable<long> IndexOfRange(IEnumerable<T> items);
+	public abstract long[] IndexOfRange(IEnumerable<T> items);
 
 	public abstract T Read(long index);
 

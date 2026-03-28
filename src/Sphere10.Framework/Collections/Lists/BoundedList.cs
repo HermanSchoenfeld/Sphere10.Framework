@@ -20,9 +20,9 @@ public class BoundedList<T, TInner> : ExtendedListDecorator<T, TInner>, IBounded
 
 	public long FirstIndex { get; }
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<T> items) {
+	public override long[] IndexOfRange(IEnumerable<T> items) {
 		var startIX = FirstIndex;
-		return base.IndexOfRange(items).Select(x => x + startIX);
+		return base.IndexOfRange(items).Select(x => x + startIX).ToArray();
 	}
 
 	public override IEnumerable<T> ReadRange(long index, long count) {

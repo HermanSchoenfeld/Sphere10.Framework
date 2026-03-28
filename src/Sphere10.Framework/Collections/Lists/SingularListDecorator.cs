@@ -27,9 +27,9 @@ public abstract class SingularListDecorator<TItem, TConcrete> : ExtendedListDeco
 		return items.Select(Contains).ToArray();
 	}
 
-	public sealed override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) {
+	public sealed override long[] IndexOfRange(IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		return items.Select(IndexOfL);
+		return items.Select(IndexOfL).ToArray();
 	}
 
 	public sealed override IEnumerable<TItem> ReadRange(long index, long count) {
@@ -60,10 +60,9 @@ public abstract class SingularListDecorator<TItem, TConcrete> : ExtendedListDeco
 			Add(item);
 	}
 
-	public sealed override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) {
+	public sealed override bool[] RemoveRange(IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		foreach (var item in items)
-			yield return Remove(item);
+		return items.Select(Remove).ToArray();
 	}
 
 }

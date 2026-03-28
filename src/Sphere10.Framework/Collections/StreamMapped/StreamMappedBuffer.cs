@@ -45,7 +45,7 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 	public void AddRange(ReadOnlySpan<byte> span)
 		=> InsertRange(Count, span);
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<byte> items)
+	public override long[] IndexOfRange(IEnumerable<byte> items)
 		=> throw new NotSupportedException();
 
 	public override IEnumerable<byte> ReadRange(long index, long count)

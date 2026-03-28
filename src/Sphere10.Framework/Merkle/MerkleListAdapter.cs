@@ -91,7 +91,7 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		base.RemoveAt(index);
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items)
+	public override bool[] RemoveRange(IEnumerable<TItem> items)
 		=> items.Select(Remove).ToArray();
 
 	public override void RemoveRange(long fromIndex, long count) {

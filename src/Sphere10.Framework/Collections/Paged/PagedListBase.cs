@@ -113,7 +113,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => throw new NotSupportedException();
+	public override long[] IndexOfRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
 	/// <summary>
 	/// Reads items across one or more pages, yielding each page segment in order.
@@ -215,7 +215,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		else throw new NotSupportedException("This collection can only be mutated from the end");
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => throw new NotSupportedException();
+	public override bool[] RemoveRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
 	public override void RemoveRange(long index, long count) {
 		CheckRange(index, count, rightAligned: true);

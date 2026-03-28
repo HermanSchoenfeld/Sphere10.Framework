@@ -112,19 +112,21 @@ public class ExtendedList<T> : RangedListBase<T> {
 	/// Returns the index of each item, or -1 if not found.
 	/// </summary>
 	/// <param name="items">The items to locate.</param>
-	public override IEnumerable<long> IndexOfRange(IEnumerable<T> items) {
+	public override long[] IndexOfRange(IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var itemsArr = items as T[] ?? items.ToArray();
-		foreach (var item in itemsArr) {
-			var itemIndex = -1;
+		var results = new long[itemsArr.Length];
+		for (var i = 0; i < itemsArr.Length; i++) {
+			var itemIndex = -1L;
 			for (var j = 0; j < _length; j++) {
-				if (_comparer.Equals(item, _internalArray[j])) {
+				if (_comparer.Equals(itemsArr[i], _internalArray[j])) {
 					itemIndex = j;
 					break;
 				}
 			}
-			yield return itemIndex;
+			results[i] = itemIndex;
 		}
+		return results;
 	}
 
 	/// <summary>

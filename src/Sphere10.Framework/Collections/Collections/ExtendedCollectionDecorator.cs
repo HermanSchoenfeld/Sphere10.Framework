@@ -24,7 +24,7 @@ public abstract class ExtendedCollectionDecorator<TItem, TConcrete> : Collection
 
 	public virtual void AddRange(IEnumerable<TItem> items) => InternalCollection.AddRange(items);
 
-	public virtual IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) => InternalCollection.RemoveRange(items);
+	public virtual bool[] RemoveRange(IEnumerable<TItem> items) => InternalCollection.RemoveRange(items);
 }
 
 

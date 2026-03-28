@@ -56,7 +56,7 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 			return base.IndexOfL(item);
 	}
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) {
+	public override long[] IndexOfRange(IEnumerable<TItem> items) {
 		using (EnterReadScope())
 			return base.IndexOfRange(items);
 	}
@@ -122,7 +122,7 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 			base.RemoveAt(index);
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) {
+	public override bool[] RemoveRange(IEnumerable<TItem> items) {
 		using (EnterWriteScope())
 			return base.RemoveRange(items);
 	}

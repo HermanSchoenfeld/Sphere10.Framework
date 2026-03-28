@@ -60,7 +60,7 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 
 	public override long Count => _length;
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<byte> items) {
+	public override long[] IndexOfRange(IEnumerable<byte> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var results = new List<long>();
 		var itemsArr = items as byte[] ?? items.ToArray();

@@ -39,7 +39,7 @@ public sealed class ProjectedExtendedList<TFrom, TTo> : IExtendedList<TTo> {
 
 	public long IndexOfL(TTo item) => _source.IndexOfL(_inverseProjection(item));
 
-	public IEnumerable<long> IndexOfRange(IEnumerable<TTo> items) => _source.IndexOfRange(items.Select(_inverseProjection));
+	public long[] IndexOfRange(IEnumerable<TTo> items) => _source.IndexOfRange(items.Select(_inverseProjection));
 
 	public bool Contains(TTo item) => _source.Contains(_inverseProjection(item));
 
@@ -65,7 +65,7 @@ public sealed class ProjectedExtendedList<TFrom, TTo> : IExtendedList<TTo> {
 
 	public bool Remove(TTo item) => _source.Remove(_inverseProjection(item));
 
-	public IEnumerable<bool> RemoveRange(IEnumerable<TTo> items) => _source.RemoveRange(items.Select(_inverseProjection));
+	public bool[] RemoveRange(IEnumerable<TTo> items) => _source.RemoveRange(items.Select(_inverseProjection));
 
 	public void RemoveAt(int index) => _source.RemoveAt(index);
 

@@ -25,9 +25,9 @@ public abstract class SingularListBase<T> : ExtendedListBase<T> {
 		return items.Select(Contains).ToArray();
 	}
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<T> items) {
+	public override long[] IndexOfRange(IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		return items.Select(IndexOfL);
+		return items.Select(IndexOfL).ToArray();
 	}
 
 	public override IEnumerable<T> ReadRange(long index, long count) {
@@ -58,10 +58,9 @@ public abstract class SingularListBase<T> : ExtendedListBase<T> {
 			Add(item);
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<T> items) {
+	public override bool[] RemoveRange(IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		foreach (var item in items)
-			yield return Remove(item);
+		return items.Select(Remove).ToArray();
 	}
 
 	public override void CopyTo(T[] array, int arrayIndex) {

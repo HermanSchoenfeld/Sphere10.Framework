@@ -58,7 +58,7 @@ public class SortedList<T> : ExtendedCollectionDecorator<T>, ISortedList<T> {
 
 	public long IndexOfL(T item) => InternalList.BinarySearch(item, _comparer);
 
-	public IEnumerable<long> IndexOfRange(IEnumerable<T> items) => InternalList.IndexOfRange(items);
+	public long[] IndexOfRange(IEnumerable<T> items) => InternalList.IndexOfRange(items);
 
 	public T Read(long index) => InternalList.Read(index);
 

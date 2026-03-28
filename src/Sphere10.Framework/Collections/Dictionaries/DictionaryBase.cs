@@ -75,10 +75,9 @@ public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyV
 			Add(item);
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {
+	public override bool[] RemoveRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		foreach (var item in items)
-			yield return Remove(item);
+		return items.Select(Remove).ToArray();
 	}
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {

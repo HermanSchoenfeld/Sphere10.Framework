@@ -68,7 +68,7 @@ public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem, TInner
 
 	public override long IndexOfL(TItem item) => ToLogicalIndex(base.IndexOf(item));
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => base.IndexOfRange(items).Select(ToLogicalIndex);
+	public override long[] IndexOfRange(IEnumerable<TItem> items) => base.IndexOfRange(items).Select(ToLogicalIndex).ToArray();
 
 	public override bool Contains(TItem item) => IndexOf(item) > 0;
 
@@ -150,7 +150,7 @@ public class UpdateOnlyList<TItem, TInner> : ExtendedListDecorator<TItem, TInner
 
 	public override bool Remove(TItem item) => this.RemoveRange(new[] { item }).First();
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<TItem> items) {
+	public override bool[] RemoveRange(IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var indexes = IndexOfRange(items).WithIndex();
 		// need to delete items in descending order

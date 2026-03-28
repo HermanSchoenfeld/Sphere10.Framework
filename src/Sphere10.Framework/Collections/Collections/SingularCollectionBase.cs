@@ -31,10 +31,9 @@ public abstract class SingularCollectionBase<T> : ExtendedCollectionBase<T> {
 			Add(item);
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<T> items) {
+	public override bool[] RemoveRange(IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		foreach (var item in items)
-			yield return Remove(item);
+		return items.Select(Remove).ToArray();
 	}
 
 	protected IEnumerable<T> EnsureSafe(IEnumerable<T> items) {

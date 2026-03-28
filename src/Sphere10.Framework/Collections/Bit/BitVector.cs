@@ -51,12 +51,12 @@ public class BitVector : RangedListBase<bool> {
 
 	public override long Count => _count;
 
-	public override IEnumerable<long> IndexOfRange(IEnumerable<bool> items) {
+	public override long[] IndexOfRange(IEnumerable<bool> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 
 		var itemsArray = items as bool[] ?? items.ToArray();
 		if (!itemsArray.Any()) {
-			return new List<long>();
+			return Array.Empty<long>();
 		}
 
 		var results = new long[itemsArray.Length];

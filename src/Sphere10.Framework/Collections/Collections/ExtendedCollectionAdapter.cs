@@ -24,7 +24,7 @@ public class ExtendedCollectionAdapter<T> : ExtendedCollectionBase<T> {
 
 	public override bool Remove(T item) => _source.Remove(item);
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<T> items) => items.Select(Remove);
+	public override bool[] RemoveRange(IEnumerable<T> items) => items.Select(Remove).ToArray();
 
 	public override bool Contains(T item) => _source.Contains(item);
 

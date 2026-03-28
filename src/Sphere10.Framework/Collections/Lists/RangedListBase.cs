@@ -57,12 +57,12 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 		return RemoveRange(new[] { item }).First();
 	}
 
-	public override IEnumerable<bool> RemoveRange(IEnumerable<T> items) {
+	public override bool[] RemoveRange(IEnumerable<T> items) {
 		var itemsArr = items as T[] ?? items.ToArray();
 
 		// Remove nothing
 		if (itemsArr.Length == 0)
-			return Enumerable.Empty<bool>();
+			return Array.Empty<bool>();
 
 		// optimize for single read
 		if (itemsArr.Length == 1) {

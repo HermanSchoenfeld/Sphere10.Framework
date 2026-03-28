@@ -17,7 +17,7 @@ public interface IWriteOnlyExtendedCollection<in T> {
 
 	bool Remove(T item);
 
-	IEnumerable<bool> RemoveRange(IEnumerable<T> items);
+	bool[] RemoveRange(IEnumerable<T> items);
 
 	void Clear();
 }

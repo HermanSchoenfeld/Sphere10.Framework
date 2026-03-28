@@ -14,7 +14,7 @@ namespace Sphere10.Framework;
 public interface IReadOnlyExtendedList<T> : IReadOnlyExtendedCollection<T>, IReadOnlyList<T> {
 	long IndexOfL(T item);
 
-	IEnumerable<long> IndexOfRange(IEnumerable<T> items);
+	long[] IndexOfRange(IEnumerable<T> items);
 
 	T Read(long index);
 
