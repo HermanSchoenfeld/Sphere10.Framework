@@ -13,8 +13,8 @@ using Newtonsoft.Json;
 
 namespace Sphere10.Framework.Application;
 
-internal static class HttpResponseMessageExtensions {
-	internal static async Task<T> ParseStreamAsync<T>(this HttpResponseMessage response, JsonSerializerSettings serializerSettings = null) {
+public static class HttpResponseMessageExtensions {
+	public static async Task<T> ParseStreamAsync<T>(this HttpResponseMessage response, JsonSerializerSettings serializerSettings = null) {
 		await using var stream = await response.Content.ReadAsStreamAsync();
 		using var streamReader = new StreamReader(stream);
 		using var jsonReader = new JsonTextReader(streamReader);
