@@ -55,26 +55,26 @@ public class SIDRenamer {
 	#region Replace
 
 	public void ReplaceEntireRegistry() {
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_CLASSES_ROOT")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_CLASSES_ROOT")) {
 			ReplaceRegistry("HKEY_CLASSES_ROOT", true);
 		}
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_CURRENT_USER")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_CURRENT_USER")) {
 			ReplaceRegistry("HKEY_CURRENT_USER", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_LOCAL_MACHINE")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_LOCAL_MACHINE")) {
 			ReplaceRegistry("HKEY_LOCAL_MACHINE", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_USERS")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_USERS")) {
 			ReplaceRegistry("HKEY_USERS", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_CURRENT_CONFIG")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_CURRENT_CONFIG")) {
 			ReplaceRegistry("HKEY_CURRENT_CONFIG", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_DYN_DATA")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_DYN_DATA")) {
 			ReplaceRegistry("HKEY_DYN_DATA", true);
 		}
 	}
@@ -82,7 +82,7 @@ public class SIDRenamer {
 	public void ReplaceRegistry(string rootKey, bool recursive) {
 		ActionObserver.NotifyAction("Search/Replace SID", "Registry", rootKey, Hostname);
 		try {
-			RegistryKey key = Tools.WinTool.OpenKey(Hostname, rootKey);
+			RegistryKey key = Tools.WinTool.Registry.OpenKey(Hostname, rootKey);
 			try {
 				RegistrySecurity security = key.GetAccessControl(AccessControlSections.All);
 				string sddl = security.GetSecurityDescriptorSddlForm(AccessControlSections.All);
@@ -107,8 +107,8 @@ public class SIDRenamer {
 			}
 
 			if (recursive) {
-				foreach (string subKey in Tools.WinTool.GetSubKeys(Hostname, rootKey)) {
-					if (Tools.WinTool.KeyExists(Hostname, subKey)) {
+				foreach (string subKey in Tools.WinTool.Registry.GetSubKeys(Hostname, rootKey)) {
+					if (Tools.WinTool.Registry.KeyExists(Hostname, subKey)) {
 						ReplaceRegistry(subKey, recursive);
 					} else {
 						ActionObserver.NotifyWarning("Unable to access key '{0}'", subKey);

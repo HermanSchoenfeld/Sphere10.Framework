@@ -104,7 +104,7 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 					int wheelDelta = 0;
 
 					if ((mouseMessages & WinAPI.USER32.WM.MOUSEWHEEL) == WinAPI.USER32.WM.MOUSEWHEEL) {
-						wheelDelta = Tools.WinTool.GET_WHEEL_DELTA_WPARAM(mouseHookStruct.mouseData) * WinAPI.USER32.WHEEL_DELTA;
+						wheelDelta = Tools.WinTool.Win32.GET_WHEEL_DELTA_WPARAM(mouseHookStruct.mouseData) * WinAPI.USER32.WHEEL_DELTA;
 					} else {
 						if ((mouseMessages & WinAPI.USER32.WM.LBUTTONDOWN) == WinAPI.USER32.WM.LBUTTONDOWN) {
 							buttonClicked = MouseButton.Left;
@@ -143,7 +143,7 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 						}
 
 						if ((mouseMessages & WinAPI.USER32.WM.XBUTTONDOWN) == WinAPI.USER32.WM.XBUTTONDOWN) {
-							buttonClicked = (Tools.WinTool.HIWORD(mouseHookStruct.mouseData) & (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON1) == (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON1
+							buttonClicked = (Tools.WinTool.Win32.HIWORD(mouseHookStruct.mouseData) & (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON1) == (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON1
 								? MouseButton.XButton1
 								: MouseButton.XButton2;
 							buttonState = MouseButtonState.Down;
@@ -151,7 +151,7 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 						}
 
 						if ((mouseMessages & WinAPI.USER32.WM.XBUTTONUP) == WinAPI.USER32.WM.XBUTTONUP) {
-							buttonClicked = (Tools.WinTool.HIWORD(mouseHookStruct.mouseData) & (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON2) == (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON2
+							buttonClicked = (Tools.WinTool.Win32.HIWORD(mouseHookStruct.mouseData) & (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON2) == (ushort)WinAPI.USER32.MouseEventDataXButtons.XBUTTON2
 								? MouseButton.XButton1
 								: MouseButton.XButton2;
 							buttonState = MouseButtonState.Up;

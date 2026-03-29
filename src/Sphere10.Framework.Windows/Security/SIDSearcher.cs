@@ -61,26 +61,26 @@ public class SIDSearcher {
 	}
 
 	public void SearchEntireRegistry() {
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_CLASSES_ROOT")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_CLASSES_ROOT")) {
 			SearchRegistry("HKEY_CLASSES_ROOT", true);
 		}
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_CURRENT_USER")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_CURRENT_USER")) {
 			SearchRegistry("HKEY_CURRENT_USER", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_LOCAL_MACHINE")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_LOCAL_MACHINE")) {
 			SearchRegistry("HKEY_LOCAL_MACHINE", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_USERS")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_USERS")) {
 			SearchRegistry("HKEY_USERS", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_CURRENT_CONFIG")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_CURRENT_CONFIG")) {
 			SearchRegistry("HKEY_CURRENT_CONFIG", true);
 		}
 
-		if (Tools.WinTool.KeyExists(Hostname, "HKEY_DYN_DATA")) {
+		if (Tools.WinTool.Registry.KeyExists(Hostname, "HKEY_DYN_DATA")) {
 			SearchRegistry("HKEY_DYN_DATA", true);
 		}
 	}
@@ -88,7 +88,7 @@ public class SIDSearcher {
 	public void SearchRegistry(string rootKey, bool recursive) {
 		try {
 			ActionObserver.NotifyAction("Searching for SID usage", "Registry", rootKey, Hostname);
-			RegistryKey key = Tools.WinTool.OpenKey(Hostname, rootKey);
+			RegistryKey key = Tools.WinTool.Registry.OpenKey(Hostname, rootKey);
 			try {
 				foreach (SecurityIdentifier match in SearchObjectSecurity(key.GetAccessControl(AccessControlSections.All))) {
 					ActionObserver.NotifyInformation(
@@ -102,8 +102,8 @@ public class SIDSearcher {
 			}
 
 			if (recursive) {
-				foreach (string subKey in Tools.WinTool.GetSubKeys(Hostname, rootKey)) {
-					if (Tools.WinTool.KeyExists(Hostname, subKey)) {
+				foreach (string subKey in Tools.WinTool.Registry.GetSubKeys(Hostname, rootKey)) {
+					if (Tools.WinTool.Registry.KeyExists(Hostname, subKey)) {
 						SearchRegistry(subKey, recursive);
 					} else {
 						ActionObserver.NotifyWarning("Unable to access key '{0}'", subKey);

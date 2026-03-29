@@ -31,7 +31,7 @@ public partial class ServiceStatusControl : UserControlEx {
 		get => _serviceStatus;
 		set {
 			_serviceStatus = value;
-			if (Tools.WinTool.TryGetServiceController(ServiceName, out var serviceController)) {
+			if (Tools.WinTool.Services.TryGetServiceController(ServiceName, out var serviceController)) {
 
 				switch (_serviceStatus) {
 					case ServiceStatus.NotInstalled:
@@ -100,7 +100,7 @@ public partial class ServiceStatusControl : UserControlEx {
 		try {
 			ServiceStatus newStatus = default;
 			try {
-				if (!Tools.WinTool.TryGetServiceController(ServiceName, out var serviceController)) {
+				if (!Tools.WinTool.Services.TryGetServiceController(ServiceName, out var serviceController)) {
 					newStatus = ServiceStatus.NotInstalled;
 					return;
 				}
@@ -141,7 +141,7 @@ public partial class ServiceStatusControl : UserControlEx {
 				Status = ServiceStatus.Stopping;
 				await nssmSentry.StopAsync(ServiceName);
 			} else {
-				if (!Tools.WinTool.TryGetServiceController(ServiceName, out var serviceController))
+				if (!Tools.WinTool.Services.TryGetServiceController(ServiceName, out var serviceController))
 					serviceController.Stop();
 			}
 		} else {
@@ -150,7 +150,7 @@ public partial class ServiceStatusControl : UserControlEx {
 				Status = ServiceStatus.Starting;
 				await nssmSentry.StartAsync(ServiceName);
 			} else {
-				if (!Tools.WinTool.TryGetServiceController(ServiceName, out var serviceController))
+				if (!Tools.WinTool.Services.TryGetServiceController(ServiceName, out var serviceController))
 					serviceController.Start();
 
 			}
