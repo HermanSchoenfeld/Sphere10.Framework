@@ -104,25 +104,29 @@ public static partial class WinAPI {
 
 		[Flags]
 		public enum WM : uint {
-			MOUSEMOVE = 0x0200,
-			LBUTTONDOWN = 0x0201,
-			RBUTTONDOWN = 0x0204,
-			MBUTTONDOWN = 0x0207,
-			XBUTTONDOWN = 0x020B,
-			LBUTTONUP = 0x0202,
-			RBUTTONUP = 0x0205,
-			MBUTTONUP = 0x0208,
-			XBUTTONUP = 0x020C,
-			LBUTTONDBLCLK = 0x0203,
-			RBUTTONDBLCLK = 0x0206,
-			MBUTTONDBLCLK = 0x0209,
-			XBUTTONDBLCLK = 0x020D,
-			MOUSEWHEEL = 0x020A,
+			DESTROY = 0x0002,
+			CLOSE = 0x0010,
+			QUERYENDSESSION = 0x0011,
+			QUIT = 0x0012,
+			ENDSESSION = 0x0016,
 			KEYDOWN = 0x0100,
 			KEYUP = 0x0101,
 			SYSKEYDOWN = 0x0104,
 			SYSKEYUP = 0x0105,
-			QUERYENDSESSION = 0x11,
+			MOUSEMOVE = 0x0200,
+			LBUTTONDOWN = 0x0201,
+			LBUTTONUP = 0x0202,
+			LBUTTONDBLCLK = 0x0203,
+			RBUTTONDOWN = 0x0204,
+			RBUTTONUP = 0x0205,
+			RBUTTONDBLCLK = 0x0206,
+			MBUTTONDOWN = 0x0207,
+			MBUTTONUP = 0x0208,
+			MBUTTONDBLCLK = 0x0209,
+			MOUSEWHEEL = 0x020A,
+			XBUTTONDOWN = 0x020B,
+			XBUTTONUP = 0x020C,
+			XBUTTONDBLCLK = 0x020D,
 		}
 
 
@@ -1148,6 +1152,10 @@ public static partial class WinAPI {
 
 		[DllImport("User32.Dll", EntryPoint = "PostMessageA")]
 		public static extern bool PostMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]

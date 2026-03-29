@@ -30,6 +30,9 @@ public static partial class WinAPI {
 		public const uint ES_SYSTEM_REQUIRED = 0x00000001;
 		public const uint ES_USER_PRESENT = 0x00000004;
 
+		public const uint CTRL_C_EVENT = 0;
+		public const uint CTRL_BREAK_EVENT = 1;
+
 		#endregion
 
 
@@ -251,6 +254,15 @@ public static partial class WinAPI {
 
 		[DllImport("kernel32.dll")]
 		public static extern uint SetThreadExecutionState(uint esFlags);
+
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetConsoleCtrlHandler(IntPtr handlerRoutine, bool add);
 
 		#endregion
 
