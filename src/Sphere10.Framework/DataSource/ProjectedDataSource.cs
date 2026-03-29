@@ -95,7 +95,7 @@ public class ProjectedDataSource<TFrom, TTo> : IDataSource<TTo> {
      => _source.CreateAsync(ToSource(entity));
 
 	public async Task<TTo> RefreshAsync(TTo entity)
-     => _projection(await _source.RefreshAsync(ToSource(entity)));
+	 => _projection(await _source.RefreshAsync(ToSource(entity)).ConfigureAwait(false));
 
 	public Task UpdateAsync(TTo entity)
      => _source.UpdateAsync(ToSource(entity));
@@ -112,17 +112,17 @@ public class ProjectedDataSource<TFrom, TTo> : IDataSource<TTo> {
 		=> _source.CreateRangeAsync(entities.Select(ToSource));
 
   public async Task<DataSourceItems<TTo>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-		var result = await _source.ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection);
+		var result = await _source.ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection).ConfigureAwait(false);
 		return new DataSourceItems<TTo> {
-			Items = result.Items.Select(_projection),
+			Items = result.Items.Select(_projection).ToArray(),
 			Page = result.Page,
 			TotalCount = result.TotalCount
 		};
 	}
 
-    public async Task RefreshRangeAsync(TTo[] entities) {
+	public async Task RefreshRangeAsync(TTo[] entities) {
 		var typed = entities.Select(ToSource).ToArray();
-		await _source.RefreshRangeAsync(typed);
+		await _source.RefreshRangeAsync(typed).ConfigureAwait(false);
 		for (var i = 0; i < entities.Length; i++)
 			entities[i] = _projection(typed[i]);
 	}
