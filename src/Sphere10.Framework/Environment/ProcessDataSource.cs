@@ -11,11 +11,9 @@ public class ProcessDataSource : BulkFetchDataSource<Process> {
 		: base(() => Process.GetProcesses().ToExtendedList()) {
 	}
 
+	public override IEnumerable<Process> NewRange(int count) => throw new NotSupportedException();
 
-	public override IEnumerable<Process> NewRange(int count) => Enumerable.Empty<Process>();
-
-	public override void CreateRange(IEnumerable<Process> entities) {
-	}
+	public override void CreateRange(IEnumerable<Process> entities) => throw new NotSupportedException();
 
 	public override DataSourceItems<Process> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		var query = Future.Value.AsEnumerable();
@@ -54,24 +52,13 @@ public class ProcessDataSource : BulkFetchDataSource<Process> {
 		};
 	}
 
-	public override void RefreshRange(Process[] entities) {
-		for (var i = 0; i < entities.Length; i++) {
-			try {
-				var refreshed = Process.GetProcessById(entities[i].Id);
-				entities[i] = refreshed;
-			} catch {
-			}
-		}
-	}
+	public override void RefreshRange(Process[] entities) => throw new NotSupportedException();
 
-	public override void UpdateRange(IEnumerable<Process> entities) {
-	}
+	public override void UpdateRange(IEnumerable<Process> entities) => throw new NotSupportedException();
 
-	public override void DeleteRange(IEnumerable<Process> entities) {
-	}
+	public override void DeleteRange(IEnumerable<Process> entities) => throw new NotSupportedException();
 
-	public override Result ValidateRange(IEnumerable<(Process entity, CrudAction action)> actions)
-		=> Result.Default;
+	public override Result ValidateRange(IEnumerable<(Process entity, CrudAction action)> actions)=> throw new NotSupportedException();
 
 	public override DataSourceCapabilities Capabilities =>
 		DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage;
