@@ -25,28 +25,17 @@ public class FilterCondition : FilterExpression {
 	public FilterOperator Operator { get; set; }
 
 	/// <summary>
-	/// The primary operand value (used by most operators).
+	/// The operand value(s) for this condition.
 	/// </summary>
-	public object Value { get; set; }
-
-	/// <summary>
-	/// The secondary operand value (used by <see cref="FilterOperator.Between"/>).
-	/// </summary>
-	public object ValueTo { get; set; }
-
-	/// <summary>
-	/// Multiple operand values (used by <see cref="FilterOperator.In"/>).
-	/// </summary>
-	public object[] Values { get; set; }
+	public FilterValue Value { get; set; }
 
 	public FilterCondition() {
+		Value = FilterValue.None();
 	}
 
-	public FilterCondition(string property, FilterOperator op, object value = null, object valueTo = null, object[] values = null) {
+	public FilterCondition(string property, FilterOperator op, FilterValue value = null) {
 		Property = property;
 		Operator = op;
-		Value = value;
-		ValueTo = valueTo;
-		Values = values;
+		Value = value ?? FilterValue.None();
 	}
 }

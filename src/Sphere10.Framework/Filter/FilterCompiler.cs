@@ -63,20 +63,21 @@ public static class FilterCompiler<T> {
 	private static Expression BuildCondition(FilterCondition condition, ParameterExpression param) {
 		var property = ResolveProperty(condition.Property);
 		var member = Expression.Property(param, property);
+		var filterValue = condition.Value;
 
 		return condition.Operator switch {
-			FilterOperator.Equals => BuildComparison(Expression.Equal, member, condition.Value, property.PropertyType),
-			FilterOperator.NotEquals => BuildComparison(Expression.NotEqual, member, condition.Value, property.PropertyType),
-			FilterOperator.GreaterThan => BuildComparison(Expression.GreaterThan, member, condition.Value, property.PropertyType),
-			FilterOperator.GreaterThanOrEqual => BuildComparison(Expression.GreaterThanOrEqual, member, condition.Value, property.PropertyType),
-			FilterOperator.LessThan => BuildComparison(Expression.LessThan, member, condition.Value, property.PropertyType),
-			FilterOperator.LessThanOrEqual => BuildComparison(Expression.LessThanOrEqual, member, condition.Value, property.PropertyType),
-			FilterOperator.Contains => BuildStringMethod("Contains", member, condition.Value, property.PropertyType),
-			FilterOperator.NotContains => Expression.Not(BuildStringMethod("Contains", member, condition.Value, property.PropertyType)),
-			FilterOperator.StartsWith => BuildStringMethod("StartsWith", member, condition.Value, property.PropertyType),
-			FilterOperator.EndsWith => BuildStringMethod("EndsWith", member, condition.Value, property.PropertyType),
-			FilterOperator.In => BuildIn(member, condition.Values, property.PropertyType),
-			FilterOperator.Between => BuildBetween(member, condition.Value, condition.ValueTo, property.PropertyType),
+			FilterOperator.Equals => BuildComparison(Expression.Equal, member, (filterValue as FilterValueSingle)?.Operand, property.PropertyType),
+			FilterOperator.NotEquals => BuildComparison(Expression.NotEqual, member, (filterValue as FilterValueSingle)?.Operand, property.PropertyType),
+			FilterOperator.GreaterThan => BuildComparison(Expression.GreaterThan, member, ((FilterValueSingle)filterValue).Operand, property.PropertyType),
+			FilterOperator.GreaterThanOrEqual => BuildComparison(Expression.GreaterThanOrEqual, member, ((FilterValueSingle)filterValue).Operand, property.PropertyType),
+			FilterOperator.LessThan => BuildComparison(Expression.LessThan, member, ((FilterValueSingle)filterValue).Operand, property.PropertyType),
+			FilterOperator.LessThanOrEqual => BuildComparison(Expression.LessThanOrEqual, member, ((FilterValueSingle)filterValue).Operand, property.PropertyType),
+			FilterOperator.Contains => BuildStringMethod("Contains", member, (filterValue as FilterValueSingle)?.Operand, property.PropertyType),
+			FilterOperator.NotContains => Expression.Not(BuildStringMethod("Contains", member, (filterValue as FilterValueSingle)?.Operand, property.PropertyType)),
+			FilterOperator.StartsWith => BuildStringMethod("StartsWith", member, (filterValue as FilterValueSingle)?.Operand, property.PropertyType),
+			FilterOperator.EndsWith => BuildStringMethod("EndsWith", member, (filterValue as FilterValueSingle)?.Operand, property.PropertyType),
+			FilterOperator.In => BuildIn(member, ((FilterValueMultiple)filterValue).Operands, property.PropertyType),
+			FilterOperator.Between => BuildBetween(member, ((FilterValueMultiple)filterValue).Operands[0], ((FilterValueMultiple)filterValue).Operands[1], property.PropertyType),
 			FilterOperator.IsEmpty => BuildIsEmpty(member, property.PropertyType),
 			FilterOperator.IsNotEmpty => Expression.Not(BuildIsEmpty(member, property.PropertyType)),
 			_ => throw new NotSupportedException($"Operator {condition.Operator} is not supported.")

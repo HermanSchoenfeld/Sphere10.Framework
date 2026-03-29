@@ -25,13 +25,13 @@ namespace Sphere10.Framework;
 public static class FilterBuilder {
 
 	public static FilterCondition Condition(string property, FilterOperator op, object value = null) =>
-		new(property, op, value);
+		new(property, op, value != null ? FilterValue.Single(value) : FilterValue.None());
 
 	public static FilterCondition Between(string property, object from, object to) =>
-		new(property, FilterOperator.Between, from, to);
+		new(property, FilterOperator.Between, FilterValue.Multiple([from, to]));
 
 	public static FilterCondition In(string property, params object[] values) =>
-		new(property, FilterOperator.In, values: values);
+		new(property, FilterOperator.In, FilterValue.Multiple(values));
 
 	public static FilterGroup And(params FilterExpression[] expressions) =>
 		new(FilterConjunction.And, expressions);
