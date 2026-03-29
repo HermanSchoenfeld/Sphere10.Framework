@@ -547,22 +547,26 @@ public class FilterTests {
 		Assert.That(condition, Is.InstanceOf<FilterCondition>());
 		Assert.That(condition.Property, Is.EqualTo("Name"));
 		Assert.That(condition.Operator, Is.EqualTo(FilterOperator.Contains));
-		Assert.That(condition.Value, Is.EqualTo("test"));
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueSingle>());
+		Assert.That(((FilterValueSingle)condition.Value).Operand, Is.EqualTo("test"));
 	}
 
 	[Test]
 	public void FilterBuilder_Between() {
 		var condition = FilterBuilder.Between("Price", 1, 100);
 		Assert.That(condition.Operator, Is.EqualTo(FilterOperator.Between));
-		Assert.That(condition.Value, Is.EqualTo(1));
-		Assert.That(condition.ValueTo, Is.EqualTo(100));
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueMultiple>());
+		var operands = ((FilterValueMultiple)condition.Value).Operands;
+		Assert.That(operands[0], Is.EqualTo(1));
+		Assert.That(operands[1], Is.EqualTo(100));
 	}
 
 	[Test]
 	public void FilterBuilder_In() {
 		var condition = FilterBuilder.In("Id", 1, 2, 3);
 		Assert.That(condition.Operator, Is.EqualTo(FilterOperator.In));
-		ClassicAssert.AreEqual(new object[] { 1, 2, 3 }, condition.Values);
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueMultiple>());
+		ClassicAssert.AreEqual(new object[] { 1, 2, 3 }, ((FilterValueMultiple)condition.Value).Operands);
 	}
 
 	[Test]
@@ -584,6 +588,91 @@ public class FilterTests {
 		);
 		Assert.That(group.Conjunction, Is.EqualTo(FilterConjunction.Or));
 		Assert.That(group.Expressions.Count, Is.EqualTo(2));
+	}
+
+	#endregion
+
+	#region FilterValue
+
+	[Test]
+	public void FilterValueNone_HasCorrectType() {
+		var value = FilterValue.None();
+		Assert.That(value, Is.InstanceOf<FilterValueNone>());
+		Assert.That(value.Type, Is.EqualTo(FilterValueType.None));
+		Assert.That(value.DataType, Is.EqualTo(FilterValueDataType.Auto));
+	}
+
+	[Test]
+	public void FilterValueSingle_HasCorrectType() {
+		var value = FilterValue.Single(42);
+		Assert.That(value, Is.InstanceOf<FilterValueSingle>());
+		Assert.That(value.Type, Is.EqualTo(FilterValueType.Single));
+		Assert.That(((FilterValueSingle)value).Operand, Is.EqualTo(42));
+	}
+
+	[Test]
+	public void FilterValueSingle_WithDataType() {
+		var value = FilterValue.Single("hello", FilterValueDataType.Text);
+		Assert.That(value.DataType, Is.EqualTo(FilterValueDataType.Text));
+		Assert.That(((FilterValueSingle)value).Operand, Is.EqualTo("hello"));
+	}
+
+	[Test]
+	public void FilterValueMultiple_HasCorrectType() {
+		var value = FilterValue.Multiple(new object[] { 1, 2, 3 });
+		Assert.That(value, Is.InstanceOf<FilterValueMultiple>());
+		Assert.That(value.Type, Is.EqualTo(FilterValueType.Multiple));
+		ClassicAssert.AreEqual(new object[] { 1, 2, 3 }, ((FilterValueMultiple)value).Operands);
+	}
+
+	[Test]
+	public void FilterValueMultiple_WithDataType() {
+		var value = FilterValue.Multiple(new object[] { 10, 20 }, FilterValueDataType.Number);
+		Assert.That(value.DataType, Is.EqualTo(FilterValueDataType.Number));
+		Assert.That(((FilterValueMultiple)value).Operands.Length, Is.EqualTo(2));
+	}
+
+	[Test]
+	public void FilterValueMultiple_NullArray_IsEmpty() {
+		var value = FilterValue.Multiple(null);
+		Assert.That(((FilterValueMultiple)value).Operands, Is.Empty);
+	}
+
+	[Test]
+	public void FilterCondition_DefaultConstructor_HasNoneValue() {
+		var condition = new FilterCondition();
+		Assert.That(condition.Value, Is.Not.Null);
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueNone>());
+	}
+
+	[Test]
+	public void FilterCondition_IsEmpty_HasNoneValue() {
+		var condition = FilterBuilder.Condition("Name", FilterOperator.IsEmpty);
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueNone>());
+	}
+
+	[Test]
+	public void FilterCondition_Equals_HasSingleValue() {
+		var condition = FilterBuilder.Condition("Id", FilterOperator.Equals, 5);
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueSingle>());
+		Assert.That(((FilterValueSingle)condition.Value).Operand, Is.EqualTo(5));
+	}
+
+	[Test]
+	public void FilterCondition_In_HasMultipleValue() {
+		var condition = FilterBuilder.In("Id", 1, 2, 3);
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueMultiple>());
+		Assert.That(((FilterValueMultiple)condition.Value).Operands.Length, Is.EqualTo(3));
+	}
+
+	[Test]
+	public void FilterCondition_Between_HasTwoOperands() {
+		var condition = FilterBuilder.Between("Price", 10, 50);
+		Assert.That(condition.Value, Is.InstanceOf<FilterValueMultiple>());
+		var operands = ((FilterValueMultiple)condition.Value).Operands;
+		Assert.That(operands.Length, Is.EqualTo(2));
+		Assert.That(operands[0], Is.EqualTo(10));
+		Assert.That(operands[1], Is.EqualTo(50));
 	}
 
 	#endregion
