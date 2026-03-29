@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Forms;
 using Sphere10.Framework;
+using Sphere10.Framework.Windows;
 using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert.Screens;
@@ -11,6 +13,7 @@ public partial class ProcessesScreen : ApplicationScreen {
 	private readonly IEnumerable<ICrudGridColumn> _gridBindings;
 	private Timer _autoRefreshTimer;
 	private int _refreshIntervalSeconds = 5;
+	private ContextMenuStrip _processContextMenu;
 
 	public ProcessesScreen() {
 		InitializeComponent();
@@ -67,6 +70,9 @@ public partial class ProcessesScreen : ApplicationScreen {
 			},
 		};
 		_crudGrid.GridBindings = _gridBindings;
+		_crudGrid.RightClickForContextMenu = false;
+		_processContextMenu = BuildProcessContextMenu();
+		_crudGrid.ContextMenuStrip = _processContextMenu;
 
 		_autoRefreshTimer = new Timer { Interval = (int)TimeSpan.FromSeconds(_refreshIntervalSeconds).TotalMilliseconds };
 		_autoRefreshTimer.Tick += (s, e) => DoRefresh();
@@ -115,4 +121,71 @@ public partial class ProcessesScreen : ApplicationScreen {
 			_autoRefreshTimer.Stop();
 		}
 	}
+
+	#region Process Message Sending
+
+	private ContextMenuStrip BuildProcessContextMenu() {
+		var contextMenu = new ContextMenuStrip();
+		var sendMessageItem = new ToolStripMenuItem("Send Message");
+
+		sendMessageItem.DropDownItems.AddRange(new ToolStripItem[] {
+			new ToolStripMenuItem("WM_QUERYENDSESSION", null, (s, e) => SendWindowMessage((uint)WinAPI.USER32.WM.QUERYENDSESSION, IntPtr.Zero, (IntPtr)ProcessSignaler.ENDSESSION_CLOSEAPP)),
+			new ToolStripMenuItem("WM_ENDSESSION", null, (s, e) => SendWindowMessage((uint)WinAPI.USER32.WM.ENDSESSION, (IntPtr)1, (IntPtr)ProcessSignaler.ENDSESSION_CLOSEAPP)),
+			new ToolStripMenuItem("WM_CLOSE", null, (s, e) => SendWindowMessage((uint)WinAPI.USER32.WM.CLOSE, IntPtr.Zero, IntPtr.Zero, synchronous: false)),
+			new ToolStripMenuItem("WM_QUIT", null, (s, e) => SendWindowMessage((uint)WinAPI.USER32.WM.QUIT, IntPtr.Zero, IntPtr.Zero, synchronous: false)),
+			new ToolStripMenuItem("WM_DESTROY", null, (s, e) => SendWindowMessage((uint)WinAPI.USER32.WM.DESTROY, IntPtr.Zero, IntPtr.Zero)),
+			new ToolStripSeparator(),
+			new ToolStripMenuItem("Close Main Window", null, (s, e) => ExecuteOnSelectedProcess(p => p.CloseMainWindow())),
+			new ToolStripMenuItem("Kill Process", null, (s, e) => ExecuteOnSelectedProcess(p => p.Kill())),
+			new ToolStripMenuItem("Kill Process Tree", null, (s, e) => ExecuteOnSelectedProcess(p => p.Kill(true))),
+			new ToolStripSeparator(),
+			new ToolStripMenuItem("CTRL+C Signal", null, (s, e) => SendConsoleSignal(WinAPI.KERNEL32.CTRL_C_EVENT)),
+			new ToolStripMenuItem("CTRL+BREAK Signal", null, (s, e) => SendConsoleSignal(WinAPI.KERNEL32.CTRL_BREAK_EVENT)),
+		});
+
+		contextMenu.Items.Add(sendMessageItem);
+		contextMenu.Opening += (s, e) => {
+			if (_crudGrid.SelectedEntity is not ProcessInfo)
+				e.Cancel = true;
+		};
+
+		return contextMenu;
+	}
+
+	private void ExecuteOnSelectedProcess(Action<Process> action) {
+		if (_crudGrid.SelectedEntity is not ProcessInfo processInfo)
+			return;
+		try {
+			using var process = Process.GetProcessById(processInfo.PID);
+			action(process);
+		} catch (ArgumentException) {
+			MessageBox.Show(this, $"Process (PID {processInfo.PID}) has exited.", "Process Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+		} catch (Exception ex) {
+			MessageBox.Show(this, $"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+	}
+
+	private void SendWindowMessage(uint msg, IntPtr wParam, IntPtr lParam, bool synchronous = true) {
+		ExecuteOnSelectedProcess(process => {
+			var hwnd = process.MainWindowHandle;
+			if (hwnd == IntPtr.Zero) {
+				MessageBox.Show(this, $"Process '{process.ProcessName}' (PID {process.Id}) has no main window.",
+					"No Window Handle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
+			}
+			Tools.WinTool.Processes.SendWindowMessage(hwnd, msg, wParam, lParam, synchronous);
+		});
+	}
+
+	private void SendConsoleSignal(uint signal) {
+		if (_crudGrid.SelectedEntity is not ProcessInfo processInfo)
+			return;
+		try {
+			Tools.WinTool.Processes.SendConsoleSignal(processInfo.PID, signal);
+		} catch (Exception ex) {
+			MessageBox.Show(this, $"Error sending console signal: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+	}
+
+	#endregion
 }

@@ -7,6 +7,7 @@ namespace SystemExpert.Screens {
 
 		protected override void Dispose(bool disposing) {
 			if (disposing) {
+				_processContextMenu?.Dispose();
 				_autoRefreshTimer?.Dispose();
 				components?.Dispose();
 			}
