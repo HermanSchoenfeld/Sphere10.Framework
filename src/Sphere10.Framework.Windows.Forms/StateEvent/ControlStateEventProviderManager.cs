@@ -34,8 +34,14 @@ public class ControlStateEventProviderManager {
 		_controlStateEventProviders.Clear();
 		if (NamedLookupInfo.TryGetMap(typeof(IControlStateEventProvider), out var serviceMap)) {
 			foreach (var eventProvider in serviceMap) {
-				var controlType = Tools.Object.ResolveType(eventProvider.Key);
-				_controlStateEventProviders.Add(controlType);
+				try {
+					var controlType = Tools.Object.ResolveType(eventProvider.Key);
+					_controlStateEventProviders.Add(controlType);
+				} catch (Exception) {
+					// Skip providers whose control types cannot be resolved
+					// (e.g. due to assembly load failures like System.Data.SqlClient on .NET 8)
+					SystemLog.Warning("Failed to resolve control type for IControlStateEventProvider with key '{0}'. Skipping provider.".FormatWith(eventProvider.Key));
+				}
 			}
 		}
 	}
