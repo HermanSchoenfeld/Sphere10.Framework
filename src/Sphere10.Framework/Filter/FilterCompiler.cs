@@ -167,6 +167,9 @@ public static class FilterCompiler<T> {
 		if (underlying.IsInstanceOfType(value))
 			return value;
 
+		if (underlying.IsEnum && value is string s)
+			return Enum.Parse(underlying, s, ignoreCase: true);
+
 		return Tools.Object.ChangeType(value, underlying);
 	}
 }
