@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms.Crud;
 
@@ -78,13 +79,13 @@ public class CrudComboBox : CustomComboBox {
 		await _crudGrid.RefreshGrid();
 	}
 
-	public void SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
+	public async Task SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
 		try {
 			if (entityEditorType != null)
 				_crudGrid.SetEntityEditor<TEntity>(entityEditorType);
-			_crudGrid.Capabilities = capabilities; //.ClearFlags(CrudCapabilities.CanDelete | CrudCapabilities.CanCreate);
 			_crudGrid.GridBindings = gridBindings;
-			_crudGrid.SetDataSource(dataSource);
+			await _crudGrid.SetDataSource(dataSource);
+			_crudGrid.Capabilities = capabilities;
 			if (size != null)
 				_crudGrid.Size = size.Value;
 			_crudGrid.AutoPageSize = autoPageSize;

@@ -132,18 +132,18 @@ public partial class CrudTestScreen : ApplicationScreen {
 			}
 		};
 		_crudGrid.GridBindings = _gridBindings;
-		_crudGrid.Capabilities = (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum;
 		_dataSource = new TestCrudDataSource();
 		FillDataSourceWithData(_dataSource, 1000);
-		_crudGrid.SetDataSource(_dataSource);
 		_crudComboBox.DisplayMember = (o) => ((Employee)o).FirstName;
-		_crudComboBox.SetCrudParameters(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked);
 
 	}
 
-	protected override void OnLoad(EventArgs e) {
+	protected override async void OnLoad(EventArgs e) {
 		base.OnLoad(e);
-		_crudGrid.RefreshGrid();
+		await _crudGrid.SetDataSource(_dataSource);
+		_crudGrid.Capabilities = (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum;
+		await _crudComboBox.SetCrudParameters(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked);
+		await _crudGrid.RefreshGrid();
 	}
 
 	private void FillDataSourceWithData(TestCrudDataSource dataSource, int numRecords) {

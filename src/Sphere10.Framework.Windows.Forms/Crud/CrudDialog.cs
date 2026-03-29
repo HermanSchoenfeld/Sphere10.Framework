@@ -8,12 +8,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class CrudDialog : Form {
-	private Action _delayedInitializationAction;
+	private Func<Task> _delayedInitializationAction;
 
 	public CrudDialog() {
 		InitializeComponent();
@@ -46,13 +47,13 @@ public partial class CrudDialog : Form {
 
 	public void SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		var initializationAction =
-			new Action(() => {
+			new Func<Task>(async () => {
 				try {
 					if (entityEditorType != null)
 						_crudGrid.SetEntityEditor<TEntity>(entityEditorType);
-					_crudGrid.Capabilities = capabilities;
 					_crudGrid.GridBindings = gridBindings;
-					_crudGrid.SetDataSource(dataSource);
+					await _crudGrid.SetDataSource(dataSource);
+					_crudGrid.Capabilities = capabilities;
 				} catch (Exception error) {
 					ExceptionDialog.Show(this, error);
 				}
@@ -73,10 +74,10 @@ public partial class CrudDialog : Form {
 	}
 
 
-	protected override void OnHandleCreated(EventArgs e) {
+	protected override async void OnHandleCreated(EventArgs e) {
 		base.OnHandleCreated(e);
 		if (_delayedInitializationAction != null)
-			_delayedInitializationAction();
+			await _delayedInitializationAction();
 	}
 
 }

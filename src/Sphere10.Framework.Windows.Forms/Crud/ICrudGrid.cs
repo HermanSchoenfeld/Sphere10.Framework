@@ -8,15 +8,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public interface ICrudGrid {
 	Type EntityEditorDisplay { get; }
 	string GridTitle { get; }
-	DataSourceCapabilities Capabilities { get; }
+	DataSourceCapabilities Capabilities { get; set; }
 	IEnumerable<ICrudGridColumn> GridBindings { get; }
 
-	void SetDataSource<TEntity>(IDataSource<TEntity> dataSource);
+	Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource);
 }
 

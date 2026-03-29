@@ -243,8 +243,10 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	#region Public Methods
 
-	public void SetDataSource<TEntity>(IDataSource<TEntity> dataSource) {
+	public async Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource) {
 		_dataSource = new ProjectedDataSource<TEntity, object>(dataSource, e => e, o => (TEntity)o);
+		_crudCapabilities = await _dataSource.CapabilitiesAsync;
+		OrganizeLayout();
 	}
 
 	public void ClearDataSource() {

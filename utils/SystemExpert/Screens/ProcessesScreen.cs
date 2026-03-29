@@ -67,8 +67,6 @@ public partial class ProcessesScreen : ApplicationScreen {
 			},
 		};
 		_crudGrid.GridBindings = _gridBindings;
-		_crudGrid.Capabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage;
-		_crudGrid.SetDataSource(_dataSource);
 
 		_autoRefreshTimer = new Timer { Interval = (int)TimeSpan.FromSeconds(_refreshIntervalSeconds).TotalMilliseconds };
 		_autoRefreshTimer.Tick += (s, e) => DoRefresh();
@@ -76,9 +74,11 @@ public partial class ProcessesScreen : ApplicationScreen {
 		UpdateAutoRefreshUI();
 	}
 
-	protected override void OnLoad(EventArgs e) {
+	protected override async void OnLoad(EventArgs e) {
 		base.OnLoad(e);
-		_crudGrid.RefreshGrid();
+		await _crudGrid.SetDataSource(_dataSource);
+		_crudGrid.Capabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage;
+		await _crudGrid.RefreshGrid();
 	}
 
 	private void DoRefresh() {
