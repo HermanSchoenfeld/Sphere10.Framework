@@ -313,15 +313,15 @@ public class TestCrudDataSource : ListDataSource<Employee> {
 	public bool GenerateUpdateError { get; set; }
 
 	public IEnumerable<Employee> AllEmployees {
-		get { return base.List; }
+		get { return Future.Value; }
 	}
 
 	public Employee FirstEntity {
-		get { return List[0]; }
+		get { return Future.Value[0]; }
 	}
 
 	public Employee RandomEmployee() {
-		return List.Count == 0 ? null : List[Tools.Maths.RNG.Next(0, (int)List.Count)];
+		return Future.Value.Count == 0 ? null : Future.Value[Tools.Maths.RNG.Next(0, (int)Future.Value.Count)];
 	}
 
 	public IEnumerable<Employee> RandomSet() {
@@ -331,19 +331,19 @@ public class TestCrudDataSource : ListDataSource<Employee> {
 	}
 
 	public void AddEmployee(Employee employee) {
-		base.List.Add(employee);
+		Future.Value.Add(employee);
 	}
 
   public override IEnumerable<Employee> NewRange(int count) {
 		return Enumerable.Range(0, count).Select(_ => new Employee() {
-			ID = (int)base.List.Count + 1
+			ID = (int)Future.Value.Count + 1
 		});
 	}
 
 
  public override DataSourceItems<Employee> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		var query =
-			from e in base.List
+			from e in Future.Value
 			select e;
 
 		if (!string.IsNullOrEmpty(searchTerm)) {
@@ -420,7 +420,7 @@ public class TestCrudDataSource : ListDataSource<Employee> {
 					if (GenerateCreateError) {
 						result.AddError("CREATE ERROR");
 					}
-					if (base.List.Any(i => i.ID == entity.ID && !Tools.Object.Compare(i, entity))) {
+					if (Future.Value.Any(i => i.ID == entity.ID && !Tools.Object.Compare(i, entity))) {
 						result.AddError("ID is already in use");
 					}
 					if (entity.ID < 0) {
