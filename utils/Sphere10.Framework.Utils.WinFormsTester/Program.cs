@@ -37,8 +37,19 @@ static class Program {
 		System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
 		AppDomain.CurrentDomain.UnhandledException += (s, e) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", (Exception)e.ExceptionObject)).Invoke();
 		System.Windows.Forms.Application.ThreadException += (xs, xe) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", xe.Exception)).Invoke();
-		SystemLog.RegisterLogger(new ConsoleLogger());
-		Sphere10Framework.Instance.StartWinFormsApplication<BlockMainForm>();
+		SystemLog.RegisterLogger(new DebugLogger());
+
+		Sphere10Framework.Instance
+			.BuildWinFormsApplication()
+			.UseMainForm<BlockMainForm>()
+			.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.CryptoEx.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.Sqlite.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration>()
+			.UseModule<ModuleConfiguration>()
+			.StartWinFormsApplication();
 	}
 }
 
