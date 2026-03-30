@@ -25,5 +25,7 @@ public class NamedLookup<T> : INamedLookup<T> {
 
 	public T this[string name]
 		=> _serviceMap.TryGetValue(name, out var serviceType) ? (T)_serviceProvider.GetService(serviceType) : default;
+
+	public bool ContainsKey(string name) => _serviceMap.ContainsKey(name);
 }
 

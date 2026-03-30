@@ -10,5 +10,6 @@ namespace Sphere10.Framework.Application;
 
 public interface INamedLookup<out T> {
 	T this[string name] { get; }
+	bool ContainsKey(string name);
 }
 

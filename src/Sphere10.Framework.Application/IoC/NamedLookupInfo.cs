@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework.Application;
 
-internal static class NamedLookupInfo {
+public static class NamedLookupInfo {
 	private static readonly Dictionary<Type, Dictionary<string, Type>> ServiceMaps = new();
 
 	public static void RegisterMap(Type serviceType, Dictionary<string, Type> serviceMap) {

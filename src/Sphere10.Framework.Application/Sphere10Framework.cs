@@ -1,14 +1,13 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
-// Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// Distributed under the MIT NON-AI software license, see the accompanying file
+// LICENSE or visit https://sphere10.com/legal/NON-AI-MIT.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.IO;
-using System.IO.Enumeration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,9 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application;
 
 public class Sphere10Framework {
-	private readonly object _threadLock;
-	private bool _registeredModules;
 	private bool _frameworkOwnsServicesProvider;
+	private ICoreModuleConfiguration[] _moduleConfigurations;
 
 	public event EventHandlerEx Initializing;
 	public event EventHandlerEx Initialized;
@@ -33,20 +31,8 @@ public class Sphere10Framework {
 
 	public Sphere10Framework() {
 		IsStarted = false;
-		_registeredModules = false;
 		_frameworkOwnsServicesProvider = false;
-		_threadLock = new object();
-		ModuleConfigurations = Tools.Values.Future.LazyLoad(() =>
-			AppDomain
-				.CurrentDomain
-				.GetNonFrameworkAssemblies()
-				.SelectMany(a => a.GetTypes())
-				.Where(t => t.IsClass && !t.IsAbstract && typeof(ICoreModuleConfiguration).IsAssignableFrom(t))
-				.Select(TypeActivator.Activate)
-				.Cast<ICoreModuleConfiguration>()
-				.OrderByDescending(x => x.Priority)
-				.ToArray()
-		);
+		_moduleConfigurations = Array.Empty<ICoreModuleConfiguration>();
 	}
 
 	public static Sphere10Framework Instance { get; }
@@ -55,38 +41,20 @@ public class Sphere10Framework {
 
 	public bool IsStarted { get; private set; }
 
-	public Sphere10FrameworkOptions Options { get; private set; }
+	public Sphere10FrameworkOptions Options { get; internal set; }
 
-	private IFuture<ICoreModuleConfiguration[]> ModuleConfigurations { get; set; }
+	internal Sphere10FrameworkBuilder PendingBuilder { get; set; }
 
-	public IServiceCollection RegisterModules(IServiceCollection serviceCollection) {
+	public Sphere10FrameworkBuilder Build() {
 		CheckNotStarted();
-		Guard.Against(_registeredModules, "Modules have already been registered");
-		lock (_threadLock) {
-			ModuleConfigurations.Value.Where(x => x is IModuleConfiguration).Cast<IModuleConfiguration>().ForEach(m => m.RegisterComponents(serviceCollection));
-			_registeredModules = true;
-		}
-		return serviceCollection;
+		return new Sphere10FrameworkBuilder(this);
 	}
 
-	public void StartFramework(Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default)
-		=> StartFramework(_ => { }, options);
-
-	public void StartFramework(Action<IServiceCollection> configure, Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default) {
-		Options = options;
-		var serviceCollection = new ServiceCollection();
-		configure?.Invoke(serviceCollection);
-		RegisterModules(serviceCollection);
-		StartFramework(serviceCollection.BuildServiceProvider(), options);
-		_frameworkOwnsServicesProvider = true;
-	}
-
-	public void StartFramework(IServiceProvider serviceProvider, Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default) {
+	internal void StartInternal(IServiceProvider serviceProvider, ICoreModuleConfiguration[] modules, bool ownsProvider) {
 		CheckNotStarted();
-		Guard.Ensure(_registeredModules, "Modules have not been registered");
-		Guard.Against(IsStarted, "Sphere10.Framework framework has already been started");
-		Options = options;
 		ServiceProvider = serviceProvider;
+		_moduleConfigurations = modules;
+		_frameworkOwnsServicesProvider = ownsProvider;
 		Initializing?.Invoke();
 		InitializeModules(serviceProvider);
 		InitializeApplication();
@@ -99,9 +67,10 @@ public class Sphere10Framework {
 		Finalizing?.Invoke();
 		FinalizeApplication();
 		FinalizeModules(ServiceProvider);
-		if (_frameworkOwnsServicesProvider && ServiceProvider is IDisposable disposable)
-			Tools.Exceptions.ExecuteIgnoringException(disposable.Dispose);
+		if (_frameworkOwnsServicesProvider && ServiceProvider is IDisposable Disposable)
+			Tools.Exceptions.ExecuteIgnoringException(Disposable.Dispose);
 		IsStarted = false;
+		_moduleConfigurations = Array.Empty<ICoreModuleConfiguration>();
 		Finalized?.Invoke();
 	}
 
@@ -112,35 +81,28 @@ public class Sphere10Framework {
 	}
 
 	private void InitializeModules(IServiceProvider serviceProvider)
-		=> ModuleConfigurations
-			.Value
-			.ForEach(moduleConfiguration => moduleConfiguration.OnInitialize(serviceProvider));
+		=> _moduleConfigurations.ForEach(m => m.OnInitialize(serviceProvider));
 
 	private void InitializeApplication() {
-		Initializing?.Invoke();
-
-		var initializers = ServiceProvider.GetServices<IApplicationInitializer>().ToArray();
+		var Initializers = ServiceProvider.GetServices<IApplicationInitializer>().ToArray();
 
 		// Execute non-parallelizable initializers in sequence first
-		initializers
+		Initializers
 			.Where(x => !x.Parallelizable)
-			.OrderBy(initTask => initTask.Priority)
-			.ForEach(initTask => initTask.Initialize());
+			.OrderBy(x => x.Priority)
+			.ForEach(x => x.Initialize());
 
-
-		// Parallel execute all parallelizable initialzers 
-		Parallel.ForEach(initializers
+		// Parallel execute all parallelizable initializers
+		Parallel.ForEach(
+			Initializers
 				.Where(x => x.Parallelizable)
-				.OrderBy(initTask => initTask.Priority),
-			startTask => startTask.Initialize()
+				.OrderBy(x => x.Priority),
+			x => x.Initialize()
 		);
-
 	}
 
 	internal void FinalizeModules(IServiceProvider serviceProvider)
-		=> ModuleConfigurations
-			.Value
-			.Update(moduleConfiguration => moduleConfiguration.OnFinalize(serviceProvider));
+		=> _moduleConfigurations.Update(m => m.OnFinalize(serviceProvider));
 
 	private void FinalizeApplication() {
 		ServiceProvider
