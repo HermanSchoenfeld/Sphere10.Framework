@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<Description>Oracle implementation for Sphere10.Framework.Data abstraction layer. Provides DAC, SQLBuilder, and DatabaseManager for Oracle database access using Oracle.ManagedDataAccess.Core.</Description>
+    <PackageTags>sphere10 framework oracle database</PackageTags>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sphere10.Framework.Data\Sphere10.Framework.Data.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+  </ItemGroup>
+
+</Project>
