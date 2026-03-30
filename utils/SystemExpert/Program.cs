@@ -14,6 +14,15 @@ static class Program {
 		AppDomain.CurrentDomain.UnhandledException += (s, e) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", (Exception)e.ExceptionObject)).Invoke();
 		System.Windows.Forms.Application.ThreadException += (xs, xe) => Tools.Lambda.ActionIgnoringExceptions(() => ExceptionDialog.Show("Error", xe.Exception)).Invoke();
 		SystemLog.RegisterLogger(new ConsoleLogger());
-		Sphere10Framework.Instance.StartWinFormsApplication<BlockMainForm>();
+
+		Sphere10Framework.Instance
+			.BuildWinFormsApplication()
+			.UseMainForm<BlockMainForm>()
+			.UseModule<ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()
+			.StartWinFormsApplication();
+
+		
 	}
 }
