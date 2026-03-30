@@ -24,6 +24,16 @@ public static class DACFactory {
 			case DBMSType.Firebird:
 			case DBMSType.FirebirdFile:
 				return (IDAC)TypeActivator.Activate("Sphere10.Framework.Data.FirebirdDAC", "Sphere10.Framework.Data.Firebird", connectionString, logger);
+
+			case DBMSType.PostgreSQL:
+				return (IDAC)TypeActivator.Activate("Sphere10.Framework.Data.PostgreSQLDAC", "Sphere10.Framework.Data.PostgreSQL", connectionString, logger);
+
+			case DBMSType.MySQL:
+				return (IDAC)TypeActivator.Activate("Sphere10.Framework.Data.MySQLDAC", "Sphere10.Framework.Data.MySQL", connectionString, logger);
+
+			case DBMSType.Oracle:
+				return (IDAC)TypeActivator.Activate("Sphere10.Framework.Data.OracleDAC", "Sphere10.Framework.Data.Oracle", connectionString, logger);
+
 			default:
 				throw new NotSupportedException(dbmsType.ToString());
 		}

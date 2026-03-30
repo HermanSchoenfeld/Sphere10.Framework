@@ -18,5 +18,11 @@ public enum DBMSType {
 	[Description("Firebird")] Firebird = 3,
 
 	[Description("Firebird Embedded")] FirebirdFile = 4,
+
+	[Description("PostgreSQL")] PostgreSQL = 5,
+
+	[Description("MySQL")] MySQL = 6,
+
+	[Description("Oracle")] Oracle = 7,
 }
 
