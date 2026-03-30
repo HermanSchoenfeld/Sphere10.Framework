@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -71,8 +72,11 @@ public class PerPixelAlphaForm : Form {
 
 	protected override CreateParams CreateParams {
 		get {
-			CreateParams cp = base.CreateParams;
-			cp.ExStyle |= 0x00080000; // This form has to have the WS_EX_LAYERED extended style
+			var cp = base.CreateParams;
+			if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+				return cp;
+
+				cp.ExStyle |= 0x00080000; // This form has to have the WS_EX_LAYERED extended style
 			return cp;
 		}
 	}
