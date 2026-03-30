@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <IsPackable>true</IsPackable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<Description>Windows Forms integration for Sphere10.Framework.Data.PostgreSQL. Provides desktop UI helpers and components intended to work with Sphere10 Framework WinForms and the PostgreSQL provider for data-driven applications.</Description>
+    <PackageTags>sphere10 framework winforms postgresql database</PackageTags>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sphere10.Framework.Data.PostgreSQL\Sphere10.Framework.Data.PostgreSQL.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework.Windows.Forms\Sphere10.Framework.Windows.Forms.csproj" />
+  </ItemGroup>
+
+</Project>
