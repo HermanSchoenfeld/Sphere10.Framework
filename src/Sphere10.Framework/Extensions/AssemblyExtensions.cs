@@ -26,6 +26,11 @@ public static class AssemblyExtensions {
 		"App_global.asax.",
 		"Microsoft.",
 		"SMDiagnostics,",
+		"Newtonsoft.",
+		"SharpDX,",
+		"SharpDX.",
+		"BouncyCastle.",
+		"SauceControl.",
 	};
 
 
@@ -72,7 +77,14 @@ public static class AssemblyExtensions {
 				x => x
 					.GetReferencedAssemblies()
 					.Where(shouldDrillDown)
-					.Select(Assembly.Load),
+					.Select(a => {
+						try {
+							return Assembly.Load(a);
+						} catch {
+							return null;
+						}
+					})
+					.Where(a => a != null),
 				x => shouldDrillDown(x.GetName())
 			);
 	}
