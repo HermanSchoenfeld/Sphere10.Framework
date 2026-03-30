@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<Description>MySQL implementation for Sphere10.Framework.Data abstraction layer. Provides DAC, SQLBuilder, and DatabaseManager for MySQL database access using MySqlConnector.</Description>
+    <PackageTags>sphere10 framework mysql mariadb database</PackageTags>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" Version="2.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sphere10.Framework.Data\Sphere10.Framework.Data.csproj" />
+    <ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
+  </ItemGroup>
+
+</Project>
