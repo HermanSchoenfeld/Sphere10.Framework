@@ -8,6 +8,7 @@
 
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,8 +27,21 @@ public static class Sphere10FrameworkExtensions {
 		return builder;
 	}
 
-	public static void StartWinFormsApplication(this Sphere10FrameworkBuilder builder, Size? size = null) {
+	public static void StartWinFormsApplication(this Sphere10FrameworkBuilder builder, Size? size = null)
+		=> StartWinFormsApplication(builder, null, size);
+
+	public static void StartWinFormsApplication(this Sphere10FrameworkBuilder builder, Image splashImage, Size? size = null) {
+		// Show splash with fade-in before framework loads
+		SplashScreen Splash = null;
+		if (splashImage != null) {
+			Splash = new SplashScreen(splashImage);
+			Splash.AttachToFramework();
+			Splash.FadeIn();
+		}
+
+		// Start the framework (splash title/subtitle update during this via events)
 		builder.Start();
+
 		var Framework = Sphere10Framework.Instance;
 		var MainForm = Framework.ServiceProvider.GetService<IMainForm>();
 		if (MainForm is not Form)
@@ -38,6 +52,13 @@ public static class Sphere10FrameworkExtensions {
 		}
 		if (size != null)
 			((Form)MainForm).Size = size.Value;
+
+		// Show main form, then fade out splash
+		if (Splash != null) {
+			((Form)MainForm).Show();
+			Splash.FadeOut();
+		}
+
 		System.Windows.Forms.Application.Run(MainForm as Form);
 	}
 }
