@@ -7,12 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
+using System;
 
 namespace Microsoft.Extensions.Hosting;
 
 public static class IHostBuilderExtensions {
-	public static IHostBuilder UseSphere10Framework(this IHostBuilder hostBuilder)
-		=> hostBuilder.ConfigureServices(x => x.AddSphere10Framework());
+	public static IHostBuilder UseSphere10Framework(this IHostBuilder hostBuilder, Action<Sphere10FrameworkBuilder> configure)
+		=> hostBuilder.ConfigureServices(x => x.AddSphere10Framework(configure));
 
 }
 
