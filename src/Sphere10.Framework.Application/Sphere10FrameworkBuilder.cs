@@ -56,6 +56,7 @@ public class Sphere10FrameworkBuilder {
 
 	public void Start() {
 		var ServiceCollection = new ServiceCollection();
+		_framework.FireRegistering();
 		RegisterModules(ServiceCollection);
 		var ServiceProvider = ServiceCollection.BuildServiceProvider();
 		_framework.StartInternal(ServiceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: true);

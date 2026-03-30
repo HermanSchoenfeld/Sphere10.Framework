@@ -18,6 +18,7 @@ public class Sphere10Framework {
 	private bool _frameworkOwnsServicesProvider;
 	private ICoreModuleConfiguration[] _moduleConfigurations;
 
+	public event EventHandlerEx Registering;
 	public event EventHandlerEx Initializing;
 	public event EventHandlerEx Initialized;
 	public event EventHandlerEx Finalizing;
@@ -49,6 +50,8 @@ public class Sphere10Framework {
 		CheckNotStarted();
 		return new Sphere10FrameworkBuilder(this);
 	}
+
+	internal void FireRegistering() => Registering?.Invoke();
 
 	internal void StartInternal(IServiceProvider serviceProvider, ICoreModuleConfiguration[] modules, bool ownsProvider) {
 		CheckNotStarted();
