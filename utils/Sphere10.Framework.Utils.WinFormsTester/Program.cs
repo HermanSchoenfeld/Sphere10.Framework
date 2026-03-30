@@ -48,6 +48,9 @@ static class Program {
 			.UseModule<Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration>()
 			.UseModule<Sphere10.Framework.Windows.Forms.Sqlite.ModuleConfiguration>()
 			.UseModule<Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.Oracle.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.PostgreSQL.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.MySQL.ModuleConfiguration>()
 			.UseModule<ModuleConfiguration>()
 			.StartWinFormsApplication();
 	}

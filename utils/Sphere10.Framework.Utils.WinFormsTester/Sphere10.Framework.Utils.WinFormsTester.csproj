@@ -17,6 +17,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Windows.Forms.MySQL\Sphere10.Framework.Windows.Forms.MySQL.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Windows.Forms.Oracle\Sphere10.Framework.Windows.Forms.Oracle.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Windows.Forms.PostgreSQL\Sphere10.Framework.Windows.Forms.PostgreSQL.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.HashLib4CSharp\Sphere10.HashLib4CSharp.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj" />
