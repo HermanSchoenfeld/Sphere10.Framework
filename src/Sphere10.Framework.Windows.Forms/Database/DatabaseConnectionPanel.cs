@@ -11,20 +11,20 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Data;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseConnectionProvider {
-	private const string MSSQLConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.MSSQL.MSSQLConnectionPanel, Sphere10.Framework.Windows.Forms.MSSQL";
-	private const string SqliteConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.Sqlite.SqliteConnectionPanel, Sphere10.Framework.Windows.Forms.Sqlite";
-	private const string FirebirdConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdConnectionPanel, Sphere10.Framework.Windows.Forms.Firebird";
-	private const string FirebirdFileConnectionPanelTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdEmbeddedConnectionPanel, Sphere10.Framework.Windows.Forms.Firebird";
+	private DBMSType? _currentDBMSType;
 
 	public event EventHandlerEx<DatabaseConnectionPanel, DBMSType> DBMSTypeChanged;
 
 	public DatabaseConnectionPanel() {
 		InitializeComponent();
+		_dbmsCombo.Filter = _dbmsCombo.Filter = x => Sphere10Framework.Instance.ServiceProvider.HasNamedService<ConnectionPanelBase>(x.ToString());
 		_dbmsCombo.EnumType = typeof(DBMSType);
 		SelectDefaultPanel();
 	}
@@ -59,7 +59,8 @@ public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseCon
 	}
 
 	protected virtual void SelectDefaultPanel() {
-		ChangeConnectionPanel(MSSQLConnectionPanelTypeName);
+		if (_dbmsCombo.Items.Count > 0)
+			_dbmsCombo.SelectedIndex = 0;
 	}
 
 	protected override IDAC GetDACInternal() {
@@ -73,33 +74,21 @@ public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseCon
 	protected ConnectionPanelBase CurrentConnectionPanel { get; set; }
 
 	protected virtual void _dbmsCombo_SelectedIndexChanged(object sender, EventArgs e) {
-		var comboItem = (DBMSType)_dbmsCombo.SelectedEnum;
-		switch (comboItem) {
-			case DBMSType.SQLServer:
-				if (CurrentConnectionPanel == null || CurrentConnectionPanel.GetType().Name != MSSQLConnectionPanelTypeName)
-					ChangeConnectionPanel(MSSQLConnectionPanelTypeName);
-				break;
-			case DBMSType.Sqlite:
-				if (CurrentConnectionPanel == null || CurrentConnectionPanel.GetType().Name != SqliteConnectionPanelTypeName)
-					ChangeConnectionPanel(SqliteConnectionPanelTypeName);
-				break;
-			case DBMSType.Firebird:
-				if (CurrentConnectionPanel == null || CurrentConnectionPanel.GetType().Name != FirebirdConnectionPanelTypeName)
-					ChangeConnectionPanel(FirebirdConnectionPanelTypeName);
-				break;
-			case DBMSType.FirebirdFile:
-				if (CurrentConnectionPanel == null || CurrentConnectionPanel.GetType().Name != FirebirdFileConnectionPanelTypeName)
-					ChangeConnectionPanel(FirebirdFileConnectionPanelTypeName);
-				break;
-		}
+		var DbmsType = (DBMSType)_dbmsCombo.SelectedEnum;
+		if (CurrentConnectionPanel != null && _currentDBMSType == DbmsType)
+			return;
+		_currentDBMSType = DbmsType;
+		ChangeConnectionPanel(DbmsType);
 	}
 
-	protected void ChangeConnectionPanel(string connectionPanelTypeName) {
+	protected void ChangeConnectionPanel(DBMSType dbmsType) {
 		if (Tools.Runtime.IsDesignMode)
 			return;
-
-		var connectionBar = (ConnectionPanelBase)Tools.Object.Create(connectionPanelTypeName);
-		ChangeConnectionPanel(connectionBar);
+		var Lookup = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<INamedLookup<ConnectionPanelBase>>();
+		var ConnectionPanel = Lookup[dbmsType.ToString()];
+		if (ConnectionPanel == null)
+			throw new InvalidOperationException($"No ConnectionPanel registered for DBMS type: {dbmsType}");
+		ChangeConnectionPanel(ConnectionPanel);
 	}
 
 	protected void ChangeConnectionPanel(ConnectionPanelBase connectionPanel) {
@@ -117,5 +106,5 @@ public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseCon
 		OnDBMSTypeChanged();
 		DBMSTypeChanged?.Invoke(this, SelectedDBMSType);
 	}
+	
 }
-

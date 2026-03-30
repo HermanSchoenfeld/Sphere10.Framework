@@ -6,24 +6,25 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using CommandLine.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Data;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework.Data;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnectionProvider {
-	private const string MSSQLConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.MSSQL.MSSQLConnectionBar, Sphere10.Framework.Windows.Forms.MSSQL";
-	private const string SqliteConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Sqlite.SqliteConnectionBar, Sphere10.Framework.Windows.Forms.Sqlite";
-	private const string FirebirdConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdConnectionBar, Sphere10.Framework.Windows.Forms.Firebird";
-	private const string FirebirdFileConnectionBarTypeName = "Sphere10.Framework.Windows.Forms.Firebird.FirebirdEmbeddedConnectionBar, Sphere10.Framework.Windows.Forms.Firebird";
+	private DBMSType? _currentDBMSType;
 
 	public DatabaseConnectionBar() {
 		InitializeComponent();
+		_dbmsCombo.Filter = x => Sphere10Framework.Instance.ServiceProvider.HasNamedService<ConnectionBarBase>(x.ToString());
 		_dbmsCombo.EnumType = typeof(DBMSType);
 		SelectDefaultBar();
 	}
@@ -67,7 +68,8 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 	}
 
 	protected virtual void SelectDefaultBar() {
-		ChangeConnectionBar(MSSQLConnectionBarTypeName);
+		if (_dbmsCombo.Items.Count > 0)
+			_dbmsCombo.SelectedIndex = 0;
 	}
 
 	protected override IDAC GetDACInternal() {
@@ -81,33 +83,21 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 	protected ConnectionBarBase CurrentConnectionBar { get; set; }
 
 	protected virtual void _dbmsCombo_SelectedIndexChanged(object sender, EventArgs e) {
-		var comboItem = (DBMSType)_dbmsCombo.SelectedEnum;
-		switch (comboItem) {
-			case DBMSType.SQLServer:
-				if (CurrentConnectionBar == null || CurrentConnectionBar.GetType().Name != MSSQLConnectionBarTypeName)
-					ChangeConnectionBar(MSSQLConnectionBarTypeName);
-				break;
-			case DBMSType.Sqlite:
-				if (CurrentConnectionBar == null || CurrentConnectionBar.GetType().Name != SqliteConnectionBarTypeName)
-					ChangeConnectionBar(SqliteConnectionBarTypeName);
-				break;
-			case DBMSType.Firebird:
-				if (CurrentConnectionBar == null || CurrentConnectionBar.GetType().Name != FirebirdConnectionBarTypeName)
-					ChangeConnectionBar(FirebirdConnectionBarTypeName);
-				break;
-			case DBMSType.FirebirdFile:
-				if (CurrentConnectionBar == null || CurrentConnectionBar.GetType().Name != FirebirdFileConnectionBarTypeName)
-					ChangeConnectionBar(FirebirdFileConnectionBarTypeName);
-				break;
-		}
+		var DbmsType = (DBMSType)_dbmsCombo.SelectedEnum;
+		if (CurrentConnectionBar != null && _currentDBMSType == DbmsType)
+			return;
+		_currentDBMSType = DbmsType;
+		ChangeConnectionBar(DbmsType);
 	}
 
-	protected void ChangeConnectionBar(string connectionBarTypeName) {
+	protected void ChangeConnectionBar(DBMSType dbmsType) {
 		if (Tools.Runtime.IsDesignMode)
 			return;
-
-		var connectionBar = (ConnectionBarBase)Tools.Object.Create(connectionBarTypeName);
-		ChangeConnectionBar(connectionBar);
+		var Lookup = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<INamedLookup<ConnectionBarBase>>();
+		var ConnectionBar = Lookup[dbmsType.ToString()];
+		if (ConnectionBar == null)
+			throw new InvalidOperationException($"No ConnectionBar registered for DBMS type: {dbmsType}");
+		ChangeConnectionBar(ConnectionBar);
 	}
 
 	protected void ChangeConnectionBar(ConnectionBarBase connectionBar) {
@@ -120,5 +110,5 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 		CurrentConnectionBar.Width = _connectionProviderPanel.Width;
 		_connectionProviderPanel.Controls.Add(CurrentConnectionBar);
 	}
+	
 }
-

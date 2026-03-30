@@ -80,7 +80,7 @@ public class ControlStateEventProviderManager {
 
 		if (FindControlStateEventProvider(controlType, true, out var actualType)) {
 			provider = Sphere10Framework.Instance.ServiceProvider.GetNamedService<IControlStateEventProvider>(actualType.FullName);
-			return true;
+			return provider != null;
 		}
 		provider = null;
 		return false;

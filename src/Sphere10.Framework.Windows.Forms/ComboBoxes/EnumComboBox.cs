@@ -30,6 +30,10 @@ public class EnumComboBox : ComboBoxEx {
 
 	public string EmptyOptionText { get; set; }
 
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public Func<Enum, bool> Filter { get; set; }
+
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -87,6 +91,8 @@ public class EnumComboBox : ComboBoxEx {
 		if (_enumType != null) {
 			foreach (Enum enumValue in Enum.GetValues(_enumType)) {
 				if (_ignoreVals.Contains(enumValue))
+					continue;
+				if (Filter != null && !Filter(enumValue))
 					continue;
 				comboItems.Add(
 					new ComboItem {

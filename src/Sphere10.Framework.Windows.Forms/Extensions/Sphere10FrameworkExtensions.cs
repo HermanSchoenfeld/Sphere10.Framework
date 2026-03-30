@@ -1,8 +1,8 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
-// Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// Distributed under the MIT NON-AI software license, see the accompanying file
+// LICENSE or visit https://sphere10.com/legal/NON-AI-MIT.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -16,32 +16,29 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public static class Sphere10FrameworkExtensions {
 
-	public static void StartWinFormsApplication<TMainForm>(this Sphere10Framework framework, Size? size = null, Sphere10FrameworkOptions options = Sphere10FrameworkOptions.Default)
+	public static Sphere10FrameworkBuilder BuildWinFormsApplication(this Sphere10Framework framework) {
+		return framework.Build();
+	}
+
+	public static Sphere10FrameworkBuilder UseMainForm<TMainForm>(this Sphere10FrameworkBuilder builder)
 		where TMainForm : class, IMainForm {
-		Sphere10Framework.Instance.StartFramework(serviceCollection => serviceCollection.AddMainForm<TMainForm>(), options);
-		framework.StartWinFormsApplication(size);
+		builder.ConfigureServices(services => services.AddMainForm<TMainForm>());
+		return builder;
 	}
 
-	public static void StartWinFormsApplication(this Sphere10Framework framework, Size? size = null) {
-
-
-		if (!framework.IsStarted)
-			framework.StartFramework();
-		var mainForm = Sphere10Framework.Instance.ServiceProvider.GetService<IMainForm>();
-		if (!(mainForm is Form)) {
+	public static void StartWinFormsApplication(this Sphere10FrameworkBuilder builder, Size? size = null) {
+		builder.Start();
+		var Framework = Sphere10Framework.Instance;
+		var MainForm = Framework.ServiceProvider.GetService<IMainForm>();
+		if (MainForm is not Form)
 			throw new SoftwareException("Registered IMainForm is not a WinForms Form");
+		if (MainForm is IBlockManager BlockManager) {
+			var Blocks = Framework.ServiceProvider.GetServices<IApplicationBlock>().OrderBy(b => b.Position);
+			Blocks.ForEach(BlockManager.RegisterBlock);
 		}
-		if (mainForm is IBlockManager) {
-			var blockManager = mainForm as IBlockManager;
-			var blocks = Sphere10Framework.Instance.ServiceProvider.GetServices<IApplicationBlock>().OrderBy(b => b.Position);
-			blocks.ForEach(blockManager.RegisterBlock);
-		}
-
 		if (size != null)
-			((Form)mainForm).Size = size.Value;
-
-		System.Windows.Forms.Application.Run(mainForm as Form);
+			((Form)MainForm).Size = size.Value;
+		System.Windows.Forms.Application.Run(MainForm as Form);
 	}
-
 }
 
