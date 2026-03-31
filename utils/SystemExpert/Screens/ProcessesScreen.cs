@@ -173,7 +173,7 @@ public partial class ProcessesScreen : ApplicationScreen {
 					"No Window Handle", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
-			Tools.WinTool.Processes.SendWindowMessage(hwnd, msg, wParam, lParam, synchronous);
+			Tools.Windows.Processes.SendWindowMessage(hwnd, msg, wParam, lParam, synchronous);
 		});
 	}
 
@@ -181,7 +181,7 @@ public partial class ProcessesScreen : ApplicationScreen {
 		if (_crudGrid.SelectedEntity is not ProcessInfo processInfo)
 			return;
 		try {
-			Tools.WinTool.Processes.SendConsoleSignal(processInfo.PID, signal);
+			Tools.Windows.Processes.SendConsoleSignal(processInfo.PID, signal);
 		} catch (Exception ex) {
 			MessageBox.Show(this, $"Error sending console signal: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}

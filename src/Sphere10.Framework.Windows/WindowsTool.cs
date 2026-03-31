@@ -15,7 +15,7 @@ namespace Tools;
 /// Static facade providing access to Windows utility instances. Each property returns a
 /// thread-static singleton of the corresponding utility class from <see cref="Sphere10.Framework.Windows"/>.
 /// </summary>
-public static class WinTool {
+public static class Windows {
 
 	[ThreadStatic] private static RegistryUtil _registry;
 	public static RegistryUtil Registry => _registry ??= new();

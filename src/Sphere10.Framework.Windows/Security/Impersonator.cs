@@ -61,7 +61,7 @@ public class Impersonator {
 							throw new WindowsException(Marshal.GetLastWin32Error(), "Unable to impersonate user '{0}'", userName);
 						}
 						if (attemptEnableSeRestorePrivilege) {
-							if (!Tools.WinTool.Security.ModifyState(tokenDuplicate, "SeRestorePrivilege", true)) {
+							if (!Tools.Windows.Security.ModifyState(tokenDuplicate, "SeRestorePrivilege", true)) {
 								//throw new WindowsException(Marshal.GetLastWin32Error(), "Unable to enable SeRestorePrivilege in impersonated security context");
 							}
 						}

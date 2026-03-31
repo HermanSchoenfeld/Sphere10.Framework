@@ -90,7 +90,7 @@ public sealed class WindowsKeyboardHook : BaseKeyboardHook, IComponent {
 
 					// Determine key 
 					var virtualKey = (VirtualKey)keyData.vkCode;
-					var key = Tools.WinTool.Win32.VirtualKeyToKey(virtualKey);
+					var key = Tools.Windows.Win32.VirtualKeyToKey(virtualKey);
 					var scanCode = (ScanCode)keyData.scanCode;
 					var asciiChar = DetermineASCIIKeyPressed(keyData);
 
