@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Threading;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
@@ -19,11 +20,18 @@ public partial class SplashScreen : Form {
 
 	public SplashScreen() {
 		InitializeComponent();
+
 	}
 
+	
 	public SplashScreen(Image splashImage)
 		: this() {
-		SplashImage = splashImage;
+		SplashImage =  splashImage.Resize(_pictureBox.Size, ResizeMethod.AspectFit);
+	}
+
+	protected override void OnFormClosed(FormClosedEventArgs e) {
+		base.OnFormClosed(e);
+		SplashImage.Dispose();
 	}
 
 	public Image SplashImage {
@@ -98,6 +106,8 @@ public partial class SplashScreen : Form {
 	private void OnFrameworkInitializing() => UpdateTitle("Initializing...");
 
 	private void OnFrameworkFinalizing() => UpdateTitle("Shutting Down...");
+
+
 
 	private class SplashLogger : LoggerBase {
 		private readonly SplashScreen _splash;
