@@ -138,6 +138,5 @@ public class Sphere10Framework {
 	private void CheckNotStarted() {
 		if (IsStarted)
 			throw new InvalidOperationException("Sphere10.Framework Framework is already started");
-	}
+	}	
 }
-
