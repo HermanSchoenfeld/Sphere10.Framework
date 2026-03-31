@@ -16,7 +16,7 @@ public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
 	public bool DoesAutoRun(AutoRunType type, string applicationName, string executable) {
 		switch (type) {
 			case AutoRunType.CurrentUser:
-				return File.Exists(Tools.WinShell.DetermineStartupShortcutFilename(applicationName));
+				return File.Exists(Tools.Windows.Shell.DetermineStartupShortcutFilename(applicationName));
 				break;
 			default:
 				throw new SoftwareException("AutoRunType '{0}' not supported", type);
@@ -26,7 +26,7 @@ public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
 	public void SetAutoRun(AutoRunType type, string applicationName, string executable, string arguments) {
 		switch (type) {
 			case AutoRunType.CurrentUser:
-				Tools.WinShell.CreateShortcutForApplication(executable, Tools.WinShell.DetermineStartupShortcutFilename(applicationName), arguments, displayMode: GetShortcutDisplayMode());
+				Tools.Windows.Shell.CreateShortcutForApplication(executable, Tools.Windows.Shell.DetermineStartupShortcutFilename(applicationName), arguments, displayMode: GetShortcutDisplayMode());
 				break;
 			default:
 				throw new SoftwareException("AutoRunType '{0}' not supported", type);
@@ -36,7 +36,7 @@ public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
 	public void RemoveAutoRun(AutoRunType type, string applicationName, string executable) {
 		switch (type) {
 			case AutoRunType.CurrentUser:
-				File.Delete(Tools.WinShell.DetermineStartupShortcutFilename(applicationName));
+				File.Delete(Tools.Windows.Shell.DetermineStartupShortcutFilename(applicationName));
 				break;
 			default:
 				throw new SoftwareException("AutoRunType '{0}' not supported", type);

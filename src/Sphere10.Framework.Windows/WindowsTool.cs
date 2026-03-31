@@ -32,5 +32,8 @@ public static class Windows {
 	[ThreadStatic] private static Win32Util _win32;
 	public static Win32Util Win32 => _win32 ??= new();
 
+	[ThreadStatic] private static ShellUtility _shell;
+	public static ShellUtility Shell => _shell ??= new();
+
 }
 
