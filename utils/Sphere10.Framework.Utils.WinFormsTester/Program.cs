@@ -52,6 +52,7 @@ static class Program {
 			.UseModule<Sphere10.Framework.Windows.Forms.PostgreSQL.ModuleConfiguration>()
 			.UseModule<Sphere10.Framework.Windows.Forms.MySQL.ModuleConfiguration>()
 			.UseModule<ModuleConfiguration>()
+			.UseSplashScreen()
 			.StartWinFormsApplication();
 	}
 }

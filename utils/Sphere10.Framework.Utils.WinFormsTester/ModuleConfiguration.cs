@@ -9,6 +9,7 @@
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
@@ -22,6 +23,22 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 
 	}
 
+	public override void OnInitialize(IServiceProvider serviceProvider) {
+		base.OnInitialize(serviceProvider);
+		SystemLog.Info("Some task..");
+		System.Threading.Thread.Sleep(100);
+		SystemLog.Info("Some other task..");
+		System.Threading.Thread.Sleep(250);
+		SystemLog.Info("Another task..");
+		System.Threading.Thread.Sleep(50);
+		SystemLog.Info("bla");
+		System.Threading.Thread.Sleep(100);
+		SystemLog.Info("bla bla");
+		System.Threading.Thread.Sleep(200);
+		SystemLog.Info("bla bla bla");
+		System.Threading.Thread.Sleep(50);
+
+	}
 }
 
 
