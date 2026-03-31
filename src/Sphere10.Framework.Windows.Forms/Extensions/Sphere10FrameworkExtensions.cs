@@ -8,6 +8,7 @@
 
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
@@ -20,8 +21,6 @@ public static class Sphere10FrameworkExtensions {
 	private static Icon _appIcon = null;
 	private static Size? _size = null;
 	private static bool _splashEnabled = false;
-	
-
 
 	public static Icon GetAppIcon(this Sphere10Framework framework) => _appIcon;
 
@@ -39,16 +38,10 @@ public static class Sphere10FrameworkExtensions {
 
 	public static Sphere10FrameworkBuilder UseSplashScreen(this Sphere10FrameworkBuilder builder, Image splashImage = null) {
 		_splashEnabled = true;
-		if (splashImage != null) 
-			builder.SetUseSplashScreenImage(splashImage);
+		if (splashImage != null)
+			_splashImage = splashImage;
 		return builder;
 	}
-
-	public static Sphere10FrameworkBuilder SetUseSplashScreenImage(this Sphere10FrameworkBuilder builder, Image splashImage) {
-		_splashImage = splashImage;
-		return builder;
-	}
-
 
 	public static Sphere10FrameworkBuilder UseIcon(this Sphere10FrameworkBuilder builder, Icon appIcon) {
 		_appIcon = appIcon;
@@ -94,80 +87,74 @@ public static class Sphere10FrameworkExtensions {
 	}
 
 	public static Bitmap GenerateDefaultSplashImage(int width, int height) {
-		var bitmap = new Bitmap(width, height);
-		using var g = Graphics.FromImage(bitmap);
-		g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-		g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+		var Bitmap = new Bitmap(width, height);
+		using var G = Graphics.FromImage(Bitmap);
+		G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+		G.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-		var entryAsm = Tools.Runtime.GetEntryAssembly();
+		var EntryAsm = Tools.Runtime.GetEntryAssembly();
 
 		// Blue gradient background
-		using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(0, 0, width, height), Color.RoyalBlue, Color.LightBlue, 45f))
-			g.FillRectangle(brush, 0, 0, width, height);
+		using (var Brush = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(0, 0, width, height), Color.RoyalBlue, Color.LightBlue, 45f))
+			G.FillRectangle(Brush, 0, 0, width, height);
 
 		// App info
-		var productName = Sphere10AssemblyAttributesHelper.GetAssemblyProduct() ?? entryAsm.GetName().Name;
-		var companyName = Sphere10AssemblyAttributesHelper.GetAssemblyCompany() ?? string.Empty;
-		var version = ApplicationVersion.TryParse(Sphere10AssemblyAttributesHelper.GetAssemblyVersion(), out var appVersion ) ? $"{appVersion.Major}.{appVersion.Minor}.{appVersion.Build}" : string.Empty;
+		var ProductName = Sphere10AssemblyAttributesHelper.GetAssemblyProduct() ?? EntryAsm.GetName().Name;
+		var CompanyName = Sphere10AssemblyAttributesHelper.GetAssemblyCompany() ?? string.Empty;
+		var Version = ApplicationVersion.TryParse(Sphere10AssemblyAttributesHelper.GetAssemblyVersion(), out var AppVersion) ? $"{AppVersion.Major}.{AppVersion.Minor}.{AppVersion.Build}" : string.Empty;
 
 		// App icon (centered, drop shadow)
 		try {
-			var icon = _appIcon;
-			if (icon == null) {
-				
-				icon = Icon.ExtractAssociatedIcon(entryAsm.Location);
-			}
-			if (icon != null) {
-				var iconSize = 72;
-				var iconX = (width - iconSize) / 2;
-				var iconY = (int)(height * 0.18) - iconSize / 2;
-				// Draw shadow
-				using (var shadowBmp = new Bitmap(iconSize, iconSize)) {
-					using (var sg = Graphics.FromImage(shadowBmp)) {
-						sg.Clear(Color.Transparent);
-						sg.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-						sg.FillEllipse(new SolidBrush(Color.FromArgb(60, 0, 0, 0)), 4, 8, iconSize - 8, iconSize - 8);
+			var AppIcon = _appIcon ?? Icon.ExtractAssociatedIcon(EntryAsm.Location);
+			if (AppIcon != null) {
+				var IconSize = 72;
+				var IconX = (width - IconSize) / 2;
+				var IconY = (int)(height * 0.18) - IconSize / 2;
+				using (var ShadowBmp = new Bitmap(IconSize, IconSize)) {
+					using (var Sg = Graphics.FromImage(ShadowBmp)) {
+						Sg.Clear(Color.Transparent);
+						Sg.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+						Sg.FillEllipse(new SolidBrush(Color.FromArgb(60, 0, 0, 0)), 4, 8, IconSize - 8, IconSize - 8);
 					}
-					g.DrawImage(shadowBmp, iconX + 2, iconY + 6, iconSize, iconSize);
+					G.DrawImage(ShadowBmp, IconX + 2, IconY + 6, IconSize, IconSize);
 				}
-				g.DrawIcon(icon, new Rectangle(iconX, iconY, iconSize, iconSize));
+				G.DrawIcon(AppIcon, new Rectangle(IconX, IconY, IconSize, IconSize));
 			}
 		} catch { /* ignore icon errors */ }
 
 		// Product name (centered, drop shadow)
-		using (var nameFont = new Font("Segoe UI", 28f, FontStyle.Bold))
-		using (var whiteBrush = new SolidBrush(Color.White))
-		using (var shadowBrush = new SolidBrush(Color.FromArgb(80, 0, 0, 0))) {
-			var nameSize = g.MeasureString(productName, nameFont);
-			var nameX = (width - nameSize.Width) / 2f;
-			var nameY = (height * 0.40f);
-			g.DrawString(productName, nameFont, shadowBrush, nameX + 2, nameY + 2);
-			g.DrawString(productName, nameFont, whiteBrush, nameX, nameY);
+		using (var NameFont = new Font("Segoe UI", 28f, FontStyle.Bold))
+		using (var WhiteBrush = new SolidBrush(Color.White))
+		using (var ShadowBrush = new SolidBrush(Color.FromArgb(80, 0, 0, 0))) {
+			var NameSize = G.MeasureString(ProductName, NameFont);
+			var NameX = (width - NameSize.Width) / 2f;
+			var NameY = height * 0.40f;
+			G.DrawString(ProductName, NameFont, ShadowBrush, NameX + 2, NameY + 2);
+			G.DrawString(ProductName, NameFont, WhiteBrush, NameX, NameY);
 		}
 
-		// Version (below product name, modern style)
-		if (!string.IsNullOrWhiteSpace(version)) {
-			using var versionFont = new Font("Segoe UI", 13f, FontStyle.Italic);
-			using var versionBrush = new SolidBrush(Color.FromArgb(220, 255, 255, 255));
-			using var versionShadow = new SolidBrush(Color.FromArgb(60, 0, 0, 0));
-			var versionSize = g.MeasureString(version, versionFont);
-			var versionX = (width - versionSize.Width) / 2f;
-			var versionY = (height * 0.40f) + 48f;
-			g.DrawString(version, versionFont, versionShadow, versionX + 1, versionY + 1);
-			g.DrawString(version, versionFont, versionBrush, versionX, versionY);
+		// Version (below product name)
+		if (!string.IsNullOrWhiteSpace(Version)) {
+			using var VersionFont = new Font("Segoe UI", 13f, FontStyle.Italic);
+			using var VersionBrush = new SolidBrush(Color.FromArgb(220, 255, 255, 255));
+			using var VersionShadow = new SolidBrush(Color.FromArgb(60, 0, 0, 0));
+			var VersionSize = G.MeasureString(Version, VersionFont);
+			var VersionX = (width - VersionSize.Width) / 2f;
+			var VersionY = height * 0.40f + 48f;
+			G.DrawString(Version, VersionFont, VersionShadow, VersionX + 1, VersionY + 1);
+			G.DrawString(Version, VersionFont, VersionBrush, VersionX, VersionY);
 		}
 
 		// Company name (below version)
-		if (!string.IsNullOrWhiteSpace(companyName)) {
-			using var companyFont = new Font("Segoe UI", 12f, FontStyle.Regular);
-			using var lightBrush = new SolidBrush(Color.FromArgb(200, 255, 255, 255));
-			var companySize = g.MeasureString(companyName, companyFont);
-			var companyX = (width - companySize.Width) / 2f;
-			var companyY = (height * 0.40f) + 80f;
-			g.DrawString(companyName, companyFont, lightBrush, companyX, companyY);
+		if (!string.IsNullOrWhiteSpace(CompanyName)) {
+			using var CompanyFont = new Font("Segoe UI", 12f, FontStyle.Regular);
+			using var LightBrush = new SolidBrush(Color.FromArgb(200, 255, 255, 255));
+			var CompanySize = G.MeasureString(CompanyName, CompanyFont);
+			var CompanyX = (width - CompanySize.Width) / 2f;
+			var CompanyY = height * 0.40f + 80f;
+			G.DrawString(CompanyName, CompanyFont, LightBrush, CompanyX, CompanyY);
 		}
 
-		return bitmap;
+		return Bitmap;
 	}
 }
-

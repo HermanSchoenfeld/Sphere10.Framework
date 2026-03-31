@@ -34,9 +34,12 @@ public class Sphere10Framework {
 		IsStarted = false;
 		_frameworkOwnsServicesProvider = false;
 		_moduleConfigurations = Array.Empty<ICoreModuleConfiguration>();
+		Disposables = new Disposables();
 	}
 
 	public static Sphere10Framework Instance { get; }
+
+	public Disposables Disposables {get; }
 
 	public IServiceProvider ServiceProvider { get; private set; }
 
@@ -74,6 +77,7 @@ public class Sphere10Framework {
 			Tools.Exceptions.ExecuteIgnoringException(Disposable.Dispose);
 		IsStarted = false;
 		_moduleConfigurations = Array.Empty<ICoreModuleConfiguration>();
+		Disposables.Dispose();
 		Finalized?.Invoke();
 	}
 

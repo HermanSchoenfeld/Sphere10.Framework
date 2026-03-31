@@ -23,6 +23,8 @@ public class Sphere10FrameworkBuilder {
 		_modules = new List<ICoreModuleConfiguration>();
 		_configureActions = new List<Action<IServiceCollection>>();
 	}
+	
+	public Sphere10Framework Framework => _framework;	
 
 	public Sphere10FrameworkBuilder UseModule<TModule>() where TModule : ICoreModuleConfiguration, new() {
 		_modules.Add(new TModule());

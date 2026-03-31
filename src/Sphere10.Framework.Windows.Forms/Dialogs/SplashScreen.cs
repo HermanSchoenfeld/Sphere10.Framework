@@ -26,7 +26,7 @@ public partial class SplashScreen : Form {
 	
 	public SplashScreen(Image splashImage)
 		: this() {
-		SplashImage =  splashImage.Resize(_pictureBox.Size, ResizeMethod.AspectFit);
+		SplashImage =  splashImage.Resize(_pictureBox.Size, ResizeMethod.AspectFill, ResizeAlignment.TopCenter);
 	}
 
 	protected override void OnFormClosed(FormClosedEventArgs e) {
