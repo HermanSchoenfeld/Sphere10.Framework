@@ -132,7 +132,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	#endregion
 
-	#region IApplicationIcon Implementation
+	#region IApplicationIconProvider Implementation
 
 	public virtual Icon ApplicationIcon {
 		get { return new Icon(this.Icon, 128, 128); }
