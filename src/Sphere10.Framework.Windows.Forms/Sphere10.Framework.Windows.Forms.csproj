@@ -506,4 +506,8 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="SourceGrid\SourceGrid\QuadTree\" />
+	</ItemGroup>
+
 </Project>

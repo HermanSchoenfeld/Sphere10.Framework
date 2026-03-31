@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using QuadTreeLib;
+using Sphere10.Framework;
 
 namespace SourceGrid;
 
@@ -33,7 +33,7 @@ namespace SourceGrid;
 /// max tree depth: 11
 /// 
 /// </summary>
-public class QuadTreeRangesList : QuadTree, ISpannedRangesCollection {
+public class QuadTreeRangesList : QuadTree<CellRange>, ISpannedRangesCollection {
 	public QuadTreeRangesList(CellRange bounds) : base(bounds) {
 
 	}
@@ -48,17 +48,15 @@ public class QuadTreeRangesList : QuadTree, ISpannedRangesCollection {
 	}
 
 	public void Redim(int rowCount, int colCount) {
-		while (this.Bounds.RowsCount <= rowCount) {
+		while (this.Bounds.RowsCount <= rowCount)
 			base.Grow();
-		}
-		while (this.Bounds.ColumnsCount <= colCount) {
+		while (this.Bounds.ColumnsCount <= colCount)
 			base.Grow();
-		}
 	}
 
 	public void Update(CellRange oldRange, CellRange newRange) {
-		var range = base.QueryFirst(oldRange.Start);
-		if (range == null)
+		var Range = base.QueryFirst(oldRange.Start.Row, oldRange.Start.Column);
+		if (Range == null)
 			throw new RangeNotFoundException();
 		Remove(oldRange);
 		Insert(newRange);
@@ -74,15 +72,11 @@ public class QuadTreeRangesList : QuadTree, ISpannedRangesCollection {
 
 
 	public CellRange? GetFirstIntersectedRange(Position pos) {
-		var result = base.QueryFirst(pos);
-		if (result == null)
-			return null;
-		return result;
+		return base.QueryFirst(pos.Row, pos.Column);
 	}
 
 	public CellRange? FindRangeWithStart(Position start) {
-		var result = base.QueryFirst(start);
-		return result;
+		return base.QueryFirst(start.Row, start.Column);
 	}
 }
 

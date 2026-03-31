@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework;
 
 namespace SourceGrid;
 
@@ -14,7 +15,7 @@ namespace SourceGrid;
 /// Represents a range of cells. Once created cannot be modified. This Range has always Start in the Top-Left, and End in the Bottom-Right (see Normalize method).
 /// </summary>
 [Serializable]
-public struct CellRange {
+public struct CellRange : IIntegerRectangle<CellRange> {
 	/// <summary>
 	/// Constructor
 	/// </summary>
@@ -72,6 +73,16 @@ public struct CellRange {
 		get { return m_End; }
 		//set{m_End = value; Normalize();}
 	}
+
+	int IIntegerRectangle<CellRange>.StartRow => m_Start.Row;
+	int IIntegerRectangle<CellRange>.StartColumn => m_Start.Column;
+	int IIntegerRectangle<CellRange>.EndRow => m_End.Row;
+	int IIntegerRectangle<CellRange>.EndColumn => m_End.Column;
+
+	bool IIntegerRectangle<CellRange>.Contains(int row, int column) => Contains(new Position(row, column));
+
+	static CellRange IIntegerRectangle<CellRange>.Create(int startRow, int startColumn, int endRow, int endColumn) =>
+		new CellRange(startRow, startColumn, endRow, endColumn);
 
 
 	/// <summary>
