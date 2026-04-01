@@ -205,7 +205,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximumSize = new System.Drawing.Size(555, 900);
 			this.MinimizeBox = false;
-			this.MinimumSize = new System.Drawing.Size(300, 131);
+			this.MinimumSize = new System.Drawing.Size(300, 180);
 			this.Name = "LogonDialog";
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
