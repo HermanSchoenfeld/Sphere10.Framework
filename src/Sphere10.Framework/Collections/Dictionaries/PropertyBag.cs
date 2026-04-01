@@ -21,7 +21,7 @@ namespace Sphere10.Framework.Collections;
 /// </example>
 /// </summary>
 public class PropertyBag : IXmlSerializable {
-	private readonly IDictionary<string, object> _properties = new Dictionary<string, object>();
+	internal readonly IDictionary<string, object> _properties = new Dictionary<string, object>();
 
 	public void Set<T>(string name, T value) {
 		_properties[name] = value;
@@ -52,6 +52,8 @@ public class PropertyBag : IXmlSerializable {
 	}
 
 	public IEnumerable<string> Keys => _properties.Keys;
+
+	public IEnumerable<object> Values => _properties.Values;
 
 	#region IXmlSerializable
 
