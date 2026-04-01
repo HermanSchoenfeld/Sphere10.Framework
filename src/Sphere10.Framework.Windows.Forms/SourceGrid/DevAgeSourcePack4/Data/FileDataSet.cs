@@ -9,7 +9,7 @@
 using System;
 using System.Data;
 
-namespace DevAge.Data;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Data;
 
 /// <summary>
 /// Summary description for Manager.

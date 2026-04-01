@@ -9,9 +9,9 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// The main grid control with static data.
@@ -575,7 +575,7 @@ public partial class Grid : GridVirtual {
 		base.OnRangePaint(e);
 	}
 
-	protected override void PaintCell(DevAge.Drawing.GraphicsCache graphics, CellContext cellContext, RectangleF drawRectangle) {
+	protected override void PaintCell(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphics, CellContext cellContext, RectangleF drawRectangle) {
 		CellRange cellRange = PositionToCellRange(cellContext.Position);
 		if (cellRange.ColumnsCount == 1 && cellRange.RowsCount == 1) {
 			base.PaintCell(graphics, cellContext, drawRectangle);

@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// This class implements a RowsSimpleBase class using a DataView bound mode for row count.

@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace SourceGrid.Exporter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 
 /// <summary>
 /// An utility class to export a grid to a csv delimited format file.
@@ -48,7 +48,7 @@ public class Image {
 
 		System.Drawing.Point cellPoint = destinationLocation;
 
-		using (DevAge.Drawing.GraphicsCache graphicsCache = new DevAge.Drawing.GraphicsCache(graphics)) {
+		using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphicsCache = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache(graphics)) {
 			for (int r = rangeToExport.Start.Row; r <= rangeToExport.End.Row; r++) {
 				int rowHeight = grid.Rows.GetHeight(r);
 
@@ -90,7 +90,7 @@ public class Image {
 		}
 	}
 
-	protected virtual void ExportCell(CellContext context, DevAge.Drawing.GraphicsCache graphics, System.Drawing.Rectangle rectangle) {
+	protected virtual void ExportCell(CellContext context, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphics, System.Drawing.Rectangle rectangle) {
 		if (context.Cell != null) {
 			context.Cell.View.DrawCell(context, graphics, rectangle);
 		}

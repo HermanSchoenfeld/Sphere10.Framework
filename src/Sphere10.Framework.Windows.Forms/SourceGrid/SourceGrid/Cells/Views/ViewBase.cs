@@ -8,25 +8,25 @@
 
 using System;
 using System.Drawing;
-using DevAge.Drawing;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Base abstract class to manage the visual aspect of a cell. This class can be shared beetween multiple cells.
 /// </summary>
 [Serializable]
-public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IView {
+public abstract class ViewBase : Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ContainerBase, IView {
 	/// <summary>
 	/// A default RectangleBorder instance with a 1 pixed LightGray border on bottom and right side
 	/// </summary>
 	public static RectangleBorder DefaultBorder = new RectangleBorder(new BorderLine(Color.LightGray, 1),
 		new BorderLine(Color.LightGray, 1));
 
-	public static DevAge.Drawing.Padding DefaultPadding = new DevAge.Drawing.Padding(2);
+	public static Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Padding DefaultPadding = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Padding(2);
 	public static Color DefaultBackColor = Color.FromKnownColor(KnownColor.Window);
 	public static Color DefaultForeColor = Color.FromKnownColor(KnownColor.WindowText);
-	public static DevAge.Drawing.ContentAlignment DefaultAlignment = DevAge.Drawing.ContentAlignment.MiddleLeft;
+	public static Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment DefaultAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft;
 
 
 	#region Constructors
@@ -35,7 +35,7 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 	/// Use default setting
 	/// </summary>
 	public ViewBase() {
-		Background = new DevAge.Drawing.VisualElements.BackgroundSolid();
+		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid();
 
 
 		Padding = DefaultPadding;
@@ -85,12 +85,12 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 		set { m_ImageStretch = value; }
 	}
 
-	private DevAge.Drawing.ContentAlignment m_ImageAlignment;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment m_ImageAlignment;
 
 	/// <summary>
 	/// Image Alignment
 	/// </summary>
-	public DevAge.Drawing.ContentAlignment ImageAlignment {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment ImageAlignment {
 		get { return m_ImageAlignment; }
 		set { m_ImageAlignment = value; }
 	}
@@ -135,12 +135,12 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 		set { mTrimmingMode = value; }
 	}
 
-	private DevAge.Drawing.ContentAlignment mTextAlignment;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment mTextAlignment;
 
 	/// <summary>
 	/// Text Alignment.
 	/// </summary>
-	public DevAge.Drawing.ContentAlignment TextAlignment {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment TextAlignment {
 		get { return mTextAlignment; }
 		set { mTextAlignment = value; }
 	}
@@ -162,19 +162,19 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 	/// </summary>
 	public Color BackColor {
 		get {
-			if (Background is DevAge.Drawing.VisualElements.BackgroundSolid)
-				return ((DevAge.Drawing.VisualElements.BackgroundSolid)Background).BackColor;
+			if (Background is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)
+				return ((Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)Background).BackColor;
 			else
 				return DefaultBackColor;
 		}
 		set {
-			if (Background is DevAge.Drawing.VisualElements.BackgroundSolid)
-				((DevAge.Drawing.VisualElements.BackgroundSolid)Background).BackColor = value;
+			if (Background is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)
+				((Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)Background).BackColor = value;
 		}
 	}
 
 	/// <summary>
-	/// The border of the Cell. Usually it is an instance of the DevAge.Drawing.RectangleBorder structure.
+	/// The border of the Cell. Usually it is an instance of the Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder structure.
 	/// </summary>
 	public new IBorder Border {
 		get { return base.Border; }
@@ -184,7 +184,7 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 	/// <summary>
 	/// The padding of the cell. Usually it is 2 pixel on all sides.
 	/// </summary>
-	public new DevAge.Drawing.Padding Padding {
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Padding Padding {
 		get { return base.Padding; }
 		set { base.Padding = value; }
 	}
@@ -208,7 +208,7 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 	/// <param name="graphics">Paint arguments</param>
 	/// <param name="rectangle">Rectangle where draw the current cell</param>
 	public void DrawCell(CellContext cellContext,
-	                     DevAge.Drawing.GraphicsCache graphics,
+	                     Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphics,
 	                     RectangleF rectangle) {
 		PrepareView(cellContext);
 
@@ -234,7 +234,7 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 	/// <returns></returns>
 	public Size Measure(CellContext cellContext,
 	                    Size maxLayoutArea) {
-		using (DevAge.Drawing.MeasureHelper measure = new DevAge.Drawing.MeasureHelper(cellContext.Grid)) {
+		using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.MeasureHelper measure = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.MeasureHelper(cellContext.Grid)) {
 			PrepareView(cellContext);
 
 			SizeF measureSize = Measure(measure, SizeF.Empty, maxLayoutArea);
@@ -247,7 +247,7 @@ public abstract class ViewBase : DevAge.Drawing.VisualElements.ContainerBase, IV
 	/// <summary>
 	/// Background of the cell. Usually it is an instance of BackgroundSolid
 	/// </summary>
-	public new DevAge.Drawing.VisualElements.IVisualElement Background {
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement Background {
 		get { return base.Background; }
 		set { base.Background = value; }
 	}

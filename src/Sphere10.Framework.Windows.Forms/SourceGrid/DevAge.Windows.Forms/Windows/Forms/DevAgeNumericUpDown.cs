@@ -10,7 +10,7 @@ using System;
 using System.Windows.Forms;
 
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 public class DevAgeNumericUpDown : NumericUpDown {
 	private System.ComponentModel.IContainer components = null;

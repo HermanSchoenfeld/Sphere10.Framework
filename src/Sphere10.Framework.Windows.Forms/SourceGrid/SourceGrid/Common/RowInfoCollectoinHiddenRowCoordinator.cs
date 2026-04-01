@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class RowInfoCollectoinHiddenRowCoordinator : StandardHiddenRowCoordinator {
 	public RowInfoCollectoinHiddenRowCoordinator(RowInfoCollection rows) : base(rows) {

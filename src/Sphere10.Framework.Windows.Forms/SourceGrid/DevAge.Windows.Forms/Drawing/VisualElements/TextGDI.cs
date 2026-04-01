@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.ComponentModel;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class TextGDI : Text {

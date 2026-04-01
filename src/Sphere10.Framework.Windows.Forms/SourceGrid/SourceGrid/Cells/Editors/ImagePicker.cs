@@ -8,7 +8,7 @@
 
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 ///  A model that use a TextBoxButton for Image editing, allowing to select a source image file. Returns null as DisplayString. Write and read byte[] values.
@@ -34,17 +34,17 @@ public class ImagePicker : EditorControlBase {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.TextBoxUITypeEditor editor = new DevAge.Windows.Forms.TextBoxUITypeEditor();
-		editor.BorderStyle = DevAge.Drawing.BorderStyle.None;
-		editor.Validator = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor();
+		editor.BorderStyle = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderStyle.None;
+		editor.Validator = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
 		return editor;
 	}
 
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.TextBoxUITypeEditor Control {
-		get { return (DevAge.Windows.Forms.TextBoxUITypeEditor)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor)base.Control; }
 	}
 
 	#endregion
@@ -54,7 +54,7 @@ public class ImagePicker : EditorControlBase {
 		if (val == null)
 			return null;
 		else if (val is System.Drawing.Image) {
-			DevAge.ComponentModel.Validator.ValidatorTypeConverter imageValidator = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
+			Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter imageValidator = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
 			return imageValidator.ValueToObject(val, typeof(byte[]));
 
 			//Stranamente questo codice in caso di ico va in eccezione!

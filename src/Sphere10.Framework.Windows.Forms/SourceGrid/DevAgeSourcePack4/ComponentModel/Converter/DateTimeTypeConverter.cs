@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel.Converter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter;
 
 /// <summary>
 /// Summary description for DateTimeTypeConverter.
@@ -17,7 +17,7 @@ public class DateTimeTypeConverter :
 #if !MINI
 	System.ComponentModel.TypeConverter
 #else
-		DevAge.ComponentModel.TypeConverter
+		Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeConverter
 #endif
 {
 
@@ -50,8 +50,8 @@ public class DateTimeTypeConverter :
 
 	public System.ComponentModel.TypeConverter BaseTypeConverter
 #else
-		private DevAge.ComponentModel.TypeConverter m_BaseTypeConverter = DevAge.ComponentModel.TypeDescriptor.GetConverter(typeof(DateTime));
-		public DevAge.ComponentModel.TypeConverter BaseTypeConverter
+		private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeConverter m_BaseTypeConverter = Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeDescriptor.GetConverter(typeof(DateTime));
+		public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeConverter BaseTypeConverter
 #endif
 	{
 		get { return m_BaseTypeConverter; }

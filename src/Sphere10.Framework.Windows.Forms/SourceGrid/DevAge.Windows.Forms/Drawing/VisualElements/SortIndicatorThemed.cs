@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class SortIndicatorThemed : SortIndicator {
@@ -61,7 +61,7 @@ public class SortIndicatorThemed : SortIndicator {
 	}
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
-		if (SortStyle != HeaderSortStyle.None && Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetSortElement())) {
+		if (SortStyle != HeaderSortStyle.None && System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetSortElement())) {
 			Rectangle sortArea = Rectangle.Round(area);
 
 			VisualStyleRenderer renderer = GetRenderer(GetSortElement());
@@ -75,7 +75,7 @@ public class SortIndicatorThemed : SortIndicator {
 	}
 
 	protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize) {
-		if (SortStyle != HeaderSortStyle.None && Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetSortElement())) {
+		if (SortStyle != HeaderSortStyle.None && System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetSortElement())) {
 			VisualStyleRenderer renderer = GetRenderer(GetSortElement());
 			return renderer.GetPartSize(measure.Graphics, ThemeSizeType.Draw);
 		} else

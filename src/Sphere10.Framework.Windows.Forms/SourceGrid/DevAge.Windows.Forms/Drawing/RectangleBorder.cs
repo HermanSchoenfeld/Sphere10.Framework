@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace DevAge.Drawing;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
 /// <summary>
 /// A struct that represents the borders of a cell. Contains 4 borders: Right, Left, Top, Bottom.

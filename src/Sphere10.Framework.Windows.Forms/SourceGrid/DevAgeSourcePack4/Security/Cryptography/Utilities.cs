@@ -11,7 +11,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace DevAge.Security.Cryptography;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Security.Cryptography;
 
 /// <summary>
 /// Utilities

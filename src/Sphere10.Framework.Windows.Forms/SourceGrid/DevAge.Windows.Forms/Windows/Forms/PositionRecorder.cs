@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 [Flags]
 public enum RestoreFlags {
@@ -36,7 +36,7 @@ public enum SaveFlags {
 /// <summary>
 /// A class that can be used to save into the isolated streams the position and the state of a Windows Forms control.
 /// </summary>
-public class PositionRecorderIsolatedStorage : DevAge.IO.IsolatedStorage.IsolatedStorageSettingVersionBase {
+public class PositionRecorderIsolatedStorage : Sphere10.Framework.Windows.Forms.SourceGrid.IO.IsolatedStorage.IsolatedStorageSettingVersionBase {
 	public PositionRecorderIsolatedStorage() : base(1) {
 	}
 
@@ -89,7 +89,7 @@ public class PositionRecorderIsolatedStorage : DevAge.IO.IsolatedStorage.Isolate
 			m_Size.Height = h;
 			m_WindowState = (FormWindowState)state;
 		} else
-			throw new DevAge.IO.InvalidDataException();
+			throw new Sphere10.Framework.Windows.Forms.SourceGrid.IO.InvalidDataException();
 	}
 
 	protected override void OnSave(System.IO.IsolatedStorage.IsolatedStorageFileStream p_File) {

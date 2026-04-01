@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel.Validator;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator;
 
 /// <summary>
 /// An interface to support value conversion and validation. 

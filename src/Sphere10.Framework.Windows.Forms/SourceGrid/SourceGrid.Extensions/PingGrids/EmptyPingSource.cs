@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 public class ListPingSource<T> : List<T>, IPingData {
 	public bool AllowSort {

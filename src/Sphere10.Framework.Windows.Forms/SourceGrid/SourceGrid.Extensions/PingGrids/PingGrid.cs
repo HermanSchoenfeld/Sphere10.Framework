@@ -8,11 +8,11 @@
 
 using System;
 using System.ComponentModel;
-using SourceGrid.Cells;
-using SourceGrid.Selection;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 using Sphere10.Framework.Windows.Forms;
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 [System.ComponentModel.ToolboxItem(true)]
 public class PingGrid : GridVirtual {
@@ -110,7 +110,7 @@ public class PingGrid : GridVirtual {
 	}
 
 	[Obsolete]
-	void mBoundList_ItemDeleted(object sender, DevAge.ComponentModel.ItemDeletedEventArgs e) {
+	void mBoundList_ItemDeleted(object sender, Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.ItemDeletedEventArgs e) {
 		Rows.RowDeleted(e.Item);
 	}
 

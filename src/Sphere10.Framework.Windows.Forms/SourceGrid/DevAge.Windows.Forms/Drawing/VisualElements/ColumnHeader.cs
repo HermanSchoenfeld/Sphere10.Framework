@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class ColumnHeader : ColumnHeaderBase {

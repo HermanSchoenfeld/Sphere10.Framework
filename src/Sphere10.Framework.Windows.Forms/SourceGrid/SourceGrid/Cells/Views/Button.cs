@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Summary description for a 3D themed Button.
@@ -30,7 +30,7 @@ public class Button : Cell {
 	/// Use default setting
 	/// </summary>
 	public Button() {
-		Background = new DevAge.Drawing.VisualElements.ButtonThemed();
+		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ButtonThemed();
 	}
 
 	/// <summary>
@@ -38,7 +38,7 @@ public class Button : Cell {
 	/// </summary>
 	/// <param name="p_Source"></param>
 	public Button(Button p_Source) : base(p_Source) {
-		Background = (DevAge.Drawing.VisualElements.IButton)p_Source.Background.Clone();
+		Background = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IButton)p_Source.Background.Clone();
 	}
 
 	#endregion
@@ -57,8 +57,8 @@ public class Button : Cell {
 
 	#region Visual Elements
 
-	public new DevAge.Drawing.VisualElements.IButton Background {
-		get { return (DevAge.Drawing.VisualElements.IButton)base.Background; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IButton Background {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IButton)base.Background; }
 		set { base.Background = value; }
 	}
 
@@ -66,13 +66,13 @@ public class Button : Cell {
 		base.PrepareView(context);
 
 		if (context.CellRange.Contains(context.Grid.MouseDownPosition))
-			Background.Style = DevAge.Drawing.ButtonStyle.Pressed;
+			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Pressed;
 		else if (context.CellRange.Contains(context.Grid.MouseCellPosition))
-			Background.Style = DevAge.Drawing.ButtonStyle.Hot;
+			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Hot;
 		else if (context.CellRange.Contains(context.Grid.Selection.ActivePosition))
-			Background.Style = DevAge.Drawing.ButtonStyle.Focus;
+			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Focus;
 		else
-			Background.Style = DevAge.Drawing.ButtonStyle.Normal;
+			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Normal;
 	}
 
 	#endregion

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
 /// <summary>
 /// Represents a Cell in a grid, with Cell.Value support and row/col span. Support also ToolTipText, ContextMenu and Cursor

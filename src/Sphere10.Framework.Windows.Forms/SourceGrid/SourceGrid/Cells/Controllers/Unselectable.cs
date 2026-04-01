@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// Implements a behavior that cannot receive the focus. This behavior can be shared between multiple cells.

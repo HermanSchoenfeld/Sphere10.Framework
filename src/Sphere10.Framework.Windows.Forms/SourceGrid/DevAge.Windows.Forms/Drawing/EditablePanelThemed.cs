@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class EditablePanelThemed : EditablePanelBase {
@@ -73,7 +73,7 @@ public class EditablePanelThemed : EditablePanelBase {
 	}
 
 	public override void Draw(GraphicsCache graphics, RectangleF area) {
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
 			if (BorderStyle == BorderStyle.System)
 				GetRenderer(GetBackgroundElement()).DrawBackground(graphics.Graphics, Rectangle.Round(area));
 		} else

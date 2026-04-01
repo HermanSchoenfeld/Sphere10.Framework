@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel.Validator;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator;
 
 /// <summary>
 /// The ValueMapping class can be used to easily map a value to a string value or a display string for conversion

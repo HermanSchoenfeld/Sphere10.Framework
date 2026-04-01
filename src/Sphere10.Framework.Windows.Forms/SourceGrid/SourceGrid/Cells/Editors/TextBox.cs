@@ -10,7 +10,7 @@ using System;
 using System.Windows.Forms;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// An editor that use a TextBoxTyped for editing support.
@@ -36,7 +36,7 @@ public class TextBox : EditorControlBase {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.DevAgeTextBox editor = new DevAge.Windows.Forms.DevAgeTextBox();
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox();
 		editor.BorderStyle = BorderStyle.None;
 		editor.AutoSize = false;
 		editor.Validator = this;
@@ -46,8 +46,8 @@ public class TextBox : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.DevAgeTextBox Control {
-		get { return (DevAge.Windows.Forms.DevAgeTextBox)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox)base.Control; }
 	}
 
 	#endregion
@@ -60,9 +60,9 @@ public class TextBox : EditorControlBase {
 	protected override void OnStartingEdit(CellContext cellContext, Control editorControl) {
 		base.OnStartingEdit(cellContext, editorControl);
 
-		DevAge.Windows.Forms.DevAgeTextBox l_TxtBox = (DevAge.Windows.Forms.DevAgeTextBox)editorControl;
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox l_TxtBox = (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox)editorControl;
 		l_TxtBox.WordWrap = cellContext.Cell.View.WordWrap;
-		l_TxtBox.TextAlign = DevAge.Windows.Forms.Utilities.ContentToHorizontalAlignment(cellContext.Cell.View.TextAlignment);
+		l_TxtBox.TextAlign = Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.Utilities.ContentToHorizontalAlignment(cellContext.Cell.View.TextAlignment);
 
 		//to set the scroll of the textbox to the initial position (otherwise the textbox use the previous scroll position)
 		l_TxtBox.SelectionStart = 0;

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Configuration;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Configuration;
 
 /// <summary>
 /// A dictionary with keys of type String and values of type PersistableItem

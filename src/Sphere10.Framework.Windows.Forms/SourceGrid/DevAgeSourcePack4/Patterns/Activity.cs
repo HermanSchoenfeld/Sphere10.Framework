@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Patterns;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Patterns;
 
 /// <summary>
 /// An interface to represents a basic activity.

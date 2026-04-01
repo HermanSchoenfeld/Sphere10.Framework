@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// ColumnFocus controller overrides the OnFocusEntering method and set the Focus on the Column. This controller is usually used on the Column Header when the Sort is disabled.

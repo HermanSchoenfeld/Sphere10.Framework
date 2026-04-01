@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Cells;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
 /// <summary>
 /// Represents a Cell to use with Grid control.

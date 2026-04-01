@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Represents a cell position (Row, Col). Once created connot be modified

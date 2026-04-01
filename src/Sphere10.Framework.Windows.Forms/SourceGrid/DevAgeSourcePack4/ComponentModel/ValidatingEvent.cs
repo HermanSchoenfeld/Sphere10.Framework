@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
 
 public class ConvertingObjectEventArgs : System.EventArgs {
 	private object m_Value;

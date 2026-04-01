@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel;
 
-namespace SourceGrid.Utils;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Utils;
 
 /// <summary>
 /// A generic converter class used to convert values from

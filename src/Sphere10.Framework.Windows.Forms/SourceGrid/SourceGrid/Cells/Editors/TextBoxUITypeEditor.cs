@@ -10,7 +10,7 @@ using System;
 using System.Windows.Forms;
 using System.Drawing.Design;
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 ///  An editor that use a UITypeEditor to edit the cell.
@@ -36,8 +36,8 @@ public class TextBoxUITypeEditor : TextBoxButton {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.TextBoxUITypeEditor editor = new DevAge.Windows.Forms.TextBoxUITypeEditor();
-		editor.BorderStyle = DevAge.Drawing.BorderStyle.None;
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor();
+		editor.BorderStyle = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderStyle.None;
 		editor.Validator = this;
 
 		object objEditor = System.ComponentModel.TypeDescriptor.GetEditor(base.ValueType, typeof(System.Drawing.Design.UITypeEditor));
@@ -52,8 +52,8 @@ public class TextBoxUITypeEditor : TextBoxButton {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.TextBoxUITypeEditor Control {
-		get { return (DevAge.Windows.Forms.TextBoxUITypeEditor)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor)base.Control; }
 	}
 
 	#endregion

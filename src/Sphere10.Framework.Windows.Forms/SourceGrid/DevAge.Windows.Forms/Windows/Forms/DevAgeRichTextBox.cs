@@ -12,7 +12,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// Used for subscript and superscript
@@ -251,7 +251,7 @@ public static class RichTextConversion {
 	/// </summary>
 	/// <param name="txt"></param>
 	/// <returns></returns>
-	public static DevAge.Windows.Forms.RichText StringToRichText(String txt) {
+	public static Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText StringToRichText(String txt) {
 		return StringToRichText(txt, FontStyle.Regular);
 	}
 
@@ -259,7 +259,7 @@ public static class RichTextConversion {
 	/// Convert plain text to rtf with font style
 	/// </summary>
 	/// <returns></returns>
-	public static DevAge.Windows.Forms.RichText StringToRichText(String txt, FontStyle fontStyle) {
+	public static Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText StringToRichText(String txt, FontStyle fontStyle) {
 		String rtf = String.Empty;
 
 		// dont use the static richtextbox member, because the richtextbox class has a problem
@@ -280,14 +280,14 @@ public static class RichTextConversion {
 		}
 		richTextBox.Dispose();
 
-		return new DevAge.Windows.Forms.RichText(rtf);
+		return new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText(rtf);
 	}
 
 	/// <summary>
 	/// Convert rtf to plain text
 	/// </summary>
 	/// <returns></returns>
-	public static String RichTextToString(DevAge.Windows.Forms.RichText rtf) {
+	public static String RichTextToString(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText rtf) {
 
 		String txt = String.Empty;
 
@@ -305,7 +305,7 @@ public static class RichTextConversion {
 		return txt;
 	}
 
-	public static String RichTextToStringStripWhitespaces(DevAge.Windows.Forms.RichText rtf) {
+	public static String RichTextToStringStripWhitespaces(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText rtf) {
 		return System.Text.RegularExpressions.Regex.Replace(RichTextToString(rtf), @"[\t\n\r\f\v]", string.Empty);
 	}
 }
@@ -550,13 +550,13 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	protected override void OnValidating(CancelEventArgs e) {
 		base.OnValidating(e);
 
-		DevAge.Windows.Forms.RichText val;
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText val;
 		if (IsValidValue(out val) == false) {
 			e.Cancel = true;
 		}
 	}
 
-	private DevAge.ComponentModel.Validator.IValidator m_Validator = null;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator m_Validator = null;
 
 	/// <summary>
 	/// Gets or sets the Validator class useded to validate the value
@@ -565,7 +565,7 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// the Validator directly to the ComboBox, for example the list of values.
 	/// </summary>
 	[DefaultValue(null)]
-	public DevAge.ComponentModel.Validator.IValidator Validator {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator Validator {
 		get { return m_Validator; }
 		set {
 			if (m_Validator != value) {
@@ -597,7 +597,7 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// </summary>
 	/// <param name="convertedValue"></param>
 	/// <returns></returns>
-	public bool IsValidValue(out DevAge.Windows.Forms.RichText convertedValue) {
+	public bool IsValidValue(out Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText convertedValue) {
 		if (Validator != null) {
 			object convertedRichTextValue = null;
 			bool success = false;
@@ -605,7 +605,7 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 				success = true;
 			}
 
-			convertedValue = convertedRichTextValue as DevAge.Windows.Forms.RichText;
+			convertedValue = convertedRichTextValue as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText;
 			return success;
 		} else {
 			convertedValue = new RichText(this.Rtf);
@@ -618,9 +618,9 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// If the Validator is null the Text property is used.
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public DevAge.Windows.Forms.RichText Value {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText Value {
 		get {
-			DevAge.Windows.Forms.RichText val;
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText val;
 			if (IsValidValue(out val))
 				return val;
 			else
@@ -628,8 +628,8 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 		}
 		set {
 			if (Validator != null) {
-				DevAge.Windows.Forms.RichText richText = (DevAge.Windows.Forms.RichText)
-					Validator.ValueToObject(value, typeof(DevAge.Windows.Forms.RichText));
+				Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText richText = (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText)
+					Validator.ValueToObject(value, typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText));
 
 				if (richText == null)
 					Text = String.Empty;

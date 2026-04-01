@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Summary description for DateTimeHelper.

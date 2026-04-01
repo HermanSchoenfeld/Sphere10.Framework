@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace DevAge.Drawing;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
 /// <summary>
 /// A class used to cache the Brush used by the drawing methods. Use the GetBrush method to retrive or insert new brushes.

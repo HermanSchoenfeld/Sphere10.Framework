@@ -6,16 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using SourceGrid.Selection;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// A abstract Grid control to support large virtual data. You must override: GetCell, CreateRowsObject, CreateColumnsObject
@@ -1454,7 +1454,7 @@ public abstract class GridVirtual : CustomScrollControl {
 		base.OnPaint(e);
 
 		//NOTE: For now I draw all the visible cells (not only the invalidated cells).
-		using (DevAge.Drawing.GraphicsCache grCache = new DevAge.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
+		using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache grCache = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
 			foreach (CellRange rng in GetVisibleRegion()) {
 				OnRangePaint(new RangePaintEventArgs(this, grCache, rng));
 			}
@@ -1522,7 +1522,7 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// <summary>
 	/// Draw the specified Cell
 	/// </summary>
-	protected virtual void PaintCell(DevAge.Drawing.GraphicsCache graphics,
+	protected virtual void PaintCell(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphics,
 	                                 CellContext cellContext,
 	                                 RectangleF drawRectangle) {
 		if (drawRectangle.Width > 0 && drawRectangle.Height > 0 &&
@@ -2138,7 +2138,7 @@ public abstract class GridVirtual : CustomScrollControl {
 			UserException(this, e);
 
 		if (e.Handled == false) {
-			DevAge.Windows.Forms.ErrorDialog.Show(this, e.Exception, "Error");
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.Show(this, e.Exception, "Error");
 			e.Handled = true;
 		}
 	}

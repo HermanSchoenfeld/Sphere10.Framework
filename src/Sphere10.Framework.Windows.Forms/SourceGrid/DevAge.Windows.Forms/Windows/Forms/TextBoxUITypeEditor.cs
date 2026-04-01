@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Drawing.Design;
 using Sphere10.Framework.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// A TextBoxTypedButton that uase the UITypeEditor associated with the type.
@@ -115,7 +115,7 @@ public class TextBoxUITypeEditor : DevAgeTextBoxButton, IServiceProvider, System
 
 	#region System.Windows.Forms.Design.IWindowsFormsEditorService
 
-	private DevAge.Windows.Forms.DropDown m_dropDown = null;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DropDown m_dropDown = null;
 	public virtual void CloseDropDown() {
 		if (m_dropDown != null) {
 			m_dropDown.CloseDropDown();
@@ -123,8 +123,8 @@ public class TextBoxUITypeEditor : DevAgeTextBoxButton, IServiceProvider, System
 	}
 
 	public virtual void DropDownControl(System.Windows.Forms.Control control) {
-		using (m_dropDown = new DevAge.Windows.Forms.DropDown(control, this, this.ParentForm)) {
-			m_dropDown.DropDownFlags = DevAge.Windows.Forms.DropDownFlags.CloseOnEscape;
+		using (m_dropDown = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DropDown(control, this, this.ParentForm)) {
+			m_dropDown.DropDownFlags = Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DropDownFlags.CloseOnEscape;
 
 			m_dropDown.ShowDropDown();
 

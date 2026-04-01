@@ -9,7 +9,7 @@
 using System;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// An editor to support Currency data type
@@ -24,7 +24,7 @@ public class TextBoxCurrency : TextBoxNumeric {
 	/// </summary>
 	/// <param name="p_Type">The type of this model</param>
 	public TextBoxCurrency(Type p_Type) : base(p_Type) {
-		TypeConverter = new DevAge.ComponentModel.Converter.CurrencyTypeConverter(p_Type);
+		TypeConverter = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.CurrencyTypeConverter(p_Type);
 	}
 
 	#endregion

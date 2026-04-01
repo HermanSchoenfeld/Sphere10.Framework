@@ -9,7 +9,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Collection of ColumnInfo

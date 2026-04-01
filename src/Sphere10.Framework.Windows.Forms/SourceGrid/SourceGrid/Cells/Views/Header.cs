@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using DevAge.Drawing;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Summary description for a 3D Header.
@@ -33,7 +33,7 @@ public class Header : Cell {
 	/// Use default setting
 	/// </summary>
 	public Header() {
-		Background = new DevAge.Drawing.VisualElements.HeaderThemed();
+		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.HeaderThemed();
 		Border = Header.DefaultBorder;
 	}
 
@@ -42,7 +42,7 @@ public class Header : Cell {
 	/// </summary>
 	/// <param name="p_Source"></param>
 	public Header(Header p_Source) : base(p_Source) {
-		Background = (DevAge.Drawing.VisualElements.IHeader)p_Source.Background.Clone();
+		Background = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IHeader)p_Source.Background.Clone();
 	}
 
 	#endregion
@@ -61,8 +61,8 @@ public class Header : Cell {
 
 	#region Visual Elements
 
-	public new DevAge.Drawing.VisualElements.IHeader Background {
-		get { return (DevAge.Drawing.VisualElements.IHeader)base.Background; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IHeader Background {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IHeader)base.Background; }
 		set { base.Background = value; }
 	}
 
@@ -70,11 +70,11 @@ public class Header : Cell {
 		base.PrepareView(context);
 
 		if (context.CellRange.Contains(context.Grid.MouseDownPosition))
-			Background.Style = DevAge.Drawing.ControlDrawStyle.Pressed;
+			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Pressed;
 		else if (context.CellRange.Contains(context.Grid.MouseCellPosition))
-			Background.Style = DevAge.Drawing.ControlDrawStyle.Hot;
+			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Hot;
 		else
-			Background.Style = DevAge.Drawing.ControlDrawStyle.Normal;
+			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Normal;
 	}
 
 	#endregion

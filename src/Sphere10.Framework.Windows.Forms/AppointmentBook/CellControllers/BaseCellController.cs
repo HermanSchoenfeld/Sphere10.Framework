@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using SourceGrid.Cells.Controllers;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 

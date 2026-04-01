@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using DevAge.Drawing;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel.Converter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter;
 
 /// <summary>
 /// A TypeConverter that support rich text conversion from and to string.
@@ -17,7 +17,7 @@ public class RichTextTypeConverter :
 #if !MINI
 	System.ComponentModel.TypeConverter
 #else
-		DevAge.ComponentModel.TypeConverter
+		Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeConverter
 #endif
 
 {
@@ -44,7 +44,7 @@ public class RichTextTypeConverter :
 	                                    Type sourceType) {
 		if (sourceType == typeof(string))
 			return true;
-		if (sourceType == typeof(DevAge.Windows.Forms.RichText))
+		if (sourceType == typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText))
 			return true;
 		if (sourceType == typeof(int))
 			return true;
@@ -60,7 +60,7 @@ public class RichTextTypeConverter :
 	/// <returns></returns>
 	public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext context,
 	                                  Type destinationType) {
-		if (destinationType == typeof(DevAge.Windows.Forms.RichText))
+		if (destinationType == typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText))
 			return true;
 		if (destinationType == typeof(string))
 			return true;
@@ -77,8 +77,8 @@ public class RichTextTypeConverter :
 	/// <returns></returns>
 	public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) {
 		if (value != null && (value.GetType() == typeof(string) || value.GetType() == typeof(int))) {
-			return DevAge.Windows.Forms.RichTextConversion.StringToRichText(value.ToString());
-		} else if (value != null && value.GetType() == typeof(DevAge.Windows.Forms.RichText)) {
+			return Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichTextConversion.StringToRichText(value.ToString());
+		} else if (value != null && value.GetType() == typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText)) {
 			return value;
 		} else {
 			throw new ArgumentException("Not supported type");
@@ -94,12 +94,12 @@ public class RichTextTypeConverter :
 	/// <param name="destinationType"></param>
 	/// <returns></returns>
 	public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType) {
-		if (destinationType == typeof(string) && value != null && value.GetType() == typeof(DevAge.Windows.Forms.RichText)) {
-			return DevAge.Windows.Forms.RichTextConversion.RichTextToString(value as DevAge.Windows.Forms.RichText);
-		} else if (destinationType == typeof(DevAge.Windows.Forms.RichText) && IsValid(value)) {
-			return new DevAge.Windows.Forms.RichText(value as string);
-		} else if (destinationType == typeof(DevAge.Windows.Forms.RichText) && value != null && value.GetType() == typeof(string)) {
-			return DevAge.Windows.Forms.RichTextConversion.StringToRichText(value as string);
+		if (destinationType == typeof(string) && value != null && value.GetType() == typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText)) {
+			return Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichTextConversion.RichTextToString(value as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText);
+		} else if (destinationType == typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText) && IsValid(value)) {
+			return new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText(value as string);
+		} else if (destinationType == typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText) && value != null && value.GetType() == typeof(string)) {
+			return Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichTextConversion.StringToRichText(value as string);
 		} else if (value != null && destinationType == value.GetType()) {
 			return value;
 		} else {

@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// Implement the mouse resize features of a cell. This behavior can be shared between multiple cells.
@@ -34,7 +34,7 @@ public class Resizable : ControllerBase {
 	/// <summary>
 	/// Border used to calculate the region where the resize is enabled.
 	/// </summary>
-	public DevAge.Drawing.RectangleBorder LogicalBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4), new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4));
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder LogicalBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4), new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4));
 
 	/// <summary>
 	/// Constructor
@@ -58,13 +58,13 @@ public class Resizable : ControllerBase {
 		Rectangle l_CellRect = sender.Grid.PositionToRectangle(sender.Position);
 		Point mousePoint = new Point(e.X, e.Y);
 
-		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(l_CellRect, mousePoint, out mDistanceFromBorder);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(l_CellRect, mousePoint, out mDistanceFromBorder);
 
 		if (((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width) &&
-		    partType == DevAge.Drawing.RectanglePartType.RightBorder)
+		    partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.RightBorder)
 			m_IsWidthResize = true;
 		else if (((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height) &&
-		         partType == DevAge.Drawing.RectanglePartType.BottomBorder)
+		         partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.BottomBorder)
 			m_IsHeightResize = true;
 	}
 
@@ -85,7 +85,7 @@ public class Resizable : ControllerBase {
 		Point mousePoint = new Point(e.X, e.Y);
 
 		float dummy;
-		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, mousePoint, out dummy);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, mousePoint, out dummy);
 
 		//sono già in fase di resizing
 		if (sender.Grid.MouseDownPosition == sender.Position) {
@@ -107,9 +107,9 @@ public class Resizable : ControllerBase {
 				mWidthCursor.ResetCursor(sender, e);
 			}
 		} else {
-			if (partType == DevAge.Drawing.RectanglePartType.RightBorder && (ResizeMode & CellResizeMode.Width) == CellResizeMode.Width)
+			if (partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.RightBorder && (ResizeMode & CellResizeMode.Width) == CellResizeMode.Width)
 				mWidthCursor.ApplyCursor(sender, e);
-			else if (partType == DevAge.Drawing.RectanglePartType.BottomBorder && (ResizeMode & CellResizeMode.Height) == CellResizeMode.Height)
+			else if (partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.BottomBorder && (ResizeMode & CellResizeMode.Height) == CellResizeMode.Height)
 				mHeightCursor.ApplyCursor(sender, e);
 			else {
 				mWidthCursor.ResetCursor(sender, e);
@@ -147,13 +147,13 @@ public class Resizable : ControllerBase {
 		Rectangle cellRect = sender.Grid.PositionToRectangle(sender.Position);
 
 		float distance;
-		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
 
 		if ((ResizeMode & CellResizeMode.Width) == CellResizeMode.Width &&
-		    partType == DevAge.Drawing.RectanglePartType.RightBorder) {
+		    partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.RightBorder) {
 			sender.Grid.Columns.AutoSizeColumn(sender.Position.Column);
 		} else if ((ResizeMode & CellResizeMode.Height) == CellResizeMode.Height &&
-		           partType == DevAge.Drawing.RectanglePartType.BottomBorder) {
+		           partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.BottomBorder) {
 			sender.Grid.Rows.AutoSizeRow(sender.Position.Row);
 		}
 	}

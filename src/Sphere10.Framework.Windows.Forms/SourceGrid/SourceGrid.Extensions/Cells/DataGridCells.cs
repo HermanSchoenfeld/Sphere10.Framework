@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.DataGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.DataGrid;
 
 public class Cell : Cells.Virtual.CellVirtual {
 	public Cell() {

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Exporter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 
 /// <summary>
 /// An utility class to export the grid in a html format file.
@@ -99,16 +99,16 @@ public class HTML {
 		return System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(p_Color.A, p_Color.R, p_Color.G, p_Color.B));
 	}
 
-	public static string BorderToHTMLStyle(DevAge.Drawing.BorderLine p_Border) {
+	public static string BorderToHTMLStyle(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine p_Border) {
 		if (p_Border.Width > 0) {
 			return p_Border.Width.ToString() + "px solid " + ColorToHTML(p_Border.Color);
 		} else
 			return "none";
 	}
 
-	public static string BorderToHTMLStyle(DevAge.Drawing.IBorder border) {
-		if (border is DevAge.Drawing.RectangleBorder) {
-			DevAge.Drawing.RectangleBorder brd = (DevAge.Drawing.RectangleBorder)border;
+	public static string BorderToHTMLStyle(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.IBorder border) {
+		if (border is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder) {
+			Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder brd = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder)border;
 
 			return "border-top:" + BorderToHTMLStyle(brd.Top) +
 			       ";border-right:" + BorderToHTMLStyle(brd.Right) +
@@ -249,12 +249,12 @@ public class HTML {
 				writer.WriteAttributeString("style", l_Style);
 
 				//alignment
-				writer.WriteAttributeString("align", DevAge.Windows.Forms.Utilities.ContentToHorizontalAlignment(viewCell.TextAlignment).ToString().ToLower());
-				if (DevAge.Drawing.Utilities.IsBottom(viewCell.TextAlignment))
+				writer.WriteAttributeString("align", Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.Utilities.ContentToHorizontalAlignment(viewCell.TextAlignment).ToString().ToLower());
+				if (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.IsBottom(viewCell.TextAlignment))
 					writer.WriteAttributeString("valign", "bottom");
-				else if (DevAge.Drawing.Utilities.IsTop(viewCell.TextAlignment))
+				else if (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.IsTop(viewCell.TextAlignment))
 					writer.WriteAttributeString("valign", "top");
-				else if (DevAge.Drawing.Utilities.IsMiddle(viewCell.TextAlignment))
+				else if (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.IsMiddle(viewCell.TextAlignment))
 					writer.WriteAttributeString("valign", "middle");
 			}
 
@@ -284,7 +284,7 @@ public class HTML {
 				if (img != null) {
 					writer.WriteStartElement("img");
 
-					writer.WriteAttributeString("align", DevAge.Windows.Forms.Utilities.ContentToHorizontalAlignment(viewCell.ImageAlignment).ToString().ToLower());
+					writer.WriteAttributeString("align", Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.Utilities.ContentToHorizontalAlignment(viewCell.ImageAlignment).ToString().ToLower());
 					writer.WriteAttributeString("src", ExportImage(img));
 
 					//img

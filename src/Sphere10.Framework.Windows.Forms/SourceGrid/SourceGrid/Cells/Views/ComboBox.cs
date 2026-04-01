@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 public class ComboBox : Cell {
 	/// <summary>
@@ -25,7 +25,7 @@ public class ComboBox : Cell {
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
 	public ComboBox() {
-		ElementDropDown.AnchorArea = new DevAge.Drawing.AnchorArea(float.NaN, 0, 0, 0, false, false);
+		ElementDropDown.AnchorArea = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.AnchorArea(float.NaN, 0, 0, 0, false, false);
 	}
 
 	/// <summary>
@@ -34,7 +34,7 @@ public class ComboBox : Cell {
 	/// <param name="p_Source"></param>
 	public ComboBox(ComboBox p_Source)
 		: base(p_Source) {
-		ElementDropDown = (DevAge.Drawing.VisualElements.IDropDownButton)p_Source.ElementDropDown.Clone();
+		ElementDropDown = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IDropDownButton)p_Source.ElementDropDown.Clone();
 	}
 
 	#endregion
@@ -45,23 +45,23 @@ public class ComboBox : Cell {
 		PrepareVisualElementDropDown(context);
 	}
 
-	protected override IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetElements() {
+	protected override IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementDropDown != null)
 			yield return ElementDropDown;
 
-		foreach (DevAge.Drawing.VisualElements.IVisualElement v in GetBaseElements())
+		foreach (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement v in GetBaseElements())
 			yield return v;
 	}
-	private IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetBaseElements() {
+	private IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetBaseElements() {
 		return base.GetElements();
 	}
 
-	private DevAge.Drawing.VisualElements.IDropDownButton mElementDropDown = new DevAge.Drawing.VisualElements.DropDownButtonThemed();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IDropDownButton mElementDropDown = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.DropDownButtonThemed();
 
 	/// <summary>
-	/// Gets or sets the visual element used to draw the checkbox. Default is DevAge.Drawing.VisualElements.CheckBoxThemed.
+	/// Gets or sets the visual element used to draw the checkbox. Default is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.CheckBoxThemed.
 	/// </summary>
-	public DevAge.Drawing.VisualElements.IDropDownButton ElementDropDown {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IDropDownButton ElementDropDown {
 		get { return mElementDropDown; }
 		set { mElementDropDown = value; }
 	}
@@ -69,9 +69,9 @@ public class ComboBox : Cell {
 
 	protected virtual void PrepareVisualElementDropDown(CellContext context) {
 		if (context.CellRange.Contains(context.Grid.MouseCellPosition)) {
-			ElementDropDown.Style = DevAge.Drawing.ButtonStyle.Hot;
+			ElementDropDown.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Hot;
 		} else {
-			ElementDropDown.Style = DevAge.Drawing.ButtonStyle.Normal;
+			ElementDropDown.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Normal;
 		}
 	}
 

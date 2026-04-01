@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Cells.Virtual {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual {
 	/// <summary>
 	/// A cell that rappresent a button 
 	/// </summary>
@@ -22,7 +22,7 @@ namespace SourceGrid.Cells.Virtual {
 	}
 }
 
-namespace SourceGrid.Cells {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells {
 	/// <summary>
 	/// A cell that rappresent a button 
 	/// </summary>

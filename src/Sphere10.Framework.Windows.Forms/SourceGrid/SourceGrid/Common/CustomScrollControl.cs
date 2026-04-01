@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 //Note about the new scrolling code:
 //This algorithm still has some bugs.
 //Right now the list is not long, but it seems you will have to deal with this, Davide:

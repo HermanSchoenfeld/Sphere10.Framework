@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.IO.IsolatedStorage;
 
-namespace DevAge.IO.IsolatedStorage;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.IO.IsolatedStorage;
 
 /// <summary>
 /// Abstract class that help to save settings in the isolated streams

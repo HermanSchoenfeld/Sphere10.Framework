@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Cells.Models;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 /// <summary>
 /// Interface for informations about a cechkbox
@@ -43,7 +43,7 @@ public struct CheckBoxStatus {
 		CheckEnable = checkEnable;
 		Caption = caption;
 
-		mCheckState = DevAge.Drawing.CheckBoxState.Undefined;
+		mCheckState = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState.Undefined;
 		Checked = bChecked;
 	}
 	/// <summary>
@@ -52,18 +52,18 @@ public struct CheckBoxStatus {
 	/// <param name="checkEnable"></param>
 	/// <param name="checkState"></param>
 	/// <param name="caption"></param>
-	public CheckBoxStatus(bool checkEnable, DevAge.Drawing.CheckBoxState checkState, string caption) {
+	public CheckBoxStatus(bool checkEnable, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState checkState, string caption) {
 		CheckEnable = checkEnable;
 		mCheckState = checkState;
 		Caption = caption;
 	}
 
-	private DevAge.Drawing.CheckBoxState mCheckState;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState mCheckState;
 
 	/// <summary>
 	/// Gets or sets the state of the check box.
 	/// </summary>
-	public DevAge.Drawing.CheckBoxState CheckState {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState CheckState {
 		get { return mCheckState; }
 		set { mCheckState = value; }
 	}
@@ -78,20 +78,20 @@ public struct CheckBoxStatus {
 	/// </summary>
 	public bool? Checked {
 		get {
-			if (CheckState == DevAge.Drawing.CheckBoxState.Checked)
+			if (CheckState == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState.Checked)
 				return true;
-			else if (CheckState == DevAge.Drawing.CheckBoxState.Unchecked)
+			else if (CheckState == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState.Unchecked)
 				return false;
 			else
 				return null;
 		}
 		set {
 			if (value == null)
-				CheckState = DevAge.Drawing.CheckBoxState.Undefined;
+				CheckState = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState.Undefined;
 			else if (value.Value)
-				CheckState = DevAge.Drawing.CheckBoxState.Checked;
+				CheckState = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState.Checked;
 			else
-				CheckState = DevAge.Drawing.CheckBoxState.Unchecked;
+				CheckState = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState.Unchecked;
 		}
 	}
 

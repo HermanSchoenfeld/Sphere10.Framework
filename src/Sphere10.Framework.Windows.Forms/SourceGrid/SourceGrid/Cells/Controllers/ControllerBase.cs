@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// Implements all the method of the controller interface without any implementation

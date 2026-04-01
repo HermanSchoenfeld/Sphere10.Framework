@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 [Serializable]
 public class RichTextBox : Cell {
@@ -25,7 +25,7 @@ public class RichTextBox : Cell {
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
 	public RichTextBox() {
-		ElementRichText = new DevAge.Drawing.VisualElements.RichTextGDI();
+		ElementRichText = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.RichTextGDI();
 	}
 
 	/// <summary>
@@ -34,7 +34,7 @@ public class RichTextBox : Cell {
 	/// <param name="p_Source"></param>
 	public RichTextBox(RichTextBox p_Source)
 		: base(p_Source) {
-		ElementRichText = (DevAge.Drawing.VisualElements.IRichText)p_Source.ElementRichText.Clone();
+		ElementRichText = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IRichText)p_Source.ElementRichText.Clone();
 	}
 
 	#endregion
@@ -48,19 +48,19 @@ public class RichTextBox : Cell {
 		PrepareVisualElementRichTextBox(context);
 	}
 
-	protected override IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetElements() {
+	protected override IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementRichText != null)
 			yield return ElementRichText;
 
-		foreach (DevAge.Drawing.VisualElements.IVisualElement v in GetBaseElements())
+		foreach (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement v in GetBaseElements())
 			yield return v;
 	}
-	private IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetBaseElements() {
+	private IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetBaseElements() {
 		return base.GetElements();
 	}
 
 	protected virtual void PrepareVisualElementRichTextBox(CellContext context) {
-		ElementRichText.Value = context.Cell.Model.ValueModel.GetValue(context) as DevAge.Windows.Forms.RichText;
+		ElementRichText.Value = context.Cell.Model.ValueModel.GetValue(context) as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText;
 		ElementRichText.ForeColor = ForeColor;
 		ElementRichText.TextAlignment = TextAlignment;
 		ElementRichText.Font = GetDrawingFont(context.Grid);
@@ -71,12 +71,12 @@ public class RichTextBox : Cell {
 
 	#region Properties
 
-	private DevAge.Drawing.VisualElements.IRichText m_ElementRichText = null;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IRichText m_ElementRichText = null;
 
 	/// <summary>
 	/// Gets or sets the IText visual element used to draw the cell rich text.
 	/// </summary>
-	public DevAge.Drawing.VisualElements.IRichText ElementRichText {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IRichText ElementRichText {
 		get { return m_ElementRichText; }
 		set { m_ElementRichText = value; }
 	}

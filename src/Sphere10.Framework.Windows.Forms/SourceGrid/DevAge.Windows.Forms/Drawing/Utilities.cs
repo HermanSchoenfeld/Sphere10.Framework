@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace DevAge.Drawing;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
 /// <summary>
 /// A static class with drawing utilities functions
@@ -120,7 +120,7 @@ public static class Utilities {
 	///// <param name="clientRect"></param>
 	///// <param name="objectSize"></param>
 	///// <returns></returns>
-	//public static Point CalculateContentLocation(DevAge.Drawing.ContentAlignment align, 
+	//public static Point CalculateContentLocation(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment align, 
 	//                                            Rectangle clientRect, 
 	//                                            Size objectSize)
 	//{
@@ -151,7 +151,7 @@ public static class Utilities {
 	///// <param name="clientRect"></param>
 	///// <param name="objectSize"></param>
 	///// <returns></returns>
-	//public static Rectangle CalculateContentRectangle(DevAge.Drawing.ContentAlignment align, 
+	//public static Rectangle CalculateContentRectangle(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment align, 
 	//    Rectangle clientRect, 
 	//    Size objectSize)
 	//{
@@ -161,30 +161,30 @@ public static class Utilities {
 	//    return rect;
 	//}
 
-	public static DevAge.Drawing.ContentAlignment StringFormatToContentAlignment(System.Drawing.StringFormat p_StringFormat) {
+	public static Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment StringFormatToContentAlignment(System.Drawing.StringFormat p_StringFormat) {
 		if (IsBottom(p_StringFormat) && IsLeft(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.BottomLeft;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomLeft;
 		else if (IsBottom(p_StringFormat) && IsRight(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.BottomRight;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomRight;
 		else if (IsBottom(p_StringFormat) && IsCenter(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.BottomCenter;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomCenter;
 
 		else if (IsTop(p_StringFormat) && IsLeft(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.TopLeft;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopLeft;
 		else if (IsTop(p_StringFormat) && IsRight(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.TopRight;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopRight;
 		else if (IsTop(p_StringFormat) && IsCenter(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.TopCenter;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopCenter;
 
 		else if (IsMiddle(p_StringFormat) && IsLeft(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.MiddleLeft;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft;
 		else if (IsMiddle(p_StringFormat) && IsRight(p_StringFormat))
-			return DevAge.Drawing.ContentAlignment.MiddleRight;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleRight;
 		else //if (Utility.IsMiddle(StringFormat) && Utility.IsCenter(StringFormat))
-			return DevAge.Drawing.ContentAlignment.MiddleCenter;
+			return Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleCenter;
 	}
 
-	public static void ApplyContentAlignmentToStringFormat(DevAge.Drawing.ContentAlignment pAlignment, StringFormat stringFormat) {
+	public static void ApplyContentAlignmentToStringFormat(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment pAlignment, StringFormat stringFormat) {
 		if (IsBottom(pAlignment))
 			stringFormat.LineAlignment = StringAlignment.Far;
 		else if (IsMiddle(pAlignment))
@@ -202,35 +202,35 @@ public static class Utilities {
 
 	#region ContentAlign Utility
 
-	public static bool IsBottom(DevAge.Drawing.ContentAlignment a) {
-		return (a == DevAge.Drawing.ContentAlignment.BottomCenter ||
-		        a == DevAge.Drawing.ContentAlignment.BottomLeft ||
-		        a == DevAge.Drawing.ContentAlignment.BottomRight);
+	public static bool IsBottom(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
+		return (a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomCenter ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomLeft ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomRight);
 	}
-	public static bool IsTop(DevAge.Drawing.ContentAlignment a) {
-		return (a == DevAge.Drawing.ContentAlignment.TopCenter ||
-		        a == DevAge.Drawing.ContentAlignment.TopLeft ||
-		        a == DevAge.Drawing.ContentAlignment.TopRight);
+	public static bool IsTop(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
+		return (a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopCenter ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopLeft ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopRight);
 	}
-	public static bool IsMiddle(DevAge.Drawing.ContentAlignment a) {
-		return (a == DevAge.Drawing.ContentAlignment.MiddleCenter ||
-		        a == DevAge.Drawing.ContentAlignment.MiddleLeft ||
-		        a == DevAge.Drawing.ContentAlignment.MiddleRight);
+	public static bool IsMiddle(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
+		return (a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleCenter ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleRight);
 	}
-	public static bool IsCenter(DevAge.Drawing.ContentAlignment a) {
-		return (a == DevAge.Drawing.ContentAlignment.BottomCenter ||
-		        a == DevAge.Drawing.ContentAlignment.MiddleCenter ||
-		        a == DevAge.Drawing.ContentAlignment.TopCenter);
+	public static bool IsCenter(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
+		return (a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomCenter ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleCenter ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopCenter);
 	}
-	public static bool IsLeft(DevAge.Drawing.ContentAlignment a) {
-		return (a == DevAge.Drawing.ContentAlignment.BottomLeft ||
-		        a == DevAge.Drawing.ContentAlignment.MiddleLeft ||
-		        a == DevAge.Drawing.ContentAlignment.TopLeft);
+	public static bool IsLeft(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
+		return (a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomLeft ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopLeft);
 	}
-	public static bool IsRight(DevAge.Drawing.ContentAlignment a) {
-		return (a == DevAge.Drawing.ContentAlignment.BottomRight ||
-		        a == DevAge.Drawing.ContentAlignment.MiddleRight ||
-		        a == DevAge.Drawing.ContentAlignment.TopRight);
+	public static bool IsRight(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
+		return (a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.BottomRight ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleRight ||
+		        a == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopRight);
 	}
 
 	public static bool IsBottom(StringFormat a) {

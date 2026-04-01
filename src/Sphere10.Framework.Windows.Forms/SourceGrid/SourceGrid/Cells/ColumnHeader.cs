@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Cells.Virtual {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual {
 	/// <summary>
 	/// A cell that rappresent a header of a table, with 3D effect. This cell override IsSelectable to false. Default use VisualModels.VisualModelHeader.Style1
 	/// </summary>
@@ -57,7 +57,7 @@ namespace SourceGrid.Cells.Virtual {
 	}
 }
 
-namespace SourceGrid.Cells {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells {
 	/// <summary>
 	/// A cell that rappresent a header of a table. 
 	/// View: Views.ColumnHeader.Default 
@@ -143,7 +143,7 @@ namespace SourceGrid.Cells {
 		/// <summary>
 		/// Sort style.
 		/// </summary>
-		public DevAge.Drawing.HeaderSortStyle SortStyle {
+		public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle SortStyle {
 			get { return SortStatus.Style; }
 			set { SortStatus = new SourceGrid.Cells.Models.SortStatus(value, SortStatus.Comparer); }
 		}

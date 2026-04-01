@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// Button controller is used to executed a specific action when the user click on a cell or when the user press the Enter or Space key (using the OnKeyDown event).

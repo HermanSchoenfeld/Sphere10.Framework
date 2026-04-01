@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Collections;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Collections;
 
 /// <summary>
 /// A collection of object with a special method that returns an object compatible with a specified Type, GetByType(Type).

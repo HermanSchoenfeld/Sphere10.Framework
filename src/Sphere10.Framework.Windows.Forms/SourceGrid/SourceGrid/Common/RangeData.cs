@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// RangeData class represents a range of data. Can represent a range of data in string format. Usually used for drag and drop and clipboard copy/paste operations.

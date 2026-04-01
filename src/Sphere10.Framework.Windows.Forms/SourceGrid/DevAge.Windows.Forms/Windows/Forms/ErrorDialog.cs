@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// A Windows Forms Form that can be used to display a dialog similar to a message box to show an exception.

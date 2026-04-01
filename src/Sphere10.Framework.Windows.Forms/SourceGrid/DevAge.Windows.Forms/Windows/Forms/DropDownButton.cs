@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// Summary description for DropDownButton.
@@ -69,22 +69,22 @@ public class DropDownButton : System.Windows.Forms.Control {
 
 	#endregion
 
-	private Drawing.VisualElements.DropDownButtonThemed mDropDown = new DevAge.Drawing.VisualElements.DropDownButtonThemed();
+	private Drawing.VisualElements.DropDownButtonThemed mDropDown = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.DropDownButtonThemed();
 
 	protected override void OnPaint(PaintEventArgs e) {
 		base.OnPaint(e);
 
 		if (Enabled) {
 			if (m_Pressed)
-				mDropDown.Style = DevAge.Drawing.ButtonStyle.Pressed;
+				mDropDown.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Pressed;
 			else if (m_MouseOver)
-				mDropDown.Style = DevAge.Drawing.ButtonStyle.Hot;
+				mDropDown.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Hot;
 			else
-				mDropDown.Style = DevAge.Drawing.ButtonStyle.Normal;
+				mDropDown.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Normal;
 		} else
-			mDropDown.Style = DevAge.Drawing.ButtonStyle.Disabled;
+			mDropDown.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Disabled;
 
-		using (DevAge.Drawing.GraphicsCache cache = new DevAge.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
+		using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache cache = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
 			mDropDown.Draw(cache, Rectangle.Round(ClientRectangle));
 		}
 	}

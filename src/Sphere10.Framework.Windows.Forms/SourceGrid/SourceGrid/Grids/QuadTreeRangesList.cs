@@ -8,7 +8,7 @@
 
 using Sphere10.Framework;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// This is a QuadTree implementation for cell ranges.

@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace DevAge.Text.FixedLength;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Text.FixedLength;
 
 /// <summary>
 /// A dictionary with keys of type string and values of type IField

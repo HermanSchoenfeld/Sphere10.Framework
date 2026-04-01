@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.ComponentModel;
 
-namespace DevAge.Drawing;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
 /// <summary>
 /// A struct that represents a single border line.

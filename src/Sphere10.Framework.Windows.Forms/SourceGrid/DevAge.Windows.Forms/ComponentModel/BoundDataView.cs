@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
 
 /// <summary>
 /// A class to support list binding to a DataView object.

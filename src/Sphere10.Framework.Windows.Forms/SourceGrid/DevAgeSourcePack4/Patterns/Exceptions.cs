@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Patterns;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Patterns;
 
 /// <summary>
 /// Exception fired when canceling an activity with the Cancel method.

@@ -10,7 +10,7 @@ using System;
 using System.ComponentModel;
 using Sphere10.Framework.Windows.Forms;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 public interface ISortIndicator : IVisualElement {
 	HeaderSortStyle SortStyle { get; set; }

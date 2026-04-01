@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 /// <summary>
 /// This class implements a RowsSimpleBase class using a DataView bound mode for row count.

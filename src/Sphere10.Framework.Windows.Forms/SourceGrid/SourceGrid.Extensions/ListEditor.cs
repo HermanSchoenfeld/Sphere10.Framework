@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Summary description for ListEditor.
@@ -281,7 +281,7 @@ public class ListEditor : System.Windows.Forms.UserControl {
 
 			OnListChanged(EventArgs.Empty);
 		} catch (Exception err) {
-			DevAge.Windows.Forms.ErrorDialog.Show(this, err, "Error");
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.Show(this, err, "Error");
 		}
 	}
 
@@ -306,7 +306,7 @@ public class ListEditor : System.Windows.Forms.UserControl {
 				OnListChanged(EventArgs.Empty);
 			}
 		} catch (Exception err) {
-			DevAge.Windows.Forms.ErrorDialog.Show(this, err, "Error");
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.Show(this, err, "Error");
 		}
 	}
 
@@ -314,7 +314,7 @@ public class ListEditor : System.Windows.Forms.UserControl {
 		try {
 			LoadList();
 		} catch (Exception err) {
-			DevAge.Windows.Forms.ErrorDialog.Show(this, err, "Error");
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.Show(this, err, "Error");
 		}
 	}
 
@@ -334,7 +334,7 @@ public class ListEditor : System.Windows.Forms.UserControl {
 				OnListChanged(EventArgs.Empty);
 			}
 		} catch (Exception err) {
-			DevAge.Windows.Forms.ErrorDialog.Show(this, err, "Error");
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.Show(this, err, "Error");
 		}
 	}
 
@@ -355,7 +355,7 @@ public class ListEditor : System.Windows.Forms.UserControl {
 				OnListChanged(EventArgs.Empty);
 			}
 		} catch (Exception err) {
-			DevAge.Windows.Forms.ErrorDialog.Show(this, err, "Error");
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.Show(this, err, "Error");
 		}
 	}
 

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Summary description for a 3D themed Header.
@@ -30,7 +30,7 @@ public class RowHeader : Header {
 	/// Use default setting
 	/// </summary>
 	public RowHeader() {
-		Background = new DevAge.Drawing.VisualElements.RowHeaderThemed();
+		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.RowHeaderThemed();
 	}
 
 	/// <summary>
@@ -56,8 +56,8 @@ public class RowHeader : Header {
 
 	#region Visual Elements
 
-	public new DevAge.Drawing.VisualElements.IRowHeader Background {
-		get { return (DevAge.Drawing.VisualElements.IRowHeader)base.Background; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IRowHeader Background {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IRowHeader)base.Background; }
 		set { base.Background = value; }
 	}
 

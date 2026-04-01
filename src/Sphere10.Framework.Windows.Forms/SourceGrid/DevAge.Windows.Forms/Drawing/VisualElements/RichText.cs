@@ -10,7 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 /// <summary>
 /// Default interface for RichText implementations
@@ -19,7 +19,7 @@ public interface IRichText : IVisualElement {
 	/// <summary>
 	/// Text of format RichText
 	/// </summary>
-	DevAge.Windows.Forms.RichText Value { get; set; }
+	Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText Value { get; set; }
 
 	/// <summary>
 	/// ForeColor of text
@@ -29,7 +29,7 @@ public interface IRichText : IVisualElement {
 	/// <summary>
 	/// Text Alignment.
 	/// </summary>
-	DevAge.Drawing.ContentAlignment TextAlignment { get; set; }
+	Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment TextAlignment { get; set; }
 
 	/// <summary>
 	/// Text Font
@@ -58,7 +58,7 @@ public class RichText : VisualElementBase, IRichText {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public RichText(DevAge.Windows.Forms.RichText value) {
+	public RichText(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText value) {
 		Value = value;
 	}
 
@@ -78,13 +78,13 @@ public class RichText : VisualElementBase, IRichText {
 
 	#region Properties
 
-	private DevAge.Windows.Forms.RichText m_Value = null;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText m_Value = null;
 
 	/// <summary>
 	/// Gets or sets the string of format rich text to draw. Default is null.
 	/// </summary>
 	[DefaultValue(null)]
-	public virtual DevAge.Windows.Forms.RichText Value {
+	public virtual Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText Value {
 		get { return m_Value; }
 		set { m_Value = value; }
 	}
@@ -102,9 +102,9 @@ public class RichText : VisualElementBase, IRichText {
 	/// <summary>
 	/// Text Alignment
 	/// </summary>
-	private DevAge.Drawing.ContentAlignment m_TextAlignment;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment m_TextAlignment;
 
-	public DevAge.Drawing.ContentAlignment TextAlignment {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment TextAlignment {
 		get { return m_TextAlignment; }
 		set { m_TextAlignment = value; }
 	}

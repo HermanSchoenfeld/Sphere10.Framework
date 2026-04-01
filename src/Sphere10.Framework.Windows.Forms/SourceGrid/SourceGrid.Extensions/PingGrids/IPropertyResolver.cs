@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 /// <summary>
 /// An extension point, where users could define their own 

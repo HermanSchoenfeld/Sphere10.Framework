@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace DevAge.ComponentModel;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
 
 /// <summary>
 /// An abstract class used for data binding. This class can be used as a base implementation of the IBoundList interface.

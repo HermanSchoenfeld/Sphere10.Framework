@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Text.FixedLength;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Text.FixedLength;
 
 /// <summary>
 /// Required attribute to specify the field position and length

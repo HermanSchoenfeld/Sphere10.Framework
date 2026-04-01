@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Selection;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 public class RowSelection : SelectionBase {
 	private Decorators.DecoratorSelection mDecorator;

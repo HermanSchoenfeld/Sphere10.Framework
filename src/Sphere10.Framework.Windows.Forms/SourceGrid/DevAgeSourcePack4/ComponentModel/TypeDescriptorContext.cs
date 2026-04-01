@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
 
 /// <summary>
 /// Class used to implement an empty ITypeDescriptorContext.

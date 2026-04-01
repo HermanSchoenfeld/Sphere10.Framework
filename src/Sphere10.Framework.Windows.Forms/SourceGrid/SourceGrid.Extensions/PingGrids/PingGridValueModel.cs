@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using SourceGrid.Cells.Models;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 /// <summary>
 /// A Model of type IValueModel used for binding the value to a specified property of the bound object.

@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Cells.Virtual {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual {
 	/// <summary>
 	/// A cell that contains a HTML style link. Use the click event to execute the link
 	/// </summary>
@@ -21,7 +21,7 @@ namespace SourceGrid.Cells.Virtual {
 	}
 }
 
-namespace SourceGrid.Cells {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells {
 	/// <summary>
 	/// A cell that contains a HTML style link. Use the click event to execute the link
 	/// </summary>

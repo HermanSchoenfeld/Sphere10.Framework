@@ -9,7 +9,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Virtual {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual {
 	/// <summary>
 	/// A Cell with a RichTextBox. This Cell is of type RichText.
 	/// Abstract, you must override GetValue and SetValue.
@@ -27,7 +27,7 @@ namespace SourceGrid.Cells.Virtual {
 	}
 }
 
-namespace SourceGrid.Cells {
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells {
 	/// <summary>
 	/// A Cell with a RichTextBox. This Cell is of type string.
 	/// View: Views.RichTextBox.Default 
@@ -48,7 +48,7 @@ namespace SourceGrid.Cells {
 		/// <summary>
 		/// Value constrcutor
 		/// </summary>
-		public RichTextBox(DevAge.Windows.Forms.RichText value)
+		public RichTextBox(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText value)
 			: base(value) {
 			View = new Views.RichTextBox();
 			Model.AddModel(new Models.RichTextBox());
@@ -150,14 +150,14 @@ namespace SourceGrid.Cells {
 			//    SelectionFont = new Font(SelectionFont.FontFamily, SelectionFont.Size - OFFSET,
 			//        SelectionFont.Style);
 			//}
-			RichTextBoxModel.SetSelectionEffect(GetContext(), DevAge.Windows.Forms.EffectType.Superscript);
+			RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType.Superscript);
 		}
 
 		/// <summary>
 		/// Change SelectionEffectType to normal.
 		/// </summary>
 		public void SelectionNormalScript() {
-			RichTextBoxModel.SetSelectionEffect(GetContext(), DevAge.Windows.Forms.EffectType.Normal);
+			RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType.Normal);
 		}
 
 		/// <summary>
@@ -177,14 +177,14 @@ namespace SourceGrid.Cells {
 			//    SelectionFont = new Font(SelectionFont.FontFamily, SelectionFont.Size + OFFSET,
 			//        SelectionFont.Style);
 			//}
-			RichTextBoxModel.SetSelectionEffect(GetContext(), DevAge.Windows.Forms.EffectType.Subscript);
+			RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType.Subscript);
 		}
 
 		/// <summary>
 		/// Change SelectionCharOffset to OFFSET respectively 0 if already set.
 		/// </summary>
 		public void SelectionNormal() {
-			RichTextBoxModel.SetSelectionEffect(GetContext(), DevAge.Windows.Forms.EffectType.Normal);
+			RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType.Normal);
 		}
 
 		#endregion

@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.ComponentModel;
-using SourceGrid.Cells.Controllers;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 #region Controller
 

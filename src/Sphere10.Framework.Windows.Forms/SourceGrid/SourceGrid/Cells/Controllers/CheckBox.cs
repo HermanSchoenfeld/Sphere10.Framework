@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 //TODO I can now use the VisualElement GetElementsAtPoint method to check the checkbox only when clicking on the check and not when clicking on the header. This can also be used with the HeaderCheckBox cell (to enable the sort when clicking outside the check and to select all when clicking the check box.
 
 

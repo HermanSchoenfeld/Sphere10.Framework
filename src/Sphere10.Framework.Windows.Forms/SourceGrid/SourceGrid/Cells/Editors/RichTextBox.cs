@@ -8,7 +8,7 @@
 
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// An editor that use a RichTextBoxTyped for editing support.
@@ -22,8 +22,8 @@ public class RichTextBox : EditorControlBase {
 	/// Constructor
 	/// </summary>
 	public RichTextBox()
-		: base(typeof(DevAge.Windows.Forms.RichText)) {
-		TypeConverter = new DevAge.ComponentModel.Converter.RichTextTypeConverter();
+		: base(typeof(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText)) {
+		TypeConverter = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.RichTextTypeConverter();
 	}
 
 	#endregion
@@ -35,7 +35,7 @@ public class RichTextBox : EditorControlBase {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.DevAgeRichTextBox editor = new DevAge.Windows.Forms.DevAgeRichTextBox();
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox();
 		editor.BorderStyle = BorderStyle.None;
 		editor.AutoSize = false;
 		editor.Validator = this;
@@ -45,8 +45,8 @@ public class RichTextBox : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.DevAgeRichTextBox Control {
-		get { return (DevAge.Windows.Forms.DevAgeRichTextBox)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox)base.Control; }
 	}
 
 	/// <summary>
@@ -58,7 +58,7 @@ public class RichTextBox : EditorControlBase {
 	protected override void OnStartingEdit(CellContext cellContext, Control editorControl) {
 		base.OnStartingEdit(cellContext, editorControl);
 
-		DevAge.Windows.Forms.DevAgeRichTextBox l_RchTxtBox = (DevAge.Windows.Forms.DevAgeRichTextBox)editorControl;
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox l_RchTxtBox = (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox)editorControl;
 		l_RchTxtBox.WordWrap = cellContext.Cell.View.WordWrap;
 
 		// to set the scroll of the textbox to the initial position
@@ -72,7 +72,7 @@ public class RichTextBox : EditorControlBase {
 	/// </summary>
 	/// <param name="editValue"></param>
 	public override void SetEditValue(object editValue) {
-		Control.Value = editValue as DevAge.Windows.Forms.RichText;
+		Control.Value = editValue as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText;
 		Control.SelectAll();
 	}
 

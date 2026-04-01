@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class GridRow : RowInfo {
 	public GridRow(Grid grid)

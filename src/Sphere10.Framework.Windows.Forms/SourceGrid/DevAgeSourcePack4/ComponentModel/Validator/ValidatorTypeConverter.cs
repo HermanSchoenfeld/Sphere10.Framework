@@ -8,9 +8,9 @@
 
 using System;
 using System.ComponentModel;
-using SourceGrid.Utils;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Utils;
 
-namespace DevAge.ComponentModel.Validator;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator;
 
 /// <summary>
 /// A string editor that use a TypeConverter for conversion.

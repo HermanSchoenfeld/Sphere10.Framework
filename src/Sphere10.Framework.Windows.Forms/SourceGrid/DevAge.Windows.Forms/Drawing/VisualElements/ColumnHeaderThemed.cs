@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class ColumnHeaderThemed : ColumnHeaderBase {
@@ -86,7 +86,7 @@ public class ColumnHeaderThemed : ColumnHeaderBase {
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 		base.OnDraw(graphics, area);
 
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 			GetRenderer(GetBackgroundElement()).DrawBackground(graphics.Graphics, Rectangle.Round(area));
 		else
 			mStandardHeader.Draw(graphics, area);
@@ -96,14 +96,14 @@ public class ColumnHeaderThemed : ColumnHeaderBase {
 		//First calls the base class for standard calculation
 		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
 
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 			return GetRenderer(GetBackgroundElement()).GetBackgroundContentRectangle(measure.Graphics, Rectangle.Round(backGroundArea));
 		else
 			return mStandardHeader.GetBackgroundContentRectangle(measure, backGroundArea);
 	}
 
 	public override SizeF GetBackgroundExtent(MeasureHelper measure, SizeF contentSize) {
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
 			Rectangle content = new Rectangle(new Point(0, 0), Size.Ceiling(contentSize));
 			contentSize = GetRenderer(GetBackgroundElement()).GetBackgroundExtent(measure.Graphics, content).Size;
 		} else

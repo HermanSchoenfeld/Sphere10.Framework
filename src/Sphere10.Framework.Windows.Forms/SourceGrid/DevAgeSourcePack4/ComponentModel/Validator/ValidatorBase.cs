@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel;
 
-namespace DevAge.ComponentModel.Validator;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator;
 
 /// <summary>
 /// A base class to support value conversion and validation. This class is used if no conversion is required or as a base class for specialized validator.

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Text.FixedLength;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Text.FixedLength;
 
 /// <summary>
 /// A class for parsing fixed length string and loading the fields into a class.

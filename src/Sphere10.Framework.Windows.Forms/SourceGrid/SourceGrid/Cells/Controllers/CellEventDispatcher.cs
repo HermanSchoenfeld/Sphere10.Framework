@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// This controller dispatch each event to the specified cell.

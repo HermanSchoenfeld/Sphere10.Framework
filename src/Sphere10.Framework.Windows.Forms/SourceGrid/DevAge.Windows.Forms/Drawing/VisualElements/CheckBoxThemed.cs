@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class CheckBoxThemed : CheckBoxBase {
@@ -113,14 +113,14 @@ public class CheckBoxThemed : CheckBoxBase {
 	#endregion
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 			GetRenderer(GetBackgroundElement()).DrawBackground(graphics.Graphics, Rectangle.Round(area));
 		else
 			mStandardCheckBox.Draw(graphics, area);
 	}
 
 	protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize) {
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 			return GetRenderer(GetBackgroundElement()).GetPartSize(measure.Graphics, ThemeSizeType.True);
 		else
 			return mStandardCheckBox.Measure(measure, Size.Empty, maxSize);

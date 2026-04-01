@@ -8,7 +8,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
-using SourceGrid;
+using Sphere10.Framework.Windows.Forms.SourceGrid;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -28,10 +28,10 @@ internal class CustomSortHeaderCellController : SourceGrid.Cells.Controllers.Con
 		var col = cell.Column;
 		var row = cell.Row;
 
-		var _logicalBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(Color.Black, 4));
+		var _logicalBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(Color.Black, 4));
 		float distanceFromBorder;
 		switch (_logicalBorder.GetPointPartType(cellRect, mousePoint, out distanceFromBorder)) {
-			case DevAge.Drawing.RectanglePartType.ContentArea:
+			case Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.ContentArea:
 				_crudGrid._grid_SortColumnPressed(sender.Position.Column);
 				break;
 

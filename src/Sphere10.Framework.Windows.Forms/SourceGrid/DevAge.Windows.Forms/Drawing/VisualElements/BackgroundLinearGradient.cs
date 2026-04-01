@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 /// <summary>
 /// Class used to draw a standard linear gradient background. If FirstColor == SecondColor a solid color is drawed.

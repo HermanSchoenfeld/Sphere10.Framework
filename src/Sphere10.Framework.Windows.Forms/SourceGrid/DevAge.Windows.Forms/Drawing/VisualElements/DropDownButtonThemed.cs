@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class DropDownButtonThemed : DropDownButtonBase {
@@ -84,7 +84,7 @@ public class DropDownButtonThemed : DropDownButtonBase {
 	#endregion
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
 			GetRenderer(GetBackgroundElement()).DrawBackground(graphics.Graphics, Rectangle.Round(area));
 
 			if (Style == ButtonStyle.Focus) {
@@ -97,7 +97,7 @@ public class DropDownButtonThemed : DropDownButtonBase {
 	}
 
 	protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize) {
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
 			var size = GetRenderer(GetBackgroundElement()).GetPartSize(measure.Graphics, ThemeSizeType.True);
 			// in Win-7 machines size is returned as 7
 			// Increase it to 16, so it matches the standard drop-down width
@@ -112,7 +112,7 @@ public class DropDownButtonThemed : DropDownButtonBase {
 	//{
 	//    backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
 
-	//    if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+	//    if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 	//        return GetRenderer(GetBackgroundElement()).GetBackgroundContentRectangle(measure.Graphics, Rectangle.Round(backGroundArea));
 	//    else
 	//        return mStandardButton.GetBackgroundContentRectangle(measure, backGroundArea);
@@ -120,7 +120,7 @@ public class DropDownButtonThemed : DropDownButtonBase {
 
 	//public override SizeF GetBackgroundExtent(MeasureHelper measure, SizeF contentSize)
 	//{
-	//    if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+	//    if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 	//    {
 	//        Rectangle content = new Rectangle(new Point(0, 0), Size.Ceiling(contentSize));
 	//        contentSize = GetRenderer(GetBackgroundElement()).GetBackgroundExtent(measure.Graphics, content).Size;

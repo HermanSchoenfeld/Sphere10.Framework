@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 public class FormSingleton {
 	private Type m_FormType;

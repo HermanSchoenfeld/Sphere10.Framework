@@ -11,7 +11,7 @@ using System.Collections;
 using System.Windows.Forms;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// Editor for a ComboBox (using DevAgeComboBox control)
@@ -48,7 +48,7 @@ public class ComboBox : EditorControlBase {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.DevAgeComboBox editor = new DevAge.Windows.Forms.DevAgeComboBox();
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox();
 		//editor.FlatStyle = FlatStyle.System;
 		editor.Validator = this;
 
@@ -60,8 +60,8 @@ public class ComboBox : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.DevAgeComboBox Control {
-		get { return (DevAge.Windows.Forms.DevAgeComboBox)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox)base.Control; }
 	}
 
 	#endregion

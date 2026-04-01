@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Decorators;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Decorators;
 
 public abstract class DecoratorBase {
 	public abstract bool IntersectWith(CellRange range);

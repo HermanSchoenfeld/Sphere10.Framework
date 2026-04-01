@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace DevAge.IO;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.IO;
 
 /// <summary>
 /// A static class to help save and read stream data

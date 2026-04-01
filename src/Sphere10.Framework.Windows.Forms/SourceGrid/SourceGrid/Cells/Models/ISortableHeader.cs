@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Cells.Models;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 /// <summary>
 /// Summary description for ICellSortableHeader.
@@ -24,7 +24,7 @@ public interface ISortableHeader : IModel {
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <param name="pStyle"></param>
-	void SetSortMode(CellContext cellContext, DevAge.Drawing.HeaderSortStyle pStyle);
+	void SetSortMode(CellContext cellContext, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle pStyle);
 }
 
 
@@ -33,7 +33,7 @@ public struct SortStatus {
 	/// Constructor
 	/// </summary>
 	/// <param name="p_Style">Status of current sort.</param>
-	public SortStatus(DevAge.Drawing.HeaderSortStyle p_Style) {
+	public SortStatus(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle p_Style) {
 		Style = p_Style;
 		Comparer = null;
 	}
@@ -42,11 +42,11 @@ public struct SortStatus {
 	/// </summary>
 	/// <param name="p_Style">Status of current sort.</param>
 	/// <param name="p_Comparer">Comparer used to sort the column. The comparer will take 2 Cell. If null the default ValueCellComparer is used.</param>
-	public SortStatus(DevAge.Drawing.HeaderSortStyle p_Style, System.Collections.IComparer p_Comparer)
+	public SortStatus(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle p_Style, System.Collections.IComparer p_Comparer)
 		: this(p_Style) {
 		Comparer = p_Comparer;
 	}
-	public DevAge.Drawing.HeaderSortStyle Style;
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle Style;
 
 	public System.Collections.IComparer Comparer;
 }

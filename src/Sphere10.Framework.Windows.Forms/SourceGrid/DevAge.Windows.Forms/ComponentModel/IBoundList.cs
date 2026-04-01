@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
 
 /// <summary>
 /// A generic binded list interface. See BoundDataView or BoundList for a concreate implementation.

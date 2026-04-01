@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// Implementation RichTextBox behavior
@@ -41,13 +41,13 @@ public class RichTextBox : ControllerBase {
 		base.OnValueChanging(sender, e);
 
 		// only check if event args is of known type if event is not of type rich text
-		if (!(e.NewValue is DevAge.Windows.Forms.RichText)) {
+		if (!(e.NewValue is Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText)) {
 			Editors.RichTextBox richEditor = (Editors.RichTextBox)sender.Cell.Editor;
-			DevAge.Windows.Forms.DevAgeRichTextBox richTextBox = richEditor.Control;
+			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox richTextBox = richEditor.Control;
 
 			// if editor is not open, assign value and select all text
 			if (sender.Cell.Editor.EditCell == null) {
-				richTextBox.Value = sender.Value as DevAge.Windows.Forms.RichText;
+				richTextBox.Value = sender.Value as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText;
 				richTextBox.SelectAll();
 			}
 
@@ -59,8 +59,8 @@ public class RichTextBox : ControllerBase {
 				richTextBox.SelectionCharOffset = (int)e.NewValue;
 			} else if (e.NewValue is HorizontalAlignment) {
 				richTextBox.SelectionAlignment = (HorizontalAlignment)e.NewValue;
-			} else if (e.NewValue is DevAge.Windows.Forms.EffectType) {
-				richTextBox.SelectionEffect = (DevAge.Windows.Forms.EffectType)e.NewValue;
+			} else if (e.NewValue is Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType) {
+				richTextBox.SelectionEffect = (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType)e.NewValue;
 			}
 
 			// if editor is not open, use changed value for cell

@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// Summary description for ErrorDialogDetails.

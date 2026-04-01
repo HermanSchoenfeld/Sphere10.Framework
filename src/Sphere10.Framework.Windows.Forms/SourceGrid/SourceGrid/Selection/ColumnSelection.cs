@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid.Selection;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 public class ColumnSelection : SelectionBase {
 	public ColumnSelection() {

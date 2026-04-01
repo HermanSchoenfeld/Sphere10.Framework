@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Data;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Data;
 
 /// <summary>
 /// A static class used to serialize a DataSet to and from a stream using a binary or xml format.

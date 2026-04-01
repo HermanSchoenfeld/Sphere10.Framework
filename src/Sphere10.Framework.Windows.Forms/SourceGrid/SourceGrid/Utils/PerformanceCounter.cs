@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Utils;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Utils;
 
 public class PerformanceCounter : IDisposable, IPerformanceCounter {
 	private DateTime m_start = DateTime.MinValue;

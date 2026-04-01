@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Decorators;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Decorators;
 
 public class DecoratorSelection : DecoratorBase {
 	public DecoratorSelection(Selection.SelectionBase selection) {

@@ -6,12 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using SourceGrid.Cells.Controllers;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace SourceGrid.Planning;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Planning;
 
 /// <summary>
 /// Summary description for PlanningGrid.
@@ -405,7 +405,7 @@ public class AppointmentBase : IAppointment {
 		m_DateTimeStart = dateTimeStart;
 
 		m_View = new Cells.Views.Cell();
-		m_View.Border = DevAge.Drawing.RectangleBorder.RectangleBlack1Width;
+		m_View.Border = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder.RectangleBlack1Width;
 	}
 
 	public AppointmentBase() : this("", DateTime.Now, DateTime.Now) {

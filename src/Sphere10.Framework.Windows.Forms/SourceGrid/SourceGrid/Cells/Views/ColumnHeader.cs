@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Summary description for a 3D Header.
@@ -32,7 +32,7 @@ public class ColumnHeader : Header {
 	/// Use default setting
 	/// </summary>
 	public ColumnHeader() {
-		Background = new DevAge.Drawing.VisualElements.ColumnHeaderThemed();
+		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ColumnHeaderThemed();
 	}
 
 	/// <summary>
@@ -58,8 +58,8 @@ public class ColumnHeader : Header {
 
 	#region Visual Elements
 
-	public new DevAge.Drawing.VisualElements.IColumnHeader Background {
-		get { return (DevAge.Drawing.VisualElements.IColumnHeader)base.Background; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IColumnHeader Background {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IColumnHeader)base.Background; }
 		set { base.Background = value; }
 	}
 
@@ -69,23 +69,23 @@ public class ColumnHeader : Header {
 		PrepareVisualElementSortIndicator(context);
 	}
 
-	protected override IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetElements() {
+	protected override IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementSort != null)
 			yield return ElementSort;
 
-		foreach (DevAge.Drawing.VisualElements.IVisualElement v in GetBaseElements())
+		foreach (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement v in GetBaseElements())
 			yield return v;
 	}
-	private IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetBaseElements() {
+	private IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetBaseElements() {
 		return base.GetElements();
 	}
 
-	private DevAge.Drawing.VisualElements.ISortIndicator mElementSort = new DevAge.Drawing.VisualElements.SortIndicator();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ISortIndicator mElementSort = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.SortIndicator();
 
 	/// <summary>
-	/// Gets or sets the visual element used to draw the sort indicator. Default is DevAge.Drawing.VisualElements.SortIndicator
+	/// Gets or sets the visual element used to draw the sort indicator. Default is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.SortIndicator
 	/// </summary>
-	public DevAge.Drawing.VisualElements.ISortIndicator ElementSort {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ISortIndicator ElementSort {
 		get { return mElementSort; }
 		set { mElementSort = value; }
 	}
@@ -96,7 +96,7 @@ public class ColumnHeader : Header {
 			Models.SortStatus status = sortModel.GetSortStatus(context);
 			ElementSort.SortStyle = status.Style;
 		} else
-			ElementSort.SortStyle = DevAge.Drawing.HeaderSortStyle.None;
+			ElementSort.SortStyle = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.None;
 
 	}
 

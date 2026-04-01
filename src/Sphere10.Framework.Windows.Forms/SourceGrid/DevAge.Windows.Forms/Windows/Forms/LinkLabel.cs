@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// A LinkLabel with Image support and round border support.
@@ -105,10 +105,10 @@ public class LinkLabel : System.Windows.Forms.UserControl {
 		set { mDisabledImage = value; }
 	}
 
-	private DevAge.Drawing.ContentAlignment mImageAlignment = DevAge.Drawing.ContentAlignment.MiddleLeft;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment mImageAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft;
 
-	[DefaultValue(DevAge.Drawing.ContentAlignment.MiddleLeft)]
-	public DevAge.Drawing.ContentAlignment ImageAlignment {
+	[DefaultValue(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft)]
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment ImageAlignment {
 		get { return mImageAlignment; }
 		set {
 			mImageAlignment = value;
@@ -116,7 +116,7 @@ public class LinkLabel : System.Windows.Forms.UserControl {
 		}
 	}
 
-	public DevAge.Drawing.ContentAlignment TextAlignment {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment TextAlignment {
 		get { return Drawing.Utilities.StringFormatToContentAlignment(mStringFormat); }
 		set {
 			Drawing.Utilities.ApplyContentAlignmentToStringFormat(value, mStringFormat);
@@ -254,14 +254,14 @@ public class LinkLabel : System.Windows.Forms.UserControl {
 			borderColor = highLight;
 		}
 
-		DevAge.Drawing.RoundedRectangle roundedRect = new DevAge.Drawing.RoundedRectangle(ClientRectangle, borderRound);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RoundedRectangle roundedRect = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RoundedRectangle(ClientRectangle, borderRound);
 		using (SolidBrush brush = new SolidBrush(fillColor)) {
-			DevAge.Drawing.Utilities.FillRoundedRectangle(graphics, roundedRect, brush);
+			Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.FillRoundedRectangle(graphics, roundedRect, brush);
 		}
 
 		if (borderWidth > 0) {
 			using (Pen pen = new Pen(borderColor, borderWidth)) {
-				DevAge.Drawing.Utilities.DrawRoundedRectangle(graphics, roundedRect, pen);
+				Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.DrawRoundedRectangle(graphics, roundedRect, pen);
 			}
 		}
 	}
@@ -292,12 +292,12 @@ public class LinkLabel : System.Windows.Forms.UserControl {
 				contentRect.Width - BorderWidth * 2,
 				contentRect.Height - BorderWidth * 2);
 
-		DevAge.Drawing.VisualElements.Container container = new DevAge.Drawing.VisualElements.Container();
-		DevAge.Drawing.VisualElements.TextGDI textElement = new DevAge.Drawing.VisualElements.TextGDI(Text);
-		DevAge.Drawing.VisualElements.Image imageElement = new DevAge.Drawing.VisualElements.Image(image);
-		imageElement.AnchorArea = new DevAge.Drawing.AnchorArea(mImageAlignment, mImageStretch);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Container container = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Container();
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextGDI textElement = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextGDI(Text);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Image imageElement = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Image(image);
+		imageElement.AnchorArea = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.AnchorArea(mImageAlignment, mImageStretch);
 		imageElement.Enabled = !disabledImage;
-		textElement.AnchorArea = new DevAge.Drawing.AnchorArea(DevAge.Drawing.Utilities.StringFormatToContentAlignment(mStringFormat), false);
+		textElement.AnchorArea = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.AnchorArea(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.StringFormatToContentAlignment(mStringFormat), false);
 		textElement.StringFormat = mStringFormat;
 		textElement.Font = Font;
 		textElement.ForeColor = ForeColor;
@@ -307,7 +307,7 @@ public class LinkLabel : System.Windows.Forms.UserControl {
 
 
 
-		using (DevAge.Drawing.GraphicsCache cache = new DevAge.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
+		using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache cache = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
 			container.Draw(cache, contentRect);
 		}
 	}

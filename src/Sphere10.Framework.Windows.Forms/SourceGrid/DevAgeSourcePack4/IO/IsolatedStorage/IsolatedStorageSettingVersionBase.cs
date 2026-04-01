@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace DevAge.IO.IsolatedStorage;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.IO.IsolatedStorage;
 
 /// <summary>
 /// Summary description for IsolatedStorageSettingVersionBase.
@@ -25,7 +25,7 @@ public abstract class IsolatedStorageSettingVersionBase : IsolatedStorageSetting
 	protected override void OnLoad(System.IO.IsolatedStorage.IsolatedStorageFileStream p_File) {
 		string l_Check = StreamPersistence.ReadString(p_File, System.Text.Encoding.UTF8);
 		if (l_Check != c_Check)
-			throw new DevAge.IO.InvalidDataException();
+			throw new Sphere10.Framework.Windows.Forms.SourceGrid.IO.InvalidDataException();
 
 		int l_CurrentVersion = StreamPersistence.ReadInt32(p_File);
 		OnLoad(p_File, l_CurrentVersion);

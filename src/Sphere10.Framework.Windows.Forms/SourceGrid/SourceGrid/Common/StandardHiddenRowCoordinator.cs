@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using SourceGrid.Selection;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class StandardHiddenRowCoordinator : IHiddenRowCoordinator {
 	protected RowsBase m_rows = null;

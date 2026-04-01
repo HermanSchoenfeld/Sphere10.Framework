@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Generic DevAge Exception
@@ -126,14 +126,19 @@ public class ConversionErrorException : DevAgeApplicationException {
 
 
 /// <summary>
-/// Common EventArgs class used to store and raise events with an Exception associated
+/// Common EventHandler class used to raise events with an Exception associated
 /// </summary>
-public class ExceptionEventArgs : EventArgs {
+public delegate void DataExceptionEventHandler(object sender, DataExceptionEventArgs e);
+
+/// <summary>
+/// Common EventArgs class used to store and raise events with an Exception associated (Data layer)
+/// </summary>
+public class DataExceptionEventArgs : EventArgs {
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="ex"></param>
-	public ExceptionEventArgs(Exception ex) {
+	public DataExceptionEventArgs(Exception ex) {
 		mException = ex;
 	}
 
@@ -146,10 +151,4 @@ public class ExceptionEventArgs : EventArgs {
 		get { return mException; }
 	}
 }
-
-
-/// <summary>
-/// Common EventHandler class used to raise events with an Exception associated
-/// </summary>
-public delegate void ExceptionEventHandler(object sender, ExceptionEventArgs e);
 

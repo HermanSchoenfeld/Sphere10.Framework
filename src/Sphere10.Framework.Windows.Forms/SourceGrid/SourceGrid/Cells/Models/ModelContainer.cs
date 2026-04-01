@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.Models;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 /// <summary>
 /// A objectStream for the model classes. THe only required model is the Value model, that you can assign using the ValueModel property.
@@ -26,7 +26,7 @@ public class ModelContainer {
 	/// <summary>
 	/// A collection of elements of type IModel
 	/// </summary>
-	public class ModelList : DevAge.Collections.ListByType<IModel> {
+	public class ModelList : Sphere10.Framework.Windows.Forms.SourceGrid.Collections.ListByType<IModel> {
 	}
 
 

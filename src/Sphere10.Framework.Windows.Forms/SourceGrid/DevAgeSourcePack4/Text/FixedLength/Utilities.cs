@@ -8,10 +8,10 @@
 
 using System;
 
-namespace DevAge.Text.FixedLength;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Text.FixedLength;
 
 public class Utilities {
-	public static DevAge.ComponentModel.Validator.IValidator CreateValidator(Type type, ParseFormatAttribute parseAttributes) {
+	public static Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator CreateValidator(Type type, ParseFormatAttribute parseAttributes) {
 		System.ComponentModel.TypeConverter converter;
 
 		//Check for nullable
@@ -21,7 +21,7 @@ public class Utilities {
 		converter = GetConverterFromPrimitiveType(type, parseAttributes);
 
 
-		DevAge.ComponentModel.Validator.ValidatorTypeConverter Validator = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(type, converter);
+		Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter Validator = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter(type, converter);
 		Validator.CultureInfo = parseAttributes.CultureInfo;
 		Validator.NullString = "";
 		Validator.NullDisplayString = "";
@@ -46,11 +46,11 @@ public class Utilities {
 		else if (type == typeof(int))
 			return new System.ComponentModel.Int32Converter();
 		else if (type == typeof(double))
-			return new DevAge.ComponentModel.Converter.NumberTypeConverter(typeof(double), parseAttributes.NumberFormat);
+			return new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.NumberTypeConverter(typeof(double), parseAttributes.NumberFormat);
 		else if (type == typeof(decimal))
-			return new DevAge.ComponentModel.Converter.NumberTypeConverter(typeof(decimal), parseAttributes.NumberFormat);
+			return new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.NumberTypeConverter(typeof(decimal), parseAttributes.NumberFormat);
 		else if (type == typeof(DateTime))
-			return new DevAge.ComponentModel.Converter.DateTimeTypeConverter(parseAttributes.DateTimeFormat, new string[] { parseAttributes.DateTimeFormat });
+			return new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.DateTimeTypeConverter(parseAttributes.DateTimeFormat, new string[] { parseAttributes.DateTimeFormat });
 		else
 			throw new TypeNotSupportedException(type);
 	}
@@ -77,7 +77,7 @@ public class Utilities {
 			object[] standardValues = prop.GetCustomAttributes(typeof(StandardValueAttribute), true);
 
 			if (fieldAttr != null) {
-				DevAge.ComponentModel.Validator.IValidator validator;
+				Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator validator;
 				if (parseFormat == null)
 					parseFormat = new ParseFormatAttribute();
 
@@ -89,7 +89,7 @@ public class Utilities {
 
 				//ValueMapping - to convert specific values, can be an array of attribute, one for each conversion
 				if (valueMappings.Length > 0) {
-					ComponentModel.Validator.ValueMapping mapping = new DevAge.ComponentModel.Validator.ValueMapping();
+					ComponentModel.Validator.ValueMapping mapping = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValueMapping();
 					object[] valList = new object[valueMappings.Length];
 					object[] strList = new object[valueMappings.Length];
 					for (int i = 0; i < valueMappings.Length; i++) {

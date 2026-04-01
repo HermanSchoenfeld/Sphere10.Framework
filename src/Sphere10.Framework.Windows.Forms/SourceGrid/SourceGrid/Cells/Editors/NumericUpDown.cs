@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// EditorNumericUpDown editor class.

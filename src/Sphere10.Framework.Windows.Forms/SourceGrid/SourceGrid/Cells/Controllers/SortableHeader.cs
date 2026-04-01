@@ -9,7 +9,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// A behavior that support sort and resize. Once created cannot be modified. When calculated automatically the range to sort is all the grid range without the rows minor of the current row and the range header is all the grid range with the rows minor or equal of the current row
@@ -23,7 +23,7 @@ public class SortableHeader : ControllerBase {
 	/// <summary>
 	/// Border used to calculate the region where the sort is enabled.
 	/// </summary>
-	public DevAge.Drawing.RectangleBorder LogicalBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4), new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4));
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder LogicalBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4), new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4));
 
 	#region Constructor
 
@@ -59,15 +59,15 @@ public class SortableHeader : ControllerBase {
 		Point currentPoint = sender.Grid.PointToClient(System.Windows.Forms.Control.MousePosition);
 		Rectangle cellRect = sender.Grid.PositionToRectangle(sender.Position);
 		float distance;
-		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
 
 		//eseguo il sort solo se non sono attualmente in resize
 		if (IsSortEnable(sender) &&
-		    partType == DevAge.Drawing.RectanglePartType.ContentArea &&
+		    partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.ContentArea &&
 		    e.Button == System.Windows.Forms.MouseButtons.Left) {
 			Models.ISortableHeader sortHeader = (Models.ISortableHeader)sender.Cell.Model.FindModel(typeof(Models.ISortableHeader));
 			Models.SortStatus l_Status = sortHeader.GetSortStatus(sender);
-			if (l_Status.Style == DevAge.Drawing.HeaderSortStyle.Ascending)
+			if (l_Status.Style == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Ascending)
 				SortColumn(sender, false, l_Status.Comparer);
 			else
 				SortColumn(sender, true, l_Status.Comparer);
@@ -155,9 +155,9 @@ public class SortableHeader : ControllerBase {
 				//Sort
 				sender.Grid.SortRangeRows(l_RangeToSort, sender.Position.Column, p_bAscending, p_Comparer);
 				if (p_bAscending)
-					modelSortable.SetSortMode(sender, DevAge.Drawing.HeaderSortStyle.Ascending);
+					modelSortable.SetSortMode(sender, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Ascending);
 				else
-					modelSortable.SetSortMode(sender, DevAge.Drawing.HeaderSortStyle.Descending);
+					modelSortable.SetSortMode(sender, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Descending);
 
 				//Remove the image from others ColHeaderSort
 				for (int r = l_RangeHeader.Start.Row; r <= l_RangeHeader.End.Row; r++) {
@@ -169,7 +169,7 @@ public class SortableHeader : ControllerBase {
 						    tmpCell.Model.FindModel(typeof(Models.ISortableHeader)) != null) {
 							Models.ISortableHeader header = (Models.ISortableHeader)tmpCell.Model.FindModel(typeof(Models.ISortableHeader));
 
-							header.SetSortMode(new CellContext(sender.Grid, new Position(r, c), tmpCell), DevAge.Drawing.HeaderSortStyle.None);
+							header.SetSortMode(new CellContext(sender.Grid, new Position(r, c), tmpCell), Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.None);
 						}
 					}
 				}

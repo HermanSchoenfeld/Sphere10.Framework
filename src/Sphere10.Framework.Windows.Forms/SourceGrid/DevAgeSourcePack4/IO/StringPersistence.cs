@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace DevAge.IO;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.IO;
 //	/// <summary>
 //	/// Summary description for StringPersistence.
 //	/// </summary>

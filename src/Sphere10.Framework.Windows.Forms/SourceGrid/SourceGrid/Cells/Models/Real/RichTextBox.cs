@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Models;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 public class RichTextBox : IRichTextBox {
 	/// <summary>
@@ -27,7 +27,7 @@ public class RichTextBox : IRichTextBox {
 	/// <summary>
 	/// Sets the effect of the selected text.
 	/// </summary>
-	public void SetSelectionEffect(CellContext cellContext, DevAge.Windows.Forms.EffectType effect) {
+	public void SetSelectionEffect(CellContext cellContext, Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType effect) {
 		ValueChangeEventArgs valArgs = new ValueChangeEventArgs(null, effect);
 
 		if (cellContext.Grid != null)
@@ -133,7 +133,7 @@ public class RichTextBox : IRichTextBox {
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	private DevAge.Windows.Forms.DevAgeRichTextBox GetRichTextBoxControl(CellContext cellContext) {
+	private Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox GetRichTextBoxControl(CellContext cellContext) {
 		if (cellContext.Cell != null) {
 			Editors.RichTextBox editorRichTextBox = cellContext.Cell.Editor as Editors.RichTextBox;
 
@@ -141,7 +141,7 @@ public class RichTextBox : IRichTextBox {
 			// using an old editor of another cell
 			// as an editor can be used for more than one cell
 			if (editorRichTextBox.EditCell == null) {
-				editorRichTextBox.Control.Value = cellContext.Value as DevAge.Windows.Forms.RichText;
+				editorRichTextBox.Control.Value = cellContext.Value as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText;
 			}
 
 			return editorRichTextBox.Control;

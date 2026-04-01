@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
-using DevAge.Drawing;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
-namespace SourceGrid.Exporter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 
 /// <summary>
 /// Grid print document.

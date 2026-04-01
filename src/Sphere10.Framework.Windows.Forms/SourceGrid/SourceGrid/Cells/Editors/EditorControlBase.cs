@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// The base class for all the editors that have a control
@@ -306,7 +306,7 @@ public abstract class EditorControlBase : EditorBase {
 	public override sealed void SendCharToEditor(char key) {
 		//if (IsEditing && Control.ContainsFocus)
 		//{
-		//    //DevAge.Windows.Forms.SendCharExact.Send(key); //Doesn't work well on french keyboard or in response to CAPS LOCK/shift keys combination
+		//    //Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.SendCharExact.Send(key); //Doesn't work well on french keyboard or in response to CAPS LOCK/shift keys combination
 		//}
 
 		KeyPressEventArgs arg = new KeyPressEventArgs(key);

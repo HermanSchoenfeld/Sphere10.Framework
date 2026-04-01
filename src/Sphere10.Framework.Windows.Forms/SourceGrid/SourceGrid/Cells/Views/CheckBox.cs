@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Summary description for VisualModelCheckBox.
@@ -30,8 +30,8 @@ public class CheckBox : Cell {
 
 	static CheckBox() {
 		MiddleLeftAlign = new CheckBox();
-		MiddleLeftAlign.CheckBoxAlignment = DevAge.Drawing.ContentAlignment.MiddleLeft;
-		MiddleLeftAlign.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleLeft;
+		MiddleLeftAlign.CheckBoxAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft;
+		MiddleLeftAlign.TextAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft;
 	}
 
 	/// <summary>
@@ -46,17 +46,17 @@ public class CheckBox : Cell {
 	/// <param name="p_Source"></param>
 	public CheckBox(CheckBox p_Source) : base(p_Source) {
 		m_CheckBoxAlignment = p_Source.m_CheckBoxAlignment;
-		ElementCheckBox = (DevAge.Drawing.VisualElements.ICheckBox)ElementCheckBox.Clone();
+		ElementCheckBox = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ICheckBox)ElementCheckBox.Clone();
 	}
 
 	#endregion
 
-	private DevAge.Drawing.ContentAlignment m_CheckBoxAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment m_CheckBoxAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleCenter;
 
 	/// <summary>
 	/// Image Alignment
 	/// </summary>
-	public DevAge.Drawing.ContentAlignment CheckBoxAlignment {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment CheckBoxAlignment {
 		get { return m_CheckBoxAlignment; }
 		set { m_CheckBoxAlignment = value; }
 	}
@@ -67,44 +67,44 @@ public class CheckBox : Cell {
 		PrepareVisualElementCheckBox(context);
 	}
 
-	protected override IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetElements() {
+	protected override IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementCheckBox != null)
 			yield return ElementCheckBox;
 
-		foreach (DevAge.Drawing.VisualElements.IVisualElement v in GetBaseElements())
+		foreach (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement v in GetBaseElements())
 			yield return v;
 	}
-	private IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetBaseElements() {
+	private IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetBaseElements() {
 		return base.GetElements();
 	}
 
-	private DevAge.Drawing.VisualElements.ICheckBox mElementCheckBox = new DevAge.Drawing.VisualElements.CheckBoxThemed();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ICheckBox mElementCheckBox = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.CheckBoxThemed();
 
 	/// <summary>
-	/// Gets or sets the visual element used to draw the checkbox. Default is DevAge.Drawing.VisualElements.CheckBoxThemed.
+	/// Gets or sets the visual element used to draw the checkbox. Default is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.CheckBoxThemed.
 	/// </summary>
-	public DevAge.Drawing.VisualElements.ICheckBox ElementCheckBox {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ICheckBox ElementCheckBox {
 		get { return mElementCheckBox; }
 		set { mElementCheckBox = value; }
 	}
 
 
 	protected virtual void PrepareVisualElementCheckBox(CellContext context) {
-		ElementCheckBox.AnchorArea = new DevAge.Drawing.AnchorArea(CheckBoxAlignment, false);
+		ElementCheckBox.AnchorArea = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.AnchorArea(CheckBoxAlignment, false);
 
 		Models.ICheckBox checkBoxModel = (Models.ICheckBox)context.Cell.Model.FindModel(typeof(Models.ICheckBox));
 		Models.CheckBoxStatus checkBoxStatus = checkBoxModel.GetCheckBoxStatus(context);
 
 		if (context.CellRange.Contains(context.Grid.MouseCellPosition)) {
 			if (checkBoxStatus.CheckEnable)
-				ElementCheckBox.Style = DevAge.Drawing.ControlDrawStyle.Hot;
+				ElementCheckBox.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Hot;
 			else
-				ElementCheckBox.Style = DevAge.Drawing.ControlDrawStyle.Disabled;
+				ElementCheckBox.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Disabled;
 		} else {
 			if (checkBoxStatus.CheckEnable)
-				ElementCheckBox.Style = DevAge.Drawing.ControlDrawStyle.Normal;
+				ElementCheckBox.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Normal;
 			else
-				ElementCheckBox.Style = DevAge.Drawing.ControlDrawStyle.Disabled;
+				ElementCheckBox.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Disabled;
 		}
 
 		ElementCheckBox.CheckBoxState = checkBoxStatus.CheckState;

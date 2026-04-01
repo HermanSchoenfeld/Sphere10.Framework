@@ -10,7 +10,7 @@ using System;
 using System.Windows.Forms;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// An editor that use a TextBoxTypedButton for editing.
@@ -36,8 +36,8 @@ public class TextBoxButton : EditorControlBase {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.DevAgeTextBoxButton editor = new DevAge.Windows.Forms.DevAgeTextBoxButton();
-		editor.BorderStyle = DevAge.Drawing.BorderStyle.None;
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton();
+		editor.BorderStyle = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderStyle.None;
 		editor.Validator = this;
 		return editor;
 	}
@@ -45,8 +45,8 @@ public class TextBoxButton : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.DevAgeTextBoxButton Control {
-		get { return (DevAge.Windows.Forms.DevAgeTextBoxButton)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton)base.Control; }
 	}
 
 	#endregion
@@ -59,7 +59,7 @@ public class TextBoxButton : EditorControlBase {
 	protected override void OnStartingEdit(CellContext cellContext, Control editorControl) {
 		base.OnStartingEdit(cellContext, editorControl);
 
-		DevAge.Windows.Forms.DevAgeTextBoxButton editor = (DevAge.Windows.Forms.DevAgeTextBoxButton)editorControl;
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton editor = (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton)editorControl;
 		//to set the scroll of the textbox to the initial position (otherwise the textbox use the previous scroll position)
 		editor.TextBox.SelectionStart = 0;
 		editor.TextBox.SelectionLength = 0;

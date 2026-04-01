@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 
-namespace DevAge.Runtime.Serialization;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Runtime.Serialization;
 
 /// <summary>
 /// Static Class for serialization utilities

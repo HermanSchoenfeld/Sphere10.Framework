@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 #if !MINI
 //la classe DictionaryBase non esisteva nel Compact Framework e non sono riuscia a riprodurla
 

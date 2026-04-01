@@ -10,7 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// DevAgeComboBox has a typed Value property and the validating features using the Validator property.
@@ -45,14 +45,14 @@ public class DevAgeComboBox : System.Windows.Forms.ComboBox {
 		set { mFormatValue = value; }
 	}
 
-	private DevAge.ComponentModel.Validator.IValidator mValidator = null;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator mValidator = null;
 
 	/// <summary>
 	/// Gets or sets the Validator class useded to validate the value and convert the text when using the Value property.
 	/// You can use the ApplyValidatorRules method to apply the settings of the Validator directly to the ComboBox, for example the list of values.
 	/// </summary>
 	[DefaultValue(null)]
-	public DevAge.ComponentModel.Validator.IValidator Validator {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator Validator {
 		get { return mValidator; }
 		set {
 			if (mValidator != value) {

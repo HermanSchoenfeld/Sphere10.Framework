@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// A interface that represents the visual aspect of a cell. Contains the Draw method and the common properties
@@ -35,13 +35,13 @@ public interface IView : ICloneable {
 	/// <summary>
 	/// Text Alignment.
 	/// </summary>
-	DevAge.Drawing.ContentAlignment TextAlignment { get; set; }
+	Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment TextAlignment { get; set; }
 
 
 	/// <summary>
-	/// The normal border of a cell. Usually it is an instance of a DevAge.Drawing.RectangleBorder structure
+	/// The normal border of a cell. Usually it is an instance of a Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder structure
 	/// </summary>
-	DevAge.Drawing.IBorder Border { get; set; }
+	Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.IBorder Border { get; set; }
 
 	/// <summary>
 	/// The BackColor of a cell
@@ -62,7 +62,7 @@ public interface IView : ICloneable {
 	/// <param name="graphics">Paint arguments</param>
 	/// <param name="rectangle">Rectangle where draw the current cell</param>
 	void DrawCell(CellContext cellContext,
-	              DevAge.Drawing.GraphicsCache graphics,
+	              Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphics,
 	              System.Drawing.RectangleF rectangle);
 
 

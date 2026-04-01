@@ -9,7 +9,7 @@
 using System;
 using System.Drawing;
 
-namespace SourceGrid.Selection;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 /// <summary>
 /// Base selection class
@@ -661,12 +661,12 @@ public abstract class SelectionBase : IGridSelection {
 		}
 	}
 
-	private DevAge.Drawing.RectangleBorder mBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(Color.Black, 2));
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder mBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(Color.Black, 2));
 
 	/// <summary>
 	/// The Border used to highlight the range
 	/// </summary>
-	public DevAge.Drawing.RectangleBorder Border {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder Border {
 		get { return mBorder; }
 		set {
 			mBorder = value;

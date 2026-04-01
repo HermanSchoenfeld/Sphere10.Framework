@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Configuration;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Configuration;
 
 [Serializable]
 public class ConfigurationException : DevAgeApplicationException {

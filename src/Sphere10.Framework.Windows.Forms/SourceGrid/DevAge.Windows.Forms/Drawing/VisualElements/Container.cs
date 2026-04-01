@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 /// <summary>
 /// A objectStream for other elements
@@ -32,7 +32,7 @@ public class Container : ContainerBase {
 	public Container(Container other)
 		: base(other) {
 		if (other.Elements != null) {
-			Elements = (DevAge.Drawing.VisualElements.VisualElementList)other.Elements.Clone();
+			Elements = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.VisualElementList)other.Elements.Clone();
 		} else {
 			Elements = null;
 		}

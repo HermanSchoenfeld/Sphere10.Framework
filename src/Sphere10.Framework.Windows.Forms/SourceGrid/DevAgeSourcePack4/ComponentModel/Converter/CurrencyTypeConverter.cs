@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel.Converter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter;
 
 /// <summary>
 /// A TypeConverter that support string conversion from and to string with the currency symbol.

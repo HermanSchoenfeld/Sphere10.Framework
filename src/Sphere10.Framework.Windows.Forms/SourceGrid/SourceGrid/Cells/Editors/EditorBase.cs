@@ -8,13 +8,13 @@
 
 using System;
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// Represents the base class of a DataModel. This DataModel support conversion but doesn't provide any user interface editor.
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
-public class EditorBase : DevAge.ComponentModel.Validator.ValidatorTypeConverter {
+public class EditorBase : Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter {
 
 	#region Constructor
 

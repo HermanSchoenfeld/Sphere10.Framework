@@ -9,7 +9,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Models;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 /// <summary>
 /// Model for RichTextBox

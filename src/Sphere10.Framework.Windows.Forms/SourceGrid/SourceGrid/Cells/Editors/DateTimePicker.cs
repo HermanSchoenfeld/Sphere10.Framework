@@ -10,7 +10,7 @@ using System;
 using System.Windows.Forms;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// Create an Editor that use a DateTimePicker as control for date editing.

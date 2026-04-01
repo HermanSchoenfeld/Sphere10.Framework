@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class SpannedCellRangesController : ISpannedCellRangesController {
 	Grid m_grid = null;

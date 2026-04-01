@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace SourceGrid.Decorators;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Decorators;
 
 public class DecoratorList : List<DecoratorBase> {
 }

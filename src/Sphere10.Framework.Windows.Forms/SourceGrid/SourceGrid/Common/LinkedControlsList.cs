@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// A dictionary with keys of type Control and values of type LinkedControlValue

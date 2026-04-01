@@ -9,11 +9,11 @@
 using System;
 using System.Drawing;
 
-namespace DevAge.Drawing;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
 /// <summary>
 /// Rapresents a rounded rectangle, takes a rectangle and a round value from 0 to 1. Can be converted to a GraphicsPath for drawing operations.
-/// See also DevAge.Drawing.Utilities.FillRoundedRectangle and DrawRoundedRectangle methods.
+/// See also Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.FillRoundedRectangle and DrawRoundedRectangle methods.
 /// </summary>
 [Serializable]
 public struct RoundedRectangle {

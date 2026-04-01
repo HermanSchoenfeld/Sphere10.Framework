@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.ComponentModel.Converter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter;
 
 /// <summary>
 /// A TypeConverter that support string conversion from and to string with the percent symbol.
@@ -18,7 +18,7 @@ public class PercentTypeConverter :
 #if !MINI
 	System.ComponentModel.TypeConverter
 #else
-		DevAge.ComponentModel.TypeConverter
+		Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeConverter
 #endif
 {
 
@@ -42,8 +42,8 @@ public class PercentTypeConverter :
 
 	public System.ComponentModel.TypeConverter BaseTypeConverter
 #else
-		private DevAge.ComponentModel.TypeConverter m_BaseTypeConverter;
-		public DevAge.ComponentModel.TypeConverter BaseTypeConverter
+		private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeConverter m_BaseTypeConverter;
+		public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeConverter BaseTypeConverter
 #endif
 	{
 		get { return m_BaseTypeConverter; }
@@ -63,7 +63,7 @@ public class PercentTypeConverter :
 #if !MINI
 			m_BaseTypeConverter = System.ComponentModel.TypeDescriptor.GetConverter(value);
 #else
-				m_BaseTypeConverter = DevAge.ComponentModel.TypeDescriptor.GetConverter(value);
+				m_BaseTypeConverter = Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.TypeDescriptor.GetConverter(value);
 #endif
 
 			m_BaseType = value;

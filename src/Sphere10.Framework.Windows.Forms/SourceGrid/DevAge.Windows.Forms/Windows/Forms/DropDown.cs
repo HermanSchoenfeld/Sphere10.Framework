@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// Summary description for DropDownCustom.
@@ -233,7 +233,7 @@ public class DropDown : System.Windows.Forms.Form {
 			//This code simulate a ShowDialog. ShowDialog cannot be used because I need to receive the deactivate event to close the window.
 			// This is not the best solution anyway because the parent for is deactivated and the user experience it is not the best.
 			while (m_bShowed) {
-				Application.DoEvents();
+				System.Windows.Forms.Application.DoEvents();
 				System.Threading.Thread.Sleep(1); //To prevent the CPU to work on 100%
 			}
 		} finally {

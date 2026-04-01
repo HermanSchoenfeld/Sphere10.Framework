@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Windows.Forms;
-using SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public partial class Grid {
 	/// <summary>

@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Exporter;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 
 /// <summary>
 /// An utility class to export a grid to a csv delimited format file.

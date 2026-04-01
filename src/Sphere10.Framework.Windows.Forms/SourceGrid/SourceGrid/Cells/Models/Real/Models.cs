@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.Models;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 public class NullValueModel : IValueModel {
 	public readonly static NullValueModel Default = new NullValueModel();
@@ -112,7 +112,7 @@ public class CheckBox : ICheckBox {
 
 		object val = cellContext.Cell.Model.ValueModel.GetValue(cellContext);
 		if (val == null)
-			return new CheckBoxStatus(enableEdit, DevAge.Drawing.CheckBoxState.Undefined, m_Caption);
+			return new CheckBoxStatus(enableEdit, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.CheckBoxState.Undefined, m_Caption);
 		else if (val is bool)
 			return new CheckBoxStatus(enableEdit, (bool)val, m_Caption);
 		else
@@ -147,13 +147,13 @@ public class SortableHeader : ISortableHeader {
 		return m_SortStatus;
 	}
 
-	public void SetSortMode(CellContext cellContext, DevAge.Drawing.HeaderSortStyle pStyle) {
+	public void SetSortMode(CellContext cellContext, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle pStyle) {
 		m_SortStatus.Style = pStyle;
 	}
 
 	#endregion
 
-	private SortStatus m_SortStatus = new SortStatus(DevAge.Drawing.HeaderSortStyle.None, null);
+	private SortStatus m_SortStatus = new SortStatus(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.None, null);
 
 	public SortStatus SortStatus {
 		get { return m_SortStatus; }
@@ -218,7 +218,7 @@ public class Image : IImage {
 public class ValueImage : IImage {
 	public static readonly ValueImage Default = new ValueImage();
 
-	private DevAge.ComponentModel.Validator.ValidatorTypeConverter imageConverter = new DevAge.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
+	private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter imageConverter = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
 
 	#region IImage Members
 

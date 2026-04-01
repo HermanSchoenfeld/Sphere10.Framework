@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Structure that represents a logical cell, composed by a ICellVirtual, a Position and a GridVirtual.

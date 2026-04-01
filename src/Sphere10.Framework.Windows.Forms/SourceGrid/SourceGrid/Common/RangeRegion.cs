@@ -8,9 +8,9 @@
 
 using System;
 using System.Collections.Generic;
-using SourceGrid.Selection;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// RangeRegion is a collection of range that are never overlying each other.

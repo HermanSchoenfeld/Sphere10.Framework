@@ -8,7 +8,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
-using DevAge.Drawing;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
@@ -17,12 +17,12 @@ namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 /// </summary>
 internal class CellView : SourceGrid.Cells.Views.Cell {
 	public CellView(BaseAppointmentBook parent, CellViewModel cellDisplay, bool selected = false) {
-		TextAlignment = DevAge.Drawing.ContentAlignment.MiddleLeft;
-		Border = DevAge.Drawing.RectangleBorder.NoBorder;
+		TextAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft;
+		Border = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder.NoBorder;
 		base.BackColor = cellDisplay.BackColor;
 		base.ForeColor = cellDisplay.TextColor;
 		base.Font = new Font(base.Font ?? Control.DefaultFont, cellDisplay.FontStyle);
-		base.Padding = new DevAge.Drawing.Padding(selected ? 0 : 1);
+		base.Padding = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Padding(selected ? 0 : 1);
 		var border = new RectangleBorder {
 			Top = BorderLine.NoBorder,
 			Left = BorderLine.NoBorder,

@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel;
 
-namespace DevAge.ComponentModel;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
 
 /// <summary>
 /// A IComponent implementation, used as a base class for component derived class. It is similar to the System Component class but doesn't derive from MarshalByRef class, for this reason it is faster and consume less resources.

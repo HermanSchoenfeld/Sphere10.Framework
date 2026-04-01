@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class RowHeaderThemed : RowHeaderBase {
@@ -98,7 +98,7 @@ public class RowHeaderThemed : RowHeaderBase {
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 		base.OnDraw(graphics, area);
 
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 			GetRenderer(GetBackgroundElement()).DrawBackground(graphics.Graphics, Rectangle.Round(area));
 		else {
 			if (RotateColHeaderIfNotDefined) {
@@ -127,14 +127,14 @@ public class RowHeaderThemed : RowHeaderBase {
 	public override RectangleF GetBackgroundContentRectangle(MeasureHelper measure, RectangleF backGroundArea) {
 		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
 
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
 			return GetRenderer(GetBackgroundElement()).GetBackgroundContentRectangle(measure.Graphics, Rectangle.Round(backGroundArea));
 		else
 			return mStandardRowHeader.GetBackgroundContentRectangle(measure, backGroundArea);
 	}
 
 	public override SizeF GetBackgroundExtent(MeasureHelper measure, SizeF contentSize) {
-		if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
 			Rectangle content = new Rectangle(new Point(0, 0), Size.Ceiling(contentSize));
 			contentSize = GetRenderer(GetBackgroundElement()).GetBackgroundExtent(measure.Graphics, content).Size;
 		} else

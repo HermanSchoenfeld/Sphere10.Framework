@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.Windows.Forms;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class CellCancelEventArgs : CellContextEventArgs {
 	public CellCancelEventArgs(CellContext pCellContext) : base(pCellContext) {
@@ -294,7 +294,7 @@ public delegate void CellContextEventHandler(object sender, CellContextEventArgs
 
 public class RangePaintEventArgs : EventArgs {
 	public RangePaintEventArgs(GridVirtual grid,
-	                           DevAge.Drawing.GraphicsCache graphicsCache,
+	                           Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphicsCache,
 	                           CellRange drawingRange) {
 		mGrid = grid;
 		mGraphicsCache = graphicsCache;
@@ -307,9 +307,9 @@ public class RangePaintEventArgs : EventArgs {
 		get { return mGrid; }
 	}
 
-	private DevAge.Drawing.GraphicsCache mGraphicsCache;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache mGraphicsCache;
 
-	public DevAge.Drawing.GraphicsCache GraphicsCache {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache GraphicsCache {
 		get { return mGraphicsCache; }
 		set { mGraphicsCache = value; }
 	}

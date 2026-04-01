@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Patterns;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Patterns;
 
 /// <summary>
 /// Interface to receive the callback for the activity events.

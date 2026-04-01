@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.Runtime.Serialization;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// A comparer used to sort more than one columns.

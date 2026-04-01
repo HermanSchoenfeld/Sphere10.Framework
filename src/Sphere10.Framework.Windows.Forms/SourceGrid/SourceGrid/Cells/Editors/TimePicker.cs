@@ -9,7 +9,7 @@
 using System.Windows.Forms;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// Create an Editor that use a DateTimePicker as control for time editing.
@@ -26,7 +26,7 @@ public class TimePicker : DateTimePicker {
 	/// Constructor
 	/// </summary>
 	public TimePicker(System.String toStringFormat, string[] p_ParseFormats) {
-		DevAge.ComponentModel.Converter.DateTimeTypeConverter timeConverter = new DevAge.ComponentModel.Converter.DateTimeTypeConverter(toStringFormat, p_ParseFormats);
+		Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.DateTimeTypeConverter timeConverter = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.DateTimeTypeConverter(toStringFormat, p_ParseFormats);
 		TypeConverter = timeConverter;
 	}
 

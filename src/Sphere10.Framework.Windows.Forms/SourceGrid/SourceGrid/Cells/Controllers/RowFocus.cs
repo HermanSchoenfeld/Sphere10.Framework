@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// RowFocus controller overrides the OnFocusEntering method and set the Focus on the Row. This controller is usually used on the Row Header. This controller also add an arror Cursor when the mouse is over the cell.
@@ -28,7 +28,7 @@ public class RowFocus : ControllerBase {
 	/// <summary>
 	/// Border used to calculate the region to enable the row selection
 	/// </summary>
-	public DevAge.Drawing.RectangleBorder LogicalBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4), new DevAge.Drawing.BorderLine(System.Drawing.Color.Black, 4));
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder LogicalBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4), new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4));
 
 	private MouseCursor mSelectionCursor = new MouseCursor(Tools.WinForms.LoadRawCursor(Resources.CursorRightArrow), false);
 
@@ -47,9 +47,9 @@ public class RowFocus : ControllerBase {
 		Point l_MousePoint = new Point(e.X, e.Y);
 
 		float distance;
-		DevAge.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(l_CellRect, l_MousePoint, out distance);
+		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(l_CellRect, l_MousePoint, out distance);
 
-		if (partType == DevAge.Drawing.RectanglePartType.ContentArea)
+		if (partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.ContentArea)
 			mSelectionCursor.ApplyCursor(sender, e);
 	}
 

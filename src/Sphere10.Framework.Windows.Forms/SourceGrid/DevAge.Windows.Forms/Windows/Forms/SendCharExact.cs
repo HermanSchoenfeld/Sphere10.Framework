@@ -8,7 +8,7 @@
 
 //using System;
 
-//namespace DevAge.Windows.Forms
+//namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls
 //{
 //    /// <summary>
 //    /// A class to send keystrokes to the active application using System.Windows.Forms.SendKeys.Send method. The characters sended are exactly the same used in the parameters, converting the special characters like upper case letters and \n, \t and similar characters with the corresponding send keys codes.

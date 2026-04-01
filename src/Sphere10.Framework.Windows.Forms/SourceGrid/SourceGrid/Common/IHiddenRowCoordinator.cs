@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public interface IHiddenRowCoordinator {
 	/// <summary>

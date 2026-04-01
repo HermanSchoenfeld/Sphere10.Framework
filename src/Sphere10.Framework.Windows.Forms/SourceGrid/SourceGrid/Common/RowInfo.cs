@@ -8,7 +8,7 @@
 
 using System.ComponentModel;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Row Information

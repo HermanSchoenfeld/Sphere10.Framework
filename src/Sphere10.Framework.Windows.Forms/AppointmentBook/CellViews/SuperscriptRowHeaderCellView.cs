@@ -13,7 +13,7 @@ namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 public class SuperscriptRowHeaderCellView : SourceGrid.Cells.Views.RowHeader {
 	public SuperscriptRowHeaderCellView() {
 		Font = new System.Drawing.Font(SystemFonts.DefaultFont.FontFamily, 7);
-		TextAlignment = DevAge.Drawing.ContentAlignment.TopCenter;
+		TextAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.TopCenter;
 	}
 }
 

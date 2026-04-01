@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// Summary description for ButtonMultiSelection.
@@ -19,7 +19,7 @@ namespace DevAge.Windows.Forms;
 [DefaultEvent("Click")]
 public class ButtonMultiSelection : System.Windows.Forms.UserControl, IButtonControl {
 	private System.Windows.Forms.Button btMain;
-	private DevAge.Windows.Forms.DropDownButton btArrow;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DropDownButton btArrow;
 
 	/// <summary> 
 	/// Required designer variable.
@@ -56,7 +56,7 @@ public class ButtonMultiSelection : System.Windows.Forms.UserControl, IButtonCon
 	private void InitializeComponent() {
 		System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(ButtonMultiSelection));
 		this.btMain = new System.Windows.Forms.Button();
-		this.btArrow = new DevAge.Windows.Forms.DropDownButton();
+		this.btArrow = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DropDownButton();
 		this.SuspendLayout();
 		// 
 		// btMain

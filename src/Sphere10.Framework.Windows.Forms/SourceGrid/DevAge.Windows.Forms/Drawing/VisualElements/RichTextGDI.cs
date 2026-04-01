@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 [Serializable]
 public class RichTextGDI : RichText {
@@ -28,7 +28,7 @@ public class RichTextGDI : RichText {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public RichTextGDI(DevAge.Windows.Forms.RichText value)
+	public RichTextGDI(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText value)
 		: base(value) {
 	}
 
@@ -57,7 +57,7 @@ public class RichTextGDI : RichText {
 		}
 		if (TextAlignment != ContentAlignment.MiddleLeft) {
 			RichTextBoxEditor.Control.SelectAll();
-			RichTextBoxEditor.Control.SelectionAlignment = DevAge.Windows.Forms.Utilities.ContentToHorizontalAlignment(TextAlignment);
+			RichTextBoxEditor.Control.SelectionAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.Utilities.ContentToHorizontalAlignment(TextAlignment);
 		}
 		if (Font != System.Windows.Forms.Control.DefaultFont) {
 			RichTextBoxEditor.Control.SelectAll();
@@ -138,7 +138,7 @@ public class RichTextGDI : RichText {
 	/// <returns>(Index of last character that fitted on the
 	/// page) + 1</returns>
 	//public int FormatRange(bool measureOnly, PrintPageEventArgs e, int charFrom, int charTo)
-	public int FormatRange(bool measureOnly, DevAge.Windows.Forms.DevAgeRichTextBox rtb,
+	public int FormatRange(bool measureOnly, Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox rtb,
 	                       ref Bitmap b, int charFrom, int charTo) {
 		// Specify which characters to print
 		STRUCT_CHARRANGE cr;
@@ -196,7 +196,7 @@ public class RichTextGDI : RichText {
 	/// <summary>
 	/// Free cached data from rich edit control after printing
 	/// </summary>
-	public void FormatRangeDone(DevAge.Windows.Forms.DevAgeRichTextBox RTB) {
+	public void FormatRangeDone(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox RTB) {
 		IntPtr lParam = new IntPtr(0);
 		SendMessage(RTB.Handle, EM_FORMATRANGE, 0, lParam);
 	}
@@ -283,7 +283,7 @@ public class RichTextGDI : RichText {
 		String s = String.Empty;
 
 		if (Value != null && Value.Rtf.Length > 0) {
-			s = DevAge.Windows.Forms.RichTextConversion.RichTextToString(Value);
+			s = Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichTextConversion.RichTextToString(Value);
 		}
 
 		return measure.Graphics.MeasureString(s, Font, maxSize);

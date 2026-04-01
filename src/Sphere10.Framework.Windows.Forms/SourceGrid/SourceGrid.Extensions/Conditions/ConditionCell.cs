@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
-namespace SourceGrid.Conditions;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Conditions;
 
 public class ConditionCell : ICondition {
 	public ConditionCell(ICellVirtual cell) {

@@ -9,7 +9,7 @@
 using System;
 using Sphere10.Framework;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Represents a range of cells. Once created cannot be modified. This Range has always Start in the Top-Left, and End in the Bottom-Right (see Normalize method).

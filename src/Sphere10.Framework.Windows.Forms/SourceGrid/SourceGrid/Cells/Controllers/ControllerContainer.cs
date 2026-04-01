@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 public class ControllerContainer : IController {
 	private ControllerList m_ControllerList = null;
@@ -17,7 +17,7 @@ public class ControllerContainer : IController {
 	/// <summary>
 	/// A collection of elements of type IController. Only one instance of the same controller is allowed.
 	/// </summary>
-	public class ControllerList : DevAge.Collections.ListByType<IController> {
+	public class ControllerList : Sphere10.Framework.Windows.Forms.SourceGrid.Collections.ListByType<IController> {
 	}
 
 

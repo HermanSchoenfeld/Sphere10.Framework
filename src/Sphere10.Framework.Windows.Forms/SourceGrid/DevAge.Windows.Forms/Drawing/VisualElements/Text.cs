@@ -10,7 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 public interface IText : IVisualElement {
 	string Value { get; set; }

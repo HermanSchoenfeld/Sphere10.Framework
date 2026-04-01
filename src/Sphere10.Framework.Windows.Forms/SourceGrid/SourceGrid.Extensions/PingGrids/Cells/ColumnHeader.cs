@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace SourceGrid.Extensions.PingGrids.Cells;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.Cells;
 
 /// <summary>
 /// A cell header used for the columns. Usually used in the HeaderCell property of a DataGridColumn.

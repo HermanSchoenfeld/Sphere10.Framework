@@ -9,19 +9,19 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using SourceGrid;
+using Sphere10.Framework.Windows.Forms.SourceGrid;
 
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
 internal class ResizableAppointmentCellController : BaseCellController {
-	private readonly DevAge.Drawing.RectangleBorder _logicalBorder;
+	private readonly Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder _logicalBorder;
 	private bool _resizing;
 
 	internal ResizableAppointmentCellController(AppointmentBook owner, bool resizeTopBorderAllowed, bool resizeBottomBorderAllowed) : base(owner) {
 		if (!resizeTopBorderAllowed && !resizeBottomBorderAllowed) {
 			throw new ArgumentException("resizeTopBorderAllowed, resizeBottomBorderAllowed", "At least 1 argument must be true");
 		}
-		_logicalBorder = new DevAge.Drawing.RectangleBorder(new DevAge.Drawing.BorderLine(Color.Black, 5));
+		_logicalBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(Color.Black, 5));
 		_resizing = false;
 		ResizeBorder1 = resizeTopBorderAllowed ? ResizedAppointmentBorder.Top : ResizedAppointmentBorder.Bottom;
 		ResizeBorder2 = resizeBottomBorderAllowed ? ResizedAppointmentBorder.Bottom : ResizedAppointmentBorder.Top;
@@ -47,13 +47,13 @@ internal class ResizableAppointmentCellController : BaseCellController {
 		var initiateResize = false;
 		var resizeBorderUsed = ResizedAppointmentBorder.Top;
 		switch (_logicalBorder.GetPointPartType(cellRect, mousePoint, out distanceFromBorder)) {
-			case DevAge.Drawing.RectanglePartType.TopBorder:
+			case Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.TopBorder:
 				if (ResizeBorder1 == ResizedAppointmentBorder.Top || ResizeBorder2 == ResizedAppointmentBorder.Top) {
 					initiateResize = true;
 					resizeBorderUsed = ResizedAppointmentBorder.Top;
 				}
 				break;
-			case DevAge.Drawing.RectanglePartType.BottomBorder:
+			case Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.BottomBorder:
 				if (ResizeBorder1 == ResizedAppointmentBorder.Bottom || ResizeBorder2 == ResizedAppointmentBorder.Bottom) {
 					initiateResize = true;
 					resizeBorderUsed = ResizedAppointmentBorder.Bottom;
@@ -109,11 +109,11 @@ internal class ResizableAppointmentCellController : BaseCellController {
 
 		float distanceFromBorder;
 		switch (_logicalBorder.GetPointPartType(cellRect, mousePoint, out distanceFromBorder)) {
-			case DevAge.Drawing.RectanglePartType.TopBorder:
+			case Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.TopBorder:
 				if (ResizeBorder1 == ResizedAppointmentBorder.Top || ResizeBorder2 == ResizedAppointmentBorder.Top)
 					CurrentCursor = Cursors.HSplit;
 				break;
-			case DevAge.Drawing.RectanglePartType.BottomBorder:
+			case Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.BottomBorder:
 				if (ResizeBorder1 == ResizedAppointmentBorder.Bottom || ResizeBorder2 == ResizedAppointmentBorder.Bottom)
 					CurrentCursor = Cursors.HSplit;
 				break;

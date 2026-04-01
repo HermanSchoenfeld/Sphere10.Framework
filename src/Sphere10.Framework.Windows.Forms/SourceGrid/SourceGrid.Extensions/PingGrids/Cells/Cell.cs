@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using SourceGrid.Cells;
-using SourceGrid.Cells.Virtual;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual;
 
-namespace SourceGrid.Extensions.PingGrids.Cells;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.Cells;
 
 public class Cell : CellVirtual {
 	public Cell() {

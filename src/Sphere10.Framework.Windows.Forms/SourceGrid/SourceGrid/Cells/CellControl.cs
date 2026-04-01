@@ -9,7 +9,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
 /// <summary>
 /// The CellControl class is used to create a cell with a Windows Forms Control inside.

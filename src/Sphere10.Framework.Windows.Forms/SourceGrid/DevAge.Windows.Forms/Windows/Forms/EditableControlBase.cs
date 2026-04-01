@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// Summary description for EditableControlBase.
@@ -63,14 +63,14 @@ public class EditableControlBase : System.Windows.Forms.UserControl {
 
 	#endregion
 
-	private DevAge.Drawing.VisualElements.Container mContainer = new DevAge.Drawing.VisualElements.Container();
-	private DevAge.Drawing.VisualElements.EditablePanelThemed mEditablePanel = new DevAge.Drawing.VisualElements.EditablePanelThemed();
-	private DevAge.Drawing.VisualElements.BackgroundSolid mBackground = new DevAge.Drawing.VisualElements.BackgroundSolid();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Container mContainer = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Container();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.EditablePanelThemed mEditablePanel = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.EditablePanelThemed();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid mBackground = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid();
 
 	protected override void OnPaint(PaintEventArgs e) {
 		base.OnPaint(e);
 
-		using (DevAge.Drawing.GraphicsCache cache = new DevAge.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
+		using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache cache = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache(e.Graphics, e.ClipRectangle)) {
 			mEditablePanel.Draw(cache, ClientRectangle);
 		}
 	}
@@ -86,8 +86,8 @@ public class EditableControlBase : System.Windows.Forms.UserControl {
 		}
 	}
 
-	[DefaultValue(DevAge.Drawing.BorderStyle.System)]
-	public new DevAge.Drawing.BorderStyle BorderStyle {
+	[DefaultValue(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderStyle.System)]
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderStyle BorderStyle {
 		get { return mEditablePanel.BorderStyle; }
 		set {
 			mEditablePanel.BorderStyle = value;
@@ -101,7 +101,7 @@ public class EditableControlBase : System.Windows.Forms.UserControl {
 
 	public override Rectangle DisplayRectangle {
 		get {
-			using (DevAge.Drawing.MeasureHelper measure = new DevAge.Drawing.MeasureHelper(this)) {
+			using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.MeasureHelper measure = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.MeasureHelper(this)) {
 				return Rectangle.Round(mContainer.GetContentRectangle(measure, base.DisplayRectangle));
 			}
 		}

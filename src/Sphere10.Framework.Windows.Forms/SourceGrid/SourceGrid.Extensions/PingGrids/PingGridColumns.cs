@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using SourceGrid.Cells;
-using SourceGrid.Cells.Editors;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 public class PingGridColumns : ColumnInfoCollection {
 	public PingGridColumns(PingGrid grid)

@@ -6,13 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using SourceGrid.Selection;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 using System;
 using System.ComponentModel;
-using DevAge.ComponentModel;
+using Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
 using Sphere10.Framework.Windows.Forms;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// A grid control that support load from a System.Data.DataView class, usually used for data binding.
@@ -56,7 +56,7 @@ public class DataGrid : GridVirtual {
 		return selObj;
 	}
 
-	private DevAge.ComponentModel.IBoundList mBoundList;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.IBoundList mBoundList;
 
 	public override bool EnableSort {
 		get {
@@ -77,7 +77,7 @@ public class DataGrid : GridVirtual {
 	///  (that can be used to bind to a generic List) or BoundDataView (that can be used to bind to a DataView).
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public DevAge.ComponentModel.IBoundList DataSource {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.IBoundList DataSource {
 		get { return mBoundList; }
 		set {
 			Unbind();
@@ -113,7 +113,7 @@ public class DataGrid : GridVirtual {
 		Rows.ResetRowHeigth();
 	}
 
-	void mBoundList_ItemDeleted(object sender, DevAge.ComponentModel.ItemDeletedEventArgs e) {
+	void mBoundList_ItemDeleted(object sender, Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.ItemDeletedEventArgs e) {
 		Rows.RowDeleted(e.Item);
 	}
 

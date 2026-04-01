@@ -9,7 +9,7 @@
 using System;
 using System.Collections;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// A comparer for the Cell class. (Not for CellVirtual). Using the value of the cell.

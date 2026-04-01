@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid.Selection;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 /// <summary>
 /// Contains a list of ranges which differ only by row, that is vertically.

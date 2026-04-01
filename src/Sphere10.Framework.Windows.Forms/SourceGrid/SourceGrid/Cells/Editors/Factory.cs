@@ -9,7 +9,7 @@
 using System;
 using System.Collections;
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 public static class Factory {
 

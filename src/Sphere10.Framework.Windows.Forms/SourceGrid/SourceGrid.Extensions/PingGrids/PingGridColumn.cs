@@ -9,9 +9,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
-namespace SourceGrid.Extensions.PingGrids;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 /// <summary>
 /// A ColumnInfo derived class used to store column informations for a PingGrid control.

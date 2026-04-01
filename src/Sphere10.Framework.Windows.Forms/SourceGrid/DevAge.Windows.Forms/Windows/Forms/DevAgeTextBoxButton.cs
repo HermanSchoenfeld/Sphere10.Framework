@@ -10,7 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// A textBox with a button on the right.
@@ -57,7 +57,7 @@ public class DevAgeTextBoxButton : EditableControlBase {
 	/// </summary>
 	private void InitializeComponent() {
 		this.btDown = new System.Windows.Forms.Button();
-		this.txtBox = new DevAge.Windows.Forms.DevAgeTextBox();
+		this.txtBox = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox();
 		this.SuspendLayout();
 		// 
 		// btDown
@@ -102,14 +102,14 @@ public class DevAgeTextBoxButton : EditableControlBase {
 	#endregion
 
 
-	private DevAge.ComponentModel.Validator.IValidator mValidator = null;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator mValidator = null;
 
 	/// <summary>
 	/// Gets or sets the Validator class useded to validate the value and convert the text when using the Value property.
 	/// You can use the ApplyValidatorRules method to apply the settings of the Validator directly to the ComboBox, for example the list of values.
 	/// </summary>
 	[DefaultValue(null)]
-	public DevAge.ComponentModel.Validator.IValidator Validator {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator Validator {
 		get { return mValidator; }
 		set {
 			if (mValidator != value) {

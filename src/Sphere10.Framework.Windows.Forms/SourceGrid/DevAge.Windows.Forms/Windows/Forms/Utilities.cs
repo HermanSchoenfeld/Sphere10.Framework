@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// Summary description for Utilities.
@@ -15,7 +15,7 @@ public class Utilities {
 	public Utilities() {
 	}
 
-	public static System.Windows.Forms.HorizontalAlignment ContentToHorizontalAlignment(DevAge.Drawing.ContentAlignment a) {
+	public static System.Windows.Forms.HorizontalAlignment ContentToHorizontalAlignment(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
 		if (Drawing.Utilities.IsLeft(a))
 			return System.Windows.Forms.HorizontalAlignment.Left;
 		else if (Drawing.Utilities.IsRight(a))
@@ -24,7 +24,7 @@ public class Utilities {
 			return System.Windows.Forms.HorizontalAlignment.Center;
 	}
 
-	public static System.Windows.Forms.TextFormatFlags ContentAligmentToTextFormatFlags(DevAge.Drawing.ContentAlignment a) {
+	public static System.Windows.Forms.TextFormatFlags ContentAligmentToTextFormatFlags(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment a) {
 		System.Windows.Forms.TextFormatFlags f = (System.Windows.Forms.TextFormatFlags)0;
 
 		if (Drawing.Utilities.IsBottom(a))

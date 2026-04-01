@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using Sphere10.Framework.FastReflection;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// Editor for a ComboBox (using DevAgeComboBox control)
@@ -59,7 +59,7 @@ public class DropDownList : EditorControlBase {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.DevAgeComboBox editor = new DevAge.Windows.Forms.DevAgeComboBox();
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox();
 		editor.DropDownStyle = ComboBoxStyle.DropDownList;
 		//editor.FlatStyle = FlatStyle.System;
 		editor.Validator = this;
@@ -76,8 +76,8 @@ public class DropDownList : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.DevAgeComboBox Control {
-		get { return (DevAge.Windows.Forms.DevAgeComboBox)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox)base.Control; }
 	}
 
 	#endregion
@@ -104,7 +104,7 @@ public class DropDownList : EditorControlBase {
 	}
 
 
-	protected override void OnConvertingValueToDisplayString(DevAge.ComponentModel.ConvertingObjectEventArgs e) {
+	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.ConvertingObjectEventArgs e) {
 		if (!string.IsNullOrEmpty(_displayMember) && e.Value != null) {
 			e.Value = e.Value.GetType().GetProperty(_displayMember).FastGetValue(e.Value);
 		} else {

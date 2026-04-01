@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel;
 
-namespace DevAge.Windows.Forms;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
 /// <summary>
 /// A TextBox that allows to set the type of value to edit, then you can use the Value property to read and write the specific type.
@@ -45,14 +45,14 @@ public class DevAgeMaskedTextBox : System.Windows.Forms.MaskedTextBox {
 		set { mFormatValue = value; }
 	}
 
-	private DevAge.ComponentModel.Validator.IValidator mValidator = null;
+	private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator mValidator = null;
 
 	/// <summary>
 	/// Gets or sets the Validator class useded to validate the value and convert the text when using the Value property.
 	/// You can use the ApplyValidatorRules method to apply the settings of the Validator directly to the ComboBox, for example the list of values.
 	/// </summary>
 	[DefaultValue(null)]
-	public DevAge.ComponentModel.Validator.IValidator Validator {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.IValidator Validator {
 		get { return mValidator; }
 		set {
 			if (mValidator != value) {

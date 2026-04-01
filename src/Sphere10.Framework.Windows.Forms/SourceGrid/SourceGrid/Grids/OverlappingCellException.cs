@@ -8,7 +8,7 @@
 
 using System;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class OverlappingCellException : SourceGridException {
 	public OverlappingCellException(string p_strErrDescription) :

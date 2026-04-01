@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Class to manage the visual aspect of a cell. This class can be shared beetween multiple cells.
@@ -29,7 +29,7 @@ public class Cell : ViewBase {
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
 	public Cell() {
-		ElementsDrawMode = DevAge.Drawing.ElementsDrawMode.Align;
+		ElementsDrawMode = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ElementsDrawMode.Align;
 	}
 
 	/// <summary>
@@ -37,8 +37,8 @@ public class Cell : ViewBase {
 	/// </summary>
 	/// <param name="p_Source"></param>
 	public Cell(Cell p_Source) : base(p_Source) {
-		ElementImage = (DevAge.Drawing.VisualElements.IImage)p_Source.ElementImage.Clone();
-		ElementText = (DevAge.Drawing.VisualElements.IText)p_Source.ElementText.Clone();
+		ElementImage = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IImage)p_Source.ElementImage.Clone();
+		ElementText = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IText)p_Source.ElementText.Clone();
 	}
 
 	#endregion
@@ -57,7 +57,7 @@ public class Cell : ViewBase {
 
 	#region Visual elements
 
-	protected override IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetElements() {
+	protected override IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementImage != null)
 			yield return ElementImage;
 
@@ -73,13 +73,13 @@ public class Cell : ViewBase {
 		PrepareVisualElementImage(context);
 	}
 
-	private DevAge.Drawing.VisualElements.IText mElementText = new DevAge.Drawing.VisualElements.TextGDI();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IText mElementText = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextGDI();
 
 	/// <summary>
 	/// Gets or sets the IText visual element used to draw the cell text.
-	/// Default is DevAge.Drawing.VisualElements.TextGDI
+	/// Default is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextGDI
 	/// </summary>
-	public DevAge.Drawing.VisualElements.IText ElementText {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IText ElementText {
 		get { return mElementText; }
 		set { mElementText = value; }
 	}
@@ -89,8 +89,8 @@ public class Cell : ViewBase {
 	/// Derived class can call this method to apply the settings to custom VisualElement.
 	/// </summary>
 	protected virtual void PrepareVisualElementText(CellContext context) {
-		if (ElementText is DevAge.Drawing.VisualElements.TextRenderer) {
-			DevAge.Drawing.VisualElements.TextRenderer elementText = (DevAge.Drawing.VisualElements.TextRenderer)ElementText;
+		if (ElementText is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextRenderer) {
+			Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextRenderer elementText = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextRenderer)ElementText;
 
 			elementText.TextFormatFlags = TextFormatFlags.Default | TextFormatFlags.NoPrefix;
 			if (WordWrap)
@@ -99,9 +99,9 @@ public class Cell : ViewBase {
 				elementText.TextFormatFlags |= TextFormatFlags.EndEllipsis;
 			else if (TrimmingMode == TrimmingMode.Word)
 				elementText.TextFormatFlags |= TextFormatFlags.WordEllipsis;
-			elementText.TextFormatFlags |= DevAge.Windows.Forms.Utilities.ContentAligmentToTextFormatFlags(TextAlignment);
-		} else if (ElementText is DevAge.Drawing.VisualElements.TextGDI) {
-			DevAge.Drawing.VisualElements.TextGDI elementTextGDI = (DevAge.Drawing.VisualElements.TextGDI)ElementText;
+			elementText.TextFormatFlags |= Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.Utilities.ContentAligmentToTextFormatFlags(TextAlignment);
+		} else if (ElementText is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextGDI) {
+			Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextGDI elementTextGDI = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.TextGDI)ElementText;
 
 			if (WordWrap)
 				elementTextGDI.StringFormat.FormatFlags = (StringFormatFlags)0;
@@ -119,18 +119,18 @@ public class Cell : ViewBase {
 		ElementText.Font = GetDrawingFont(context.Grid);
 		ElementText.ForeColor = ForeColor;
 		//I have already set the TextFormatFlags for the alignment so the Anchor is not necessary. I have removed this code for performance reasons.
-		//element.AnchorArea = new DevAge.Drawing.AnchorArea(TextAlignment, false);
+		//element.AnchorArea = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.AnchorArea(TextAlignment, false);
 
 		ElementText.Value = context.DisplayText;
 	}
 
-	private DevAge.Drawing.VisualElements.IImage mElementImage = new DevAge.Drawing.VisualElements.Image();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IImage mElementImage = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Image();
 
 	/// <summary>
 	/// Gets or sets the IImage visual element used to draw the cell image.
-	/// Default is DevAge.Drawing.VisualElements.Image
+	/// Default is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.Image
 	/// </summary>
-	public DevAge.Drawing.VisualElements.IImage ElementImage {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IImage ElementImage {
 		get { return mElementImage; }
 		set { mElementImage = value; }
 	}
@@ -140,7 +140,7 @@ public class Cell : ViewBase {
 	/// Derived class can call this method to apply the settings to custom VisualElement.
 	/// </summary>
 	protected virtual void PrepareVisualElementImage(CellContext context) {
-		ElementImage.AnchorArea = new DevAge.Drawing.AnchorArea(ImageAlignment, ImageStretch);
+		ElementImage.AnchorArea = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.AnchorArea(ImageAlignment, ImageStretch);
 
 		//Read the image
 		System.Drawing.Image img = null;

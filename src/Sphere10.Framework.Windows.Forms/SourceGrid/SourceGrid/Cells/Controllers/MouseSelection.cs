@@ -10,7 +10,7 @@ using System;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace SourceGrid.Cells.Controllers;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
 /// A cell controller used to handle mouse selection

@@ -6,10 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using SourceGrid.Cells.Controllers;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 using System;
 
-namespace SourceGrid.Cells.Virtual;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual;
 
 /// <summary>
 /// Represents a CellVirtual in a grid.

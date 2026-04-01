@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DevAge.Drawing.VisualElements;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
 public interface IRowHeader : IHeader {
 }

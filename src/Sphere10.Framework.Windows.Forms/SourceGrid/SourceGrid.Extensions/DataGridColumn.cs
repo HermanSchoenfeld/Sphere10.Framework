@@ -6,13 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using SourceGrid.Cells.Editors;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class DataGridColumns : ColumnInfoCollection {
 	public DataGridColumns(DataGrid grid)

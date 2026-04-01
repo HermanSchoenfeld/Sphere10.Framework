@@ -10,7 +10,7 @@ using System;
 using System.Windows.Forms;
 
 
-namespace SourceGrid.Cells.Editors;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
 /// An editor that use a TextBoxTypedNumeric for editing support. You can customize the Control.NumericCharStyle property to enable char validation.
@@ -36,7 +36,7 @@ public class TextBoxNumeric : TextBox {
 	/// </summary>
 	/// <returns></returns>
 	protected override Control CreateControl() {
-		DevAge.Windows.Forms.DevAgeTextBox editor = new DevAge.Windows.Forms.DevAgeTextBox();
+		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox();
 		editor.BorderStyle = BorderStyle.None;
 		editor.AutoSize = false;
 		editor.Validator = this;
@@ -46,8 +46,8 @@ public class TextBoxNumeric : TextBox {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new DevAge.Windows.Forms.DevAgeTextBox Control {
-		get { return (DevAge.Windows.Forms.DevAgeTextBox)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox Control {
+		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBox)base.Control; }
 	}
 
 	#endregion

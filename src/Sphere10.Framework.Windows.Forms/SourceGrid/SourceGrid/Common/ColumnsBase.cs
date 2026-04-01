@@ -10,7 +10,7 @@ using System;
 using System.Drawing;
 using System.Collections.Generic;
 
-namespace SourceGrid;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// Abstract base class for manage columns informations.

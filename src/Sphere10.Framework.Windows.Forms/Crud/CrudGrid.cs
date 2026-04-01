@@ -13,8 +13,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SourceGrid;
-using SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -591,7 +591,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		if (_sortColumnName != null && _sortColumnIndex == col) {
 			((SourceGrid.Cells.Models.ISortableHeader)_grid[0, col].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader))).SetSortMode(
 				SourceGrid.CellContext.Empty,
-				_sortDirection == SortDirection.Ascending ? DevAge.Drawing.HeaderSortStyle.Ascending : DevAge.Drawing.HeaderSortStyle.Descending
+				_sortDirection == SortDirection.Ascending ? Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Ascending : Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Descending
 			);
 		}
 	}
@@ -695,7 +695,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		var customFormat = columnBinding.GetDateTimeFormat(entity);
 		editor.Control.CustomFormat = customFormat;
 		var dtParseFormats = new string[] { customFormat };
-		var dtConverter = new DevAge.ComponentModel.Converter.DateTimeTypeConverter(customFormat, dtParseFormats, dtStyles);
+		var dtConverter = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.DateTimeTypeConverter(customFormat, dtParseFormats, dtStyles);
 		editor.TypeConverter = dtConverter;
 		return new Cell(cellValue, editor);
 	}

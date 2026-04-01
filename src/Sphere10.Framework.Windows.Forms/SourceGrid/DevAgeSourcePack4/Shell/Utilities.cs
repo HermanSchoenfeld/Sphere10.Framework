@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace DevAge.Shell;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Shell;
 
 /// <summary>
 /// Shell utilities

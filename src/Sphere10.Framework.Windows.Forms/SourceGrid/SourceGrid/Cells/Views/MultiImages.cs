@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SourceGrid.Cells.Views;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 /// <summary>
 /// Summary description for VisualModelCheckBox.
@@ -23,7 +23,7 @@ public class MultiImages : Cell {
 	/// Use default setting
 	/// </summary>
 	public MultiImages() {
-		ElementsDrawMode = DevAge.Drawing.ElementsDrawMode.Covering;
+		ElementsDrawMode = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ElementsDrawMode.Covering;
 	}
 
 	/// <summary>
@@ -32,28 +32,28 @@ public class MultiImages : Cell {
 	/// <param name="other"></param>
 	public MultiImages(MultiImages other)
 		: base(other) {
-		mImages = (DevAge.Drawing.VisualElements.VisualElementList)other.mImages.Clone();
+		mImages = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.VisualElementList)other.mImages.Clone();
 	}
 
 	#endregion
 
-	private DevAge.Drawing.VisualElements.VisualElementList mImages = new DevAge.Drawing.VisualElements.VisualElementList();
+	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.VisualElementList mImages = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.VisualElementList();
 
 	/// <summary>
 	/// Images of the cells
 	/// </summary>
-	public DevAge.Drawing.VisualElements.VisualElementList SubImages {
+	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.VisualElementList SubImages {
 		get { return mImages; }
 	}
 
-	protected override IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetElements() {
-		foreach (DevAge.Drawing.VisualElements.IVisualElement v in GetBaseElements())
+	protected override IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetElements() {
+		foreach (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement v in GetBaseElements())
 			yield return v;
 
-		foreach (DevAge.Drawing.VisualElements.IVisualElement v in SubImages)
+		foreach (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement v in SubImages)
 			yield return v;
 	}
-	private IEnumerable<DevAge.Drawing.VisualElements.IVisualElement> GetBaseElements() {
+	private IEnumerable<Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement> GetBaseElements() {
 		return base.GetElements();
 	}
 

@@ -9,7 +9,7 @@
 using System;
 using System.Data;
 
-namespace DevAge.Data;
+namespace Sphere10.Framework.Windows.Forms.SourceGrid.Data;
 
 /// <summary>
 /// Utilities for DataSet class. Contains some methods to create expression string, for Select and Epression methods and methods for selecting data like SelectDistinct.

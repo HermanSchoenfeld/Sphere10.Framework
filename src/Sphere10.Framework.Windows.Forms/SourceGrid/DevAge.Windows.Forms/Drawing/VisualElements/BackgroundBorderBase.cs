@@ -12,7 +12,7 @@
 //using System.ComponentModel;
 //using System.Drawing;
 
-//namespace DevAge.Drawing.VisualElements
+//namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements
 //{
 //    /// <summary>
 //    /// A background with a border.
