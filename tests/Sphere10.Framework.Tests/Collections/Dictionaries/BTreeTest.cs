@@ -21,19 +21,24 @@ public class BTreeTests {
 	[Test]
 	public void IntegrationTest([Range(3, 15)] int order) {
 		var keyGens = 0;
-		var tree = new BTree<string, TestObject>(order);
+		var tree = new MemoryBTree<string, TestObject>(order);
 		AssertEx.DictionaryIntegrationTest(
 			tree,
 			500,
 			(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 			iterations: 500,
-			valueComparer: new TestObjectEqualityComparer()
+			valueComparer: new TestObjectEqualityComparer(),
+			endOfIterTest: () => {
+				// Verify in-order traversal yields sorted keys
+				var result = tree.Validate(out var error);
+				Assert.That(result, Is.True, error);
+			}
 		);
 	}
 
 	[Test]
 	public void Add_SingleItem() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		Assert.That(tree.Count, Is.EqualTo(1));
 		Assert.That(tree[1], Is.EqualTo("one"));
@@ -41,7 +46,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Add_MultipleItems([Range(3, 15)] int order) {
-		var tree = new BTree<int, string>(order);
+		var tree = new MemoryBTree<int, string>(order);
 		tree.Add(3, "three");
 		tree.Add(1, "one");
 		tree.Add(2, "two");
@@ -53,14 +58,14 @@ public class BTreeTests {
 
 	[Test]
 	public void Add_DuplicateKey_Throws() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		Assert.That(() => tree.Add(1, "duplicate"), Throws.InstanceOf<InvalidOperationException>());
 	}
 
 	[Test]
 	public void Add_KVP() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(new KeyValuePair<int, string>(1, "one"));
 		Assert.That(tree.Count, Is.EqualTo(1));
 		Assert.That(tree[1], Is.EqualTo("one"));
@@ -68,7 +73,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Add_ManyItems([Range(3, 15)] int order) {
-		var tree = new BTree<int, string>(order);
+		var tree = new MemoryBTree<int, string>(order);
 		for (var i = 0; i < 200; i++)
 			tree.Add(i, $"value_{i}");
 		Assert.That(tree.Count, Is.EqualTo(200));
@@ -78,7 +83,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Set_OverwriteExisting() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		tree.Set(1, "ONE", true);
 		Assert.That(tree.Count, Is.EqualTo(1));
@@ -87,14 +92,14 @@ public class BTreeTests {
 
 	[Test]
 	public void Set_NoOverwrite_Throws() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		Assert.That(() => tree.Set(1, "ONE", false), Throws.InstanceOf<InvalidOperationException>());
 	}
 
 	[Test]
 	public void Indexer_Set_NewKey() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree[1] = "one";
 		Assert.That(tree.Count, Is.EqualTo(1));
 		Assert.That(tree[1], Is.EqualTo("one"));
@@ -102,7 +107,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Indexer_Set_ExistingKey_Updates() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree[1] = "one";
 		tree[1] = "ONE";
 		Assert.That(tree.Count, Is.EqualTo(1));
@@ -111,13 +116,13 @@ public class BTreeTests {
 
 	[Test]
 	public void Indexer_Get_NonExisting_Throws() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(() => { var _ = tree[999]; }, Throws.InstanceOf<KeyNotFoundException>());
 	}
 
 	[Test]
 	public void Remove_ExistingKey_ReturnsTrue() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		tree.Add(2, "two");
 		var result = tree.Remove(1);
@@ -129,7 +134,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Remove_NonExistingKey_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		var result = tree.Remove(999);
 		Assert.That(result, Is.False);
@@ -138,13 +143,13 @@ public class BTreeTests {
 
 	[Test]
 	public void Remove_FromEmpty_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(tree.Remove(1), Is.False);
 	}
 
 	[Test]
 	public void Remove_KVP() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		var result = tree.Remove(new KeyValuePair<int, string>(1, "one"));
 		Assert.That(result, Is.True);
@@ -153,7 +158,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Remove_AllItems([Range(3, 15)] int order) {
-		var tree = new BTree<int, string>(order);
+		var tree = new MemoryBTree<int, string>(order);
 		var count = 50;
 		for (var i = 0; i < count; i++)
 			tree.Add(i, $"value_{i}");
@@ -168,7 +173,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Remove_ReverseOrder([Range(3, 15)] int order) {
-		var tree = new BTree<int, string>(order);
+		var tree = new MemoryBTree<int, string>(order);
 		var count = 50;
 		for (var i = 0; i < count; i++)
 			tree.Add(i, $"value_{i}");
@@ -182,7 +187,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Clear_ResetsCount() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		tree.Add(2, "two");
 		tree.Add(3, "three");
@@ -193,47 +198,47 @@ public class BTreeTests {
 
 	[Test]
 	public void ContainsKey_ExistingKey_ReturnsTrue() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		Assert.That(tree.ContainsKey(1), Is.True);
 	}
 
 	[Test]
 	public void ContainsKey_NonExistingKey_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		Assert.That(tree.ContainsKey(999), Is.False);
 	}
 
 	[Test]
 	public void ContainsKey_EmptyTree_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(tree.ContainsKey(1), Is.False);
 	}
 
 	[Test]
 	public void Contains_MatchingKVP_ReturnsTrue() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		Assert.That(tree.Contains(new KeyValuePair<int, string>(1, "one")), Is.True);
 	}
 
 	[Test]
 	public void Contains_WrongValue_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		Assert.That(tree.Contains(new KeyValuePair<int, string>(1, "wrong")), Is.False);
 	}
 
 	[Test]
 	public void Contains_NonExistingKey_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(tree.Contains(new KeyValuePair<int, string>(1, "one")), Is.False);
 	}
 
 	[Test]
 	public void TryGetValue_ExistingKey_ReturnsTrueWithValue() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		var found = tree.TryGetValue(1, out var value);
 		Assert.That(found, Is.True);
@@ -242,7 +247,7 @@ public class BTreeTests {
 
 	[Test]
 	public void TryGetValue_NonExistingKey_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		var found = tree.TryGetValue(999, out var value);
 		Assert.That(found, Is.False);
 		Assert.That(value, Is.Null);
@@ -250,14 +255,14 @@ public class BTreeTests {
 
 	[Test]
 	public void TryGetValue_EmptyTree_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		var found = tree.TryGetValue(1, out _);
 		Assert.That(found, Is.False);
 	}
 
 	[Test]
 	public void Keys_ReturnsAllKeys() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(3, "three");
 		tree.Add(1, "one");
 		tree.Add(2, "two");
@@ -267,7 +272,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Values_ReturnsAllValues() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		tree.Add(2, "two");
 		tree.Add(3, "three");
@@ -277,25 +282,25 @@ public class BTreeTests {
 
 	[Test]
 	public void Keys_EmptyTree_ReturnsEmpty() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(tree.Keys, Is.Empty);
 	}
 
 	[Test]
 	public void Values_EmptyTree_ReturnsEmpty() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(tree.Values, Is.Empty);
 	}
 
 	[Test]
 	public void IsReadOnly_ReturnsFalse() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(tree.IsReadOnly, Is.False);
 	}
 
 	[Test]
 	public void CopyTo() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		tree.Add(2, "two");
 		var array = new KeyValuePair<int, string>[4];
@@ -308,7 +313,7 @@ public class BTreeTests {
 
 	[Test]
 	public void CopyTo_InsufficientSpace_Throws() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		tree.Add(2, "two");
 		var array = new KeyValuePair<int, string>[1];
@@ -317,7 +322,7 @@ public class BTreeTests {
 
 	[Test]
 	public void InOrderTraversal_ReturnsSorted() {
-		var tree = new BTree<int, string>(3) { TraversalType = TreeTraversalType.InOrder };
+		var tree = new MemoryBTree<int, string>(3) { TraversalType = TreeTraversalType.InOrder };
 		var items = new[] { 5, 3, 8, 1, 4, 7, 9, 2, 6 };
 		foreach (var item in items)
 			tree.Add(item, $"value_{item}");
@@ -329,7 +334,7 @@ public class BTreeTests {
 
 	[Test]
 	public void InOrderTraversal_LargeDataSet([Range(3, 15)] int order) {
-		var tree = new BTree<int, string>(order) { TraversalType = TreeTraversalType.InOrder };
+		var tree = new MemoryBTree<int, string>(order) { TraversalType = TreeTraversalType.InOrder };
 		var rng = new Random(42);
 		var addedKeys = new HashSet<int>();
 		for (var i = 0; i < 200; i++) {
@@ -345,7 +350,7 @@ public class BTreeTests {
 
 	[Test]
 	public void PreOrderTraversal_ReturnsAllItems() {
-		var tree = new BTree<int, string>(3) { TraversalType = TreeTraversalType.PreOrder };
+		var tree = new MemoryBTree<int, string>(3) { TraversalType = TreeTraversalType.PreOrder };
 		tree.Add(2, "two");
 		tree.Add(1, "one");
 		tree.Add(3, "three");
@@ -355,7 +360,7 @@ public class BTreeTests {
 
 	[Test]
 	public void PostOrderTraversal_ReturnsAllItems() {
-		var tree = new BTree<int, string>(3) { TraversalType = TreeTraversalType.PostOrder };
+		var tree = new MemoryBTree<int, string>(3) { TraversalType = TreeTraversalType.PostOrder };
 		tree.Add(2, "two");
 		tree.Add(1, "one");
 		tree.Add(3, "three");
@@ -365,7 +370,7 @@ public class BTreeTests {
 
 	[Test]
 	public void LevelOrderTraversal_ReturnsAllItems() {
-		var tree = new BTree<int, string>(3) { TraversalType = TreeTraversalType.LevelOrder };
+		var tree = new MemoryBTree<int, string>(3) { TraversalType = TreeTraversalType.LevelOrder };
 		tree.Add(2, "two");
 		tree.Add(1, "one");
 		tree.Add(3, "three");
@@ -375,22 +380,22 @@ public class BTreeTests {
 
 	[Test]
 	public void Enumeration_EmptyTree_YieldsNothing() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		var items = tree.ToList();
 		Assert.That(items, Is.Empty);
 	}
 
 	[Test]
 	public void Constructor_OrderLessThan3_Throws() {
-		Assert.That(() => new BTree<int, string>(2), Throws.InstanceOf<ArgumentOutOfRangeException>());
-		Assert.That(() => new BTree<int, string>(1), Throws.InstanceOf<ArgumentOutOfRangeException>());
-		Assert.That(() => new BTree<int, string>(0), Throws.InstanceOf<ArgumentOutOfRangeException>());
-		Assert.That(() => new BTree<int, string>(-1), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		Assert.That(() => new MemoryBTree<int, string>(2), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		Assert.That(() => new MemoryBTree<int, string>(1), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		Assert.That(() => new MemoryBTree<int, string>(0), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		Assert.That(() => new MemoryBTree<int, string>(-1), Throws.InstanceOf<ArgumentOutOfRangeException>());
 	}
 
 	[Test]
 	public void Constructor_Order3_Works() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		tree.Add(1, "one");
 		tree.Add(2, "two");
 		tree.Add(3, "three");
@@ -399,7 +404,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Count_TracksAddAndRemove() {
-		var tree = new BTree<int, string>(3);
+		var tree = new MemoryBTree<int, string>(3);
 		Assert.That(tree.Count, Is.EqualTo(0));
 		tree.Add(1, "one");
 		Assert.That(tree.Count, Is.EqualTo(1));
@@ -413,7 +418,7 @@ public class BTreeTests {
 
 	[Test]
 	public void AddRemoveAdd_SameKey([Range(3, 15)] int order) {
-		var tree = new BTree<int, string>(order);
+		var tree = new MemoryBTree<int, string>(order);
 		tree.Add(1, "first");
 		Assert.That(tree[1], Is.EqualTo("first"));
 		tree.Remove(1);
@@ -424,7 +429,7 @@ public class BTreeTests {
 
 	[Test]
 	public void StringKeys([Range(3, 15)] int order) {
-		var tree = new BTree<string, int>(order);
+		var tree = new MemoryBTree<string, int>(order);
 		tree.Add("banana", 1);
 		tree.Add("apple", 2);
 		tree.Add("cherry", 3);
@@ -438,7 +443,7 @@ public class BTreeTests {
 
 	[Test]
 	public void SequentialInsertAndRetrieve([Range(3, 15)] int order) {
-		var tree = new BTree<int, int>(order);
+		var tree = new MemoryBTree<int, int>(order);
 		var count = 100;
 		for (var i = 0; i < count; i++)
 			tree.Add(i, i * 10);
@@ -449,7 +454,7 @@ public class BTreeTests {
 
 	[Test]
 	public void ReverseInsertAndRetrieve([Range(3, 15)] int order) {
-		var tree = new BTree<int, int>(order);
+		var tree = new MemoryBTree<int, int>(order);
 		var count = 100;
 		for (var i = count - 1; i >= 0; i--)
 			tree.Add(i, i * 10);
@@ -460,7 +465,7 @@ public class BTreeTests {
 
 	[Test]
 	public void RandomInsertAndRetrieve([Range(3, 15)] int order) {
-		var tree = new BTree<int, int>(order);
+		var tree = new MemoryBTree<int, int>(order);
 		var rng = new Random(12345);
 		var expected = new Dictionary<int, int>();
 		for (var i = 0; i < 200; i++) {
@@ -477,7 +482,7 @@ public class BTreeTests {
 
 	[Test]
 	public void RandomAddRemoveMix([Range(3, 15)] int order) {
-		var tree = new BTree<int, string>(order);
+		var tree = new MemoryBTree<int, string>(order);
 		var reference = new Dictionary<int, string>();
 		var rng = new Random(31337);
 
@@ -514,7 +519,7 @@ public class BTreeTests {
 
 	[Test]
 	public void Add_ThenContainsKey([Range(3, 15)] int order) {
-		var tree = new BTree<int, int>(order);
+		var tree = new MemoryBTree<int, int>(order);
 		var rng = new Random(31337);
 		var keys = Tools.Collection.Generate(() => rng.Next()).Take(100000).Distinct().ToArray();
 		for (var i = 0; i < keys.Length; i++) {

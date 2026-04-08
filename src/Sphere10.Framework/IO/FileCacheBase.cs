@@ -13,8 +13,6 @@ using System.IO;
 namespace Sphere10.Framework;
 
 public abstract class FileCacheBase<TContent> : CacheBase<string, TContent> {
-	private readonly Dictionary<string, DateTime> _fetchedWriteTimes;
-
 	protected FileCacheBase(
 		CacheReapPolicy reapStrategy = CacheReapPolicy.LeastUsed,
 		ExpirationPolicy expirationStrategy = ExpirationPolicy.SinceLastAccessedTime,
@@ -23,7 +21,6 @@ public abstract class FileCacheBase<TContent> : CacheBase<string, TContent> {
 		IEqualityComparer<string> fileNameComparer = null,
 		ICacheReaper reaper = null
 	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, NullValuePolicy.Throw, StaleValuePolicy.CheckStaleOnDemand, fileNameComparer, reaper) {
-		_fetchedWriteTimes = new Dictionary<string, DateTime>(fileNameComparer ?? EqualityComparer<string>.Default);
 	}
 
 	/// <summary>
@@ -31,13 +28,6 @@ public abstract class FileCacheBase<TContent> : CacheBase<string, TContent> {
 	/// </summary>
 	public bool RetainCacheOnDelete { get; init; }
 
-	protected override void OnItemFetched(string key, TContent val) {
-		_fetchedWriteTimes[key] = File.GetLastWriteTimeUtc(key);
-	}
-
-	protected override void OnItemRemoved(string key, CachedItem<TContent> val) {
-		_fetchedWriteTimes.Remove(key);
-	}
 
 	/// <remarks>
 	/// A stale file will result in a re-fetching of that file TRUE. When FALSE, the cache re-uses the cached item.
@@ -49,7 +39,6 @@ public abstract class FileCacheBase<TContent> : CacheBase<string, TContent> {
 	protected override bool CheckStaleness(string key, CachedItem<TContent> item)
 		=> !File.Exists(key)
 			? !RetainCacheOnDelete
-			: !_fetchedWriteTimes.TryGetValue(key, out var fetchedWriteTime)
-			  || fetchedWriteTime != File.GetLastWriteTimeUtc(key);
+			: item.FetchedOn < File.GetLastWriteTime(key);
 }
 
