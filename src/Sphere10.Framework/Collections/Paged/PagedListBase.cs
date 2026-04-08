@@ -52,15 +52,17 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	private long _count;
 	private long _lastFoundPage;
-	private readonly ReadOnlyListAdapter<IPage<TItem>> _pagesAdapter;
+	private readonly List<IPage<TItem>> _pages;
+	private readonly IReadOnlyList<IPage<TItem>> _pagesReadOnly;
 	protected IExtendedList<IPage<TItem>> InternalPages;
 
 	protected PagedListBase(bool autoLoad) {
 		RequiresLoad = false;
 		IsLoading = false;
-		InternalPages = new ExtendedList<IPage<TItem>>();
+		_pages = new List<IPage<TItem>>();
+		InternalPages = _pages.AsExtended();
 		_count = 0;
-		_pagesAdapter = new ReadOnlyListAdapter<IPage<TItem>>(InternalPages);
+		_pagesReadOnly = _pages.AsReadOnly();
 		_lastFoundPage = -1;
 
 		if (autoLoad)
@@ -75,7 +77,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	/// <summary>
 	/// Exposes the pages composing the list in read-only form.
 	/// </summary>
-	public virtual IReadOnlyList<IPage<TItem>> Pages => _pagesAdapter;
+	public virtual IReadOnlyList<IPage<TItem>> Pages => _pagesReadOnly;
 
 	/// <summary>
 	/// Indicates whether the list must be loaded before accessing data.
@@ -97,7 +99,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		try {
 			Clear();
 			foreach (var page in LoadPages()) {
-				InternalPages.Add(page);
+				_pages.Add(page);
 				_count += page.Count;
 			}
 		} finally {
@@ -129,7 +131,6 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	/// Reads items grouped by the pages they fall into, issuing page lifecycle notifications as needed.
 	/// </summary>
 	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
-		CheckRange(index, count);
 		CheckLoaded();
 		NotifyAccessing();
 		CheckRange(index, count);
@@ -153,7 +154,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		CheckLoaded();
 		NotifyAccessing();
 
-		var page = InternalPages.Any() ? InternalPages.Last() : CreateNextPage();
+		var page = _pages.Count > 0 ? _pages[_pages.Count - 1] : CreateNextPage();
 		_count -= page.Count;
 
 		bool AppendToPage(out IEnumerable<TItem> remaining) {
@@ -225,7 +226,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		if (count == 0)
 			return;
 		var endIndex = index + count - 1;
-		if (endIndex != InternalPages.Last().EndIndex)
+		if (endIndex != _pages[_pages.Count - 1].EndIndex)
 			throw new NotSupportedException("Removing an inner region of items is not supported. This collection only supports removing from the end.");
 		var pages = GetPagesInRange(index, endIndex);
 		pages.Reverse();
@@ -253,9 +254,9 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	public override void Clear() {
 		CheckLoaded();
 		NotifyAccessing();
-		while (InternalPages.Count > 0)
-			DeletePage(InternalPages[InternalPages.Count - 1]);
-		InternalPages.Clear();
+		while (_pages.Count > 0)
+			DeletePage(_pages[_pages.Count - 1]);
+		_pages.Clear();
 		_lastFoundPage = -1;
 		_count = 0;
 		NotifyAccessed();
@@ -265,7 +266,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		var currentVersion = Version;
 		IDisposable lastScope = default;
 		return
-			InternalPages
+			_pages
 				.SelectMany(p => {
 					lastScope?.Dispose();
 					lastScope = EnterOpenPageScope(p);
@@ -287,7 +288,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	protected IPage<TItem> CreateNextPage() {
 		IPage<TItem> newPage;
-		if (!InternalPages.Any()) {
+		if (_pages.Count == 0) {
 			// First page
 			NotifyPageCreating(0);
 			newPage = NewPageInstance(0);
@@ -298,7 +299,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 			newPage.Size = 0;
 		} else {
 			// Next page
-			var lastPage = InternalPages.Last();
+			var lastPage = _pages[_pages.Count - 1];
 			var nextPageNumber = lastPage.Number + 1;
 			NotifyPageCreating(nextPageNumber);
 			newPage = NewPageInstance(nextPageNumber);
@@ -308,19 +309,18 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 			newPage.Count = 0;
 			newPage.Size = 0;
 		}
-		;
-		InternalPages.Add(newPage);
+		_pages.Add(newPage);
 		NotifyPageCreated(newPage);
 		return newPage;
 	}
 
 	protected void DeletePage(IPage<TItem> page) {
-		if (page.Number != Pages.Last().Number)
+		if (page.Number != _pages[_pages.Count - 1].Number)
 			throw new NotSupportedException("Deleting inner pages is not currently supported in this collection. Only deleting pages from the end is supported.");
 		NotifyPageAccessing(page);
 		page.State = PageState.Deleting;
 		NotifyPageDeleting(page);
-		InternalPages.RemoveAt(InternalPages.Count - 1);
+		_pages.RemoveAt(_pages.Count - 1);
 		page.State = PageState.Deleted;
 		NotifyPageDeleted(page);
 		NotifyPageAccessed(page);
@@ -348,21 +348,21 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		var pages = new List<IPage<TItem>>();
 		IPage<TItem> page;
 		do {
-			page = InternalPages[index++];
+			page = _pages[(int)index++];
 			pages.Add(page);
-		} while (endIndex > page.EndIndex && index < InternalPages.Count);
+		} while (endIndex > page.EndIndex && index < _pages.Count);
 		return pages;
 	}
 
 	protected long FindPageContainingIndex(long index) {
-		var internalPagesCount = InternalPages.Count;
+		var internalPagesCount = _pages.Count;
 		if (internalPagesCount == 0)
 			return -1;
 
 		long lower, upper;
 		if (_lastFoundPage != -1) {
 			// Optimization 1: check the last binary searched page again (index seeks tend to be clustered together)
-			var currentPage = InternalPages[_lastFoundPage];
+			var currentPage = _pages[(int)_lastFoundPage];
 			var cpStartIndex = currentPage.StartIndex;
 			var cpEndIndex = currentPage.EndIndex;
 			if (cpStartIndex <= index && index <= cpEndIndex)
@@ -390,20 +390,20 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 			upper = internalPagesCount - 1;
 		}
 
-		// Binary search pages to find the one containing the index
-		_lastFoundPage = Tools.Collection.BinarySearch(
-			InternalPages,
-			index,
-			lower,
-			upper,
-			(_, p) => {
-				if (index < p.StartIndex)
-					return -1;
-				if (index > p.EndIndex)
-					return +1;
-				return 0;
-			});
-
+		// Inlined binary search over _pages to avoid IExtendedList indexer overhead
+		while (lower <= upper) {
+			var middle = lower + (upper - lower) / 2;
+			var p = _pages[(int)middle];
+			if (index < p.StartIndex)
+				upper = middle - 1;
+			else if (index > p.EndIndex)
+				lower = middle + 1;
+			else {
+				_lastFoundPage = middle;
+				return _lastFoundPage;
+			}
+		}
+		_lastFoundPage = ~lower;
 		return _lastFoundPage;
 	}
 
@@ -420,21 +420,21 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		if (allowAtEnd && index == 0)
 			return;
 
-		if (InternalPages.Count == 0)
+		if (_pages.Count == 0)
 			throw new InvalidOperationException("No pages");
 
-		var startIX = InternalPages[0].StartIndex;
-		var lastIX = InternalPages[InternalPages.Count - 1].EndIndex;
+		var startIX = _pages[0].StartIndex;
+		var lastIX = _pages[_pages.Count - 1].EndIndex;
 		var collectionCount = lastIX - startIX + 1;
 		Guard.CheckIndex(index, startIX, collectionCount, allowAtEnd);
 	}
 
 	protected override void CheckRange(long index, long count, bool rightAligned = false) {
-		if (InternalPages.Count == 0)
+		if (_pages.Count == 0)
 			throw new InvalidOperationException("No pages");
 
-		var startIX = InternalPages[0].StartIndex;
-		var lastIX = InternalPages[InternalPages.Count - 1].EndIndex;
+		var startIX = _pages[0].StartIndex;
+		var lastIX = _pages[_pages.Count - 1].EndIndex;
 		var collectionCount = lastIX - startIX + 1;
 		Guard.CheckRange(index, count, rightAligned, startIX, collectionCount);
 	}
@@ -485,7 +485,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	protected virtual void OnPageDeleted(IPage<TItem> page) {
 		if (_lastFoundPage == page.Number) {
 			// reset current page to end, since most likely place to search 
-			var pCount = Pages.Count;
+			var pCount = _pages.Count;
 			_lastFoundPage = pCount > 0 ? pCount - 1 : -1;
 		}
 	}
@@ -569,7 +569,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		CheckRange,
 		EnterOpenPageScope,
 		GetPageSegments,
-		() => InternalPages,
+		() => _pagesReadOnly,
 		CreateNextPage,
 		NotifyAccessing,
 		NotifyAccessed,
