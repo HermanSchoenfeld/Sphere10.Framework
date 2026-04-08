@@ -22,7 +22,7 @@ public class SerializerFactory {
 	private readonly BijectiveDictionary<Type, long> _registrationsByType;
 	private readonly ICache<Type, RecursiveDataType<long>> _getSerializerHierarchyCache;
 	private readonly ICache<RecursiveDataType<long>, IItemSerializer> _fromSerializerHierarchyCache;
-	private readonly IDictionary<Type, IItemSerializer> _activatedSerializers;
+	private readonly SynchronizedDictionary<Type, IItemSerializer> _activatedSerializers;
 	private bool _readOnly;
 
 	static SerializerFactory() {
@@ -37,7 +37,7 @@ public class SerializerFactory {
 		_registrationsByType = new BijectiveDictionary<Type, long>(new TypeEquivalenceComparer(), EqualityComparer<long>.Default);
 		_getSerializerHierarchyCache = new ActionCache<Type, RecursiveDataType<long>>(GetSerializerHierarchyInternal, keyComparer: TypeEquivalenceComparer.Instance);
 		_fromSerializerHierarchyCache = new ActionCache<RecursiveDataType<long>, IItemSerializer>(FromSerializerHierarchyInternal);
-		_activatedSerializers = new Dictionary<Type, IItemSerializer>(TypeEquivalenceComparer.Instance);
+		_activatedSerializers = new SynchronizedDictionary<Type, IItemSerializer>(TypeEquivalenceComparer.Instance);
 		//_getSerializerCache = new ActionCache<Type, IItemSerializer>(GetCachedSerializer_Fetch,  keyComparer: TypeEquivalenceComparer.Instance);
 		_readOnly = false;
 		}
@@ -346,16 +346,20 @@ public class SerializerFactory {
 
 	public bool TryGetPureSerializer(Type dataType, out IItemSerializer serializer, out HashSet<Type> missingSerializers) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
-		if (_activatedSerializers.TryGetValue(dataType, out serializer)) {
-			missingSerializers = null;
-			return true;
+		if (!_activatedSerializers.TryGetValue(dataType, out serializer)) {
+			using (_activatedSerializers.EnterWriteScope()) {
+				if (!_activatedSerializers.TryGetValue(dataType, out serializer)) {
+					if (!TryFindRegistration(dataType, out var registration, out missingSerializers))
+						return false;
+
+					serializer = registration.Factory(registration, dataType);
+					_activatedSerializers.Add(dataType, serializer);
+					return true;
+				}
+			}
 		}
 
-		if (!TryFindRegistration(dataType, out var registration, out missingSerializers))
-			return false;
-
-		serializer = registration.Factory(registration, dataType);
-		_activatedSerializers.Add(dataType, serializer);
+		missingSerializers = null;
 		return true;
 	}
 
