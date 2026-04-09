@@ -58,7 +58,13 @@ namespace Sphere10.Framework;
 /// <typeparam name="V">Value type. Must have a constant-size serializer.</typeparam>
 public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	public const int HeaderSize = 32;
-	public const long NoNode = -1L;
+
+	/// <summary>
+	/// Sentinel value representing "no node". Equal to <c>default(long)</c> so that
+	/// <see cref="BTreePlus{K,V,TNode}"/> can use <c>default(TNode)</c> to represent a null node.
+	/// Node handles exposed to the base class are 1-based; the underlying store uses 0-based indices.
+	/// </summary>
+	public const long NoNode = 0L;
 
 	// Node record field offsets
 	private const int IsLeafOffset = 0;
@@ -116,9 +122,12 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		_freeList = new Stack<long>();
 
 		// Compute derived layout values
-		var MaxEntries = order - 1;
-		_childrenOffset = EntriesOffset + (MaxEntries * _entrySize);
-		_nodeSize = _childrenOffset + (order * sizeof(long));
+		// During splits, a node temporarily holds up to (order) keys/entries and (order + 1) children,
+		// so we allocate one extra slot for entries and children beyond the steady-state maximum.
+		var MaxEntrySlots = order;           // order - 1 steady-state + 1 overflow during split
+		var MaxChildSlots = order + 1;       // order steady-state + 1 overflow during split
+		_childrenOffset = EntriesOffset + (MaxEntrySlots * _entrySize);
+		_nodeSize = _childrenOffset + (MaxChildSlots * sizeof(long));
 
 		// The StreamPagedList occupies the stream region after the header.
 		var NodeStream = new BoundedStream(stream, HeaderSize, long.MaxValue - HeaderSize) {
@@ -175,8 +184,8 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		// KeyCount = 0, ChildCount = 0 are already zero
 		// NextLeaf = NoNode
 		Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
-		// Initialize children slots to NoNode (unused for leaves, but keeps the record clean)
-		for (var I = 0; I < Order; I++)
+		// Initialize all children slots to NoNode (unused for leaves, but keeps the record clean)
+		for (var I = 0; I < Order + 1; I++)
 			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
 		return AllocateNode(Record);
 	}
@@ -187,8 +196,8 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		// KeyCount = 0, ChildCount = 0 are already zero
 		// NextLeaf = NoNode (not used for internal nodes)
 		Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
-		// Initialize children slots to NoNode
-		for (var I = 0; I < Order; I++)
+		// Initialize all children slots to NoNode
+		for (var I = 0; I < Order + 1; I++)
 			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
 		return AllocateNode(Record);
 	}
@@ -450,22 +459,32 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 
 	#region Private — Node I/O
 
-	private byte[] ReadNode(long index) {
-		return _nodeStore.Read(index);
+	/// <summary>
+	/// Converts a 1-based node handle to a 0-based store index.
+	/// </summary>
+	private static long HandleToIndex(long handle) => handle - 1;
+
+	/// <summary>
+	/// Converts a 0-based store index to a 1-based node handle.
+	/// </summary>
+	private static long IndexToHandle(long index) => index + 1;
+
+	private byte[] ReadNode(long handle) {
+		return _nodeStore.Read(HandleToIndex(handle));
 	}
 
-	private void WriteNode(long index, byte[] record) {
-		_nodeStore.Update(index, record);
+	private void WriteNode(long handle, byte[] record) {
+		_nodeStore.Update(HandleToIndex(handle), record);
 	}
 
 	private long AllocateNode(byte[] record) {
 		if (_freeList.Count > 0) {
-			var Index = _freeList.Pop();
-			WriteNode(Index, record);
-			return Index;
+			var Handle = _freeList.Pop();
+			WriteNode(Handle, record);
+			return Handle;
 		}
 		_nodeStore.Add(record);
-		return _nodeStore.Count - 1;
+		return IndexToHandle(_nodeStore.Count - 1);
 	}
 
 	#endregion

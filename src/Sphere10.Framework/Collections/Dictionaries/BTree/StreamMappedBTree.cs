@@ -60,6 +60,8 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	private readonly int _keySize;
 	private readonly int _valueSize;
 	private readonly int _keyEntrySize;
+	private readonly int _maxKeySlots;
+	private readonly int _childrenOffset;
 	private readonly int _nodeSize;
 	private readonly StreamPagedList<byte[]> _nodeStore;
 	private readonly Stack<long> _freeList;
@@ -100,8 +102,12 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 		_freeList = new Stack<long>();
 
 		// Node layout: 1 (IsLeaf) + 4 (KeyCount) + 4 (ChildCount) + keys + children
-		var MaxKeys = order - 1;
-		_nodeSize = 1 + 4 + 4 + (MaxKeys * _keyEntrySize) + (order * sizeof(long));
+		// During splits, a node temporarily holds up to (order) keys and (order + 1) children,
+		// so we allocate one extra slot for keys and children beyond the steady-state maximum.
+		_maxKeySlots = order;             // order - 1 steady-state + 1 overflow during split
+		var MaxChildSlots = order + 1;    // order steady-state + 1 overflow during split
+		_childrenOffset = 1 + 4 + 4 + (_maxKeySlots * _keyEntrySize);
+		_nodeSize = _childrenOffset + (MaxChildSlots * sizeof(long));
 
 		// The StreamPagedList occupies the stream region after the BTree header.
 		// A BoundedStream with relative addressing maps position 0 to HeaderSize.
@@ -163,10 +169,9 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	protected override long CreateInternalNode() {
 		var Record = new byte[_nodeSize];
 		Record[0] = 0; // IsLeaf = false
-		// Initialize children slots to NoNode
-		var ChildrenOffset = 1 + 4 + 4 + (MaxKeys * _keyEntrySize);
-		for (var I = 0; I < Order; I++)
-			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, ChildrenOffset + (I * sizeof(long)), sizeof(long));
+		// Initialize all children slots to NoNode
+		for (var I = 0; I < Order + 1; I++)
+			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
 		return AllocateNode(Record);
 	}
 
@@ -263,31 +268,28 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 
 	protected override long GetChild(long node, int index) {
 		var Record = ReadNode(node);
-		var ChildrenOffset = 1 + 4 + 4 + (MaxKeys * _keyEntrySize);
-		return _bitConverter.ToInt64(Record, ChildrenOffset + (index * sizeof(long)));
+		return _bitConverter.ToInt64(Record, _childrenOffset + (index * sizeof(long)));
 	}
 
 	protected override void SetChild(long node, int index, long child) {
 		var Record = ReadNode(node);
-		var ChildrenOffset = 1 + 4 + 4 + (MaxKeys * _keyEntrySize);
-		Buffer.BlockCopy(_bitConverter.GetBytes(child), 0, Record, ChildrenOffset + (index * sizeof(long)), sizeof(long));
+		Buffer.BlockCopy(_bitConverter.GetBytes(child), 0, Record, _childrenOffset + (index * sizeof(long)), sizeof(long));
 		WriteNode(node, Record);
 	}
 
 	protected override void InsertChild(long node, int index, long child) {
 		var Record = ReadNode(node);
 		var ChildCount = _bitConverter.ToInt32(Record, 5);
-		var ChildrenOffset = 1 + 4 + 4 + (MaxKeys * _keyEntrySize);
 
 		// Shift children right
 		if (index < ChildCount) {
 			Buffer.BlockCopy(
-				Record, ChildrenOffset + (index * sizeof(long)),
-				Record, ChildrenOffset + ((index + 1) * sizeof(long)),
+				Record, _childrenOffset + (index * sizeof(long)),
+				Record, _childrenOffset + ((index + 1) * sizeof(long)),
 				(ChildCount - index) * sizeof(long));
 		}
 
-		Buffer.BlockCopy(_bitConverter.GetBytes(child), 0, Record, ChildrenOffset + (index * sizeof(long)), sizeof(long));
+		Buffer.BlockCopy(_bitConverter.GetBytes(child), 0, Record, _childrenOffset + (index * sizeof(long)), sizeof(long));
 
 		// Increment child count
 		Buffer.BlockCopy(_bitConverter.GetBytes(ChildCount + 1), 0, Record, 5, 4);
@@ -297,8 +299,7 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	protected override void AddChild(long node, long child) {
 		var Record = ReadNode(node);
 		var ChildCount = _bitConverter.ToInt32(Record, 5);
-		var ChildrenOffset = 1 + 4 + 4 + (MaxKeys * _keyEntrySize);
-		Buffer.BlockCopy(_bitConverter.GetBytes(child), 0, Record, ChildrenOffset + (ChildCount * sizeof(long)), sizeof(long));
+		Buffer.BlockCopy(_bitConverter.GetBytes(child), 0, Record, _childrenOffset + (ChildCount * sizeof(long)), sizeof(long));
 		Buffer.BlockCopy(_bitConverter.GetBytes(ChildCount + 1), 0, Record, 5, 4);
 		WriteNode(node, Record);
 	}
@@ -306,18 +307,17 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	protected override void RemoveChildAt(long node, int index) {
 		var Record = ReadNode(node);
 		var ChildCount = _bitConverter.ToInt32(Record, 5);
-		var ChildrenOffset = 1 + 4 + 4 + (MaxKeys * _keyEntrySize);
 
 		// Shift children left
 		if (index < ChildCount - 1) {
 			Buffer.BlockCopy(
-				Record, ChildrenOffset + ((index + 1) * sizeof(long)),
-				Record, ChildrenOffset + (index * sizeof(long)),
+				Record, _childrenOffset + ((index + 1) * sizeof(long)),
+				Record, _childrenOffset + (index * sizeof(long)),
 				(ChildCount - index - 1) * sizeof(long));
 		}
 
 		// Write NoNode into the vacated slot
-		Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, ChildrenOffset + ((ChildCount - 1) * sizeof(long)), sizeof(long));
+		Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + ((ChildCount - 1) * sizeof(long)), sizeof(long));
 
 		// Decrement child count
 		Buffer.BlockCopy(_bitConverter.GetBytes(ChildCount - 1), 0, Record, 5, 4);
