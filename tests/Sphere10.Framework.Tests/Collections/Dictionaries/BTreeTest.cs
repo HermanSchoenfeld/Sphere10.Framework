@@ -29,7 +29,6 @@ public class BTreeTests {
 			iterations: 500,
 			valueComparer: new TestObjectEqualityComparer(),
 			endOfIterTest: () => {
-				// Verify in-order traversal yields sorted keys
 				var result = tree.Validate(out var error);
 				Assert.That(result, Is.True, error);
 			}
