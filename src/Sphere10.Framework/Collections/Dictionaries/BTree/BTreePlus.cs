@@ -159,6 +159,9 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 
 		Count--;
 
+		if (HasRoot && !IsLeaf(Root))
+			RebuildInternalSeparators(Root);
+
 		if (HasRoot && GetKeyCount(Root) == 0) {
 			if (IsLeaf(Root)) {
 				var OldRoot = Root;
@@ -495,6 +498,15 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 			MergeChildren(parent, childIndex - 1);
 		else if (childIndex < GetChildCount(parent) - 1)
 			MergeChildren(parent, childIndex);
+	}
+
+	private void RebuildInternalSeparators(TNode node) {
+		if (IsLeaf(node))
+			return;
+		var ChildCount = GetChildCount(node);
+		for (var i = 0; i < ChildCount; i++)
+			RebuildInternalSeparators(GetChild(node, i));
+		RefreshAllSeparators(node);
 	}
 
 	private void RefreshAllSeparators(TNode parent) {
