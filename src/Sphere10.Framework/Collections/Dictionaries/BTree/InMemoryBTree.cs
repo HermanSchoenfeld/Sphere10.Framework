@@ -13,10 +13,10 @@ namespace Sphere10.Framework;
 /// <summary>
 /// In-memory B-tree dictionary backed by object-graph nodes with List-based key and child storage.
 /// </summary>
-public class MemoryBTree<K, V> : BTreeBase<K, V, MemoryBTree<K, V>.Node> {
+public class InMemoryBTree<K, V> : BTree<K, V, InMemoryBTree<K, V>.Node> {
 	private Node _root;
 
-	public MemoryBTree(int order, IComparer<K> keyComparer = null)
+	public InMemoryBTree(int order, IComparer<K> keyComparer = null)
 		: base(order, keyComparer) {
 	}
 
