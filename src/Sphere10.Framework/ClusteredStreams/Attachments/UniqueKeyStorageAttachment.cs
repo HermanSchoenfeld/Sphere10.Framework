@@ -9,28 +9,60 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework;
 
+/// <summary>
+/// A scalable unique key storage attachment that persists the reverse index (key → position) in
+/// a stream-mapped B-tree rather than an in-memory dictionary. The forward mapping (position → key)
+/// is still stored in the base <see cref="PagedListStorageAttachmentBase{TKey}"/>.
+///
+/// A companion <see cref="ClusteredStreamsAttachmentBase"/> is registered on the same
+/// <see cref="ClusteredStreams"/> to provide a dedicated stream for the B-tree.
+/// </summary>
 public class UniqueKeyStorageAttachment<TKey> : PagedListStorageAttachmentBase<TKey>, IReadOnlyDictionary<TKey, long> {
-	
-	private readonly Dictionary<TKey, long> _dictionary;
+	private const int BTreeOrder = 64;
+
+	private readonly IEqualityComparer<TKey> _keyComparer;
+	private readonly BTreeCompanionAttachment _btreeCompanion;
+	private StreamMappedBTree<TKey, long> _btree;
 
 	public UniqueKeyStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer)
 		: base(streams, attachmentID, keySerializer) {
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-		_dictionary = new Dictionary<TKey, long>(keyComparer);
+		_keyComparer = keyComparer;
+
+		// Register a companion attachment to hold the BTree's persistent storage
+		_btreeCompanion = new BTreeCompanionAttachment(streams, attachmentID + ".btree");
+		streams.RegisterAttachment(_btreeCompanion);
 	}
-	
-	public int Count => _dictionary.Count;
-	
-	public IEnumerable<TKey> Keys => _dictionary.Keys;
 
-	public IEnumerable<long> Values => _dictionary.Values;
+	public int Count => _btree?.Count ?? 0;
 
-	public bool ContainsKey(TKey key) => _dictionary.ContainsKey(key);
+	public IEnumerable<TKey> Keys {
+		get {
+			CheckAttached();
+			return _btree.Select(Kvp => Kvp.Key);
+		}
+	}
 
-	public bool TryGetValue(TKey key, out long value) => _dictionary.TryGetValue(key, out value);
+	public IEnumerable<long> Values {
+		get {
+			CheckAttached();
+			return _btree.Select(Kvp => Kvp.Value);
+		}
+	}
+
+	public bool ContainsKey(TKey key) {
+		CheckAttached();
+		return _btree.ContainsKey(key);
+	}
+
+	public bool TryGetValue(TKey key, out long value) {
+		CheckAttached();
+		return _btree.TryGetValue(key, out value);
+	}
 
 	public TKey Read(long index) {
 		CheckAttached();
@@ -46,74 +78,115 @@ public class UniqueKeyStorageAttachment<TKey> : PagedListStorageAttachmentBase<T
 	public void Add(long index, TKey key) {
 		CheckAttached();
 		Guard.Argument(index == PagedList.Count, nameof(index), "Index mismatches with expected index in store");
-		_dictionary.Add(key, index);
+		_btree.Add(key, index);
 		PagedList.Add(key);
 	}
 
 	public void Update(long index, TKey key) {
 		CheckAttached();
-		var oldKey = PagedList.Read(index);
-		_dictionary.Remove(oldKey);
-		_dictionary.Add(key, index);
+		var OldKey = PagedList.Read(index);
+		_btree.Remove(OldKey);
+		_btree.Add(key, index);
 		PagedList.Update(index, key);
 	}
 
 	public void Insert(long index, TKey key) {
 		CheckAttached();
-		Guard.Ensure(!_dictionary.ContainsKey(key));
+		Guard.Ensure(!_btree.ContainsKey(key));
 		PagedList.Insert(index, key);
-		HydrateStore(); // rebuild entire memory index since indices have shifted
+		RebuildBTree();
 	}
 
 	public void Remove(long index) {
 		CheckAttached();
 		PagedList.RemoveAt(index);
-		HydrateStore(); // rebuild entire memory index since indices have shifted
+		RebuildBTree();
 	}
 
 	public void Reap(long index) {
 		CheckAttached();
-		var oldKey = PagedList.Read(index);
-		_dictionary.Remove(oldKey);
-		// Reap doesn't delete item, only tombstones it so indices are preserved
+		var OldKey = PagedList.Read(index);
+		_btree.Remove(OldKey);
 	}
 
 	public void Clear() {
 		CheckAttached();
-		_dictionary.Clear();
+		_btree.Clear();
 		PagedList.Clear();
 	}
-	
+
 	public IEnumerator<KeyValuePair<TKey, long>> GetEnumerator() {
 		CheckAttached();
-		return _dictionary.GetEnumerator();
+		return _btree.GetEnumerator();
 	}
 
 	IEnumerator IEnumerable.GetEnumerator() {
 		return GetEnumerator();
 	}
-	
 
-	public long this[TKey key] => _dictionary[key];
-
-	protected override void AttachInternal() {
-		base.AttachInternal();
-		HydrateStore();
-	}
-
-	private void HydrateStore() {
-		// Loads the storage and fill out the lookup with the stored projections
-		_dictionary.Clear();
-		using var _ = Streams.EnterAccessScope();
-		var reserved = Streams.Header.ReservedStreams;
-		for (var i = 0L; i < PagedList.Count; i++) {
-			// reaped objects are ignored
-			if (Streams.FastReadStreamDescriptorTraits(i + reserved).HasFlag(ClusteredStreamTraits.Reaped))
-				continue;
-			var key = PagedList.Read(i);
-			_dictionary.Add(key, i);
+	public long this[TKey key] {
+		get {
+			CheckAttached();
+			return _btree[key];
 		}
 	}
 
+	protected override void AttachInternal() {
+		base.AttachInternal();
+		_btree = new StreamMappedBTree<TKey, long>(
+			BTreeOrder,
+			_btreeCompanion.Stream,
+			DatumSerializer,
+			PrimitiveSerializer<long>.Instance,
+			Comparer<TKey>.Default
+		);
+		if (_btree.Count == 0 && PagedList.Count > 0)
+			RebuildBTree();
+	}
+
+	protected override void DetachInternal() {
+		_btree?.Dispose();
+		_btree = null;
+		base.DetachInternal();
+	}
+
+	public override void Flush() {
+		base.Flush();
+		_btreeCompanion.Flush();
+	}
+
+	private void RebuildBTree() {
+		_btree.Clear();
+		using var _ = Streams.EnterAccessScope();
+		var Reserved = Streams.Header.ReservedStreams;
+		for (var I = 0L; I < PagedList.Count; I++) {
+			if (Streams.FastReadStreamDescriptorTraits(I + Reserved).HasFlag(ClusteredStreamTraits.Reaped))
+				continue;
+			var Key = PagedList.Read(I);
+			_btree.Add(Key, I);
+		}
+	}
+
+	/// <summary>
+	/// A lightweight companion attachment that provides a dedicated stream for the B-tree storage.
+	/// It holds no logic — only exposes its <see cref="Stream"/> for the parent to use.
+	/// </summary>
+	private sealed class BTreeCompanionAttachment : ClusteredStreamsAttachmentBase {
+		public BTreeCompanionAttachment(ClusteredStreams streams, string attachmentID)
+			: base(streams, attachmentID) {
+		}
+
+		public System.IO.Stream Stream => AttachmentStream;
+
+		protected override void AttachInternal() {
+			// No-op: the parent attachment manages the BTree lifecycle
+		}
+
+		protected override void VerifyIntegrity() {
+		}
+
+		protected override void DetachInternal() {
+		}
+	}
 }
 
