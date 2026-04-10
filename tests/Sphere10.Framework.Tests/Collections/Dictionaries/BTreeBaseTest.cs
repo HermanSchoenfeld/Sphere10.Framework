@@ -60,8 +60,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Add_KVP() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Add_KVP([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(new KeyValuePair<int, string>(1, "one"));
 		Assert.That(Tree.Count, Is.EqualTo(1));
 		Assert.That(Tree[1], Is.EqualTo("one"));
@@ -78,8 +78,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Set_OverwriteExisting() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Set_OverwriteExisting([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Tree.Set(1, "ONE", true);
 		Assert.That(Tree.Count, Is.EqualTo(1));
@@ -87,16 +87,16 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Indexer_Set_NewKey() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Indexer_Set_NewKey([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree[1] = "one";
 		Assert.That(Tree.Count, Is.EqualTo(1));
 		Assert.That(Tree[1], Is.EqualTo("one"));
 	}
 
 	[Test]
-	public void Indexer_Set_ExistingKey_Updates() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Indexer_Set_ExistingKey_Updates([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree[1] = "one";
 		Tree[1] = "ONE";
 		Assert.That(Tree.Count, Is.EqualTo(1));
@@ -104,14 +104,14 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Indexer_Get_NonExisting_Throws() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Indexer_Get_NonExisting_Throws([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(() => { var _ = Tree[999]; }, Throws.InstanceOf<KeyNotFoundException>());
 	}
 
 	[Test]
-	public void Remove_ExistingKey_ReturnsTrue() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Remove_ExistingKey_ReturnsTrue([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Tree.Add(2, "two");
 		var Result = Tree.Remove(1);
@@ -122,8 +122,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Remove_NonExistingKey_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Remove_NonExistingKey_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		var Result = Tree.Remove(999);
 		Assert.That(Result, Is.False);
@@ -131,14 +131,14 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Remove_FromEmpty_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Remove_FromEmpty_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(Tree.Remove(1), Is.False);
 	}
 
 	[Test]
-	public void Remove_KVP() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Remove_KVP([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		var Result = Tree.Remove(new KeyValuePair<int, string>(1, "one"));
 		Assert.That(Result, Is.True);
@@ -175,8 +175,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Clear_ResetsCount() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Clear_ResetsCount([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Tree.Add(2, "two");
 		Tree.Add(3, "three");
@@ -186,48 +186,48 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void ContainsKey_ExistingKey_ReturnsTrue() {
-		var Tree = CreateInstance<int, string>(3);
+	public void ContainsKey_ExistingKey_ReturnsTrue([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Assert.That(Tree.ContainsKey(1), Is.True);
 	}
 
 	[Test]
-	public void ContainsKey_NonExistingKey_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void ContainsKey_NonExistingKey_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Assert.That(Tree.ContainsKey(999), Is.False);
 	}
 
 	[Test]
-	public void ContainsKey_EmptyTree_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void ContainsKey_EmptyTree_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(Tree.ContainsKey(1), Is.False);
 	}
 
 	[Test]
-	public void Contains_MatchingKVP_ReturnsTrue() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Contains_MatchingKVP_ReturnsTrue([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Assert.That(Tree.Contains(new KeyValuePair<int, string>(1, "one")), Is.True);
 	}
 
 	[Test]
-	public void Contains_WrongValue_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Contains_WrongValue_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Assert.That(Tree.Contains(new KeyValuePair<int, string>(1, "wrong")), Is.False);
 	}
 
 	[Test]
-	public void Contains_NonExistingKey_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Contains_NonExistingKey_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(Tree.Contains(new KeyValuePair<int, string>(1, "one")), Is.False);
 	}
 
 	[Test]
-	public void TryGetValue_ExistingKey_ReturnsTrueWithValue() {
-		var Tree = CreateInstance<int, string>(3);
+	public void TryGetValue_ExistingKey_ReturnsTrueWithValue([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		var Found = Tree.TryGetValue(1, out var Value);
 		Assert.That(Found, Is.True);
@@ -235,23 +235,23 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void TryGetValue_NonExistingKey_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void TryGetValue_NonExistingKey_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		var Found = Tree.TryGetValue(999, out var Value);
 		Assert.That(Found, Is.False);
 		Assert.That(Value, Is.Null);
 	}
 
 	[Test]
-	public void TryGetValue_EmptyTree_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void TryGetValue_EmptyTree_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		var Found = Tree.TryGetValue(1, out _);
 		Assert.That(Found, Is.False);
 	}
 
 	[Test]
-	public void Keys_ReturnsAllKeys() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Keys_ReturnsAllKeys([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(3, "three");
 		Tree.Add(1, "one");
 		Tree.Add(2, "two");
@@ -260,8 +260,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Values_ReturnsAllValues() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Values_ReturnsAllValues([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Tree.Add(2, "two");
 		Tree.Add(3, "three");
@@ -270,20 +270,20 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Keys_EmptyTree_ReturnsEmpty() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Keys_EmptyTree_ReturnsEmpty([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(Tree.Keys, Is.Empty);
 	}
 
 	[Test]
-	public void Values_EmptyTree_ReturnsEmpty() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Values_EmptyTree_ReturnsEmpty([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(Tree.Values, Is.Empty);
 	}
 
 	[Test]
-	public void IsReadOnly_ReturnsFalse() {
-		var Tree = CreateInstance<int, string>(3);
+	public void IsReadOnly_ReturnsFalse([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(Tree.IsReadOnly, Is.False);
 	}
 
@@ -301,8 +301,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void CopyTo_InsufficientSpace_Throws() {
-		var Tree = CreateInstance<int, string>(3);
+	public void CopyTo_InsufficientSpace_Throws([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Tree.Add(2, "two");
 		var Array = new KeyValuePair<int, string>[1];
@@ -310,8 +310,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void InOrderTraversal_ReturnsSorted() {
-		var Tree = CreateInstance<int, string>(3);
+	public void InOrderTraversal_ReturnsSorted([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.TraversalType = TreeTraversalType.InOrder;
 		var Items = new[] { 5, 3, 8, 1, 4, 7, 9, 2, 6 };
 		foreach (var Item in Items)
@@ -340,8 +340,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void PreOrderTraversal_ReturnsAllItems() {
-		var Tree = CreateInstance<int, string>(3);
+	public void PreOrderTraversal_ReturnsAllItems([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.TraversalType = TreeTraversalType.PreOrder;
 		for (var I = 0; I < 50; I++)
 			Tree.Add(I, $"value_{I}");
@@ -351,8 +351,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void PostOrderTraversal_ReturnsAllItems() {
-		var Tree = CreateInstance<int, string>(3);
+	public void PostOrderTraversal_ReturnsAllItems([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.TraversalType = TreeTraversalType.PostOrder;
 		for (var I = 0; I < 50; I++)
 			Tree.Add(I, $"value_{I}");
@@ -362,8 +362,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void LevelOrderTraversal_ReturnsAllItems() {
-		var Tree = CreateInstance<int, string>(3);
+	public void LevelOrderTraversal_ReturnsAllItems([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.TraversalType = TreeTraversalType.LevelOrder;
 		for (var I = 0; I < 50; I++)
 			Tree.Add(I, $"value_{I}");
@@ -373,23 +373,20 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Enumeration_EmptyTree_YieldsNothing() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Enumeration_EmptyTree_YieldsNothing([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		var Items = Tree.ToList();
 		Assert.That(Items, Is.Empty);
 	}
 
 	[Test]
-	public void Constructor_OrderLessThan3_Throws() {
-		Assert.That(() => CreateInstance<int, string>(2), Throws.InstanceOf<ArgumentOutOfRangeException>());
-		Assert.That(() => CreateInstance<int, string>(1), Throws.InstanceOf<ArgumentOutOfRangeException>());
-		Assert.That(() => CreateInstance<int, string>(0), Throws.InstanceOf<ArgumentOutOfRangeException>());
-		Assert.That(() => CreateInstance<int, string>(-1), Throws.InstanceOf<ArgumentOutOfRangeException>());
+	public void Constructor_OrderLessThan3_Throws([Range(-1, 2)] int order) {
+		Assert.That(() => CreateInstance<int, string>(order), Throws.InstanceOf<ArgumentOutOfRangeException>());
 	}
 
 	[Test]
-	public void Constructor_Order3_Works() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Constructor_Order3_Works([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
 		Tree.Add(2, "two");
 		Tree.Add(3, "three");
@@ -397,8 +394,8 @@ public abstract class BTreeBaseTests {
 	}
 
 	[Test]
-	public void Count_TracksAddAndRemove() {
-		var Tree = CreateInstance<int, string>(3);
+	public void Count_TracksAddAndRemove([Range(3, 15)] int order) {
+		var Tree = CreateInstance<int, string>(order);
 		Assert.That(Tree.Count, Is.EqualTo(0));
 		Tree.Add(1, "one");
 		Assert.That(Tree.Count, Is.EqualTo(1));
