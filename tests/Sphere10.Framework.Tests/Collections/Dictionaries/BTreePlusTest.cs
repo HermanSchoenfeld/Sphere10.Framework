@@ -17,17 +17,4 @@ namespace Sphere10.Framework.Tests;
 /// </summary>
 public abstract class BTreePlusTests : BTreeBaseTests {
 
-[Test]
-public void Add_DuplicateKey_Throws() {
-var Tree = CreateInstance<int, string>(3);
-Tree.Add(1, "one");
-Assert.That(() => Tree.Add(1, "duplicate"), Throws.InstanceOf<ArgumentException>());
-}
-
-[Test]
-public void Set_NoOverwrite_Throws() {
-var Tree = CreateInstance<int, string>(3);
-Tree.Add(1, "one");
-Assert.That(() => Tree.Set(1, "ONE", false), Throws.InstanceOf<ArgumentException>());
-}
 }
