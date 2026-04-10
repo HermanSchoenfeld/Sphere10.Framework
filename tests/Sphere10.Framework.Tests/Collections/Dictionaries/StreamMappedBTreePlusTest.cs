@@ -19,7 +19,12 @@ public class StreamMappedBTreePlusTests : BTreePlusTests {
 
 	protected override BTreeBase<K, V> CreateInstance<K, V>(int order, IComparer<K> comparer = null) {
 		var KeySerializer = ItemSerializer<K>.Default;
+		if (KeySerializer is ReferenceSerializer<string>)
+			KeySerializer = KeySerializer.AsConstantSize(MaxStringValueLength*sizeof(char));
+
 		var ValueSerializer = ItemSerializer<V>.Default;
+		if (ValueSerializer is ReferenceSerializer<string>)
+			ValueSerializer = ValueSerializer.AsConstantSize(MaxStringValueLength*sizeof(char));
 		if (!KeySerializer.IsConstantSize || !ValueSerializer.IsConstantSize)
 			Assert.Ignore("StreamMappedBTreePlus requires constant-size serializers; skipping for this type combination.");
 		var Stream = new MemoryStream();

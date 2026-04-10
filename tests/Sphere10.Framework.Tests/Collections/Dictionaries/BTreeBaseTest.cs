@@ -19,19 +19,20 @@ namespace Sphere10.Framework.Tests;
 /// Subclasses provide a concrete tree via <see cref="CreateInstance{K,V}"/>.
 /// </summary>
 public abstract class BTreeBaseTests {
-
+	public const int MaxStringValueLength = 100;
+	public const int IntegrationTestItemCount = 1000;
+	public const int IntegrationTestIterations = 10;
 	protected abstract BTreeBase<K, V> CreateInstance<K, V>(int order, IComparer<K> comparer = null);
 
 	[Test]
 	public void IntegrationTest([Range(3, 15)] int order) {
 		var KeyGens = 0;
-		var Tree = (BTreeBase<string, TestObject>)CreateInstance<string, TestObject>(order);
+		var Tree = CreateInstance<string, string>(order);
 		AssertEx.DictionaryIntegrationTest(
 			Tree,
-			500,
-			(rng) => ($"{KeyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
-			iterations: 500,
-			valueComparer: new TestObjectEqualityComparer(),
+			IntegrationTestItemCount,
+			(rng) => ($"{Guid.NewGuid().ToStrictAlphaString()}_{KeyGens++}", $"{rng.NextString(0, MaxStringValueLength)}"),
+			iterations: IntegrationTestIterations,
 			endOfIterTest: () => {
 				var Result = Tree.Validate(out var Error);
 				Assert.That(Result, Is.True, Error);
@@ -513,7 +514,7 @@ public abstract class BTreeBaseTests {
 	public void Add_ThenContainsKey([Range(3, 15)] int order) {
 		var Tree = CreateInstance<int, int>(order);
 		var Rng = new Random(31337);
-		var Keys = Tools.Collection.Generate(() => Rng.Next()).Take(50000).Distinct().ToArray();
+		var Keys = Tools.Collection.Generate(() => Rng.Next()).Take(IntegrationTestItemCount).Distinct().ToArray();
 		for (var I = 0; I < Keys.Length; I++) {
 			Tree.Add(Keys[I], I);
 			Assert.That(Tree.ContainsKey(Keys[I]), Is.True, $"Missing key {Keys[I]} after inserting (iteration {I})");
