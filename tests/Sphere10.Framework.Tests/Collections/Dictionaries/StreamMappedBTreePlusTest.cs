@@ -38,17 +38,17 @@ public class StreamMappedBTreePlusTests : BTreePlusTests {
 	protected override void IntergrationPerIterationTest<K, V>(BTreeBase<K, V> tree) {
 		base.IntergrationPerIterationTest(tree);
 		// Test that a new instance of the tree can read the data from the stream
-		var streamMappedTree = (StreamMappedBTree<K, V>)tree;
+		var streamMappedTree = (StreamMappedBTreePlus<K, V>)tree;
 		byte[] streamData;
 		using (streamMappedTree.Stream.EnterRestoreSeekPositionScope()) { 
 			streamData = streamMappedTree.Stream.ToArray();
 		}
-		var newTree = new StreamMappedBTree<K, V>(streamMappedTree.Order, new MemoryStream(streamData), streamMappedTree.KeySerializer, streamMappedTree.ValueSerializer, streamMappedTree.Comparer);
-		
+		var newTree = new StreamMappedBTreePlus<K, V>(streamMappedTree.Order, new MemoryStream(streamData), streamMappedTree.KeySerializer, streamMappedTree.ValueSerializer, streamMappedTree.Comparer);
+
 		base.IntergrationPerIterationTest(newTree);
-		
+
 		Assert.That(newTree.Count, Is.EqualTo(tree.Count));
 		Assert.That(newTree, Is.EqualTo(tree).Using(new KeyValuePairEqualityComparer<K,V>(streamMappedTree.Comparer.ToEqualityComparer(), EqualityComparer<V>.Default )));
-		
+
 	}
 }
