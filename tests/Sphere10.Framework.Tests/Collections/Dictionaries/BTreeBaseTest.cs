@@ -34,10 +34,14 @@ public abstract class BTreeBaseTests {
 			(rng) => ($"{Guid.NewGuid().ToStrictAlphaString()}_{KeyGens++}", $"{rng.NextString(0, MaxStringValueLength)}"),
 			iterations: IntegrationTestIterations,
 			endOfIterTest: () => {
-				var Result = Tree.Validate(out var Error);
-				Assert.That(Result, Is.True, Error);
+				IntergrationPerIterationTest(Tree);
 			}
 		);
+	}
+
+	protected virtual void IntergrationPerIterationTest<K,V>(BTreeBase<K, V> tree) {
+		var Result = tree.Validate(out var Error);
+		Assert.That(Result, Is.True, Error);
 	}
 
 	[Test]

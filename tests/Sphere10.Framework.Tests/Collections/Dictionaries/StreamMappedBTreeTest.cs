@@ -6,10 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using NUnit.Framework;
+using Sphere10.Framework.NUnit;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests;
 
@@ -31,4 +33,26 @@ public class StreamMappedBTreeTests : BTreeTests {
 		var Stream = new MemoryStream();
 		return new StreamMappedBTree<K, V>(order, Stream, KeySerializer, ValueSerializer, comparer);
 	}
+
+	// Integration test will run this, per iteration. It will duplicate stream and recreate the current tree from the stream,
+	// then run the same test on the new tree to ensure that the stream data is correct and can be read back into a new instance
+	// of the tree.
+	protected override void IntergrationPerIterationTest<K, V>(BTreeBase<K, V> tree) {
+		base.IntergrationPerIterationTest(tree);
+		// Test that a new instance of the tree can read the data from the stream
+		var streamMappedTree = (StreamMappedBTree<K, V>)tree;
+		byte[] streamData;
+		using (streamMappedTree.Stream.EnterRestoreSeekPositionScope()) { 
+			streamData = streamMappedTree.Stream.ToArray();
+		}
+		var newTree = new StreamMappedBTree<K, V>(streamMappedTree.Order, new MemoryStream(streamData), streamMappedTree.KeySerializer, streamMappedTree.ValueSerializer, streamMappedTree.Comparer);
+		
+		base.IntergrationPerIterationTest(newTree);
+		
+		Assert.That(newTree.Count, Is.EqualTo(tree.Count));
+		Assert.That(newTree, Is.EqualTo(tree).Using(new KeyValuePairEqualityComparer<K,V>(streamMappedTree.Comparer.ToEqualityComparer(), EqualityComparer<V>.Default )));
+		
+	}
 }
+
+
