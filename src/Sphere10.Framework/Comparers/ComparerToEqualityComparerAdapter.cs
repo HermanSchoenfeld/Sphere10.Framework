@@ -1,0 +1,26 @@
+﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT NON-AI software license, see the accompanying file
+// LICENSE or visit https://sphere10.com/legal/NON-AI-MIT.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System.Collections.Generic;
+
+namespace Sphere10.Framework {
+	public class ComparerToEqualityComparerAdapter<T> : IEqualityComparer<T> {
+		private readonly IComparer<T> _comparer;
+		public ComparerToEqualityComparerAdapter(IComparer<T> comparer) {
+			Guard.ArgumentNotNull(comparer, nameof(comparer));
+			_comparer = comparer;
+		}
+		public bool Equals(T x, T y) {
+			return _comparer.Compare(x, y) == 0;
+		}
+		public int GetHashCode(T obj) {
+			return obj?.GetHashCode() ?? 0;
+		}
+
+	}
+}

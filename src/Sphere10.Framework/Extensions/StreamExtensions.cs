@@ -125,6 +125,15 @@ public static class StreamExtensions {
 			}
 		}
 	}
+
+	public static IDisposable EnterRestoreSeekPositionScope(this Stream stream) {
+		Guard.Argument(stream.CanSeek, nameof(stream), "Stream must be seekable");
+		long originalPosition = 0;
+		return new ActionDisposable(() => {
+				stream.Position = originalPosition;
+		});
+	}
+
 }
 
 
