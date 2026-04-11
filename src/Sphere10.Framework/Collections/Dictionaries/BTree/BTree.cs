@@ -344,7 +344,7 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 		var Index = FindKeyIndex(node, key, out var Found);
 		if (Found) {
 			if (!overwriteIfExists)
-				throw new InvalidOperationException($"Key {key} already exists in tree.");
+				throw new ArgumentException($"Key {key} already exists in tree.");
 			SetKey(node, Index, new KeyValuePair<K, V>(key, value));
 			return null;
 		}

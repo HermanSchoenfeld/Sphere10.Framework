@@ -529,13 +529,13 @@ public abstract class BTreeBaseTests {
 	public void Add_DuplicateKey_Throws([Range(3, 15)] int order) {
 		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
-		Assert.That(() => Tree.Add(1, "duplicate"), Throws.InstanceOf<InvalidOperationException>());
+		Assert.That(() => Tree.Add(1, "duplicate"), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
 	public void Set_NoOverwrite_Throws([Range(3, 15)] int order) {
 		var Tree = CreateInstance<int, string>(order);
 		Tree.Add(1, "one");
-		Assert.That(() => Tree.Set(1, "ONE", false), Throws.InstanceOf<InvalidOperationException>());
+		Assert.That(() => Tree.Set(1, "ONE", false), Throws.InstanceOf<ArgumentException>());
 	}
 }
