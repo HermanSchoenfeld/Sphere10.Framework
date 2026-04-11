@@ -65,9 +65,9 @@ public abstract class BTreeBase<K, V> : IDictionary<K, V> {
 		set => Set(key, value, overwriteIfExists: true);
 	}
 
-	protected int Order => _order;
+	public int Order => _order;
 
-	protected IComparer<K> Comparer => _comparer;
+	public IComparer<K> Comparer => _comparer;
 
 	public void Add(K key, V value) => Set(key, value, overwriteIfExists: false);
 

@@ -141,9 +141,16 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 
 	#region Root Management
 
+	public Stream Stream => _stream;
+
+	public IItemSerializer<K> KeySerializer => _keySerializer;
+
+	public IItemSerializer<V> ValueSerializer => _valueSerializer;
+
 	protected override bool HasRoot => _rootIndex != NoNode;
 
 	protected override long Root => _rootIndex;
+
 
 	protected override void SetRoot(long node) {
 		_rootIndex = node;
