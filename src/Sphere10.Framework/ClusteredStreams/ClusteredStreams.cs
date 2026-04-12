@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -239,10 +240,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		RemoveStreamDescriptor(index); // descriptor must be removed last, in case it deletes genesis cluster
 		var countAfterRemove = Header.StreamCount;
 		Guard.Ensure(countAfterRemove == countBeforeRemove - 1, $"Failed to remove descriptor {index}");
-#if ENABLE_CLUSTER_DIAGNOSTICS
-		ClusterDiagnostics.VerifyClusters(this);
-#endif
-
+		DiagnosticVerifyClusters();
 	}
 
 	public ClusteredStream Insert(long index) {
@@ -286,10 +284,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			_clusters.WriteClusterNext(secondDescriptor.EndCluster, first);
 
 		NotifyStreamSwapped(first, firstDescriptor, second, secondDescriptor);
-
-#if ENABLE_CLUSTER_DIAGNOSTICS
-		ClusterDiagnostics.VerifyClusters(this);
-#endif
+		DiagnosticVerifyClusters();
 	}
 
 	public void Clear(long index) {
@@ -298,10 +293,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		CheckStreamDescriptorIndex(index);
 		using var stream = OpenWrite(index);
 		stream.SetLength(0);
-
-#if ENABLE_CLUSTER_DIAGNOSTICS
-		ClusterDiagnostics.VerifyClusters(this);
-#endif
+		DiagnosticVerifyClusters();
 	}
 
 	public void Clear() {
@@ -321,9 +313,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			SuppressEvents = false;
 		}
 		CreateReservedStreams();
-#if ENABLE_CLUSTER_DIAGNOSTICS
-		ClusterDiagnostics.VerifyClusters(this);
-#endif
+		DiagnosticVerifyClusters();
 		NotifyCleared();
 	}
 
@@ -697,11 +687,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 		Guard.ArgumentNotNull(attachment, nameof(attachment));
 		Guard.Argument(attachment.AttachmentID is not null, nameof(attachment.AttachmentID), "Attachment did not specify an ID");
-//		Guard.Against(Initialized, "Cannot register attachments after initialization");
-
 		Guard.Argument(!_attachments.ContainsKey(attachment.AttachmentID), nameof(attachment), $" An attachment with ID '{attachment.AttachmentID}' was already attached to clustered streams instance");
-		//Guard.Ensure(Header.ReservedStreams > _attachments.Count, $"Insufficient reserved streams available to register attachment '{attachment.ID}'") ;
-
 
 		// track attachment
 		_attachments.Add(attachment.AttachmentID, attachment);
@@ -709,21 +695,38 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		// If objectStream is already loaded, then attach now
 		if (!RequiresLoad)
 			attachment.Attach();
-	
 	}
 
+	/// <summary>
+	/// Calculates the base reserved stream index for the attachment with the given <paramref name="attachmentID"/>
+	/// by summing the <see cref="IClusteredStreamsAttachment.StreamCount"/> of all preceding attachments.
+	/// </summary>
+	internal int CalculateAttachmentBaseIndex(string attachmentID) {
+		var baseIndex = 0;
+		foreach (var attachment in _attachments.Values) {
+			if (attachment.AttachmentID == attachmentID)
+				return baseIndex;
+			baseIndex += attachment.StreamCount;
+		}
+		return -1;
+	}
 
 	private void LoadAttachments() {
-		foreach(var attachment in _attachments.Values.Where(x => !x.IsAttached))
+		// Validate that header has enough reserved streams for all registered attachments
+		var totalRequired = _attachments.Values.Sum(a => a.StreamCount);
+		Guard.Ensure(Header.ReservedStreams >= totalRequired, $"Insufficient reserved streams: need {totalRequired} but header declares {Header.ReservedStreams}");
+		foreach (var attachment in _attachments.Values.Where(x => !x.IsAttached))
 			attachment.Attach();
 	}
 
 	internal void UnloadAttachments() {
-		foreach(var (attachment, ix) in _attachments.Values.Where(x => x.IsAttached).WithIndex()) {
+		var streamIndex = 0;
+		foreach (var attachment in _attachments.Values.Where(x => x.IsAttached)) {
 			attachment.Detach();
-			_streamDescriptorCache?.Invalidate(ix);
+			for (var i = 0; i < attachment.StreamCount; i++)
+				_streamDescriptorCache?.Invalidate(streamIndex + i);
+			streamIndex += attachment.StreamCount;
 		}
-
 		_attachments.Clear();
 	}
 
@@ -899,10 +902,13 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	private void CreateReservedStreams() {
 		Guard.Ensure(Header.StreamCount == 0, "Records are already existing");
+		// Ensure reserved stream count accommodates all registered attachment stream requirements
+		var totalRequired = _attachments.Values.Sum(a => a.StreamCount);
+		if (totalRequired > Header.ReservedStreams)
+			Header.ReservedStreams = totalRequired;
 		NotifyReservedStreamsCreating();
-		for (var i = 0; i < Header.ReservedStreams; i++) {
+		for (var i = 0; i < Header.ReservedStreams; i++)
 			AddStreamDescriptor(out var index, NewStreamDescriptor());
-		}
 		Header.StreamCount = _streamDescriptors.Count; // this has to be done explicitly here since the handler which sets RecordCount may not be called in certain scenarios
 		NotifyReservedStreamsCreated();
 	}
@@ -916,6 +922,11 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			Guard.Ensure(descriptor.StartCluster == Cluster.Null, $"Empty stream descriptor {index} should have start cluster {Cluster.Null} but was {descriptor.StartCluster}");
 			Guard.Ensure(descriptor.EndCluster == Cluster.Null, $"Empty stream descriptor {index} should have end cluster {Cluster.Null} but was {descriptor.EndCluster}");
 		} else Guard.Ensure(0 <= descriptor.StartCluster && descriptor.StartCluster < Header.TotalClusters, $"Stream descriptor {index} pointed to to non-existent cluster {descriptor.StartCluster}");
+	}
+
+	[Conditional("DIAGNOSTIC")]
+	private void DiagnosticVerifyClusters() {
+		ClusterDiagnostics.VerifyClusters(this);
 	}
 
 	#endregion

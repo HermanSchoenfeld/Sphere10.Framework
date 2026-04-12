@@ -7,6 +7,7 @@
  // This notice must not be removed when duplicating this file or its contents, in whole or in part.
  
  using System;
+ using System.Diagnostics;
  using System.IO;
  
  namespace Sphere10.Framework;
@@ -173,20 +174,21 @@
  		if (!ReadOnly)
  			_streams.UpdateStreamDescriptor(StreamIndex, _descriptor);
  		
- 		_finalizeAction?.Invoke();
- 		_disposables.ForEach(d => d.Dispose());
- 		
+        _finalizeAction?.Invoke();
+        _disposables.ForEach(d => d.Dispose());
+        DiagnosticVerifyClusters();
+        base.Close();
+    }
  
- #if ENABLE_CLUSTER_DIAGNOSTICS
- 		ClusterDiagnostics.VerifyClusters(_streamContainer.ClusterMap);
- #endif
- 		base.Close();
- 	}
- 
- 	private void NotifyStreamLengthChanged(long newSize) {
- 		StreamLengthChanged?.Invoke(newSize);
- 	}
- 
+	private void NotifyStreamLengthChanged(long newSize) {
+		StreamLengthChanged?.Invoke(newSize);
+	}
+
+	[Conditional("DIAGNOSTIC")]
+	private void DiagnosticVerifyClusters() {
+		ClusterDiagnostics.VerifyClusters(_streams);
+	}
+
 	/// <summary>
 	/// Builds the internal stream pipeline used by <see cref="ClusteredStream"/> for a given descriptor.
 	/// </summary>
