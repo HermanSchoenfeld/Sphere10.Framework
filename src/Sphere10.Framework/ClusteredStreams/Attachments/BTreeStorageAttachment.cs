@@ -7,20 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework;
 
-/// <summary>
-/// A single-stream <see cref="ClusteredStreamsAttachmentBase"/> that hosts a <see cref="StreamMappedBTree{TKey,TValue}"/>
-/// on its reserved stream.
-/// </summary>
-public class BTreeStorageAttachment<TKey, TValue> : ClusteredStreamsAttachmentBase {
-	private readonly int _order;
-	private readonly IItemSerializer<TKey> _keySerializer;
-	private readonly IItemSerializer<TValue> _valueSerializer;
-	private readonly IComparer<TKey> _keyComparer;
-	private StreamMappedBTree<TKey, TValue> _btree;
+public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<TKey, TValue>, IDictionary<TKey, TValue> {
 
 	public BTreeStorageAttachment(
 		ClusteredStreams streams,
@@ -29,38 +21,168 @@ public class BTreeStorageAttachment<TKey, TValue> : ClusteredStreamsAttachmentBa
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IComparer<TKey> keyComparer
-	) : base(streams, attachmentID) {
-		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
-		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-		_order = order;
-		_keySerializer = keySerializer;
-		_valueSerializer = valueSerializer;
-		_keyComparer = keyComparer;
+	) : base(streams, attachmentID, order, keySerializer, valueSerializer, keyComparer) {
 	}
 
-	public StreamMappedBTree<TKey, TValue> BTree {
+	public new StreamMappedBTree<TKey, TValue> BTree => base.BTree;
+
+	#region IsReadOnly
+
+	public bool IsReadOnly {
 		get {
 			CheckAttached();
-			return _btree;
+			using var _ = Streams.EnterAccessScope();
+			return BTree.IsReadOnly;
 		}
 	}
 
-	protected override void AttachInternal() {
-		_btree = new StreamMappedBTree<TKey, TValue>(
-			_order,
-			AttachmentStream,
-			_keySerializer,
-			_valueSerializer,
-			_keyComparer
-		);
+	#endregion
+
+	#region Count
+
+	public int Count {
+		get {
+			CheckAttached();
+			using var _ = Streams.EnterAccessScope();
+			return BTree.Count;
+		}
 	}
 
-	protected override void VerifyIntegrity() {
+	#endregion
+
+	#region Keys / Values
+
+	public ICollection<TKey> Keys {
+		get {
+			CheckAttached();
+			using var _ = Streams.EnterAccessScope();
+			return BTree.Keys;
+		}
 	}
 
-	protected override void DetachInternal() {
-		_btree?.Dispose();
-		_btree = null;
+	public ICollection<TValue> Values {
+		get {
+			CheckAttached();
+			using var _ = Streams.EnterAccessScope();
+			return BTree.Values;
+		}
 	}
+
+	#endregion
+
+	#region Indexer
+
+	public TValue this[TKey key] {
+		get {
+			CheckAttached();
+			using var _ = Streams.EnterAccessScope();
+			return BTree[key];
+		}
+		set {
+			CheckAttached();
+			using var _ = Streams.EnterAccessScope();
+			BTree[key] = value;
+		}
+	}
+
+	#endregion
+
+	#region Add
+
+	public void Add(TKey key, TValue value) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		BTree.Add(key, value);
+	}
+
+	public void Add(KeyValuePair<TKey, TValue> item) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		BTree.Add(item);
+	}
+
+	#endregion
+
+	#region ContainsKey / Contains
+
+	public bool ContainsKey(TKey key) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return BTree.ContainsKey(key);
+	}
+
+	public bool Contains(KeyValuePair<TKey, TValue> item) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return BTree.Contains(item);
+	}
+
+	#endregion
+
+	#region TryGetValue
+
+	public bool TryGetValue(TKey key, out TValue value) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return BTree.TryGetValue(key, out value);
+	}
+
+	#endregion
+
+	#region Remove
+
+	public bool Remove(TKey key) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return BTree.Remove(key);
+	}
+
+	public bool Remove(KeyValuePair<TKey, TValue> item) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return BTree.Remove(item);
+	}
+
+	#endregion
+
+	#region Clear
+
+	public void Clear() {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		BTree.Clear();
+	}
+
+	#endregion
+
+	#region CopyTo
+
+	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		BTree.CopyTo(array, arrayIndex);
+	}
+
+	#endregion
+
+	#region GetEnumerator
+
+	public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
+		CheckAttached();
+		var scope = Streams.EnterAccessScope();
+		try {
+			return
+				BTree
+					.GetEnumerator()
+					.OnDispose(scope.Dispose);
+		} catch {
+			scope.Dispose();
+			throw;
+		}
+	}
+
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+	#endregion
+
 }
