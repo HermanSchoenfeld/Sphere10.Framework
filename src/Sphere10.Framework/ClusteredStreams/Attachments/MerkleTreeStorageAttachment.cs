@@ -123,7 +123,7 @@ internal class MerkleTreeStorageAttachment : ClusteredStreamsAttachmentBase, IDy
 	}
 
 	protected override void VerifyIntegrity() {
-		var errorHeader = $"{nameof(MerkleTreeStorageAttachment)} (reserved stream: {this.ReservedStreamIndex}) integrity failure";
+		var errorHeader = $"{nameof(MerkleTreeStorageAttachment)} (reserved streams: {this.BaseReservedStreamIndex} - {this.BaseReservedStreamIndex + this.StreamCount}) integrity failure";
 
 		// Verify leaf-count matches item count
 		var itemCount = Streams.Count - Streams.Header.ReservedStreams;

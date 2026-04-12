@@ -14,7 +14,7 @@ using Sphere10.Framework.ObjectSpaces;
 namespace Sphere10.Framework;
 
 /// <summary>
-/// Base implementation for an <see cref="IClusteredStreamsAttachment"/>
+/// Base implementation for a single-stream <see cref="IClusteredStreamsAttachment"/>.
 /// </summary>
 public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredStreamsAttachment {
 	private Stream _stream;
@@ -28,14 +28,16 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 		Streams = streams;
 		_attached = false;
 		_streamOffset = 0;
-		ReservedStreamIndex = -1;
+		BaseReservedStreamIndex = -1;
 	}
 
 	public string AttachmentID { get; }
 
+	public virtual int StreamCount => 1;
+
 	public ClusteredStreams Streams { get; }
 
-	public int ReservedStreamIndex { get; private set; }
+	public int BaseReservedStreamIndex { get; private set; }
 
 	protected Stream AttachmentStream {
 		get {
@@ -51,26 +53,25 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 		CheckNotAttached();
 		Guard.Ensure(!Streams.RequiresLoad, "Unable to attach to an unloaded Object Container");
 		Guard.Ensure(Streams.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
-		//Guard.Ensure(ReservedStreamIndex < Streams.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
 		using (Streams.EnterAccessScope()) {
 			_attached = true;
 
-			// Figure out the index of the stream which this attachment is bound to
-			ReservedStreamIndex = Streams.Attachments.IndexOf(AttachmentID);
-			Guard.Against(ReservedStreamIndex == -1, $"{GetType().ToStringCS()} was not registered with {nameof(ClusteredStreams)} owner");
+			// Calculate the base reserved stream index as the cumulative StreamCount of all preceding attachments
+			BaseReservedStreamIndex = Streams.CalculateAttachmentBaseIndex(AttachmentID);
+			Guard.Against(BaseReservedStreamIndex == -1, $"{GetType().ToStringCS()} was not registered with {nameof(ClusteredStreams)} owner");
 
 			// Open the stream used by the index. No access scope is acquired for the stream
 			// and thus all use of the index must take place within an explicit access scope.
 			AttachmentStream =
 				Streams
-					.Open(ReservedStreamIndex, false, false)
+					.Open(BaseReservedStreamIndex, false, false)
 					.AsBounded(_streamOffset, long.MaxValue, allowInnerResize: true);
 
 			// Ensures the stream is at least as long as the offset (the space prior to offset can
 			// be used to store header information (i.e. factory info to decide what type of index to load)
 			if (AttachmentStream.Position < 0)
 				AttachmentStream.SetLength(0);
-			
+
 			// User-defined attachment done now
 			AttachInternal();
 
@@ -86,9 +87,11 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 	public void Detach() {
 		CheckAttached();
 		Flush();
-		DetachInternal();
-		AttachmentStream.Dispose();
-		AttachmentStream = null;
+		using (Streams.EnterAccessScope()) {
+			DetachInternal();
+			AttachmentStream.Dispose();
+			AttachmentStream = null;
+		}
 		_attached = false;
 	}
 
