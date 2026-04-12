@@ -18,96 +18,101 @@ namespace Sphere10.Framework;
 /// a stream-mapped B-tree rather than an in-memory dictionary. The forward mapping (position → key)
 /// is stored in a <see cref="StreamPagedList{TData}"/>.
 ///
-/// This is a <see cref="CompositeStorageAttachment"/> that uses two reserved streams:
-/// stream 0 for the paged list (forward mapping) and stream 1 for the B-tree (reverse mapping).
+/// This is a <see cref="CompositeStorageAttachmentBase"/> that composes two child attachments:
+/// a <see cref="PagedListStorageAttachmentBase{TData}"/> for the paged list (forward mapping)
+/// and a <see cref="BTreeStorageAttachment{TKey,TValue}"/> for the B-tree (reverse mapping).
 /// </summary>
-public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachment, IReadOnlyDictionary<TKey, long> {
+public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, IReadOnlyDictionary<TKey, long> {
 	private const int BTreeOrder = 64;
 
-	private readonly IItemSerializer<TKey> _keySerializer;
-	private readonly IEqualityComparer<TKey> _keyComparer;
-	private StreamPagedList<TKey> _pagedList;
-	private StreamMappedBTree<TKey, long> _btree;
+	private readonly PagedListStorageAttachment<TKey> _pagedListStore;
+	private readonly BTreeStorageAttachment<TKey, long> _btreeStore;
 
 	public UniqueKeyStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer)
-		: base(streams, attachmentID, 2) {
+		: this(
+			streams,
+			attachmentID,
+			new PagedListStorageAttachment<TKey>(streams, attachmentID + ".pagedList", keySerializer),
+			new BTreeStorageAttachment<TKey, long>(streams, attachmentID + ".btree", BTreeOrder, keySerializer, PrimitiveSerializer<long>.Instance, Comparer<TKey>.Default)
+		) {
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.Argument(keySerializer.IsConstantSize, nameof(keySerializer), "Key serializer must be a constant-length serializer.");
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-		_keySerializer = keySerializer;
-		_keyComparer = keyComparer;
 	}
 
-	public int Count => _btree?.Count ?? 0;
+	private UniqueKeyStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		PagedListStorageAttachment<TKey> pagedListStore,
+		BTreeStorageAttachment<TKey, long> btreeStore
+	) : base(streams, attachmentID, pagedListStore, btreeStore) {
+		_pagedListStore = pagedListStore;
+		_btreeStore = btreeStore;
+	}
 
-	protected StreamPagedList<TKey> PagedList => _pagedList;
+	public int Count => IsAttached ? _btreeStore.BTree.Count : 0;
 
 	public IEnumerable<TKey> Keys {
 		get {
 			CheckAttached();
-			using (Streams.EnterAccessScope())
-				return _btree.Select(Kvp => Kvp.Key).ToArray();
+			return _btreeStore.Select(Kvp => Kvp.Key).ToArray();
 		}
 	}
 
 	public IEnumerable<long> Values {
 		get {
 			CheckAttached();
-			using (Streams.EnterAccessScope())
-				return _btree.Select(Kvp => Kvp.Value).ToArray();
+			return _btreeStore.Select(Kvp => Kvp.Value).ToArray();
 		}
 	}
 
 	public bool ContainsKey(TKey key) {
 		CheckAttached();
-		using (Streams.EnterAccessScope())
-			return _btree.ContainsKey(key);
+		return _btreeStore.ContainsKey(key);
 	}
 
 	public bool TryGetValue(TKey key, out long value) {
 		CheckAttached();
-		using (Streams.EnterAccessScope())
-			return _btree.TryGetValue(key, out value);
+		return _btreeStore.TryGetValue(key, out value);
 	}
 
 	public TKey Read(long index) {
 		CheckAttached();
-		using (Streams.EnterAccessScope())
-			return _pagedList.Read(index);
+		return _pagedListStore.Read(index);
 	}
 
 	public byte[] ReadBytes(long index) {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			_pagedList.ReadItemBytes(index, 0, null, out var bytes);
-			return bytes;
+			_pagedListStore.ReadItemBytes(index, 0, null, out var Bytes);
+			return Bytes;
 		}
 	}
 
 	public void Add(long index, TKey key) {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			Guard.Argument(index == _pagedList.Count, nameof(index), "Index mismatches with expected index in store");
-			_btree.Add(key, index);
-			_pagedList.Add(key);
+			Guard.Argument(index == _pagedListStore.Count, nameof(index), "Index mismatches with expected index in store");
+			_btreeStore.BTree.Add(key, index);
+			_pagedListStore.Add(key);
 		}
 	}
 
 	public void Update(long index, TKey key) {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			var oldKey = _pagedList.Read(index);
-			_btree.Remove(oldKey);
-			_btree.Add(key, index);
-			_pagedList.Update(index, key);
+			var OldKey = _pagedListStore.Read(index);
+			_btreeStore.BTree.Remove(OldKey);
+			_btreeStore.BTree.Add(key, index);
+			_pagedListStore.Update(index, key);
 		}
 	}
 
 	public void Insert(long index, TKey key) {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			Guard.Ensure(!_btree.ContainsKey(key));
-			_pagedList.Insert(index, key);
+			Guard.Ensure(!_btreeStore.BTree.ContainsKey(key));
+			_pagedListStore.Insert(index, key);
 			RebuildBTree();
 		}
 	}
@@ -115,7 +120,7 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachment, IRea
 	public void Remove(long index) {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			_pagedList.RemoveAt(index);
+			_pagedListStore.RemoveAt(index);
 			RebuildBTree();
 		}
 	}
@@ -123,23 +128,23 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachment, IRea
 	public void Reap(long index) {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			var oldKey = _pagedList.Read(index);
-			_btree.Remove(oldKey);
+			var OldKey = _pagedListStore.Read(index);
+			_btreeStore.BTree.Remove(OldKey);
 		}
 	}
 
 	public void Clear() {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			_btree.Clear();
-			_pagedList.Clear();
+			_btreeStore.BTree.Clear();
+			_pagedListStore.Clear();
 		}
 	}
 
 	public IEnumerator<KeyValuePair<TKey, long>> GetEnumerator() {
 		CheckAttached();
 		using (Streams.EnterAccessScope())
-			return _btree.ToList().GetEnumerator();
+			return _btreeStore.BTree.ToList().GetEnumerator();
 	}
 
 	IEnumerator IEnumerable.GetEnumerator() {
@@ -150,55 +155,27 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachment, IRea
 		get {
 			CheckAttached();
 			using (Streams.EnterAccessScope())
-				return _btree[key];
+				return _btreeStore.BTree[key];
 		}
 	}
 
-	protected override void AttachInternal() {
-		// Stream 0: paged list (forward mapping position → key)
-		_pagedList = new StreamPagedList<TKey>(
-			_keySerializer,
-			GetAttachmentStream(0),
-			Streams.Endianness,
-			false,
-			true
-		);
-
-		// Stream 1: B-tree (reverse mapping key → position)
-		_btree = new StreamMappedBTree<TKey, long>(
-			BTreeOrder,
-			GetAttachmentStream(1),
-			_keySerializer,
-			PrimitiveSerializer<long>.Instance,
-			Comparer<TKey>.Default
-		);
-		if (_btree.Count == 0 && _pagedList.Count > 0)
-			RebuildBTree();
-	}
-
-	protected override void VerifyIntegrity() {
-	}
-
-	protected override void DetachInternal() {
-		_btree?.Dispose();
-		_btree = null;
-		_pagedList = null;
-	}
-
-	public override void Flush() {
-		base.Flush();
+	public override void Attach() {
+		base.Attach();
+		using (Streams.EnterAccessScope()) {
+			if (_btreeStore.BTree.Count == 0 && _pagedListStore.Count > 0)
+				RebuildBTree();
+		}
 	}
 
 	private void RebuildBTree() {
 		using var _ = Streams.EnterAccessScope();
-		_btree.Clear();
+		_btreeStore.BTree.Clear();
 		var Reserved = Streams.Header.ReservedStreams;
-		for (var I = 0L; I < _pagedList.Count; I++) {
+		for (var I = 0L; I < _pagedListStore.Count; I++) {
 			if (Streams.FastReadStreamDescriptorTraits(I + Reserved).HasFlag(ClusteredStreamTraits.Reaped))
 				continue;
-			var Key = _pagedList.Read(I);
-			_btree.Add(Key, I);
+			var Key = _pagedListStore.Read(I);
+			_btreeStore.BTree.Add(Key, I);
 		}
 	}
 }
-
