@@ -133,6 +133,42 @@ public static class StreamMappedFactory {
 
 	#endregion
 
+	#region BTree
+	public static StreamMappedBTree<TKey, TValue> CreateBTree<TKey, TValue>(
+		int order,
+		Stream stream,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer = null,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) => new(
+			order,
+			stream,
+			keySerializer,
+			valueSerializer,
+			keyComparer,
+			endianness
+		);
+	
+
+		public static StreamMappedBTreePlus<TKey, TValue> CreateBTreePlus<TKey, TValue>(
+		int order,
+		Stream stream,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer = null,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) => new(
+			order,
+			stream,
+			keySerializer,
+			valueSerializer,
+			keyComparer,
+			endianness
+		);
+
+	#endregion
+
 	#region Dictionary
 
 	public static IStreamMappedDictionary<TKey, TValue> CreateDictionary<TKey, TValue>(
