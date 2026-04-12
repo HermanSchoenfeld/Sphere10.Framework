@@ -74,7 +74,7 @@ public static class TypeExtensions {
 		var builder = new StringBuilder();
 		var name = type.Name;
 		var index = name.IndexOf('`');
-		builder.Append(name.Substring(0, index));
+		builder.Append(index >= 0 ? name.Substring(0, index) : name);
 		builder.Append('<');
 
 		var genericArguments = type.GetGenericArguments();
