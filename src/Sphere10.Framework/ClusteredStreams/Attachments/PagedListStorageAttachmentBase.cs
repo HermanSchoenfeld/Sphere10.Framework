@@ -11,7 +11,7 @@ namespace Sphere10.Framework;
 
 public abstract class PagedListStorageAttachmentBase<TData> : ClusteredStreamsAttachmentBase {
 
-	protected PagedListStorageAttachmentBase(ClusteredStreams streams, string attachmentID, IItemSerializer<TData> datumSerializer)
+	public PagedListStorageAttachmentBase(ClusteredStreams streams, string attachmentID, IItemSerializer<TData> datumSerializer)
 		: base(streams, attachmentID) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
