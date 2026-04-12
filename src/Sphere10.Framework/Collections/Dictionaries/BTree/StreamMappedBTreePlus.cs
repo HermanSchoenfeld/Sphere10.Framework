@@ -75,6 +75,14 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	private const int NextLeafOffset = 9;
 	private const int EntriesOffset = 17;
 
+	// Header field offsets and lengths
+	private const int RootIndexOffset = 0;
+	private const int RootIndexLength = sizeof(long);
+	private const int CountOffset = RootIndexOffset + RootIndexLength;
+	private const int CountLength = sizeof(long);
+	private const int FreeListCountOffset = CountOffset + CountLength;
+	private const int FreeListCountLength = sizeof(int);
+
 	private readonly Stream _stream;
 	private readonly EndianBitConverter _bitConverter;
 	private readonly EndianBinaryReader _reader;
@@ -88,7 +96,9 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	private readonly int _childrenOffset;
 	private readonly int _nodeSize;
 	private readonly Stack<long> _freeList;
-	private long _rootIndex;
+	private readonly StreamMappedProperty<long> _rootIndexProperty;
+	private readonly StreamMappedProperty<long> _countProperty;
+	private readonly StreamMappedProperty<int> _freeListCountProperty;
 	private long _nodeCount;
 	private bool _disposed;
 
@@ -135,15 +145,24 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		_childrenOffset = EntriesOffset + (MaxEntrySlots * _entrySize);
 		_nodeSize = _childrenOffset + (MaxChildSlots * sizeof(long));
 
+		// Header properties — cached, write-through stream-mapped values
+		_rootIndexProperty = new StreamMappedProperty<long>(_stream, RootIndexOffset, RootIndexLength, PrimitiveSerializer<long>.Instance, _reader, _writer);
+		_countProperty = new StreamMappedProperty<long>(_stream, CountOffset, CountLength, PrimitiveSerializer<long>.Instance, _reader, _writer);
+		_freeListCountProperty = new StreamMappedProperty<int>(_stream, FreeListCountOffset, FreeListCountLength, PrimitiveSerializer<int>.Instance, _reader, _writer);
+
 		if (stream.Length == 0) {
 			// Initialize a new tree
-			_rootIndex = NoNode;
-			_nodeCount = 0;
+			_stream.SetLength(HeaderSize);
+			_rootIndexProperty.Value = NoNode;
+			_countProperty.Value = 0;
+			_freeListCountProperty.Value = 0;
 			Count = 0;
-			WriteHeader();
+			_nodeCount = 0;
 		} else {
 			// Load existing tree from stream
-			ReadHeader();
+			if (_stream.Length < HeaderSize)
+				throw new InvalidDataFormatException("Stream is too short to contain a valid StreamMappedBTreePlus header.");
+			Count = (int)_countProperty.Value;
 			_nodeCount = (_stream.Length - HeaderSize) / _nodeSize;
 		}
 	}
@@ -156,18 +175,16 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 
 	public IItemSerializer<V> ValueSerializer => _valueSerializer;
 
-	protected override bool HasRoot => _rootIndex != NoNode;
+	protected override bool HasRoot => _rootIndexProperty.Value != NoNode;
 
-	protected override long Root => _rootIndex;
+	protected override long Root => _rootIndexProperty.Value;
 
 	protected override void SetRoot(long node) {
-		_rootIndex = node;
-		WriteHeader();
+		_rootIndexProperty.Value = node;
 	}
 
 	protected override void ClearRoot() {
-		_rootIndex = NoNode;
-		WriteHeader();
+		_rootIndexProperty.Value = NoNode;
 	}
 
 	#endregion
@@ -428,13 +445,16 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 
 	public override void Set(K key, V value, bool overwriteIfExists) {
 		base.Set(key, value, overwriteIfExists);
-		WriteHeader();
+		_countProperty.Value = Count;
+		_freeListCountProperty.Value = _freeList.Count;
 	}
 
 	public override bool Remove(K key) {
 		var Result = base.Remove(key);
-		if (Result)
-			WriteHeader();
+		if (Result) {
+			_countProperty.Value = Count;
+			_freeListCountProperty.Value = _freeList.Count;
+		}
 		return Result;
 	}
 
@@ -443,7 +463,8 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		_freeList.Clear();
 		_nodeCount = 0;
 		_stream.SetLength(HeaderSize);
-		WriteHeader();
+		_countProperty.Value = Count;
+		_freeListCountProperty.Value = 0;
 	}
 
 	#endregion
@@ -459,7 +480,8 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		if (_disposed)
 			return;
 		if (disposing) {
-			WriteHeader();
+			_countProperty.Value = Count;
+			_freeListCountProperty.Value = _freeList.Count;
 			_writer.Flush();
 		}
 		_disposed = true;
@@ -526,31 +548,6 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		var Offset = EntriesOffset + (entryIndex * _entrySize);
 		var KeyBytes = _keySerializer.SerializeToBytes(key, _endianness);
 		Buffer.BlockCopy(KeyBytes, 0, record, Offset, _keySize);
-	}
-
-	#endregion
-
-	#region Private — Header I/O
-
-	private void WriteHeader() {
-		_stream.Seek(0, SeekOrigin.Begin);
-		_writer.Write(_rootIndex);
-		_writer.Write((long)Count);
-		_writer.Write(_freeList.Count);
-		_writer.Write(0L);
-		_writer.Write(0);
-		_writer.Flush();
-	}
-
-	private void ReadHeader() {
-		if (_stream.Length < HeaderSize)
-			throw new InvalidDataFormatException("Stream is too short to contain a valid StreamMappedBTreePlus header.");
-		_stream.Seek(0, SeekOrigin.Begin);
-		_rootIndex = _reader.ReadInt64();
-		Count = (int)_reader.ReadInt64();
-		// Free list count is read but the in-memory free list starts empty on load,
-		// since we cannot persist an unbounded free list in a fixed header.
-		// Deleted node slots are reclaimed only during the current session.
 	}
 
 	#endregion
