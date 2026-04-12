@@ -312,7 +312,7 @@ public static class StreamMappedFactory {
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false,
-		long reservedStreamCount = 2,
+		long reservedStreamCount = 3,
 		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
 		string keyStoreName = Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName
 	) {
