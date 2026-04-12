@@ -18,6 +18,7 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		: base(streams, attachmentID, datumSerializer) {
 	}
 
+
 	#region IsReadOnly
 
 	public bool IsReadOnly {
@@ -43,6 +44,29 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 	int ICollection<TData>.Count => checked((int)Count);
 
 	int IReadOnlyCollection<TData>.Count => checked((int)Count);
+
+	#endregion
+
+		#region Special Stream-based Operations
+
+	public int ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return PagedList.ReadItemBytes(itemIndex, byteOffset, byteLength, out result);
+	}
+	
+	public void WriteItemBytes(long index, long byteOffset, ReadOnlySpan<byte> bytes) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		PagedList.WriteItemBytes(index, byteOffset, bytes);
+	}
+
+
+	public virtual IEnumerable<IEnumerable<TData>> ReadRangeByPage(long index, long count) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return PagedList.ReadRangeByPage(index, count);
+	}
 
 	#endregion
 
