@@ -19,6 +19,8 @@ public class ClusteredStreamsAttachmentDecorator<TInner> : IClusteredStreamsAtta
 
 	public virtual string AttachmentID => Inner.AttachmentID;
 
+	public virtual int StreamCount => Inner.StreamCount;
+
 	public virtual ClusteredStreams Streams => Inner.Streams;
 
 	public virtual bool IsAttached => Inner.IsAttached;

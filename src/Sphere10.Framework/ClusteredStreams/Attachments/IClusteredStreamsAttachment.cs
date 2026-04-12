@@ -9,11 +9,16 @@
 namespace Sphere10.Framework;
 
 /// <summary>
-/// An auxillary component that attaches to a reserved stream within a <see cref="ClusteredStreams"/>.
+/// An auxillary component that attaches to one or more reserved streams within a <see cref="ClusteredStreams"/>.
 /// </summary>
 public interface IClusteredStreamsAttachment {
 
 	public string AttachmentID { get; }
+
+	/// <summary>
+	/// The number of reserved streams this attachment requires.
+	/// </summary>
+	int StreamCount { get; }
 
 	ClusteredStreams Streams { get; }
 

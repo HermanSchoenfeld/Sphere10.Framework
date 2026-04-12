@@ -24,6 +24,8 @@ public abstract class IndexBase<TStore> : ObjectStreamObserverBase, IClusteredSt
 
 	public string AttachmentID => Store.AttachmentID;
 
+	public int StreamCount => Store.StreamCount;
+
 	public TStore Store { get; }
 
 	public virtual ClusteredStreams Streams => Store.Streams;
