@@ -16,108 +16,130 @@ namespace Sphere10.Framework;
 /// <summary>
 /// A scalable unique key storage attachment that persists the reverse index (key → position) in
 /// a stream-mapped B-tree rather than an in-memory dictionary. The forward mapping (position → key)
-/// is still stored in the base <see cref="PagedListStorageAttachmentBase{TKey}"/>.
+/// is stored in a <see cref="StreamPagedList{TData}"/>.
 ///
-/// A companion <see cref="ClusteredStreamsAttachmentBase"/> is registered on the same
-/// <see cref="ClusteredStreams"/> to provide a dedicated stream for the B-tree.
+/// This is a <see cref="CompositeStorageAttachment"/> that uses two reserved streams:
+/// stream 0 for the paged list (forward mapping) and stream 1 for the B-tree (reverse mapping).
 /// </summary>
-public class UniqueKeyStorageAttachment<TKey> : PagedListStorageAttachmentBase<TKey>, IReadOnlyDictionary<TKey, long> {
+public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachment, IReadOnlyDictionary<TKey, long> {
 	private const int BTreeOrder = 64;
 
+	private readonly IItemSerializer<TKey> _keySerializer;
 	private readonly IEqualityComparer<TKey> _keyComparer;
-	private readonly BTreeCompanionAttachment _btreeCompanion;
+	private StreamPagedList<TKey> _pagedList;
 	private StreamMappedBTree<TKey, long> _btree;
 
 	public UniqueKeyStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer)
-		: base(streams, attachmentID, keySerializer) {
+		: base(streams, attachmentID, 2) {
+		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
+		Guard.Argument(keySerializer.IsConstantSize, nameof(keySerializer), "Key serializer must be a constant-length serializer.");
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
+		_keySerializer = keySerializer;
 		_keyComparer = keyComparer;
-
-		// Register a companion attachment to hold the BTree's persistent storage
-		_btreeCompanion = new BTreeCompanionAttachment(streams, attachmentID + ".btree");
-		streams.RegisterAttachment(_btreeCompanion);
 	}
 
 	public int Count => _btree?.Count ?? 0;
 
+	protected StreamPagedList<TKey> PagedList => _pagedList;
+
 	public IEnumerable<TKey> Keys {
 		get {
 			CheckAttached();
-			return _btree.Select(Kvp => Kvp.Key);
+			using (Streams.EnterAccessScope())
+				return _btree.Select(Kvp => Kvp.Key).ToArray();
 		}
 	}
 
 	public IEnumerable<long> Values {
 		get {
 			CheckAttached();
-			return _btree.Select(Kvp => Kvp.Value);
+			using (Streams.EnterAccessScope())
+				return _btree.Select(Kvp => Kvp.Value).ToArray();
 		}
 	}
 
 	public bool ContainsKey(TKey key) {
 		CheckAttached();
-		return _btree.ContainsKey(key);
+		using (Streams.EnterAccessScope())
+			return _btree.ContainsKey(key);
 	}
 
 	public bool TryGetValue(TKey key, out long value) {
 		CheckAttached();
-		return _btree.TryGetValue(key, out value);
+		using (Streams.EnterAccessScope())
+			return _btree.TryGetValue(key, out value);
 	}
 
 	public TKey Read(long index) {
 		CheckAttached();
-		return PagedList.Read(index);
+		using (Streams.EnterAccessScope())
+			return _pagedList.Read(index);
 	}
 
 	public byte[] ReadBytes(long index) {
 		CheckAttached();
-		PagedList.ReadItemBytes(index, 0, null, out var bytes);
-		return bytes;
+		using (Streams.EnterAccessScope()) {
+			_pagedList.ReadItemBytes(index, 0, null, out var bytes);
+			return bytes;
+		}
 	}
 
 	public void Add(long index, TKey key) {
 		CheckAttached();
-		Guard.Argument(index == PagedList.Count, nameof(index), "Index mismatches with expected index in store");
-		_btree.Add(key, index);
-		PagedList.Add(key);
+		using (Streams.EnterAccessScope()) {
+			Guard.Argument(index == _pagedList.Count, nameof(index), "Index mismatches with expected index in store");
+			_btree.Add(key, index);
+			_pagedList.Add(key);
+		}
 	}
 
 	public void Update(long index, TKey key) {
 		CheckAttached();
-		var OldKey = PagedList.Read(index);
-		_btree.Remove(OldKey);
-		_btree.Add(key, index);
-		PagedList.Update(index, key);
+		using (Streams.EnterAccessScope()) {
+			var oldKey = _pagedList.Read(index);
+			_btree.Remove(oldKey);
+			_btree.Add(key, index);
+			_pagedList.Update(index, key);
+		}
 	}
 
 	public void Insert(long index, TKey key) {
 		CheckAttached();
-		Guard.Ensure(!_btree.ContainsKey(key));
-		PagedList.Insert(index, key);
-		RebuildBTree();
+		using (Streams.EnterAccessScope()) {
+			Guard.Ensure(!_btree.ContainsKey(key));
+			_pagedList.Insert(index, key);
+			RebuildBTree();
+		}
 	}
 
 	public void Remove(long index) {
 		CheckAttached();
-		PagedList.RemoveAt(index);
-		RebuildBTree();
+		using (Streams.EnterAccessScope()) {
+			_pagedList.RemoveAt(index);
+			RebuildBTree();
+		}
 	}
 
 	public void Reap(long index) {
 		CheckAttached();
-		var OldKey = PagedList.Read(index);
-		_btree.Remove(OldKey);
+		using (Streams.EnterAccessScope()) {
+			var oldKey = _pagedList.Read(index);
+			_btree.Remove(oldKey);
+		}
 	}
 
 	public void Clear() {
 		CheckAttached();
-		_btree.Clear();
-		PagedList.Clear();
+		using (Streams.EnterAccessScope()) {
+			_btree.Clear();
+			_pagedList.Clear();
+		}
 	}
 
 	public IEnumerator<KeyValuePair<TKey, long>> GetEnumerator() {
 		CheckAttached();
-		return _btree.GetEnumerator();
+		using (Streams.EnterAccessScope())
+			return _btree.ToList().GetEnumerator();
 	}
 
 	IEnumerator IEnumerable.GetEnumerator() {
@@ -127,65 +149,55 @@ public class UniqueKeyStorageAttachment<TKey> : PagedListStorageAttachmentBase<T
 	public long this[TKey key] {
 		get {
 			CheckAttached();
-			return _btree[key];
+			using (Streams.EnterAccessScope())
+				return _btree[key];
 		}
 	}
 
 	protected override void AttachInternal() {
-		base.AttachInternal();
+		// Stream 0: paged list (forward mapping position → key)
+		_pagedList = new StreamPagedList<TKey>(
+			_keySerializer,
+			GetAttachmentStream(0),
+			Streams.Endianness,
+			false,
+			true
+		);
+
+		// Stream 1: B-tree (reverse mapping key → position)
 		_btree = new StreamMappedBTree<TKey, long>(
 			BTreeOrder,
-			_btreeCompanion.Stream,
-			DatumSerializer,
+			GetAttachmentStream(1),
+			_keySerializer,
 			PrimitiveSerializer<long>.Instance,
 			Comparer<TKey>.Default
 		);
-		if (_btree.Count == 0 && PagedList.Count > 0)
+		if (_btree.Count == 0 && _pagedList.Count > 0)
 			RebuildBTree();
+	}
+
+	protected override void VerifyIntegrity() {
 	}
 
 	protected override void DetachInternal() {
 		_btree?.Dispose();
 		_btree = null;
-		base.DetachInternal();
+		_pagedList = null;
 	}
 
 	public override void Flush() {
 		base.Flush();
-		_btreeCompanion.Flush();
 	}
 
 	private void RebuildBTree() {
-		_btree.Clear();
 		using var _ = Streams.EnterAccessScope();
+		_btree.Clear();
 		var Reserved = Streams.Header.ReservedStreams;
-		for (var I = 0L; I < PagedList.Count; I++) {
+		for (var I = 0L; I < _pagedList.Count; I++) {
 			if (Streams.FastReadStreamDescriptorTraits(I + Reserved).HasFlag(ClusteredStreamTraits.Reaped))
 				continue;
-			var Key = PagedList.Read(I);
+			var Key = _pagedList.Read(I);
 			_btree.Add(Key, I);
-		}
-	}
-
-	/// <summary>
-	/// A lightweight companion attachment that provides a dedicated stream for the B-tree storage.
-	/// It holds no logic — only exposes its <see cref="Stream"/> for the parent to use.
-	/// </summary>
-	private sealed class BTreeCompanionAttachment : ClusteredStreamsAttachmentBase {
-		public BTreeCompanionAttachment(ClusteredStreams streams, string attachmentID)
-			: base(streams, attachmentID) {
-		}
-
-		public System.IO.Stream Stream => AttachmentStream;
-
-		protected override void AttachInternal() {
-			// No-op: the parent attachment manages the BTree lifecycle
-		}
-
-		protected override void VerifyIntegrity() {
-		}
-
-		protected override void DetachInternal() {
 		}
 	}
 }
