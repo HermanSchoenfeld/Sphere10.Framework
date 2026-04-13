@@ -195,7 +195,7 @@ public class BTreeLookupTests {
 		// Create and populate
 		using (var Lookup = new StreamMappedBTreeLookup<int, long>(
 			5, BackingStream, PrimitiveSerializer<int>.Instance, PrimitiveSerializer<long>.Instance,
-			Comparer<int>.Default, Comparer<long>.Default, long.MinValue, long.MaxValue)) {
+			Comparer<int>.Default)) {
 			Lookup.Add(1, 10L);
 			Lookup.Add(1, 20L);
 			Lookup.Add(2, 30L);
@@ -205,7 +205,7 @@ public class BTreeLookupTests {
 		BackingStream.Position = 0;
 		using (var Lookup = new StreamMappedBTreeLookup<int, long>(
 			5, BackingStream, PrimitiveSerializer<int>.Instance, PrimitiveSerializer<long>.Instance,
-			Comparer<int>.Default, Comparer<long>.Default, long.MinValue, long.MaxValue)) {
+			Comparer<int>.Default)) {
 			Assert.That(Lookup.TotalCount, Is.EqualTo(3));
 			Assert.That(Lookup.DistinctKeyCount, Is.EqualTo(2));
 			Assert.That(Lookup.GetValues(1).OrderBy(X => X).ToArray(), Is.EqualTo(new[] { 10L, 20L }));
@@ -236,10 +236,7 @@ public class BTreeLookupTests {
 	private static InMemoryBTreeLookup<string, long> CreateInMemoryLookup(int order = 5) {
 		return new InMemoryBTreeLookup<string, long>(
 			order,
-			Comparer<string>.Default,
-			Comparer<long>.Default,
-			long.MinValue,
-			long.MaxValue
+			Comparer<string>.Default
 		);
 	}
 
@@ -249,10 +246,7 @@ public class BTreeLookupTests {
 			new MemoryStream(),
 			PrimitiveSerializer<int>.Instance,
 			PrimitiveSerializer<long>.Instance,
-			Comparer<int>.Default,
-			Comparer<long>.Default,
-			long.MinValue,
-			long.MaxValue
+			Comparer<int>.Default
 		);
 	}
 
