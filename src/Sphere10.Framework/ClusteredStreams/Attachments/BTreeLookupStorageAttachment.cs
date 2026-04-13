@@ -18,7 +18,7 @@ namespace Sphere10.Framework;
 /// lookup as an <see cref="ILookup{TKey, TValue}"/>. This is the ILookup analog of
 /// <see cref="BTreeStorageAttachment{TKey,TValue}"/>.
 /// </summary>
-public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAttachmentBase<TKey, TValue>, ILookup<TKey, TValue> {
+public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAttachmentBase<TKey, TValue>, IBTreeLookup<TKey, TValue> {
 
 	public BTreeLookupStorageAttachment(
 		ClusteredStreams streams,
@@ -26,11 +26,8 @@ public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAtta
 		int order,
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
-		IComparer<TKey> keyComparer,
-		IComparer<TValue> valueComparer,
-		TValue minValue,
-		TValue maxValue
-	) : base(streams, attachmentID, order, keySerializer, valueSerializer, keyComparer, valueComparer, minValue, maxValue) {
+		IComparer<TKey> keyComparer
+	) : base(streams, attachmentID, order, keySerializer, valueSerializer, keyComparer) {
 	}
 
 	public new StreamMappedBTreeLookup<TKey, TValue> BTreeLookup => base.BTreeLookup;
@@ -42,6 +39,18 @@ public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAtta
 			CheckAttached();
 			using var _ = Streams.EnterAccessScope();
 			return BTreeLookup.DistinctKeyCount;
+		}
+	}
+
+	#endregion
+
+	#region TotalCount
+
+	public int TotalCount {
+		get {
+			CheckAttached();
+			using var _ = Streams.EnterAccessScope();
+			return BTreeLookup.TotalCount;
 		}
 	}
 
@@ -97,6 +106,26 @@ public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAtta
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
 		BTreeLookup.Clear();
+	}
+
+	#endregion
+
+	#region ContainsEntry
+
+	public bool ContainsEntry(TKey key, TValue value) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return BTreeLookup.ContainsEntry(key, value);
+	}
+
+	#endregion
+
+	#region Validate
+
+	public bool Validate(out string error) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return BTreeLookup.Validate(out error);
 	}
 
 	#endregion

@@ -35,7 +35,7 @@ public class IndexStorageAttachment<TData> : CompositeStorageAttachmentBase, ILo
 			streams,
 			attachmentID,
 			new PagedListStorageAttachment<TData>(streams, attachmentID + ".pagedList", datumSerializer),
-			new BTreeLookupStorageAttachment<TData, long>(streams, attachmentID + ".btreeLookup", BTreeOrder, datumSerializer, PrimitiveSerializer<long>.Instance, Comparer<TData>.Default, Comparer<long>.Default, long.MinValue, long.MaxValue)
+			new BTreeLookupStorageAttachment<TData, long>(streams, attachmentID + ".btreeLookup", BTreeOrder, datumSerializer, PrimitiveSerializer<long>.Instance, Comparer<TData>.Default)
 		) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Data serializer must be a constant-length serializer.");

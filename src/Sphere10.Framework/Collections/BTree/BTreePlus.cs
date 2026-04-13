@@ -203,6 +203,30 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 		return false;
 	}
 
+	/// <summary>
+	/// Returns all key-value pairs whose keys fall within [<paramref name="lowerInclusive"/>, <paramref name="upperInclusive"/>].
+	/// Entries are yielded in sorted (in-order) sequence using the linked leaf chain for O(log n + k) performance.
+	/// </summary>
+	public IEnumerable<KeyValuePair<K, V>> FindRange(K lowerInclusive, K upperInclusive) {
+		if (!HasRoot)
+			yield break;
+
+		var Leaf = FindLeaf(Root, lowerInclusive);
+		var Index = FindLeafKeyIndex(Leaf, lowerInclusive, out _);
+
+		while (!EqualityComparer<TNode>.Default.Equals(Leaf, default)) {
+			var KeyCount = GetKeyCount(Leaf);
+			for (var I = Index; I < KeyCount; I++) {
+				var Entry = GetLeafEntry(Leaf, I);
+				if (Compare(Entry.Key, upperInclusive) > 0)
+					yield break;
+				yield return Entry;
+			}
+			Leaf = GetNextLeaf(Leaf);
+			Index = 0;
+		}
+	}
+
 	public override IEnumerator<KeyValuePair<K, V>> GetEnumerator() {
 		if (!HasRoot)
 			yield break;

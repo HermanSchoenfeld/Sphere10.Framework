@@ -19,9 +19,6 @@ public abstract class BTreeLookupStorageAttachmentBase<TKey, TValue> : Clustered
 	private readonly IItemSerializer<TKey> _keySerializer;
 	private readonly IItemSerializer<TValue> _valueSerializer;
 	private readonly IComparer<TKey> _keyComparer;
-	private readonly IComparer<TValue> _valueComparer;
-	private readonly TValue _minValue;
-	private readonly TValue _maxValue;
 	private StreamMappedBTreeLookup<TKey, TValue> _lookup;
 
 	public BTreeLookupStorageAttachmentBase(
@@ -30,22 +27,15 @@ public abstract class BTreeLookupStorageAttachmentBase<TKey, TValue> : Clustered
 		int order,
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
-		IComparer<TKey> keyComparer,
-		IComparer<TValue> valueComparer,
-		TValue minValue,
-		TValue maxValue
+		IComparer<TKey> keyComparer
 	) : base(streams, attachmentID) {
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-		Guard.ArgumentNotNull(valueComparer, nameof(valueComparer));
 		_order = order;
 		_keySerializer = keySerializer;
 		_valueSerializer = valueSerializer;
 		_keyComparer = keyComparer;
-		_valueComparer = valueComparer;
-		_minValue = minValue;
-		_maxValue = maxValue;
 	}
 
 	protected StreamMappedBTreeLookup<TKey, TValue> BTreeLookup {
@@ -61,10 +51,7 @@ public abstract class BTreeLookupStorageAttachmentBase<TKey, TValue> : Clustered
 			AttachmentStream,
 			_keySerializer,
 			_valueSerializer,
-			_keyComparer,
-			_valueComparer,
-			_minValue,
-			_maxValue
+			_keyComparer
 		);
 	}
 
