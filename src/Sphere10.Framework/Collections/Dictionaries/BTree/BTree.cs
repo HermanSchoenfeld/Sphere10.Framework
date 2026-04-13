@@ -240,6 +240,46 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 		return true;
 	}
 
+	/// <summary>
+	/// Returns all key-value pairs whose keys fall within [<paramref name="lowerInclusive"/>, <paramref name="upperInclusive"/>].
+	/// Entries are yielded in sorted (in-order) sequence. Performance is O(log n + k) where k is the result count.
+	/// </summary>
+	public IEnumerable<KeyValuePair<K, V>> FindRange(K lowerInclusive, K upperInclusive) {
+		if (!HasRoot)
+			yield break;
+		foreach (var Item in FindRangeRecursive(Root, lowerInclusive, upperInclusive))
+			yield return Item;
+	}
+
+	private IEnumerable<KeyValuePair<K, V>> FindRangeRecursive(TNode node, K lower, K upper) {
+		var KeyCount = GetKeyCount(node);
+		var NodeIsLeaf = IsLeaf(node);
+
+		// Binary-search for the first key position >= lower
+		var StartIdx = FindKeyIndex(node, lower, out _);
+
+		for (var I = StartIdx; I < KeyCount; I++) {
+			// Visit child[I] — it may contain keys in [lower, upper]
+			if (!NodeIsLeaf) {
+				foreach (var Item in FindRangeRecursive(GetChild(node, I), lower, upper))
+					yield return Item;
+			}
+
+			// If key[I] exceeds upper bound, stop
+			var Entry = GetKey(node, I);
+			if (Compare(Entry.Key, upper) > 0)
+				yield break;
+
+			yield return Entry;
+		}
+
+		// Visit the rightmost child (may contain keys in range)
+		if (!NodeIsLeaf) {
+			foreach (var Item in FindRangeRecursive(GetChild(node, KeyCount), lower, upper))
+				yield return Item;
+		}
+	}
+
 	protected virtual int FindKeyIndex(TNode node, K key, out bool found) {
 		var Lo = 0;
 		var Hi = GetKeyCount(node) - 1;

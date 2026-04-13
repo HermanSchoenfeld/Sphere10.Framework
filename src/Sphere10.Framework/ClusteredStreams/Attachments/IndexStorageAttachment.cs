@@ -13,93 +13,153 @@ using System.Linq;
 
 namespace Sphere10.Framework;
 
-public class IndexStorageAttachment<TData> : PagedListStorageAttachmentBase<TData>, ILookup<TData, long> {
+/// <summary>
+/// A scalable index storage attachment that persists the reverse index (data → positions) in
+/// a stream-mapped B-tree lookup rather than an in-memory lookup. The forward mapping (position → data)
+/// is stored in a <see cref="StreamPagedList{TData}"/>.
+///
+/// This is a <see cref="CompositeStorageAttachmentBase"/> that composes two child attachments:
+/// a <see cref="PagedListStorageAttachment{TData}"/> for the paged list (forward mapping)
+/// and a <see cref="BTreeLookupStorageAttachment{TKey,TValue}"/> for the B-tree lookup (reverse mapping).
+///
+/// This is the <see cref="ILookup{TKey,TElement}"/> analog of <see cref="UniqueKeyStorageAttachment{TKey}"/>.
+/// </summary>
+public class IndexStorageAttachment<TData> : CompositeStorageAttachmentBase, ILookup<TData, long> {
+	private const int BTreeOrder = 64;
 
-	private readonly ExtendedLookup<TData, long> _lookup;
+	private readonly PagedListStorageAttachment<TData> _pagedListStore;
+	private readonly BTreeLookupStorageAttachment<TData, long> _btreeLookupStore;
 
 	public IndexStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TData> datumSerializer, IEqualityComparer<TData> datumComparer)
-		: base(streams, attachmentID, datumSerializer) {
+		: this(
+			streams,
+			attachmentID,
+			new PagedListStorageAttachment<TData>(streams, attachmentID + ".pagedList", datumSerializer),
+			new BTreeLookupStorageAttachment<TData, long>(streams, attachmentID + ".btreeLookup", BTreeOrder, datumSerializer, PrimitiveSerializer<long>.Instance, Comparer<TData>.Default, Comparer<long>.Default, long.MinValue, long.MaxValue)
+		) {
+		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
+		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Data serializer must be a constant-length serializer.");
 		Guard.ArgumentNotNull(datumComparer, nameof(datumComparer));
-		_lookup = new ExtendedLookup<TData, long>(datumComparer);
 	}
 
-	public int Count => _lookup.Count;
+	private IndexStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		PagedListStorageAttachment<TData> pagedListStore,
+		BTreeLookupStorageAttachment<TData, long> btreeLookupStore
+	) : base(streams, attachmentID, pagedListStore, btreeLookupStore) {
+		_pagedListStore = pagedListStore;
+		_btreeLookupStore = btreeLookupStore;
+	}
 
-	protected override void AttachInternal() {
-		base.AttachInternal();
-		HydrateStore();
+	public int Count => IsAttached ? _btreeLookupStore.BTreeLookup.DistinctKeyCount : 0;
+
+	public bool Contains(TData key) {
+		CheckAttached();
+		using var _ = Streams.EnterAccessScope();
+		return _btreeLookupStore.BTreeLookup.ContainsKey(key);
+	}
+
+	public IEnumerable<long> this[TData key] {
+		get {
+			CheckAttached();
+			using var _ = Streams.EnterAccessScope();
+			return _btreeLookupStore.BTreeLookup.GetValues(key).ToArray();
+		}
 	}
 
 	public TData Read(long index) {
 		CheckAttached();
-		return PagedList.Read(index);
+		using var _ = Streams.EnterAccessScope();
+		return _pagedListStore.Read(index);
 	}
 
 	public byte[] ReadBytes(long index) {
 		CheckAttached();
-		PagedList.ReadItemBytes(index, 0, null, out var bytes);
-		return bytes;
+		using (Streams.EnterAccessScope()) {
+			_pagedListStore.ReadItemBytes(index, 0, null, out var Bytes);
+			return Bytes;
+		}
 	}
 
 	public void Add(long index, TData data) {
 		CheckAttached();
-		Guard.Argument(index == PagedList.Count, nameof(index), "Index mismatches with expected index in store");
-		PagedList.Add(data);
-		_lookup.Add(data, index);
+		using (Streams.EnterAccessScope()) {
+			Guard.Argument(index == _pagedListStore.Count, nameof(index), "Index mismatches with expected index in store");
+			_btreeLookupStore.BTreeLookup.Add(data, index);
+			_pagedListStore.Add(data);
+		}
 	}
 
 	public void Update(long index, TData data) {
 		CheckAttached();
-		var oldProjection = PagedList.Read(index);
-		_lookup.Remove(oldProjection, index);
-		PagedList.Update(index, data);
-		_lookup.Add(data, index);
+		using (Streams.EnterAccessScope()) {
+			var OldData = _pagedListStore.Read(index);
+			_btreeLookupStore.BTreeLookup.Remove(OldData, index);
+			_btreeLookupStore.BTreeLookup.Add(data, index);
+			_pagedListStore.Update(index, data);
+		}
 	}
+
 	public void Insert(long index, TData data) {
 		CheckAttached();
-		PagedList.Insert(index, data);
-		HydrateStore(); // rebuild entire memory index since indices have shifted
+		using (Streams.EnterAccessScope()) {
+			_pagedListStore.Insert(index, data);
+			RebuildBTreeLookup();
+		}
 	}
 
 	public void Remove(long index) {
 		CheckAttached();
-		PagedList.RemoveAt(index);
-		HydrateStore(); // rebuild entire memory index since indices have shifted
+		using (Streams.EnterAccessScope()) {
+			_pagedListStore.RemoveAt(index);
+			RebuildBTreeLookup();
+		}
 	}
 
 	public void Reap(long index) {
 		CheckAttached();
-		var oldProjection = PagedList.Read(index);
-		_lookup.Remove(oldProjection, index);
-		// Reap doesn't delete item, only tombstones it
+		using (Streams.EnterAccessScope()) {
+			var OldData = _pagedListStore.Read(index);
+			_btreeLookupStore.BTreeLookup.Remove(OldData, index);
+		}
 	}
-
 
 	public void Clear() {
 		CheckAttached();
-		_lookup.Clear();
-		PagedList.Clear();
+		using (Streams.EnterAccessScope()) {
+			_btreeLookupStore.BTreeLookup.Clear();
+			_pagedListStore.Clear();
+		}
 	}
 
-	public bool Contains(TData key) => _lookup.Contains(key);
+	public IEnumerator<IGrouping<TData, long>> GetEnumerator() {
+		CheckAttached();
+		using (Streams.EnterAccessScope())
+			return _btreeLookupStore.BTreeLookup.EnumerateGroupings().ToList().GetEnumerator();
+	}
 
-	public IEnumerator<IGrouping<TData, long>> GetEnumerator() => _lookup.GetEnumerator();
+	IEnumerator IEnumerable.GetEnumerator() {
+		return GetEnumerator();
+	}
 
-	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	public override void Attach() {
+		base.Attach();
+		using (Streams.EnterAccessScope()) {
+			if (_btreeLookupStore.BTreeLookup.TotalCount == 0 && _pagedListStore.Count > 0)
+				RebuildBTreeLookup();
+		}
+	}
 
-	public IEnumerable<long> this[TData key] => _lookup[key];
-
-	private void HydrateStore() {
-		// Loads the storage and fill out the lookup with the stored projections
-		_lookup.Clear();
+	private void RebuildBTreeLookup() {
 		using var _ = Streams.EnterAccessScope();
-		var reserved = Streams.Header.ReservedStreams;
-		for (var i = 0L; i < PagedList.Count; i++) {
-			// reaped objects are ignored
-			if (Streams.FastReadStreamDescriptorTraits(i + reserved).HasFlag(ClusteredStreamTraits.Reaped))
+		_btreeLookupStore.BTreeLookup.Clear();
+		var Reserved = Streams.Header.ReservedStreams;
+		for (var I = 0L; I < _pagedListStore.Count; I++) {
+			if (Streams.FastReadStreamDescriptorTraits(I + Reserved).HasFlag(ClusteredStreamTraits.Reaped))
 				continue;
-			var value = PagedList.Read(i);
-			_lookup.Add(value, i);
+			var Data = _pagedListStore.Read(I);
+			_btreeLookupStore.BTreeLookup.Add(Data, I);
 		}
 	}
 }
