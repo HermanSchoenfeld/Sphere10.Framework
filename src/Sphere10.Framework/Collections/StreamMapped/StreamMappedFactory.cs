@@ -350,7 +350,8 @@ public static class StreamMappedFactory {
 		bool autoLoad = false,
 		long reservedStreamCount = 3,
 		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
-		string keyStoreName = Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName
+		string keyStoreName = Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName,
+		IComparer<TKey> keyOrderComparer = null
 	) {
 		var container = new ClusteredStreams(
 			rootStream,
@@ -369,11 +370,12 @@ public static class StreamMappedFactory {
 			valueComparer,
 			autoLoad,
 			recyclableIndexIndexName,
-			keyStoreName
+			keyStoreName,
+			keyOrderComparer
 		);
 
 		dict.ObjectStream.OwnsStreams = true;
-		
+
 		return dict;
 	}
 
@@ -385,13 +387,14 @@ public static class StreamMappedFactory {
 		IEqualityComparer<TValue> valueComparer = null,
 		bool autoLoad = false,
 		string recyclableIndexIndexName = Sphere10FrameworkDefaults.DefaultReyclableIndexIndexName,
-		string keyStoreName = Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName
+		string keyStoreName = Sphere10FrameworkDefaults.DefaultKeyStoreAttachmentName,
+		IComparer<TKey> keyOrderComparer = null
 	) {
 		var container = CreateClkContainer(
 			streams,
 			constantLengthKeySerializer,
 			valueSerializer ?? ItemSerializer<TValue>.Default,
-			keyComparer ?? EqualityComparer<TKey>.Default,
+			keyOrderComparer ?? ResolveDefaultComparer<TKey>(),
 			recyclableIndexIndexName,
 			keyStoreName
 		);
@@ -445,7 +448,8 @@ public static class StreamMappedFactory {
 			new ByteArrayEqualityComparer(),
 			comparer,
 			policy,
-			endianness
+			endianness,
+			keyOrderComparer: new ByteArrayComparer()
 		),
 		comparer,
 		hasher
@@ -518,7 +522,7 @@ public static class StreamMappedFactory {
 		ClusteredStreams streams,
 		IItemSerializer<TKey> constantLengthKeySerializer,
 		IItemSerializer<TValue> valueSerializer,
-		IEqualityComparer<TKey> keyComparer,
+		IComparer<TKey> keyComparer,
 		string recyclableIndexIndexName,
 		string keyStoreName
 	) {
@@ -622,6 +626,12 @@ public static class StreamMappedFactory {
 	}
 
 	#endregion
+
+	private static IComparer<T> ResolveDefaultComparer<T>() {
+		if (typeof(T) == typeof(byte[]))
+			return (IComparer<T>)(object)new ByteArrayComparer();
+		return Comparer<T>.Default;
+	}
 }
 
 

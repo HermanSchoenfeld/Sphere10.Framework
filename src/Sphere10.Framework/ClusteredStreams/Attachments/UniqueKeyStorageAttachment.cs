@@ -29,15 +29,19 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 	private readonly BTreeStorageAttachment<TKey, long> _btreeStore;
 
 	public UniqueKeyStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer)
+		: this(streams, attachmentID, keySerializer, Comparer<TKey>.Default) {
+		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
+	}
+
+	public UniqueKeyStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TKey> keySerializer, IComparer<TKey> keyComparer)
 		: this(
 			streams,
 			attachmentID,
 			new PagedListStorageAttachment<TKey>(streams, attachmentID + ".pagedList", keySerializer),
-			new BTreeStorageAttachment<TKey, long>(streams, attachmentID + ".btree", BTreeOrder, keySerializer, PrimitiveSerializer<long>.Instance, Comparer<TKey>.Default)
+			new BTreeStorageAttachment<TKey, long>(streams, attachmentID + ".btree", BTreeOrder, keySerializer, PrimitiveSerializer<long>.Instance, keyComparer ?? Comparer<TKey>.Default)
 		) {
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.Argument(keySerializer.IsConstantSize, nameof(keySerializer), "Key serializer must be a constant-length serializer.");
-		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
 	}
 
 	private UniqueKeyStorageAttachment(
