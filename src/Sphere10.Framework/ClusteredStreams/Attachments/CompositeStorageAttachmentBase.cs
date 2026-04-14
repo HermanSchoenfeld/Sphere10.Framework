@@ -34,7 +34,7 @@ public class CompositeStorageAttachmentBase : IClusteredStreamsAttachment {
 
 	public string AttachmentID { get; }
 
-	public int StreamCount => Children.Sum(child => child.StreamCount);
+	public int StreamCount => 0;
 
 	public ClusteredStreams Streams => Children.FirstOrDefault()?.Streams;
 

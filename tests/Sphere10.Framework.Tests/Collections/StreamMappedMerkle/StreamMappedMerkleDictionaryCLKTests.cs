@@ -46,7 +46,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 	public void TestHeader() {
 		using (CreateTestObjectDictionary(CHF.SHA2_256, out var streamMappedMerkleDictionary)) {
 			Assert.That(streamMappedMerkleDictionary.ObjectStream.Streams.Header.ClusterSize, Is.EqualTo(DefaultClusterSize));
-			Assert.That(streamMappedMerkleDictionary.ObjectStream.Streams.Header.ReservedStreams, Is.EqualTo(3));
+			Assert.That(streamMappedMerkleDictionary.ObjectStream.Streams.Header.ReservedStreams, Is.EqualTo(4));
 		}
 	}
 
