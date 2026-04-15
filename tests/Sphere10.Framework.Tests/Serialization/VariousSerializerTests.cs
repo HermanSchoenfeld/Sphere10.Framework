@@ -25,6 +25,12 @@ public class VariousSerializerTests {
 		BinarySerializer_SerializeOnly,
 		Factory_Sizing_Then_Serialize,
 		Factory_SerializeOnly,
+
+		MixedContext_BinarySerializer_Sizing_Then_Serialize,
+		MixedContext_BinarySerializer_SerializeOnly,
+		MixedContext_Factory_Sizing_Then_Serialize,
+		MixedContext_Factory_SerializeOnly,
+
 	}
 
 	internal class PrimitiveTestObject {
@@ -135,10 +141,14 @@ public class VariousSerializerTests {
 		switch (testType) {
 			case TestType.BinarySerializer_Sizing_Then_Serialize:
 			case TestType.BinarySerializer_SerializeOnly:
+			case TestType.MixedContext_BinarySerializer_Sizing_Then_Serialize:
+			case TestType.MixedContext_BinarySerializer_SerializeOnly:
 				serializer = new BinarySerializer();
 				break;
 			case TestType.Factory_Sizing_Then_Serialize:
 			case TestType.Factory_SerializeOnly:
+			case TestType.MixedContext_Factory_Sizing_Then_Serialize:
+			case TestType.MixedContext_Factory_SerializeOnly:
 				var factory = new SerializerFactory(SerializerFactory.Default);
 				if (!factory.ContainsSerializer<PrimitiveTestObject>())
 					factory.RegisterAutoBuild<PrimitiveTestObject>();
@@ -176,9 +186,17 @@ public class VariousSerializerTests {
 				break;
 		}
 
-		var len = testSize ? serializer.CalculateSize(item) : 0;
-		var bytes = serializer.SerializeBytesLE(item);
-		deserialized = serializer.DeserializeBytesLE(bytes);
+		var usesMixedContext = testType.IsIn(
+			TestType.MixedContext_BinarySerializer_Sizing_Then_Serialize,
+			TestType.MixedContext_BinarySerializer_SerializeOnly,
+			TestType.MixedContext_Factory_Sizing_Then_Serialize,
+			TestType.MixedContext_Factory_SerializeOnly
+			);
+
+		var context = new SerializationContext();
+		var len = testSize ? serializer.CalculateSize(usesMixedContext ? context : new SerializationContext(), item) : 0;
+		var bytes = serializer.SerializeBytesLE(item, usesMixedContext ? context : new SerializationContext());
+		deserialized = serializer.DeserializeBytesLE(bytes, usesMixedContext ? context : new SerializationContext());
 		if (testSize)
 			Assert.That(len, Is.EqualTo(bytes.Length));
 		item.Should().BeEquivalentTo(deserialized, x => x.IgnoringCyclicReferences());
@@ -279,6 +297,241 @@ public class VariousSerializerTests {
 		DoTest(item, testType, out _);
 	}
 
+    #region IValueTypeActivatingSerializer Tests
+
+    [Test]
+    public void CompositeSerializer_ShouldNotifyInstanceActivation_DefaultsFalse() {
+        var factory = new SerializerFactory(SerializerFactory.Default);
+        factory.RegisterAutoBuild<PrimitiveTestObject>();
+        var serializer = factory.GetPureSerializer<PrimitiveTestObject>();
+        Assert.That(serializer, Is.InstanceOf<IValueTypeActivatingSerializer>());
+        Assert.That(((IValueTypeActivatingSerializer)serializer).ShouldNotifyInstanceActivation, Is.False);
+    }
+
+    [Test]
+    public void CollectionSerializer_ShouldNotifyInstanceActivation_DefaultsFalse() {
+        var serializer = new ListSerializer<int>(PrimitiveSerializer<int>.Instance);
+        Assert.That(serializer, Is.InstanceOf<IValueTypeActivatingSerializer>());
+        Assert.That(((IValueTypeActivatingSerializer)serializer).ShouldNotifyInstanceActivation, Is.False);
+    }
+
+    [Test]
+    public void ArraySerializer_ShouldNotifyInstanceActivation_DefaultsFalse() {
+        var serializer = new ArraySerializer<int>(PrimitiveSerializer<int>.Instance);
+        Assert.That(serializer, Is.InstanceOf<IValueTypeActivatingSerializer>());
+        Assert.That(((IValueTypeActivatingSerializer)serializer).ShouldNotifyInstanceActivation, Is.False);
+    }
+
+    [Test]
+    public void ReferenceSerializer_SetsActivationFlagOnInnerSerializer() {
+        var inner = new ListSerializer<int>(PrimitiveSerializer<int>.Instance);
+        Assert.That(((IValueTypeActivatingSerializer)inner).ShouldNotifyInstanceActivation, Is.False);
+        var _ = new ReferenceSerializer<List<int>>(inner);
+        Assert.That(((IValueTypeActivatingSerializer)inner).ShouldNotifyInstanceActivation, Is.True);
+    }
+
+    [Test]
+    public void PolymorphicSerializer_ImplementsIValueTypeActivatingSerializer() {
+        var factory = new SerializerFactory(SerializerFactory.Default);
+        var serializer = new PolymorphicSerializer<object>(factory, factory.GetPureSerializer<object>());
+        Assert.That(serializer, Is.InstanceOf<IValueTypeActivatingSerializer>());
+        Assert.That(((IValueTypeActivatingSerializer)serializer).ShouldNotifyInstanceActivation, Is.False);
+    }
+
+    #endregion
+
+    #region Null Tracking in Context References Tests
+
+    [Test]
+    public void NullsInterspersedWithObjects_ContextIndicesStayConsistent([Values] TestType testType) {
+        var item = new ObjectObj {
+            A = "first",
+            B = null,
+            C = null,
+            D = "fourth",
+            E = null
+        };
+        DoTest(item, testType, out _);
+    }
+
+    [Test]
+    public void MultipleNullProperties_RoundTrip_PreservesNulls([Values] TestType testType) {
+        var item = new NullTestObject {
+            U = null,
+            V = null
+        };
+        DoTest(item, testType, out var deserialized);
+        var result = (NullTestObject)deserialized;
+        Assert.That(result.U, Is.Null);
+        Assert.That(result.V, Is.Null);
+    }
+
+    [Test]
+    public void NullInCollection_RoundTrip([Values] TestType testType) {
+        var obj = new List<string> { "hello", null, "world", null };
+        DoTest(obj, testType, out var deserialized);
+        var result = (List<string>)deserialized;
+        Assert.That(result[0], Is.EqualTo("hello"));
+        Assert.That(result[1], Is.Null);
+        Assert.That(result[2], Is.EqualTo("world"));
+        Assert.That(result[3], Is.Null);
+    }
+
+    #endregion
+
+    #region Repeated Reference Identity Tests
+
+    [Test]
+    public void RepeatedObjectReference_PreservesIdentity([Values] TestType testType) {
+        var shared = new PrimitiveTestObject { A = "shared", C = 42 };
+        var item = new ObjectObj {
+            A = shared,
+            B = shared,
+            C = "other",
+            D = shared,
+            E = null
+        };
+        DoTest(item, testType, out var deserialized);
+        var result = (ObjectObj)deserialized;
+        Assert.That(result.A, Is.SameAs(result.B));
+        Assert.That(result.A, Is.SameAs(result.D));
+    }
+
+    [Test]
+    public void RepeatedStringReference_PreservesIdentity([Values] TestType testType) {
+        var obj = new List<string> { "same", "different", "same", "same" };
+        DoTest(obj, testType, out var deserialized);
+        var result = (List<string>)deserialized;
+        Assert.That(result[0], Is.SameAs(result[2]));
+        Assert.That(result[0], Is.SameAs(result[3]));
+        Assert.That(result[0], Is.Not.SameAs(result[1]));
+    }
+
+    #endregion
+
+    #region Deep Cyclic Reference Tests
+
+    [Test]
+    public void DeepCyclicReference_ThreeLevels([Values] TestType testType) {
+        var fixture = new Fixture();
+        var a = new CircularReferenceObj { B = fixture.Create<PrimitiveTestObject>() };
+        var b = new CircularReferenceObj { B = fixture.Create<PrimitiveTestObject>() };
+        var c = new CircularReferenceObj { B = fixture.Create<PrimitiveTestObject>() };
+        a.A = b;
+        b.A = c;
+        c.A = a;
+
+        DoTest(a, testType, out var deserialized);
+        var result = (CircularReferenceObj)deserialized;
+        result.Should().BeEquivalentTo(a, x => x.IgnoringCyclicReferences());
+        Assert.That(result.A.A.A, Is.SameAs(result));
+    }
+
+    [Test]
+    public void SelfReference([Values] TestType testType) {
+        var fixture = new Fixture();
+        var item = new CircularReferenceObj {
+            B = fixture.Create<PrimitiveTestObject>()
+        };
+        item.A = item;
+
+        DoTest(item, testType, out var deserialized);
+        var result = (CircularReferenceObj)deserialized;
+        Assert.That(result.A, Is.SameAs(result));
+        result.B.Should().BeEquivalentTo(item.B);
+    }
+
+    #endregion
+
+    #region Mixed-Context Sizing Consistency Tests
+
+    [Test]
+    public void MixedContext_SizingThenSerialize_SizeMatchesBytes(
+        [Values(TestType.MixedContext_BinarySerializer_Sizing_Then_Serialize, TestType.MixedContext_Factory_Sizing_Then_Serialize)]
+        TestType testType
+    ) {
+        var fixture = new Fixture();
+        var item = fixture.Create<ReferenceTypeObject>();
+        IItemSerializer<object> serializer;
+        if (testType == TestType.MixedContext_BinarySerializer_Sizing_Then_Serialize)
+            serializer = new BinarySerializer();
+        else {
+            var factory = new SerializerFactory(SerializerFactory.Default);
+            factory.RegisterAutoBuild<PrimitiveTestObject>();
+            factory.RegisterAutoBuild<ValueTypeTestObject>();
+            factory.RegisterAutoBuild<CollectionTestObject>();
+            factory.RegisterAutoBuild<NullTestObject>();
+            factory.RegisterAutoBuild<ReferenceTypeObject>();
+            factory.RegisterAutoBuild<EnumObj>();
+            serializer = new ObjectSerializer(factory);
+        }
+
+        var context = new SerializationContext();
+        var size = serializer.CalculateSize(context, item);
+        var bytes = serializer.SerializeBytesLE(item, context);
+        var deserialized = serializer.DeserializeBytesLE(bytes, context);
+        Assert.That(size, Is.EqualTo(bytes.Length));
+        item.Should().BeEquivalentTo(deserialized, x => x.IgnoringCyclicReferences());
+    }
+
+    [Test]
+    public void MixedContext_CircularReference_PreservesIdentity(
+        [Values(TestType.MixedContext_BinarySerializer_SerializeOnly, TestType.MixedContext_Factory_SerializeOnly,
+            TestType.MixedContext_BinarySerializer_Sizing_Then_Serialize, TestType.MixedContext_Factory_Sizing_Then_Serialize)]
+        TestType testType
+    ) {
+        var fixture = new Fixture();
+        var item = new CircularReferenceObj {
+            A = new CircularReferenceObj { B = fixture.Create<PrimitiveTestObject>() },
+            B = fixture.Create<PrimitiveTestObject>()
+        };
+        item.A.A = item;
+
+        DoTest(item, testType, out var deserialized);
+        var result = (CircularReferenceObj)deserialized;
+        Assert.That(result.A.A, Is.SameAs(result));
+    }
+
+    #endregion
+
+    #region Explicit Context Extension Method Tests
+
+    [Test]
+    public void ExplicitContext_SerializeDeserialize_RoundTrip() {
+        var factory = new SerializerFactory(SerializerFactory.Default);
+        factory.RegisterAutoBuild<PrimitiveTestObject>();
+        var serializer = new ObjectSerializer(factory);
+
+        var fixture = new Fixture();
+        var item = (object)fixture.Create<PrimitiveTestObject>();
+
+        var context = new SerializationContext();
+        var bytes = serializer.SerializeBytesLE(item, context);
+        var deserialized = serializer.DeserializeBytesLE(bytes, context);
+        item.Should().BeEquivalentTo(deserialized);
+    }
+
+    [Test]
+    public void ExplicitContext_SeparateContexts_ProduceIndependentResults() {
+        var factory = new SerializerFactory(SerializerFactory.Default);
+        factory.RegisterAutoBuild<PrimitiveTestObject>();
+        var serializer = new ObjectSerializer(factory);
+
+        var fixture = new Fixture();
+        var item1 = (object)fixture.Create<PrimitiveTestObject>();
+        var item2 = (object)fixture.Create<PrimitiveTestObject>();
+
+        var context1 = new SerializationContext();
+        var context2 = new SerializationContext();
+        var bytes1 = serializer.SerializeBytesLE(item1, context1);
+        var bytes2 = serializer.SerializeBytesLE(item2, context2);
+        var deserialized1 = serializer.DeserializeBytesLE(bytes1, context1);
+        var deserialized2 = serializer.DeserializeBytesLE(bytes2, context2);
+        item1.Should().BeEquivalentTo(deserialized1);
+        item2.Should().BeEquivalentTo(deserialized2);
+    }
+
+    #endregion
 
 }
 
