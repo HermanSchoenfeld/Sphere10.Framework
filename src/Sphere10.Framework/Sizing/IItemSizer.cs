@@ -9,10 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework;
-
 
 public interface IItemSizer {
 	
@@ -49,17 +47,17 @@ public interface IItemSizer<in T> : IItemSizer  {
 public static class IItemSizerExtensions {
 
 	public static long CalculateTotalSize<T>(this IItemSizer<T> sizer, IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes) {
-		using var context = SerializationContext.New;
+		using var context = new SerializationContext();
 		return sizer.CalculateTotalSize(context, items, calculateIndividualItems, out itemSizes);
 	}
 
 	public static long CalculateSize<TItem>(this IItemSizer<TItem> sizer, TItem item) {
-		using var context = SerializationContext.New;
+		using var context = new SerializationContext();
 		return sizer.CalculateSize(context, item);
 	}
 
 	public static long PackedCalculateSize(this IItemSizer sizer, object item) {
-		using var context = SerializationContext.New;
+		using var context = new SerializationContext();
 		return sizer.PackedCalculateSize(context, item);
 	}
 }

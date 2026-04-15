@@ -68,8 +68,11 @@ public class KeyValuePairSerializer<TKey, TValue> : ItemSerializerBase<KeyValueP
 		return new KeyValuePair<TKey, TValue>(key, value);
 	}
 
-	public TKey DeserializeKey(EndianBinaryReader reader)  // NOTE: potential issue since using a new context here
-		=> Deserialize(reader, SerializationContext.New).Key;
+	public TKey DeserializeKey(EndianBinaryReader reader) { 
+		// NOTE: potential issue since using a new context here
+		var keyBytes = ReadKeyBytes(reader);
+		return KeySerializer.DeserializeBytes(keyBytes, reader.BitConverter.Endianness);
+	}
 
 	public byte[] ReadKeyBytes(EndianBinaryReader reader) {
 		using var context = new SerializationContext();
@@ -77,11 +80,14 @@ public class KeyValuePairSerializer<TKey, TValue> : ItemSerializerBase<KeyValueP
 		return reader.ReadBytes(keyBytesLength);
 	}
 
-	public TValue DeserializeValue(EndianBinaryReader reader) // NOTE: potential issue since using a new context here
-		=> Deserialize(reader, SerializationContext.New).Value;
+	public TValue DeserializeValue(EndianBinaryReader reader) { 
+		// NOTE: potential issue since using a new context here
+		var valueBytes = ReadValueBytes(reader);
+		return ValueSerializer.DeserializeBytes(valueBytes, reader.BitConverter.Endianness);
+	}
 
 	public byte[] ReadValueBytes(EndianBinaryReader reader) {
-		var context = new SerializationContext();
+		using var context = new SerializationContext();
 
 		// skip key
 		var keyBytesLength = _sizeSerializer.Deserialize(reader, context);

@@ -19,4 +19,3 @@ public sealed class VoidSerializer() : ConstantSizeItemSerializerBase<Void>(0, f
 		return Void.Value;
 	}
 }
-

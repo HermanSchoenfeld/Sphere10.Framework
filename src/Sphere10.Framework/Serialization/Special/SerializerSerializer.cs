@@ -5,7 +5,7 @@ using System.Linq;
 namespace Sphere10.Framework;
 
 /// <summary>
-/// Used to serialize a reference to serializer in a <see cref="SerializerFactory"/>. Used predominantly by <see cref="PolymorphicSerializer{TBase}"/>
+/// Used to serialize a reference to serializer in a <see cref="SerializerFactory"/>. Used predominantly by <see cref="PolymorphicActivatingSerializerActivatingSerializer{TItem}"/>
 /// as a prefix for serialized objects so that deserialization knows which <see cref="IItemSerializer{TItem}"/> to use.
 /// </summary>
 internal class SerializerSerializer : ItemSerializerBase<IItemSerializer>{

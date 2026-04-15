@@ -23,7 +23,6 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 		_staticFactory = serializerFactory;
 	}
 
-
 	public override long CalculateSize(SerializationContext context, object item) {
 		context.SetEphemeralFactory(new SerializerFactory(_staticFactory));
 		try {
@@ -44,10 +43,9 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 	// Compatible with BinaryFormatter.Serialize
 	public void Serialize(Stream stream, object item) { 
 		using var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream.AsNonClosing());
-		using var context = SerializationContext.New;
+		using var context = new SerializationContext();
 		Serialize(item, writer, context); 
 	}
-
 
 	public override void Serialize(object item, EndianBinaryWriter writer, SerializationContext context) {
 		context.SetEphemeralFactory(new SerializerFactory(_staticFactory));
@@ -60,7 +58,7 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 
 			// serialize registrations first
 			context.EphemeralFactory.FinishRegistrations();
-			var registrations = context.GetEphemeralRegistrations().Select(x => new FactoryRegistration(x.DataType, x.TypeCode));;
+			var registrations = context.GetEphemeralRegistrations().Select(x => new FactoryRegistration(x.DataType, x.TypeCode));
 			_registrationsSerializer.Serialize(registrations, writer);  // don't use context
 
 			// serialize item (buffer)
@@ -70,16 +68,15 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 		}
 	}
 
-
 	// Compatible with BinaryFormatter.Deserialize
 	public object Deserialize(Stream stream) {
 		using var reader = new EndianBinaryReader(EndianBitConverter.Little, stream.AsNonClosing());
-		using var context = SerializationContext.New;
+		using var context = new SerializationContext();
 		return Deserialize(reader, context); 
 	}
 
 	public override object Deserialize(EndianBinaryReader reader, SerializationContext context) {
-	
+
 		// Deserialize type registrations
 		var registrations = _registrationsSerializer.Deserialize(reader); // don't use context
 
@@ -95,14 +92,12 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 			}
 		}
 		context.EphemeralFactory.FinishRegistrations();
-		
+
 		// Deserialize item
 		var item = base.Deserialize(reader, context);
-		
+
 		return item;
 	}
-
-	
 
 	private class RegistrationSerializer : ProjectedSerializer<IEnumerable<(Type, long)>, IEnumerable<FactoryRegistration>> {
 		public RegistrationSerializer() 

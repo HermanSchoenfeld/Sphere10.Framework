@@ -153,7 +153,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 					// re-allocating fragmented stream on individual properties of the serialized item
 					var expectedSize = ItemSerializer.PackedCalculateSize(item);
 					stream.SetLength(expectedSize);
-					ItemSerializer.Serialize(item, writer);
+					ItemSerializer.PackedSerialize(item, writer);
 				} else {
 					var byteLength = ItemSerializer.PackedSerializeReturnSize(item, writer);
 					stream.SetLength(byteLength);

@@ -40,12 +40,13 @@ public class ContextSegregatedKeyValuePairSerializer<TKey, TValue> : ItemSeriali
 
 	public override long CalculateSize(SerializationContext context, KeyValuePair<TKey, TValue> item) {
 		long keySize, keySizeDescriptorSize, valueSize, valueSizeDescriptorSize;
-		using (var keyContext = SerializationContext.New) {
+		// NOTE: since keys/values are accessible independently, we must use a fresh context for each
+		using (var keyContext = new SerializationContext()) {
 			keySize = KeySerializer.CalculateSize(keyContext, item.Key);
 			keySizeDescriptorSize = _sizeSerializer.CalculateSize(keyContext, keySize);
 		}
 		
-		using (var valueContext = SerializationContext.New) {
+		using (var valueContext = new SerializationContext()) {
 			valueSize = ValueSerializer.CalculateSize(valueContext, item.Value);
 			valueSizeDescriptorSize = _sizeSerializer.CalculateSize(valueContext, valueSize);
 		}
@@ -54,16 +55,15 @@ public class ContextSegregatedKeyValuePairSerializer<TKey, TValue> : ItemSeriali
 
 	public override void Serialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer, SerializationContext context) {
 		// NOTE: since keys/values are accessible independently, we must use a fresh context for each
-
 		// key value		
-		using (var keyContext = SerializationContext.New) {
+		using (var keyContext = new SerializationContext()) {
 			var keySize = KeySerializer.CalculateSize(keyContext, item.Key);
 			_sizeSerializer.Serialize(keySize, writer, keyContext);
 			KeySerializer.Serialize(item.Key, writer, keyContext);
 		}
 
 		// write value
-		using (var valueContext = SerializationContext.New) {
+		using (var valueContext = new SerializationContext()) {
 			var valueSize = ValueSerializer.CalculateSize(valueContext, item.Value);
 			_sizeSerializer.Serialize(valueSize, writer, valueContext);
 			ValueSerializer.Serialize(item.Value, writer, valueContext);
