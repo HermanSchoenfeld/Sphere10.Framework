@@ -44,6 +44,11 @@ public class PolymorphicSerializer<TItem> : IItemSerializer<TItem>, IValueTypeAc
 
 	public long ConstantSize => -1;
 
+	/// <summary>
+	/// Propagated to dynamically-resolved child serializers so that the actual concrete-type serializer
+	/// performs early instance registration when needed. PolymorphicSerializer itself doesn't activate
+	/// instances — it delegates to the resolved serializer, which must inherit this flag.
+	/// </summary>
 	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	public long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {

@@ -23,6 +23,12 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 		ShouldNotifyInstanceActivation = false;
 	}
 
+	/// <summary>
+	/// When true, the freshly activated instance is registered with the <see cref="SerializationContext"/> immediately
+	/// after construction but before its members are deserialized. This allows cyclic back-references within the
+	/// member graph to resolve to this instance. Set to true by <see cref="ReferenceSerializer{TItem}"/> when it
+	/// wraps this serializer; defaults to false because the overhead is unnecessary for non-reference-tracked graphs.
+	/// </summary>
 	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	internal void Configure(Delegate activator, MemberSerializationBinding[] memberBindings)  {

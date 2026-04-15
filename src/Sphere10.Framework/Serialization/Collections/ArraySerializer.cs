@@ -18,6 +18,11 @@ public class ArraySerializer<T> : ItemSerializerBase<T[]>, IValueTypeActivatingS
 		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
+	/// <summary>
+	/// When true, the newly allocated array is registered with the <see cref="SerializationContext"/> before its
+	/// elements are deserialized, allowing cyclic back-references from elements to the array itself.
+	/// Enabled by <see cref="ReferenceSerializer{TItem}"/>; defaults to false.
+	/// </summary>
 	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	public override long CalculateSize(SerializationContext context, T[] item)

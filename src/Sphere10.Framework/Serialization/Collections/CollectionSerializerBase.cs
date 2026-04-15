@@ -23,6 +23,11 @@ public abstract class CollectionSerializerBase<TCollection, TItem> : ItemSeriali
 		ShouldNotifyInstanceActivation = false;
 	}
 
+	/// <summary>
+	/// When true, the newly created collection instance is registered with the <see cref="SerializationContext"/>
+	/// immediately after activation but before its elements are deserialized. This is required for cyclic graphs
+	/// where an element may hold a back-reference to the collection itself. Enabled by <see cref="ReferenceSerializer{TItem}"/>.
+	/// </summary>
 	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	public override long CalculateSize(SerializationContext context, TCollection collection) {
