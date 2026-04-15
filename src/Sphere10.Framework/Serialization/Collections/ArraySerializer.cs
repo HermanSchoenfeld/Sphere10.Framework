@@ -8,7 +8,7 @@
 
 namespace Sphere10.Framework;
 
-public class ArraySerializer<T> : ItemSerializerBase<T[]> {
+public class ArraySerializer<T> : ItemSerializerBase<T[]>, IValueTypeActivatingSerializer {
 	private readonly SizeDescriptorSerializer _sizeSerializer;
 	private readonly IItemSerializer<T> _valueSerializer;
 
@@ -17,6 +17,8 @@ public class ArraySerializer<T> : ItemSerializerBase<T[]> {
 		_valueSerializer = valueSerializer; // support null values
 		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
+
+	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	public override long CalculateSize(SerializationContext context, T[] item)
 		=> _sizeSerializer.CalculateSize(context, item.Length) + _valueSerializer.CalculateTotalSize(context, item, false, out _);
@@ -30,7 +32,8 @@ public class ArraySerializer<T> : ItemSerializerBase<T[]> {
 	public override T[] Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var arraySize = _sizeSerializer.Deserialize(reader, context);
 		var array = new T[arraySize];
-		context.SetDeserializingItem(array);
+		if (ShouldNotifyInstanceActivation)
+			context.SetDeserializingItem(array); // needed for cyclic references (items may reference collection)
 		for (var i = 0; i < arraySize; i++) {
 			array[i] = _valueSerializer.Deserialize(reader, context);
 		}

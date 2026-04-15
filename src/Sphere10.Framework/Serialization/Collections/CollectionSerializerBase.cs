@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace Sphere10.Framework;
 
-public abstract class CollectionSerializerBase<TCollection, TItem> : ItemSerializerBase<TCollection> where TCollection : IEnumerable {
+public abstract class CollectionSerializerBase<TCollection, TItem> : ItemSerializerBase<TCollection>, IValueTypeActivatingSerializer where TCollection : IEnumerable {
 	private readonly SizeDescriptorSerializer _sizeSerializer;
 	private readonly IItemSerializer<TItem> _itemSerializer;
 
@@ -20,7 +20,10 @@ public abstract class CollectionSerializerBase<TCollection, TItem> : ItemSeriali
 		Guard.ArgumentNotNull(itemSerializer, nameof(itemSerializer));
 		_itemSerializer = itemSerializer;
 		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
+		ShouldNotifyInstanceActivation = false;
 	}
+
+	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	public override long CalculateSize(SerializationContext context, TCollection collection) {
 		var sizeSize = _sizeSerializer.CalculateSize(context, GetLength(collection));
@@ -46,14 +49,14 @@ public abstract class CollectionSerializerBase<TCollection, TItem> : ItemSeriali
 	public override TCollection Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var length = _sizeSerializer.Deserialize(reader, context);
 		var collection = Activate(length);
-		context.SetDeserializingItem(collection);
+		if (ShouldNotifyInstanceActivation)
+			context.SetDeserializingItem(collection);  // needed for cyclic references (items may reference collection)
 		for (var i = 0L; i < length; i++) {
 			var item = _itemSerializer.Deserialize(reader, context);
 			SetItem(collection, i, item);
 		}
 		return collection;
 	}
-
 
 	protected abstract long GetLength(TCollection collection);
 

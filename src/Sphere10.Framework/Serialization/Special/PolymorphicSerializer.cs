@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace Sphere10.Framework;
 
-public class PolymorphicSerializer<TItem> : IItemSerializer<TItem> {
+public class PolymorphicSerializer<TItem> : IItemSerializer<TItem>, IValueTypeActivatingSerializer {
 	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
 	private readonly IItemSerializer<TItem> _pureSerializer;
@@ -31,6 +31,7 @@ public class PolymorphicSerializer<TItem> : IItemSerializer<TItem> {
 		_factory = factory;
 		_serializerSerializer = new SerializerSerializer(_factory);
 		_pureSerializer = pureSerializer;
+		ShouldNotifyInstanceActivation = false;
 	}
 
 	public IItemSerializer<TItem> PureSerializer => _pureSerializer ?? throw new InvalidOperationException("Abstract types have no pure serializer");
@@ -42,6 +43,8 @@ public class PolymorphicSerializer<TItem> : IItemSerializer<TItem> {
 	public bool IsConstantSize => false;
 
 	public long ConstantSize => -1;
+
+	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	public long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemSizesL = new List<long>();
@@ -90,18 +93,27 @@ public class PolymorphicSerializer<TItem> : IItemSerializer<TItem> {
 				SerializerBuilder.FactoryAssemble(context.EphemeralFactory, missing, true);
 			serializer = context.EphemeralFactory.GetPureSerializer(dataType);
 		}
+
+		// Propagate the activation flag so that the resolved concrete serializer will register
+		// the instance early during deserialization, matching the behavior ReferenceSerializer expects.
+		if (serializer is IValueTypeActivatingSerializer activatingSerializer)
+			activatingSerializer.ShouldNotifyInstanceActivation = ShouldNotifyInstanceActivation;
 		return serializer;
 	}
 
 	private IItemSerializer<TItem> ToUsableSerializer(IItemSerializer serializer) {
+		// Same propagation for the deserialization path where the serializer is resolved from the stream.
+		if (serializer is IValueTypeActivatingSerializer activatingSerializer)
+			activatingSerializer.ShouldNotifyInstanceActivation = ShouldNotifyInstanceActivation;
+
 		if (serializer.ItemType != typeof(TItem))
 			return (IItemSerializer<TItem>)serializer.AsCastedSerializer(typeof(TItem));
 		return (IItemSerializer<TItem>)serializer;
 	}
-
 }
 
 public static class PolymorphicSerializer {
+
 	public static IItemSerializer Create(SerializerFactory factory, Type itemType) 
 		=> (IItemSerializer)typeof(PolymorphicSerializer<>)
 			.MakeGenericType(itemType)

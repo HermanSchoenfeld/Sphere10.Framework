@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Sphere10.Framework;
 
-public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
+public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeActivatingSerializer {
 	private Func<TItem> _activator;
 	private MemberSerializationBinding[] _memberBindings;
 	private bool _isConstantSize;
@@ -14,12 +14,16 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 
 	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) : this() {
 		Configure(activator, memberBindings);
+		ShouldNotifyInstanceActivation = false;
 	}
 
 	internal CompositeSerializer() {
 		// This constructor is used by SerializerFactory in conjunction with Configure method
 		_configured = false;
+		ShouldNotifyInstanceActivation = false;
 	}
+
+	public bool ShouldNotifyInstanceActivation { get; set; }
 
 	internal void Configure(Delegate activator, MemberSerializationBinding[] memberBindings)  {
 		// This is used to configure the serializer after it has been created by the serializer builder.
@@ -84,7 +88,8 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 
 	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var item = _activator();
-		context.SetDeserializingItem(item);
+		if (ShouldNotifyInstanceActivation) 
+			context.SetDeserializingItem(item);  // let context know instance now in case needed for cyclic references 
 		foreach (var binding in _memberBindings) {
 			var memberValue = binding.Serializer.PackedDeserialize(reader, context);
 			binding.Member.SetValue(item, memberValue);

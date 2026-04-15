@@ -29,6 +29,11 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		_supportsContextReferences = mode.HasFlag(ReferenceSerializerMode.SupportContextReferences);
 		_supportsExternalReferences = mode.HasFlag(ReferenceSerializerMode.SupportExternalReferences);
 		_supportsReferences = _supportsContextReferences || _supportsExternalReferences;
+		// Enable early instance registration on the inner serializer so that cyclic back-references
+		// encountered during deserialization can resolve to the parent object before it is fully populated.
+		if (valueSerializer is IValueTypeActivatingSerializer activatingSerializer)
+			activatingSerializer.ShouldNotifyInstanceActivation = true;
+
 	}
 
 	public override bool SupportsNull => true;
@@ -43,12 +48,13 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 
 	public override long CalculateSize(SerializationContext context, TItem item) {
 		var referenceType = ClassifyReferenceType(item, context, true, out var contextIndex);
+		long size;
 		switch(referenceType) {
 			case ReferenceType.IsNull:
 				context.NotifySizing(item, out contextIndex);
-				long size = sizeof(byte);
+				size = sizeof(byte); // only the discriminator byte is present (ReferenceType.IsNull)
 				context.NotifySized(contextIndex);
-				return size;
+				break;
 			case ReferenceType.IsNotNull:
 				if (!_supportsReferences)
 					if (context.IsSizingOrSerializingObject(item, out _))
@@ -56,12 +62,14 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				context.NotifySizing(item, out contextIndex);
 				size = sizeof(byte) + Internal.CalculateSize(context, item);
 				context.NotifySized(contextIndex);
-				return size;
+				break;
 			case ReferenceType.IsContextReference:
-				return sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, unchecked((ulong)contextIndex));
+				size = sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, unchecked((ulong)contextIndex));
+				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
+		return size;
 	}
 
 	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
@@ -92,22 +100,35 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		var referenceType = (ReferenceType)PrimitiveSerializer<byte>.Instance.Deserialize(reader, context);
 		switch (referenceType) {
 			case ReferenceType.IsNull:
-				Guard.Ensure(_supportsNull, ErrMsg_NullValuesNotEnabled);
-				context.NotifyDeserializingObject(out _);
-				return default;
-			case ReferenceType.IsNotNull:
-				context.NotifyDeserializingObject(out var index);
-				var item = Internal.Deserialize(reader, context);
-				context.NotifyDeserializedObject(item, index);
-				return item;
-			case ReferenceType.IsContextReference:
-				var contextIndex = CVarIntSerializer.Instance.Deserialize(reader, context);
-				return (TItem)context.GetDeserializedObject(unchecked((long)(ulong)contextIndex));
+					Guard.Ensure(_supportsNull, ErrMsg_NullValuesNotEnabled);
+					// Null values must still be registered in the context so that deserialization indices
+					// stay aligned with those assigned during sizing/serialization. Without this, any
+					// subsequent IsContextReference would resolve to the wrong object.
+					context.NotifyDeserializingObject(out var index);
+					context.NotifyDeserializedObject(null, index);
+					return default;
+				case ReferenceType.IsNotNull:
+					context.NotifyDeserializingObject(out index);
+					var item = Internal.Deserialize(reader, context);
+					context.NotifyDeserializedObject(item, index);
+					return item;
+				case ReferenceType.IsContextReference:
+					var contextIndex = CVarIntSerializer.Instance.Deserialize(reader, context);
+					return (TItem)context.GetDeserializedObject(unchecked((long)(ulong)contextIndex));
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
 	}
 
+	/// <summary>
+	/// Determines whether <paramref name="item"/> should be serialized as null, a full value, or a context reference.
+	/// The <paramref name="sizeOnly"/> flag selects which context query to use:
+	///   - Sizing (sizeOnly=true) uses <see cref="SerializationContext.HasSizedOrSerializedObject"/> because an object
+	///     that has been sized (or serialized) in any prior pass already has a stable context index.
+	///   - Serializing (sizeOnly=false) uses <see cref="SerializationContext.IsSerializingOrHasSerializedObject"/>,
+	///     which excludes the "Sized" status. This prevents treating an object that was only sized (not yet serialized)
+	///     as a context reference during the serialization pass, which would produce an invalid reference.
+	/// </summary>
 	private ReferenceType ClassifyReferenceType(TItem item, SerializationContext context, bool sizeOnly, out long index) {
 		index = -1;
 		if (item == null) 
@@ -115,9 +136,10 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 
 		if (_supportsContextReferences && (sizeOnly ? context.HasSizedOrSerializedObject(item, out index) : context.IsSerializingOrHasSerializedObject(item, out index)))
 			return ReferenceType.IsContextReference;
-		
+
 		return ReferenceType.IsNotNull;
 	}
+
 	public enum ReferenceType : byte {
 		IsNull = 0,
 		IsNotNull = 1,

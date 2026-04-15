@@ -15,6 +15,10 @@ public sealed class SerializationContext : SyncScope {
 	private readonly IDictionary<long, SerializationStatus> _objectSerializationStatus;
 	private readonly List<Action> _onRootContextEndActions;
 	private long _currentlyDeserializingIndex;
+	// Sequential counter for deserialization indices. Unlike sizing/serialization (which derive indices from
+	// _processedObjects.Count), deserialization must use its own counter so that indices align with those
+	// assigned during a prior sizing or serialization pass when the same context is reused (mixed-context).
+	private long _nextDeserializationIndex;
 	private SerializerFactory _serializerFactory;
 	private long _lastNonEphemeralTypeCode;
 
@@ -23,6 +27,7 @@ public sealed class SerializationContext : SyncScope {
 		_objectSerializationStatus = new Dictionary<long, SerializationStatus>();
 		_onRootContextEndActions = new List<Action>();
 		_currentlyDeserializingIndex = -1;
+		_nextDeserializationIndex = 0;
 		_serializerFactory = null;
 		_lastNonEphemeralTypeCode = 0;
 	}
@@ -136,7 +141,10 @@ public sealed class SerializationContext : SyncScope {
 		if (status != SerializationStatus.Deserialized)
 			throw new InvalidOperationException($"Object at deserialization context index {index} was in status {status}");
 
-		return _processedObjects.Bijection[index];
+		var obj = _processedObjects.Bijection[index];
+		// NullPlaceHolder was substituted during serialization to give null a distinct identity in the bijection.
+		// Unwrap it here so callers see the original null value.
+		return obj is NullPlaceHolder ? null : obj;
 	}
 
 #if !DEBUG
@@ -187,15 +195,30 @@ public sealed class SerializationContext : SyncScope {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public void NotifyDeserializingObject(out long serializationContextIndex) {
-		serializationContextIndex = _processedObjects.Count;
-		_processedObjects.Add(new PlaceHolder(this, serializationContextIndex), serializationContextIndex); // we place a dummy object in the dictionary to reserve the index
-		_objectSerializationStatus.Add(serializationContextIndex, SerializationStatus.Deserializing);
+		serializationContextIndex = _nextDeserializationIndex++;
+		var placeHolder = new PlaceHolder(this, serializationContextIndex);
+		if (_objectSerializationStatus.TryGetValue(serializationContextIndex, out var existingStatus) &&
+			existingStatus is SerializationStatus.Sized or SerializationStatus.Serialized) {
+			// Mixed-context: reuse the index from a prior sizing/serialization pass.
+			// Replace the old object with a placeholder so the bijection stays valid.
+			_processedObjects.Bijection[serializationContextIndex] = placeHolder;
+			_objectSerializationStatus[serializationContextIndex] = SerializationStatus.Deserializing;
+		} else {
+			_processedObjects.Add(placeHolder, serializationContextIndex);
+			_objectSerializationStatus.Add(serializationContextIndex, SerializationStatus.Deserializing);
+		}
 		_currentlyDeserializingIndex = serializationContextIndex;
 	}
 
 #if !DEBUG
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+	/// <summary>
+	/// Called by serializers implementing <see cref="IValueTypeActivatingSerializer"/> immediately after
+	/// constructing the target instance. Replaces the placeholder in the context with the real instance
+	/// so that any cyclic back-references encountered while deserializing the instance's members can
+	/// resolve to it. Resets <c>_currentlyDeserializingIndex</c> to -1 to prevent double-registration.
+	/// </summary>
 	public void SetDeserializingItem(object item) {
 		if (_currentlyDeserializingIndex < 0)
 			return;
