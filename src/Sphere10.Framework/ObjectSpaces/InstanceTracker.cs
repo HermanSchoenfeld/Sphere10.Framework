@@ -30,7 +30,7 @@ internal class InstanceTracker {
 	/// Maps each tracked object to its globally unique <see cref="ObjectSpaceObjectReference"/>.
 	/// Keyed by reference equality so distinct instances with equal values are tracked separately.
 	/// </summary>
-	private readonly Dictionary<object, ObjectSpaceObjectReference> _objectRefs;
+	private readonly ReferenceDictionary<object, ObjectSpaceObjectReference> _objectRefs;
 
 	/// <summary>
 	/// Reverse map: <see cref="ObjectSpaceObjectReference"/> → live object instance.
@@ -42,22 +42,22 @@ internal class InstanceTracker {
 	/// Per-object out-refs: for each tracked object, the set of dimension objects it references.
 	/// Updated after serialization when <see cref="SerializationContext.CollectedOutRefs"/> is harvested.
 	/// </summary>
-	private readonly Dictionary<object, HashSet<ObjectSpaceObjectReference>> _outRefs;
+	private readonly ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>> _outRefs;
 
 	/// <summary>
 	/// Per-object in-refs: for each tracked object, the set of dimension objects that reference it.
 	/// This is the inverse of <see cref="_outRefs"/> and is the primary input to GC decisions.
 	/// An empty in-refs set on a non-root object means it is garbage.
 	/// </summary>
-	private readonly Dictionary<object, HashSet<ObjectSpaceObjectReference>> _inRefs;
+	private readonly ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>> _inRefs;
 
 	public InstanceTracker() {
 		_objectsByType = new Dictionary<Type, BijectiveDictionary<long, object>>(TypeEquivalenceComparer.Instance);
 		_newInstances = 0;
-		_objectRefs = new Dictionary<object, ObjectSpaceObjectReference>(ReferenceEqualityComparer.Instance);
+		_objectRefs = new ReferenceDictionary<object, ObjectSpaceObjectReference>();
 		_refToObject = new Dictionary<ObjectSpaceObjectReference, object>();
-		_outRefs = new Dictionary<object, HashSet<ObjectSpaceObjectReference>>(ReferenceEqualityComparer.Instance);
-		_inRefs = new Dictionary<object, HashSet<ObjectSpaceObjectReference>>(ReferenceEqualityComparer.Instance);
+		_outRefs = new ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>>();
+		_inRefs = new ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>>();
 	}
 
 
