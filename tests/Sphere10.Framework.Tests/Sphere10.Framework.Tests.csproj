@@ -32,5 +32,6 @@
 		<ProjectReference Include="..\..\src\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework.Communications\Sphere10.Framework.Communications.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Generators\Sphere10.Framework.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 </Project>

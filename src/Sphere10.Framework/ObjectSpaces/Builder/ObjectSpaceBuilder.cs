@@ -42,6 +42,7 @@ public class ObjectSpaceBuilder {
 	private bool _usingCustomComparerFactory;
 	private bool _specifiedCustomComparer;
 	private bool _autoSave;
+	private bool _garbageCollect;
 
 	public ObjectSpaceBuilder() {
 		_type = null;
@@ -67,6 +68,7 @@ public class ObjectSpaceBuilder {
 		_specifiedCustomComparer = false;
 
 		_autoSave = false;
+		_garbageCollect = false;
 	}
 
 	public ObjectSpaceBuilder UseFile(string filePath) {
@@ -130,6 +132,15 @@ public class ObjectSpaceBuilder {
 
 	public ObjectSpaceBuilder AutoSave() {
 		_autoSave = true;
+		return this;
+	}
+
+	/// <summary>
+	/// Enables reference-counting garbage collection. Non-root dimension objects with zero
+	/// incoming references will be automatically collected on save/delete and via explicit <c>CollectGarbage()</c>.
+	/// </summary>
+	public ObjectSpaceBuilder WithGarbageCollection() {
+		_garbageCollect = true;
 		return this;
 	}
 
@@ -234,6 +245,10 @@ public class ObjectSpaceBuilder {
 		
 		if (!ignoreAnnotations) {
 
+			// Check for [Root] attribute — marks the dimension as a GC root so its objects are never auto-collected
+			if (type.TryGetCustomAttributeOfType<RootAttribute>(false, out _))
+				dimensionBuilder.AsRoot();
+
 			if (type.TryGetCustomAttributeOfType<EqualityComparerAttribute>(false, out var equalityComparerAttribute))
 				dimensionBuilder.UsingEqualityComparer(equalityComparerAttribute.EqualityComparerType.ActivateWithCompatibleArgs());
 
@@ -264,6 +279,9 @@ public class ObjectSpaceBuilder {
 			HashFunction = _hashFunction,
 			Dimensions = _dimensions.Select(x => x.BuildDefinition()).ToArray()
 		};
+		// Wire in the GarbageCollect trait if enabled via the builder
+		if (_garbageCollect)
+			definition.Traits |= ObjectSpaceTraits.GarbageCollect;
 		definition.Validate().ThrowOnFailure();
 		return definition;
 	}

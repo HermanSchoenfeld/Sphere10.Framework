@@ -120,6 +120,12 @@ public class ObjectSpaceDefinition {
 				.ForEach(x => result.AddError($"Dimension {x.ObjectType.ToStringCS()} does not support change tracking"));
 		}
 
+		// When GC is enabled, at least one root dimension must exist so there is an anchor for the reference graph
+		if (Traits.HasFlag(ObjectSpaceTraits.GarbageCollect)) {
+			if (!Dimensions.Any(d => d.IsRoot))
+				result.AddError("At least one dimension must be marked as a root ([Root]) when garbage collection is enabled.");
+		}
+
 		return result;
 
 		bool RequiresMember(IndexType type) 
@@ -142,6 +148,13 @@ public class ObjectSpaceDefinition {
 		/// CLR type of the objects stored in the dimension.
 		/// </summary>
 		public Type ObjectType { get; set; }
+
+		/// <summary>
+		/// Whether this dimension is a GC root. Root dimension objects are user-managed and never
+		/// auto-collected by the garbage collector. Non-root objects are collected when their
+		/// in-ref count drops to zero.
+		/// </summary>
+		public bool IsRoot { get; set; }
 
 		/// <summary>
 		/// Index definitions for this dimension.

@@ -23,5 +23,11 @@ public enum ObjectSpaceTraits {
 	/// </summary>
 	AutoSave = 1 << 1,
 
+	/// <summary>
+	/// Enables reference-counting garbage collection for non-root dimension objects.
+	/// Objects in non-root dimensions with zero incoming references are automatically collected.
+	/// </summary>
+	GarbageCollect = 1 << 2,
+
 }
 

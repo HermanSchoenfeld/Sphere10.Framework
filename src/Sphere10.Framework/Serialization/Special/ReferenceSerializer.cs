@@ -66,6 +66,10 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 			case ReferenceType.IsContextReference:
 				size = sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, unchecked((ulong)contextIndex));
 				break;
+			case ReferenceType.IsExternalReference:
+				// External references: use the serialized size from the context's classification
+				size = sizeof(byte) + context.LastClassifiedExternalReferenceSize;
+				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
@@ -91,6 +95,10 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 			case ReferenceType.IsContextReference:
 				CVarIntSerializer.Instance.Serialize(unchecked((ulong)contextIndex), writer, context);
 				break;
+			case ReferenceType.IsExternalReference:
+				// Delegate external reference serialization entirely to the context
+				context.SerializeExternalReference(item, writer);
+				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
@@ -115,36 +123,53 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				case ReferenceType.IsContextReference:
 					var contextIndex = CVarIntSerializer.Instance.Deserialize(reader, context);
 					return (TItem)context.GetDeserializedObject(unchecked((long)(ulong)contextIndex));
+				case ReferenceType.IsExternalReference:
+					// Delegate external reference deserialization and resolution entirely to the context
+					return (TItem)context.DeserializeAndResolveExternalReference(reader);
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
 	}
 
 	/// <summary>
-	/// Determines whether <paramref name="item"/> should be serialized as null, a full value, or a context reference.
+	/// Determines whether <paramref name="item"/> should be serialized as null, a full value, a context reference,
+	/// or an external reference.
 	/// The <paramref name="sizeOnly"/> flag selects which context query to use:
 	///   - Sizing (sizeOnly=true) uses <see cref="SerializationContext.HasSizedOrSerializedObject"/> because an object
 	///     that has been sized (or serialized) in any prior pass already has a stable context index.
 	///   - Serializing (sizeOnly=false) uses <see cref="SerializationContext.IsSerializingOrHasSerializedObject"/>,
 	///     which excludes the "Sized" status. This prevents treating an object that was only sized (not yet serialized)
 	///     as a context reference during the serialization pass, which would produce an invalid reference.
+	/// External references are only produced when <see cref="_supportsExternalReferences"/> is true AND the
+	/// serialization context's <see cref="SerializationContext.TryClassifyAsExternalReference(object)"/> identifies the item
+	/// as an external object. Component objects fall through to <see cref="ReferenceType.IsNotNull"/>.
 	/// </summary>
 	private ReferenceType ClassifyReferenceType(TItem item, SerializationContext context, bool sizeOnly, out long index) {
 		index = -1;
+
+		// Null check — return IsNull if nulls are supported, otherwise throw
 		if (item == null) 
 			return _supportsNull ? ReferenceType.IsNull : throw new InvalidOperationException(ErrMsg_NullValuesNotEnabled);
 
+		// Context reference check — has this exact object instance already been processed in this context?
 		if (_supportsContextReferences && (sizeOnly ? context.HasSizedOrSerializedObject(item, out index) : context.IsSerializingOrHasSerializedObject(item, out index)))
 			return ReferenceType.IsContextReference;
+
+		// External reference check — delegate to the context's virtual method
+		if (_supportsExternalReferences && context.TryClassifyAsExternalReference(item))
+			return ReferenceType.IsExternalReference;
 
 		return ReferenceType.IsNotNull;
 	}
 
+	/// <summary>
+	/// Discriminates how a reference-type value is serialized in the stream.
+	/// </summary>
 	public enum ReferenceType : byte {
-		IsNull = 0,
-		IsNotNull = 1,
-		IsContextReference = 2,
-		//IsExternalReference = 3,   // serializers a pointer to an external object and places external object in the context for serialization by user
+		IsNull = 0,             // The value is null — only the discriminator byte is written
+		IsNotNull = 1,          // The value is a full inline object — discriminator byte followed by the serialized object
+		IsContextReference = 2, // The value was already seen in this serialization context — discriminator byte followed by a CVarInt context index
+		IsExternalReference = 3 // The value is an external reference — discriminator byte followed by subclass-defined reference data
 	}
 }
 
