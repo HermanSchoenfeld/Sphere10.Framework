@@ -545,7 +545,25 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 	
 	protected virtual IItemSerializer CreateItemSerializer(Type objectType) {
-		return Serializers.GetSerializer(objectType);
+		// Get the base serializer from the factory (typically a CompositeSerializer wrapped in ReferenceSerializer)
+		var baseSerializer = Serializers.GetSerializer(objectType);
+
+		// If GC is enabled, wrap the serializer with ObjectSpaceReferenceSerializer to support
+		// external references for dimension objects. The wrapper installs classification/resolution
+		// callbacks on the SerializationContext so that dimension-typed properties are serialized
+		// as lightweight ObjectSpaceObjectReference pointers instead of inline objects.
+		if (GarbageCollectEnabled) {
+			var wrapperType = typeof(ObjectSpaceReferenceSerializer<>).MakeGenericType(objectType);
+			baseSerializer = (IItemSerializer)Activator.CreateInstance(
+				wrapperType,
+				baseSerializer,
+				_dimensionTypes,
+				_instanceTracker,
+				(Func<ObjectSpaceObjectReference, object>)ResolveExternalReference
+			);
+		}
+
+		return baseSerializer;
 	}
 
 	protected virtual int SanitizeContainerClusterSize(int? clusterSizeB)
