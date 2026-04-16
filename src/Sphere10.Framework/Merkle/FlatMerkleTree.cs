@@ -125,6 +125,15 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 	}
 
 	private void EnsureComputed(MerkleCoordinate coordinate, long flatIndex) {
+		// Imperfect nodes don't exist in the flat array, so just recurse into their children
+		if (!MerkleMath.IsPerfectNode(_size, coordinate)) {
+			var subNodes = MerkleMath.GetChildren(_size, coordinate);
+			EnsureComputed(subNodes.Left, checked((long)MerkleMath.ToFlatIndex(subNodes.Left)));
+			if (subNodes.Right != MerkleCoordinate.Null)
+				EnsureComputed(subNodes.Right, checked((long)MerkleMath.ToFlatIndex(subNodes.Right)));
+			return;
+		}
+
 		// leafs case
 		if (coordinate.Level == 0)
 			if (IsDirty(flatIndex))
