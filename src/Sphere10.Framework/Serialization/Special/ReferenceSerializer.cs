@@ -141,7 +141,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 	///     which excludes the "Sized" status. This prevents treating an object that was only sized (not yet serialized)
 	///     as a context reference during the serialization pass, which would produce an invalid reference.
 	/// External references are only produced when <see cref="_supportsExternalReferences"/> is true AND the
-	/// serialization context's <see cref="SerializationContext.TryClassifyAsExternalReference"/> identifies the item
+	/// serialization context's <see cref="SerializationContext.TryClassifyAsExternalReference(object)"/> identifies the item
 	/// as an external object. Component objects fall through to <see cref="ReferenceType.IsNotNull"/>.
 	/// </summary>
 	private ReferenceType ClassifyReferenceType(TItem item, SerializationContext context, bool sizeOnly, out long index) {
@@ -156,7 +156,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 			return ReferenceType.IsContextReference;
 
 		// External reference check — delegate to the context's virtual method
-		if (_supportsExternalReferences && context.TryClassifyAsExternalReference(item, out _))
+		if (_supportsExternalReferences && context.TryClassifyAsExternalReference(item))
 			return ReferenceType.IsExternalReference;
 
 		return ReferenceType.IsNotNull;

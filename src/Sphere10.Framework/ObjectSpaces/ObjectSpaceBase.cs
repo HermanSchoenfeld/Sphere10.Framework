@@ -399,8 +399,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 				// Update tracked index and ObjectSpaceObjectReference only if the real index differs from provisional
 				if (index != provisionalIndex) {
 					_instanceTracker.Track(item, index);
-					var dimIdx = GetDimensionIndex(itemType);
-					_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, index));
+					_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(GetDimensionIndex(itemType), index));
 				}
 			}
 
@@ -708,11 +707,11 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	/// </summary>
 	private void TryCollectIfOrphaned(ObjectSpaceObjectReference targetRef) {
 		// Use a queue to iteratively process orphans instead of recursion (handles cycles, avoids stack overflow)
-		var collectionQueue = new Queue<ObjectSpaceObjectReference>();
-		collectionQueue.Enqueue(targetRef);
+		var orphanQueue = new Queue<ObjectSpaceObjectReference>();
+		orphanQueue.Enqueue(targetRef);
 
-		while (collectionQueue.Count > 0) {
-			var candidate = collectionQueue.Dequeue();
+		while (orphanQueue.Count > 0) {
+			var candidate = orphanQueue.Dequeue();
 
 			// Skip if this dimension is a root — root objects are never auto-collected
 			if (candidate.DimensionIndex < 0 || candidate.DimensionIndex >= Definition.Dimensions.Length)
@@ -755,7 +754,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 						memSubInRefs.Remove(candidate);
 
 					// Queue this target for orphan check
-					collectionQueue.Enqueue(subTarget);
+					orphanQueue.Enqueue(subTarget);
 				}
 			}
 		}

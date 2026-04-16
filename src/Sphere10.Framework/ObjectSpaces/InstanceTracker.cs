@@ -111,11 +111,11 @@ internal class InstanceTracker {
 	/// </summary>
 	public long TrackNew(object item, long dimensionCount) {
 		var itemType = item.GetType();
-		if (!_newInstanceCounts.TryGetValue(itemType, out var count))
-			count = 0;
-		count++;
-		_newInstanceCounts[itemType] = count;
-		var provisionalIndex = dimensionCount + count - 1;
+		if (!_newInstanceCounts.TryGetValue(itemType, out var typeNewCount))
+			typeNewCount = 0;
+		typeNewCount++;
+		_newInstanceCounts[itemType] = typeNewCount;
+		var provisionalIndex = dimensionCount + typeNewCount - 1;
 		Track(item, provisionalIndex);
 		_provisionalObjects.Add(item);
 		return provisionalIndex;

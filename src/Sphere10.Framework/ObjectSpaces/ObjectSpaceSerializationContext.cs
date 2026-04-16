@@ -27,7 +27,6 @@ internal sealed class ObjectSpaceSerializationContext : SerializationContext {
 	private readonly HashSet<Type> _dimensionTypes;
 	private readonly InstanceTracker _instanceTracker;
 	private readonly Func<ObjectSpaceObjectReference, object> _resolveReference;
-	private ObjectSpaceObjectReference _lastClassifiedRef;
 
 	/// <summary>
 	/// Accumulated during serialization: every external reference written is recorded here so that
@@ -51,24 +50,21 @@ internal sealed class ObjectSpaceSerializationContext : SerializationContext {
 	/// Determines whether <paramref name="item"/> is a dimension object that should be serialized as an
 	/// external <see cref="ObjectSpaceObjectReference"/> pointer. Returns true if the item's CLR type is
 	/// a registered dimension type and the object is tracked in the <see cref="InstanceTracker"/>.
+	/// Sets <see cref="SerializationContext.LastClassifiedExternalReferenceSize"/> on success.
 	/// </summary>
-	protected internal override bool TryClassifyAsExternalReference(object item, out long serializedSize) {
+	protected internal override bool TryClassifyAsExternalReference(object item) {
 		var objType = item.GetType();
 
 		// Only objects whose CLR type is registered as a dimension are treated as external references
-		if (!_dimensionTypes.Contains(objType)) {
-			serializedSize = 0;
+		if (!_dimensionTypes.Contains(objType))
 			return false;
-		}
 
 		// Look up the pre-assigned ObjectSpaceObjectReference from the InstanceTracker.
 		// This reference was eagerly assigned during New<T>() or Get<T>().
 		if (!_instanceTracker.TryGetRef(item, out var objRef))
 			throw new InvalidOperationException($"Dimension object of type {objType.ToStringCS()} is not tracked in the InstanceTracker — was it created outside of ObjectSpace.New<T>()?");
 
-		_lastClassifiedRef = objRef;
-		serializedSize = ObjectSpaceObjectReferenceSerializer.SerializedSize;
-		SetLastClassifiedExternalReferenceSize(serializedSize);
+		SetLastClassifiedExternalReferenceSize(ObjectSpaceObjectReferenceSerializer.SerializedSize);
 		return true;
 	}
 

@@ -276,11 +276,11 @@ public class SerializationContext : SyncScope {
 	/// <summary>
 	/// Determines whether <paramref name="item"/> is an external reference (e.g. a dimension object
 	/// in an ObjectSpace) that should be serialized as a lightweight pointer instead of inline.
-	/// When true, <paramref name="serializedSize"/> is set to the byte size of the serialized reference.
+	/// When true, <see cref="LastClassifiedExternalReferenceSize"/> is set to the byte size of the
+	/// serialized reference.
 	/// The base implementation always returns false (no external references).
 	/// </summary>
-	protected internal virtual bool TryClassifyAsExternalReference(object item, out long serializedSize) {
-		serializedSize = 0;
+	protected internal virtual bool TryClassifyAsExternalReference(object item) {
 		_lastClassifiedExternalReferenceSize = 0;
 		return false;
 	}
