@@ -18,6 +18,7 @@ namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Core implementation of an object space that orchestrates clustered streams, dimensions, serializers, and indexes for persisted objects.
+/// Supports optional garbage collection of non-root dimension objects via reference counting.
 /// </summary>
 public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
@@ -26,6 +27,31 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	private readonly InstanceTracker _instanceTracker;
 	private bool _loaded;
 	protected readonly bool AutoSave;
+
+	/// <summary>
+	/// Whether GC is enabled for this ObjectSpace (set from <see cref="ObjectSpaceTraits.GarbageCollect"/>).
+	/// </summary>
+	protected readonly bool GarbageCollectEnabled;
+
+	/// <summary>
+	/// Set of all CLR types registered as dimensions, used by <see cref="ObjectSpaceReferenceSerializer{TItem}"/>
+	/// to distinguish dimension objects (external references) from component objects (inline serialization).
+	/// </summary>
+	private readonly HashSet<Type> _dimensionTypes;
+
+	/// <summary>
+	/// Persisted out-refs index: maps each object's <see cref="ObjectSpaceObjectReference"/> to the set of
+	/// dimension objects it references. Stored in a reserved stream within the top-level ClusteredStreams.
+	/// Null when GC is not enabled.
+	/// </summary>
+	private Dictionary<ObjectSpaceObjectReference, HashSet<ObjectSpaceObjectReference>> _persistedOutRefs;
+
+	/// <summary>
+	/// Persisted in-refs index: maps each object's <see cref="ObjectSpaceObjectReference"/> to the set of
+	/// dimension objects that reference it. The inverse of <see cref="_persistedOutRefs"/>.
+	/// An empty entry on a non-root object = garbage. Null when GC is not enabled.
+	/// </summary>
+	private Dictionary<ObjectSpaceObjectReference, HashSet<ObjectSpaceObjectReference>> _persistedInRefs;
 
 	protected ObjectSpace(ClusteredStreams streams, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
 		Guard.ArgumentNotNull(streams, nameof(streams));
@@ -40,8 +66,19 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		_dimensions = new DictionaryList<Type, Dimension>(TypeEquivalenceComparer.Instance, ReferenceEqualityComparer.Instance);
 		_instanceTracker = new InstanceTracker();
 		AutoSave = objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.AutoSave);
+		GarbageCollectEnabled = objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.GarbageCollect);
 		Disposables = Disposables.None;
 		FlushOnDispose = true;
+
+		// Build the set of dimension types for external reference classification
+		_dimensionTypes = new HashSet<Type>(
+			objectSpaceDefinition.Dimensions.Select(d => d.ObjectType),
+			TypeEquivalenceComparer.Instance
+		);
+
+		// Initialize persisted ref indexes (populated during LoadInternal if GC is enabled)
+		_persistedOutRefs = null;
+		_persistedInRefs = null;
 	}
 
 	public override bool RequiresLoad => !_loaded || _streams.RequiresLoad;
@@ -108,6 +145,10 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			// Track item instance
 			_instanceTracker.Track(item, index);
 			dimension.Definition.ChangeTracker.SetChanged(item, false);
+
+			// Eagerly assign the ObjectSpaceObjectReference (Task 6) so it is known before any serialization
+			var dimIdx = GetDimensionIndex(typeof(TItem));
+			_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, index));
 
 			return true;
 		}
@@ -176,6 +217,10 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			}
 		}
 		_instanceTracker.Clear();
+
+		// Also clear the persisted ref indexes when GC is enabled
+		_persistedOutRefs?.Clear();
+		_persistedInRefs?.Clear();
 	}
 
 	public virtual void Flush() {
@@ -263,6 +308,12 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		}
 
 		_loaded = true;
+
+		// Initialize persisted ref indexes if GC is enabled (Task 11)
+		if (GarbageCollectEnabled) {
+			_persistedOutRefs = new Dictionary<ObjectSpaceObjectReference, HashSet<ObjectSpaceObjectReference>>();
+			_persistedInRefs = new Dictionary<ObjectSpaceObjectReference, HashSet<ObjectSpaceObjectReference>>();
+		}
 	}
 	
 	protected void SaveModifiedObjects() {
@@ -289,6 +340,10 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			disposable.Dispose();
 		_dimensions.Clear();
 		_instanceTracker.Clear();
+
+		// Clear persisted ref indexes on unload
+		_persistedOutRefs?.Clear();
+		_persistedInRefs?.Clear();
 		
 		// unsubscribe to RollingBack event prevent re-entrant unloads (disposal of Streams will result in internal rollback event)
 		_streams.UnloadAttachments();
@@ -302,7 +357,17 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		var dimension = GetDimension(itemType);
 		if (AutoSave)
 			dimension.Definition.ChangeTracker.SetChanged(item, true);
-		return _instanceTracker.TrackNew(item);
+
+		// Track the new instance with a provisional negative index
+		var negativeIndex = _instanceTracker.TrackNew(item);
+
+		// Eagerly assign an ObjectSpaceObjectReference with the provisional negative ObjectIndex (Task 6).
+		// This ensures the reference is always available before serialization begins.
+		// It will be replaced with the real persisted index during SaveInternal.
+		var dimIdx = GetDimensionIndex(itemType);
+		_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, negativeIndex));
+
+		return negativeIndex;
 	}
 
 	protected long CountInternal(Type itemType) {
@@ -329,10 +394,18 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 				// Add if new
 				dimension.Container.Add(item, out index);
 				_instanceTracker.Track(item, index); // updates index from negative value to actual index
+
+				// Update the ObjectSpaceObjectReference from provisional (negative) to real persisted index
+				var dimIdx = GetDimensionIndex(itemType);
+				_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, index));
 			}
 
 			// Mark as unchanged
 			dimension.Definition.ChangeTracker.SetChanged(item, false);
+
+			// --- GC reference tracking (Tasks 7, 8, 12) ---
+			if (GarbageCollectEnabled)
+				UpdateRefsAfterSave(itemType, item, index);
 
 			return index;
 		}
@@ -343,7 +416,15 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			// Get tracked index of item instance
 			if (!_instanceTracker.TryGetIndexOf(item, out var index)) 
 				throw new InvalidOperationException($"Instance of {item.GetType().ToStringCS()} was not tracked");
-			
+
+			// Capture the object's refs before untracking for GC processing
+			ObjectSpaceObjectReference selfRef = default;
+			HashSet<ObjectSpaceObjectReference> previousOutRefs = null;
+			if (GarbageCollectEnabled) {
+				_instanceTracker.TryGetRef(item, out selfRef);
+				previousOutRefs = _instanceTracker.GetOrCreateOutRefs(item);
+			}
+
 			// Stop tracking instance
 			_instanceTracker.Untrack(item);
 
@@ -351,6 +432,10 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			var dimension = GetDimension(itemType);
 			if (index >= 0)
 				dimension.Container.Recycle(index);
+
+			// --- GC reference cleanup and cascade (Tasks 8, 9, 12) ---
+			if (GarbageCollectEnabled && previousOutRefs is not null)
+				CascadeDeleteRefs(selfRef, previousOutRefs);
 		}
 	}
 
@@ -469,6 +554,234 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			Sphere10FrameworkDefaults.SmallestRecommendedClusterSize, 
 			Sphere10FrameworkDefaults.LargestRecommendedClusterSize
 		);
+
+	/// <summary>
+	/// Returns the ordinal index of the dimension for the given CLR type.
+	/// This index is the <see cref="ObjectSpaceObjectReference.DimensionIndex"/> component.
+	/// </summary>
+	private short GetDimensionIndex(Type itemType) {
+		for (var i = 0; i < Definition.Dimensions.Length; i++) {
+			if (TypeEquivalenceComparer.Instance.Equals(Definition.Dimensions[i].ObjectType, itemType))
+				return (short)i;
+		}
+		throw new InvalidOperationException($"Type '{itemType.ToStringCS()}' is not a registered dimension");
+	}
+
+	/// <summary>
+	/// Resolves an <see cref="ObjectSpaceObjectReference"/> to a live object instance.
+	/// Checks the InstanceTracker cache first (no I/O); if not found, loads from the dimension's stream.
+	/// Used as the <see cref="SerializationContext.ResolveExternalReference"/> callback.
+	/// </summary>
+	private object ResolveExternalReference(ObjectSpaceObjectReference objRef) {
+		// Fast path: check if the object is already in the instance cache
+		if (_instanceTracker.TryResolveRef(objRef, out var item))
+			return item;
+
+		// Slow path: load from the dimension's stream and cache it
+		var dimensionDef = Definition.Dimensions[objRef.DimensionIndex];
+		var dimension = _dimensions[dimensionDef.ObjectType];
+		item = dimension.Container.ObjectStream.LoadItem(objRef.ObjectIndex);
+
+		// Track the loaded instance
+		_instanceTracker.Track(item, objRef.ObjectIndex);
+		dimension.Definition.ChangeTracker.SetChanged(item, false);
+		_instanceTracker.TrackRef(item, objRef);
+		return item;
+	}
+
+	// --- GC helper methods (Tasks 7, 8, 9, 12) ---
+
+	/// <summary>
+	/// Called after a successful save to update the in-memory and persisted reference indexes.
+	/// Diffs the new out-refs (from serialization) against the previous out-refs and updates in-refs accordingly.
+	/// If any former target now has zero in-refs and is non-root, it is garbage-collected.
+	/// </summary>
+	private void UpdateRefsAfterSave(Type itemType, object item, long index) {
+		if (!_instanceTracker.TryGetRef(item, out var selfRef))
+			return;
+
+		// Get the new out-refs collected during the most recent serialization pass
+		// NOTE: The serialization context's CollectedOutRefs should have been populated during the
+		// most recent dimension.Container.Update/Add call. For now, use the in-memory cache which
+		// is the ground truth for this object's references after serialization.
+		var currentOutRefs = _instanceTracker.GetOrCreateOutRefs(item);
+
+		// Read previous persisted out-refs (empty if this is a new object)
+		var previousPersistedOutRefs = _persistedOutRefs != null && _persistedOutRefs.TryGetValue(selfRef, out var prevRefs)
+			? prevRefs
+			: new HashSet<ObjectSpaceObjectReference>();
+
+		// Compute the diff: which refs were added, which were removed
+		var addedRefs = new HashSet<ObjectSpaceObjectReference>(currentOutRefs);
+		addedRefs.ExceptWith(previousPersistedOutRefs);
+
+		var removedRefs = new HashSet<ObjectSpaceObjectReference>(previousPersistedOutRefs);
+		removedRefs.ExceptWith(currentOutRefs);
+
+		// Update persisted in-refs for removed targets: remove self from their in-refs
+		foreach (var removedTarget in removedRefs) {
+			if (_persistedInRefs != null && _persistedInRefs.TryGetValue(removedTarget, out var targetInRefs))
+				targetInRefs.Remove(selfRef);
+
+			// Also update in-memory in-refs if the target is loaded
+			if (_instanceTracker.TryGetInRefs(removedTarget, out var memInRefs))
+				memInRefs.Remove(selfRef);
+		}
+
+		// Update persisted in-refs for added targets: add self to their in-refs
+		foreach (var addedTarget in addedRefs) {
+			if (_persistedInRefs != null) {
+				if (!_persistedInRefs.TryGetValue(addedTarget, out var targetInRefs)) {
+					targetInRefs = new HashSet<ObjectSpaceObjectReference>();
+					_persistedInRefs[addedTarget] = targetInRefs;
+				}
+				targetInRefs.Add(selfRef);
+			}
+
+			// Also update in-memory in-refs if the target is loaded
+			if (_instanceTracker.TryResolveRef(addedTarget, out var targetObj))
+				_instanceTracker.GetOrCreateInRefs(targetObj).Add(selfRef);
+		}
+
+		// Replace persisted out-refs for this object
+		if (_persistedOutRefs != null)
+			_persistedOutRefs[selfRef] = new HashSet<ObjectSpaceObjectReference>(currentOutRefs);
+
+		// Cascade GC: check if any removed targets are now orphaned (zero in-refs on non-root dimension)
+		foreach (var removedTarget in removedRefs)
+			TryCollectIfOrphaned(removedTarget);
+	}
+
+	/// <summary>
+	/// Called after a delete to remove the deleted object's out-refs from all targets' in-refs,
+	/// then cascade-collects any targets that become orphaned.
+	/// </summary>
+	private void CascadeDeleteRefs(ObjectSpaceObjectReference selfRef, HashSet<ObjectSpaceObjectReference> previousOutRefs) {
+		// Remove self from each target's persisted in-refs
+		foreach (var targetRef in previousOutRefs) {
+			if (_persistedInRefs != null && _persistedInRefs.TryGetValue(targetRef, out var targetInRefs))
+				targetInRefs.Remove(selfRef);
+
+			// Also update in-memory in-refs
+			if (_instanceTracker.TryGetInRefs(targetRef, out var memInRefs))
+				memInRefs.Remove(selfRef);
+		}
+
+		// Remove persisted entries for the deleted object itself
+		_persistedOutRefs?.Remove(selfRef);
+		_persistedInRefs?.Remove(selfRef);
+
+		// Cascade: check each former target — if non-root and zero in-refs, collect it
+		foreach (var targetRef in previousOutRefs)
+			TryCollectIfOrphaned(targetRef);
+	}
+
+	/// <summary>
+	/// Checks whether the object at <paramref name="targetRef"/> is an orphan (non-root dimension, zero in-refs)
+	/// and if so, deletes it. This may cascade further as the deleted object's own out-refs are cleaned up.
+	/// Uses a queue to avoid stack overflow from deep reference chains.
+	/// </summary>
+	private void TryCollectIfOrphaned(ObjectSpaceObjectReference targetRef) {
+		// Use a queue to iteratively process orphans instead of recursion (handles cycles, avoids stack overflow)
+		var collectionQueue = new Queue<ObjectSpaceObjectReference>();
+		collectionQueue.Enqueue(targetRef);
+
+		while (collectionQueue.Count > 0) {
+			var candidate = collectionQueue.Dequeue();
+
+			// Skip if this dimension is a root — root objects are never auto-collected
+			if (candidate.DimensionIndex < 0 || candidate.DimensionIndex >= Definition.Dimensions.Length)
+				continue;
+			var dimensionDef = Definition.Dimensions[candidate.DimensionIndex];
+			if (dimensionDef.IsRoot)
+				continue;
+
+			// Check persisted in-refs: only collect if truly zero incoming references
+			if (_persistedInRefs != null && _persistedInRefs.TryGetValue(candidate, out var inRefs) && inRefs.Count > 0)
+				continue;
+
+			// This object is garbage — collect it
+			// First, read its out-refs so we can cascade
+			HashSet<ObjectSpaceObjectReference> outRefsToClean = null;
+			if (_persistedOutRefs != null && _persistedOutRefs.TryGetValue(candidate, out var outs))
+				outRefsToClean = new HashSet<ObjectSpaceObjectReference>(outs);
+
+			// Recycle from dimension if persisted
+			if (candidate.ObjectIndex >= 0) {
+				var dimension = _dimensions[dimensionDef.ObjectType];
+				dimension.Container.Recycle(candidate.ObjectIndex);
+			}
+
+			// Untrack from InstanceTracker if loaded
+			if (_instanceTracker.TryResolveRef(candidate, out var obj))
+				_instanceTracker.Untrack(obj);
+
+			// Clean up persisted indexes
+			_persistedOutRefs?.Remove(candidate);
+			_persistedInRefs?.Remove(candidate);
+
+			// Cascade: remove this object from each of its targets' in-refs, then check if those targets are now orphaned
+			if (outRefsToClean is not null) {
+				foreach (var subTarget in outRefsToClean) {
+					if (_persistedInRefs != null && _persistedInRefs.TryGetValue(subTarget, out var subInRefs))
+						subInRefs.Remove(candidate);
+
+					if (_instanceTracker.TryGetInRefs(subTarget, out var memSubInRefs))
+						memSubInRefs.Remove(candidate);
+
+					// Queue this target for orphan check
+					collectionQueue.Enqueue(subTarget);
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// Explicit full-scan garbage collection. Iterates all objects in non-root dimensions and collects
+	/// any with empty persisted in-refs. This is a safety net / consistency check — the primary GC
+	/// mechanism is the cascading check in <see cref="SaveInternal"/> and <see cref="DeleteInternal"/>.
+	/// </summary>
+	public void CollectGarbage() {
+		if (!GarbageCollectEnabled)
+			return;
+
+		using (EnterAccessScope()) {
+			// Collect all non-root objects with zero in-refs
+			var orphans = new List<ObjectSpaceObjectReference>();
+
+			for (var dimIdx = 0; dimIdx < Definition.Dimensions.Length; dimIdx++) {
+				var dimensionDef = Definition.Dimensions[dimIdx];
+
+				// Skip root dimensions — their objects are never garbage-collected
+				if (dimensionDef.IsRoot)
+					continue;
+
+				var dimension = _dimensions[dimensionDef.ObjectType];
+				var count = dimension.Container.Count;
+
+				// Scan all rows in this non-root dimension
+				for (long rowIdx = 0; rowIdx < count; rowIdx++) {
+					// Skip recycled (already deleted) rows
+					if (dimension.Container.ObjectStream.IsReaped(rowIdx))
+						continue;
+
+					var objRef = new ObjectSpaceObjectReference((short)dimIdx, rowIdx);
+
+					// Check if this object has any incoming references
+					var hasInRefs = _persistedInRefs != null
+						&& _persistedInRefs.TryGetValue(objRef, out var inRefs)
+						&& inRefs.Count > 0;
+
+					if (!hasInRefs)
+						orphans.Add(objRef);
+				}
+			}
+
+			// Collect each orphan (this may cascade further)
+			foreach (var orphan in orphans)
+				TryCollectIfOrphaned(orphan);
+		}
+	}
 
 	private Dimension<TItem> GetDimension<TItem>() 
 		=> (Dimension<TItem>)GetDimension(typeof(TItem));
