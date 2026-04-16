@@ -78,13 +78,13 @@ public class GarbageCollectionTests {
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
 					EqualityComparerBuilder.For<GCAccount>().By(x => x.Name)
-				)
+			)
 				.Done()
 			.AddDimension<GCIdentity>()
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
 					EqualityComparerBuilder.For<GCIdentity>().By(x => x.Key)
-				)
+			)
 				.Done();
 
 		if (includeNodeDimension) {
@@ -93,7 +93,7 @@ public class GarbageCollectionTests {
 					.WithChangeTrackingVia(x => x.Dirty)
 					.UsingEqualityComparer(
 						EqualityComparerBuilder.For<GCNode>().By(x => x.Id)
-					)
+				)
 					.Done();
 		}
 
@@ -136,7 +136,7 @@ public class GarbageCollectionTests {
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
 					EqualityComparerBuilder.For<GCIdentity>().By(x => x.Key)
-				)
+			)
 				.Done();
 
 		// BuildDefinition should throw because no root dimension is present
@@ -270,13 +270,13 @@ public class GarbageCollectionTests {
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
 					EqualityComparerBuilder.For<GCAccount>().By(x => x.Name)
-				)
+			)
 				.Done()
 			.AddDimension<GCIdentity>()
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
 					EqualityComparerBuilder.For<GCIdentity>().By(x => x.Key)
-				)
+			)
 				.Done();
 
 		using var objectSpace = builder.Build();

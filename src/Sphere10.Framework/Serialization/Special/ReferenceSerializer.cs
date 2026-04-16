@@ -181,14 +181,10 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 	/// Discriminates how a reference-type value is serialized in the stream.
 	/// </summary>
 	public enum ReferenceType : byte {
-		/// <summary>The value is null — only the discriminator byte is written.</summary>
-		IsNull = 0,
-		/// <summary>The value is a full inline object — discriminator byte followed by the serialized object.</summary>
-		IsNotNull = 1,
-		/// <summary>The value was already seen in this serialization context — discriminator byte followed by a CVarInt context index.</summary>
-		IsContextReference = 2,
-		/// <summary>The value is an external dimension object — discriminator byte followed by an <see cref="ObjectSpaces.ObjectSpaceObjectReference"/> (10 bytes).</summary>
-		IsExternalReference = 3,
+		IsNull = 0,             // The value is null — only the discriminator byte is written
+		IsNotNull = 1,          // The value is a full inline object — discriminator byte followed by the serialized object
+		IsContextReference = 2, // The value was already seen in this serialization context — discriminator byte followed by a CVarInt context index
+		IsExternalReference = 3 // The value is an external dimension object — discriminator byte followed by an ObjectSpaceObjectReference (10 bytes)
 	}
 }
 
