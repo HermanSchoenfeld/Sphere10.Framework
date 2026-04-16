@@ -22,7 +22,7 @@ public static class SafeBoxTestHelper {
 
 	/// <summary>
 	/// Creates an ObjectSpace populated with the SafeBox model dimensions.
-	/// GC is enabled so cross-dimension references are serialized as external reference pointers.
+	/// Cross-dimension references are serialized inline with context-level deduplication.
 	/// </summary>
 	public static ObjectSpace CreateSafeBoxObjectSpace(TestTraits traits, Dictionary<string, object> activationArgs = default) {
 		activationArgs ??= [];
