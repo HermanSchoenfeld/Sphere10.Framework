@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Generators;
 using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework.Tests.SafeBox;
@@ -21,8 +22,12 @@ namespace Sphere10.Framework.Tests.SafeBox;
 /// <summary>
 /// Common base class for all SafeBox domain objects.
 /// Contains the transient change-tracking flag used by ObjectSpace.
+/// The <see cref="AutoDirtyAttribute"/> causes the source generator to implement
+/// every <c>partial</c> property so that setting a new value automatically marks
+/// the object dirty.
 /// </summary>
-public abstract class SafeBoxObject {
+[AutoDirty(nameof(Dirty))]
+public abstract partial class SafeBoxObject {
 	[Transient]
 	public bool Dirty { get; set; }
 }
@@ -34,11 +39,11 @@ public abstract class SafeBoxObject {
 /// <see cref="User"/> and <see cref="Group"/> are subclasses stored in their own dimensions.
 /// </summary>
 [Root]
-public class Identity : SafeBoxObject {
+public partial class Identity : SafeBoxObject {
 	[Identity]
-	public string Name { get; set; }
+	public partial string Name { get; set; }
 
-	public byte[] PublicKey { get; set; }
+	public partial byte[] PublicKey { get; set; }
 }
 
 /// <summary>
@@ -46,10 +51,10 @@ public class Identity : SafeBoxObject {
 /// Stored in its own dimension so the framework can track it independently.
 /// </summary>
 [Root]
-public class User : Identity {
-	public string Email { get; set; }
+public partial class User : Identity {
+	public partial string Email { get; set; }
 
-	public string DisplayName { get; set; }
+	public partial string DisplayName { get; set; }
 }
 
 /// <summary>
@@ -58,13 +63,13 @@ public class User : Identity {
 /// <see cref="User"/>, or another <see cref="Group"/>.
 /// </summary>
 [Root]
-public class Group : Identity {
+public partial class Group : Identity {
 	/// <summary>
 	/// Polymorphic array of member identities. Each element can be an <see cref="Identity"/>,
 	/// <see cref="User"/>, or <see cref="Group"/>, exercising cross-dimension reference
 	/// serialization within a base-typed array.
 	/// </summary>
-	public Identity[] Members { get; set; }
+	public partial Identity[] Members { get; set; }
 }
 
 // ── Permission ──────────────────────────────────────────────────────────────
@@ -72,14 +77,14 @@ public class Group : Identity {
 /// Permission granted to an identity (usually a group). Cross-dimension reference to
 /// the <see cref="Identity"/> hierarchy.
 /// </summary>
-public class Permission : SafeBoxObject {
+public partial class Permission : SafeBoxObject {
 	[Identity]
-	public string PermissionName { get; set; }
+	public partial string PermissionName { get; set; }
 
-	public string Description { get; set; }
+	public partial string Description { get; set; }
 
 	/// <summary>The identity (usually a group) this permission is granted to.</summary>
-	public Identity GrantedTo { get; set; }
+	public partial Identity GrantedTo { get; set; }
 }
 
 // ── Account ─────────────────────────────────────────────────────────────────
@@ -87,16 +92,16 @@ public class Permission : SafeBoxObject {
 /// PascalCoin-style account with balance, unique account number, and an owning identity.
 /// </summary>
 [Root]
-public class Account : SafeBoxObject {
+public partial class Account : SafeBoxObject {
 	[Identity]
-	public long AccountNumber { get; set; }
+	public partial long AccountNumber { get; set; }
 
-	public string Name { get; set; }
+	public partial string Name { get; set; }
 
-	public decimal Balance { get; set; }
+	public partial decimal Balance { get; set; }
 
 	/// <summary>The identity that owns this account (may be a User, Group, or plain Identity).</summary>
-	public Identity Owner { get; set; }
+	public partial Identity Owner { get; set; }
 }
 
 // ── Transaction ─────────────────────────────────────────────────────────────
@@ -104,20 +109,20 @@ public class Account : SafeBoxObject {
 /// A single value transfer between two accounts, belonging to a block.
 /// Contains a back-reference to its owner block.
 /// </summary>
-public class Transaction : SafeBoxObject {
+public partial class Transaction : SafeBoxObject {
 	[Identity]
-	public string TxHash { get; set; }
+	public partial string TxHash { get; set; }
 
-	public decimal Amount { get; set; }
+	public partial decimal Amount { get; set; }
 
 	/// <summary>Sender account reference (cross-dimension).</summary>
-	public Account Sender { get; set; }
+	public partial Account Sender { get; set; }
 
 	/// <summary>Receiver account reference (cross-dimension).</summary>
-	public Account Receiver { get; set; }
+	public partial Account Receiver { get; set; }
 
 	/// <summary>Back-reference to the block that contains this transaction.</summary>
-	public Block OwnerBlock { get; set; }
+	public partial Block OwnerBlock { get; set; }
 }
 
 // ── Block ───────────────────────────────────────────────────────────────────
@@ -126,14 +131,14 @@ public class Transaction : SafeBoxObject {
 /// The Transaction[] exercises serialization of arrays of external-reference dimension objects.
 /// </summary>
 [Root]
-public class Block : SafeBoxObject {
+public partial class Block : SafeBoxObject {
 	[Identity]
-	public long Height { get; set; }
+	public partial long Height { get; set; }
 
-	public DateTime Timestamp { get; set; }
+	public partial DateTime Timestamp { get; set; }
 
-	public byte[] PreviousBlockHash { get; set; }
+	public partial byte[] PreviousBlockHash { get; set; }
 
 	/// <summary>Array of transactions in this block (each is a dimension object).</summary>
-	public Transaction[] Transactions { get; set; }
+	public partial Transaction[] Transactions { get; set; }
 }

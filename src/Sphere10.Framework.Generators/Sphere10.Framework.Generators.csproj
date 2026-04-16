@@ -1,11 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-	<Description>C# source generators for Sphere10 Framework that generate boilerplate at compile time. Includes generator implementations and shared helper code to support framework conventions and improve developer ergonomics.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>C# source generators for Sphere10 Framework that generate boilerplate at compile time. Includes the AutoDirty generator that intercepts property setters and sets a dirty flag when values change.</Description>
     <PackageTags>sphere10 framework code-generation source-generator</PackageTags>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent>true</IsRoslynComponent>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
+  </ItemGroup>
 
 </Project>
