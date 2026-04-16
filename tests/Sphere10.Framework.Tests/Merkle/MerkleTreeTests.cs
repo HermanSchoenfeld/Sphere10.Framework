@@ -287,6 +287,29 @@ public class MerkleTreeTests {
 	}
 
 
+	[Test]
+	public void EnsureComputed_NonPowerOfTwo_DoesNotThrow(
+		[Values(CHF.SHA2_256)] CHF chf,
+		[Values(3, 5, 6, 7, 9, 10, 13, 17)] int leafCount) {
+		// Regression: FlatMerkleTree.EnsureComputed() used the imperfect virtual root coordinate
+		// for non-power-of-2 leaf counts, whose flat index exceeded the internal dirty-nodes BitArray.
+		// EnsureComputed is called by ToBytes(). The Root property uses GetValue() which correctly
+		// handles imperfect nodes on-the-fly and does NOT trigger this bug.
+		var rng = new Random(31337);
+		var reference = new SimpleMerkleTree(chf);
+		var tree = new FlatMerkleTree(chf);
+		for (var i = 0; i < leafCount; i++) {
+			var leaf = rng.NextByteArrays(Hashers.GetDigestSizeBytes(chf), 1)[0];
+			tree.Leafs.Add(leaf);
+			reference.Leafs.Add(leaf);
+		}
+		// ToBytes() calls EnsureComputed() — the exact code path that was broken
+		Assert.That(() => tree.ToBytes(), Throws.Nothing);
+		Assert.That(tree.ToBytes().Length, Is.GreaterThan(0));
+		// Verify root is still correct
+		ClassicAssert.AreEqual(reference.Root, tree.Root);
+	}
+
 	private IDynamicMerkleTree CreateReferenceTree(CHF chf, IEnumerable<byte[]> leafs = null)
 		=> CreateMerkleTree(MerkleTreeImpl.Simple, chf);
 
