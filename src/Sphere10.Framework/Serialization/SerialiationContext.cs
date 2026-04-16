@@ -4,11 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework;
 
-public sealed class SerializationContext : SyncScope {
+public class SerializationContext : SyncScope {
 
 	private enum SerializationStatus { Sizing, Sized, Serializing, Serialized, Deserializing, Deserialized }
 
@@ -22,6 +21,7 @@ public sealed class SerializationContext : SyncScope {
 	private long _nextDeserializationIndex;
 	private SerializerFactory _serializerFactory;
 	private long _lastNonEphemeralTypeCode;
+	private long _lastClassifiedExternalReferenceSize;
 
 	public SerializationContext() {
 		_processedObjects = new BijectiveDictionary<object, long>(ReferenceEqualityComparer.Instance, EqualityComparer<long>.Default);
@@ -31,43 +31,17 @@ public sealed class SerializationContext : SyncScope {
 		_nextDeserializationIndex = 0;
 		_serializerFactory = null;
 		_lastNonEphemeralTypeCode = 0;
-
-		// Initialize external reference support — callbacks are null until an ObjectSpace configures them
-		ClassifyExternalReference = null;
-		ResolveExternalReference = null;
-		CollectedOutRefs = new List<ObjectSpaceObjectReference>();
+		_lastClassifiedExternalReferenceSize = 0;
 	}
 
 	public static SerializationContext New => new();
 
 	/// <summary>
-	/// Callback installed by ObjectSpace to classify whether an object is an external dimension object.
-	/// Returns <c>(IsExternal: true, Reference)</c> if the object's CLR type is a registered dimension type,
-	/// or <c>(IsExternal: false, default)</c> for component objects that should be serialized inline.
+	/// The serialized byte size of the most recently classified external reference.
+	/// Set by <see cref="TryClassifyAsExternalReference"/> when it returns true, and consumed
+	/// immediately by the subsequent CalculateSize call.
 	/// </summary>
-	public Func<object, (bool IsExternal, ObjectSpaceObjectReference Reference)>? ClassifyExternalReference { get; set; }
-
-	/// <summary>
-	/// Callback installed by ObjectSpace to resolve an <see cref="ObjectSpaceObjectReference"/> back to a live
-	/// object instance during deserialization. Checks the InstanceTracker cache first (cache hit = no I/O),
-	/// then loads from the dimension's stream if needed.
-	/// </summary>
-	public Func<ObjectSpaceObjectReference, object>? ResolveExternalReference { get; set; }
-
-	/// <summary>
-	/// Accumulated during serialization: every external reference written by <see cref="ReferenceSerializer{TItem}"/>
-	/// is recorded here so that <c>SaveInternal</c> can diff against previous out-refs for GC bookkeeping.
-	/// Cleared before each top-level serialization begins.
-	/// </summary>
-	public List<ObjectSpaceObjectReference> CollectedOutRefs { get; }
-
-	/// <summary>
-	/// Temporary storage for the most recently classified external reference. Set by
-	/// <see cref="ReferenceSerializer{TItem}.ClassifyReferenceType"/> when it returns
-	/// <see cref="ReferenceSerializer{TItem}.ReferenceType.IsExternalReference"/>, and consumed
-	/// immediately by the subsequent Serialize/CalculateSize call for the same item.
-	/// </summary>
-	public ObjectSpaceObjectReference LastClassifiedExternalReference { get; set; }
+	public long LastClassifiedExternalReferenceSize => _lastClassifiedExternalReferenceSize;
 
 	public SerializerFactory EphemeralFactory {
 		get  {
@@ -295,6 +269,48 @@ public sealed class SerializationContext : SyncScope {
 			action();
 		_processedObjects.Clear();
 
+	}
+
+	// --- External reference support (virtual methods for subclass override) ---
+
+	/// <summary>
+	/// Determines whether <paramref name="item"/> is an external reference (e.g. a dimension object
+	/// in an ObjectSpace) that should be serialized as a lightweight pointer instead of inline.
+	/// When true, <paramref name="serializedSize"/> is set to the byte size of the serialized reference.
+	/// The base implementation always returns false (no external references).
+	/// </summary>
+	protected internal virtual bool TryClassifyAsExternalReference(object item, out long serializedSize) {
+		serializedSize = 0;
+		_lastClassifiedExternalReferenceSize = 0;
+		return false;
+	}
+
+	/// <summary>
+	/// Writes the external reference for <paramref name="item"/> to the output stream.
+	/// Called by <see cref="ReferenceSerializer{TItem}"/> when <see cref="TryClassifyAsExternalReference"/>
+	/// returned true. Also performs any post-serialization bookkeeping (e.g. collecting out-refs).
+	/// The base implementation throws — subclasses that support external references must override.
+	/// </summary>
+	protected internal virtual void SerializeExternalReference(object item, EndianBinaryWriter writer) {
+		throw new NotSupportedException("External references are not supported by this serialization context");
+	}
+
+	/// <summary>
+	/// Reads an external reference from the input stream and resolves it to a live object instance.
+	/// Called by <see cref="ReferenceSerializer{TItem}"/> when it encounters an external reference discriminator.
+	/// The base implementation throws — subclasses that support external references must override.
+	/// </summary>
+	protected internal virtual object DeserializeAndResolveExternalReference(EndianBinaryReader reader) {
+		throw new NotSupportedException("External references are not supported by this serialization context");
+	}
+
+	/// <summary>
+	/// Stores the serialized size from the most recent successful external reference classification.
+	/// Called by <see cref="TryClassifyAsExternalReference"/> overrides to communicate the size
+	/// to the <see cref="ReferenceSerializer{TItem}"/> CalculateSize path.
+	/// </summary>
+	protected void SetLastClassifiedExternalReferenceSize(long size) {
+		_lastClassifiedExternalReferenceSize = size;
 	}
 
 	#region Inner Types

@@ -358,16 +358,16 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		if (AutoSave)
 			dimension.Definition.ChangeTracker.SetChanged(item, true);
 
-		// Track the new instance with a provisional negative index
-		var negativeIndex = _instanceTracker.TrackNew(item);
+		// Track the new instance with a provisional index based on dimension count + new instance count
+		var provisionalIndex = _instanceTracker.TrackNew(item, dimension.Container.Count);
 
-		// Eagerly assign an ObjectSpaceObjectReference with the provisional negative ObjectIndex (Task 6).
+		// Eagerly assign an ObjectSpaceObjectReference with the provisional ObjectIndex (Task 6).
 		// This ensures the reference is always available before serialization begins.
 		// It will be replaced with the real persisted index during SaveInternal.
 		var dimIdx = GetDimensionIndex(itemType);
-		_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, negativeIndex));
+		_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, provisionalIndex));
 
-		return negativeIndex;
+		return (int)provisionalIndex;
 	}
 
 	protected long CountInternal(Type itemType) {
@@ -387,17 +387,21 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			// Get underlying stream mapped collection
 			var dimension = GetDimension(itemType);
 
-			if (index >= 0) {
-				// Update existing
+			if (!_instanceTracker.IsProvisional(item)) {
+				// Update existing persisted object
 				dimension.Container.Update(index, item);
 			} else {
-				// Add if new
+				// Add new object to storage
+				var provisionalIndex = index;
 				dimension.Container.Add(item, out index);
-				_instanceTracker.Track(item, index); // updates index from negative value to actual index
+				_instanceTracker.MarkPersisted(item);
 
-				// Update the ObjectSpaceObjectReference from provisional (negative) to real persisted index
-				var dimIdx = GetDimensionIndex(itemType);
-				_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, index));
+				// Update tracked index and ObjectSpaceObjectReference only if the real index differs from provisional
+				if (index != provisionalIndex) {
+					_instanceTracker.Track(item, index);
+					var dimIdx = GetDimensionIndex(itemType);
+					_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, index));
+				}
 			}
 
 			// Mark as unchanged
@@ -425,12 +429,15 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 				previousOutRefs = _instanceTracker.GetOrCreateOutRefs(item);
 			}
 
+			// Check if persisted before untracking (provisional objects haven't been written to storage)
+			var isPersisted = !_instanceTracker.IsProvisional(item);
+
 			// Stop tracking instance
 			_instanceTracker.Untrack(item);
 
-			// Remove it from the dimension 
+			// Remove it from the dimension only if it was persisted
 			var dimension = GetDimension(itemType);
-			if (index >= 0)
+			if (isPersisted)
 				dimension.Container.Recycle(index);
 
 			// --- GC reference cleanup and cascade (Tasks 8, 9, 12) ---
@@ -549,9 +556,9 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		var baseSerializer = Serializers.GetSerializer(objectType);
 
 		// If GC is enabled, wrap the serializer with ObjectSpaceReferenceSerializer to support
-		// external references for dimension objects. The wrapper installs classification/resolution
-		// callbacks on the SerializationContext so that dimension-typed properties are serialized
-		// as lightweight ObjectSpaceObjectReference pointers instead of inline objects.
+		// external references for dimension objects. The wrapper creates an ObjectSpaceSerializationContext
+		// so that dimension-typed properties are serialized as lightweight ObjectSpaceObjectReference
+		// pointers instead of inline objects.
 		if (GarbageCollectEnabled) {
 			var wrapperType = typeof(ObjectSpaceReferenceSerializer<>).MakeGenericType(objectType);
 			baseSerializer = (IItemSerializer)Activator.CreateInstance(
@@ -588,7 +595,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	/// <summary>
 	/// Resolves an <see cref="ObjectSpaceObjectReference"/> to a live object instance.
 	/// Checks the InstanceTracker cache first (no I/O); if not found, loads from the dimension's stream.
-	/// Used as the <see cref="SerializationContext.ResolveExternalReference"/> callback.
+	/// Used as the resolution callback in <see cref="ObjectSpaceSerializationContext"/>.
 	/// </summary>
 	private object ResolveExternalReference(ObjectSpaceObjectReference objRef) {
 		// Fast path: check if the object is already in the instance cache
@@ -724,9 +731,9 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			if (_persistedOutRefs != null && _persistedOutRefs.TryGetValue(candidate, out var outs))
 				outRefsToClean = new HashSet<ObjectSpaceObjectReference>(outs);
 
-			// Recycle from dimension if persisted
-			if (candidate.ObjectIndex >= 0) {
-				var dimension = _dimensions[dimensionDef.ObjectType];
+			// Recycle from dimension if persisted (the object exists in storage)
+			var dimension = _dimensions[dimensionDef.ObjectType];
+			if (candidate.ObjectIndex >= 0 && candidate.ObjectIndex < dimension.Container.Count) {
 				dimension.Container.Recycle(candidate.ObjectIndex);
 			}
 

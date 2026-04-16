@@ -13,25 +13,17 @@ namespace Sphere10.Framework.ObjectSpaces;
 
 /// <summary>
 /// Serializer decorator for handling reference types within an ObjectSpace. Wraps a standard
-/// <see cref="IItemSerializer{TItem}"/> and installs ObjectSpace-specific external reference callbacks
-/// on the <see cref="SerializationContext"/> before each sizing, serialization, or deserialization operation.
+/// <see cref="IItemSerializer{TItem}"/> and creates an <see cref="ObjectSpaceSerializationContext"/>
+/// for each sizing, serialization, or deserialization operation so that dimension-typed properties
+/// are serialized as lightweight external reference pointers instead of inline objects.
 /// </summary>
 /// <remarks>
 /// When a property's CLR type is registered as a dimension in the ObjectSpace, the underlying
-/// <see cref="ReferenceSerializer{TItem}"/> will detect it via the installed callbacks and write a lightweight
-/// external reference pointer (<see cref="ObjectSpaceObjectReference"/>) instead of serializing inline.
+/// <see cref="ReferenceSerializer{TItem}"/> will detect it via the <see cref="ObjectSpaceSerializationContext"/>'s
+/// <see cref="SerializationContext.TryClassifyAsExternalReference"/> override and write a lightweight
+/// <see cref="ObjectSpaceObjectReference"/> pointer instead of serializing inline.
 /// For component objects (types NOT registered as dimensions), serialization falls through to the
 /// standard inline behavior.
-/// <para>
-/// This class configures the <see cref="SerializationContext"/> with two callbacks:
-/// <list type="bullet">
-///   <item><see cref="SerializationContext.ClassifyExternalReference"/>: Checks whether the object's type
-///   is a registered dimension type. If so, looks up its <see cref="ObjectSpaceObjectReference"/> from
-///   the <see cref="InstanceTracker"/>.</item>
-///   <item><see cref="SerializationContext.ResolveExternalReference"/>: Given an <see cref="ObjectSpaceObjectReference"/>,
-///   returns the live object instance from the InstanceTracker cache or loads it from the dimension.</item>
-/// </list>
-/// </para>
 /// </remarks>
 /// <typeparam name="TItem">The CLR type being serialized (may or may not be a dimension type).</typeparam>
 internal sealed class ObjectSpaceReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> {
@@ -62,62 +54,34 @@ internal sealed class ObjectSpaceReferenceSerializer<TItem> : ItemSerializerDeco
 	}
 
 	/// <summary>
-	/// Configures the serialization context with ObjectSpace-specific external reference callbacks,
-	/// then delegates to the inner serializer for actual sizing.
+	/// Creates an <see cref="ObjectSpaceSerializationContext"/> and delegates to the inner serializer for sizing.
 	/// </summary>
 	public override long CalculateSize(SerializationContext context, TItem item) {
-		// Install the ObjectSpace callbacks on the context before sizing
-		ConfigureContext(context);
-		return base.CalculateSize(context, item);
+		using var osContext = CreateObjectSpaceContext();
+		return base.CalculateSize(osContext, item);
 	}
 
 	/// <summary>
-	/// Configures the serialization context with ObjectSpace-specific external reference callbacks,
-	/// then delegates to the inner serializer for actual serialization.
+	/// Creates an <see cref="ObjectSpaceSerializationContext"/> and delegates to the inner serializer for serialization.
 	/// </summary>
 	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
-		ConfigureContext(context);
-		base.Serialize(item, writer, context);
+		using var osContext = CreateObjectSpaceContext();
+		base.Serialize(item, writer, osContext);
 	}
 
 	/// <summary>
-	/// Configures the serialization context with the resolve callback for external references,
-	/// then delegates to the inner serializer for deserialization.
+	/// Creates an <see cref="ObjectSpaceSerializationContext"/> and delegates to the inner serializer for deserialization.
 	/// </summary>
 	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
-		ConfigureContext(context);
-		return base.Deserialize(reader, context);
+		using var osContext = CreateObjectSpaceContext();
+		return base.Deserialize(reader, osContext);
 	}
 
 	/// <summary>
-	/// Installs the ObjectSpace classification and resolution callbacks on the context if they are not
-	/// already set. This is idempotent — safe to call multiple times during the same serialization pass.
+	/// Creates a fresh <see cref="ObjectSpaceSerializationContext"/> configured with this ObjectSpace's
+	/// dimension types, instance tracker, and reference resolution callback.
 	/// </summary>
-	private void ConfigureContext(SerializationContext context) {
-		// Only install callbacks once per serialization context to avoid overwriting an already-configured context
-		if (context.ClassifyExternalReference is null) {
-			// Classification: determine if a given object is a dimension object or a component object.
-			// Dimension objects → external reference; component objects → inline serialization.
-			context.ClassifyExternalReference = obj => {
-				var objType = obj.GetType();
-
-				// Only objects whose CLR type is registered as a dimension are treated as external references
-				if (!_dimensionTypes.Contains(objType))
-					return (IsExternal: false, Reference: default);
-
-				// Look up the pre-assigned ObjectSpaceObjectReference from the InstanceTracker.
-				// This reference was eagerly assigned during New<T>() or Get<T>().
-				if (!_instanceTracker.TryGetRef(obj, out var objRef))
-					throw new InvalidOperationException($"Dimension object of type {objType.ToStringCS()} is not tracked in the InstanceTracker — was it created outside of ObjectSpace.New<T>()?");
-
-				return (IsExternal: true, Reference: objRef);
-			};
-		}
-
-		if (context.ResolveExternalReference is null) {
-			// Resolution: given an ObjectSpaceObjectReference, return the live object instance.
-			context.ResolveExternalReference = _resolveReference;
-		}
-	}
+	private ObjectSpaceSerializationContext CreateObjectSpaceContext()
+		=> new(_dimensionTypes, _instanceTracker, _resolveReference);
 }
 

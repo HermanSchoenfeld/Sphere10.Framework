@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework;
 
@@ -68,8 +67,8 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				size = sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, unchecked((ulong)contextIndex));
 				break;
 			case ReferenceType.IsExternalReference:
-				// External references are a fixed size: 1-byte discriminator + 10-byte ObjectSpaceObjectReference
-				size = sizeof(byte) + ObjectSpaces.ObjectSpaceObjectReferenceSerializer.SerializedSize;
+				// External references: use the serialized size from the context's classification
+				size = sizeof(byte) + context.LastClassifiedExternalReferenceSize;
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
@@ -97,11 +96,8 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				CVarIntSerializer.Instance.Serialize(unchecked((ulong)contextIndex), writer, context);
 				break;
 			case ReferenceType.IsExternalReference:
-				// Write the external ObjectSpaceObjectReference (10 bytes) that was resolved during classification.
-				// Also record this reference in the context's collected out-refs for post-serialization GC bookkeeping.
-				var externalRef = context.LastClassifiedExternalReference;
-				ObjectSpaces.ObjectSpaceObjectReferenceSerializer.Instance.Serialize(externalRef, writer, context);
-				context.CollectedOutRefs.Add(externalRef);
+				// Delegate external reference serialization entirely to the context
+				context.SerializeExternalReference(item, writer);
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
@@ -128,12 +124,8 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 					var contextIndex = CVarIntSerializer.Instance.Deserialize(reader, context);
 					return (TItem)context.GetDeserializedObject(unchecked((long)(ulong)contextIndex));
 				case ReferenceType.IsExternalReference:
-					// Read the 10-byte ObjectSpaceObjectReference from the stream
-					var externalRef = ObjectSpaces.ObjectSpaceObjectReferenceSerializer.Instance.Deserialize(reader, context);
-					// Resolve the external reference via the ObjectSpace callback to get the live object instance.
-					// The callback checks the InstanceTracker cache first, then loads from the dimension if needed.
-					Guard.Ensure(context.ResolveExternalReference is not null, "External reference encountered but no ResolveExternalReference callback is configured");
-					return (TItem)context.ResolveExternalReference(externalRef);
+					// Delegate external reference deserialization and resolution entirely to the context
+					return (TItem)context.DeserializeAndResolveExternalReference(reader);
 			default:
 				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
@@ -141,7 +133,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 
 	/// <summary>
 	/// Determines whether <paramref name="item"/> should be serialized as null, a full value, a context reference,
-	/// or an external reference to a dimension object in an ObjectSpace.
+	/// or an external reference.
 	/// The <paramref name="sizeOnly"/> flag selects which context query to use:
 	///   - Sizing (sizeOnly=true) uses <see cref="SerializationContext.HasSizedOrSerializedObject"/> because an object
 	///     that has been sized (or serialized) in any prior pass already has a stable context index.
@@ -149,8 +141,8 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 	///     which excludes the "Sized" status. This prevents treating an object that was only sized (not yet serialized)
 	///     as a context reference during the serialization pass, which would produce an invalid reference.
 	/// External references are only produced when <see cref="_supportsExternalReferences"/> is true AND the
-	/// serialization context's <see cref="SerializationContext.ClassifyExternalReference"/> callback identifies the item
-	/// as a dimension object. Component objects (non-dimension types) fall through to <see cref="ReferenceType.IsNotNull"/>.
+	/// serialization context's <see cref="SerializationContext.TryClassifyAsExternalReference"/> identifies the item
+	/// as an external object. Component objects fall through to <see cref="ReferenceType.IsNotNull"/>.
 	/// </summary>
 	private ReferenceType ClassifyReferenceType(TItem item, SerializationContext context, bool sizeOnly, out long index) {
 		index = -1;
@@ -163,16 +155,9 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		if (_supportsContextReferences && (sizeOnly ? context.HasSizedOrSerializedObject(item, out index) : context.IsSerializingOrHasSerializedObject(item, out index)))
 			return ReferenceType.IsContextReference;
 
-		// External reference check — is this object a dimension object that should be serialized as a pointer?
-		// Only applies when external references are enabled and the context has a classification callback installed.
-		if (_supportsExternalReferences && context.ClassifyExternalReference is not null) {
-			var classification = context.ClassifyExternalReference(item);
-			if (classification.IsExternal) {
-				// Store the resolved external reference in the context for downstream use during serialization
-				context.LastClassifiedExternalReference = classification.Reference;
-				return ReferenceType.IsExternalReference;
-			}
-		}
+		// External reference check — delegate to the context's virtual method
+		if (_supportsExternalReferences && context.TryClassifyAsExternalReference(item, out _))
+			return ReferenceType.IsExternalReference;
 
 		return ReferenceType.IsNotNull;
 	}
@@ -184,7 +169,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		IsNull = 0,             // The value is null — only the discriminator byte is written
 		IsNotNull = 1,          // The value is a full inline object — discriminator byte followed by the serialized object
 		IsContextReference = 2, // The value was already seen in this serialization context — discriminator byte followed by a CVarInt context index
-		IsExternalReference = 3 // The value is an external dimension object — discriminator byte followed by an ObjectSpaceObjectReference (10 bytes)
+		IsExternalReference = 3 // The value is an external reference — discriminator byte followed by subclass-defined reference data
 	}
 }
 

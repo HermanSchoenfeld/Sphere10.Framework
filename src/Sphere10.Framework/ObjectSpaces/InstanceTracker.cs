@@ -24,7 +24,7 @@ namespace Sphere10.Framework.ObjectSpaces;
 internal class InstanceTracker {
 
 	private readonly Dictionary<Type, BijectiveDictionary<long, object>> _objectsByType;
-	private int _newInstances;
+	private readonly Dictionary<Type, int> _newInstanceCounts;
 
 	/// <summary>
 	/// Maps each tracked object to its globally unique <see cref="ObjectSpaceObjectReference"/>.
@@ -40,7 +40,7 @@ internal class InstanceTracker {
 
 	/// <summary>
 	/// Per-object out-refs: for each tracked object, the set of dimension objects it references.
-	/// Updated after serialization when <see cref="SerializationContext.CollectedOutRefs"/> is harvested.
+	/// Updated after serialization when <see cref="ObjectSpaceSerializationContext.CollectedOutRefs"/> is harvested.
 	/// </summary>
 	private readonly ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>> _outRefs;
 
@@ -51,13 +51,20 @@ internal class InstanceTracker {
 	/// </summary>
 	private readonly ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>> _inRefs;
 
+	/// <summary>
+	/// Set of objects that have been created via <see cref="TrackNew"/> but not yet persisted.
+	/// Used by <see cref="IsProvisional"/> to distinguish new objects from persisted ones.
+	/// </summary>
+	private readonly HashSet<object> _provisionalObjects;
+
 	public InstanceTracker() {
 		_objectsByType = new Dictionary<Type, BijectiveDictionary<long, object>>(TypeEquivalenceComparer.Instance);
-		_newInstances = 0;
+		_newInstanceCounts = new Dictionary<Type, int>(TypeEquivalenceComparer.Instance);
 		_objectRefs = new ReferenceDictionary<object, ObjectSpaceObjectReference>();
 		_refToObject = new Dictionary<ObjectSpaceObjectReference, object>();
 		_outRefs = new ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>>();
 		_inRefs = new ReferenceDictionary<object, HashSet<ObjectSpaceObjectReference>>();
+		_provisionalObjects = new HashSet<object>(ReferenceEqualityComparer.Instance);
 	}
 
 
@@ -96,12 +103,35 @@ internal class InstanceTracker {
 		=> _objectsByType.TryGetValue(itemType, out var instances) ? instances.Values : Array.Empty<object>();
 
 
-	public int TrackNew(object item) {
-		// Assign a provisional negative index for new (not yet persisted) objects
-		var newIndex = -(++_newInstances);
-		Track(item, newIndex);
-		return newIndex;
+	/// <summary>
+	/// Tracks a newly created object with a provisional positive index computed as
+	/// <paramref name="dimensionCount"/> + the number of new instances already created for that type.
+	/// This avoids negative provisional indices and produces indices that are safe for use as
+	/// <see cref="ObjectSpaceObjectReference.ObjectIndex"/> values.
+	/// </summary>
+	public long TrackNew(object item, long dimensionCount) {
+		var itemType = item.GetType();
+		if (!_newInstanceCounts.TryGetValue(itemType, out var count))
+			count = 0;
+		count++;
+		_newInstanceCounts[itemType] = count;
+		var provisionalIndex = dimensionCount + count - 1;
+		Track(item, provisionalIndex);
+		_provisionalObjects.Add(item);
+		return provisionalIndex;
 	}
+
+	/// <summary>
+	/// Returns true if the object was created via <see cref="TrackNew"/> and has not yet been
+	/// marked as persisted via <see cref="MarkPersisted"/>.
+	/// </summary>
+	public bool IsProvisional(object item) => _provisionalObjects.Contains(item);
+
+	/// <summary>
+	/// Marks a provisional object as persisted, removing it from the provisional set.
+	/// Called after <c>SaveInternal</c> persists the object and updates its tracked index.
+	/// </summary>
+	public void MarkPersisted(object item) => _provisionalObjects.Remove(item);
 
 	public void Track(object item, long index) {
 		var itemType = item.GetType();
@@ -140,6 +170,7 @@ internal class InstanceTracker {
 		}
 		_outRefs.Remove(item);
 		_inRefs.Remove(item);
+		_provisionalObjects.Remove(item);
 	}
 
 	public long GetIndexOf(object item) {
@@ -233,11 +264,12 @@ internal class InstanceTracker {
 
 	public void Clear() {
 		_objectsByType.Clear();
-		_newInstances = 0;
+		_newInstanceCounts.Clear();
 		_objectRefs.Clear();
 		_refToObject.Clear();
 		_outRefs.Clear();
 		_inRefs.Clear();
+		_provisionalObjects.Clear();
 	}
 
 	private BijectiveDictionary<long, object> CreateInstanceDictionary() => new(EqualityComparer<long>.Default, ReferenceEqualityComparer.Instance);
