@@ -9,65 +9,77 @@
 using System;
 using Sphere10.Framework.ObjectSpaces;
 
-namespace Sphere10.Framework.Tests;
+namespace Sphere10.Framework.Tests.SafeBox;
 
 /// <summary>
 /// PascalCoin SafeBox-inspired object model for ObjectSpace integration testing.
-/// Exercises cross-dimension references, arrays of dimension objects, back-references,
-/// unique indexes, and polymorphic identity hierarchies.
+/// Exercises cross-dimension references, polymorphic arrays, back-references,
+/// unique indexes, and a proper User/Group/Identity class hierarchy.
 /// </summary>
 
-// ── Identity (base concept) ─────────────────────────────────────────────────
+// ── SafeBoxObject (common base) ─────────────────────────────────────────────
 /// <summary>
-/// Base identity dimension: users, groups, and plain identities share this type.
-/// IdentityType discriminator distinguishes subtypes stored in a single dimension.
+/// Common base class for all SafeBox domain objects.
+/// Contains the transient change-tracking flag used by ObjectSpace.
 /// </summary>
-[Root]
-public class SafeBoxIdentity {
-	[Identity]
-	public string Name { get; set; }
-
-	public byte[] PublicKey { get; set; }
-
-	public SafeBoxIdentityType IdentityType { get; set; }
-
-	/// <summary>Email for users, null for plain identities / groups.</summary>
-	public string Email { get; set; }
-
-	/// <summary>Display name for users.</summary>
-	public string DisplayName { get; set; }
-
-	/// <summary>
-	/// Member identity names when <see cref="IdentityType"/> is Group.
-	/// Stores the Name strings of member identities (use ObjectSpace.Get to resolve).
-	/// </summary>
-	public string[] MemberNames { get; set; }
-
+public abstract class SafeBoxObject {
 	[Transient]
 	public bool Dirty { get; set; }
 }
 
-public enum SafeBoxIdentityType : byte {
-	Identity = 0,
-	User = 1,
-	Group = 2
+// ── Identity hierarchy ──────────────────────────────────────────────────────
+
+/// <summary>
+/// Base identity dimension. A plain identity has a unique name and public key.
+/// <see cref="User"/> and <see cref="Group"/> are subclasses stored in their own dimensions.
+/// </summary>
+[Root]
+public class Identity : SafeBoxObject {
+	[Identity]
+	public string Name { get; set; }
+
+	public byte[] PublicKey { get; set; }
+}
+
+/// <summary>
+/// A user identity — extends <see cref="Identity"/> with email and display name.
+/// Stored in its own dimension so the framework can track it independently.
+/// </summary>
+[Root]
+public class User : Identity {
+	public string Email { get; set; }
+
+	public string DisplayName { get; set; }
+}
+
+/// <summary>
+/// A group identity — extends <see cref="Identity"/> with a polymorphic array of member
+/// identities. Each member in <see cref="Members"/> may be an <see cref="Identity"/>,
+/// <see cref="User"/>, or another <see cref="Group"/>.
+/// </summary>
+[Root]
+public class Group : Identity {
+	/// <summary>
+	/// Polymorphic array of member identities. Each element can be an <see cref="Identity"/>,
+	/// <see cref="User"/>, or <see cref="Group"/>, exercising cross-dimension reference
+	/// serialization within a base-typed array.
+	/// </summary>
+	public Identity[] Members { get; set; }
 }
 
 // ── Permission ──────────────────────────────────────────────────────────────
 /// <summary>
-/// Permission granted to a group (or identity). Links to the owning group/identity dimension.
+/// Permission granted to an identity (usually a group). Cross-dimension reference to
+/// the <see cref="Identity"/> hierarchy.
 /// </summary>
-public class SafeBoxPermission {
+public class Permission : SafeBoxObject {
 	[Identity]
 	public string PermissionName { get; set; }
 
 	public string Description { get; set; }
 
 	/// <summary>The identity (usually a group) this permission is granted to.</summary>
-	public SafeBoxIdentity GrantedTo { get; set; }
-
-	[Transient]
-	public bool Dirty { get; set; }
+	public Identity GrantedTo { get; set; }
 }
 
 // ── Account ─────────────────────────────────────────────────────────────────
@@ -75,7 +87,7 @@ public class SafeBoxPermission {
 /// PascalCoin-style account with balance, unique account number, and an owning identity.
 /// </summary>
 [Root]
-public class SafeBoxAccount {
+public class Account : SafeBoxObject {
 	[Identity]
 	public long AccountNumber { get; set; }
 
@@ -83,11 +95,8 @@ public class SafeBoxAccount {
 
 	public decimal Balance { get; set; }
 
-	/// <summary>The identity that owns this account.</summary>
-	public SafeBoxIdentity Owner { get; set; }
-
-	[Transient]
-	public bool Dirty { get; set; }
+	/// <summary>The identity that owns this account (may be a User, Group, or plain Identity).</summary>
+	public Identity Owner { get; set; }
 }
 
 // ── Transaction ─────────────────────────────────────────────────────────────
@@ -95,23 +104,20 @@ public class SafeBoxAccount {
 /// A single value transfer between two accounts, belonging to a block.
 /// Contains a back-reference to its owner block.
 /// </summary>
-public class SafeBoxTransaction {
+public class Transaction : SafeBoxObject {
 	[Identity]
 	public string TxHash { get; set; }
 
 	public decimal Amount { get; set; }
 
 	/// <summary>Sender account reference (cross-dimension).</summary>
-	public SafeBoxAccount Sender { get; set; }
+	public Account Sender { get; set; }
 
 	/// <summary>Receiver account reference (cross-dimension).</summary>
-	public SafeBoxAccount Receiver { get; set; }
+	public Account Receiver { get; set; }
 
 	/// <summary>Back-reference to the block that contains this transaction.</summary>
-	public SafeBoxBlock OwnerBlock { get; set; }
-
-	[Transient]
-	public bool Dirty { get; set; }
+	public Block OwnerBlock { get; set; }
 }
 
 // ── Block ───────────────────────────────────────────────────────────────────
@@ -120,7 +126,7 @@ public class SafeBoxTransaction {
 /// The Transaction[] exercises serialization of arrays of external-reference dimension objects.
 /// </summary>
 [Root]
-public class SafeBoxBlock {
+public class Block : SafeBoxObject {
 	[Identity]
 	public long Height { get; set; }
 
@@ -129,8 +135,5 @@ public class SafeBoxBlock {
 	public byte[] PreviousBlockHash { get; set; }
 
 	/// <summary>Array of transactions in this block (each is a dimension object).</summary>
-	public SafeBoxTransaction[] Transactions { get; set; }
-
-	[Transient]
-	public bool Dirty { get; set; }
+	public Transaction[] Transactions { get; set; }
 }

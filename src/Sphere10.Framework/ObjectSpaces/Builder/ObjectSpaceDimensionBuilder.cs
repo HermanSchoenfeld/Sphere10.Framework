@@ -109,7 +109,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 
 	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithIdentifier(Member member, string indexName) {
 		Guard.ArgumentNotNull(member, nameof(member));
-		Guard.Argument(member.DeclaringType == typeof(T), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
+		Guard.Argument(typeof(T).IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(typeof(T)), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.Identifier,
 			Name = indexName ?? member.Name,
@@ -128,7 +128,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 
 	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
 		Guard.ArgumentNotNull(member, nameof(member));
-		Guard.Argument(member.DeclaringType == typeof(T), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
+		Guard.Argument(typeof(T).IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(typeof(T)), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.Index,
 			Name = indexName ?? member.Name,
@@ -148,7 +148,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 
 	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
 		Guard.ArgumentNotNull(member, nameof(member));
-		Guard.Argument(member.DeclaringType == typeof(T), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
+		Guard.Argument(typeof(T).IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(typeof(T)), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.UniqueKey,
 			Name = indexName ?? member.Name,

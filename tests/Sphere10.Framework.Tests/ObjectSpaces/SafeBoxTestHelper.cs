@@ -10,19 +10,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Sphere10.Framework.ObjectSpaces;
+using SB = Sphere10.Framework.Tests.SafeBox;
 
 namespace Sphere10.Framework.Tests.ObjectSpaces;
 
 /// <summary>
 /// Helper for creating ObjectSpaces configured with the SafeBox-inspired model.
-/// All five dimension types are registered with appropriate change tracking, equality
-/// comparers, and unique indexes (discovered from annotations).
+/// Registers separate dimensions for the polymorphic Identity/User/Group hierarchy,
+/// plus Account, Block, Transaction, and Permission.
 /// </summary>
 public static class SafeBoxTestHelper {
 
 	/// <summary>
 	/// Creates an ObjectSpace populated with the SafeBox model dimensions.
-	/// Cross-dimension references are serialized inline with context-level deduplication.
+	/// Identity, User, and Group are registered as separate dimensions to exercise
+	/// polymorphic arrays (Group.Members typed as Identity[] containing Users, Groups, etc.).
 	/// </summary>
 	public static ObjectSpace CreateSafeBoxObjectSpace(TestTraits traits, Dictionary<string, object> activationArgs = default) {
 		activationArgs ??= [];
@@ -31,35 +33,48 @@ public static class SafeBoxTestHelper {
 		var builder = new ObjectSpaceBuilder();
 		builder
 			.AutoLoad()
-			// Dimensions — annotations on the model classes provide [Identity], [UniqueIndex], [Root], etc.
-			.AddDimension<SafeBoxIdentity>()
+			// Identity hierarchy — each concrete type gets its own dimension.
+			// Group.Members (Identity[]) exercises polymorphic cross-dimension arrays.
+			.AddDimension<SB.Identity>()
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
-					EqualityComparerBuilder.For<SafeBoxIdentity>().By(x => x.Name)
+					EqualityComparerBuilder.For<SB.Identity>().By(x => x.Name)
 				)
 				.Done()
-			.AddDimension<SafeBoxAccount>()
+			.AddDimension<SB.User>()
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
-					EqualityComparerBuilder.For<SafeBoxAccount>().By(x => x.AccountNumber)
+					EqualityComparerBuilder.For<SB.User>().By(x => x.Name)
 				)
 				.Done()
-			.AddDimension<SafeBoxBlock>()
+			.AddDimension<SB.Group>()
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
-					EqualityComparerBuilder.For<SafeBoxBlock>().By(x => x.Height)
+					EqualityComparerBuilder.For<SB.Group>().By(x => x.Name)
 				)
 				.Done()
-			.AddDimension<SafeBoxTransaction>()
+			.AddDimension<SB.Account>()
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
-					EqualityComparerBuilder.For<SafeBoxTransaction>().By(x => x.TxHash)
+					EqualityComparerBuilder.For<SB.Account>().By(x => x.AccountNumber)
 				)
 				.Done()
-			.AddDimension<SafeBoxPermission>()
+			.AddDimension<SB.Block>()
 				.WithChangeTrackingVia(x => x.Dirty)
 				.UsingEqualityComparer(
-					EqualityComparerBuilder.For<SafeBoxPermission>().By(x => x.PermissionName)
+					EqualityComparerBuilder.For<SB.Block>().By(x => x.Height)
+				)
+				.Done()
+			.AddDimension<SB.Transaction>()
+				.WithChangeTrackingVia(x => x.Dirty)
+				.UsingEqualityComparer(
+					EqualityComparerBuilder.For<SB.Transaction>().By(x => x.TxHash)
+				)
+				.Done()
+			.AddDimension<SB.Permission>()
+				.WithChangeTrackingVia(x => x.Dirty)
+				.UsingEqualityComparer(
+					EqualityComparerBuilder.For<SB.Permission>().By(x => x.PermissionName)
 				)
 				.Done();
 
