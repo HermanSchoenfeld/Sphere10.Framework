@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework;
 
@@ -30,9 +31,43 @@ public sealed class SerializationContext : SyncScope {
 		_nextDeserializationIndex = 0;
 		_serializerFactory = null;
 		_lastNonEphemeralTypeCode = 0;
+
+		// Initialize external reference support — callbacks are null until an ObjectSpace configures them
+		ClassifyExternalReference = null;
+		ResolveExternalReference = null;
+		CollectedOutRefs = new List<ObjectSpaceObjectReference>();
 	}
 
 	public static SerializationContext New => new();
+
+	/// <summary>
+	/// Callback installed by ObjectSpace to classify whether an object is an external dimension object.
+	/// Returns <c>(IsExternal: true, Reference)</c> if the object's CLR type is a registered dimension type,
+	/// or <c>(IsExternal: false, default)</c> for component objects that should be serialized inline.
+	/// </summary>
+	public Func<object, (bool IsExternal, ObjectSpaceObjectReference Reference)>? ClassifyExternalReference { get; set; }
+
+	/// <summary>
+	/// Callback installed by ObjectSpace to resolve an <see cref="ObjectSpaceObjectReference"/> back to a live
+	/// object instance during deserialization. Checks the InstanceTracker cache first (cache hit = no I/O),
+	/// then loads from the dimension's stream if needed.
+	/// </summary>
+	public Func<ObjectSpaceObjectReference, object>? ResolveExternalReference { get; set; }
+
+	/// <summary>
+	/// Accumulated during serialization: every external reference written by <see cref="ReferenceSerializer{TItem}"/>
+	/// is recorded here so that <c>SaveInternal</c> can diff against previous out-refs for GC bookkeeping.
+	/// Cleared before each top-level serialization begins.
+	/// </summary>
+	public List<ObjectSpaceObjectReference> CollectedOutRefs { get; }
+
+	/// <summary>
+	/// Temporary storage for the most recently classified external reference. Set by
+	/// <see cref="ReferenceSerializer{TItem}.ClassifyReferenceType"/> when it returns
+	/// <see cref="ReferenceSerializer{TItem}.ReferenceType.IsExternalReference"/>, and consumed
+	/// immediately by the subsequent Serialize/CalculateSize call for the same item.
+	/// </summary>
+	public ObjectSpaceObjectReference LastClassifiedExternalReference { get; set; }
 
 	public SerializerFactory EphemeralFactory {
 		get  {

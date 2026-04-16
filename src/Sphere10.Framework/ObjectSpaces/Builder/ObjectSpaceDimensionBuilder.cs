@@ -19,12 +19,14 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	private readonly IList<ObjectSpaceDefinition.IndexDefinition> _indexes;
 	private int? _averageItemSize;
 	private ObjectChangeTracker _changeTracker;
+	private bool _isRoot;
 
 	public ObjectSpaceDimensionBuilder(ObjectSpaceBuilder parent) {
 		_parent = parent;
 		_averageItemSize = null;
 		_indexes = new List<ObjectSpaceDefinition.IndexDefinition>();
 		_changeTracker = ObjectChangeTracker.Default;
+		_isRoot = false;
 
 		// Add recyclable free index store by default
 		WithRecyclableIndexes();
@@ -84,6 +86,20 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		_parent.UsingEqualityComparer(typeof(T), comparer);
 		return this;
 	}
+
+	/// <summary>
+	/// Marks this dimension as a GC root. Root objects are user-managed and never auto-collected
+	/// by the garbage collector. Only non-root objects with zero in-refs are eligible for collection.
+	/// </summary>
+	public ObjectSpaceDimensionBuilder<T> AsRoot() {
+		_isRoot = true;
+		return this;
+	}
+
+	/// <summary>
+	/// Explicit interface implementation for <see cref="IObjectSpaceDimensionBuilder.AsRoot"/>.
+	/// </summary>
+	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.AsRoot() => AsRoot();
 
 	public ObjectSpaceDimensionBuilder<T> WithIdentifier<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) 
 		=> WithIdentifier(memberExpression.ToMember(), indexName);
@@ -185,6 +201,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	public ObjectSpaceDefinition.DimensionDefinition BuildDefinition() {
 		return new ObjectSpaceDefinition.DimensionDefinition {
 			ObjectType = typeof(T),
+			IsRoot = _isRoot,
 			AverageObjectSizeBytes = _averageItemSize,
 			Indexes = _indexes.ToArray(),
 			ChangeTracker = _changeTracker
