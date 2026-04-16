@@ -757,7 +757,7 @@ public class ObjectSpaceIntegrationTests {
 			}
 
 			// ── DELETE phase: delete some accounts and their owners ──────
-			var toDelete = Math.Min(rng.Next(0, 2), liveAccounts.Count);
+			var toDelete = Math.Min(rng.Next(0, 4), liveAccounts.Count);
 			var accountsToDelete = liveAccounts.Values.OrderBy(_ => rng.Next()).Take(toDelete).ToArray();
 			foreach (var acc in accountsToDelete) {
 				os.Delete(acc);
