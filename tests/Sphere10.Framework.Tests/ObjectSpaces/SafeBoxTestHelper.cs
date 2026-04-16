@@ -113,11 +113,19 @@ public static class SafeBoxTestHelper {
 	/// <summary>Memory-mapped test case subsets (fastest for integration loops).</summary>
 	public static readonly IEnumerable<TestTraits> MemoryMappedTestCases = [
 		TestTraits.MemoryMapped,
+		TestTraits.MemoryMapped | TestTraits.Merklized,
+		TestTraits.MemoryMapped | TestTraits.Merklized | TestTraits.PersistentIgnorant,
 	];
 
 	/// <summary>All supported test trait combinations.</summary>
 	public static readonly IEnumerable<TestTraits> AllTestCases = [
 		TestTraits.MemoryMapped,
+		TestTraits.MemoryMapped  | TestTraits.Merklized,
+		TestTraits.MemoryMapped  | TestTraits.PersistentIgnorant,
+		TestTraits.MemoryMapped  | TestTraits.Merklized | TestTraits.PersistentIgnorant,
 		TestTraits.FileMapped,
+		TestTraits.FileMapped  | TestTraits.Merklized,
+		TestTraits.FileMapped  | TestTraits.PersistentIgnorant,
+		TestTraits.FileMapped  | TestTraits.Merklized | TestTraits.PersistentIgnorant,
 	];
 }
