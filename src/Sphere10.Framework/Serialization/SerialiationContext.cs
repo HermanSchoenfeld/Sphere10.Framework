@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework;
 
-public sealed class SerializationContext : SyncScope {
+public class SerializationContext : SyncScope {
 
 	private enum SerializationStatus { Sizing, Sized, Serializing, Serialized, Deserializing, Deserialized }
 
@@ -21,6 +21,7 @@ public sealed class SerializationContext : SyncScope {
 	private long _nextDeserializationIndex;
 	private SerializerFactory _serializerFactory;
 	private long _lastNonEphemeralTypeCode;
+	private long _lastClassifiedExternalReferenceSize;
 
 	public SerializationContext() {
 		_processedObjects = new BijectiveDictionary<object, long>(ReferenceEqualityComparer.Instance, EqualityComparer<long>.Default);
@@ -30,9 +31,17 @@ public sealed class SerializationContext : SyncScope {
 		_nextDeserializationIndex = 0;
 		_serializerFactory = null;
 		_lastNonEphemeralTypeCode = 0;
+		_lastClassifiedExternalReferenceSize = 0;
 	}
 
 	public static SerializationContext New => new();
+
+	/// <summary>
+	/// The serialized byte size of the most recently classified external reference.
+	/// Set by <see cref="TryClassifyAsExternalReference"/> when it returns true, and consumed
+	/// immediately by the subsequent CalculateSize call.
+	/// </summary>
+	public long LastClassifiedExternalReferenceSize => _lastClassifiedExternalReferenceSize;
 
 	public SerializerFactory EphemeralFactory {
 		get  {
@@ -260,6 +269,48 @@ public sealed class SerializationContext : SyncScope {
 			action();
 		_processedObjects.Clear();
 
+	}
+
+	// --- External reference support (virtual methods for subclass override) ---
+
+	/// <summary>
+	/// Determines whether <paramref name="item"/> is an external reference (e.g. a dimension object
+	/// in an ObjectSpace) that should be serialized as a lightweight pointer instead of inline.
+	/// When true, <see cref="LastClassifiedExternalReferenceSize"/> is set to the byte size of the
+	/// serialized reference.
+	/// The base implementation always returns false (no external references).
+	/// </summary>
+	protected internal virtual bool TryClassifyAsExternalReference(object item) {
+		_lastClassifiedExternalReferenceSize = 0;
+		return false;
+	}
+
+	/// <summary>
+	/// Writes the external reference for <paramref name="item"/> to the output stream.
+	/// Called by <see cref="ReferenceSerializer{TItem}"/> when <see cref="TryClassifyAsExternalReference"/>
+	/// returned true. Also performs any post-serialization bookkeeping (e.g. collecting out-refs).
+	/// The base implementation throws — subclasses that support external references must override.
+	/// </summary>
+	protected internal virtual void SerializeExternalReference(object item, EndianBinaryWriter writer) {
+		throw new NotSupportedException("External references are not supported by this serialization context");
+	}
+
+	/// <summary>
+	/// Reads an external reference from the input stream and resolves it to a live object instance.
+	/// Called by <see cref="ReferenceSerializer{TItem}"/> when it encounters an external reference discriminator.
+	/// The base implementation throws — subclasses that support external references must override.
+	/// </summary>
+	protected internal virtual object DeserializeAndResolveExternalReference(EndianBinaryReader reader) {
+		throw new NotSupportedException("External references are not supported by this serialization context");
+	}
+
+	/// <summary>
+	/// Stores the serialized size from the most recent successful external reference classification.
+	/// Called by <see cref="TryClassifyAsExternalReference"/> overrides to communicate the size
+	/// to the <see cref="ReferenceSerializer{TItem}"/> CalculateSize path.
+	/// </summary>
+	protected void SetLastClassifiedExternalReferenceSize(long size) {
+		_lastClassifiedExternalReferenceSize = size;
 	}
 
 	#region Inner Types

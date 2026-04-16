@@ -18,6 +18,11 @@ public interface IObjectSpaceDimensionBuilder {
 
 	IEnumerable<ObjectSpaceDefinition.IndexDefinition> Indexes { get; }
 
+	/// <summary>
+	/// Marks this dimension as a GC root. Root objects are user-managed and never auto-collected.
+	/// </summary>
+	IObjectSpaceDimensionBuilder AsRoot();
+
 	IObjectSpaceDimensionBuilder WithRecyclableIndexes();
 
 	IObjectSpaceDimensionBuilder Merkleized();
