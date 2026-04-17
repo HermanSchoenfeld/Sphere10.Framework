@@ -47,7 +47,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		_domainParams =
 			new ECDomainParameters(_curveParams.Curve, _curveParams.G, _curveParams.N, _curveParams.H, _curveParams.GetSeed());
 		_secureRandom = new SecureRandom();
-		Traits = Traits & DigitalSignatureSchemeTraits.Schnorr & DigitalSignatureSchemeTraits.SupportsIES;
+		Traits = Traits | DigitalSignatureSchemeTraits.Schnorr | DigitalSignatureSchemeTraits.SupportsIES;
 	}
 	public override IIESAlgorithm IES => new ECIES(); // defaults to a Pascalcoin style ECIES
 
@@ -90,9 +90,10 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	public override PrivateKey GeneratePrivateKey(ReadOnlySpan<byte> seed) {
 		var keyPairGenerator = GeneratorUtilities.GetKeyPairGenerator("ECDSA");
-		// add seed to RNG
-		_secureRandom.SetSeed(seed.ToArray());
-		keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, _secureRandom));
+		// use a dedicated RNG seeded exclusively with the provided seed for deterministic generation
+		var seededRandom = new SecureRandom();
+		seededRandom.SetSeed(seed.ToArray());
+		keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, seededRandom));
 		var keyPair = keyPairGenerator.GenerateKeyPair();
 		var privateKeyBytes = BytesOfBigInt((keyPair.Private as ECPrivateKeyParameters)?.D, KeySize);
 		return (PrivateKey)this.ParsePrivateKey(privateKeyBytes);
@@ -115,44 +116,58 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 	}
 
 	public byte[] SignDigestWithAuxRandomData(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest,
-	                                          ReadOnlySpan<byte> auxRandomData) {
+											  ReadOnlySpan<byte> auxRandomData) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
 		var sk = privateKey.AsInteger.Value;
 		var message = messageDigest.ToArray();
 		ValidatePrivateKeyRange(nameof(sk), sk);
 		ValidateArray(nameof(message), message);
 
-		var p = G.Multiply(sk).Normalize();
-		var px = BytesOfXCoord(p);
-		var d = GetEvenKey(p, sk);
+		byte[] t = null;
+		byte[] rand = null;
+		byte[] px = null;
+		byte[] rx = null;
+		try {
+			var p = G.Multiply(sk).Normalize();
+			px = BytesOfXCoord(p);
+			var d = GetEvenKey(p, sk);
 
-		if (!auxRandomData.IsEmpty) {
-			ValidateBuffer(nameof(auxRandomData), auxRandomData, 32);
-		} else {
-			auxRandomData = RandomBytes(32);
+			if (!auxRandomData.IsEmpty) {
+				ValidateBuffer(nameof(auxRandomData), auxRandomData, 32);
+			} else {
+				auxRandomData = RandomBytes(32);
+			}
+
+			t = BytesOfBigInt(d.Xor(BytesToBigIntPositive(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), KeySize);
+			rand = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(t, px, message));
+			var kPrime = BytesToBigIntPositive(rand).Mod(N);
+
+			if (kPrime.SignValue == 0) {
+				throw new InvalidOperationException("kPrime is zero");
+			}
+
+			var r = G.Multiply(kPrime).Normalize();
+			var k = GetEvenKey(r, kPrime);
+			rx = BytesOfXCoord(r);
+			var e = GetE(rx, px, message);
+			var sig = Arrays.ConcatenateAll(rx, BytesOfBigInt(k.Add(e.Multiply(d)).Mod(N), KeySize));
+			if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p))) {
+				throw new InvalidOperationException("The created signature did not pass verification.");
+			}
+			return sig;
+		} finally {
+			// Zero nonce-related intermediates to limit exposure in memory
+			if (t != null) Array.Clear(t, 0, t.Length);
+			if (rand != null) Array.Clear(rand, 0, rand.Length);
+			if (px != null) Array.Clear(px, 0, px.Length);
+			if (rx != null) Array.Clear(rx, 0, rx.Length);
 		}
-
-		var t = BytesOfBigInt(d.Xor(BytesToBigIntPositive(TaggedHash("BIP0340/aux", auxRandomData.ToArray()))), KeySize);
-		var rand = TaggedHash("BIP0340/nonce", Arrays.ConcatenateAll(t, px, message));
-		var kPrime = BytesToBigIntPositive(rand).Mod(N);
-
-		if (kPrime.SignValue == 0) {
-			throw new InvalidOperationException("kPrime is zero");
-		}
-
-		var r = G.Multiply(kPrime).Normalize();
-		var k = GetEvenKey(r, kPrime);
-		var rx = BytesOfXCoord(r);
-		var e = GetE(rx, px, message);
-		var sig = Arrays.ConcatenateAll(rx, BytesOfBigInt(k.Add(e.Multiply(d)).Mod(N), KeySize));
-		if (!VerifyDigest(sig, messageDigest, BytesOfXCoord(p))) {
-			throw new InvalidOperationException("The created signature did not pass verification.");
-		}
-		return sig;
 	}
 
 	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> messageDigest, ReadOnlySpan<byte> publicKey) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
+		if (signature.Length != 2 * KeySize)
+			return false;
 		var message = messageDigest.ToArray();
 		var sig = signature.ToArray();
 		var pubKey = publicKey.ToArray();
