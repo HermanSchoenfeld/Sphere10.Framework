@@ -69,14 +69,18 @@ public class CustomIesEngine {
 	}
 
 	protected void SetupBlockCipherAndMacKeyBytes(out byte[] k1,
-	                                              out byte[] k2) {
+												  out byte[] k2) {
 		k1 = new byte[((IesWithCipherParameters)_param).CipherKeySize / 8];
 		k2 = new byte[_param.MacKeySize / 8];
 		byte[] k = new byte[k1.Length + k2.Length];
-
-		Kdf.GenerateBytes(k, 0, k.Length);
-		Array.Copy(k, 0, k1, 0, k1.Length);
-		Array.Copy(k, k1.Length, k2, 0, k2.Length);
+		try {
+			Kdf.GenerateBytes(k, 0, k.Length);
+			Array.Copy(k, 0, k1, 0, k1.Length);
+			Array.Copy(k, k1.Length, k2, 0, k2.Length);
+		} finally {
+			// Zero the combined key material buffer
+			Array.Clear(k, 0, k.Length);
+		}
 	}
 
 	protected virtual byte[] DecryptBlock(
