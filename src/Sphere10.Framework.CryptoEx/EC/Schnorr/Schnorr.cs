@@ -90,9 +90,10 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	public override PrivateKey GeneratePrivateKey(ReadOnlySpan<byte> seed) {
 		var keyPairGenerator = GeneratorUtilities.GetKeyPairGenerator("ECDSA");
-		// use a dedicated RNG seeded exclusively with the provided seed for deterministic generation
-		var seededRandom = new SecureRandom();
-		seededRandom.SetSeed(seed.ToArray());
+		// use a deterministic RNG seeded exclusively with the provided seed
+		var digestRng = new Org.BouncyCastle.Crypto.Prng.DigestRandomGenerator(new Org.BouncyCastle.Crypto.Digests.Sha256Digest());
+		digestRng.AddSeedMaterial(seed.ToArray());
+		var seededRandom = new SecureRandom(digestRng);
 		keyPairGenerator.Init(new ECKeyGenerationParameters(_domainParams, seededRandom));
 		var keyPair = keyPairGenerator.GenerateKeyPair();
 		var privateKeyBytes = BytesOfBigInt((keyPair.Private as ECPrivateKeyParameters)?.D, KeySize);
