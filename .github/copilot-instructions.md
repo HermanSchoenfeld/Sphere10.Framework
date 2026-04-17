@@ -2,6 +2,11 @@
 
 These are project-level instructions for GitHub Copilot when working in the Sphere10 Framework codebase.
 
+## Workflow
+- **Never commit** unless explicitly asked to.
+- When committing, prefer **granular commits per logical task** rather than bulk commits. This does not mean one commit per file — group related changes across files into a single commit when they serve the same logical purpose.
+- When writing code, understand the ambient code pattern at the method, class, and library level, then re-evaluate your intentions to ensure you achieve your goals and blend perfectly into the existing codebase.
+
 ## Project Overview
 
 Sphere10 Framework is a .NET framework targeting **.NET 8** and **.NET Standard 2.1**. It provides foundational libraries for application development including data access, cryptography, communications, Windows utilities, and WinForms UI components.
