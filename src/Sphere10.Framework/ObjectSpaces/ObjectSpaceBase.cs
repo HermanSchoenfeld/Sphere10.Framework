@@ -324,12 +324,11 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 					.GetInstances()
 					.Select(x => (Type: x.GetType(), Instance: x))
 					.Where(x => _dimensions[x.Type].Definition.ChangeTracker.HasChanged(x.Instance))
-					.Select(x => x.Instance)
 					.ToArray();
 			foreach(var changedObject in changedObjects) {
 				// check if still changed (prior connected object may have saved it recursively)
-				if (_dimensions[changedObject.GetType()].Definition.ChangeTracker.HasChanged(changedObject))
-					Save(changedObject);
+				if (_dimensions[changedObject.Type].Definition.ChangeTracker.HasChanged(changedObject.Instance))
+					Save(changedObject.Instance);
 			}
 		}
 	}
