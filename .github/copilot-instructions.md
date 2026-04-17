@@ -154,3 +154,25 @@ All new source files must include the copyright header:
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 ```
+
+## Unit Testing
+
+### Framework & Conventions
+- Use **NUnit** as the test framework.
+- **Do not** use `ClassicAssert` or any legacy NUnit assertion style (`Assert.IsTrue`, `Assert.AreEqual`, `ClassicAssert.IsTrue`, etc.).
+- **Always** use the modern **constraint-model assertions** via `Assert.That(...)`:
+  ```csharp
+  // ✅ Correct
+  Assert.That(result, Is.EqualTo(expected));
+  Assert.That(flag, Is.True);
+  Assert.That(collection, Is.Not.Empty);
+  Assert.That(() => Foo(), Throws.InstanceOf<InvalidOperationException>());
+
+  // ❌ Wrong — do not use
+  ClassicAssert.AreEqual(expected, result);
+  ClassicAssert.IsTrue(flag);
+  Assert.IsTrue(flag);
+  ```
+- Include a descriptive failure message where it aids diagnosis: `Assert.That(result, Is.True, "Signature must verify against the correct public key");`
+- Use `[TestFixture]`, `[Test]`, `[TestCase(...)]`, `[Values(...)]`, `[Repeat(n)]` attributes as appropriate.
+- Use `[Parallelizable(ParallelScope.Children)]` on test fixtures unless tests share mutable state.
