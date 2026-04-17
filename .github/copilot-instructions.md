@@ -141,6 +141,109 @@ Logging uses a simple `ILogger` interface with `Debug`, `Info`, `Warning`, `Erro
 - `ApplicationScreen` base class for screens within a block.
 - `CrudGrid` for data-bound grid screens backed by `IDataSource<T>`.
 
+### Guard Pattern (Argument & Invariant Checking)
+**Never** write `if (condition) throw new ArgumentException(...)` or similar inline throw patterns. Always use the `Guard` static class from `Sphere10.Framework`:
+
+- **`Guard.ArgumentNotNull(value, nameof(value))`** — throws `ArgumentNullException`.
+- **`Guard.Argument(condition, nameof(param), "message")`** — throws `ArgumentException` when `condition` is false.
+- **`Guard.ArgumentNot(condition, nameof(param), "message")`** — throws when `condition` is true.
+- **`Guard.ArgumentNotNullOrEmpty(str, nameof(str))`** — for strings and enumerables.
+- **`Guard.ArgumentInRange(value, min, max, nameof(value))`** — throws `ArgumentOutOfRangeException`.
+- **`Guard.ArgumentGTE / ArgumentLTE / ArgumentGT / ArgumentLT`** — relational argument checks.
+- **`Guard.ArgumentEquals(value, expected, nameof(value))`** — exact value match.
+- **`Guard.ArgumentCast<T>(obj, nameof(obj))`** — safe cast or throw.
+- **`Guard.Ensure(condition, "message")`** — throws `InvalidOperationException` for internal invariants (not argument validation).
+- **`Guard.Against(condition, "message")`** — inverse of `Ensure`, throws when condition is true.
+- **`Guard.CheckIndex / Guard.CheckRange`** — collection bounds validation.
+- **`Guard.FileExists / Guard.DirectoryExists`** — file-system pre-conditions.
+
+```csharp
+// ✅ Correct
+Guard.ArgumentNotNull(buffer, nameof(buffer));
+Guard.Argument(buffer.Length >= MinSize, nameof(buffer), "Buffer too small");
+Guard.Ensure(!IsDisposed, "Object has been disposed");
+
+// ❌ Wrong — do not use inline throws
+if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+if (buffer.Length < MinSize) throw new ArgumentException("Buffer too small");
+```
+
+### Endian-Aware Bit Conversion
+**Never** use `System.BitConverter`. Always use the framework's endian-aware equivalents:
+
+- **`EndianBitConverter`** — abstract base with `LittleEndianBitConverter` and `BigEndianBitConverter` implementations. Use `EndianBitConverter.Little` / `EndianBitConverter.Big` static singletons.
+- **`EndianBinaryWriter`** / **`EndianBinaryReader`** — endian-aware stream readers/writers used throughout serialization.
+- All serialization infrastructure (`IItemSerializer<T>`, `ClusteredStreams`, `ObjectStream`) is endianness-aware. When writing new serializers or stream code, always propagate `Endianness` from the parent context.
+
+### Cryptography
+The framework provides its own crypto infrastructure in `Sphere10.Framework` (core) and `Sphere10.Framework.CryptoEx` (extended). **Prefer framework crypto over raw BCL crypto.**
+
+- **Hashing** — use `Hashers.Hash(CHF.SHA2_256, data)` or other `CHF` enum values. The `Hashers` class is a thread-safe static registry of `IHashFunction` implementations. Never use `System.Security.Cryptography.SHA256.Create()` directly.
+- **`CHF` enum** — canonical hash function identifiers: `SHA2_256`, `SHA2_512`, `BLAKE2B_256`, `BLAKE2B_128`, `SHA3_256`, etc.
+- **`Tools.Crypto`** — static tool for random bytes (`GenerateCryptographicallyRandomBytes`), password hashing, AES encryption, secure erase (`SecureErase`).
+- **Digital signatures** — `IDigitalSignatureScheme` / `StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey>` in `Sphere10.Framework.CryptoEx`. Implementations: `Schnorr`, `ECDSA` (various curves), etc.
+- **Key derivation** — `GeneratePrivateKey(ReadOnlySpan<byte> seed)` must be deterministic (same seed → same key). Use `DigestRandomGenerator` seeded exclusively with the provided seed. The parameterless overload uses system entropy.
+- **IES** — `IIESAlgorithm` for integrated encryption schemes, accessed via `scheme.IES`.
+
+### Comparers & Equality
+The framework provides a `ComparerFactory` registry — **not** ad-hoc `IEqualityComparer<T>` implementations:
+
+- **`ComparerFactory`** — registry of `IEqualityComparer<T>` and `IComparer<T>` by type. `ComparerFactory.Default` has all primitives and common types pre-registered.
+- **`ByteArrayEqualityComparer`** — use for `byte[]` equality (not `SequenceEqual` in hot paths).
+- **`ReferenceEqualityComparer`** — identity comparison by reference.
+- **`TypeEquivalenceComparer`** — for `Type` equality that respects type forwarding.
+- Chain custom factories: `new ComparerFactory(ComparerFactory.Default)` then register domain-specific comparers.
+- When `ObjectSpace` or `StreamMappedCollection` needs comparers, they come from the injected `ComparerFactory`.
+
+### Scope-Based Patterns
+The framework uses **disposable scope objects** (`using` blocks) extensively for resource management, synchronization, and state transitions. **Always follow this pattern**:
+
+- **Thread synchronization** — `SynchronizedObject` provides `EnterReadScope()` / `EnterWriteScope()` returning `IDisposable`. All reads/writes to synchronized collections must be enclosed in the appropriate scope:
+  ```csharp
+  using (collection.EnterWriteScope()) {
+      collection.Add(item);
+  }
+  ```
+- **Access scopes** — `ICriticalObject.EnterAccessScope()` used by `ObjectSpace`, `ClusteredStreams`, and stream-mapped collections.
+- **`Tools.Scope`** — utility for ad-hoc cleanup scopes:
+  - `Tools.Scope.ExecuteOnDispose(action)` — runs `action` when the scope is disposed.
+  - `Tools.Scope.DeleteFileOnDispose(path)` — auto-cleanup temp files.
+- **Transactional scopes** — `TransactionalScopeBase` for commit/rollback semantics. Database DACs and `ClusteredStreams` use transactional scopes internally.
+- **`ActionScope` / `TaskScope`** — lightweight `IDisposable`/`IAsyncDisposable` that execute a delegate on disposal.
+
+The general principle: if an operation acquires a resource, enters a state, or needs guaranteed cleanup, wrap it in a scope. Never use bare `try/finally` when a scope object exists.
+
+### Job Scheduler
+The framework includes a built-in `Scheduler<TJob, TJobSchedule>` for recurring or one-shot background jobs:
+
+- **`IJob`** — interface with `Execute()`, `Name`, `Status`, `Policy`, `Schedules`.
+- **`BaseJob`** — abstract base with schedule management and serializable surrogates.
+- **`ActionJob`** — wraps a plain `Action` as a job.
+- **`JobBuilder<T>`** / **`JobBuilder`** — fluent builder: `JobBuilder.For(action).Called("name").Repeat.OnInterval(TimeSpan).Build()`.
+- **`Scheduler<TJob, TJobSchedule>`** — manages a timeline heap, auto-reschedules based on `ReschedulePolicy`, supports sync/async via `JobPolicy`, emits `JobStatusChanged` / `StatusChanged` events.
+- The scheduler accepts an `ILogger` for diagnostics.
+
+### Dog-Fooding (Prefer Framework Over BCL)
+**Always prefer Sphere10 Framework utilities over raw System/BCL equivalents** when a framework tool exists:
+
+| Instead of (BCL) | Use (Framework) |
+|---|---|
+| `System.BitConverter` | `EndianBitConverter.Little` / `.Big` |
+| `SHA256.Create().ComputeHash(...)` | `Hashers.Hash(CHF.SHA2_256, data)` |
+| `new Random()` / `RandomNumberGenerator` | `Tools.Crypto.GenerateCryptographicallyRandomBytes(n)` |
+| `File.ReadAllBytes` / `File.WriteAllBytes` | `Tools.FileSystem.*` |
+| `Array.Copy` / `Buffer.BlockCopy` | `Tools.Array.*` |
+| `string.Join`, `string.Format` (complex) | `Tools.Text.*` |
+| `Enum.GetValues`, `Enum.Parse` | `Tools.Enum.*` |
+| `Activator.CreateInstance` (complex) | `Tools.Reflection.ActivateWithCompatibleArgs` |
+| `Console.WriteLine` (logging) | `SystemLog.Info(...)` |
+| inline `if/throw` for args | `Guard.*` |
+| ad-hoc `EqualityComparer<T>` | `ComparerFactory.Default.GetEqualityComparer<T>()` |
+
+### Documentation
+- Update **README.md** files in affected projects when changes alter public API, behavior, or usage patterns.
+- Each project (`Sphere10.Framework`, `Sphere10.Framework.CryptoEx`, `Sphere10.Framework.Data`, etc.) may have its own README. Keep them current.
+
 ## License Header
 
 All new source files must include the copyright header:

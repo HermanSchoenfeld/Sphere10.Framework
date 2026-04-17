@@ -80,6 +80,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AA4A8AEA-0
 		..\pack.ps1 = ..\pack.ps1
 		..\publish.ps1 = ..\publish.ps1
 		..\README.md = ..\README.md
+		TODO.md = TODO.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.HashLib4CSharp.Tests", "..\tests\Sphere10.HashLib4CSharp.Tests\Sphere10.HashLib4CSharp.Tests.csproj", "{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}"
