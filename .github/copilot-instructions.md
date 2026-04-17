@@ -3,8 +3,7 @@
 These are project-level instructions for GitHub Copilot when working in the Sphere10 Framework codebase.
 
 ## Workflow
-- **Never commit** unless explicitly asked to.
-- When committing, prefer **granular commits per logical task** rather than bulk commits. This does not mean one commit per file — group related changes across files into a single commit when they serve the same logical purpose.
+- **Never commit** unless explicitly asked to. See [Committing](#committing) for commit rules.
 - When writing code, understand the ambient code pattern at the method, class, and library level, then re-evaluate your intentions to ensure you achieve your goals and blend perfectly into the existing codebase.
 
 ## Project Overview
@@ -176,3 +175,25 @@ All new source files must include the copyright header:
 - Include a descriptive failure message where it aids diagnosis: `Assert.That(result, Is.True, "Signature must verify against the correct public key");`
 - Use `[TestFixture]`, `[Test]`, `[TestCase(...)]`, `[Values(...)]`, `[Repeat(n)]` attributes as appropriate.
 - Use `[Parallelizable(ParallelScope.Children)]` on test fixtures unless tests share mutable state.
+
+## Committing
+- Prefer **granular commits per logical task** rather than bulk commits. This does not mean one commit per file — group related changes across files into a single commit when they serve the same logical purpose.
+- Write commit messages in **imperative mood** using a **title + detail** format:
+  ```
+  Short summarative title of overall change
+
+  - specific logical change 1
+  - specific logical change 2
+  - specific logical change N
+  ```
+  The first line is the title shown in log views; the body (after a blank line) lists individual logical changes. Example:
+  ```
+  Harden RNG and fix deterministic key generation
+
+  - Remove public Seed property from HashRandom
+  - Fix GeneratePrivateKey to use seeded DigestRandomGenerator
+  - Add SeedGenerator with environment entropy collection
+  ```
+- Do **not** amend or force-push unless explicitly asked to.
+- Stage only the files relevant to the logical change — do not include unrelated modifications.
+- When multiple logical changes are ready, commit them **separately** in dependency order.
