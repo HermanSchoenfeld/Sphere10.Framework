@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Linq;
-using System.Threading;
 
 namespace Sphere10.Framework.Maths;
 
@@ -29,6 +27,11 @@ public sealed class HashRandom : IRandomNumberGenerator {
 	private int _index;
 	private long _counter;
 
+
+	public HashRandom()
+		: this(SeedGenerator.Generate(chf: CHF.SHA2_256)) {
+	}
+
 	public HashRandom(byte[] seed)
 		: this(CHF.SHA2_256, seed) {
 	}
@@ -42,10 +45,7 @@ public sealed class HashRandom : IRandomNumberGenerator {
 		_counter = 0;
 		_lock = new object();
 		_data = Hashers.Hash(_chf, Tools.Array.Concat<byte>(seed, EndianBitConverter.Little.GetBytes(_counter)));
-		Seed = seed.ToArray();
 	}
-
-	public byte[] Seed { get; }
 
 	public void NextBytes(Span<byte> result) {
 		if (result.Length == 0)
@@ -55,26 +55,26 @@ public sealed class HashRandom : IRandomNumberGenerator {
 			var count = result.Length;
 			var resultIndex = 0;
 			Span<byte> counterBytes = stackalloc byte[sizeof(ulong)];
-			while (count > 0) {
-				var remainingData = _data.Length - _index;
-				var amountToCopy = Math.Min(remainingData, count);
-				_data.AsSpan(_index, amountToCopy).CopyTo(result.Slice(resultIndex));
-				count -= amountToCopy;
-				resultIndex += amountToCopy;
-				_index += amountToCopy;
-				if (_index >= _data.Length) {
-					Interlocked.Increment(ref _counter);
-					EndianBitConverter.Little.WriteTo(_counter, counterBytes);
-					using (Hashers.BorrowHasher(_chf, out var hasher)) {
+			var bitConverter = EndianBitConverter.Little;
+			using (Hashers.BorrowHasher(_chf, out var hasher)) {
+				while (count > 0) {
+					var remainingData = _data.Length - _index;
+					var amountToCopy = Math.Min(remainingData, count);
+					_data.AsSpan(_index, amountToCopy).CopyTo(result.Slice(resultIndex));
+					count -= amountToCopy;
+					resultIndex += amountToCopy;
+					_index += amountToCopy;
+					if (_index >= _data.Length) {
+						_counter++;
+						bitConverter.WriteTo(_counter, counterBytes);
 						hasher.Transform(_data);
 						hasher.Transform(counterBytes);
 						hasher.GetResult(_data);
+						hasher.Reset();
+						_index = 0;
 					}
-					_index = 0;
 				}
 			}
 		}
 	}
-
 }
-
