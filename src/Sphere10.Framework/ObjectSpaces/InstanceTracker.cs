@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Sphere10.Framework.ObjectSpaces;
@@ -118,6 +119,7 @@ internal class InstanceTracker {
 		var provisionalIndex = dimensionCount + typeNewCount - 1;
 		Track(item, provisionalIndex);
 		_provisionalObjects.Add(item);
+		AssertConsistency();
 		return provisionalIndex;
 	}
 
@@ -151,6 +153,7 @@ internal class InstanceTracker {
 		else
 			// otherwise, add the item
 			instances.Add(index, item);
+		AssertConsistency();
 	}
 
 	public void Untrack(object item) {
@@ -171,6 +174,7 @@ internal class InstanceTracker {
 		_outRefs.Remove(item);
 		_inRefs.Remove(item);
 		_provisionalObjects.Remove(item);
+		AssertConsistency();
 	}
 
 	public long GetIndexOf(object item) {
@@ -207,6 +211,7 @@ internal class InstanceTracker {
 
 		_objectRefs[item] = objRef;
 		_refToObject[objRef] = item;
+		AssertConsistency();
 	}
 
 	/// <summary>
@@ -270,6 +275,38 @@ internal class InstanceTracker {
 		_outRefs.Clear();
 		_inRefs.Clear();
 		_provisionalObjects.Clear();
+	}
+
+	/// <summary>
+	/// DEBUG-only consistency assertion verifying that <see cref="_objectsByType"/>,
+	/// <see cref="_objectRefs"/>, and <see cref="_refToObject"/> are mutually consistent.
+	/// </summary>
+	[Conditional("DEBUG")]
+	internal void AssertConsistency() {
+		// Every object that has a ref mapping must also be present in _objectsByType
+		foreach (var kvp in _objectRefs) {
+			var item = kvp.Key;
+			var objRef = kvp.Value;
+			var itemType = item.GetType();
+			Debug.Assert(
+				_objectsByType.TryGetValue(itemType, out var instances) && instances.Bijection.ContainsKey(item),
+				$"InstanceTracker inconsistency: object of type {itemType.Name} has an ObjectRef but is not in _objectsByType"
+			);
+			Debug.Assert(
+				_refToObject.TryGetValue(objRef, out var reverseItem) && ReferenceEquals(reverseItem, item),
+				$"InstanceTracker inconsistency: _refToObject does not map back to the same object for ref ({objRef.DimensionIndex},{objRef.ObjectIndex})"
+			);
+		}
+
+		// Every entry in _refToObject must have a corresponding _objectRefs entry
+		foreach (var kvp in _refToObject) {
+			var objRef = kvp.Key;
+			var item = kvp.Value;
+			Debug.Assert(
+				_objectRefs.TryGetValue(item, out var forwardRef) && forwardRef.Equals(objRef),
+				$"InstanceTracker inconsistency: _refToObject contains ref ({objRef.DimensionIndex},{objRef.ObjectIndex}) with no matching _objectRefs entry"
+			);
+		}
 	}
 
 	private BijectiveDictionary<long, object> CreateInstanceDictionary() => new(EqualityComparer<long>.Default, ReferenceEqualityComparer.Instance);

@@ -126,8 +126,16 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 			// First try return an already fetched instance
 			if (_instanceTracker.TryGet(index, out item))
-				return true;	
-			
+				return true;
+
+			// Fallback: check by ObjectSpaceObjectReference ID (handles cross-type lookups)
+			var dimIdx = GetDimensionIndex(typeof(TItem));
+			var objRef = new ObjectSpaceObjectReference(dimIdx, index);
+			if (_instanceTracker.TryResolveRef(objRef, out var cached)) {
+				item = (TItem)cached;
+				return true;
+			}
+
 			// Get underlying stream mapped collection
 			var dimension = GetDimension<TItem>();
 			
@@ -147,7 +155,6 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			dimension.Definition.ChangeTracker.SetChanged(item, false);
 
 			// Eagerly assign the ObjectSpaceObjectReference (Task 6) so it is known before any serialization
-			var dimIdx = GetDimensionIndex(typeof(TItem));
 			_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, index));
 
 			return true;
