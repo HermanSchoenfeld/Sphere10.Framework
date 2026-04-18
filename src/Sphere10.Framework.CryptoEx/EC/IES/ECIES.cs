@@ -25,7 +25,7 @@ public sealed class ECIES : IIESAlgorithm {
 	public byte[] Encrypt(ReadOnlySpan<byte> message, IPublicKey publicKey) {
 		// Encryption
 		var cipherEncrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-		cipherEncrypt.Init(true, ((ECDSA.PublicKey)publicKey).Parameters.Value, GetPascalCoinIesParameterSpec(), SecureRandom);
+		cipherEncrypt.Init(true, ((ECDSA.PublicKey)publicKey).Parameters, GetPascalCoinIesParameterSpec(), SecureRandom);
 		return cipherEncrypt.DoFinal(message.ToArray());
 	}
 
@@ -33,7 +33,7 @@ public sealed class ECIES : IIESAlgorithm {
 		try {
 			// Decryption
 			var cipherDecrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-			cipherDecrypt.Init(false, ((ECDSA.PrivateKey)privateKey).Parameters.Value, GetPascalCoinIesParameterSpec(), SecureRandom);
+			cipherDecrypt.Init(false, ((ECDSA.PrivateKey)privateKey).Parameters, GetPascalCoinIesParameterSpec(), SecureRandom);
 			decryptedMessage = cipherDecrypt.DoFinal(encryptedMessage.ToArray());
 			return true;
 		} catch (Exception) {

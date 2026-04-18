@@ -201,7 +201,7 @@ public class ECDSATests {
 		var messageDigest = Hashers.Hash(CHF.SHA2_256,
 			Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"));
 
-		var order = privateKey.Parameters.Value.Parameters.Curve.Order;
+		var order = privateKey.Parameters.Parameters.Curve.Order;
 
 		var ecdsaAllowMalleability = SignerUtilities.GetSigner("NONEwithECDSA");
 
@@ -210,7 +210,7 @@ public class ECDSATests {
 		BigInteger[] sig;
 		// generate a "High S" signature
 		do {
-			var parametersWithRandom = new ParametersWithRandom(privateKey.Parameters.Value, secureRandom);
+			var parametersWithRandom = new ParametersWithRandom(privateKey.Parameters, secureRandom);
 			ecdsaAllowMalleability.Init(true, parametersWithRandom);
 			ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
 
@@ -221,11 +221,11 @@ public class ECDSATests {
 		var canonicalSig = CanonicalizeSig(order, ecdsaAllowMalleabilitySig);
 
 		// normal ECDSA should be able to verify both the OriginalSig and CanonicalSig
-		ecdsaAllowMalleability.Init(false, publicKey.Parameters.Value);
+		ecdsaAllowMalleability.Init(false, publicKey.Parameters);
 		ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
 		Assert.That(ecdsaAllowMalleability.VerifySignature(ecdsaAllowMalleabilitySig), Is.True);
 
-		ecdsaAllowMalleability.Init(false, publicKey.Parameters.Value);
+		ecdsaAllowMalleability.Init(false, publicKey.Parameters);
 		ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
 		Assert.That(ecdsaAllowMalleability.VerifySignature(canonicalSig), Is.True);
 

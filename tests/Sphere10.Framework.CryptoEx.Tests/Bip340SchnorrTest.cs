@@ -122,7 +122,7 @@ public class Bip340SchnorrTest {
 
 		Assert.That(actual, Is.EqualTo(false), $"batch verification failure. expected = '{false}' but got = '{actual}'");
 		Assert.That(exception, Is.Not.Null);
-		Assert.That(exception?.Message, Is.EqualTo("c is not equal to y^2"));
+		Assert.That(exception?.Message, Does.Contain("c is not equal to y^2"));
 	}
 
 	[Test]

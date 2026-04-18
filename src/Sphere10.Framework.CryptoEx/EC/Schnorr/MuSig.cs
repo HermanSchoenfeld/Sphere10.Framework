@@ -60,7 +60,7 @@ public class MuSig {
 		var isPointEven = Schnorr.IsEven(x);
 		var combinedPoint = isPointEven ? x : x?.Negate();
 		var publicKeyParity = !isPointEven;
-		Schnorr.ThrowIfPointIsAtInfinity(x);
+		Guard.Argument(!Schnorr.IsPointInfinity(x), nameof(x), "Point is at infinity");
 		return new AggregatedPublicKeyData() {
 			CombinedPoint = combinedPoint,
 			PublicKeyParity = publicKeyParity
@@ -102,8 +102,8 @@ public class MuSig {
 			throw new ArgumentException($"unable to parse {nameof(privateNonce.K2)} private key");
 		}
 
-		var pointR1 = Schnorr.DerivePublicKey(k1).AsPoint.Value;
-		var pointR2 = Schnorr.DerivePublicKey(k2).AsPoint.Value;
+		var pointR1 = Schnorr.DerivePublicKey(k1).AsPoint;
+		var pointR2 = Schnorr.DerivePublicKey(k2).AsPoint;
 
 		return new MuSigPublicNonce {
 			R1 = CBytes(pointR1),
@@ -282,7 +282,8 @@ public class MuSig {
 		if (sessionCache == null)
 			throw new InvalidOperationException("You need to run MuSig.InitializeSessionCache first");
 
-		Schnorr.ThrowIfPointIsAtInfinity(Schnorr.LiftX(sessionCache.FinalNonce));
+		var finalNoncePoint = Schnorr.LiftX(sessionCache.FinalNonce);
+		Guard.Argument(!Schnorr.IsPointInfinity(finalNoncePoint), nameof(sessionCache), "Final nonce point is at infinity");
 
 		var k1 = Schnorr.BytesToBigIntPositive(signerSession.PrivateNonce.AsSpan().Slice(0, KeySize).ToArray());
 		var k2 = Schnorr.BytesToBigIntPositive(signerSession.PrivateNonce.AsSpan().Slice(KeySize, KeySize).ToArray());

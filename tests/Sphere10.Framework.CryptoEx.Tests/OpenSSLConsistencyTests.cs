@@ -77,12 +77,12 @@ public class OpenSSLConsistencyTests {
 		var ecdsa = new ECDSA(keyType);
 		var secret = Crypto.GenerateCryptographicallyRandomBytes(rng.Next(5, 64));
 		var privateKey = ecdsa.GeneratePrivateKey(secret);
-		var privateKeyAsHex = privateKey.Parameters.Value.D.ToByteArray().ToHexString(true);
+		var privateKeyAsHex = privateKey.Parameters.D.ToByteArray().ToHexString(true);
 		var publicKey = ecdsa.DerivePublicKey(privateKey);
 		var curveName = Enum.GetName(typeof(ECDSAKeyType), keyType);
 		var message = Encoding.ASCII.GetBytes(RandomString(rng.Next(1, 1000)));
 		var messageDigest = Hashers.Hash(CHF.SHA2_256, message).ToHexString(true);
-		var order = privateKey.Parameters.Value.Parameters.Curve.Order;
+		var order = privateKey.Parameters.Parameters.Curve.Order;
 		string[] args = {
 			"-operationtype SIGN",
 			$"-curvetype {curveName}",
@@ -102,7 +102,7 @@ public class OpenSSLConsistencyTests {
 		var ecdsa = new ECDSA(keyType);
 		var secret = Crypto.GenerateCryptographicallyRandomBytes(rng.Next(5, 64));
 		var privateKey = ecdsa.GeneratePrivateKey(secret);
-		var publicKeyPoint = ecdsa.DerivePublicKey(privateKey).Parameters.Value.Q;
+		var publicKeyPoint = ecdsa.DerivePublicKey(privateKey).Parameters.Q;
 		var xCoord = publicKeyPoint.AffineXCoord.ToBigInteger().ToByteArray().ToHexString(true);
 		var yCoord = publicKeyPoint.AffineYCoord.ToBigInteger().ToByteArray().ToHexString(true);
 		var curveName = Enum.GetName(typeof(ECDSAKeyType), keyType);
@@ -130,7 +130,7 @@ public class OpenSSLConsistencyTests {
 		var ecdsa = new ECDSA(keyType);
 		var secret = Crypto.GenerateCryptographicallyRandomBytes(rng.Next(5, 64));
 		var privateKey = ecdsa.GeneratePrivateKey(secret);
-		var publicKeyPoint = ecdsa.DerivePublicKey(privateKey).Parameters.Value.Q;
+		var publicKeyPoint = ecdsa.DerivePublicKey(privateKey).Parameters.Q;
 		var xCoord = publicKeyPoint.AffineXCoord.ToBigInteger().ToByteArray().ToHexString(true);
 		var yCoord = publicKeyPoint.AffineYCoord.ToBigInteger().ToByteArray().ToHexString(true);
 		var curveName = Enum.GetName(typeof(ECDSAKeyType), keyType);

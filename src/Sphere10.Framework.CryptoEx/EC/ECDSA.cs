@@ -98,7 +98,7 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 	}
 
 	public override PublicKey DerivePublicKey(PrivateKey privateKey) {
-		var privateKeyParameters = new ECPrivateKeyParameters("ECDSA", privateKey.AsInteger.Value, _domainParams);
+		var privateKeyParameters = new ECPrivateKeyParameters("ECDSA", privateKey.AsInteger, _domainParams);
 		var domainParameters = privateKeyParameters.Parameters;
 		var ecPoint = (new FixedPointCombMultiplier() as ECMultiplier).Multiply(domainParameters.G, privateKeyParameters.D);
 		var pubKeyParams = new ECPublicKeyParameters(privateKeyParameters.AlgorithmName, ecPoint, domainParameters);
@@ -116,7 +116,7 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 
 	public override byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest) {
 		var signer = CustomEcDsaSigner.GetRfc6979DeterministicSigner();
-		var parametersWithRandom = new ParametersWithRandom(privateKey.Parameters.Value, _secureRandom);
+		var parametersWithRandom = new ParametersWithRandom(privateKey.Parameters, _secureRandom);
 		signer.Init(true, parametersWithRandom);
 		signer.BlockUpdate(messageDigest.ToArray(), 0, messageDigest.Length);
 		return signer.GenerateSignature();
@@ -126,7 +126,7 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 		if (!TryParsePublicKey(publicKey, out var pubKey))
 			return false;
 		var signer = CustomEcDsaSigner.GetRfc6979DeterministicSigner();
-		signer.Init(false, pubKey.Parameters.Value);
+		signer.Init(false, pubKey.Parameters);
 		signer.BlockUpdate(messageDigest.ToArray(), 0, messageDigest.Length);
 		return signer.VerifySignature(signature.ToArray());
 	}
@@ -138,7 +138,7 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 			KeyType = keyType;
 			CurveParams = curveParams;
 			DomainParams = domainParams;
-			AsInteger = Tools.Values.Future.LazyLoad(() => BigIntegerUtils.BytesToBigIntegerPositive(RawBytes));
+			AsInteger = BigIntegerUtils.BytesToBigIntegerPositive(RawBytes);
 		}
 
 		public ECDSAKeyType KeyType { get; }
@@ -149,12 +149,11 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 
 		internal ECDomainParameters DomainParams { get; }
 
-		internal IFuture<BigInteger> AsInteger { get; }
+		internal BigInteger AsInteger { get; }
 
 		public override bool Equals(object obj) {
-			if (obj is Key key) {
+			if (obj is Key key)
 				return Equals(key);
-			}
 			return false;
 		}
 
@@ -167,24 +166,24 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 
 
 	public class PrivateKey : Key, IPrivateKey {
-		public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
-			base(rawKeyBytes, keyType, curveParams, domainParams) {
-			Parameters = Tools.Values.Future.LazyLoad(() => new ECPrivateKeyParameters("ECDSA", AsInteger.Value, DomainParams));
+		public PrivateKey(byte[] rawKeyBytes, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams)
+			: base(rawKeyBytes, keyType, curveParams, domainParams) {
+			Parameters = new ECPrivateKeyParameters("ECDSA", AsInteger, DomainParams);
 		}
 
-		public IFuture<ECPrivateKeyParameters> Parameters { get; }
+		public ECPrivateKeyParameters Parameters { get; }
 	}
 
 
 	public class PublicKey : Key, IPublicKey {
-		public PublicKey(ECPoint point, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams) :
-			base(point.GetEncoded(true), keyType, curveParams, domainParams) {
-			AsPoint = Tools.Values.Future.LazyLoad(() => point);
-			Parameters = Tools.Values.Future.LazyLoad(() => new ECPublicKeyParameters("ECDSA", AsPoint.Value, DomainParams));
+		public PublicKey(ECPoint point, ECDSAKeyType keyType, X9ECParameters curveParams, ECDomainParameters domainParams)
+			: base(point.GetEncoded(true), keyType, curveParams, domainParams) {
+			AsPoint = point;
+			Parameters = new ECPublicKeyParameters("ECDSA", AsPoint, DomainParams);
 		}
 
-		public IFuture<ECPublicKeyParameters> Parameters { get; }
-		internal IFuture<ECPoint> AsPoint { get; }
+		public ECPublicKeyParameters Parameters { get; }
+		internal ECPoint AsPoint { get; }
 
 	}
 }

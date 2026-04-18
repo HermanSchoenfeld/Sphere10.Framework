@@ -98,29 +98,27 @@ public class SchnorrSecurityTests {
     #region Signature Malleability / Forgery
 
     [Test]
-    public void VerifyDigest_FlippedBitInR_Fails() {
+    public void VerifyDigest_FlipEveryBit_AllFail() {
         var schnorr = CreateSchnorr();
         var sk = schnorr.GeneratePrivateKey();
         var pk = schnorr.DerivePublicKey(sk);
         var messageDigest = RandomMessageDigest();
         var sig = schnorr.SignDigest(sk, messageDigest);
-        // Flip one bit in the R component (first half of signature)
-        var tampered = (byte[])sig.Clone();
-        tampered[0] ^= 0x01;
-        Assert.That(schnorr.VerifyDigest(tampered, messageDigest, pk.RawBytes), Is.False, "Flipping a bit in R must invalidate the signature");
-    }
 
-    [Test]
-    public void VerifyDigest_FlippedBitInS_Fails() {
-        var schnorr = CreateSchnorr();
-        var sk = schnorr.GeneratePrivateKey();
-        var pk = schnorr.DerivePublicKey(sk);
-        var messageDigest = RandomMessageDigest();
-        var sig = schnorr.SignDigest(sk, messageDigest);
-        // Flip one bit in the S component (second half of signature)
-        var tampered = (byte[])sig.Clone();
-        tampered[schnorr.KeySize] ^= 0x01;
-        Assert.That(schnorr.VerifyDigest(tampered, messageDigest, pk.RawBytes), Is.False, "Flipping a bit in S must invalidate the signature");
+        for (var byteIdx = 0; byteIdx < sig.Length; byteIdx++) {
+            for (var bitIdx = 0; bitIdx < 8; bitIdx++) {
+                var tampered = (byte[])sig.Clone();
+                tampered[byteIdx] ^= (byte)(1 << bitIdx);
+                bool result;
+                try {
+                    result = schnorr.VerifyDigest(tampered, messageDigest, pk.RawBytes);
+                } catch (Exception) {
+                    result = false;
+                }
+                Assert.That(result, Is.False,
+                    $"Flipping bit {bitIdx} of byte {byteIdx} must invalidate the signature");
+            }
+        }
     }
 
     [Test]
