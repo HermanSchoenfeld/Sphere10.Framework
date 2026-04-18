@@ -254,5 +254,38 @@ public class ECDSATests {
 		var validBip66Der = goodDerSig.ToHexByteArray();
 		Assert.That(CustomDsaEncoding.IsValidSignatureEncoding(validBip66Der), Is.True);
 	}
+
+	#region Key Derivation Determinism
+
+	[Test]
+	[TestCase(ECDSAKeyType.SECP256K1)]
+	[TestCase(ECDSAKeyType.SECP384R1)]
+	[TestCase(ECDSAKeyType.SECP521R1)]
+	[TestCase(ECDSAKeyType.SECT283K1)]
+	public void GeneratePrivateKey_SameSeed_ProducesSameKey(ECDSAKeyType keyType) {
+		var ecdsa1 = new ECDSA(keyType);
+		var seed = Tools.Crypto.GenerateCryptographicallyRandomBytes(32);
+		var sk1 = ecdsa1.GeneratePrivateKey(seed);
+		// Create a fresh ECDSA instance to ensure no shared RNG state
+		var ecdsa2 = new ECDSA(keyType);
+		var sk2 = ecdsa2.GeneratePrivateKey(seed);
+		Assert.That(sk2.RawBytes, Is.EqualTo(sk1.RawBytes),
+			"Same seed must produce identical private keys across instances");
+	}
+
+	[Test]
+	[TestCase(ECDSAKeyType.SECP256K1)]
+	[TestCase(ECDSAKeyType.SECP384R1)]
+	[TestCase(ECDSAKeyType.SECP521R1)]
+	[TestCase(ECDSAKeyType.SECT283K1)]
+	public void GeneratePrivateKey_DifferentSeeds_ProduceDifferentKeys(ECDSAKeyType keyType) {
+		var ecdsa = new ECDSA(keyType);
+		var sk1 = ecdsa.GeneratePrivateKey(Tools.Crypto.GenerateCryptographicallyRandomBytes(32));
+		var sk2 = ecdsa.GeneratePrivateKey(Tools.Crypto.GenerateCryptographicallyRandomBytes(32));
+		Assert.That(sk1.RawBytes.SequenceEqual(sk2.RawBytes), Is.False,
+			"Different seeds must produce different private keys");
+	}
+
+	#endregion
 }
 
