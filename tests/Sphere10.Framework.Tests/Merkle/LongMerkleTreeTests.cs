@@ -10,8 +10,6 @@ using System;
 using NUnit.Framework;
 using System.Linq;
 using Sphere10.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Merkle;
 
 [TestFixture]
@@ -23,13 +21,13 @@ public class LongMerkleTreeTests {
 		var rng = new Random(31337);
 		var reference = new SimpleMerkleTree(chf);
 		var impl = new LongMerkleTree(chf);
-		ClassicAssert.AreEqual(reference.Root, impl.Root);
+		Assert.That(impl.Root, Is.EqualTo(reference.Root));
 		var newItems = rng.NextBytes(Hashers.GetDigestSizeBytes(chf));
 		reference.Leafs.AddRange(newItems);
 		impl.Leafs.AddRange(newItems);
-		ClassicAssert.AreEqual(reference.Root, impl.Root);
-		ClassicAssert.AreEqual(reference.Leafs.Count, impl.Leafs.Count);
-		ClassicAssert.AreEqual(reference.Size, impl.Size);
+		Assert.That(impl.Root, Is.EqualTo(reference.Root));
+		Assert.That(impl.Leafs.Count, Is.EqualTo(reference.Leafs.Count));
+		Assert.That(impl.Size, Is.EqualTo(reference.Size));
 	}
 
 	[Test]
@@ -42,8 +40,8 @@ public class LongMerkleTreeTests {
 			var newItems = rng.NextBytes(Hashers.GetDigestSizeBytes(chf));
 			reference.Leafs.AddRange(newItems);
 			impl.Leafs.AddRange(newItems);
-			ClassicAssert.AreEqual(reference.Root, impl.Root);
-			ClassicAssert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
+			Assert.That(impl.Root, Is.EqualTo(reference.Root));
+			Assert.That(impl.Size.LeafCount, Is.EqualTo(impl.Leafs.Count));
 		}
 	}
 
@@ -56,7 +54,7 @@ public class LongMerkleTreeTests {
 		var rng = new Random(31337);
 		var reference = new SimpleMerkleTree(chf);
 		var impl = new LongMerkleTree(chf);
-		ClassicAssert.AreEqual(reference.Root, impl.Root);
+		Assert.That(impl.Root, Is.EqualTo(reference.Root));
 		for (var i = 0; i < MaxIterations; i++) {
 			var newItems =
 				Tools.Collection.Generate(() => rng.NextBytes(Hashers.GetDigestSizeBytes(chf))).Take(rng.Next(MinItemsAddPerIter, MaxItemsAddPerIter + 1)).ToArray();
@@ -64,12 +62,12 @@ public class LongMerkleTreeTests {
 			reference.Leafs.AddRange(newItems);
 			impl.Leafs.AddRange(newItems);
 			if (Tools.Maths.Gamble(0.1)) // force root calculation 10% of the time
-				ClassicAssert.AreEqual(reference.Root, impl.Root);
+				Assert.That(impl.Root, Is.EqualTo(reference.Root));
 
-			ClassicAssert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
+			Assert.That(impl.Size.LeafCount, Is.EqualTo(impl.Leafs.Count));
 
 		}
-		ClassicAssert.AreEqual(reference.Root, impl.Root);
+		Assert.That(impl.Root, Is.EqualTo(reference.Root));
 	}
 
 	[Test]

@@ -10,8 +10,6 @@ using NUnit.Framework;
 using Sphere10.Framework.CryptoEx.PascalCoin;
 using Sphere10.Framework.NUnit;
 using System.Linq;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
@@ -109,20 +107,20 @@ public class PascalAsciiEncodingTests {
 	public void Encoding_EscapeString() {
 		var unescaped = @"""a(b)c:d<e>f[g\h]i{j}";
 		var escaped = @"\""a\(b\)c\:d\<e\>f\[g\\h\]i\{j\}";
-		ClassicAssert.AreEqual(escaped, PascalAsciiEncoding.Escape(unescaped));
-		ClassicAssert.AreEqual(escaped, PascalAsciiEncoding.Escape(PascalAsciiEncoding.Escape(unescaped)));
-		ClassicAssert.IsTrue(PascalAsciiEncoding.IsValidEscaped(escaped));
-		ClassicAssert.IsTrue(PascalAsciiEncoding.IsValidEscaped(unescaped)); // unescaped is also a valid escaped string (unlike pascal64 encoding)
+		Assert.That(PascalAsciiEncoding.Escape(unescaped), Is.EqualTo(escaped));
+		Assert.That(PascalAsciiEncoding.Escape(PascalAsciiEncoding.Escape(unescaped)), Is.EqualTo(escaped));
+		Assert.That(PascalAsciiEncoding.IsValidEscaped(escaped), Is.True);
+		Assert.That(PascalAsciiEncoding.IsValidEscaped(unescaped), Is.True); // unescaped is also a valid escaped string (unlike pascal64 encoding)
 	}
 
 	[Test]
 	public void Encoding_UnescapedString() {
 		var unescaped = @"""a(b)c:d<e>f[g\h]i{j}";
 		var escaped = @"\""a\(b\)c\:d\<e\>f\[g\\h\]i\{j\}";
-		ClassicAssert.AreEqual(unescaped, PascalAsciiEncoding.Unescape(escaped));
-		ClassicAssert.AreEqual(unescaped, PascalAsciiEncoding.Unescape(PascalAsciiEncoding.Unescape(escaped)));
-		ClassicAssert.IsTrue(PascalAsciiEncoding.IsValidUnescaped(escaped)); // escaped string is also valid as unescaped, since \ is allowed
-		ClassicAssert.IsTrue(PascalAsciiEncoding.IsValidUnescaped(unescaped));
+		Assert.That(PascalAsciiEncoding.Unescape(escaped), Is.EqualTo(unescaped));
+		Assert.That(PascalAsciiEncoding.Unescape(PascalAsciiEncoding.Unescape(escaped)), Is.EqualTo(unescaped));
+		Assert.That(PascalAsciiEncoding.IsValidUnescaped(escaped), Is.True); // escaped string is also valid as unescaped, since \ is allowed
+		Assert.That(PascalAsciiEncoding.IsValidUnescaped(unescaped), Is.True);
 	}
 
 	#endregion

@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCollectionTestsBase {
@@ -323,7 +321,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 						return Hashers.JoinHash(chf, keyHash, valueHash);
 					}).ToArray();
 					var treeLeaves = clusteredDictionary.MerkleTree.GetLeafs().ToArray();
-					ClassicAssert.AreEqual(itemHashes, treeLeaves);
+					Assert.That(treeLeaves, Is.EqualTo(itemHashes));
 					Assert.That(clusteredDictionary.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(itemHashes, chf)));
 				}
 			);

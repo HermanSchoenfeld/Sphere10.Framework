@@ -9,8 +9,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -46,7 +44,7 @@ public class RecursiveDataTypeTests {
 		rdt.AddSubStates("B", "C", "D");
 		rdt.SubStates[1].AddSubStates("C1");
 
-		ClassicAssert.AreEqual(new[] { "A", "B", "C", "C1", "D" }, rdt.Flatten());
+		Assert.That(rdt.Flatten(), Is.EqualTo(new[] { "A", "B", "C", "C1", "D" }));
 	}
 
 	[Test]
@@ -56,8 +54,8 @@ public class RecursiveDataTypeTests {
 		rdt.AddSubStates("B", "C", "D");
 		rdt.SubStates[1].AddSubStates("C1");
 		rdt.Flatten(out var states, out var counts);
-		ClassicAssert.AreEqual(new[] { "A", "B", "C", "C1", "D" }, states);
-		ClassicAssert.AreEqual(new[] { 3, 0, 1, 0, 0 }, counts);
+		Assert.That(states, Is.EqualTo(new[] { "A", "B", "C", "C1", "D" }));
+		Assert.That(counts, Is.EqualTo(new[] { 3, 0, 1, 0, 0 }));
 	}
 
 	[Test]

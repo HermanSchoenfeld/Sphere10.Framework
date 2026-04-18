@@ -11,8 +11,6 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 public class BitVectorTests {
@@ -29,7 +27,7 @@ public class BitVectorTests {
 		var insert = Enumerable.Repeat(false, 20).ToArray();
 		list.InsertRange(20, insert);
 
-		ClassicAssert.AreEqual(inputs.Concat(insert), list);
+		Assert.That(list, Is.EqualTo(inputs.Concat(insert)));
 	}
 
 	[Test]
@@ -40,12 +38,12 @@ public class BitVectorTests {
 
 		var inputs = random.NextBools(16);
 		list.AddRange(inputs);
-		ClassicAssert.AreEqual(inputs, list);
+		Assert.That(list, Is.EqualTo(inputs));
 
 		var range = list.ReadRange(9, 7)
 			.ToList();
 
-		ClassicAssert.AreEqual(inputs[9..], range);
+		Assert.That(range, Is.EqualTo(inputs[9..]));
 	}
 
 	[Test]
@@ -57,8 +55,8 @@ public class BitVectorTests {
 		var inputs = new[] { false, false, false, false, false, false, false, false, true };
 		list.AddRange(inputs);
 
-		ClassicAssert.AreEqual(new[] { 8, 8, 8 }, list.IndexOfRange(new[] { true, true, true }));
-		ClassicAssert.AreEqual(new[] { 7 }, list.IndexOfRange(new[] { false }));
+		Assert.That(list.IndexOfRange(new[] { true, true, true }), Is.EqualTo(new[] { 8, 8, 8 }));
+		Assert.That(list.IndexOfRange(new[] { false }), Is.EqualTo(new[] { 7 }));
 	}
 
 	[Test]
@@ -70,11 +68,11 @@ public class BitVectorTests {
 
 		list.AddRange(inputs);
 		list.RemoveRange(8, 1);
-		ClassicAssert.AreEqual(8, list.Count);
-		ClassicAssert.AreEqual(inputs[..^1], list);
+		Assert.That(list.Count, Is.EqualTo(8));
+		Assert.That(list, Is.EqualTo(inputs[..^1]));
 
 		list.RemoveRange(0, list.Count);
-		ClassicAssert.AreEqual(0, list.Count);
+		Assert.That(list.Count, Is.EqualTo(0));
 	}
 
 	[Test]
@@ -93,7 +91,7 @@ public class BitVectorTests {
 		list.UpdateRange(0, update);
 		expected.UpdateRange(0, update);
 
-		ClassicAssert.AreEqual(expected, list);
+		Assert.That(list, Is.EqualTo(expected));
 
 		int randomIndex = random.Next(0, (int)list.Count - 1);
 		var randomUpdate = random.NextBools((int)list.Count - randomIndex);
@@ -101,7 +99,7 @@ public class BitVectorTests {
 		list.UpdateRange(randomIndex, randomUpdate);
 		expected.UpdateRange(randomIndex, randomUpdate);
 
-		ClassicAssert.AreEqual(expected, list);
+		Assert.That(list, Is.EqualTo(expected));
 	}
 
 	[Test]

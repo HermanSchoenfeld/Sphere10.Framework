@@ -8,8 +8,6 @@
 
 using System;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -24,7 +22,7 @@ public class WOTSSharpTests {
 		var wots = new WOTSSharp(w, optimized);
 		var digest = Tools.Array.Gen<byte>(wots.Config.DigestSize, 0);
 		var key = wots.GenerateKeys();
-		ClassicAssert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
+		Assert.That(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest), Is.True);
 	}
 
 	[Test]
@@ -36,7 +34,7 @@ public class WOTSSharpTests {
 		var wots = new WOTSSharp(w, optimized);
 		var digest = Tools.Array.Gen<byte>(wots.Config.DigestSize, 1);
 		var key = wots.GenerateKeys();
-		ClassicAssert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
+		Assert.That(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest), Is.True);
 	}
 
 	[Test]
@@ -49,7 +47,7 @@ public class WOTSSharpTests {
 		var key = wots.GenerateKeys();
 		var message = System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = wots.Sign(key.PrivateKey, message);
-		ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+		Assert.That(wots.Verify(sig, key.PublicKey, message), Is.True);
 	}
 
 	[Test]
@@ -64,7 +62,7 @@ public class WOTSSharpTests {
 		var sig = wots.Sign(key.PrivateKey, message);
 		unchecked {
 			sig[0, 0] = (byte)(sig[0, 0] + 1);
-			ClassicAssert.IsFalse(wots.Verify(sig, key.PublicKey, message));
+			Assert.That(wots.Verify(sig, key.PublicKey, message), Is.False);
 		}
 	}
 
@@ -81,7 +79,7 @@ public class WOTSSharpTests {
 		for (var i = 0; i < TestRounds; i++) {
 			var message = RNG.NextBytes(RNG.Next(0, 100));
 			var sig = wots.Sign(key.PrivateKey, message);
-			ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+			Assert.That(wots.Verify(sig, key.PublicKey, message), Is.True);
 
 			// flip a random byte
 			var row = RNG.Next(0, sig.GetLength(0));
@@ -89,7 +87,7 @@ public class WOTSSharpTests {
 			unchecked {
 				sig[row, col] += 1;
 			}
-			ClassicAssert.IsFalse(wots.Verify(sig, key.PublicKey, message));
+			Assert.That(wots.Verify(sig, key.PublicKey, message), Is.False);
 		}
 	}
 

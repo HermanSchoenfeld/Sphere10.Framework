@@ -11,8 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -29,11 +27,11 @@ public class ProducerConsumerQueueTest {
 	public async Task Simple() {
 		using var queue = new ProducerConsumerQueue<string>(10);
 		await queue.PutAsync("Hello World!");
-		ClassicAssert.AreEqual(1, queue.Count);
+		Assert.That(queue.Count, Is.EqualTo(1));
 		var r = await queue.TakeManyAsync(1);
-		ClassicAssert.AreEqual(0, queue.Count);
-		ClassicAssert.AreEqual(1, r.Length);
-		ClassicAssert.AreEqual("Hello World!", r[0]);
+		Assert.That(queue.Count, Is.EqualTo(0));
+		Assert.That(r.Length, Is.EqualTo(1));
+		Assert.That(r[0], Is.EqualTo("Hello World!"));
 	}
 
 	[Test]
@@ -87,7 +85,7 @@ public class ProducerConsumerQueueTest {
 
 		await Task.WhenAll(ProduceTask(), ConsumeTask());
 		//Tools.NUnit.Print(result);
-		ClassicAssert.AreEqual(expected, result);
+		Assert.That(result, Is.EqualTo(expected));
 	}
 
 
@@ -170,7 +168,7 @@ public class ProducerConsumerQueueTest {
 
 		await Task.WhenAll(ProduceTask(), ConsumeTask()).WithTimeout(TimeSpan.FromSeconds(TimeoutSEC));
 		var resultArr = result.OrderBy(x => x).ToArray();
-		ClassicAssert.AreEqual(expected, resultArr);
+		Assert.That(resultArr, Is.EqualTo(expected));
 	}
 
 

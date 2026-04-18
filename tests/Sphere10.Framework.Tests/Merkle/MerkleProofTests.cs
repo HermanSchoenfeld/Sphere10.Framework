@@ -11,8 +11,6 @@ using NUnit.Framework;
 using System.Linq;
 using System.Text;
 using Sphere10.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Merkle;
 
 [TestFixture]
@@ -29,16 +27,16 @@ public class MerkleProofTests {
 			for (var i = 0; i < tree.Leafs.Count; i++) {
 				var proof = tree.GenerateExistenceProof(i).ToArray();
 				var verify = MerkleMath.VerifyExistenceProof(tree.HashAlgorithm, tree.Root, tree.Size, i, Encoding.ASCII.GetBytes(elems[i]), proof);
-				ClassicAssert.IsTrue(verify);
+				Assert.That(verify, Is.True);
 			}
 		}
 
 		// Verify last proof items 
 		var lastProof = tree.GenerateExistenceProof(tree.Leafs.Count - 1).ToArray();
-		ClassicAssert.AreEqual(3, lastProof.Length);
-		ClassicAssert.AreEqual(lastProof[0], Encoding.ASCII.GetBytes("Y"));
-		ClassicAssert.AreEqual(lastProof[1], Encoding.ASCII.GetBytes("QRSTUVWX"));
-		ClassicAssert.AreEqual(lastProof[2], Encoding.ASCII.GetBytes("ABCDEFGHIJKLMNOP"));
+		Assert.That(lastProof.Length, Is.EqualTo(3));
+		Assert.That(Encoding.ASCII.GetBytes("Y"), Is.EqualTo(lastProof[0]));
+		Assert.That(Encoding.ASCII.GetBytes("QRSTUVWX"), Is.EqualTo(lastProof[1]));
+		Assert.That(Encoding.ASCII.GetBytes("ABCDEFGHIJKLMNOP"), Is.EqualTo(lastProof[2]));
 	}
 
 
@@ -62,7 +60,7 @@ public class MerkleProofTests {
 				var consistencyProof = newTree.GenerateConsistencyProof(i);
 				var verifyProof = MerkleMath.VerifyConsistencyProof(chf, oldTree.Root, i, newTree.Root, i + (j - i), consistencyProof);
 
-				ClassicAssert.IsTrue(verifyProof);
+				Assert.That(verifyProof, Is.True);
 			}
 
 		}

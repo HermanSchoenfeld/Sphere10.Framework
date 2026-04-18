@@ -14,7 +14,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using NUnit.Framework.Legacy;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
@@ -94,7 +93,7 @@ public class ECDSATests {
 		var publicKey = ecdsa.DerivePublicKey(privateKey);
 		var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = ecdsa.Sign(privateKey, message);
-		ClassicAssert.IsTrue(ecdsa.Verify(sig, message, publicKey));
+		Assert.That(ecdsa.Verify(sig, message, publicKey), Is.True);
 	}
 
 	[Test]
@@ -107,7 +106,7 @@ public class ECDSATests {
 		var secret = new byte[] { 0, 1, 2, 3, 4 }; // deterministic secret
 		var privateKey = ecdsa.GeneratePrivateKey(secret);
 		var publicKey = ecdsa.DerivePublicKey(privateKey);
-		ClassicAssert.IsTrue(ecdsa.IsPublicKey(privateKey, publicKey.RawBytes));
+		Assert.That(ecdsa.IsPublicKey(privateKey, publicKey.RawBytes), Is.True);
 	}
 
 	[Test]
@@ -118,8 +117,8 @@ public class ECDSATests {
 	public void VerifyThatTryParsePrivateKeyPassForGoodKeys(ECDSAKeyType keyType) {
 		var ecdsa = new ECDSA(keyType);
 		var privateKeyBytes = ecdsa.GeneratePrivateKey().RawBytes;
-		ClassicAssert.IsTrue(ecdsa.TryParsePrivateKey(privateKeyBytes, out var privateKey));
-		ClassicAssert.AreEqual(privateKeyBytes, privateKey.RawBytes);
+		Assert.That(ecdsa.TryParsePrivateKey(privateKeyBytes, out var privateKey), Is.True);
+		Assert.That(privateKey.RawBytes, Is.EqualTo(privateKeyBytes));
 	}
 
 	[Test]
@@ -133,7 +132,7 @@ public class ECDSATests {
 	[TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECT283K1)]
 	public void VerifyThatTryParsePrivateKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType) {
 		var ecdsa = new ECDSA(keyType);
-		ClassicAssert.IsFalse(ecdsa.TryParsePrivateKey(badRawKey, out _));
+		Assert.That(ecdsa.TryParsePrivateKey(badRawKey, out _), Is.False);
 	}
 
 	[Test]
@@ -144,9 +143,9 @@ public class ECDSATests {
 	public void VerifyThatTryParsePrivateKeyFailsForValuesNotInBetweenZeroToCurveOrderMinusOne(ECDSAKeyType keyType) {
 		var ecdsa = new ECDSA(keyType);
 		var negativeOne = BigInteger.One.Negate();
-		ClassicAssert.IsFalse(ecdsa.TryParsePrivateKey(negativeOne.ToByteArray(), out _));
+		Assert.That(ecdsa.TryParsePrivateKey(negativeOne.ToByteArray(), out _), Is.False);
 		var order = keyType.GetAttribute<KeyTypeOrderAttribute>().Value;
-		ClassicAssert.IsFalse(ecdsa.TryParsePrivateKey(BigIntegerUtils.BigIntegerToBytes(order.Add(BigInteger.One), ecdsa.KeySize), out _));
+		Assert.That(ecdsa.TryParsePrivateKey(BigIntegerUtils.BigIntegerToBytes(order.Add(BigInteger.One), ecdsa.KeySize), out _), Is.False);
 	}
 
 	[Test]
@@ -158,8 +157,8 @@ public class ECDSATests {
 		var ecdsa = new ECDSA(keyType);
 		var privateKey = ecdsa.GeneratePrivateKey();
 		var publicKeyBytes = ecdsa.DerivePublicKey(privateKey).RawBytes;
-		ClassicAssert.IsTrue(ecdsa.TryParsePublicKey(publicKeyBytes, out var publicKey));
-		ClassicAssert.AreEqual(publicKeyBytes, publicKey.RawBytes);
+		Assert.That(ecdsa.TryParsePublicKey(publicKeyBytes, out var publicKey), Is.True);
+		Assert.That(publicKey.RawBytes, Is.EqualTo(publicKeyBytes));
 	}
 
 	[Test]
@@ -173,7 +172,7 @@ public class ECDSATests {
 	[TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECT283K1)]
 	public void VerifyThatTryParsePublicKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType) {
 		var ecdsa = new ECDSA(keyType);
-		ClassicAssert.IsFalse(ecdsa.TryParsePublicKey(badRawKey, out _));
+		Assert.That(ecdsa.TryParsePublicKey(badRawKey, out _), Is.False);
 	}
 
 	//SECT283K1 excluded as it is a binary curve
@@ -184,9 +183,9 @@ public class ECDSATests {
 	public void VerifyThatTryParsePublicKeyFailsForValuesNotInBetweenZeroToPrimeFieldMinusOne(ECDSAKeyType keyType) {
 		var ecdsa = new ECDSA(keyType);
 		var negativeOne = BigInteger.One.Negate();
-		ClassicAssert.IsFalse(ecdsa.TryParsePublicKey(negativeOne.ToByteArray(), out _));
+		Assert.That(ecdsa.TryParsePublicKey(negativeOne.ToByteArray(), out _), Is.False);
 		var primeField = keyType.GetAttribute<KeyTypePrimeFieldAttribute>().Value;
-		ClassicAssert.IsFalse(ecdsa.TryParsePublicKey(BigIntegerUtils.BigIntegerToBytes(primeField, ecdsa.CompressedPublicKeySize), out _));
+		Assert.That(ecdsa.TryParsePublicKey(BigIntegerUtils.BigIntegerToBytes(primeField, ecdsa.CompressedPublicKeySize), out _), Is.False);
 	}
 
 	[Test, Repeat(64)]
@@ -224,15 +223,15 @@ public class ECDSATests {
 		// normal ECDSA should be able to verify both the OriginalSig and CanonicalSig
 		ecdsaAllowMalleability.Init(false, publicKey.Parameters.Value);
 		ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
-		ClassicAssert.IsTrue(ecdsaAllowMalleability.VerifySignature(ecdsaAllowMalleabilitySig));
+		Assert.That(ecdsaAllowMalleability.VerifySignature(ecdsaAllowMalleabilitySig), Is.True);
 
 		ecdsaAllowMalleability.Init(false, publicKey.Parameters.Value);
 		ecdsaAllowMalleability.BlockUpdate(messageDigest, 0, messageDigest.Length);
-		ClassicAssert.IsTrue(ecdsaAllowMalleability.VerifySignature(canonicalSig));
+		Assert.That(ecdsaAllowMalleability.VerifySignature(canonicalSig), Is.True);
 
 		// our LowS ECDSA should be able to verify only the CanonicalSig
-		ClassicAssert.IsFalse(ecdsaNoMalleability.VerifyDigest(ecdsaAllowMalleabilitySig, messageDigest, publicKey));
-		ClassicAssert.IsTrue(ecdsaNoMalleability.VerifyDigest(canonicalSig, messageDigest, publicKey));
+		Assert.That(ecdsaNoMalleability.VerifyDigest(ecdsaAllowMalleabilitySig, messageDigest, publicKey), Is.False);
+		Assert.That(ecdsaNoMalleability.VerifyDigest(canonicalSig, messageDigest, publicKey), Is.True);
 	}
 
 	[Test]
@@ -246,14 +245,14 @@ public class ECDSATests {
 	[TestCase("302402107777777777777777777777777777777702108777777777777777777777777777777701")]
 	public void TestSignatureMalleability_Invalid_Strict_DER(string badDerSig) {
 		var invalidBip66Der = badDerSig.ToHexByteArray();
-		ClassicAssert.IsFalse(CustomDsaEncoding.IsValidSignatureEncoding(invalidBip66Der));
+		Assert.That(CustomDsaEncoding.IsValidSignatureEncoding(invalidBip66Der), Is.False);
 	}
 
 	[Test]
 	[TestCase("302502107777777777777777777777777777777702110087777777777777777777777777777777")]
 	public void TestSignatureMalleability_Valid_Strict_DER(string goodDerSig) {
 		var validBip66Der = goodDerSig.ToHexByteArray();
-		ClassicAssert.IsTrue(CustomDsaEncoding.IsValidSignatureEncoding(validBip66Der));
+		Assert.That(CustomDsaEncoding.IsValidSignatureEncoding(validBip66Der), Is.True);
 	}
 }
 

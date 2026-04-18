@@ -8,8 +8,6 @@
 
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [Parallelizable]
@@ -86,8 +84,8 @@ public class BijectiveDictionaryTests {
 		dictionary.Bijection[1] = "one updated";
 
 		Assert.That(dictionary.Count, Is.EqualTo(1));
-		ClassicAssert.AreEqual(dictionary.Keys, new [] { "one updated" });
-		ClassicAssert.AreEqual(dictionary.Values, new [] { 1 });
+		Assert.That(new [] { "one updated" }, Is.EqualTo(dictionary.Keys));
+		Assert.That(new [] { 1 }, Is.EqualTo(dictionary.Values));
 	}
 
 	[Test]

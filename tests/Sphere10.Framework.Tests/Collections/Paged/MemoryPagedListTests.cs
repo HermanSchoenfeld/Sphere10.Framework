@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -26,19 +24,19 @@ public class MemoryPagedListTests {
 		using (var collection = new MemoryPagedList<int>(pageSize, 1 * pageSize, itemSize)) {
 			collection.Add(10);
 			// Check page
-			ClassicAssert.AreEqual(1, collection.Pages.Count());
-			ClassicAssert.AreEqual(0, collection.Pages[0].Number);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[0].MaxSize);
-			ClassicAssert.AreEqual(0, collection.Pages[0].StartIndex);
-			ClassicAssert.AreEqual(1, collection.Pages[0].Count);
-			ClassicAssert.AreEqual(0, collection.Pages[0].EndIndex);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[0].Size);
-			ClassicAssert.IsTrue(collection.Pages[0].Dirty);
+			Assert.That(collection.Pages.Count(), Is.EqualTo(1));
+			Assert.That(collection.Pages[0].Number, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].MaxSize, Is.EqualTo(pageSize));
+			Assert.That(collection.Pages[0].StartIndex, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].Count, Is.EqualTo(1));
+			Assert.That(collection.Pages[0].EndIndex, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].Size, Is.EqualTo(pageSize));
+			Assert.That(collection.Pages[0].Dirty, Is.True);
 
 			// Check value
-			ClassicAssert.AreEqual(10, collection[0]);
-			ClassicAssert.AreEqual(1, collection.Count);
-			ClassicAssert.AreEqual(1 * itemSize, collection.CalculateTotalSize());
+			Assert.That(collection[0], Is.EqualTo(10));
+			Assert.That(collection.Count, Is.EqualTo(1));
+			Assert.That(collection.CalculateTotalSize(), Is.EqualTo(1 * itemSize));
 		}
 	}
 
@@ -50,47 +48,47 @@ public class MemoryPagedListTests {
 			collection.Add(10);
 
 			// Check Page 1
-			ClassicAssert.AreEqual(1, collection.Pages.Count());
-			ClassicAssert.IsTrue(collection.Pages[0].State == PageState.Loaded);
-			ClassicAssert.AreEqual(0, collection.Pages[0].Number);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[0].MaxSize);
-			ClassicAssert.AreEqual(0, collection.Pages[0].StartIndex);
-			ClassicAssert.AreEqual(1, collection.Pages[0].Count);
-			ClassicAssert.AreEqual(0, collection.Pages[0].EndIndex);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[0].Size);
-			ClassicAssert.IsTrue(collection.Pages[0].Dirty);
+			Assert.That(collection.Pages.Count(), Is.EqualTo(1));
+			Assert.That(collection.Pages[0].State == PageState.Loaded, Is.True);
+			Assert.That(collection.Pages[0].Number, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].MaxSize, Is.EqualTo(pageSize));
+			Assert.That(collection.Pages[0].StartIndex, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].Count, Is.EqualTo(1));
+			Assert.That(collection.Pages[0].EndIndex, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].Size, Is.EqualTo(pageSize));
+			Assert.That(collection.Pages[0].Dirty, Is.True);
 
 			// Add new page
 			collection.Add(20);
 
 			// Check pages 1 & 2
-			ClassicAssert.AreEqual(2, collection.Pages.Count());
-			ClassicAssert.IsTrue(collection.Pages[0].State == PageState.Unloaded);
-			ClassicAssert.AreEqual(0, collection.Pages[0].Number);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[0].MaxSize);
-			ClassicAssert.AreEqual(0, collection.Pages[0].StartIndex);
-			ClassicAssert.AreEqual(1, collection.Pages[0].Count);
-			ClassicAssert.AreEqual(0, collection.Pages[0].EndIndex);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[0].Size);
+			Assert.That(collection.Pages.Count(), Is.EqualTo(2));
+			Assert.That(collection.Pages[0].State == PageState.Unloaded, Is.True);
+			Assert.That(collection.Pages[0].Number, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].MaxSize, Is.EqualTo(pageSize));
+			Assert.That(collection.Pages[0].StartIndex, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].Count, Is.EqualTo(1));
+			Assert.That(collection.Pages[0].EndIndex, Is.EqualTo(0));
+			Assert.That(collection.Pages[0].Size, Is.EqualTo(pageSize));
 
 
-			ClassicAssert.IsTrue(collection.Pages[1].State == PageState.Loaded);
-			ClassicAssert.AreEqual(1, collection.Pages[1].Number);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[1].MaxSize);
-			ClassicAssert.AreEqual(1, collection.Pages[1].StartIndex);
-			ClassicAssert.AreEqual(1, collection.Pages[1].Count);
-			ClassicAssert.AreEqual(1, collection.Pages[1].EndIndex);
-			ClassicAssert.AreEqual(pageSize, collection.Pages[1].Size);
-			ClassicAssert.IsTrue(collection.Pages[1].Dirty);
+			Assert.That(collection.Pages[1].State == PageState.Loaded, Is.True);
+			Assert.That(collection.Pages[1].Number, Is.EqualTo(1));
+			Assert.That(collection.Pages[1].MaxSize, Is.EqualTo(pageSize));
+			Assert.That(collection.Pages[1].StartIndex, Is.EqualTo(1));
+			Assert.That(collection.Pages[1].Count, Is.EqualTo(1));
+			Assert.That(collection.Pages[1].EndIndex, Is.EqualTo(1));
+			Assert.That(collection.Pages[1].Size, Is.EqualTo(pageSize));
+			Assert.That(collection.Pages[1].Dirty, Is.True);
 
 			// Check values
-			ClassicAssert.AreEqual(10, collection[0]);
-			ClassicAssert.AreEqual(20, collection[1]);
+			Assert.That(collection[0], Is.EqualTo(10));
+			Assert.That(collection[1], Is.EqualTo(20));
 
 			// Check size
-			ClassicAssert.AreEqual(collection.Pages[0].Size, itemSize);
-			ClassicAssert.AreEqual(collection.Pages[1].Size, itemSize);
-			ClassicAssert.AreEqual(collection.CalculateTotalSize(), 2 * itemSize);
+			Assert.That(itemSize, Is.EqualTo(collection.Pages[0].Size));
+			Assert.That(itemSize, Is.EqualTo(collection.Pages[1].Size));
+			Assert.That(2 * itemSize, Is.EqualTo(collection.CalculateTotalSize()));
 		}
 	}
 
@@ -106,127 +104,127 @@ public class MemoryPagedListTests {
 			collection.PageDeleted += (o, page) => deletes++;
 			collection.PageLoaded += (o, page) => loads++;
 			collection.PageUnloaded += (o, page) => unloads++;
-			ClassicAssert.AreEqual(0, created);
-			ClassicAssert.AreEqual(0, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 0);
-			ClassicAssert.AreEqual(collection.Pages.Count, 0);
+			Assert.That(created, Is.EqualTo(0));
+			Assert.That(loads, Is.EqualTo(0));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(0, Is.EqualTo(collection.Count));
+			Assert.That(0, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, Array.Empty<long>());
 
 			collection.Add("page1");
-			ClassicAssert.AreEqual(1, created);
-			ClassicAssert.AreEqual(1, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 1);
-			ClassicAssert.AreEqual(collection.Pages.Count, 1);
+			Assert.That(created, Is.EqualTo(1));
+			Assert.That(loads, Is.EqualTo(1));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(1, Is.EqualTo(collection.Count));
+			Assert.That(1, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 0);
 
 			collection.Add("page1.1");
-			ClassicAssert.AreEqual(1, created);
-			ClassicAssert.AreEqual(1, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 2);
-			ClassicAssert.AreEqual(collection.Pages.Count, 1);
+			Assert.That(created, Is.EqualTo(1));
+			Assert.That(loads, Is.EqualTo(1));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(2, Is.EqualTo(collection.Count));
+			Assert.That(1, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 0);
 
 			collection.Add("page2");
-			ClassicAssert.AreEqual(2, created);
-			ClassicAssert.AreEqual(2, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 3);
-			ClassicAssert.AreEqual(collection.Pages.Count, 2);
+			Assert.That(created, Is.EqualTo(2));
+			Assert.That(loads, Is.EqualTo(2));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(3, Is.EqualTo(collection.Count));
+			Assert.That(2, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 0, 1);
 
 			collection.Add("page2.2");
-			ClassicAssert.AreEqual(2, created);
-			ClassicAssert.AreEqual(2, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 4);
-			ClassicAssert.AreEqual(collection.Pages.Count, 2);
+			Assert.That(created, Is.EqualTo(2));
+			Assert.That(loads, Is.EqualTo(2));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(4, Is.EqualTo(collection.Count));
+			Assert.That(2, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 0, 1);
 
 			// should be two pages open
 			collection.Add("page3");
-			ClassicAssert.AreEqual(3, created);
-			ClassicAssert.AreEqual(3, loads);
-			ClassicAssert.AreEqual(1, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 3);
+			Assert.That(created, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(3));
+			Assert.That(unloads, Is.EqualTo(1));
+			Assert.That(3, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 1, 2);
 
 			collection.Add("page3.3");
-			ClassicAssert.AreEqual(3, created);
-			ClassicAssert.AreEqual(3, loads);
-			ClassicAssert.AreEqual(1, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 3);
+			Assert.That(created, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(3));
+			Assert.That(unloads, Is.EqualTo(1));
+			Assert.That(3, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 1, 2);
 
 			// read from page[2] a few times to increase demand ticker
 			var xxx = collection[5] + collection[5];
 
 			collection.Add("page4");
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(4, loads);
-			ClassicAssert.AreEqual(2, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(4));
+			Assert.That(unloads, Is.EqualTo(2));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
 			AssertEx.HasLoadedPages(collection, 2, 3);
 
 			// read from page[3] several times to increase demand ticker
 			xxx = collection[6] + collection[6] + collection[6] + collection[6] + collection[6] + collection[6] + collection[6] + collection[6];
 
 			var item = collection[0];
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(5, loads);
-			ClassicAssert.AreEqual(3, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
-			ClassicAssert.AreEqual(item, "page1");
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(5));
+			Assert.That(unloads, Is.EqualTo(3));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
+			Assert.That("page1", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 3, 0);
 
 			item = collection[1];
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(5, loads);
-			ClassicAssert.AreEqual(3, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
-			ClassicAssert.AreEqual(item, "page1.1");
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(5));
+			Assert.That(unloads, Is.EqualTo(3));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
+			Assert.That("page1.1", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 3, 0);
 
 			item = collection[2];
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(6, loads);
-			ClassicAssert.AreEqual(4, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
-			ClassicAssert.AreEqual(item, "page2");
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(6));
+			Assert.That(unloads, Is.EqualTo(4));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
+			Assert.That("page2", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 3, 1);
 
 			item = collection[3];
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(6, loads);
-			ClassicAssert.AreEqual(4, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
-			ClassicAssert.AreEqual(item, "page2.2");
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(6));
+			Assert.That(unloads, Is.EqualTo(4));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
+			Assert.That("page2.2", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 3, 1);
 
 			item = collection[4];
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(7, loads);
-			ClassicAssert.AreEqual(5, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
-			ClassicAssert.AreEqual(item, "page3");
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(7));
+			Assert.That(unloads, Is.EqualTo(5));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
+			Assert.That("page3", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 3, 2);
 
 			item = collection[5];
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(7, loads);
-			ClassicAssert.AreEqual(5, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
-			ClassicAssert.AreEqual(item, "page3.3");
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(7));
+			Assert.That(unloads, Is.EqualTo(5));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
+			Assert.That("page3.3", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 3, 2);
 
 			item = collection[6];
-			ClassicAssert.AreEqual(4, created);
-			ClassicAssert.AreEqual(7, loads);
-			ClassicAssert.AreEqual(5, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count, 4);
-			ClassicAssert.AreEqual(item, "page4");
+			Assert.That(created, Is.EqualTo(4));
+			Assert.That(loads, Is.EqualTo(7));
+			Assert.That(unloads, Is.EqualTo(5));
+			Assert.That(4, Is.EqualTo(collection.Pages.Count));
+			Assert.That("page4", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 3, 2);
 
 			// Remove an illegal subrange
@@ -234,10 +232,10 @@ public class MemoryPagedListTests {
 
 			// remove some items
 			collection.RemoveRange(3, 4);
-			ClassicAssert.AreEqual(collection.Pages.Count, 2);
-			ClassicAssert.AreEqual(collection.Count, 3);
-			ClassicAssert.AreEqual(collection.Last(), "page2");
-			ClassicAssert.AreEqual(2, deletes);
+			Assert.That(2, Is.EqualTo(collection.Pages.Count));
+			Assert.That(3, Is.EqualTo(collection.Count));
+			Assert.That("page2", Is.EqualTo(collection.Last()));
+			Assert.That(deletes, Is.EqualTo(2));
 		}
 
 	}
@@ -253,85 +251,85 @@ public class MemoryPagedListTests {
 			collection.PageDeleted += (o, page) => deletes++;
 			collection.PageLoaded += (o, page) => loads++;
 			collection.PageUnloaded += (o, page) => unloads++;
-			ClassicAssert.AreEqual(0, created);
-			ClassicAssert.AreEqual(0, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 0);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 0);
+			Assert.That(created, Is.EqualTo(0));
+			Assert.That(loads, Is.EqualTo(0));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(0, Is.EqualTo(collection.Count));
+			Assert.That(0, Is.EqualTo(collection.Pages.Count()));
 			AssertEx.HasLoadedPages(collection, Array.Empty<long>());
 
 			// page 1
 			collection.Add("01");
-			ClassicAssert.AreEqual(1, created);
-			ClassicAssert.AreEqual(1, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 1);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 1);
-			ClassicAssert.AreEqual(collection.Pages[0].Size, 2);
+			Assert.That(created, Is.EqualTo(1));
+			Assert.That(loads, Is.EqualTo(1));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(1, Is.EqualTo(collection.Count));
+			Assert.That(1, Is.EqualTo(collection.Pages.Count()));
+			Assert.That(2, Is.EqualTo(collection.Pages[0].Size));
 			AssertEx.HasLoadedPages(collection, 0);
 
 			collection.Add("2");
-			ClassicAssert.AreEqual(1, created);
-			ClassicAssert.AreEqual(1, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 2);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 1);
-			ClassicAssert.AreEqual(collection.Pages[0].Size, 3);
+			Assert.That(created, Is.EqualTo(1));
+			Assert.That(loads, Is.EqualTo(1));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(2, Is.EqualTo(collection.Count));
+			Assert.That(1, Is.EqualTo(collection.Pages.Count()));
+			Assert.That(3, Is.EqualTo(collection.Pages[0].Size));
 			AssertEx.HasLoadedPages(collection, 0);
 
 			// page 2
 			collection.Add("34");
-			ClassicAssert.AreEqual(2, created);
-			ClassicAssert.AreEqual(2, loads);
-			ClassicAssert.AreEqual(0, unloads);
-			ClassicAssert.AreEqual(collection.Count, 3);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 2);
-			ClassicAssert.AreEqual(collection.Pages[1].Size, 2);
+			Assert.That(created, Is.EqualTo(2));
+			Assert.That(loads, Is.EqualTo(2));
+			Assert.That(unloads, Is.EqualTo(0));
+			Assert.That(3, Is.EqualTo(collection.Count));
+			Assert.That(2, Is.EqualTo(collection.Pages.Count()));
+			Assert.That(2, Is.EqualTo(collection.Pages[1].Size));
 			AssertEx.HasLoadedPages(collection, 0, 1);
 			// read this page[1] few times to bump ticker
 			var xxx = collection[2] + collection[2];
 
 			// page 3
 			collection.Add("56");
-			ClassicAssert.AreEqual(3, created);
-			ClassicAssert.AreEqual(3, loads);
-			ClassicAssert.AreEqual(1, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 3);
-			ClassicAssert.AreEqual(collection.Pages[2].Size, 2);
+			Assert.That(created, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(3));
+			Assert.That(unloads, Is.EqualTo(1));
+			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
+			Assert.That(2, Is.EqualTo(collection.Pages[2].Size));
 			AssertEx.HasLoadedPages(collection, 1, 2);
 			// read this page[2] many times to bump ticker up
 			xxx = collection[3] + collection[3] + collection[3] + collection[3];
 
 			var item = collection[0];
-			ClassicAssert.AreEqual(3, created);
-			ClassicAssert.AreEqual(4, loads);
-			ClassicAssert.AreEqual(2, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 3);
-			ClassicAssert.AreEqual(item, "01");
+			Assert.That(created, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(4));
+			Assert.That(unloads, Is.EqualTo(2));
+			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
+			Assert.That("01", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 2, 0);
 
 			item = collection[1];
-			ClassicAssert.AreEqual(3, created);
-			ClassicAssert.AreEqual(4, loads);
-			ClassicAssert.AreEqual(2, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 3);
-			ClassicAssert.AreEqual(item, "2");
+			Assert.That(created, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(4));
+			Assert.That(unloads, Is.EqualTo(2));
+			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
+			Assert.That("2", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 2, 0);
 
 			item = collection[2];
-			ClassicAssert.AreEqual(3, created);
-			ClassicAssert.AreEqual(5, loads);
-			ClassicAssert.AreEqual(3, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 3);
-			ClassicAssert.AreEqual(item, "34");
+			Assert.That(created, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(5));
+			Assert.That(unloads, Is.EqualTo(3));
+			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
+			Assert.That("34", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 2, 1);
 
 			item = collection[3];
-			ClassicAssert.AreEqual(3, created);
-			ClassicAssert.AreEqual(5, loads);
-			ClassicAssert.AreEqual(3, unloads);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 3);
-			ClassicAssert.AreEqual(item, "56");
+			Assert.That(created, Is.EqualTo(3));
+			Assert.That(loads, Is.EqualTo(5));
+			Assert.That(unloads, Is.EqualTo(3));
+			Assert.That(3, Is.EqualTo(collection.Pages.Count()));
+			Assert.That("56", Is.EqualTo(item));
 			AssertEx.HasLoadedPages(collection, 2, 1);
 
 			// Remove an illegal subrange
@@ -339,10 +337,10 @@ public class MemoryPagedListTests {
 
 			// remove some items
 			collection.RemoveRange(1, 3);
-			ClassicAssert.AreEqual(collection.Pages.Count(), 1);
-			ClassicAssert.AreEqual(collection.Count, 1);
-			ClassicAssert.AreEqual(collection[0], "01");
-			ClassicAssert.AreEqual(2, deletes);
+			Assert.That(1, Is.EqualTo(collection.Pages.Count()));
+			Assert.That(1, Is.EqualTo(collection.Count));
+			Assert.That("01", Is.EqualTo(collection[0]));
+			Assert.That(deletes, Is.EqualTo(2));
 		}
 	}
 
@@ -367,34 +365,34 @@ public class MemoryPagedListTests {
 				// ensure lazily loads
 				switch (item.Index) {
 					case 0:
-						ClassicAssert.AreEqual(1, loads.Count);
+						Assert.That(loads.Count, Is.EqualTo(1));
 						break;
 					case 1:
-						ClassicAssert.AreEqual(1, loads.Count);
+						Assert.That(loads.Count, Is.EqualTo(1));
 						break;
 					case 2:
-						ClassicAssert.AreEqual(2, loads.Count);
+						Assert.That(loads.Count, Is.EqualTo(2));
 						break;
 					case 3:
-						ClassicAssert.AreEqual(3, loads.Count);
+						Assert.That(loads.Count, Is.EqualTo(3));
 						break;
 					case 4:
-						ClassicAssert.AreEqual(3, loads.Count);
+						Assert.That(loads.Count, Is.EqualTo(3));
 						break;
 
 				}
 			}
 
-			ClassicAssert.AreEqual(3, loads.Count);
-			ClassicAssert.AreEqual(3, unloads.Count);
+			Assert.That(loads.Count, Is.EqualTo(3));
+			Assert.That(unloads.Count, Is.EqualTo(3));
 
-			ClassicAssert.AreEqual(loads[0], 0);
-			ClassicAssert.AreEqual(loads[1], 1);
-			ClassicAssert.AreEqual(loads[2], 2);
+			Assert.That(0, Is.EqualTo(loads[0]));
+			Assert.That(1, Is.EqualTo(loads[1]));
+			Assert.That(2, Is.EqualTo(loads[2]));
 
-			ClassicAssert.AreEqual(unloads[0], 2);
-			ClassicAssert.AreEqual(unloads[1], 0);
-			ClassicAssert.AreEqual(unloads[2], 1);
+			Assert.That(2, Is.EqualTo(unloads[0]));
+			Assert.That(0, Is.EqualTo(unloads[1]));
+			Assert.That(1, Is.EqualTo(unloads[2]));
 
 		}
 	}
@@ -419,11 +417,11 @@ public class MemoryPagedListTests {
 			collection.Add("01234567890123456789012345678901234567890123456789");
 
 			var pages = collection.Pages.ToArray();
-			ClassicAssert.AreEqual(1, pages.Length);
-			ClassicAssert.AreEqual(0, pages[0].StartIndex);
-			ClassicAssert.AreEqual(0, pages[0].EndIndex);
-			ClassicAssert.AreEqual(1, pages[0].Count);
-			ClassicAssert.AreEqual(100, pages[0].Size);
+			Assert.That(pages.Length, Is.EqualTo(1));
+			Assert.That(pages[0].StartIndex, Is.EqualTo(0));
+			Assert.That(pages[0].EndIndex, Is.EqualTo(0));
+			Assert.That(pages[0].Count, Is.EqualTo(1));
+			Assert.That(pages[0].Size, Is.EqualTo(100));
 		}
 	}
 
@@ -437,17 +435,17 @@ public class MemoryPagedListTests {
 			collection.Add("0123456789");
 
 
-			ClassicAssert.AreEqual(5, collection.Count);
+			Assert.That(collection.Count, Is.EqualTo(5));
 			var pages = collection.Pages.ToArray();
-			ClassicAssert.AreEqual(1, pages.Length);
+			Assert.That(pages.Length, Is.EqualTo(1));
 
 			// Page 0
-			ClassicAssert.AreEqual(0, pages[0].Number);
+			Assert.That(pages[0].Number, Is.EqualTo(0));
 
-			ClassicAssert.AreEqual(0, pages[0].StartIndex);
-			ClassicAssert.AreEqual(4, pages[0].EndIndex);
-			ClassicAssert.AreEqual(5, pages[0].Count);
-			ClassicAssert.AreEqual(100, pages[0].Size);
+			Assert.That(pages[0].StartIndex, Is.EqualTo(0));
+			Assert.That(pages[0].EndIndex, Is.EqualTo(4));
+			Assert.That(pages[0].Count, Is.EqualTo(5));
+			Assert.That(pages[0].Size, Is.EqualTo(100));
 		}
 	}
 
@@ -462,29 +460,29 @@ public class MemoryPagedListTests {
 			collection.Add("01234567890123456789012345678901234567890123456789");
 			collection.Add("0123456789012345678901234567890123456789012345678");
 
-			ClassicAssert.AreEqual(2, collection.Count);
+			Assert.That(collection.Count, Is.EqualTo(2));
 			var pages = collection.Pages.ToArray();
-			ClassicAssert.AreEqual(2, pages.Length);
+			Assert.That(pages.Length, Is.EqualTo(2));
 
 			// Page 0
-			ClassicAssert.AreEqual(0, pages[0].Number);
-			ClassicAssert.AreEqual(0, pages[0].StartIndex);
-			ClassicAssert.AreEqual(0, pages[0].EndIndex);
-			ClassicAssert.AreEqual(1, pages[0].Count);
-			ClassicAssert.AreEqual(100, pages[0].Size);
+			Assert.That(pages[0].Number, Is.EqualTo(0));
+			Assert.That(pages[0].StartIndex, Is.EqualTo(0));
+			Assert.That(pages[0].EndIndex, Is.EqualTo(0));
+			Assert.That(pages[0].Count, Is.EqualTo(1));
+			Assert.That(pages[0].Size, Is.EqualTo(100));
 
 			// Page 1
-			ClassicAssert.AreEqual(1, pages[1].Number);
-			ClassicAssert.AreEqual(1, pages[1].StartIndex);
-			ClassicAssert.AreEqual(1, pages[1].EndIndex);
-			ClassicAssert.AreEqual(1, pages[1].Count);
-			ClassicAssert.AreEqual(98, pages[1].Size);
+			Assert.That(pages[1].Number, Is.EqualTo(1));
+			Assert.That(pages[1].StartIndex, Is.EqualTo(1));
+			Assert.That(pages[1].EndIndex, Is.EqualTo(1));
+			Assert.That(pages[1].Count, Is.EqualTo(1));
+			Assert.That(pages[1].Size, Is.EqualTo(98));
 
 			// Page Swaps
-			ClassicAssert.AreEqual(2, pageLoads.Count);
-			ClassicAssert.AreEqual(1, pageUnloads.Count);
+			Assert.That(pageLoads.Count, Is.EqualTo(2));
+			Assert.That(pageUnloads.Count, Is.EqualTo(1));
 
-			ClassicAssert.AreEqual(0, pageUnloads[0]);
+			Assert.That(pageUnloads[0], Is.EqualTo(0));
 		}
 	}
 
@@ -506,37 +504,37 @@ public class MemoryPagedListTests {
 			collection.Add("0123456789");
 			collection.Add("012345678");
 
-			ClassicAssert.AreEqual(10, collection.Count);
+			Assert.That(collection.Count, Is.EqualTo(10));
 			var pages = collection.Pages.ToArray();
-			ClassicAssert.AreEqual(2, pages.Length);
+			Assert.That(pages.Length, Is.EqualTo(2));
 
 			// Page 0
-			ClassicAssert.AreEqual(0, pages[0].Number);
-			ClassicAssert.AreEqual(0, pages[0].StartIndex);
-			ClassicAssert.AreEqual(4, pages[0].EndIndex);
-			ClassicAssert.AreEqual(5, pages[0].Count);
-			ClassicAssert.AreEqual(100, pages[0].Size);
+			Assert.That(pages[0].Number, Is.EqualTo(0));
+			Assert.That(pages[0].StartIndex, Is.EqualTo(0));
+			Assert.That(pages[0].EndIndex, Is.EqualTo(4));
+			Assert.That(pages[0].Count, Is.EqualTo(5));
+			Assert.That(pages[0].Size, Is.EqualTo(100));
 
 			// Page 1
-			ClassicAssert.AreEqual(1, pages[1].Number);
-			ClassicAssert.AreEqual(5, pages[1].StartIndex);
-			ClassicAssert.AreEqual(9, pages[1].EndIndex);
-			ClassicAssert.AreEqual(5, pages[1].Count);
-			ClassicAssert.AreEqual(98, pages[1].Size);
+			Assert.That(pages[1].Number, Is.EqualTo(1));
+			Assert.That(pages[1].StartIndex, Is.EqualTo(5));
+			Assert.That(pages[1].EndIndex, Is.EqualTo(9));
+			Assert.That(pages[1].Count, Is.EqualTo(5));
+			Assert.That(pages[1].Size, Is.EqualTo(98));
 
 
 			// Page Swaps
-			ClassicAssert.AreEqual(2, pageLoads.Count);
-			ClassicAssert.AreEqual(1, pageUnloads.Count);
-			ClassicAssert.AreEqual(0, pageUnloads[0]);
+			Assert.That(pageLoads.Count, Is.EqualTo(2));
+			Assert.That(pageUnloads.Count, Is.EqualTo(1));
+			Assert.That(pageUnloads[0], Is.EqualTo(0));
 		}
 	}
 
 	[Test]
 	public void TestEmpty() {
 		using (var collection = new MemoryPagedList<string>(40, 1 * 40, str => str.Length * sizeof(char))) {
-			ClassicAssert.AreEqual(0, collection.Pages.Count());
-			ClassicAssert.AreEqual(0, collection.Count);
+			Assert.That(collection.Pages.Count(), Is.EqualTo(0));
+			Assert.That(collection.Count, Is.EqualTo(0));
 		}
 	}
 
@@ -546,8 +544,8 @@ public class MemoryPagedListTests {
 			collection.Add("");
 			collection.Add("");
 			collection.Add("");
-			ClassicAssert.AreEqual(1, collection.Pages.Count());
-			ClassicAssert.AreEqual(3, collection.Count);
+			Assert.That(collection.Pages.Count(), Is.EqualTo(1));
+			Assert.That(collection.Count, Is.EqualTo(3));
 		}
 	}
 
@@ -572,7 +570,7 @@ public class MemoryPagedListTests {
 			} catch (Exception error) {
 				thrown = true;
 			}
-			ClassicAssert.IsTrue(thrown, "Exception was not thrown");
+			Assert.That(thrown, Is.True, "Exception was not thrown");
 		}
 	}
 
@@ -588,7 +586,7 @@ public class MemoryPagedListTests {
 			} catch (Exception error) {
 				thrown = true;
 			}
-			ClassicAssert.IsTrue(thrown, "Exception was not thrown");
+			Assert.That(thrown, Is.True, "Exception was not thrown");
 		}
 	}
 
@@ -608,9 +606,9 @@ public class MemoryPagedListTests {
 			foreach (var item in collection) {
 				list.Add(item);
 			}
-			ClassicAssert.AreEqual("10", list[0]);
-			ClassicAssert.AreEqual("20", list[1]);
-			ClassicAssert.AreEqual("30", list[2]);
+			Assert.That(list[0], Is.EqualTo("10"));
+			Assert.That(list[1], Is.EqualTo("20"));
+			Assert.That(list[2], Is.EqualTo("30"));
 
 		}
 	}
@@ -628,7 +626,7 @@ public class MemoryPagedListTests {
 				collection.Add(Tools.Text.GenerateRandomString(Tools.Maths.RNG.Next(0, 100)));
 			}
 
-			ClassicAssert.AreEqual(10000, collection.Count);
+			Assert.That(collection.Count, Is.EqualTo(10000));
 
 			for (var i = 0; i < 300; i++) {
 				var str = collection[Tools.Maths.RNG.Next(0, 10000 - 1)];
@@ -676,7 +674,7 @@ public class MemoryPagedListTests {
 				.Reverse();
 
 			foreach (var val in testCollection) {
-				ClassicAssert.IsTrue(val.StartsWith("1") || val.StartsWith("2"));
+				Assert.That(val.StartsWith("1") || val.StartsWith("2"), Is.True);
 			}
 
 		}

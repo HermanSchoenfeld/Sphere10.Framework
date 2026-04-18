@@ -22,8 +22,6 @@ using Org.BouncyCastle.Utilities.Encoders;
 using System;
 using Sphere10.Framework.CryptoEx.IES;
 using Sphere10.Framework.CryptoEx.PascalCoin;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 /// <remarks>Test for PascalCoin Ecies - PascalCoin Elliptic Curve Integrated Encryption Scheme</remarks>
@@ -155,7 +153,7 @@ public class PascalCoinEciesTest {
 		string decryptedPayload = DoPascalCoinEciesDecrypt(keyType, rawPrivateKey,
 			payloadToDecrypt);
 
-		ClassicAssert.AreEqual(expectedOutput, decryptedPayload, string.Format("Test {0} Failed, Expected {1} but got {2}",
+		Assert.That(decryptedPayload, Is.EqualTo(expectedOutput), string.Format("Test {0} Failed, Expected {1} but got {2}",
 			id + "_Decrypt", expectedOutput,
 			decryptedPayload));
 	}
@@ -168,7 +166,7 @@ public class PascalCoinEciesTest {
 			DoPascalCoinEciesEncrypt(keyType, rawAffineXCoord, rawAffineYCoord,
 				payloadToEncrypt));
 
-		ClassicAssert.AreEqual(payloadToEncrypt, actualOutput, string.Format("Test {0} Failed, Expected {1} but got {2}",
+		Assert.That(actualOutput, Is.EqualTo(payloadToEncrypt), string.Format("Test {0} Failed, Expected {1} but got {2}",
 			id + "_EncryptDecrypt",
 			payloadToEncrypt,
 			actualOutput));

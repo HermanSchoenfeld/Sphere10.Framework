@@ -11,8 +11,6 @@ using System.Linq;
 using NUnit.Framework;
 using System.IO;
 using System.Threading.Tasks;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -43,19 +41,19 @@ public class FileTransactionScopeTests {
 						scope3.EnlistFile(filePath3, 100, 1 * 100);
 
 						// Ensures that scope3 refers to 3 enlisted files
-						ClassicAssert.AreEqual(filePath1, scope3.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath);
-						ClassicAssert.AreEqual(filePath2, scope3.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath);
-						ClassicAssert.AreEqual(filePath3, scope3.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath);
+						Assert.That(scope3.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath1));
+						Assert.That(scope3.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath2));
+						Assert.That(scope3.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath3));
 					}
 					// Ensures that scope3 refers to 3 enlisted files
-					ClassicAssert.AreEqual(filePath1, scope2.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath);
-					ClassicAssert.AreEqual(filePath2, scope2.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath);
-					ClassicAssert.AreEqual(filePath3, scope2.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath);
+					Assert.That(scope2.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath1));
+					Assert.That(scope2.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath2));
+					Assert.That(scope2.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath3));
 				}
 				// Ensures that scope3 refers to 3 enlisted files
-				ClassicAssert.AreEqual(filePath1, scope1.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath);
-				ClassicAssert.AreEqual(filePath2, scope1.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath);
-				ClassicAssert.AreEqual(filePath3, scope1.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath);
+				Assert.That(scope1.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath1));
+				Assert.That(scope1.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath2));
+				Assert.That(scope1.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath, Is.EqualTo(filePath3));
 			}
 		}
 	}
@@ -136,11 +134,11 @@ public class FileTransactionScopeTests {
 
 				using (var scope2 = new FileTransactionScope(txnBaseDir)) {
 					// child scope should get absorb parent transaction automatically
-					ClassicAssert.AreEqual(scope1.Transaction, scope2.Transaction);
-					ClassicAssert.AreEqual(scope1.TransactionFile, scope2.TransactionFile);
+					Assert.That(scope2.Transaction, Is.EqualTo(scope1.Transaction));
+					Assert.That(scope2.TransactionFile, Is.EqualTo(scope1.TransactionFile));
 
 					// Should have enlisted file
-					ClassicAssert.AreEqual(file, scope2.Transaction.EnlistedFiles[0]);
+					Assert.That(scope2.Transaction.EnlistedFiles[0], Is.EqualTo(file));
 					scope2.Transaction.EnlistedFiles[0].AddRange(chunk2);
 
 					// child commit doesn't commit
@@ -153,10 +151,10 @@ public class FileTransactionScopeTests {
 
 				scope1.Commit();
 			}
-			ClassicAssert.AreEqual(original.Concat(chunk1).Concat(chunk2).Concat(chunk3), File.ReadAllBytes(filePath));
+			Assert.That(File.ReadAllBytes(filePath), Is.EqualTo(original.Concat(chunk1).Concat(chunk2).Concat(chunk3)));
 		}
 		// check no transaction files
-		ClassicAssert.IsTrue(!File.Exists(txnFile));
+		Assert.That(!File.Exists(txnFile), Is.True);
 	}
 
 	[Test]
@@ -182,10 +180,10 @@ public class FileTransactionScopeTests {
 
 				using (var scope2 = new FileTransactionScope(txnBaseDir)) {
 					// child scope should get absorb parent transaction automatically
-					ClassicAssert.AreEqual(scope1.Transaction, scope2.Transaction);
+					Assert.That(scope2.Transaction, Is.EqualTo(scope1.Transaction));
 
 					// Should have enlisted file
-					ClassicAssert.AreEqual(file, scope2.Transaction.EnlistedFiles[0]);
+					Assert.That(scope2.Transaction.EnlistedFiles[0], Is.EqualTo(file));
 					scope2.Transaction.EnlistedFiles[0].AddRange(chunk2);
 
 					// child commit doesn't commit
@@ -198,10 +196,10 @@ public class FileTransactionScopeTests {
 
 				scope1.Commit();
 			}
-			ClassicAssert.AreEqual(original, File.ReadAllBytes(filePath));
+			Assert.That(File.ReadAllBytes(filePath), Is.EqualTo(original));
 
 			// check no transaction files
-			ClassicAssert.IsTrue(!File.Exists(txnFile));
+			Assert.That(!File.Exists(txnFile), Is.True);
 		}
 	}
 
@@ -229,16 +227,16 @@ public class FileTransactionScopeTests {
 
 				using (var scope2 = new FileTransactionScope(txnBaseDir)) {
 					// child scope should get absorb parent transaction automatically
-					ClassicAssert.AreEqual(scope1.Transaction, scope2.Transaction);
+					Assert.That(scope2.Transaction, Is.EqualTo(scope1.Transaction));
 
 					// Should have enlisted file
-					ClassicAssert.AreEqual(file, scope2.Transaction.EnlistedFiles[0]);
+					Assert.That(scope2.Transaction.EnlistedFiles[0], Is.EqualTo(file));
 					scope2.Transaction.EnlistedFiles[0].AddRange(chunk2);
 
 					// child commit doesn't commit
 					scope2.Commit();
 					// check no transaction files
-					ClassicAssert.IsTrue(File.Exists(txnFile));
+					Assert.That(File.Exists(txnFile), Is.True);
 				}
 
 				// Add a third chunk
@@ -246,10 +244,10 @@ public class FileTransactionScopeTests {
 
 				scope1.Rollback();
 			}
-			ClassicAssert.AreEqual(original, File.ReadAllBytes(filePath));
+			Assert.That(File.ReadAllBytes(filePath), Is.EqualTo(original));
 
 			// check no transaction files
-			ClassicAssert.IsTrue(!File.Exists(txnFile));
+			Assert.That(!File.Exists(txnFile), Is.True);
 
 		}
 	}
@@ -278,10 +276,10 @@ public class FileTransactionScopeTests {
 
 				using (var scope2 = new FileTransactionScope(txnBaseDir)) {
 					// child scope should get absorb parent transaction automatically
-					ClassicAssert.AreEqual(scope1.Transaction, scope2.Transaction);
+					Assert.That(scope2.Transaction, Is.EqualTo(scope1.Transaction));
 
 					// Should have enlisted file
-					ClassicAssert.AreEqual(file, scope2.Transaction.EnlistedFiles[0]);
+					Assert.That(scope2.Transaction.EnlistedFiles[0], Is.EqualTo(file));
 					scope2.Transaction.EnlistedFiles[0].AddRange(chunk2);
 
 					// child commit doesn't commit
@@ -293,10 +291,10 @@ public class FileTransactionScopeTests {
 
 				scope1.Rollback();
 			}
-			ClassicAssert.AreEqual(original, File.ReadAllBytes(filePath));
+			Assert.That(File.ReadAllBytes(filePath), Is.EqualTo(original));
 
 			// check no transaction files
-			ClassicAssert.IsTrue(!File.Exists(txnFile));
+			Assert.That(!File.Exists(txnFile), Is.True);
 		}
 	}
 

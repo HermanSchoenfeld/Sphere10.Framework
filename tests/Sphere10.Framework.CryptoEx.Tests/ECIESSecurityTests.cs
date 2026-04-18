@@ -10,7 +10,6 @@ using System;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using Sphere10.Framework.CryptoEx.EC;
 
 namespace Sphere10.Framework.CryptoEx.Tests;
@@ -46,8 +45,7 @@ public class ECIESSecurityTests {
         var flipIndex = ciphertext.Length / 2;
         tampered[flipIndex] ^= 0x01;
 
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(tampered, out _, sk),
-            "Decryption must fail when a ciphertext bit is flipped (MAC should catch tampering)");
+        Assert.That(ecdsa.IES.TryDecrypt(tampered, out _, sk), Is.False, "Decryption must fail when a ciphertext bit is flipped (MAC should catch tampering)");
     }
 
     [Test]
@@ -61,8 +59,7 @@ public class ECIESSecurityTests {
 
         // Truncate by removing last byte
         var truncated = ciphertext.AsSpan().Slice(0, ciphertext.Length - 1).ToArray();
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(truncated, out _, sk),
-            "Decryption must fail on truncated ciphertext");
+        Assert.That(ecdsa.IES.TryDecrypt(truncated, out _, sk), Is.False, "Decryption must fail on truncated ciphertext");
     }
 
     [Test]
@@ -79,8 +76,7 @@ public class ECIESSecurityTests {
         Array.Copy(ciphertext, extended, ciphertext.Length);
         extended[^1] = 0x42;
 
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(extended, out _, sk),
-            "Decryption must fail when extra data is appended to ciphertext");
+        Assert.That(ecdsa.IES.TryDecrypt(extended, out _, sk), Is.False, "Decryption must fail when extra data is appended to ciphertext");
     }
 
     [Test]
@@ -89,8 +85,7 @@ public class ECIESSecurityTests {
         var ecdsa = new ECDSA(keyType);
         var sk = ecdsa.GeneratePrivateKey();
         var zeroCiphertext = new byte[128];
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(zeroCiphertext, out _, sk),
-            "Decryption of all-zero ciphertext must fail");
+        Assert.That(ecdsa.IES.TryDecrypt(zeroCiphertext, out _, sk), Is.False, "Decryption of all-zero ciphertext must fail");
     }
 
     [Test]
@@ -99,8 +94,7 @@ public class ECIESSecurityTests {
         var ecdsa = new ECDSA(keyType);
         var sk = ecdsa.GeneratePrivateKey();
         var garbage = RandomBytes(256);
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(garbage, out _, sk),
-            "Decryption of random garbage must fail");
+        Assert.That(ecdsa.IES.TryDecrypt(garbage, out _, sk), Is.False, "Decryption of random garbage must fail");
     }
 
     #endregion
@@ -120,8 +114,7 @@ public class ECIESSecurityTests {
         var message = Encoding.UTF8.GetBytes("Confidential message");
         var ciphertext = ecdsa.IES.Encrypt(message, pkSender);
 
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(ciphertext, out _, skAttacker),
-            "Decryption with a different private key must fail");
+        Assert.That(ecdsa.IES.TryDecrypt(ciphertext, out _, skAttacker), Is.False, "Decryption with a different private key must fail");
     }
 
     #endregion
@@ -139,14 +132,13 @@ public class ECIESSecurityTests {
         var ciphertext1 = ecdsa.IES.Encrypt(message, pk);
         var ciphertext2 = ecdsa.IES.Encrypt(message, pk);
 
-        ClassicAssert.IsFalse(ciphertext1.SequenceEqual(ciphertext2),
-            "Encrypting the same message twice must produce different ciphertexts (ephemeral key must be fresh)");
+        Assert.That(ciphertext1.SequenceEqual(ciphertext2), Is.False, "Encrypting the same message twice must produce different ciphertexts (ephemeral key must be fresh)");
 
         // Both must still decrypt correctly
-        ClassicAssert.IsTrue(ecdsa.IES.TryDecrypt(ciphertext1, out var dec1, sk));
-        ClassicAssert.IsTrue(ecdsa.IES.TryDecrypt(ciphertext2, out var dec2, sk));
-        ClassicAssert.IsTrue(message.SequenceEqual(dec1));
-        ClassicAssert.IsTrue(message.SequenceEqual(dec2));
+        Assert.That(ecdsa.IES.TryDecrypt(ciphertext1, out var dec1, sk), Is.True);
+        Assert.That(ecdsa.IES.TryDecrypt(ciphertext2, out var dec2, sk), Is.True);
+        Assert.That(message.SequenceEqual(dec1), Is.True);
+        Assert.That(message.SequenceEqual(dec2), Is.True);
     }
 
     #endregion
@@ -172,10 +164,8 @@ public class ECIESSecurityTests {
         var message = RandomBytes(messageSize);
 
         var ciphertext = ecdsa.IES.Encrypt(message, pk);
-        ClassicAssert.IsTrue(ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, sk),
-            $"Decryption failed for message size {messageSize}");
-        ClassicAssert.IsTrue(message.SequenceEqual(decrypted),
-            $"Decrypted message differs from original for size {messageSize}");
+        Assert.That(ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, sk), Is.True, $"Decryption failed for message size {messageSize}");
+        Assert.That(message.SequenceEqual(decrypted), Is.True, $"Decrypted message differs from original for size {messageSize}");
     }
 
     [Test]
@@ -189,10 +179,8 @@ public class ECIESSecurityTests {
         foreach (var size in new[] { 16, 32, 48, 64, 128 }) {
             var message = RandomBytes(size);
             var ciphertext = ecdsa.IES.Encrypt(message, pk);
-            ClassicAssert.IsTrue(ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, sk),
-                $"Decryption failed at block-aligned size {size}");
-            ClassicAssert.IsTrue(message.SequenceEqual(decrypted),
-                $"Decrypted message mismatch at block-aligned size {size}");
+            Assert.That(ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, sk), Is.True, $"Decryption failed at block-aligned size {size}");
+            Assert.That(message.SequenceEqual(decrypted), Is.True, $"Decrypted message mismatch at block-aligned size {size}");
         }
     }
 
@@ -217,8 +205,7 @@ public class ECIESSecurityTests {
         Array.Copy(ct1, 0, spliced, 0, half);
         Array.Copy(ct2, half, spliced, half, minLen - half);
 
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(spliced, out _, sk),
-            "Spliced ciphertext from two different encryptions must fail decryption");
+        Assert.That(ecdsa.IES.TryDecrypt(spliced, out _, sk), Is.False, "Spliced ciphertext from two different encryptions must fail decryption");
     }
 
     #endregion
@@ -230,8 +217,7 @@ public class ECIESSecurityTests {
     public void Decrypt_EmptyInput_Fails(ECDSAKeyType keyType) {
         var ecdsa = new ECDSA(keyType);
         var sk = ecdsa.GeneratePrivateKey();
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(Array.Empty<byte>(), out _, sk),
-            "Decryption of empty input must fail gracefully");
+        Assert.That(ecdsa.IES.TryDecrypt(Array.Empty<byte>(), out _, sk), Is.False, "Decryption of empty input must fail gracefully");
     }
 
     [Test]
@@ -239,8 +225,7 @@ public class ECIESSecurityTests {
     public void Decrypt_SingleByte_Fails(ECDSAKeyType keyType) {
         var ecdsa = new ECDSA(keyType);
         var sk = ecdsa.GeneratePrivateKey();
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(new byte[] { 0x42 }, out _, sk),
-            "Decryption of a single byte must fail gracefully");
+        Assert.That(ecdsa.IES.TryDecrypt(new byte[] { 0x42 }, out _, sk), Is.False, "Decryption of a single byte must fail gracefully");
     }
 
     #endregion
@@ -260,8 +245,7 @@ public class ECIESSecurityTests {
         var message = Encoding.UTF8.GetBytes("Cross-curve test");
         var ciphertext = ecdsa256.IES.Encrypt(message, pk256);
 
-        ClassicAssert.IsFalse(ecdsa384.IES.TryDecrypt(ciphertext, out _, sk384),
-            "Ciphertext encrypted for one curve must not decrypt with a key from a different curve");
+        Assert.That(ecdsa384.IES.TryDecrypt(ciphertext, out _, sk384), Is.False, "Ciphertext encrypted for one curve must not decrypt with a key from a different curve");
     }
 
     #endregion
@@ -282,8 +266,7 @@ public class ECIESSecurityTests {
         for (var i = Math.Max(0, tampered.Length - 16); i < tampered.Length; i++)
             tampered[i] ^= 0xFF;
 
-        ClassicAssert.IsFalse(ecdsa.IES.TryDecrypt(tampered, out _, sk),
-            "Decryption must fail when MAC bytes are modified");
+        Assert.That(ecdsa.IES.TryDecrypt(tampered, out _, sk), Is.False, "Decryption must fail when MAC bytes are modified");
     }
 
     #endregion
@@ -300,10 +283,8 @@ public class ECIESSecurityTests {
         for (var i = 0; i < iterations; i++) {
             var message = RandomBytes(new Random(i).Next(1, 512));
             var ciphertext = ecdsa.IES.Encrypt(message, pk);
-            ClassicAssert.IsTrue(ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, sk),
-                $"Decryption failed at iteration {i}");
-            ClassicAssert.IsTrue(message.SequenceEqual(decrypted),
-                $"Decrypted message mismatch at iteration {i}");
+            Assert.That(ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, sk), Is.True, $"Decryption failed at iteration {i}");
+            Assert.That(message.SequenceEqual(decrypted), Is.True, $"Decrypted message mismatch at iteration {i}");
         }
     }
 

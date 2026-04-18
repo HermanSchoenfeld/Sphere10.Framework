@@ -9,8 +9,6 @@
 using System.Linq;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 public class UpdateOnlyListTests {
@@ -18,12 +16,12 @@ public class UpdateOnlyListTests {
 	[Test]
 	public void AddRange() {
 		var list = new UpdateOnlyList<int>(10, () => default);
-		ClassicAssert.IsTrue(list.All(x => x == default));
+		Assert.That(list.All(x => x == default), Is.True);
 
 		list.AddRange(Enumerable.Range(0, 5));
 		list.AddRange(Enumerable.Range(5, 5));
 
-		ClassicAssert.AreEqual(Enumerable.Range(0, 10).ToList(), list);
+		Assert.That(list, Is.EqualTo(Enumerable.Range(0, 10).ToList()));
 	}
 
 	[Test]
@@ -32,7 +30,7 @@ public class UpdateOnlyListTests {
 		var list = new UpdateOnlyList<int>(store, 0, PreAllocationPolicy.Fixed, 3, () => default);
 		list.AddRange(new[] { 1, 3 });
 		list.Insert(1, 2);
-		ClassicAssert.AreEqual(new[] { 1, 2, 3 }, list);
+		Assert.That(list, Is.EqualTo(new[] { 1, 2, 3 }));
 	}
 
 	[Test]
@@ -41,7 +39,7 @@ public class UpdateOnlyListTests {
 		ExtendedList<int> list = new ExtendedList<int>(input);
 		UpdateOnlyList<int> preallocatedList = new UpdateOnlyList<int>(list, 0, PreAllocationPolicy.Fixed, 10, () => default);
 		preallocatedList.InsertRange(0, input.Reverse());
-		ClassicAssert.AreEqual(input.Reverse(), list);
+		Assert.That(list, Is.EqualTo(input.Reverse()));
 	}
 
 	[Test]
@@ -53,7 +51,7 @@ public class UpdateOnlyListTests {
 
 		preallocatedList.RemoveRange(0, preallocatedList.Count);
 
-		ClassicAssert.IsTrue(preallocatedList.All(x => x == default));
+		Assert.That(preallocatedList.All(x => x == default), Is.True);
 	}
 
 	[Test]

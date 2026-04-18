@@ -9,8 +9,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -29,20 +27,20 @@ public class RandomTests {
 	public void Range_1() {
 		var rng = new Random(31337);
 		var range = rng.NextRange(1, rangeLength: 1);
-		ClassicAssert.AreEqual(0, range.Start);
-		ClassicAssert.AreEqual(0, range.End);
+		Assert.That(range.Start, Is.EqualTo(0));
+		Assert.That(range.End, Is.EqualTo(0));
 	}
 
 	[Test]
 	public void Range_2() {
 		var rng = new Random(31337);
 		var range = rng.NextRange(2, true, rangeLength: 2);
-		ClassicAssert.AreEqual(0, range.Start);
-		ClassicAssert.AreEqual(1, range.End);
+		Assert.That(range.Start, Is.EqualTo(0));
+		Assert.That(range.End, Is.EqualTo(1));
 
 		range = rng.NextRange(2, false, rangeLength: 2);
-		ClassicAssert.AreEqual(0, range.Start);
-		ClassicAssert.AreEqual(1, range.End);
+		Assert.That(range.Start, Is.EqualTo(0));
+		Assert.That(range.End, Is.EqualTo(1));
 
 	}
 
@@ -50,8 +48,8 @@ public class RandomTests {
 	public void Range_Empty() {
 		var rng = new Random(31337);
 		var range = rng.NextRange(1, rangeLength: 0);
-		ClassicAssert.AreEqual(0, range.Start);
-		ClassicAssert.AreEqual(0, range.End);
+		Assert.That(range.Start, Is.EqualTo(0));
+		Assert.That(range.End, Is.EqualTo(0));
 	}
 
 	//[Test]

@@ -11,8 +11,6 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Cache;
 
 [TestFixture]
@@ -39,9 +37,9 @@ public class GeneralCacheTests {
 	public void MaxCapacity_1() {
 		var cache = new ActionCache<int, int>(x => x, sizeEstimator: x => 1, maxCapacity: 1, reapStrategy: CacheReapPolicy.LeastUsed);
 		var val = cache[0];
-		ClassicAssert.AreEqual(1, cache.ItemCount);
+		Assert.That(cache.ItemCount, Is.EqualTo(1));
 		val = cache[1];
-		ClassicAssert.AreEqual(1, cache.ItemCount);
+		Assert.That(cache.ItemCount, Is.EqualTo(1));
 	}
 
 	[Test]
@@ -50,10 +48,10 @@ public class GeneralCacheTests {
 		var val = cache[0];
 		val = cache[1];
 		val = cache[2];
-		ClassicAssert.AreEqual(3, cache.ItemCount);
+		Assert.That(cache.ItemCount, Is.EqualTo(3));
 		for (var i = 3; i < 1000; i++) {
 			val = cache[i];
-			ClassicAssert.AreEqual(3, cache.ItemCount);
+			Assert.That(cache.ItemCount, Is.EqualTo(3));
 		}
 	}
 
@@ -65,11 +63,11 @@ public class GeneralCacheTests {
 		cache.ItemRemoved += (i, item) => removed.Add(item.Value);
 
 		var val = cache[0];
-		ClassicAssert.AreEqual(0, removed.Count);
+		Assert.That(removed.Count, Is.EqualTo(0));
 
 		val = cache[1];
-		ClassicAssert.AreEqual(1, removed.Count);
-		ClassicAssert.AreEqual(0, removed[0]);
+		Assert.That(removed.Count, Is.EqualTo(1));
+		Assert.That(removed[0], Is.EqualTo(0));
 	}
 
 	[Test]
@@ -82,9 +80,9 @@ public class GeneralCacheTests {
 			var val = cache[i];
 		}
 
-		ClassicAssert.AreEqual(999, removed.Count);
+		Assert.That(removed.Count, Is.EqualTo(999));
 		removed.Sort();
-		ClassicAssert.AreEqual(Enumerable.Range(0, 999).ToArray(), removed.ToArray());
+		Assert.That(removed.ToArray(), Is.EqualTo(Enumerable.Range(0, 999).ToArray()));
 	}
 
 	[Test]
@@ -93,8 +91,8 @@ public class GeneralCacheTests {
 			() => new Dictionary<int, string>() {
 				{ 1, "one" }, { 2, "two" }, { 3, "three" }
 			});
-		ClassicAssert.AreEqual("one", cache[1]);
-		ClassicAssert.AreEqual(new[] { "one", "two", "three" }, cache.CachedItems.Select(x => x.Value).ToArray());
+		Assert.That(cache[1], Is.EqualTo("one"));
+		Assert.That(cache.CachedItems.Select(x => x.Value).ToArray(), Is.EqualTo(new[] { "one", "two", "three" }));
 	}
 
 	[Test]
@@ -106,14 +104,14 @@ public class GeneralCacheTests {
 			expirationStrategy: ExpirationPolicy.SinceFetchedTime,
 			expirationDuration: TimeSpan.FromMilliseconds(100)
 		);
-		ClassicAssert.AreEqual("first", cache[1]);
+		Assert.That(cache[1], Is.EqualTo("first"));
 		val = "second";
-		ClassicAssert.AreEqual("first", cache[1]);
-		ClassicAssert.AreEqual("first", cache[1]);
+		Assert.That(cache[1], Is.EqualTo("first"));
+		Assert.That(cache[1], Is.EqualTo("first"));
 		Thread.Sleep(111);
-		ClassicAssert.AreEqual("second", cache[1]);
-		ClassicAssert.AreEqual("second", cache[1]);
-		ClassicAssert.AreEqual("second", cache[1]);
+		Assert.That(cache[1], Is.EqualTo("second"));
+		Assert.That(cache[1], Is.EqualTo("second"));
+		Assert.That(cache[1], Is.EqualTo("second"));
 	}
 
 	[Test]
@@ -130,15 +128,15 @@ public class GeneralCacheTests {
 		Assert.Throws<InvalidOperationException>(() => {
 			var x = cache[101];
 		});
-		ClassicAssert.AreEqual("98", cache[98]);
-		ClassicAssert.AreEqual(1, cache.InternalStorage.Count);
-		ClassicAssert.AreEqual("2", cache[2]);
-		ClassicAssert.AreEqual(2, cache.InternalStorage.Count);
-		ClassicAssert.AreEqual("1", cache[1]);
-		ClassicAssert.AreEqual(2, cache.InternalStorage.Count); // should have purged first item
-		ClassicAssert.AreEqual(new[] { "1", "2" }, cache.GetAllCachedValues().ToArray());
-		ClassicAssert.AreEqual("100", cache[100]);
-		ClassicAssert.AreEqual(1, cache.InternalStorage.Count); // should have purged everything 
+		Assert.That(cache[98], Is.EqualTo("98"));
+		Assert.That(cache.InternalStorage.Count, Is.EqualTo(1));
+		Assert.That(cache[2], Is.EqualTo("2"));
+		Assert.That(cache.InternalStorage.Count, Is.EqualTo(2));
+		Assert.That(cache[1], Is.EqualTo("1"));
+		Assert.That(cache.InternalStorage.Count, Is.EqualTo(2)); // should have purged first item
+		Assert.That(cache.GetAllCachedValues().ToArray(), Is.EqualTo(new[] { "1", "2" }));
+		Assert.That(cache[100], Is.EqualTo("100"));
+		Assert.That(cache.InternalStorage.Count, Is.EqualTo(1)); // should have purged everything 
 	}
 
 	[Test]
@@ -157,11 +155,11 @@ public class GeneralCacheTests {
 			expirationStrategy: ExpirationPolicy.SinceFetchedTime,
 			expirationDuration: TimeSpan.FromMilliseconds(100)
 		);
-		ClassicAssert.IsFalse(cache.ContainsCachedItem(1));
+		Assert.That(cache.ContainsCachedItem(1), Is.False);
 		var val = cache[1];
-		ClassicAssert.IsTrue(cache.ContainsCachedItem(1));
+		Assert.That(cache.ContainsCachedItem(1), Is.True);
 		Thread.Sleep(111);
-		ClassicAssert.IsFalse(cache.ContainsCachedItem(1));
+		Assert.That(cache.ContainsCachedItem(1), Is.False);
 	}
 
 
@@ -174,8 +172,8 @@ public class GeneralCacheTests {
 		);
 		for (var i = 0; i < 100; i++) {
 			var item = cache[i];
-			ClassicAssert.AreEqual(i + 1, cache.ItemCount);
-			ClassicAssert.AreEqual(0, cache.CurrentSize);
+			Assert.That(cache.ItemCount, Is.EqualTo(i + 1));
+			Assert.That(cache.CurrentSize, Is.EqualTo(0));
 		}
 	}
 

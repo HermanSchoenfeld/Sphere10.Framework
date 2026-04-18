@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -18,32 +16,32 @@ public class MemoryMetricTests {
 
 	[Test]
 	public void Byte2Bit() {
-		ClassicAssert.AreEqual(16, Tools.Memory.ConvertMemoryMetric(2, MemoryMetric.Byte, MemoryMetric.Bit));
+		Assert.That(Tools.Memory.ConvertMemoryMetric(2, MemoryMetric.Byte, MemoryMetric.Bit), Is.EqualTo(16));
 	}
 
 	[Test]
 	public void Bit2Byte() {
-		ClassicAssert.AreEqual(2, Tools.Memory.ConvertMemoryMetric(16, MemoryMetric.Bit, MemoryMetric.Byte));
+		Assert.That(Tools.Memory.ConvertMemoryMetric(16, MemoryMetric.Bit, MemoryMetric.Byte), Is.EqualTo(2));
 	}
 
 	[Test]
 	public void Kilobyte2Byte() {
-		ClassicAssert.AreEqual(1000, Tools.Memory.ConvertMemoryMetric(1, MemoryMetric.Kilobyte, MemoryMetric.Byte));
+		Assert.That(Tools.Memory.ConvertMemoryMetric(1, MemoryMetric.Kilobyte, MemoryMetric.Byte), Is.EqualTo(1000));
 	}
 
 	[Test]
 	public void Byte2Kilobyte() {
-		ClassicAssert.AreEqual(1, Tools.Memory.ConvertMemoryMetric(1000, MemoryMetric.Byte, MemoryMetric.Kilobyte));
+		Assert.That(Tools.Memory.ConvertMemoryMetric(1000, MemoryMetric.Byte, MemoryMetric.Kilobyte), Is.EqualTo(1));
 	}
 
 	[Test]
 	public void KilobyteToMegabyte() {
-		ClassicAssert.AreEqual(1, Tools.Memory.ConvertMemoryMetric(1000, MemoryMetric.Kilobyte, MemoryMetric.Megabyte));
+		Assert.That(Tools.Memory.ConvertMemoryMetric(1000, MemoryMetric.Kilobyte, MemoryMetric.Megabyte), Is.EqualTo(1));
 	}
 
 	[Test]
 	public void KilobyteToMegabit() {
-		ClassicAssert.AreEqual(1 * 8, Tools.Memory.ConvertMemoryMetric(1000, MemoryMetric.Kilobyte, MemoryMetric.Megabit));
+		Assert.That(Tools.Memory.ConvertMemoryMetric(1000, MemoryMetric.Kilobyte, MemoryMetric.Megabit), Is.EqualTo(1 * 8));
 	}
 }
 

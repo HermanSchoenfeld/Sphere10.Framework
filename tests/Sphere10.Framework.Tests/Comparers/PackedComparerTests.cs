@@ -9,8 +9,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -44,12 +42,12 @@ public class PackedComparerTests {
 	public void TestCompare_Consistency() {
 		IComparer<string> stringComparer = StringComparer.InvariantCultureIgnoreCase;
 		var packedComparer = stringComparer.AsPacked();
-		ClassicAssert.AreEqual(stringComparer.Compare(null, null), packedComparer.Compare(null, null));
-		ClassicAssert.AreEqual(stringComparer.Compare(null, "B"), packedComparer.Compare(null, "B"));
-		ClassicAssert.AreEqual(stringComparer.Compare("A", null), packedComparer.Compare("A", null));
-		ClassicAssert.AreEqual(stringComparer.Compare("a", "b"), packedComparer.Compare("a", "b"));
-		ClassicAssert.AreEqual(stringComparer.Compare("a", "a"), packedComparer.Compare("a", "a"));
-		ClassicAssert.AreEqual(stringComparer.Compare("a", "A"), packedComparer.Compare("a", "A"));
+		Assert.That(packedComparer.Compare(null, null), Is.EqualTo(stringComparer.Compare(null, null)));
+		Assert.That(packedComparer.Compare(null, "B"), Is.EqualTo(stringComparer.Compare(null, "B")));
+		Assert.That(packedComparer.Compare("A", null), Is.EqualTo(stringComparer.Compare("A", null)));
+		Assert.That(packedComparer.Compare("a", "b"), Is.EqualTo(stringComparer.Compare("a", "b")));
+		Assert.That(packedComparer.Compare("a", "a"), Is.EqualTo(stringComparer.Compare("a", "a")));
+		Assert.That(packedComparer.Compare("a", "A"), Is.EqualTo(stringComparer.Compare("a", "A")));
 	}
 
 	[Test]

@@ -11,8 +11,6 @@ using NUnit.Framework;
 using System.Linq;
 using System.Text;
 using Sphere10.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Merkle;
 
 [TestFixture]
@@ -30,7 +28,7 @@ public class SimpleMerkleTreeTests {
 		foreach (var (newLeaf, expectedTree) in new string[] { null }.Concat(elems).Zip(expectedTrees, Tuple.Create)) {
 			if (newLeaf != null)
 				testTree.Leafs.Add(Encoding.ASCII.GetBytes(newLeaf));
-			ClassicAssert.AreEqual(expectedTree.Root, testTree.Root);
+			Assert.That(testTree.Root, Is.EqualTo(expectedTree.Root));
 		}
 	}
 
@@ -38,27 +36,27 @@ public class SimpleMerkleTreeTests {
 	public void Insert() {
 		var expected = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
 		var test = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
-		ClassicAssert.AreNotEqual(expected.Root, test.Root);
+		Assert.That(test.Root, Is.Not.EqualTo(expected.Root));
 		test.Leafs.InsertRange(3, new[] { "D", "E", "F" }.Select(Encoding.ASCII.GetBytes));
-		ClassicAssert.AreEqual(expected.Root, test.Root);
+		Assert.That(test.Root, Is.EqualTo(expected.Root));
 	}
 
 	[Test]
 	public void Update() {
 		var expected = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
 		var test = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "Z", "Z", "Z", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
-		ClassicAssert.AreNotEqual(expected.Root, test.Root);
+		Assert.That(test.Root, Is.Not.EqualTo(expected.Root));
 		test.Leafs.UpdateRange(3, new[] { "D", "E", "F" }.Select(Encoding.ASCII.GetBytes));
-		ClassicAssert.AreEqual(expected.Root, test.Root);
+		Assert.That(test.Root, Is.EqualTo(expected.Root));
 	}
 
 	[Test]
 	public void Remove() {
 		var expected = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
 		var test = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
-		ClassicAssert.AreNotEqual(expected.Root, test.Root);
+		Assert.That(test.Root, Is.Not.EqualTo(expected.Root));
 		test.Leafs.RemoveRange(3, 3);
-		ClassicAssert.AreEqual(expected.Root, test.Root);
+		Assert.That(test.Root, Is.EqualTo(expected.Root));
 	}
 
 }

@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Sphere10.Framework.CryptoEx.Bitcoin;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 //https://github.com/bitcoin/bitcoin/blob/master/src/test/base58_tests.cpp
@@ -52,14 +50,14 @@ public class BitcoinBase58EncodingTests {
 		foreach (var testCase in testCases) {
 			var input = string.Equals(testCase.HexString, string.Empty, StringComparison.OrdinalIgnoreCase) ? Array.Empty<byte>() : HexEncoding.Decode(testCase.HexString).ToArray();
 			var result = encoder(input);
-			ClassicAssert.AreEqual(testCase.Base58String, result);
+			Assert.That(result, Is.EqualTo(testCase.Base58String));
 		}
 	}
 
 	private static void TestDecode<TResult>(Func<TResult, byte[]> decoder, IEnumerable<TestItem<string, TResult>> testCases) {
 		foreach (var testCase in testCases) {
 			var result = decoder(testCase.Base58String);
-			ClassicAssert.AreEqual(testCase.HexString, HexEncoding.Encode(result));
+			Assert.That(HexEncoding.Encode(result), Is.EqualTo(testCase.HexString));
 		}
 	}
 
@@ -75,26 +73,26 @@ public class BitcoinBase58EncodingTests {
 
 	[Test]
 	public void TestShouldFailOnInvalidBase58() {
-		ClassicAssert.IsFalse(BitcoinBase58Encoding.TryDecode("invalid", out _));
-		ClassicAssert.IsFalse(BitcoinBase58Encoding.TryDecode("invalid\0", out _));
-		ClassicAssert.IsFalse(BitcoinBase58Encoding.TryDecode("\0invalid", out _));
+		Assert.That(BitcoinBase58Encoding.TryDecode("invalid", out _), Is.False);
+		Assert.That(BitcoinBase58Encoding.TryDecode("invalid\0", out _), Is.False);
+		Assert.That(BitcoinBase58Encoding.TryDecode("\0invalid", out _), Is.False);
 
-		ClassicAssert.IsFalse(BitcoinBase58Encoding.TryDecode("bad0IOl", out _));
-		ClassicAssert.IsFalse(BitcoinBase58Encoding.TryDecode("goodbad0IOl", out _));
-		ClassicAssert.IsFalse(BitcoinBase58Encoding.TryDecode("good\0bad0IOl", out _));
+		Assert.That(BitcoinBase58Encoding.TryDecode("bad0IOl", out _), Is.False);
+		Assert.That(BitcoinBase58Encoding.TryDecode("goodbad0IOl", out _), Is.False);
+		Assert.That(BitcoinBase58Encoding.TryDecode("good\0bad0IOl", out _), Is.False);
 
 		// check that DecodeBase58 skips whitespace, but still fails with unexpected non-whitespace at the end.
-		ClassicAssert.IsFalse(BitcoinBase58Encoding.TryDecode(" \t\n\v\f\r skip \r\f\v\n\t a", out _));
+		Assert.That(BitcoinBase58Encoding.TryDecode(" \t\n\v\f\r skip \r\f\v\n\t a", out _), Is.False);
 	}
 
 	[Test]
 	public void TestShouldPassOnValidBase58() {
-		ClassicAssert.IsTrue(BitcoinBase58Encoding.TryDecode("good", out _));
-		ClassicAssert.IsTrue(BitcoinBase58Encoding.TryDecode(" ", out _));
+		Assert.That(BitcoinBase58Encoding.TryDecode("good", out _), Is.True);
+		Assert.That(BitcoinBase58Encoding.TryDecode(" ", out _), Is.True);
 
 		var result = BitcoinBase58Encoding.Decode(" \t\n\v\f\r skip \r\f\v\n\t ");
 		var expected = HexEncoding.Decode("971a55");
-		ClassicAssert.AreEqual(expected, result);
+		Assert.That(result, Is.EqualTo(expected));
 	}
 }
 

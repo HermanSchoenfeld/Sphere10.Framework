@@ -9,7 +9,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using Sphere10.Framework.CryptoEx.EC;
 using Sphere10.Framework.CryptoEx.EC.Schnorr;
 
@@ -37,15 +36,13 @@ public class SchnorrSecurityTests {
     [Test]
     public void Traits_HasSchnorrFlag() {
         var schnorr = CreateSchnorr();
-        ClassicAssert.IsTrue(schnorr.Traits.HasFlag(DigitalSignatureSchemeTraits.Schnorr),
-            "Schnorr trait flag must be set");
+        Assert.That(schnorr.Traits.HasFlag(DigitalSignatureSchemeTraits.Schnorr), Is.True, "Schnorr trait flag must be set");
     }
 
     [Test]
     public void Traits_HasSupportsIESFlag() {
         var schnorr = CreateSchnorr();
-        ClassicAssert.IsTrue(schnorr.Traits.HasFlag(DigitalSignatureSchemeTraits.SupportsIES),
-            "SupportsIES trait flag must be set");
+        Assert.That(schnorr.Traits.HasFlag(DigitalSignatureSchemeTraits.SupportsIES), Is.True, "SupportsIES trait flag must be set");
     }
 
     #endregion
@@ -58,7 +55,7 @@ public class SchnorrSecurityTests {
         var sk = schnorr.GeneratePrivateKey();
         var pk = schnorr.DerivePublicKey(sk);
         var result = schnorr.VerifyDigest(Array.Empty<byte>(), RandomMessageDigest(), pk.RawBytes);
-        ClassicAssert.IsFalse(result, "Empty signature must return false, not throw");
+        Assert.That(result, Is.False, "Empty signature must return false, not throw");
     }
 
     [Test]
@@ -71,7 +68,7 @@ public class SchnorrSecurityTests {
         // truncate to half
         var truncated = sig.AsSpan().Slice(0, sig.Length / 2).ToArray();
         var result = schnorr.VerifyDigest(truncated, messageDigest, pk.RawBytes);
-        ClassicAssert.IsFalse(result, "Truncated signature must return false, not throw");
+        Assert.That(result, Is.False, "Truncated signature must return false, not throw");
     }
 
     [Test]
@@ -84,7 +81,7 @@ public class SchnorrSecurityTests {
         var oversized = new byte[sig.Length + 1];
         Array.Copy(sig, oversized, sig.Length);
         var result = schnorr.VerifyDigest(oversized, messageDigest, pk.RawBytes);
-        ClassicAssert.IsFalse(result, "Oversized signature must return false, not throw");
+        Assert.That(result, Is.False, "Oversized signature must return false, not throw");
     }
 
     [Test]
@@ -93,7 +90,7 @@ public class SchnorrSecurityTests {
         var sk = schnorr.GeneratePrivateKey();
         var pk = schnorr.DerivePublicKey(sk);
         var result = schnorr.VerifyDigest(new byte[] { 0x42 }, RandomMessageDigest(), pk.RawBytes);
-        ClassicAssert.IsFalse(result, "Single-byte signature must return false");
+        Assert.That(result, Is.False, "Single-byte signature must return false");
     }
 
     #endregion
@@ -110,8 +107,7 @@ public class SchnorrSecurityTests {
         // Flip one bit in the R component (first half of signature)
         var tampered = (byte[])sig.Clone();
         tampered[0] ^= 0x01;
-        ClassicAssert.IsFalse(schnorr.VerifyDigest(tampered, messageDigest, pk.RawBytes),
-            "Flipping a bit in R must invalidate the signature");
+        Assert.That(schnorr.VerifyDigest(tampered, messageDigest, pk.RawBytes), Is.False, "Flipping a bit in R must invalidate the signature");
     }
 
     [Test]
@@ -124,8 +120,7 @@ public class SchnorrSecurityTests {
         // Flip one bit in the S component (second half of signature)
         var tampered = (byte[])sig.Clone();
         tampered[schnorr.KeySize] ^= 0x01;
-        ClassicAssert.IsFalse(schnorr.VerifyDigest(tampered, messageDigest, pk.RawBytes),
-            "Flipping a bit in S must invalidate the signature");
+        Assert.That(schnorr.VerifyDigest(tampered, messageDigest, pk.RawBytes), Is.False, "Flipping a bit in S must invalidate the signature");
     }
 
     [Test]
@@ -139,8 +134,7 @@ public class SchnorrSecurityTests {
         var swapped = new byte[sig.Length];
         Array.Copy(sig, schnorr.KeySize, swapped, 0, schnorr.KeySize);
         Array.Copy(sig, 0, swapped, schnorr.KeySize, schnorr.KeySize);
-        ClassicAssert.IsFalse(schnorr.VerifyDigest(swapped, messageDigest, pk.RawBytes),
-            "Swapping R and S must invalidate the signature");
+        Assert.That(schnorr.VerifyDigest(swapped, messageDigest, pk.RawBytes), Is.False, "Swapping R and S must invalidate the signature");
     }
 
     [Test]
@@ -155,7 +149,7 @@ public class SchnorrSecurityTests {
         } catch (Exception) {
             result = false;
         }
-        ClassicAssert.IsFalse(result, "All-zero signature must not verify");
+        Assert.That(result, Is.False, "All-zero signature must not verify");
     }
 
     [Test]
@@ -171,7 +165,7 @@ public class SchnorrSecurityTests {
         } catch (Exception) {
             result = false;
         }
-        ClassicAssert.IsFalse(result, "All-0xFF signature must not verify");
+        Assert.That(result, Is.False, "All-0xFF signature must not verify");
     }
 
     [Test]
@@ -182,8 +176,7 @@ public class SchnorrSecurityTests {
         var messageDigest = RandomMessageDigest();
         var sig = schnorr.SignDigest(sk, messageDigest);
         var wrongMessage = RandomMessageDigest();
-        ClassicAssert.IsFalse(schnorr.VerifyDigest(sig, wrongMessage, pk.RawBytes),
-            "Signature must not verify against a different message");
+        Assert.That(schnorr.VerifyDigest(sig, wrongMessage, pk.RawBytes), Is.False, "Signature must not verify against a different message");
     }
 
     [Test]
@@ -194,8 +187,7 @@ public class SchnorrSecurityTests {
         var pk2 = schnorr.DerivePublicKey(sk2);
         var messageDigest = RandomMessageDigest();
         var sig = schnorr.SignDigest(sk1, messageDigest);
-        ClassicAssert.IsFalse(schnorr.VerifyDigest(sig, messageDigest, pk2.RawBytes),
-            "Signature must not verify against a different public key");
+        Assert.That(schnorr.VerifyDigest(sig, messageDigest, pk2.RawBytes), Is.False, "Signature must not verify against a different public key");
     }
 
     [Test]
@@ -207,8 +199,7 @@ public class SchnorrSecurityTests {
         var skB = schnorr.GeneratePrivateKey();
         var pkB = schnorr.DerivePublicKey(skB);
         var sigA = schnorr.SignDigest(skA, messageDigest);
-        ClassicAssert.IsFalse(schnorr.VerifyDigest(sigA, messageDigest, pkB.RawBytes),
-            "Signature from key A must not verify under key B");
+        Assert.That(schnorr.VerifyDigest(sigA, messageDigest, pkB.RawBytes), Is.False, "Signature from key A must not verify under key B");
     }
 
     #endregion
@@ -223,8 +214,7 @@ public class SchnorrSecurityTests {
         // Create a fresh Schnorr instance to ensure no shared RNG state
         var schnorr2 = CreateSchnorr();
         var sk2 = schnorr2.GeneratePrivateKey(seed);
-        ClassicAssert.AreEqual(sk1.RawBytes, sk2.RawBytes,
-            "Same seed must produce identical private keys across instances");
+        Assert.That(sk2.RawBytes, Is.EqualTo(sk1.RawBytes), "Same seed must produce identical private keys across instances");
     }
 
     [Test]
@@ -232,8 +222,7 @@ public class SchnorrSecurityTests {
         var schnorr = CreateSchnorr();
         var sk1 = schnorr.GeneratePrivateKey(RandomBytes(32));
         var sk2 = schnorr.GeneratePrivateKey(RandomBytes(32));
-        ClassicAssert.IsFalse(sk1.RawBytes.SequenceEqual(sk2.RawBytes),
-            "Different seeds must produce different private keys");
+        Assert.That(sk1.RawBytes.SequenceEqual(sk2.RawBytes), Is.False, "Different seeds must produce different private keys");
     }
 
     [Test]
@@ -241,8 +230,7 @@ public class SchnorrSecurityTests {
         var schnorr = CreateSchnorr();
         var sk1 = schnorr.GeneratePrivateKey();
         var sk2 = schnorr.GeneratePrivateKey();
-        ClassicAssert.IsFalse(sk1.RawBytes.SequenceEqual(sk2.RawBytes),
-            "Successive seedless generation must produce unique keys");
+        Assert.That(sk1.RawBytes.SequenceEqual(sk2.RawBytes), Is.False, "Successive seedless generation must produce unique keys");
     }
 
     #endregion
@@ -257,8 +245,7 @@ public class SchnorrSecurityTests {
         var sig1 = schnorr.SignDigestWithAuxRandomData(sk, messageDigest, RandomBytes(32));
         var sig2 = schnorr.SignDigestWithAuxRandomData(sk, messageDigest, RandomBytes(32));
         // Overwhelmingly likely to differ (different aux randomness → different nonce)
-        ClassicAssert.IsFalse(sig1.SequenceEqual(sig2),
-            "Different auxiliary randomness must produce different signatures");
+        Assert.That(sig1.SequenceEqual(sig2), Is.False, "Different auxiliary randomness must produce different signatures");
     }
 
     [Test]
@@ -269,8 +256,7 @@ public class SchnorrSecurityTests {
         var aux = RandomBytes(32);
         var sig1 = schnorr.SignDigestWithAuxRandomData(sk, messageDigest, aux);
         var sig2 = schnorr.SignDigestWithAuxRandomData(sk, messageDigest, aux);
-        ClassicAssert.IsTrue(sig1.SequenceEqual(sig2),
-            "Identical inputs must produce identical, deterministic signatures");
+        Assert.That(sig1.SequenceEqual(sig2), Is.True, "Identical inputs must produce identical, deterministic signatures");
     }
 
     [Test]
@@ -280,8 +266,7 @@ public class SchnorrSecurityTests {
         var pk = schnorr.DerivePublicKey(sk);
         var messageDigest = RandomMessageDigest();
         var sig = schnorr.SignDigest(sk, messageDigest);
-        ClassicAssert.IsTrue(schnorr.VerifyDigest(sig, messageDigest, pk.RawBytes),
-            "SignDigest with default (random) aux must produce a valid signature");
+        Assert.That(schnorr.VerifyDigest(sig, messageDigest, pk.RawBytes), Is.True, "SignDigest with default (random) aux must produce a valid signature");
     }
 
     #endregion
@@ -292,8 +277,7 @@ public class SchnorrSecurityTests {
     public void TryParsePrivateKey_AllZeros_Fails() {
         var schnorr = CreateSchnorr();
         var zeroKey = new byte[schnorr.KeySize];
-        ClassicAssert.IsFalse(schnorr.TryParsePrivateKey(zeroKey, out _),
-            "Private key of all zeros (outside valid range) must be rejected");
+        Assert.That(schnorr.TryParsePrivateKey(zeroKey, out _), Is.False, "Private key of all zeros (outside valid range) must be rejected");
     }
 
     [Test]
@@ -309,7 +293,7 @@ public class SchnorrSecurityTests {
         }
         // Either returns false or throws — both are acceptable, but must not return true
         // with an invalid key. If it did return true, it would be a security issue.
-        ClassicAssert.IsFalse(result, "Public key of all zeros must be rejected");
+        Assert.That(result, Is.False, "Public key of all zeros must be rejected");
     }
 
     [Test]
@@ -323,7 +307,7 @@ public class SchnorrSecurityTests {
         } catch (Exception) {
             result = false;
         }
-        ClassicAssert.IsFalse(result, "Public key of all 0xFF must be rejected (exceeds field)");
+        Assert.That(result, Is.False, "Public key of all 0xFF must be rejected (exceeds field)");
     }
 
     #endregion
@@ -339,7 +323,7 @@ public class SchnorrSecurityTests {
         var pkB = schnorr.DerivePublicKey(skB);
         var messageDigest = RandomMessageDigest();
         var sigA = schnorr.SignDigest(skA, messageDigest);
-        ClassicAssert.IsFalse(schnorr.VerifyDigest(sigA, messageDigest, pkB.RawBytes));
+        Assert.That(schnorr.VerifyDigest(sigA, messageDigest, pkB.RawBytes), Is.False);
     }
 
     #endregion
@@ -356,7 +340,7 @@ public class SchnorrSecurityTests {
         var sigs = Enumerable.Range(0, count).Select(i => schnorr.SignDigest(sks[i], messages[i])).ToArray();
 
         // Verify the honest batch passes
-        ClassicAssert.IsTrue(schnorr.BatchVerifyDigest(sigs, messages, pks.Select(p => p.RawBytes).ToArray()));
+        Assert.That(schnorr.BatchVerifyDigest(sigs, messages, pks.Select(p => p.RawBytes).ToArray()), Is.True);
 
         // Forge one signature (flip a bit)
         var forgedSigs = (byte[][])sigs.Clone();
@@ -369,7 +353,7 @@ public class SchnorrSecurityTests {
         } catch (Exception) {
             result = false;
         }
-        ClassicAssert.IsFalse(result, "A single forged signature must cause the entire batch to fail");
+        Assert.That(result, Is.False, "A single forged signature must cause the entire batch to fail");
     }
 
     [Test]
@@ -391,7 +375,7 @@ public class SchnorrSecurityTests {
         } catch (Exception) {
             result = false;
         }
-        ClassicAssert.IsFalse(result, "Swapping message order in batch verification must fail");
+        Assert.That(result, Is.False, "Swapping message order in batch verification must fail");
     }
 
     #endregion
@@ -407,8 +391,7 @@ public class SchnorrSecurityTests {
         // Extract R components (first KeySize bytes)
         var r1 = sig1.AsSpan().Slice(0, schnorr.KeySize).ToArray();
         var r2 = sig2.AsSpan().Slice(0, schnorr.KeySize).ToArray();
-        ClassicAssert.IsFalse(r1.SequenceEqual(r2),
-            "Different messages must produce different R nonce points (nonce reuse = catastrophic key leak)");
+        Assert.That(r1.SequenceEqual(r2), Is.False, "Different messages must produce different R nonce points (nonce reuse = catastrophic key leak)");
     }
 
     #endregion
@@ -422,7 +405,7 @@ public class SchnorrSecurityTests {
         var pk = schnorr.DerivePublicKey(sk);
         var messageDigest = RandomMessageDigest();
         var sig = schnorr.SignDigest(sk, messageDigest);
-        ClassicAssert.IsTrue(schnorr.VerifyDigest(sig, messageDigest, pk.RawBytes));
+        Assert.That(schnorr.VerifyDigest(sig, messageDigest, pk.RawBytes), Is.True);
     }
 
     [Test]
@@ -433,7 +416,7 @@ public class SchnorrSecurityTests {
         var messageDigest = RandomMessageDigest();
         var aux = RandomBytes(32);
         var sig = schnorr.SignDigestWithAuxRandomData(sk, messageDigest, aux);
-        ClassicAssert.IsTrue(schnorr.VerifyDigest(sig, messageDigest, pk.RawBytes));
+        Assert.That(schnorr.VerifyDigest(sig, messageDigest, pk.RawBytes), Is.True);
     }
 
     #endregion

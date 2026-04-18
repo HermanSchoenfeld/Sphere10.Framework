@@ -9,8 +9,6 @@
 using System;
 using NUnit.Framework;
 using System.Linq;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -47,7 +45,7 @@ public class EnumerableExtensionTests {
 
 		for (var i = 0; i < 6; i++) {
 			for (var j = 0; j < 2; j++) {
-				ClassicAssert.AreEqual(expected[i][j], actual.ElementAt(i).ElementAt(j));
+				Assert.That(actual.ElementAt(i).ElementAt(j), Is.EqualTo(expected[i][j]));
 			}
 		}
 
@@ -62,8 +60,8 @@ public class EnumerableExtensionTests {
 		var input = rando.NextBytes(length);
 		var parts = input.PartitionBySize(x => 1, partSize);
 
-		ClassicAssert.AreEqual(expectedParts, parts.Count());
-		ClassicAssert.AreEqual(input, parts.Aggregate((x, y) => x.Concat(y)));
+		Assert.That(parts.Count(), Is.EqualTo(expectedParts));
+		Assert.That(parts.Aggregate((x, y) => x.Concat(y)), Is.EqualTo(input));
 	}
 }
 

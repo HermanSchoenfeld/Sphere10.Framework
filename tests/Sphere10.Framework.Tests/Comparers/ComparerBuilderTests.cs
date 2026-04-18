@@ -9,8 +9,6 @@
 using System.Linq;
 using Sphere10.Framework.NUnit;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -39,7 +37,7 @@ public class ComparerBuilderTests {
 			items[0]
 		};
 		var actual = items.OrderBy(x => x, comparer).ToArray();
-		ClassicAssert.AreEqual(expected, actual);
+		Assert.That(actual, Is.EqualTo(expected));
 	}
 	
 	[Test]

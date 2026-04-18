@@ -12,9 +12,6 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using System.Threading;
 using System.Linq;
-using NUnit.Framework.Legacy;
-
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -36,7 +33,7 @@ public class SchedulerTest {
 		scheduler.Start();
 		await Task.Delay(TimeSpan.FromSeconds(1.5));
 		scheduler.Stop();
-		ClassicAssert.AreEqual(1, count);
+		Assert.That(count, Is.EqualTo(1));
 	}
 
 	[Test]
@@ -49,7 +46,7 @@ public class SchedulerTest {
 		scheduler.Start();
 		await Task.Delay(TimeSpan.FromSeconds(1.1));
 		scheduler.Stop();
-		ClassicAssert.AreEqual(1, count);
+		Assert.That(count, Is.EqualTo(1));
 	}
 
 	[Test]
@@ -62,7 +59,7 @@ public class SchedulerTest {
 		scheduler.Start();
 		await Task.Delay(TimeSpan.FromSeconds(1.1));
 		scheduler.Stop();
-		ClassicAssert.AreEqual(1, count); // does not start straight away
+		Assert.That(count, Is.EqualTo(1)); // does not start straight away
 	}
 
 
@@ -76,7 +73,7 @@ public class SchedulerTest {
 		scheduler.Start();
 		await Task.Delay(TimeSpan.FromSeconds(5.8));
 		scheduler.Stop();
-		ClassicAssert.AreEqual(1 + 5, count); // Starts straight away
+		Assert.That(count, Is.EqualTo(1 + 5)); // Starts straight away
 	}
 
 	[Test]
@@ -138,7 +135,7 @@ public class SchedulerTest {
 		await Task.Delay(TimeSpan.FromSeconds(3.8));
 		scheduler.Stop();
 		ThreadPool.SetMaxThreads(workerThreads, portThreads);
-		ClassicAssert.AreEqual(3, count); // Starts straight away
+		Assert.That(count, Is.EqualTo(3)); // Starts straight away
 	}
 
 	[Test]
@@ -160,7 +157,7 @@ public class SchedulerTest {
 		scheduler.Start();
 		await Task.Delay(TimeSpan.FromSeconds(1));
 		scheduler.Stop();
-		ClassicAssert.AreEqual(1, count); // Starts straight away
+		Assert.That(count, Is.EqualTo(1)); // Starts straight away
 	}
 
 	[Test]
@@ -189,10 +186,10 @@ public class SchedulerTest {
 
 		scheduler.Start();
 		await Task.Delay(TimeSpan.FromSeconds((executionCount * intervalSeconds) + 1));
-		ClassicAssert.AreEqual(JobStatus.Completed, job.Status);
+		Assert.That(job.Status, Is.EqualTo(JobStatus.Completed));
 		scheduler.Stop();
 
-		ClassicAssert.AreEqual(executionCount, count);
+		Assert.That(count, Is.EqualTo(executionCount));
 	}
 
 	[Test]
@@ -221,10 +218,10 @@ public class SchedulerTest {
 
 		scheduler.Start();
 		await Task.Delay(TimeSpan.FromSeconds((executionCount * intervalSeconds) + 1));
-		ClassicAssert.AreEqual(JobStatus.Completed, job.Status);
+		Assert.That(job.Status, Is.EqualTo(JobStatus.Completed));
 		scheduler.Stop();
 
-		ClassicAssert.AreEqual(executionCount, count);
+		Assert.That(count, Is.EqualTo(executionCount));
 	}
 
 	[Test]
@@ -274,7 +271,7 @@ public class SchedulerTest {
 		await Task.Delay(TimeSpan.FromSeconds(2));
 		scheduler.Stop();
 
-		ClassicAssert.IsTrue(failException != null && failException.Message == SchedulerTestErrorJob.Errormessage);
+		Assert.That(failException != null && failException.Message == SchedulerTestErrorJob.Errormessage, Is.True);
 	}
 
 	[Test]
@@ -318,10 +315,10 @@ public class SchedulerTest {
 		foreach (var job in scheduler.GetJobs()) {
 			// Compare jobs.
 			var convertedJob = convertedScheduler.GetJobs().FirstOrDefault(x => x.Name == job.Name);
-			ClassicAssert.IsNotNull(convertedJob);
-			ClassicAssert.AreEqual(job.Policy, convertedJob.Policy);
-			ClassicAssert.AreEqual(job.Status, convertedJob.Status);
-			ClassicAssert.AreEqual(job.Schedules.Count(), convertedJob.Schedules.Count());
+			Assert.That(convertedJob, Is.Not.Null);
+			Assert.That(convertedJob.Policy, Is.EqualTo(job.Policy));
+			Assert.That(convertedJob.Status, Is.EqualTo(job.Status));
+			Assert.That(convertedJob.Schedules.Count(), Is.EqualTo(job.Schedules.Count()));
 
 			// Compare schedules.
 			var schedules = job.Schedules.ToList();
@@ -331,13 +328,13 @@ public class SchedulerTest {
 				var schedule = schedules[i];
 				var convertedSchedule = convertedSchedules[i];
 
-				ClassicAssert.IsNotNull(convertedSchedule);
-				ClassicAssert.AreEqual(Truncate(schedule.LastStartTime), Truncate(convertedSchedule.LastStartTime));
-				ClassicAssert.AreEqual(Truncate(schedule.LastEndTime), Truncate(convertedSchedule.LastEndTime));
-				ClassicAssert.AreEqual(Truncate(schedule.EndDate), Truncate(convertedSchedule.EndDate));
-				ClassicAssert.AreEqual(schedule.ReschedulePolicy, convertedSchedule.ReschedulePolicy);
-				ClassicAssert.AreEqual(schedule.IterationsRemaining, convertedSchedule.IterationsRemaining);
-				ClassicAssert.AreEqual(schedule.IterationsExecuted, convertedSchedule.IterationsExecuted);
+				Assert.That(convertedSchedule, Is.Not.Null);
+				Assert.That(Truncate(convertedSchedule.LastStartTime), Is.EqualTo(Truncate(schedule.LastStartTime)));
+				Assert.That(Truncate(convertedSchedule.LastEndTime), Is.EqualTo(Truncate(schedule.LastEndTime)));
+				Assert.That(Truncate(convertedSchedule.EndDate), Is.EqualTo(Truncate(schedule.EndDate)));
+				Assert.That(convertedSchedule.ReschedulePolicy, Is.EqualTo(schedule.ReschedulePolicy));
+				Assert.That(convertedSchedule.IterationsRemaining, Is.EqualTo(schedule.IterationsRemaining));
+				Assert.That(convertedSchedule.IterationsExecuted, Is.EqualTo(schedule.IterationsExecuted));
 			}
 		}
 

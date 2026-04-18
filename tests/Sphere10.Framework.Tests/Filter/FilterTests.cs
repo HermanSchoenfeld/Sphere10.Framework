@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -203,7 +201,7 @@ public class FilterTests {
 		var filter = FilterBuilder.In("Id", 1, 3, 5);
 		var result = products.ApplyFilter(filter).ToArray();
 		Assert.That(result.Length, Is.EqualTo(3));
-		ClassicAssert.AreEqual(new[] { 1, 3, 5 }, result.Select(p => p.Id).ToArray());
+		Assert.That(result.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 1, 3, 5 }));
 	}
 
 	[Test]
@@ -242,7 +240,7 @@ public class FilterTests {
 		var filter = FilterBuilder.Between("Id", 2, 4);
 		var result = products.ApplyFilter(filter).ToArray();
 		Assert.That(result.Length, Is.EqualTo(3));
-		ClassicAssert.AreEqual(new[] { 2, 3, 4 }, result.Select(p => p.Id).ToArray());
+		Assert.That(result.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 2, 3, 4 }));
 	}
 
 	[Test]
@@ -356,7 +354,7 @@ public class FilterTests {
 		var result = products.ApplyFilter(filter).ToArray();
 		// Matches: Beta Gadget (electronics, $24.99), Delta Gizmo (electronics, $99.95), Gamma Tool (not in stock)
 		Assert.That(result.Length, Is.EqualTo(3));
-		ClassicAssert.AreEqual(new[] { 2, 3, 4 }, result.Select(p => p.Id).OrderBy(x => x).ToArray());
+		Assert.That(result.Select(p => p.Id).OrderBy(x => x).ToArray(), Is.EqualTo(new[] { 2, 3, 4 }));
 	}
 
 	[Test]
@@ -378,7 +376,7 @@ public class FilterTests {
 		// Id=4: price 99.95 >= 50 => no
 		// Id=5: price 0.50 < 50 => yes
 		Assert.That(result.Length, Is.EqualTo(2));
-		ClassicAssert.AreEqual(new[] { 1, 5 }, result.Select(p => p.Id).ToArray());
+		Assert.That(result.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 1, 5 }));
 	}
 
 	#endregion
@@ -458,7 +456,7 @@ public class FilterTests {
 		var products = CreateTestProducts();
 		var sort = new SortExpression("Price", SortDirection.Ascending);
 		var result = products.ApplySort(sort).ToArray();
-		ClassicAssert.AreEqual(new[] { 5, 3, 1, 2, 4 }, result.Select(p => p.Id).ToArray());
+		Assert.That(result.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 5, 3, 1, 2, 4 }));
 	}
 
 	[Test]
@@ -466,7 +464,7 @@ public class FilterTests {
 		var products = CreateTestProducts();
 		var sort = new SortExpression("Price", SortDirection.Descending);
 		var result = products.ApplySort(sort).ToArray();
-		ClassicAssert.AreEqual(new[] { 4, 2, 1, 3, 5 }, result.Select(p => p.Id).ToArray());
+		Assert.That(result.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 4, 2, 1, 3, 5 }));
 	}
 
 	[Test]
@@ -474,7 +472,7 @@ public class FilterTests {
 		var products = CreateTestProducts().Where(p => p.Name != null).ToList();
 		var sort = new SortExpression("Name", SortDirection.Ascending);
 		var result = products.ApplySort(sort).ToArray();
-		ClassicAssert.AreEqual(new[] { 1, 2, 4, 3 }, result.Select(p => p.Id).ToArray());
+		Assert.That(result.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 1, 2, 4, 3 }));
 	}
 
 	#endregion
@@ -488,7 +486,7 @@ public class FilterTests {
 		var sort = new SortExpression("Price", SortDirection.Descending);
 		var result = products.AsEnumerable().ApplyQuery(filter, sort);
 		Assert.That(result.TotalCount, Is.EqualTo(4));
-		ClassicAssert.AreEqual(new[] { 4, 2, 1, 5 }, result.Items.Select(p => p.Id).ToArray());
+		Assert.That(result.Items.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 4, 2, 1, 5 }));
 	}
 
 	[Test]
@@ -498,7 +496,7 @@ public class FilterTests {
 		var result = products.AsEnumerable().ApplyQuery(sort: sort, pageLength: 2, page: 1);
 		Assert.That(result.TotalCount, Is.EqualTo(5));
 		Assert.That(result.Page, Is.EqualTo(1));
-		ClassicAssert.AreEqual(new[] { 3, 4 }, result.Items.Select(p => p.Id).ToArray());
+		Assert.That(result.Items.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 3, 4 }));
 	}
 
 	[Test]
@@ -509,7 +507,7 @@ public class FilterTests {
 		Assert.That(result.TotalCount, Is.EqualTo(5));
 		// page should be adjusted to last page (page 2 for 5 items with pageLength 2)
 		Assert.That(result.Page, Is.EqualTo(2));
-		ClassicAssert.AreEqual(new[] { 5 }, result.Items.Select(p => p.Id).ToArray());
+		Assert.That(result.Items.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 5 }));
 	}
 
 	[Test]
@@ -523,7 +521,7 @@ public class FilterTests {
 	public void ApplyQuery_NullSort_PreservesOrder() {
 		var products = CreateTestProducts();
 		var result = products.AsEnumerable().ApplyQuery(sort: null);
-		ClassicAssert.AreEqual(new[] { 1, 2, 3, 4, 5 }, result.Items.Select(p => p.Id).ToArray());
+		Assert.That(result.Items.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 1, 2, 3, 4, 5 }));
 	}
 
 	[Test]
@@ -534,7 +532,7 @@ public class FilterTests {
 		var result = products.AsEnumerable().ApplyQuery(filter, sort, pageLength: 2, page: 0);
 		Assert.That(result.TotalCount, Is.EqualTo(3));
 		Assert.That(result.Page, Is.EqualTo(0));
-		ClassicAssert.AreEqual(new[] { 1, 2 }, result.Items.Select(p => p.Id).ToArray());
+		Assert.That(result.Items.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 1, 2 }));
 	}
 
 	#endregion
@@ -566,7 +564,7 @@ public class FilterTests {
 		var condition = FilterBuilder.In("Id", 1, 2, 3);
 		Assert.That(condition.Operator, Is.EqualTo(FilterOperator.In));
 		Assert.That(condition.Value, Is.InstanceOf<FilterValueMultiple>());
-		ClassicAssert.AreEqual(new object[] { 1, 2, 3 }, ((FilterValueMultiple)condition.Value).Operands);
+		Assert.That(((FilterValueMultiple)condition.Value).Operands, Is.EqualTo(new object[] { 1, 2, 3 }));
 	}
 
 	[Test]
@@ -622,7 +620,7 @@ public class FilterTests {
 		var value = FilterValue.Multiple(new object[] { 1, 2, 3 });
 		Assert.That(value, Is.InstanceOf<FilterValueMultiple>());
 		Assert.That(value.Type, Is.EqualTo(FilterValueType.Multiple));
-		ClassicAssert.AreEqual(new object[] { 1, 2, 3 }, ((FilterValueMultiple)value).Operands);
+		Assert.That(((FilterValueMultiple)value).Operands, Is.EqualTo(new object[] { 1, 2, 3 }));
 	}
 
 	[Test]
@@ -776,7 +774,7 @@ public class FilterTests {
 		var result = products.ApplyFilter(filter).ToArray();
 		// Beta Gadget (electronics, $24.99), Delta Gizmo (electronics, $99.95), Gamma Tool (out of stock)
 		Assert.That(result.Length, Is.EqualTo(3));
-		ClassicAssert.AreEqual(new[] { 2, 3, 4 }, result.Select(p => p.Id).OrderBy(x => x).ToArray());
+		Assert.That(result.Select(p => p.Id).OrderBy(x => x).ToArray(), Is.EqualTo(new[] { 2, 3, 4 }));
 	}
 
 	[Test]
@@ -792,7 +790,7 @@ public class FilterTests {
 		Assert.That(result.TotalCount, Is.EqualTo(3));
 		Assert.That(result.Page, Is.EqualTo(0));
 		// Delta Gizmo ($99.95), Beta Gadget ($24.99) — first page of 2
-		ClassicAssert.AreEqual(new[] { 4, 2 }, result.Items.Select(p => p.Id).ToArray());
+		Assert.That(result.Items.Select(p => p.Id).ToArray(), Is.EqualTo(new[] { 4, 2 }));
 	}
 
 	#endregion

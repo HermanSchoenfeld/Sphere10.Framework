@@ -13,8 +13,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -24,7 +22,7 @@ public class MiscellaneousTests {
 
 	[Test]
 	public void InterpolateNullAssumption() {
-		ClassicAssert.AreEqual(string.Empty, $"{null}");
+		Assert.That($"{null}", Is.EqualTo(string.Empty));
 	}
 
 	[Test]

@@ -9,15 +9,13 @@
 using System;
 using NUnit.Framework;
 using System.IO;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Data.Tests;
 
 [TestFixture]
 public class SqliteToolTest {
 	[Test]
 	public void ExistsByFilePath_False() {
-		ClassicAssert.IsFalse(Tools.Sqlite.ExistsByPath(GenerateTempFilename()));
+		Assert.That(Tools.Sqlite.ExistsByPath(GenerateTempFilename()), Is.False);
 	}
 
 	[Test]
@@ -25,7 +23,7 @@ public class SqliteToolTest {
 		var path = GenerateTempFilename();
 		try {
 			var dac1 = Tools.Sqlite.Create(path);
-			ClassicAssert.IsTrue(Tools.Sqlite.ExistsByPath(path));
+			Assert.That(Tools.Sqlite.ExistsByPath(path), Is.True);
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);
@@ -39,7 +37,7 @@ public class SqliteToolTest {
 		try {
 			var dac1 = Tools.Sqlite.Create(path);
 			System.Console.WriteLine("File Size is " + Tools.FileSystem.GetFileSize(path));
-			ClassicAssert.IsTrue(File.Exists(path));
+			Assert.That(File.Exists(path), Is.True);
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);
@@ -52,7 +50,7 @@ public class SqliteToolTest {
 		try {
 			var dac1 = Tools.Sqlite.Create(path);
 			Assert.DoesNotThrow(() => Tools.Sqlite.Create(path, existsPolicy: AlreadyExistsPolicy.Skip));
-			ClassicAssert.IsTrue(File.Exists(path));
+			Assert.That(File.Exists(path), Is.True);
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);
@@ -65,7 +63,7 @@ public class SqliteToolTest {
 		try {
 			var dac1 = Tools.Sqlite.Create(path);
 			Assert.DoesNotThrow(() => Tools.Sqlite.Create(path, existsPolicy: AlreadyExistsPolicy.Overwrite));
-			ClassicAssert.IsTrue(File.Exists(path));
+			Assert.That(File.Exists(path), Is.True);
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);
@@ -78,7 +76,7 @@ public class SqliteToolTest {
 		try {
 			var dac1 = Tools.Sqlite.Create(path);
 			Assert.Catch<Exception>(() => Tools.Sqlite.Create(path));
-			ClassicAssert.IsTrue(File.Exists(path));
+			Assert.That(File.Exists(path), Is.True);
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);
@@ -113,7 +111,7 @@ public class SqliteToolTest {
 		try {
 			var dac1 = Tools.Sqlite.Create(path, pageSize: 4096);
 			var pageSize = dac1.ExecuteScalar<long>("PRAGMA page_size;");
-			ClassicAssert.AreEqual(4096, pageSize);
+			Assert.That(pageSize, Is.EqualTo(4096));
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);
@@ -126,7 +124,7 @@ public class SqliteToolTest {
 		try {
 			var dac1 = Tools.Sqlite.Create(path, pageSize: 32768);
 			var pageSize = dac1.ExecuteScalar<long>("PRAGMA page_size;");
-			ClassicAssert.AreEqual(32768, pageSize);
+			Assert.That(pageSize, Is.EqualTo(32768));
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);
@@ -138,9 +136,9 @@ public class SqliteToolTest {
 		var path = GenerateTempFilename();
 		try {
 			var dac = Tools.Sqlite.Create(path);
-			ClassicAssert.IsTrue(Tools.Sqlite.ExistsByPath(path));
+			Assert.That(Tools.Sqlite.ExistsByPath(path), Is.True);
 			Tools.Sqlite.Drop(path);
-			ClassicAssert.IsFalse(Tools.Sqlite.ExistsByPath(path));
+			Assert.That(Tools.Sqlite.ExistsByPath(path), Is.False);
 		} finally {
 			if (File.Exists(path))
 				File.Delete(path);

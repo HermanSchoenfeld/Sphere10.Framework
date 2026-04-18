@@ -8,8 +8,6 @@
 
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -21,8 +19,8 @@ public class AppendIteratorTests {
 		var data = new[] { "one" };
 		var union = data.Union("one");
 		var result = union.ToArray();
-		ClassicAssert.AreEqual(1, result.Length);
-		ClassicAssert.AreEqual("one", result[0]);
+		Assert.That(result.Length, Is.EqualTo(1));
+		Assert.That(result[0], Is.EqualTo("one"));
 	}
 
 	[Test]
@@ -30,9 +28,9 @@ public class AppendIteratorTests {
 		var data = new[] { "one" };
 		var union = data.Concat("one");
 		var result = union.ToArray();
-		ClassicAssert.AreEqual(2, result.Length);
-		ClassicAssert.AreEqual("one", result[0]);
-		ClassicAssert.AreEqual("one", result[0]);
+		Assert.That(result.Length, Is.EqualTo(2));
+		Assert.That(result[0], Is.EqualTo("one"));
+		Assert.That(result[0], Is.EqualTo("one"));
 	}
 
 

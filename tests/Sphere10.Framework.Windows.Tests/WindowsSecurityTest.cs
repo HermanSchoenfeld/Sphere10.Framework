@@ -12,9 +12,6 @@ using System.Security.Principal;
 using System.IO;
 using Sphere10.Framework.Windows;
 using Sphere10.Framework.Windows.Security;
-using NUnit.Framework.Legacy;
-
-
 namespace Sphere10.Framework.UnitTests;
 
 [TestFixture]
@@ -43,11 +40,11 @@ public class WindowsSecurityTests {
 			WinAPI.ADVAPI32.SidNameUse.Domain
 		);
 
-		ClassicAssert.AreEqual(host.Name, obj.Host);
-		ClassicAssert.AreEqual("Domain", obj.Domain);
-		ClassicAssert.AreEqual("Name", obj.Name);
-		ClassicAssert.AreEqual(host.SID, obj.SID);
-		ClassicAssert.AreEqual(WinAPI.ADVAPI32.SidNameUse.Domain, obj.SidNameUsage);
+		Assert.That(obj.Host, Is.EqualTo(host.Name));
+		Assert.That(obj.Domain, Is.EqualTo("Domain"));
+		Assert.That(obj.Name, Is.EqualTo("Name"));
+		Assert.That(obj.SID, Is.EqualTo(host.SID));
+		Assert.That(obj.SidNameUsage, Is.EqualTo(WinAPI.ADVAPI32.SidNameUse.Domain));
 
 	}
 
@@ -61,9 +58,9 @@ public class WindowsSecurityTests {
 			"Name"
 		);
 
-		ClassicAssert.AreEqual(host.Name, obj.Host);
-		ClassicAssert.AreEqual("Name", obj.Name);
-		ClassicAssert.IsNull(obj.SID);
+		Assert.That(obj.Host, Is.EqualTo(host.Name));
+		Assert.That(obj.Name, Is.EqualTo("Name"));
+		Assert.That(obj.SID, Is.Null);
 	}
 
 
@@ -77,10 +74,10 @@ public class WindowsSecurityTests {
 			WinAPI.ADVAPI32.SidNameUse.Invalid
 		);
 
-		ClassicAssert.AreEqual(host.Name, obj.Host);
-		ClassicAssert.AreEqual(host.SID, obj.SID);
-		ClassicAssert.AreEqual(WinAPI.ADVAPI32.SidNameUse.Invalid, obj.NameUse);
-		ClassicAssert.AreEqual(string.Empty, obj.Name);
+		Assert.That(obj.Host, Is.EqualTo(host.Name));
+		Assert.That(obj.SID, Is.EqualTo(host.SID));
+		Assert.That(obj.NameUse, Is.EqualTo(WinAPI.ADVAPI32.SidNameUse.Invalid));
+		Assert.That(obj.Name, Is.EqualTo(string.Empty));
 	}
 
 	#endregion
@@ -90,43 +87,39 @@ public class WindowsSecurityTests {
 	[Test]
 	public void TestLocalHost() {
 		NTHost host = NTHost.CurrentMachine;
-		ClassicAssert.IsNotNull(host);
-		ClassicAssert.AreEqual(host.Name.ToUpper(), Environment.MachineName.ToUpper());
+		Assert.That(host, Is.Not.Null);
+		Assert.That(Environment.MachineName.ToUpper(), Is.EqualTo(host.Name.ToUpper()));
 	}
 
 	[Test]
 	public void TestLocalHostGetSid() {
 		NTHost host = NTHost.CurrentMachine;
-		ClassicAssert.IsNotNull(host.SID);
+		Assert.That(host.SID, Is.Not.Null);
 	}
 
 	[Test]
 	public void TestLocalHostGetAdministratorUser() {
 		NTHost host = NTHost.CurrentMachine;
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.AccountAdministratorSid, host.SID),
 				host.GetLocalUsers()
-			)
-		);
+			), Is.True);
 	}
 
 	[Test]
 	public void TestLocalHostAdministratorUserPrivilege() {
 		NTHost host = NTHost.CurrentMachine;
 		NTLocalUser user = GetObjectByName(host.GetLocalUsers(), "Administrator");
-		ClassicAssert.IsTrue(user.Privilege == UserPrivilege.Admin);
+		Assert.That(user.Privilege == UserPrivilege.Admin, Is.True);
 	}
 
 	[Test]
 	public void TestLocalHostGetGuest() {
 		NTHost host = NTHost.CurrentMachine;
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.AccountGuestSid, host.SID),
 				host.GetLocalUsers()
-			)
-		);
+			), Is.True);
 
 	}
 
@@ -137,34 +130,28 @@ public class WindowsSecurityTests {
 		NTLocalGroup group = GetObjectByName(localGroups, "Administrators");
 		SecurityIdentifier localHostSid = host.SID;
 		SecurityIdentifier adminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, localHostSid);
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				adminSid,
 				host.GetLocalGroups()
-			)
-		);
+			), Is.True);
 	}
 
 	[Test]
 	public void TestLocalHostGetGuestsGroup() {
 		NTHost host = NTHost.CurrentMachine;
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.BuiltinGuestsSid, null),
 				host.GetLocalGroups()
-			)
-		);
+			), Is.True);
 	}
 
 	[Test]
 	public void TestLocalHostGetPowerUsersGroup() {
 		NTHost host = NTHost.CurrentMachine;
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.BuiltinPowerUsersSid, null),
 				host.GetLocalGroups()
-			)
-		);
+			), Is.True);
 	}
 
 	[Test]
@@ -173,10 +160,10 @@ public class WindowsSecurityTests {
 		// find a unique user name
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
-		ClassicAssert.IsNotNull(user);
-		ClassicAssert.IsTrue(ContainsObjectByName(host.GetLocalUsers(), userName));
+		Assert.That(user, Is.Not.Null);
+		Assert.That(ContainsObjectByName(host.GetLocalUsers(), userName), Is.True);
 		user.Delete();
-		ClassicAssert.IsFalse(ContainsObjectByName(host.GetLocalUsers(), userName));
+		Assert.That(ContainsObjectByName(host.GetLocalUsers(), userName), Is.False);
 	}
 
 	[Test]
@@ -186,7 +173,7 @@ public class WindowsSecurityTests {
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
 		try {
-			ClassicAssert.IsNotNull(user.SID);
+			Assert.That(user.SID, Is.Not.Null);
 		} finally {
 			user.Delete();
 		}
@@ -199,7 +186,7 @@ public class WindowsSecurityTests {
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
 		try {
-			ClassicAssert.AreEqual(user.SID.AccountDomainSid, host.SID);
+			Assert.That(host.SID, Is.EqualTo(user.SID.AccountDomainSid));
 		} finally {
 			user.Delete();
 		}
@@ -216,7 +203,7 @@ public class WindowsSecurityTests {
 			user.HomeDirectory = value;
 			user.Update();
 			user = GetObjectByName(host.GetLocalUsers(), userName);
-			ClassicAssert.AreEqual(user.HomeDirectory, value);
+			Assert.That(value, Is.EqualTo(user.HomeDirectory));
 		} finally {
 			user.Delete();
 		}
@@ -232,7 +219,7 @@ public class WindowsSecurityTests {
 		try {
 			user.Update();
 			user = GetObjectByName(host.GetLocalUsers(), userName);
-			ClassicAssert.AreEqual(value, user.LastLogoff);
+			Assert.That(user.LastLogoff, Is.EqualTo(value));
 		} finally {
 			user.Delete();
 		}
@@ -248,7 +235,7 @@ public class WindowsSecurityTests {
 		try {
 			user.Update();
 			user = GetObjectByName(host.GetLocalUsers(), userName);
-			ClassicAssert.AreEqual(value, user.LastLogon);
+			Assert.That(user.LastLogon, Is.EqualTo(value));
 		} finally {
 			user.Delete();
 		}
@@ -264,7 +251,7 @@ public class WindowsSecurityTests {
 		user.LogonHours = value;
 		user.Update();
 		user = GetObjectByName(host.GetLocalUsers(), userName);
-		ClassicAssert.AreEqual(user.LogonHours, value);
+		Assert.That(value, Is.EqualTo(user.LogonHours));
 		user.Delete();
 	}
 
@@ -275,7 +262,7 @@ public class WindowsSecurityTests {
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
 		try {
-			ClassicAssert.AreEqual("\\\\*", user.LogonServer);
+			Assert.That(user.LogonServer, Is.EqualTo("\\\\*"));
 		} finally {
 			user.Delete();
 		}
@@ -293,7 +280,7 @@ public class WindowsSecurityTests {
 			user.MaxStorage = value;
 			user.Update();
 			user = GetObjectByName(host.GetLocalUsers(), userName);
-			ClassicAssert.AreEqual(value, user.MaxStorage);
+			Assert.That(user.MaxStorage, Is.EqualTo(value));
 		} finally {
 			user.Delete();
 		}
@@ -306,7 +293,7 @@ public class WindowsSecurityTests {
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
 		try {
-			ClassicAssert.AreEqual(user.Name, userName);
+			Assert.That(userName, Is.EqualTo(user.Name));
 		} finally {
 			user.Delete();
 		}
@@ -319,7 +306,7 @@ public class WindowsSecurityTests {
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
 		try {
-			ClassicAssert.AreEqual(user.NumberOfLogons, 0);
+			Assert.That(0, Is.EqualTo(user.NumberOfLogons));
 		} finally {
 			user.Delete();
 		}
@@ -344,7 +331,7 @@ public class WindowsSecurityTests {
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
 		try {
-			ClassicAssert.IsTrue(0 <= user.PasswordAge.TotalSeconds && user.PasswordAge.TotalSeconds <= 2);
+			Assert.That(0 <= user.PasswordAge.TotalSeconds && user.PasswordAge.TotalSeconds <= 2, Is.True);
 		} finally {
 			user.Delete();
 		}
@@ -357,7 +344,7 @@ public class WindowsSecurityTests {
 		string userName = GenerateUserName(host);
 		NTLocalUser user = host.CreateLocalUser(userName, "pPnNmm*&");
 		try {
-			ClassicAssert.AreEqual(user.Privilege, UserPrivilege.Guest);
+			Assert.That(UserPrivilege.Guest, Is.EqualTo(user.Privilege));
 		} finally {
 			user.Delete();
 		}
@@ -374,7 +361,7 @@ public class WindowsSecurityTests {
 			user.ScriptPath = value;
 			user.Update();
 			user = GetObjectByName(host.GetLocalUsers(), userName);
-			ClassicAssert.AreEqual(user.ScriptPath, value);
+			Assert.That(value, Is.EqualTo(user.ScriptPath));
 		} finally {
 			user.Delete();
 		}
@@ -392,7 +379,7 @@ public class WindowsSecurityTests {
 			user.UnitsPerWeek = value;
 			user.Update();
 			user = GetObjectByName(host.GetLocalUsers(), userName);
-			ClassicAssert.AreEqual(user.UnitsPerWeek, value);
+			Assert.That(value, Is.EqualTo(user.UnitsPerWeek));
 		} finally {
 			user.Delete();
 		}
@@ -409,7 +396,7 @@ public class WindowsSecurityTests {
 			user.Workstations = value;
 			user.Update();
 			user = GetObjectByName(host.GetLocalUsers(), userName);
-			ClassicAssert.AreEqual(user.Workstations, value);
+			Assert.That(value, Is.EqualTo(user.Workstations));
 		} finally {
 			user.Delete();
 		}
@@ -443,7 +430,7 @@ public class WindowsSecurityTests {
 			group = host.CreateLocalGroup(GenerateGroupName(host), null);
 			user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 			user.AddMembership(group.Name);
-			ClassicAssert.IsTrue(ContainsObjectByName(user.GetMembership(), group.Name));
+			Assert.That(ContainsObjectByName(user.GetMembership(), group.Name), Is.True);
 		} finally {
 			try {
 				if (user != null) {
@@ -472,11 +459,11 @@ public class WindowsSecurityTests {
 		NTLocalGroup group3 = null;
 		try {
 			group1 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group1);
+			Assert.That(group1, Is.Not.Null);
 			group2 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group2);
+			Assert.That(group2, Is.Not.Null);
 			group3 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group3);
+			Assert.That(group3, Is.Not.Null);
 
 
 			user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
@@ -488,16 +475,16 @@ public class WindowsSecurityTests {
 			user2.AddMembership(group3.Name);
 
 			NTLocalGroup[] user1Membership = user1.GetMembership();
-			ClassicAssert.IsNotNull(user1Membership);
+			Assert.That(user1Membership, Is.Not.Null);
 
-			ClassicAssert.IsTrue(ContainsObjectByName(user1Membership, group1.Name));
-			ClassicAssert.IsTrue(ContainsObjectByName(user1Membership, group2.Name));
+			Assert.That(ContainsObjectByName(user1Membership, group1.Name), Is.True);
+			Assert.That(ContainsObjectByName(user1Membership, group2.Name), Is.True);
 
 			NTLocalGroup[] user2Membership = user2.GetMembership();
-			ClassicAssert.IsNotNull(user2Membership);
+			Assert.That(user2Membership, Is.Not.Null);
 
-			ClassicAssert.IsTrue(ContainsObjectByName(user2Membership, group1.Name));
-			ClassicAssert.IsTrue(ContainsObjectByName(user2Membership, group3.Name));
+			Assert.That(ContainsObjectByName(user2Membership, group1.Name), Is.True);
+			Assert.That(ContainsObjectByName(user2Membership, group3.Name), Is.True);
 
 		} finally {
 			try {
@@ -544,10 +531,10 @@ public class WindowsSecurityTests {
 		NTHost host = NTHost.CurrentMachine;
 		string groupName = GenerateGroupName(host);
 		NTLocalGroup group = host.CreateLocalGroup(groupName, null);
-		ClassicAssert.IsNotNull(group);
-		ClassicAssert.IsTrue(ContainsObjectByName(host.GetLocalGroups(), groupName));
+		Assert.That(group, Is.Not.Null);
+		Assert.That(ContainsObjectByName(host.GetLocalGroups(), groupName), Is.True);
 		group.Delete();
-		ClassicAssert.IsFalse(ContainsObjectByName(host.GetLocalGroups(), groupName));
+		Assert.That(ContainsObjectByName(host.GetLocalGroups(), groupName), Is.False);
 	}
 
 	[Test]
@@ -558,7 +545,7 @@ public class WindowsSecurityTests {
 		NTLocalGroup group = host.CreateLocalGroup(groupName, description);
 		try {
 			group = GetObjectByName(host.GetLocalGroups(), groupName);
-			ClassicAssert.AreEqual(description, group.Description);
+			Assert.That(group.Description, Is.EqualTo(description));
 		} finally {
 			group.Delete();
 		}
@@ -575,7 +562,7 @@ public class WindowsSecurityTests {
 			group.Description = newDescription;
 			group.Update();
 			group = GetObjectByName(host.GetLocalGroups(), groupName);
-			ClassicAssert.AreEqual(newDescription, group.Description);
+			Assert.That(group.Description, Is.EqualTo(newDescription));
 		} finally {
 			group.Delete();
 		}
@@ -609,7 +596,7 @@ public class WindowsSecurityTests {
 			group = host.CreateLocalGroup(GenerateGroupName(host), null);
 			user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 			group.AddLocalMember(user.Name);
-			ClassicAssert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
+			Assert.That(ContainsObjectByName(group.GetLocalMembers(), user.Name), Is.True);
 		} finally {
 			try {
 				if (user != null) {
@@ -637,7 +624,7 @@ public class WindowsSecurityTests {
 			group = host.CreateLocalGroup(GenerateGroupName(host), null);
 			user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 			group.AddLocalMember(user.Name);
-			ClassicAssert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
+			Assert.That(ContainsObjectByName(group.GetLocalMembers(), user.Name), Is.True);
 			group.DeleteMember(user);
 			CollectionAssert.IsEmpty(group.GetLocalMembers());
 		} finally {
@@ -667,7 +654,7 @@ public class WindowsSecurityTests {
 			group = host.CreateLocalGroup(GenerateGroupName(host), null);
 			user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 			group.AddLocalMember(user.Name);
-			ClassicAssert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
+			Assert.That(ContainsObjectByName(group.GetLocalMembers(), user.Name), Is.True);
 			group.DeleteMember(user.SID);
 			CollectionAssert.IsEmpty(group.GetLocalMembers());
 		} finally {
@@ -697,7 +684,7 @@ public class WindowsSecurityTests {
 			group = host.CreateLocalGroup(GenerateGroupName(host), null);
 			user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 			group.AddLocalMember(user.Name);
-			ClassicAssert.IsTrue(ContainsObjectByName(group.GetLocalMembers(), user.Name));
+			Assert.That(ContainsObjectByName(group.GetLocalMembers(), user.Name), Is.True);
 			group.DeleteLocalMember(user.Name);
 			CollectionAssert.IsEmpty(group.GetLocalMembers());
 		} finally {
@@ -728,11 +715,11 @@ public class WindowsSecurityTests {
 		NTLocalGroup group3 = null;
 		try {
 			group1 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group1);
+			Assert.That(group1, Is.Not.Null);
 			group2 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group2);
+			Assert.That(group2, Is.Not.Null);
 			group3 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group3);
+			Assert.That(group3, Is.Not.Null);
 
 
 			user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
@@ -744,16 +731,16 @@ public class WindowsSecurityTests {
 			group3.AddLocalMember(user2.Name);
 
 			NTLocalGroup[] user1Membership = user1.GetMembership();
-			ClassicAssert.IsNotNull(user1Membership);
+			Assert.That(user1Membership, Is.Not.Null);
 
-			ClassicAssert.IsTrue(ContainsObjectByName(user1Membership, group1.Name));
-			ClassicAssert.IsTrue(ContainsObjectByName(user1Membership, group2.Name));
+			Assert.That(ContainsObjectByName(user1Membership, group1.Name), Is.True);
+			Assert.That(ContainsObjectByName(user1Membership, group2.Name), Is.True);
 
 			NTLocalGroup[] user2Membership = user2.GetMembership();
-			ClassicAssert.IsNotNull(user2Membership);
+			Assert.That(user2Membership, Is.Not.Null);
 
-			ClassicAssert.IsTrue(ContainsObjectByName(user2Membership, group1.Name));
-			ClassicAssert.IsTrue(ContainsObjectByName(user2Membership, group3.Name));
+			Assert.That(ContainsObjectByName(user2Membership, group1.Name), Is.True);
+			Assert.That(ContainsObjectByName(user2Membership, group3.Name), Is.True);
 
 		} finally {
 			try {
@@ -806,11 +793,11 @@ public class WindowsSecurityTests {
 		NTLocalGroup group3 = null;
 		try {
 			group1 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group1);
+			Assert.That(group1, Is.Not.Null);
 			group2 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group2);
+			Assert.That(group2, Is.Not.Null);
 			group3 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group3);
+			Assert.That(group3, Is.Not.Null);
 
 
 			user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
@@ -822,20 +809,20 @@ public class WindowsSecurityTests {
 			group3.AddLocalMember(user2.Name);
 
 			NTLocalObject[] group1Members = group1.GetLocalMembers();
-			ClassicAssert.IsNotNull(group1Members);
-			ClassicAssert.AreEqual(2, group1Members.Length);
-			ClassicAssert.IsTrue(ContainsObjectByName(group1Members, user1.Name));
-			ClassicAssert.IsTrue(ContainsObjectByName(group1Members, user2.Name));
+			Assert.That(group1Members, Is.Not.Null);
+			Assert.That(group1Members.Length, Is.EqualTo(2));
+			Assert.That(ContainsObjectByName(group1Members, user1.Name), Is.True);
+			Assert.That(ContainsObjectByName(group1Members, user2.Name), Is.True);
 
 			NTLocalObject[] group2Members = group2.GetLocalMembers();
-			ClassicAssert.IsNotNull(group2Members);
-			ClassicAssert.AreEqual(1, group2Members.Length);
-			ClassicAssert.IsTrue(ContainsObjectByName(group2Members, user1.Name));
+			Assert.That(group2Members, Is.Not.Null);
+			Assert.That(group2Members.Length, Is.EqualTo(1));
+			Assert.That(ContainsObjectByName(group2Members, user1.Name), Is.True);
 
 			NTLocalObject[] group3Members = group3.GetLocalMembers();
-			ClassicAssert.IsNotNull(group3Members);
-			ClassicAssert.AreEqual(1, group3Members.Length);
-			ClassicAssert.IsTrue(ContainsObjectByName(group3Members, user2.Name));
+			Assert.That(group3Members, Is.Not.Null);
+			Assert.That(group3Members.Length, Is.EqualTo(1));
+			Assert.That(ContainsObjectByName(group3Members, user2.Name), Is.True);
 
 		} finally {
 			try {
@@ -888,11 +875,11 @@ public class WindowsSecurityTests {
 		NTLocalGroup group3 = null;
 		try {
 			group1 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group1);
+			Assert.That(group1, Is.Not.Null);
 			group2 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group2);
+			Assert.That(group2, Is.Not.Null);
 			group3 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group3);
+			Assert.That(group3, Is.Not.Null);
 
 			user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
 			user2 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
@@ -909,12 +896,12 @@ public class WindowsSecurityTests {
 
 
 			NTLocalGroup[] user1Membership = user1.GetMembership();
-			ClassicAssert.IsNotNull(user1Membership);
-			ClassicAssert.AreEqual(0, user1Membership.Length);
+			Assert.That(user1Membership, Is.Not.Null);
+			Assert.That(user1Membership.Length, Is.EqualTo(0));
 
 			NTLocalGroup[] user2Membership = user2.GetMembership();
-			ClassicAssert.IsNotNull(user2Membership);
-			ClassicAssert.AreEqual(0, user2Membership.Length);
+			Assert.That(user2Membership, Is.Not.Null);
+			Assert.That(user2Membership.Length, Is.EqualTo(0));
 
 		} finally {
 			try {
@@ -967,11 +954,11 @@ public class WindowsSecurityTests {
 		NTLocalGroup group3 = null;
 		try {
 			group1 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group1);
+			Assert.That(group1, Is.Not.Null);
 			group2 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group2);
+			Assert.That(group2, Is.Not.Null);
 			group3 = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			ClassicAssert.IsNotNull(group3);
+			Assert.That(group3, Is.Not.Null);
 
 
 			user1 = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
@@ -989,16 +976,16 @@ public class WindowsSecurityTests {
 
 
 			NTObject[] group1Members = group1.GetMembers();
-			ClassicAssert.IsNotNull(group1Members);
-			ClassicAssert.AreEqual(0, group1Members.Length);
+			Assert.That(group1Members, Is.Not.Null);
+			Assert.That(group1Members.Length, Is.EqualTo(0));
 
 			NTObject[] group2Members = group2.GetMembers();
-			ClassicAssert.IsNotNull(group2Members);
-			ClassicAssert.AreEqual(0, group2Members.Length);
+			Assert.That(group2Members, Is.Not.Null);
+			Assert.That(group2Members.Length, Is.EqualTo(0));
 
 			NTObject[] group3Members = group3.GetMembers();
-			ClassicAssert.IsNotNull(group3Members);
-			ClassicAssert.AreEqual(0, group3Members.Length);
+			Assert.That(group3Members, Is.Not.Null);
+			Assert.That(group3Members.Length, Is.EqualTo(0));
 
 		} finally {
 			try {
@@ -1047,43 +1034,39 @@ public class WindowsSecurityTests {
 	[Test]
 	public void TestRemoteHost() {
 		NTHost host = new NTHost(RemoteHostName);
-		ClassicAssert.IsNotNull(host);
-		ClassicAssert.AreEqual(RemoteHostName.ToUpper(), host.Name.ToUpper());
+		Assert.That(host, Is.Not.Null);
+		Assert.That(host.Name.ToUpper(), Is.EqualTo(RemoteHostName.ToUpper()));
 	}
 
 	[Test]
 	public void TestRemoteHostGetSid() {
 		NTHost host = new NTHost(RemoteHostName);
-		ClassicAssert.IsNotNull(host.SID);
+		Assert.That(host.SID, Is.Not.Null);
 	}
 
 	[Test]
 	public void TestRemoteHostGetAdministratorUser() {
 		NTHost host = new NTHost(RemoteHostName);
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.AccountAdministratorSid, host.SID),
 				host.GetLocalUsers()
-			)
-		);
+			), Is.True);
 	}
 
 	[Test]
 	public void TestRemoteHostAdministratorUserPrivilege() {
 		NTHost host = new NTHost(RemoteHostName);
 		NTLocalUser user = GetObjectByName(host.GetLocalUsers(), "Administrator");
-		ClassicAssert.IsTrue(user.Privilege == UserPrivilege.Admin);
+		Assert.That(user.Privilege == UserPrivilege.Admin, Is.True);
 	}
 
 	[Test]
 	public void TestRemoteHostGetGuest() {
 		NTHost host = new NTHost(RemoteHostName);
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.AccountGuestSid, host.SID),
 				host.GetLocalUsers()
-			)
-		);
+			), Is.True);
 
 	}
 
@@ -1094,12 +1077,10 @@ public class WindowsSecurityTests {
 		NTLocalGroup group = GetObjectByName(localGroups, "Administrators");
 		SecurityIdentifier localHostSid = host.SID;
 		SecurityIdentifier adminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, localHostSid);
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				adminSid,
 				host.GetLocalGroups()
-			)
-		);
+			), Is.True);
 	}
 
 	[Test]
@@ -1108,7 +1089,7 @@ public class WindowsSecurityTests {
 		NTLocalGroup[] localGroups = host.GetLocalGroups();
 		NTLocalGroup group = GetObjectByName(localGroups, "Administrators");
 		NTLocalObject[] members = group.GetLocalMembers();
-		ClassicAssert.IsNotNull(members);
+		Assert.That(members, Is.Not.Null);
 		CollectionAssert.IsNotEmpty(members);
 	}
 
@@ -1116,23 +1097,19 @@ public class WindowsSecurityTests {
 	[Test]
 	public void TestRemoteHostGetGuestsGroup() {
 		NTHost host = new NTHost(RemoteHostName);
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.BuiltinGuestsSid, null),
 				host.GetLocalGroups()
-			)
-		);
+			), Is.True);
 	}
 
 	[Test]
 	public void TestRemoteHostGetPowerUsersGroup() {
 		NTHost host = new NTHost(RemoteHostName);
-		ClassicAssert.IsTrue(
-			ContainsSid(
+		Assert.That(ContainsSid(
 				new SecurityIdentifier(WellKnownSidType.BuiltinPowerUsersSid, null),
 				host.GetLocalGroups()
-			)
-		);
+			), Is.True);
 	}
 
 	#endregion

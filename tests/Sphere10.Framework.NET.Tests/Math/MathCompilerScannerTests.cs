@@ -9,8 +9,6 @@
 using NUnit.Framework;
 using System.IO;
 using Sphere10.Framework.Maths.Compiler;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.UnitTests;
 
 [TestFixture]
@@ -20,11 +18,11 @@ public class MathCompilerScannerTests {
 	public void TestComplexTokenSequence() {
 		string text = "ID1E-1E-3++";
 		Scanner scanner = new Scanner(new StringReader(text));
-		ClassicAssert.AreEqual(TokenType.Identifier, scanner.GetNextToken().TokenType);
-		ClassicAssert.AreEqual(TokenType.Minus, scanner.GetNextToken().TokenType);
-		ClassicAssert.AreEqual(TokenType.Scalar, scanner.GetNextToken().TokenType);
-		ClassicAssert.AreEqual(TokenType.Plus, scanner.GetNextToken().TokenType);
-		ClassicAssert.AreEqual(TokenType.Plus, scanner.GetNextToken().TokenType);
+		Assert.That(scanner.GetNextToken().TokenType, Is.EqualTo(TokenType.Identifier));
+		Assert.That(scanner.GetNextToken().TokenType, Is.EqualTo(TokenType.Minus));
+		Assert.That(scanner.GetNextToken().TokenType, Is.EqualTo(TokenType.Scalar));
+		Assert.That(scanner.GetNextToken().TokenType, Is.EqualTo(TokenType.Plus));
+		Assert.That(scanner.GetNextToken().TokenType, Is.EqualTo(TokenType.Plus));
 	}
 
 
@@ -33,9 +31,9 @@ public class MathCompilerScannerTests {
 		string text = "5";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Scalar, token.TokenType);
-		ClassicAssert.AreEqual(5.ToString(), token.Value);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Scalar));
+		Assert.That(token.Value, Is.EqualTo(5.ToString()));
 	}
 
 	[Test]
@@ -43,9 +41,9 @@ public class MathCompilerScannerTests {
 		string text = "123.456";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Scalar, token.TokenType);
-		ClassicAssert.AreEqual((123.456).ToString(), token.Value);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Scalar));
+		Assert.That(token.Value, Is.EqualTo((123.456).ToString()));
 	}
 
 	[Test]
@@ -53,9 +51,9 @@ public class MathCompilerScannerTests {
 		string text = "123.456E12";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Scalar, token.TokenType);
-		ClassicAssert.AreEqual(double.Parse(text), double.Parse(token.Value));
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Scalar));
+		Assert.That(double.Parse(token.Value), Is.EqualTo(double.Parse(text)));
 	}
 
 	[Test]
@@ -63,9 +61,9 @@ public class MathCompilerScannerTests {
 		string text = "   123.456E-12   e";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Scalar, token.TokenType);
-		ClassicAssert.AreEqual(double.Parse("123.456E-12"), double.Parse(token.Value));
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Scalar));
+		Assert.That(double.Parse(token.Value), Is.EqualTo(double.Parse("123.456E-12")));
 	}
 
 	[Test]
@@ -73,9 +71,9 @@ public class MathCompilerScannerTests {
 		string text = "abc123   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Identifier, token.TokenType);
-		ClassicAssert.AreEqual("abc123", token.Value);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Identifier));
+		Assert.That(token.Value, Is.EqualTo("abc123"));
 
 	}
 
@@ -84,8 +82,8 @@ public class MathCompilerScannerTests {
 		string text = " +   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Plus, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Plus));
 	}
 
 	[Test]
@@ -93,8 +91,8 @@ public class MathCompilerScannerTests {
 		string text = " -   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Minus, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Minus));
 	}
 
 	[Test]
@@ -102,8 +100,8 @@ public class MathCompilerScannerTests {
 		string text = " *   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Multiply, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Multiply));
 
 	}
 
@@ -112,8 +110,8 @@ public class MathCompilerScannerTests {
 		string text = " /   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Divide, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Divide));
 
 	}
 
@@ -122,8 +120,8 @@ public class MathCompilerScannerTests {
 		string text = " ^   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Power, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Power));
 
 	}
 
@@ -132,8 +130,8 @@ public class MathCompilerScannerTests {
 		string text = " =   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Assignment, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Assignment));
 	}
 
 	[Test]
@@ -141,8 +139,8 @@ public class MathCompilerScannerTests {
 		string text = " ==   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Equality, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Equality));
 	}
 
 	[Test]
@@ -150,8 +148,8 @@ public class MathCompilerScannerTests {
 		string text = " &&   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.And, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.And));
 	}
 
 	[Test]
@@ -159,8 +157,8 @@ public class MathCompilerScannerTests {
 		string text = " ||   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Or, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Or));
 	}
 
 	[Test]
@@ -168,8 +166,8 @@ public class MathCompilerScannerTests {
 		string text = " [   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.OpenBracket, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.OpenBracket));
 	}
 
 	[Test]
@@ -177,8 +175,8 @@ public class MathCompilerScannerTests {
 		string text = " ]   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.CloseBracket, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.CloseBracket));
 	}
 
 
@@ -187,8 +185,8 @@ public class MathCompilerScannerTests {
 		string text = " (   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.OpenParenthesis, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.OpenParenthesis));
 	}
 
 	[Test]
@@ -196,8 +194,8 @@ public class MathCompilerScannerTests {
 		string text = " )   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.CloseParenthesis, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.CloseParenthesis));
 	}
 
 	[Test]
@@ -205,8 +203,8 @@ public class MathCompilerScannerTests {
 		string text = " {   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.BeginBracket, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.BeginBracket));
 	}
 
 	[Test]
@@ -214,8 +212,8 @@ public class MathCompilerScannerTests {
 		string text = " }   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.EndBracket, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.EndBracket));
 	}
 
 	[Test]
@@ -223,8 +221,8 @@ public class MathCompilerScannerTests {
 		string text = " ,   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Comma, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Comma));
 	}
 
 	[Test]
@@ -232,8 +230,8 @@ public class MathCompilerScannerTests {
 		string text = " .   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Dot, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Dot));
 	}
 
 	[Test]
@@ -241,8 +239,8 @@ public class MathCompilerScannerTests {
 		string text = " leT   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Let, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Let));
 	}
 
 	[Test]
@@ -250,8 +248,8 @@ public class MathCompilerScannerTests {
 		string text = " If   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.If, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.If));
 	}
 
 	[Test]
@@ -259,8 +257,8 @@ public class MathCompilerScannerTests {
 		string text = " tHeN   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Then, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Then));
 	}
 
 
@@ -269,8 +267,8 @@ public class MathCompilerScannerTests {
 		string text = " else   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Else, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Else));
 	}
 
 
@@ -279,8 +277,8 @@ public class MathCompilerScannerTests {
 		string text = " ;   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.SemiColon, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.SemiColon));
 	}
 
 
@@ -289,8 +287,8 @@ public class MathCompilerScannerTests {
 		string text = " !   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Not, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Not));
 	}
 
 
@@ -299,8 +297,8 @@ public class MathCompilerScannerTests {
 		string text = " !=   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Inequality, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Inequality));
 	}
 
 
@@ -309,8 +307,8 @@ public class MathCompilerScannerTests {
 		string text = " %   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.Modulus, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.Modulus));
 	}
 
 	[Test]
@@ -318,8 +316,8 @@ public class MathCompilerScannerTests {
 		string text = " <   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.LessThan, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.LessThan));
 	}
 
 	[Test]
@@ -327,8 +325,8 @@ public class MathCompilerScannerTests {
 		string text = " <=   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.LessThanEqualTo, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.LessThanEqualTo));
 	}
 
 	[Test]
@@ -336,8 +334,8 @@ public class MathCompilerScannerTests {
 		string text = " >   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.GreaterThan, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.GreaterThan));
 	}
 
 
@@ -346,8 +344,8 @@ public class MathCompilerScannerTests {
 		string text = " >=   ";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.GreaterThanEqualTo, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.GreaterThanEqualTo));
 	}
 
 
@@ -356,8 +354,8 @@ public class MathCompilerScannerTests {
 		string text = "";
 		Scanner scanner = new Scanner(new StringReader(text));
 		Token token = scanner.GetNextToken();
-		ClassicAssert.IsNotNull(token);
-		ClassicAssert.AreEqual(TokenType.EndOfCode, token.TokenType);
+		Assert.That(token, Is.Not.Null);
+		Assert.That(token.TokenType, Is.EqualTo(TokenType.EndOfCode));
 	}
 }
 

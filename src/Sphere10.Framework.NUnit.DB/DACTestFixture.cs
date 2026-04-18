@@ -31,8 +31,6 @@ using NUnit.Framework;
 using Sphere10.Framework.Data;
 using Tools;
 using Object = Tools.Object;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.NUnit {
 	public abstract class DACTestFixture {
 		private const string MSSQLServer_Default = "localhost";
@@ -111,7 +109,7 @@ namespace Sphere10.Framework.NUnit {
 		protected virtual void AssertSameTableRowCount(IDAC source, IDAC dest, string tableName) {
 			var sourceCount = source.Count(tableName);
 			var destCount = dest.Count(tableName);
-			ClassicAssert.AreEqual(sourceCount, destCount);
+			Assert.That(destCount, Is.EqualTo(sourceCount));
 		}
 
 		// ReSharper disable once InconsistentNaming
@@ -157,8 +155,8 @@ namespace Sphere10.Framework.NUnit {
 			var sourceTableSchema = source.GetSchemaCached()[tableName];
 			var destTableSchema = dest.GetSchemaCached()[tableName];
 
-			ClassicAssert.AreNotEqual(DBKeyType.None, sourceTableSchema.PrimaryKey.KeyType, "Tables without primary keys are not supported");
-			ClassicAssert.AreEqual(sourceTableSchema.PrimaryKey.KeyType, destTableSchema.PrimaryKey.KeyType, "Table primary key types do not match");
+			Assert.That(sourceTableSchema.PrimaryKey.KeyType, Is.Not.EqualTo(DBKeyType.None), "Tables without primary keys are not supported");
+			Assert.That(destTableSchema.PrimaryKey.KeyType, Is.EqualTo(sourceTableSchema.PrimaryKey.KeyType), "Table primary key types do not match");
 
 			var sourceData = source.Select(tableName).Rows.Cast<DataRow>().Select(r => r.ItemArray.Select(Object.SanitizeObject).ToArray()).ToArray();
 			var destData = dest.Select(tableName).Rows.Cast<DataRow>().Select(r => r.ItemArray.Select(Object.SanitizeObject).ToArray()).ToArray();

@@ -15,8 +15,6 @@ using Sphere10.Framework.CryptoEx.EC;
 using System.Text;
 using Tools;
 using System.IO;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
@@ -95,7 +93,7 @@ public class OpenSSLConsistencyTests {
 		var sig = CallPascalOpenSSL(args).ToHexByteArray();
 		// OpenSSL doesn't take into account the "LowS fix" to resolve signature malleability so we account for it here
 		sig = ECDSATests.CanonicalizeSig(order, sig);
-		ClassicAssert.IsTrue(ecdsa.VerifyDigest(sig, messageDigest.ToHexByteArray(), publicKey));
+		Assert.That(ecdsa.VerifyDigest(sig, messageDigest.ToHexByteArray(), publicKey), Is.True);
 	}
 
 	[Test]
@@ -122,7 +120,7 @@ public class OpenSSLConsistencyTests {
 		};
 
 		var isValidSig = CallPascalOpenSSL(args);
-		ClassicAssert.IsTrue(isValidSig.ToBool());
+		Assert.That(isValidSig.ToBool(), Is.True);
 	}
 
 
@@ -157,7 +155,7 @@ public class OpenSSLConsistencyTests {
 		};
 
 		var isValidSig = CallPascalOpenSSL(args);
-		ClassicAssert.IsFalse(isValidSig.ToBool());
+		Assert.That(isValidSig.ToBool(), Is.False);
 	}
 }
 

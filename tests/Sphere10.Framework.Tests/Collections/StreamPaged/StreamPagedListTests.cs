@@ -12,8 +12,6 @@ using System.Text;
 using NUnit.Framework;
 using System.IO;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -30,7 +28,7 @@ public class StreamPagedListTests {
 		var size = serializer.ConstantSize;
 		var list = new StreamPagedList<string>(serializer, clusteredStream, includeListHeader: false, autoLoad: true);
 		list.Add("");
-		ClassicAssert.AreEqual(1, list.Count);
+		Assert.That(list.Count, Is.EqualTo(1));
 		var item = list.Read(0);
 		Assert.That(item, Is.EqualTo(string.Empty));
 	}
@@ -41,7 +39,7 @@ public class StreamPagedListTests {
 		var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
 		list.Add("item1");
-		ClassicAssert.AreEqual(1, list.Count);
+		Assert.That(list.Count, Is.EqualTo(1));
 	}
 
 	[Test]
@@ -52,7 +50,7 @@ public class StreamPagedListTests {
 		list.Add("item1");
 		list.Update(0, "item2");
 
-		ClassicAssert.AreEqual("item2", list[0]);
+		Assert.That(list[0], Is.EqualTo("item2"));
 	}
 
 	[Test]
@@ -62,7 +60,7 @@ public class StreamPagedListTests {
 
 		list.Add("item1");
 		list.Add("the second item");
-		ClassicAssert.AreEqual(2, list.Count);
+		Assert.That(list.Count, Is.EqualTo(2));
 	}
 
 	[Test]
@@ -72,7 +70,7 @@ public class StreamPagedListTests {
 
 		list.Add("item1");
 		list.AddRange("the second item", "33333333333333333333333333");
-		ClassicAssert.AreEqual(3, list.Count);
+		Assert.That(list.Count, Is.EqualTo(3));
 	}
 
 	[Test]
@@ -81,7 +79,7 @@ public class StreamPagedListTests {
 		var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
 		list.Add("item1");
-		ClassicAssert.AreEqual("item1", list[0]);
+		Assert.That(list[0], Is.EqualTo("item1"));
 	}
 
 	[Test]
@@ -90,8 +88,8 @@ public class StreamPagedListTests {
 		var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
 
 		list.AddRange("item1", "item2");
-		ClassicAssert.AreEqual("item1", list[0]);
-		ClassicAssert.AreEqual("item2", list[1]);
+		Assert.That(list[0], Is.EqualTo("item1"));
+		Assert.That(list[1], Is.EqualTo("item2"));
 	}
 
 	[Test]
@@ -102,7 +100,7 @@ public class StreamPagedListTests {
 		var added = new[] { 1, 2, 3, 4 };
 		list.AddRange(added);
 		var read = list.ReadRange(2, 2);
-		ClassicAssert.AreEqual(added[2..], read);
+		Assert.That(read, Is.EqualTo(added[2..]));
 	}
 
 	[Test]
@@ -115,7 +113,7 @@ public class StreamPagedListTests {
 
 		list.UpdateRange(0, read);
 
-		ClassicAssert.AreEqual(added, list);
+		Assert.That(list, Is.EqualTo(added));
 	}
 
 	[Test]
@@ -129,9 +127,9 @@ public class StreamPagedListTests {
 		mappedList.AddRange(random.NextInts(10));
 		int read = mappedList.ReadItemBytes(1, 1, 3, out var span);
 
-		ClassicAssert.AreEqual(read, span.Length);
-		ClassicAssert.AreEqual(3, span.Length);
-		ClassicAssert.AreEqual(BitConverter.GetBytes(mappedList[1])[1..], span.ToArray());
+		Assert.That(span.Length, Is.EqualTo(read));
+		Assert.That(span.Length, Is.EqualTo(3));
+		Assert.That(span.ToArray(), Is.EqualTo(BitConverter.GetBytes(mappedList[1])[1..]));
 	}
 
 	[Test]
@@ -154,23 +152,23 @@ public class StreamPagedListTests {
 			var len0 = stream.Length;
 
 			list.Add("test");
-			ClassicAssert.AreEqual(1, list.Count);
-			ClassicAssert.AreEqual("test", list[0]);
+			Assert.That(list.Count, Is.EqualTo(1));
+			Assert.That(list[0], Is.EqualTo("test"));
 
 			var len1 = stream.Length;
 
 			list.Add("test2");
-			ClassicAssert.AreEqual(2, list.Count);
-			ClassicAssert.AreEqual("test", list[0]);
-			ClassicAssert.AreEqual("test2", list[1]);
+			Assert.That(list.Count, Is.EqualTo(2));
+			Assert.That(list[0], Is.EqualTo("test"));
+			Assert.That(list[1], Is.EqualTo("test2"));
 
 			var len2 = stream.Length;
 
 			list.Add("test33");
-			ClassicAssert.AreEqual(3, list.Count);
-			ClassicAssert.AreEqual("test", list[0]);
-			ClassicAssert.AreEqual("test33", list[2]);
-			ClassicAssert.AreEqual("test2", list[1]);
+			Assert.That(list.Count, Is.EqualTo(3));
+			Assert.That(list[0], Is.EqualTo("test"));
+			Assert.That(list[2], Is.EqualTo("test33"));
+			Assert.That(list[1], Is.EqualTo("test2"));
 
 			var len3 = stream.Length;
 
@@ -180,26 +178,26 @@ public class StreamPagedListTests {
 
 			// Remove tip
 			list.RemoveAt(2);
-			ClassicAssert.AreEqual(2, list.Count);
-			ClassicAssert.AreEqual("test", list[0]);
-			ClassicAssert.AreEqual("test2", list[1]);
+			Assert.That(list.Count, Is.EqualTo(2));
+			Assert.That(list[0], Is.EqualTo("test"));
+			Assert.That(list[1], Is.EqualTo("test2"));
 
-			ClassicAssert.AreEqual(len2, stream.Length);
+			Assert.That(stream.Length, Is.EqualTo(len2));
 
 			// Illegal remove
 			Assert.That(() => list.RemoveAt(0), Throws.Exception);
 
 			// Remove rest
 			list.RemoveAt(1);
-			ClassicAssert.AreEqual(1, list.Count);
-			ClassicAssert.AreEqual("test", list[0]);
+			Assert.That(list.Count, Is.EqualTo(1));
+			Assert.That(list[0], Is.EqualTo("test"));
 
-			ClassicAssert.AreEqual(len1, stream.Length);
+			Assert.That(stream.Length, Is.EqualTo(len1));
 
 			list.RemoveAt(0);
-			ClassicAssert.AreEqual(0, list.Count);
+			Assert.That(list.Count, Is.EqualTo(0));
 
-			ClassicAssert.AreEqual(len0, stream.Length);
+			Assert.That(stream.Length, Is.EqualTo(len0));
 		}
 	}
 

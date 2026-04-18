@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using Sphere10.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Tools;
 
 public static class NUnit {
@@ -30,16 +28,16 @@ public static class NUnit {
 
 	public static void IsEmpty<T>(IEnumerable<T> collection, string message = null) {
 		if (!string.IsNullOrWhiteSpace(message))
-			ClassicAssert.IsEmpty(collection, message);
+			Assert.That(collection, Is.Empty, message);
 		else
-			ClassicAssert.IsEmpty(collection);
+			Assert.That(collection, Is.Empty);
 	}
 
 	public static void IsNotEmpty<T>(IEnumerable<T> collection, string message = null) {
 		if (!string.IsNullOrWhiteSpace(message))
-			ClassicAssert.IsNotEmpty(collection, message);
+			Assert.That(collection, Is.Not.Empty, message);
 		else
-			ClassicAssert.IsNotEmpty(collection);
+			Assert.That(collection, Is.Not.Empty);
 	}
 
 

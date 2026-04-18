@@ -10,8 +10,6 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -22,9 +20,9 @@ public class ExtendedMemoryStreamTests {
 	public void Empty([Values] InnerListType listType) {
 		using (CreateTestStream(listType, 10, out var stream)) {
 			var expected = new MemoryStream();
-			ClassicAssert.AreEqual(expected.Position, stream.Position);
-			ClassicAssert.AreEqual(expected.Length, stream.Length);
-			ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
+			Assert.That(stream.Position, Is.EqualTo(expected.Position));
+			Assert.That(stream.Length, Is.EqualTo(expected.Length));
+			Assert.That(stream.ToArray(), Is.EqualTo(expected.ToArray()));
 		}
 	}
 
@@ -35,10 +33,10 @@ public class ExtendedMemoryStreamTests {
 			var data = new Random(31337).NextBytes(100);
 			stream.WriteBytes(data);
 			expected.WriteBytes(data);
-			ClassicAssert.AreEqual(expected.ReadBytes(100), stream.ReadBytes(100));
-			ClassicAssert.AreEqual(expected.Position, stream.Position);
-			ClassicAssert.AreEqual(expected.Length, stream.Length);
-			ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
+			Assert.That(stream.ReadBytes(100), Is.EqualTo(expected.ReadBytes(100)));
+			Assert.That(stream.Position, Is.EqualTo(expected.Position));
+			Assert.That(stream.Length, Is.EqualTo(expected.Length));
+			Assert.That(stream.ToArray(), Is.EqualTo(expected.ToArray()));
 		}
 	}
 
@@ -51,9 +49,9 @@ public class ExtendedMemoryStreamTests {
 			expected.WriteBytes(data);
 			stream.SetLength(0);
 			expected.SetLength(0);
-			ClassicAssert.AreEqual(expected.Position, stream.Position);
-			ClassicAssert.AreEqual(expected.Length, stream.Length);
-			ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
+			Assert.That(stream.Position, Is.EqualTo(expected.Position));
+			Assert.That(stream.Length, Is.EqualTo(expected.Length));
+			Assert.That(stream.ToArray(), Is.EqualTo(expected.ToArray()));
 		}
 	}
 
@@ -63,7 +61,7 @@ public class ExtendedMemoryStreamTests {
 			var expected = new MemoryStream();
 			stream.Seek(0, SeekOrigin.End);
 			expected.Seek(0, SeekOrigin.End);
-			ClassicAssert.AreEqual(expected.Position, stream.Position);
+			Assert.That(stream.Position, Is.EqualTo(expected.Position));
 		}
 	}
 
@@ -76,7 +74,7 @@ public class ExtendedMemoryStreamTests {
 			expected.WriteBytes(data);
 			stream.Seek(0, SeekOrigin.End);
 			expected.Seek(0, SeekOrigin.End);
-			ClassicAssert.AreEqual(expected.Position, stream.Position);
+			Assert.That(stream.Position, Is.EqualTo(expected.Position));
 		}
 	}
 

@@ -12,8 +12,6 @@ using NUnit.Framework;
 using System.Linq;
 using System.Text;
 using Sphere10.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Merkle;
 
 [TestFixture]
@@ -26,8 +24,8 @@ public class MerkleTreeTests {
 		[Values(MerkleTreeImpl.Simple, MerkleTreeImpl.Flat, MerkleTreeImpl.Long)]
 		MerkleTreeImpl impl) {
 		var tree = CreateMerkleTree(impl, chf);
-		ClassicAssert.AreEqual(MerkleSize.FromLeafCount(0), tree.Size);
-		ClassicAssert.AreEqual(null, tree.Root);
+		Assert.That(tree.Size, Is.EqualTo(MerkleSize.FromLeafCount(0)));
+		Assert.That(tree.Root, Is.EqualTo(null));
 	}
 
 	[Test]
@@ -39,7 +37,7 @@ public class MerkleTreeTests {
 		var tree = CreateMerkleTree(impl, chf);
 		var data = rng.NextByteArrays(Hashers.GetDigestSizeBytes(chf), 1)[0];
 		tree.Leafs.Add(data);
-		ClassicAssert.AreEqual(data, tree.Root);
+		Assert.That(tree.Root, Is.EqualTo(data));
 	}
 
 	[Test]
@@ -58,7 +56,7 @@ public class MerkleTreeTests {
 		}
 
 		for (var i = 0; i < Items; i++) {
-			ClassicAssert.AreEqual(roots[i], tree.CalculateOldRoot(i + 1));
+			Assert.That(tree.CalculateOldRoot(i + 1), Is.EqualTo(roots[i]));
 		}
 	}
 
@@ -71,13 +69,13 @@ public class MerkleTreeTests {
 		var rng = new Random(31337);
 		// add item
 		tree.Leafs.Add(Hashers.Hash(chf, rng.NextBytes(100)));
-		ClassicAssert.AreEqual(tree.Leafs[0], tree.Root);
+		Assert.That(tree.Root, Is.EqualTo(tree.Leafs[0]));
 
 		// update it
 		var datum = Hashers.Hash(chf, rng.NextBytes(100));
 		tree.Leafs.Update(0, datum);
-		ClassicAssert.AreEqual(datum, tree.Leafs[0]);
-		ClassicAssert.AreEqual(datum, tree.Root);
+		Assert.That(tree.Leafs[0], Is.EqualTo(datum));
+		Assert.That(tree.Root, Is.EqualTo(datum));
 	}
 
 	[Test]
@@ -93,7 +91,7 @@ public class MerkleTreeTests {
 			tree.Leafs.Add(elem);
 			for (var i = 0; i < tree.Leafs.Count; i++) {
 				var proof = tree.GenerateExistenceProof(i).ToArray();
-				ClassicAssert.IsTrue(MerkleMath.VerifyExistenceProof(chf, tree.Root, tree.Size, i, elemsHash[i], proof));
+				Assert.That(MerkleMath.VerifyExistenceProof(chf, tree.Root, tree.Size, i, elemsHash[i], proof), Is.True);
 			}
 		}
 
@@ -123,7 +121,7 @@ public class MerkleTreeTests {
 				var consistencyProof = newTree.GenerateConsistencyProof(i);
 				var verifyProof = MerkleMath.VerifyConsistencyProof(chf, oldTree.Root, i, newTree.Root, i + (j - i), consistencyProof);
 
-				ClassicAssert.IsTrue(verifyProof);
+				Assert.That(verifyProof, Is.True);
 			}
 		}
 	}
@@ -147,7 +145,7 @@ public class MerkleTreeTests {
 				var proof = tree.GenerateContainsProof(i, j - i);
 				var verify = MerkleMath.VerifyContainsProof(chf, tree.Root, tree.Size, i, leafs, proof);
 
-				ClassicAssert.IsTrue(verify);
+				Assert.That(verify, Is.True);
 			}
 		}
 	}
@@ -170,7 +168,7 @@ public class MerkleTreeTests {
 			var leafs = indices.Select(i => elems[i]).ToArray();
 			var proof = tree.GenerateContainsProof(indices);
 			var verify = MerkleMath.VerifyContainsProof(chf, tree.Root, tree.Size, indices.Zip(leafs, Tuple.Create), proof);
-			ClassicAssert.IsTrue(verify);
+			Assert.That(verify, Is.True);
 		}
 	}
 
@@ -201,7 +199,7 @@ public class MerkleTreeTests {
 				var updateProof = oldTree.GenerateUpdateProof(i, j - i);
 				var verifyProof = MerkleMath.VerifyUpdateProof(chf, oldTree.Root, oldTree.Size, newRoot, i, updatedItems, updateProof);
 
-				ClassicAssert.IsTrue(verifyProof);
+				Assert.That(verifyProof, Is.True);
 			}
 		}
 	}
@@ -231,7 +229,7 @@ public class MerkleTreeTests {
 			// Gen proof
 			var updateProof = oldTree.GenerateUpdateProof(indices);
 			var verifyProof = MerkleMath.VerifyUpdateProof(chf, oldTree.Root, oldTree.Size, newTree.Root, indices.Zip(newLeafs), updateProof);
-			ClassicAssert.IsTrue(verifyProof);
+			Assert.That(verifyProof, Is.True);
 		}
 	}
 
@@ -257,7 +255,7 @@ public class MerkleTreeTests {
 		// Gen proof
 		var appendProof = oldTree.GenerateAppendProof();
 		var verifyProof = MerkleMath.VerifyAppendProof(chf, oldTree.Root, newTree.Root, oldTree.Size, newLeafs, appendProof);
-		ClassicAssert.IsTrue(verifyProof);
+		Assert.That(verifyProof, Is.True);
 	}
 
 	[Test]
@@ -281,7 +279,7 @@ public class MerkleTreeTests {
 			var deleteProof = oldTree.GenerateDeleteProof(i);
 			newTree.Leafs.RemoveRange(newTree.Leafs.Count - i, i);
 			var verifyProof = MerkleMath.VerifyDeleteProof(chf, oldTree.Root, leafCount, newTree.Root, i, deleteProof);
-			ClassicAssert.IsTrue(verifyProof);
+			Assert.That(verifyProof, Is.True);
 		}
 
 	}
@@ -307,7 +305,7 @@ public class MerkleTreeTests {
 		Assert.That(() => tree.ToBytes(), Throws.Nothing);
 		Assert.That(tree.ToBytes().Length, Is.GreaterThan(0));
 		// Verify root is still correct
-		ClassicAssert.AreEqual(reference.Root, tree.Root);
+		Assert.That(tree.Root, Is.EqualTo(reference.Root));
 	}
 
 	private IDynamicMerkleTree CreateReferenceTree(CHF chf, IEnumerable<byte[]> leafs = null)

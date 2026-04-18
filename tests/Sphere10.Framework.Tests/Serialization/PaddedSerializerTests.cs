@@ -8,8 +8,6 @@
 
 using System.Text;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -22,7 +20,7 @@ public class PaddedSerializerTests {
 		var size = serializer.CalculateSize(@value);
 		var bytes = serializer.SerializeBytesLE(@value);
 		Assert.That(bytes.Length, Is.EqualTo(size));
-		ClassicAssert.AreEqual(100, bytes.Length);
+		Assert.That(bytes.Length, Is.EqualTo(100));
 	}
 
 }

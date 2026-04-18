@@ -9,8 +9,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -19,33 +17,33 @@ public class StringFormatterTests {
 
 	[Test]
 	public void SimpleTest_1() {
-		ClassicAssert.AreEqual(string.Format("{0}", 1), Tools.Text.FormatEx("{0}", 1));
+		Assert.That(Tools.Text.FormatEx("{0}", 1), Is.EqualTo(string.Format("{0}", 1)));
 	}
 
 	[Test]
 	public void SimpleTest_2() {
-		ClassicAssert.AreEqual(string.Format(" {0}", 23), Tools.Text.FormatEx(" {0}", 23));
+		Assert.That(Tools.Text.FormatEx(" {0}", 23), Is.EqualTo(string.Format(" {0}", 23)));
 	}
 
 	public void SimpleTest_3() {
-		ClassicAssert.AreEqual(string.Format(" {0}", 23), Tools.Text.FormatEx(" {0}", 23));
+		Assert.That(Tools.Text.FormatEx(" {0}", 23), Is.EqualTo(string.Format(" {0}", 23)));
 	}
 
 	[Test]
 	public void SimpleTest_4() {
-		ClassicAssert.AreEqual(string.Format(" !{0}! ", 99), Tools.Text.FormatEx(" !{0}! ", 99));
+		Assert.That(Tools.Text.FormatEx(" !{0}! ", 99), Is.EqualTo(string.Format(" !{0}! ", 99)));
 	}
 
 	[Test]
 	public void SimpleTest_5() {
 		var now = DateTime.Now;
-		ClassicAssert.AreEqual(string.Format(" x{0:yyyy-MM-dd}x ", now), Tools.Text.FormatEx(" x{0:yyyy-MM-dd}x ", now));
+		Assert.That(Tools.Text.FormatEx(" x{0:yyyy-MM-dd}x ", now), Is.EqualTo(string.Format(" x{0:yyyy-MM-dd}x ", now)));
 	}
 
 	[Test]
 	public void SimpleTest_6() {
 		var now = DateTime.Now;
-		ClassicAssert.AreEqual(string.Format(" ${0:yyyy-MM-dd}^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now), Tools.Text.FormatEx(" ${0:yyyy-MM-dd}^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now));
+		Assert.That(Tools.Text.FormatEx(" ${0:yyyy-MM-dd}^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now), Is.EqualTo(string.Format(" ${0:yyyy-MM-dd}^^^^^{1}{2:HH:mm:ss tt zz}! ", now, "ALPHA", now)));
 	}
 
 	[Test]
@@ -58,7 +56,7 @@ public class StringFormatterTests {
 					return null;
 			}
 		};
-		ClassicAssert.AreEqual("1", Tools.Text.FormatEx("{token}", resolver));
+		Assert.That(Tools.Text.FormatEx("{token}", resolver), Is.EqualTo("1"));
 	}
 
 	[Test]
@@ -73,7 +71,7 @@ public class StringFormatterTests {
 					return null;
 			}
 		};
-		ClassicAssert.AreEqual("   X1lhjk34k2342kj4h2!", Tools.Text.FormatEx("   X{token1}lhjk34k2342kj4h{token2}!", resolver));
+		Assert.That(Tools.Text.FormatEx("   X{token1}lhjk34k2342kj4h{token2}!", resolver), Is.EqualTo("   X1lhjk34k2342kj4h2!"));
 	}
 
 	[Test]
@@ -88,42 +86,42 @@ public class StringFormatterTests {
 					return null;
 			}
 		};
-		ClassicAssert.AreEqual(" !ABCDEEDCBA! ", Tools.Text.FormatEx(" !{0}{token1}{1}{token2}{2}{2}{token2}{1}{token1}{0}! ", resolver, "A", "C", "E"));
+		Assert.That(Tools.Text.FormatEx(" !{0}{token1}{1}{token2}{2}{2}{token2}{1}{token1}{0}! ", resolver, "A", "C", "E"), Is.EqualTo(" !ABCDEEDCBA! "));
 	}
 
 	[Test]
 	public void EscapedTest_1() {
-		ClassicAssert.AreEqual(string.Format("{{"), Tools.Text.FormatEx("{{"));
+		Assert.That(Tools.Text.FormatEx("{{"), Is.EqualTo(string.Format("{{")));
 	}
 
 	[Test]
 	public void EscapedTest_2() {
-		ClassicAssert.AreEqual(string.Format("{{"), Tools.Text.FormatEx("{{"));
+		Assert.That(Tools.Text.FormatEx("{{"), Is.EqualTo(string.Format("{{")));
 	}
 
 	[Test]
 	public void EscapedTest_3() {
-		ClassicAssert.AreEqual(string.Format("{{0}}"), Tools.Text.FormatEx("{{0}}"));
+		Assert.That(Tools.Text.FormatEx("{{0}}"), Is.EqualTo(string.Format("{{0}}")));
 	}
 
 	[Test]
 	public void EscapedTest_4() {
-		ClassicAssert.AreEqual(string.Format("{{{0}", 1), Tools.Text.FormatEx("{{{0}", 1));
+		Assert.That(Tools.Text.FormatEx("{{{0}", 1), Is.EqualTo(string.Format("{{{0}", 1)));
 	}
 
 	[Test]
 	public void EscapedTest_5() {
-		ClassicAssert.AreEqual(string.Format("{0}}}", 1), Tools.Text.FormatEx("{0}}}", 1));
+		Assert.That(Tools.Text.FormatEx("{0}}}", 1), Is.EqualTo(string.Format("{0}}}", 1)));
 	}
 
 	[Test]
 	public void EscapedTest_6() {
-		ClassicAssert.AreEqual(string.Format("{{{0}}}", 1), Tools.Text.FormatEx("{{{0}}}", 1));
+		Assert.That(Tools.Text.FormatEx("{{{0}}}", 1), Is.EqualTo(string.Format("{{{0}}}", 1)));
 	}
 
 	[Test]
 	public void EscapedTest_7() {
-		ClassicAssert.AreEqual(string.Format("{{}}", 1), Tools.Text.FormatEx("{{}}", 1));
+		Assert.That(Tools.Text.FormatEx("{{}}", 1), Is.EqualTo(string.Format("{{}}", 1)));
 	}
 
 
@@ -139,7 +137,7 @@ public class StringFormatterTests {
 					return null;
 			}
 		};
-		ClassicAssert.AreEqual(" {!A{BCD}EEDCBA!} ", Tools.Text.FormatEx(" {{!{0}{{{token1}{1}{token2}}}{2}{2}{token2}{1}{token1}{0}!}} ", resolver, "A", "C", "E"));
+		Assert.That(Tools.Text.FormatEx(" {{!{0}{{{token1}{1}{token2}}}{2}{2}{token2}{1}{token1}{0}!}} ", resolver, "A", "C", "E"), Is.EqualTo(" {!A{BCD}EEDCBA!} "));
 	}
 
 	[Test]

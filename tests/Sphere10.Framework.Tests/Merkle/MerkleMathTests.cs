@@ -9,8 +9,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Merkle;
 
 [TestFixture]
@@ -39,18 +37,18 @@ public class MerkleMathTests {
 	[Test]
 	public void IsPerfect() {
 		for (var x = 0; x < 31; x++) {
-			ClassicAssert.IsTrue(MerkleMath.IsPerfectTree(MerkleSize.FromLeafCount(1 << x)));
+			Assert.That(MerkleMath.IsPerfectTree(MerkleSize.FromLeafCount(1 << x)), Is.True);
 			if (x != 1)
-				ClassicAssert.IsFalse(MerkleMath.IsPerfectTree(MerkleSize.FromLeafCount((1 << x) - 1)));
+				Assert.That(MerkleMath.IsPerfectTree(MerkleSize.FromLeafCount((1 << x) - 1)), Is.False);
 		}
 	}
 
 	[Test]
 	public void CalculateHeight_Basic() {
-		ClassicAssert.AreEqual(0, MerkleMath.CalculateHeight(0));
-		ClassicAssert.AreEqual(1, MerkleMath.CalculateHeight(1));
-		ClassicAssert.AreEqual(3, MerkleMath.CalculateHeight(3));
-		ClassicAssert.AreEqual(32, MerkleMath.CalculateHeight(int.MaxValue));
+		Assert.That(MerkleMath.CalculateHeight(0), Is.EqualTo(0));
+		Assert.That(MerkleMath.CalculateHeight(1), Is.EqualTo(1));
+		Assert.That(MerkleMath.CalculateHeight(3), Is.EqualTo(3));
+		Assert.That(MerkleMath.CalculateHeight(int.MaxValue), Is.EqualTo(32));
 	}
 
 	[Test]
@@ -63,7 +61,7 @@ public class MerkleMathTests {
 
 				var height = MerkleMath.CalculateHeight(leafCount);
 				var dims = CalculateTreeDimensionsManual(leafCount);
-				ClassicAssert.AreEqual(dims.Length, height);
+				Assert.That(height, Is.EqualTo(dims.Length));
 			}
 		}
 	}
@@ -83,7 +81,7 @@ public class MerkleMathTests {
 					if (k == 31 && leafCount == int.MaxValue) {
 						var xxx = 1;
 					}
-					ClassicAssert.AreEqual(dims[k], MerkleMath.CalculateLevelLength(treeSize.LeafCount, k));
+					Assert.That(MerkleMath.CalculateLevelLength(treeSize.LeafCount, k), Is.EqualTo(dims[k]));
 				}
 			}
 		}
@@ -105,9 +103,9 @@ public class MerkleMathTests {
 
 			var dims = CalculateTreeDimensionsManual(leafCount); // note: CalculateTreeDimensions is simple integer based arithmetic
 			var treeSize = MerkleSize.FromLeafCount(leafCount);
-			ClassicAssert.AreEqual(dims.Length, MerkleMath.CalculateHeight(leafCount));
+			Assert.That(MerkleMath.CalculateHeight(leafCount), Is.EqualTo(dims.Length));
 			for (var j = 0; j < dims.Length; j++) {
-				ClassicAssert.AreEqual(dims[j], MerkleMath.CalculateLevelLength(treeSize.LeafCount, j));
+				Assert.That(MerkleMath.CalculateLevelLength(treeSize.LeafCount, j), Is.EqualTo(dims[j]));
 			}
 		}
 	}
@@ -115,7 +113,7 @@ public class MerkleMathTests {
 	[Test]
 	public void CalculateNodeTraits_Single() {
 		var size = MerkleSize.FromLeafCount(1);
-		ClassicAssert.AreEqual(1, size.Height);
+		Assert.That(size.Height, Is.EqualTo(1));
 		var traits = MerkleMath.GetTraits(size, MerkleCoordinate.LeafAt(0));
 		AssertEx.HasFlags(MerkleNodeTraits.Root, traits);
 		AssertEx.HasFlags(MerkleNodeTraits.Leaf, traits);
@@ -216,7 +214,7 @@ public class MerkleMathTests {
 	public void CalculateNodeTraits_Root_1() {
 		var size = MerkleSize.FromLeafCount(1);
 		//          T
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Root));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Root), Is.True);
 	}
 
 	[Test]
@@ -297,7 +295,7 @@ public class MerkleMathTests {
 		var size = MerkleSize.FromLeafCount(1);
 
 		//          T
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
 	}
 
 	[Test]
@@ -308,12 +306,12 @@ public class MerkleMathTests {
 		//      T       T
 		//    T   T   T   T     
 
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
 	}
 
 	[Test]
@@ -324,17 +322,17 @@ public class MerkleMathTests {
 		//      T       T       F
 		//    T   T   T   T   T      
 
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(3, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 2)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 3)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 4)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(3, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 2)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 3)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 4)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
 
 	}
 
@@ -346,22 +344,22 @@ public class MerkleMathTests {
 		//      T       T       T       
 		//    T   T   T   T   T   T         
 
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(3, 0)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(3, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
 
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 1)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
 
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 2)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 2)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
 
 
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 3)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 4)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 5)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 3)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 4)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 5)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
 
 	}
 
@@ -373,23 +371,23 @@ public class MerkleMathTests {
 		//      T       T       T       F
 		//    T   T   T   T   T   T   T      
 
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(3, 0)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(3, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
 
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 1)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(2, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
 
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 2)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsFalse(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 3)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 2)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(1, 3)).HasFlag(MerkleNodeTraits.Perfect), Is.False);
 
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 3)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 4)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 5)).HasFlag(MerkleNodeTraits.Perfect));
-		ClassicAssert.IsTrue(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 6)).HasFlag(MerkleNodeTraits.Perfect));
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 0)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 1)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 2)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 3)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 4)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 5)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
+		Assert.That(MerkleMath.GetTraits(size, MerkleCoordinate.From(0, 6)).HasFlag(MerkleNodeTraits.Perfect), Is.True);
 
 	}
 
@@ -410,55 +408,55 @@ public class MerkleMathTests {
 
 
 		var (left, right) = MerkleMath.GetChildren(size, a);
-		ClassicAssert.AreEqual(b, left);
-		ClassicAssert.AreEqual(c, right);
+		Assert.That(left, Is.EqualTo(b));
+		Assert.That(right, Is.EqualTo(c));
 
 		(left, right) = MerkleMath.GetChildren(size, b);
-		ClassicAssert.AreEqual(d, left);
-		ClassicAssert.AreEqual(e, right);
+		Assert.That(left, Is.EqualTo(d));
+		Assert.That(right, Is.EqualTo(e));
 
 		(left, right) = MerkleMath.GetChildren(size, c);
-		ClassicAssert.AreEqual(f, left);
-		ClassicAssert.AreEqual(MerkleCoordinate.Null, right);
+		Assert.That(left, Is.EqualTo(f));
+		Assert.That(right, Is.EqualTo(MerkleCoordinate.Null));
 
 	}
 
 	[Test]
 	public void FromFlatCoordinate() {
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 0), MerkleMath.FromFlatIndex(0));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 1), MerkleMath.FromFlatIndex(1));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(1, 0), MerkleMath.FromFlatIndex(2));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 2), MerkleMath.FromFlatIndex(3));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 3), MerkleMath.FromFlatIndex(4));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(1, 1), MerkleMath.FromFlatIndex(5));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(2, 0), MerkleMath.FromFlatIndex(6));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 4), MerkleMath.FromFlatIndex(7));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 5), MerkleMath.FromFlatIndex(8));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(1, 2), MerkleMath.FromFlatIndex(9));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 6), MerkleMath.FromFlatIndex(10));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(0, 7), MerkleMath.FromFlatIndex(11));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(1, 3), MerkleMath.FromFlatIndex(12));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(2, 1), MerkleMath.FromFlatIndex(13));
-		ClassicAssert.AreEqual(MerkleCoordinate.From(3, 0), MerkleMath.FromFlatIndex(14));
+		Assert.That(MerkleMath.FromFlatIndex(0), Is.EqualTo(MerkleCoordinate.From(0, 0)));
+		Assert.That(MerkleMath.FromFlatIndex(1), Is.EqualTo(MerkleCoordinate.From(0, 1)));
+		Assert.That(MerkleMath.FromFlatIndex(2), Is.EqualTo(MerkleCoordinate.From(1, 0)));
+		Assert.That(MerkleMath.FromFlatIndex(3), Is.EqualTo(MerkleCoordinate.From(0, 2)));
+		Assert.That(MerkleMath.FromFlatIndex(4), Is.EqualTo(MerkleCoordinate.From(0, 3)));
+		Assert.That(MerkleMath.FromFlatIndex(5), Is.EqualTo(MerkleCoordinate.From(1, 1)));
+		Assert.That(MerkleMath.FromFlatIndex(6), Is.EqualTo(MerkleCoordinate.From(2, 0)));
+		Assert.That(MerkleMath.FromFlatIndex(7), Is.EqualTo(MerkleCoordinate.From(0, 4)));
+		Assert.That(MerkleMath.FromFlatIndex(8), Is.EqualTo(MerkleCoordinate.From(0, 5)));
+		Assert.That(MerkleMath.FromFlatIndex(9), Is.EqualTo(MerkleCoordinate.From(1, 2)));
+		Assert.That(MerkleMath.FromFlatIndex(10), Is.EqualTo(MerkleCoordinate.From(0, 6)));
+		Assert.That(MerkleMath.FromFlatIndex(11), Is.EqualTo(MerkleCoordinate.From(0, 7)));
+		Assert.That(MerkleMath.FromFlatIndex(12), Is.EqualTo(MerkleCoordinate.From(1, 3)));
+		Assert.That(MerkleMath.FromFlatIndex(13), Is.EqualTo(MerkleCoordinate.From(2, 1)));
+		Assert.That(MerkleMath.FromFlatIndex(14), Is.EqualTo(MerkleCoordinate.From(3, 0)));
 	}
 
 	[Test]
 	public void ToFlatCoordinate() {
-		ClassicAssert.AreEqual(0, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 0)));
-		ClassicAssert.AreEqual(1, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 1)));
-		ClassicAssert.AreEqual(2, MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 0)));
-		ClassicAssert.AreEqual(3, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 2)));
-		ClassicAssert.AreEqual(4, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 3)));
-		ClassicAssert.AreEqual(5, MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 1)));
-		ClassicAssert.AreEqual(6, MerkleMath.ToFlatIndex(MerkleCoordinate.From(2, 0)));
-		ClassicAssert.AreEqual(7, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 4)));
-		ClassicAssert.AreEqual(8, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 5)));
-		ClassicAssert.AreEqual(9, MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 2)));
-		ClassicAssert.AreEqual(10, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 6)));
-		ClassicAssert.AreEqual(11, MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 7)));
-		ClassicAssert.AreEqual(12, MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 3)));
-		ClassicAssert.AreEqual(13, MerkleMath.ToFlatIndex(MerkleCoordinate.From(2, 1)));
-		ClassicAssert.AreEqual(14, MerkleMath.ToFlatIndex(MerkleCoordinate.From(3, 0)));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 0)), Is.EqualTo(0));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 1)), Is.EqualTo(1));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 0)), Is.EqualTo(2));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 2)), Is.EqualTo(3));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 3)), Is.EqualTo(4));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 1)), Is.EqualTo(5));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(2, 0)), Is.EqualTo(6));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 4)), Is.EqualTo(7));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 5)), Is.EqualTo(8));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 2)), Is.EqualTo(9));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 6)), Is.EqualTo(10));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(0, 7)), Is.EqualTo(11));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(1, 3)), Is.EqualTo(12));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(2, 1)), Is.EqualTo(13));
+		Assert.That(MerkleMath.ToFlatIndex(MerkleCoordinate.From(3, 0)), Is.EqualTo(14));
 	}
 
 	[Test]
@@ -467,7 +465,7 @@ public class MerkleMathTests {
 		for (var i = 0UL; i < Max; i++) {
 			var coord = MerkleMath.FromFlatIndex(i);
 			var result = MerkleMath.ToFlatIndex(coord);
-			ClassicAssert.AreEqual(i, result);
+			Assert.That(result, Is.EqualTo(i));
 		}
 	}
 
@@ -477,7 +475,7 @@ public class MerkleMathTests {
 		var set = new HashSet<MerkleCoordinate>();
 		for (var i = 0UL; i < Max; i++) {
 			var coord = MerkleMath.FromFlatIndex(i);
-			ClassicAssert.IsFalse(set.Contains(coord));
+			Assert.That(set.Contains(coord), Is.False);
 			set.Add(coord);
 		}
 	}

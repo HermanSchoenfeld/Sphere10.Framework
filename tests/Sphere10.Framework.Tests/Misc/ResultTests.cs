@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -18,14 +16,14 @@ public class ResultTests {
 
 	[Test]
 	public void ValueTypeCast_Bool() {
-		ClassicAssert.IsTrue((bool)Result<bool>.From(true));
-		ClassicAssert.IsFalse((bool)Result<bool>.From(false));
+		Assert.That((bool)Result<bool>.From(true), Is.True);
+		Assert.That((bool)Result<bool>.From(false), Is.False);
 	}
 
 	[Test]
 	public void ValueTypeCast_Result_Bool() {
-		ClassicAssert.AreEqual(Result<bool>.From(true), (Result<bool>)true);
-		ClassicAssert.AreEqual(Result<bool>.From(false), (Result<bool>)false);
+		Assert.That((Result<bool>)true, Is.EqualTo(Result<bool>.From(true)));
+		Assert.That((Result<bool>)false, Is.EqualTo(Result<bool>.From(false)));
 	}
 
 	[Test]

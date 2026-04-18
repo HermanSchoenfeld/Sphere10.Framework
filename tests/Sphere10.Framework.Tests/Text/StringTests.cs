@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -18,64 +16,64 @@ public class StringTests {
 
 	[Test]
 	public void TrimStart_1() {
-		ClassicAssert.AreEqual("", "alpha".TrimStart("alpha"));
+		Assert.That("alpha".TrimStart("alpha"), Is.EqualTo(""));
 	}
 
 	[Test]
 	public void TrimStart_2() {
-		ClassicAssert.AreEqual("1", "alpha1".TrimStart("alpha"));
+		Assert.That("alpha1".TrimStart("alpha"), Is.EqualTo("1"));
 	}
 
 	[Test]
 	public void TrimStart_3() {
-		ClassicAssert.AreEqual("1alpha2", "1alpha2".TrimStart("alpha"));
+		Assert.That("1alpha2".TrimStart("alpha"), Is.EqualTo("1alpha2"));
 	}
 
 
 	[Test]
 	public void TrimStart_4() {
-		ClassicAssert.AreEqual("", "aLphA".TrimStart("alpha", false));
+		Assert.That("aLphA".TrimStart("alpha", false), Is.EqualTo(""));
 	}
 
 	[Test]
 	public void TrimStart_5() {
-		ClassicAssert.AreEqual("1", "AlpHa1".TrimStart("alpha", false));
+		Assert.That("AlpHa1".TrimStart("alpha", false), Is.EqualTo("1"));
 	}
 
 	[Test]
 	public void TrimStart_6() {
-		ClassicAssert.AreEqual("1aLPha2", "1aLPha2".TrimStart("alpha", false));
+		Assert.That("1aLPha2".TrimStart("alpha", false), Is.EqualTo("1aLPha2"));
 	}
 
 
 	[Test]
 	public void TrimEnd_1() {
-		ClassicAssert.AreEqual("", "alpha".TrimEnd("alpha"));
+		Assert.That("alpha".TrimEnd("alpha"), Is.EqualTo(""));
 	}
 
 	[Test]
 	public void TrimEnd_2() {
-		ClassicAssert.AreEqual("1", "1alpha".TrimEnd("alpha"));
+		Assert.That("1alpha".TrimEnd("alpha"), Is.EqualTo("1"));
 	}
 
 	[Test]
 	public void TrimEnd_3() {
-		ClassicAssert.AreEqual("1aLpha2", "1aLpha2".TrimEnd("alpha"));
+		Assert.That("1aLpha2".TrimEnd("alpha"), Is.EqualTo("1aLpha2"));
 	}
 
 	[Test]
 	public void TrimEnd_4() {
-		ClassicAssert.AreEqual("", "alpHa".TrimEnd("alpha", false));
+		Assert.That("alpHa".TrimEnd("alpha", false), Is.EqualTo(""));
 	}
 
 	[Test]
 	public void TrimEnd_5() {
-		ClassicAssert.AreEqual("1", "1AlphA".TrimEnd("alpha", false));
+		Assert.That("1AlphA".TrimEnd("alpha", false), Is.EqualTo("1"));
 	}
 
 	[Test]
 	public void TrimEnd_6() {
-		ClassicAssert.AreEqual("1alpHa2", "1alpHa2".TrimEnd("alpha", false));
+		Assert.That("1alpHa2".TrimEnd("alpha", false), Is.EqualTo("1alpHa2"));
 	}
 }
 

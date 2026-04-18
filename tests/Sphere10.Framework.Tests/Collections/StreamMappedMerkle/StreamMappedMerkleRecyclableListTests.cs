@@ -12,9 +12,6 @@ using System.IO;
 using System.Linq;
 using FastSerialization;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -56,7 +53,7 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 		Assert.That(list.MerkleTree.Root, Is.Null);
 
 		// Enumerate empty
-		ClassicAssert.AreEqual(list, Array.Empty<string>());
+		Assert.That(Array.Empty<string>(), Is.EqualTo(list));
 
 		// add "A"
 		list.Add("A");
@@ -91,7 +88,7 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 		Assert.That(() => list.RemoveAt(1), Throws.ArgumentException);
 
 		// Enumerate 
-		ClassicAssert.AreEqual(list, new[] { "A", "C" });
+		Assert.That(new[] { "A", "C" }, Is.EqualTo(list));
 		Assert.That(list.Count, Is.EqualTo(2));
 		Assert.That(list.ListCount, Is.EqualTo(3));
 		Assert.That(list.RecycledCount, Is.EqualTo(1));
@@ -116,7 +113,7 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 		Assert.That(list.MerkleTree.Root, Is.EqualTo(TreeHash("A", "B2", "C")));
 
 		// Enumeration check
-		ClassicAssert.AreEqual(list, new[] { "A", "B2", "C" });
+		Assert.That(new[] { "A", "B2", "C" }, Is.EqualTo(list));
 
 		// add another "A" (verify used new index)
 		list.Add("A");
@@ -161,7 +158,7 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 		Assert.That(list.IndexOf("C"), Is.EqualTo(2));
 
 		// Enumerate "B2" and "C"
-		ClassicAssert.AreEqual(list, new[] { "B2", "C" });
+		Assert.That(new[] { "B2", "C" }, Is.EqualTo(list));
 
 		// Clear
 		list.Clear();

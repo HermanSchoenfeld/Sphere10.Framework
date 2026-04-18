@@ -8,8 +8,6 @@
 
 using System;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Data.Tests;
 
 [Ignore("Fails on Github")]
@@ -22,7 +20,7 @@ public class MSSQLToolTest {
 
 	[Test]
 	public void Exists_False() {
-		ClassicAssert.IsFalse(Tools.MSSQL.Exists(Server, "__!__No_Database_Should_Ever_be_Called_This__!", Username, Password));
+		Assert.That(Tools.MSSQL.Exists(Server, "__!__No_Database_Should_Ever_be_Called_This__!", Username, Password), Is.False);
 	}
 
 	[Test]
@@ -30,7 +28,7 @@ public class MSSQLToolTest {
 		var dbName = Guid.NewGuid().ToStrictAlphaString();
 		try {
 			Tools.MSSQL.CreateDatabase(Server, dbName, Username, Password);
-			ClassicAssert.IsTrue(Tools.MSSQL.Exists(Server, dbName, Username, Password));
+			Assert.That(Tools.MSSQL.Exists(Server, dbName, Username, Password), Is.True);
 		} finally {
 			Tools.MSSQL.DropDatabase(Server, dbName, Username, Password);
 		}
@@ -74,9 +72,9 @@ public class MSSQLToolTest {
 	public void Drop() {
 		var dbName = Guid.NewGuid().ToStrictAlphaString();
 		Tools.MSSQL.CreateDatabase(Server, dbName, Username, Password);
-		ClassicAssert.IsTrue(Tools.MSSQL.Exists(Server, dbName, Username, Password));
+		Assert.That(Tools.MSSQL.Exists(Server, dbName, Username, Password), Is.True);
 		Tools.MSSQL.DropDatabase(Server, dbName, Username, Password);
-		ClassicAssert.IsFalse(Tools.MSSQL.Exists(Server, dbName, Username, Password));
+		Assert.That(Tools.MSSQL.Exists(Server, dbName, Username, Password), Is.False);
 	}
 
 	[Test]

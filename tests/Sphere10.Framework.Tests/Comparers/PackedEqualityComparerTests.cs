@@ -9,8 +9,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -44,12 +42,12 @@ public class PackedEqualityComparerTests {
 	public void TestEquals_Consistency() {
 		IEqualityComparer<string> stringComparer = StringComparer.InvariantCultureIgnoreCase;
 		var packedComparer = stringComparer.AsPacked();
-		ClassicAssert.AreEqual(stringComparer.Equals(null, null), packedComparer.Equals(null, null));
-		ClassicAssert.AreEqual(stringComparer.Equals(null, "B"), packedComparer.Equals(null, "B"));
-		ClassicAssert.AreEqual(stringComparer.Equals("A", null), packedComparer.Equals("A", null));
-		ClassicAssert.AreEqual(stringComparer.Equals("a", "b"), packedComparer.Equals("a", "b"));
-		ClassicAssert.AreEqual(stringComparer.Equals("a", "a"), packedComparer.Equals("a", "a"));
-		ClassicAssert.AreEqual(stringComparer.Equals("a", "A"), packedComparer.Equals("a", "A"));
+		Assert.That(packedComparer.Equals(null, null), Is.EqualTo(stringComparer.Equals(null, null)));
+		Assert.That(packedComparer.Equals(null, "B"), Is.EqualTo(stringComparer.Equals(null, "B")));
+		Assert.That(packedComparer.Equals("A", null), Is.EqualTo(stringComparer.Equals("A", null)));
+		Assert.That(packedComparer.Equals("a", "b"), Is.EqualTo(stringComparer.Equals("a", "b")));
+		Assert.That(packedComparer.Equals("a", "a"), Is.EqualTo(stringComparer.Equals("a", "a")));
+		Assert.That(packedComparer.Equals("a", "A"), Is.EqualTo(stringComparer.Equals("a", "A")));
 	}
 
 	[Test]
@@ -70,9 +68,9 @@ public class PackedEqualityComparerTests {
 	public void TestGetHashCode_Consistency() {
 		IEqualityComparer<string> stringComparer = StringComparer.InvariantCultureIgnoreCase;
 		var packedComparer = stringComparer.AsPacked();
-		ClassicAssert.AreEqual(stringComparer.GetHashCode("a"), packedComparer.GetHashCode("a"));
-		ClassicAssert.AreEqual(stringComparer.GetHashCode("B"), packedComparer.GetHashCode("B"));
-		ClassicAssert.AreEqual(stringComparer.GetHashCode("c"), packedComparer.GetHashCode("c"));
+		Assert.That(packedComparer.GetHashCode("a"), Is.EqualTo(stringComparer.GetHashCode("a")));
+		Assert.That(packedComparer.GetHashCode("B"), Is.EqualTo(stringComparer.GetHashCode("B")));
+		Assert.That(packedComparer.GetHashCode("c"), Is.EqualTo(stringComparer.GetHashCode("c")));
 	}
 
 	[Test]

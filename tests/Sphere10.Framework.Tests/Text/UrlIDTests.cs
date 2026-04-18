@@ -9,8 +9,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -36,7 +34,7 @@ public class UrlIDTests {
 			var checkTask = new Task(() => {
 				while (!queue.HasFinishedProducing) {
 					var toCheck = queue.Take();
-					ClassicAssert.AreEqual(false, permutes.Contains(toCheck), "Value {0} clashed".FormatWith(toCheck));
+					Assert.That(permutes.Contains(toCheck), Is.EqualTo(false), "Value {0} clashed".FormatWith(toCheck));
 					permutes.Add(toCheck);
 				}
 			});

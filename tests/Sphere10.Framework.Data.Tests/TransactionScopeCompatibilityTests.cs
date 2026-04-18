@@ -9,8 +9,6 @@
 using System.Transactions;
 using NUnit.Framework;
 using Sphere10.Framework.NUnit;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Data.Tests;
 
 [TestFixture]
@@ -26,7 +24,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 					txn.Complete();
 				}
 			}
-			ClassicAssert.AreEqual(1, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));
 		}
 	}
 
@@ -43,7 +41,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 					txn.Complete();
 				}
 			}
-			ClassicAssert.AreEqual(1, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));
 		}
 	}
 
@@ -56,7 +54,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				}
 			}
-			ClassicAssert.AreEqual(0, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(0));
 		}
 	}
 
@@ -72,7 +70,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				}
 			}
-			ClassicAssert.AreEqual(0, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(0));
 		}
 	}
 
@@ -87,7 +85,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 				}
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
 			}
-			ClassicAssert.AreEqual(1, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));
 		}
 	}
 
@@ -107,7 +105,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
 				scope.Commit();
 			}
-			ClassicAssert.AreEqual(2, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(2));
 		}
 	}
 
@@ -125,7 +123,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
 				scope.Commit();
 			}
-			ClassicAssert.AreEqual(1, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));
 		}
 	}
 
@@ -145,7 +143,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 					tx.Complete();
 				}
 			}
-			ClassicAssert.AreEqual(2, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(2));
 		}
 	}
 
@@ -164,7 +162,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				}
 			}
-			ClassicAssert.AreEqual(1, dac.Count("BasicTable"));
+			Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));
 		}
 	}
 

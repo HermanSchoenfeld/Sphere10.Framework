@@ -13,8 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.NUnit;
 
 public static class AssertEx {
@@ -738,7 +736,7 @@ public static class AssertEx {
 				expectedStream.Seek(segment.Start, SeekOrigin.Begin);
 				actualStream.Seek(segment.Start, SeekOrigin.Begin);
 				if (runAsserts) {
-					ClassicAssert.AreEqual(expectedStream.ReadBytes(count), actualStream.ReadBytes(count));
+					Assert.That(actualStream.ReadBytes(count), Is.EqualTo(expectedStream.ReadBytes(count)));
 					AreEqual(expectedStream, actualStream);
 				}
 				extraTest?.Invoke();
@@ -785,18 +783,18 @@ public static class AssertEx {
 
 
 	public static void AreEqual(IDynamicMerkleTree expected, IDynamicMerkleTree actual) {
-		ClassicAssert.AreEqual(expected.Size, actual.Size);
-		ClassicAssert.AreEqual(expected.Leafs.Count, actual.Leafs.Count);
-		ClassicAssert.AreEqual(expected.Leafs.ToArray(), actual.Leafs.ToArray());
-		ClassicAssert.AreEqual(expected.Root, actual.Root);
+		Assert.That(actual.Size, Is.EqualTo(expected.Size));
+		Assert.That(actual.Leafs.Count, Is.EqualTo(expected.Leafs.Count));
+		Assert.That(actual.Leafs.ToArray(), Is.EqualTo(expected.Leafs.ToArray()));
+		Assert.That(actual.Root, Is.EqualTo(expected.Root));
 	}
 
 	public static void NotHasFlags<T>(T expected, T actual) where T : Enum {
-		ClassicAssert.IsFalse(actual.HasFlag(expected));
+		Assert.That(actual.HasFlag(expected), Is.False);
 	}
 
 	public static void HasFlags<T>(T expected, T actual) where T : Enum {
-		ClassicAssert.IsTrue(actual.HasFlag(expected));
+		Assert.That(actual.HasFlag(expected), Is.True);
 	}
 
 	public static void HasAllFlags<T>(T actual, params T[] flags) where T : Enum {
@@ -807,21 +805,21 @@ public static class AssertEx {
 	public static void RegexMatch(string expected, string regexPattern, params Tuple<string, string>[] expectedCaptures) {
 		var regex = new Regex(regexPattern);
 		var match = regex.Match(expected);
-		ClassicAssert.AreEqual(expected, match.Value);
+		Assert.That(match.Value, Is.EqualTo(expected));
 		foreach (var expectedCapture in expectedCaptures) {
 			if (expectedCapture.Item2 == null)
-				ClassicAssert.IsFalse(match.Groups[expectedCapture.Item1].Success);
+				Assert.That(match.Groups[expectedCapture.Item1].Success, Is.False);
 			else
-				ClassicAssert.AreEqual(expectedCapture.Item2, match.Groups[expectedCapture.Item1]?.Value);
+				Assert.That(match.Groups[expectedCapture.Item1]?.Value, Is.EqualTo(expectedCapture.Item2));
 		}
 	}
 
 	public static void RegexNotMatch(string badInput, string regexPattern, params Tuple<string, string>[] expectedCaptures) {
 		var regex = new Regex(regexPattern);
 		var match = regex.Match(badInput);
-		ClassicAssert.AreNotEqual(badInput, match.Value);
+		Assert.That(match.Value, Is.Not.EqualTo(badInput));
 		if (expectedCaptures.Any())
-			ClassicAssert.IsFalse(expectedCaptures.All(c => c.Item2 == match.Groups[c.Item1]?.Value));
+			Assert.That(expectedCaptures.All(c => c.Item2 == match.Groups[c.Item1]?.Value), Is.False);
 
 	}
 
@@ -831,28 +829,11 @@ public static class AssertEx {
 
 		var preText = String.Format("{0}{1}{2}{0}", Environment.NewLine, Tools.NUnit.Convert2DArrayToString(expectedName, expectedRowsArr), Tools.NUnit.Convert2DArrayToString(actualName, actualRowsArr));
 
-		ClassicAssert.AreEqual(expectedRowsArr.Count(), actualRowsArr.Count(), "{4}{0} has {1} row(s) but {2} has {3} row(s)", actualName, expectedRowsArr.Count(), expectedName, actualRowsArr.Count(), preText);
+		Assert.That(actualRowsArr.Count(), Is.EqualTo(expectedRowsArr.Count()), string.Format("{4}{0} has {1} row(s) but {2} has {3} row(s)", actualName, expectedRowsArr.Count(), expectedName, actualRowsArr.Count(), preText));
 		foreach (var rowExpectation in expectedRowsArr.WithDescriptions().Zip(actualRowsArr, Tuple.Create)) {
-			ClassicAssert.AreEqual(rowExpectation.Item1.Item.Count(),
-				rowExpectation.Item2.Count(),
-				"{5}{0} row {1} had {2} column(s) but {3} row {1} had {4} column(s)",
-				expectedName,
-				rowExpectation.Item1.Index,
-				rowExpectation.Item1.Item.Count(),
-				actualName,
-				rowExpectation.Item2.Count(),
-				preText);
+			Assert.That(rowExpectation.Item2.Count(), Is.EqualTo(rowExpectation.Item1.Item.Count()), string.Format("{5}{0} row {1} had {2} column(s) but {3} row {1} had {4} column(s)", expectedName, rowExpectation.Item1.Index, rowExpectation.Item1.Item.Count(), actualName, rowExpectation.Item2.Count(), preText));
 			foreach (var colExpectation in rowExpectation.Item1.Item.WithDescriptions().Zip(rowExpectation.Item2, Tuple.Create)) {
-				ClassicAssert.AreEqual(colExpectation.Item1.Item,
-					colExpectation.Item2,
-					"{6}{0} row {1} col {2} had value {3} but {4} row {1} col {2} had value {5}",
-					expectedName,
-					rowExpectation.Item1.Index,
-					colExpectation.Item1.Index,
-					colExpectation.Item1.Item,
-					actualName,
-					colExpectation.Item2,
-					preText);
+				Assert.That(colExpectation.Item2, Is.EqualTo(colExpectation.Item1.Item), string.Format("{6}{0} row {1} col {2} had value {3} but {4} row {1} col {2} had value {5}", expectedName, rowExpectation.Item1.Index, colExpectation.Item1.Index, colExpectation.Item1.Item, actualName, colExpectation.Item2, preText));
 			}
 		}
 	}
@@ -860,22 +841,22 @@ public static class AssertEx {
 	public static void ApproxEqual(System.DateTime expected, System.DateTime actual, TimeSpan? tolerance = null, string errorMessage = null) {
 		var approxEqual = expected.ApproxEqual(actual, tolerance);
 		if (!approxEqual)
-			ClassicAssert.Fail(errorMessage ?? ("Dates not approximately equal.{0}Expected: {1:yyyy-MM-dd HH:mm:ss.fff}{0}Actual: {2:yyyy-MM-dd HH:mm:ss.fff}").FormatWith(Environment.NewLine, expected, actual));
+			Assert.Fail(errorMessage ?? ("Dates not approximately equal.{0}Expected: {1:yyyy-MM-dd HH:mm:ss.fff}{0}Actual: {2:yyyy-MM-dd HH:mm:ss.fff}").FormatWith(Environment.NewLine, expected, actual));
 	}
 
 	public static void ApproxEqual<T>(T expected, T actual, T tolerance, string message = null) {
 		var lowerBound = Tools.OperatorTool.Subtract(expected, tolerance);
 		var upperBound = Tools.OperatorTool.Add(expected, tolerance);
 		var inRange = Tools.OperatorTool.LessThanOrEqual(lowerBound, actual) && Tools.OperatorTool.LessThanOrEqual(actual, upperBound);
-		ClassicAssert.IsTrue(inRange, message ?? $"Value '{actual}' was not approx equal to '{expected}' (tolerance '{tolerance}')");
+		Assert.That(inRange, Is.True, message ?? $"Value '{actual}' was not approx equal to '{expected}' (tolerance '{tolerance}')");
 	}
 
 	public static void HasLoadedPages<TItem>(PagedListBase<TItem> list, params long[] pageNos) {
-		ClassicAssert.IsEmpty(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), "Unexpected pages were open");
+		Assert.That(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were open");
 	}
 
 	public static void HasDirtyPages<TItem, TPage>(PagedListBase<TItem> list, params long[] pageNos) {
-		ClassicAssert.IsEmpty(list.Pages.Where(p => p.Dirty).Select(p => p.Number).Except(pageNos), "Unexpected pages were dirty");
+		Assert.That(list.Pages.Where(p => p.Dirty).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were dirty");
 	}
 
 }

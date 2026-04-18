@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 public abstract class HashTestBase {
@@ -26,7 +24,7 @@ public abstract class HashTestBase {
 		foreach (var testCase in testCases) {
 			var input = HexEncoding.Decode(DATA_BYTES).Take(testCase.Input).ToArray();
 			var result = hasher(input);
-			ClassicAssert.AreEqual(testCase.Expected, result);
+			Assert.That(result, Is.EqualTo(testCase.Expected));
 		}
 	}
 

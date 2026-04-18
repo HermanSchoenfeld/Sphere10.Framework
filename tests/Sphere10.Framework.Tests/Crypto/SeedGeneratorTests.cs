@@ -9,8 +9,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -20,8 +18,8 @@ public class SeedGeneratorTests {
     [Test]
     public void Generate_DefaultPolicy_ReturnsNonZeroBytes() {
         var seed = SeedGenerator.Generate();
-        ClassicAssert.IsTrue(seed.Length > 0, "Seed must have non-zero length");
-        ClassicAssert.IsFalse(seed.All(b => b == 0), "Seed must not be all zeros");
+        Assert.That(seed.Length > 0, Is.True, "Seed must have non-zero length");
+        Assert.That(seed.All(b => b == 0), Is.False, "Seed must not be all zeros");
     }
 
     [Test]
@@ -29,15 +27,14 @@ public class SeedGeneratorTests {
         var chf = Sphere10FrameworkDefaults.HashFunction;
         var expected = Hashers.GetDigestSizeBytes(chf);
         var seed = SeedGenerator.Generate();
-        ClassicAssert.AreEqual(expected, seed.Length);
+        Assert.That(seed.Length, Is.EqualTo(expected));
     }
 
     [Test]
     public void Generate_SuccessiveCalls_ProduceDifferentSeeds() {
         var seed1 = SeedGenerator.Generate();
         var seed2 = SeedGenerator.Generate();
-        ClassicAssert.IsFalse(seed1.SequenceEqual(seed2),
-            "Two successive calls must produce different seeds");
+        Assert.That(seed1.SequenceEqual(seed2), Is.False, "Two successive calls must produce different seeds");
     }
 
     [Test]
@@ -50,15 +47,14 @@ public class SeedGeneratorTests {
     [TestCase(EntropyPolicy.Default)]
     public void Generate_EachPolicy_ProducesNonZeroSeed(EntropyPolicy policy) {
         var seed = SeedGenerator.Generate(policy);
-        ClassicAssert.IsTrue(seed.Length > 0);
-        ClassicAssert.IsFalse(seed.All(b => b == 0),
-            $"Seed for policy {policy} must not be all zeros");
+        Assert.That(seed.Length > 0, Is.True);
+        Assert.That(seed.All(b => b == 0), Is.False, $"Seed for policy {policy} must not be all zeros");
     }
 
     [Test]
     public void Generate_BigEndianPolicy_ProducesNonZeroSeed() {
         var seed = SeedGenerator.Generate(EntropyPolicy.Default | EntropyPolicy.UseBigEndianNotLittle);
-        ClassicAssert.IsFalse(seed.All(b => b == 0));
+        Assert.That(seed.All(b => b == 0), Is.False);
     }
 
     [Test]
@@ -67,8 +63,7 @@ public class SeedGeneratorTests {
         var policy = EntropyPolicy.UseEnvironment;
         var seedLE = SeedGenerator.Generate(policy);
         var seedBE = SeedGenerator.Generate(policy | EntropyPolicy.UseBigEndianNotLittle);
-        ClassicAssert.IsFalse(seedLE.SequenceEqual(seedBE),
-            "Big-endian and little-endian policies should produce different seeds");
+        Assert.That(seedLE.SequenceEqual(seedBE), Is.False, "Big-endian and little-endian policies should produce different seeds");
     }
 
     [Test]
@@ -78,15 +73,14 @@ public class SeedGeneratorTests {
     public void Generate_DifferentCHF_MatchesDigestLength(CHF chf) {
         var expected = Hashers.GetDigestSizeBytes(chf);
         var seed = SeedGenerator.Generate(EntropyPolicy.Default, chf);
-        ClassicAssert.AreEqual(expected, seed.Length);
+        Assert.That(seed.Length, Is.EqualTo(expected));
     }
 
     [Test]
     public void Generate_SpanOverload_FillsBuffer() {
         var buffer = new byte[32];
         SeedGenerator.Generate(buffer);
-        ClassicAssert.IsFalse(buffer.All(b => b == 0),
-            "Span overload must fill the buffer with non-zero seed data");
+        Assert.That(buffer.All(b => b == 0), Is.False, "Span overload must fill the buffer with non-zero seed data");
     }
 
     [Test]
@@ -99,21 +93,19 @@ public class SeedGeneratorTests {
     public void Generate_SpanOverload_LargeBuffer() {
         var buffer = new byte[128];
         SeedGenerator.Generate(buffer);
-        ClassicAssert.IsFalse(buffer.All(b => b == 0));
+        Assert.That(buffer.All(b => b == 0), Is.False);
     }
 
     [Test]
     public void Generate_GuidOnlyPolicy_SuccessiveCalls_Differ() {
         var seed1 = SeedGenerator.Generate(EntropyPolicy.UseGuid);
         var seed2 = SeedGenerator.Generate(EntropyPolicy.UseGuid);
-        ClassicAssert.IsFalse(seed1.SequenceEqual(seed2),
-            "GUID-based seeds must differ across calls");
+        Assert.That(seed1.SequenceEqual(seed2), Is.False, "GUID-based seeds must differ across calls");
     }
 
     [Test]
     public void Generate_EnvironmentOnlyPolicy_ProducesNonZero() {
         var seed = SeedGenerator.Generate(EntropyPolicy.UseEnvironment);
-        ClassicAssert.IsFalse(seed.All(b => b == 0),
-            "Environment-only policy must produce non-zero seed from process telemetry");
+        Assert.That(seed.All(b => b == 0), Is.False, "Environment-only policy must produce non-zero seed from process telemetry");
     }
 }

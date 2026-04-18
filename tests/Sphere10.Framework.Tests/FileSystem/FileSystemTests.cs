@@ -9,8 +9,6 @@
 using System;
 using NUnit.Framework;
 using System.IO;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -22,7 +20,7 @@ public class FileSystemTests {
 		var file = Guid.NewGuid().ToStrictAlphaString();
 		var ext = ".ext";
 		var expectedPath = Path.Combine(path, file + ext);
-		ClassicAssert.AreEqual(expectedPath, Tools.FileSystem.DetermineAvailableFileName(path, file + ext));
+		Assert.That(Tools.FileSystem.DetermineAvailableFileName(path, file + ext), Is.EqualTo(expectedPath));
 	}
 
 	[Test]
@@ -33,7 +31,7 @@ public class FileSystemTests {
 		var desiredPath = Path.Combine(path, file + ext);
 		try {
 			Tools.FileSystem.CreateBlankFile(desiredPath);
-			ClassicAssert.AreEqual(Path.Combine(path, file + " 2" + ext), Tools.FileSystem.DetermineAvailableFileName(path, file + ext));
+			Assert.That(Tools.FileSystem.DetermineAvailableFileName(path, file + ext), Is.EqualTo(Path.Combine(path, file + " 2" + ext)));
 		} finally {
 			File.Delete(Path.Combine(path, file + ext));
 		}
@@ -47,7 +45,7 @@ public class FileSystemTests {
 		try {
 			Tools.FileSystem.CreateBlankFile(Path.Combine(path, file + ext));
 			Tools.FileSystem.CreateBlankFile(Path.Combine(path, file + " 2" + ext));
-			ClassicAssert.AreEqual(Path.Combine(path, file + " 3" + ext), Tools.FileSystem.DetermineAvailableFileName(path, file + ext));
+			Assert.That(Tools.FileSystem.DetermineAvailableFileName(path, file + ext), Is.EqualTo(Path.Combine(path, file + " 3" + ext)));
 		} finally {
 			File.Delete(Path.Combine(path, file + ext));
 			File.Delete(Path.Combine(path, file + " 2" + ext));

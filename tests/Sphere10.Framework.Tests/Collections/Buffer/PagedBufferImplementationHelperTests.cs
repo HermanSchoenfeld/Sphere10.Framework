@@ -8,8 +8,6 @@
 
 using System;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 public class PagedBufferImplementationHelperTests {
@@ -24,7 +22,7 @@ public class PagedBufferImplementationHelperTests {
 		int endIndex = startIndex + count;
 
 		var span = buffer.ReadSpan(startIndex, count);
-		ClassicAssert.AreEqual(input[startIndex..endIndex], span.ToArray());
+		Assert.That(span.ToArray(), Is.EqualTo(input[startIndex..endIndex]));
 	}
 }
 

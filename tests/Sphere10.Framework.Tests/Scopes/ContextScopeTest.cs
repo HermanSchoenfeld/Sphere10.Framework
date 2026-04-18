@@ -10,7 +10,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
 namespace Sphere10.Framework.Tests;
 
@@ -20,52 +19,52 @@ public class ContextScopeTest {
 
 	[Test]
 	public void TestNested_None_None() {
-		ClassicAssert.IsFalse(ExceptionOccured(ContextScopePolicy.None, ContextScopePolicy.None));
+		Assert.That(ExceptionOccured(ContextScopePolicy.None, ContextScopePolicy.None), Is.False);
 	}
 
 	[Test]
 	public void TestNested_None_MustBeNested() {
-		ClassicAssert.IsFalse(ExceptionOccured(ContextScopePolicy.None, ContextScopePolicy.MustBeNested));
+		Assert.That(ExceptionOccured(ContextScopePolicy.None, ContextScopePolicy.MustBeNested), Is.False);
 	}
 
 	[Test]
 	public void TestNested_None_MustBeRoot() {
-		ClassicAssert.IsTrue(ExceptionOccured(ContextScopePolicy.None, ContextScopePolicy.MustBeRoot));
+		Assert.That(ExceptionOccured(ContextScopePolicy.None, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeNested_None() {
-		ClassicAssert.IsTrue(ExceptionOccured(ContextScopePolicy.MustBeNested, ContextScopePolicy.None));
+		Assert.That(ExceptionOccured(ContextScopePolicy.MustBeNested, ContextScopePolicy.None), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeNested_MustBeNested() {
-		ClassicAssert.IsTrue(ExceptionOccured(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested));
+		Assert.That(ExceptionOccured(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeNested_MustBeRoot() {
-		ClassicAssert.IsTrue(ExceptionOccured(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot));
+		Assert.That(ExceptionOccured(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeRoot_None() {
-		ClassicAssert.IsFalse(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.None));
+		Assert.That(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.None), Is.False);
 	}
 
 	[Test]
 	public void TestNested_MustBeRoot_MustBeNested() {
-		ClassicAssert.IsFalse(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested));
+		Assert.That(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested), Is.False);
 	}
 
 	[Test]
 	public void TestNested_MustBeRoot_MustBeRoot() {
-		ClassicAssert.IsTrue(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot));
+		Assert.That(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public void MultiThreaded_0() {
-		ClassicAssert.IsTrue(Enumerable.Range(1, 10).All(x => !ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested, Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100))));
+		Assert.That(Enumerable.Range(1, 10).All(x => !ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested, Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100))), Is.True);
 	}
 
 	[Test]
@@ -75,8 +74,8 @@ public class ContextScopeTest {
 		task1.Start();
 		task2.Start();
 		Task.WaitAll(task1, task2);
-		ClassicAssert.IsTrue(task1.Result);
-		ClassicAssert.IsTrue(task2.Result);
+		Assert.That(task1.Result, Is.True);
+		Assert.That(task2.Result, Is.True);
 	}
 
 	[Test]
@@ -86,105 +85,105 @@ public class ContextScopeTest {
 		task1.Start();
 		task2.Start();
 		Task.WaitAll(task1, task2);
-		ClassicAssert.IsTrue(task1.Result);
-		ClassicAssert.IsTrue(task2.Result);
+		Assert.That(task1.Result, Is.True);
+		Assert.That(task2.Result, Is.True);
 	}
 
 	[Test]
 	public void TestNested_None_None_Async() {
-		ClassicAssert.IsFalse(ExceptionOccuredAsync(ContextScopePolicy.None, ContextScopePolicy.None));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.None, ContextScopePolicy.None), Is.False);
 	}
 
 	[Test]
 	public async Task TestNested_None_None_Async2() {
-		ClassicAssert.IsFalse(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.None));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.None), Is.False);
 	}
 
 	[Test]
 	public void TestNested_None_MustBeNested_Async() {
-		ClassicAssert.IsFalse(ExceptionOccuredAsync(ContextScopePolicy.None, ContextScopePolicy.MustBeNested));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.None, ContextScopePolicy.MustBeNested), Is.False);
 	}
 
 	[Test]
 	public async Task TestNested_None_MustBeNested_Async2() {
-		ClassicAssert.IsFalse(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.MustBeNested));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.MustBeNested), Is.False);
 	}
 
 	[Test]
 	public void TestNested_None_MustBeRoot_Async() {
-		ClassicAssert.IsTrue(ExceptionOccuredAsync(ContextScopePolicy.None, ContextScopePolicy.MustBeRoot));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.None, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public async Task TestNested_None_MustBeRoot_Async2() {
-		ClassicAssert.IsTrue(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.MustBeRoot));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.None, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeNested_None_Async() {
-		ClassicAssert.IsTrue(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.None));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.None), Is.True);
 	}
 
 	[Test]
 	public async Task TestNested_MustBeNested_None_Async2() {
-		ClassicAssert.IsTrue(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.None));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.None), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeNested_MustBeNested_Async() {
-		ClassicAssert.IsTrue(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested), Is.True);
 	}
 
 	[Test]
 	public async Task TestNested_MustBeNested_MustBeNested_Async2() {
-		ClassicAssert.IsTrue(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeNested), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeNested_MustBeRoot_Async() {
-		ClassicAssert.IsTrue(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public async Task TestNested_MustBeNested_MustBeRoot_Async2() {
-		ClassicAssert.IsTrue(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeNested, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public void TestNested_MustBeRoot_None_Async() {
-		ClassicAssert.IsFalse(ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.None));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.None), Is.False);
 	}
 
 	[Test]
 	public async Task TestNested_MustBeRoot_None_Async2() {
-		ClassicAssert.IsFalse(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.None));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.None), Is.False);
 	}
 
 	[Test]
 	public void TestNested_MustBeRoot_MustBeNested_Async() {
-		ClassicAssert.IsFalse(ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested), Is.False);
 	}
 
 	[Test]
 	public async Task TestNested_MustBeRoot_MustBeNested_Async2() {
-		ClassicAssert.IsFalse(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested), Is.False);
 	}
 
 
 	[Test]
 	public void TestNested_MustBeRoot_MustBeRoot_Async() {
-		ClassicAssert.IsTrue(ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot));
+		Assert.That(ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 
 	[Test]
 	public async Task TestNested_MustBeRoot_MustBeRoot_Async2() {
-		ClassicAssert.IsTrue(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot));
+		Assert.That(await ExceptionOccuredAsync2(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot), Is.True);
 	}
 
 	[Test]
 	public void MultiThreaded_0_Async() {
-		ClassicAssert.IsTrue(Enumerable.Range(1, 10).All(x => !ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested, Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100))));
+		Assert.That(Enumerable.Range(1, 10).All(x => !ExceptionOccuredAsync(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested, Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100))), Is.True);
 	}
 
 	//[Test]
@@ -203,8 +202,8 @@ public class ContextScopeTest {
 		task1.Start();
 		task2.Start();
 		Task.WaitAll(task1, task2);
-		ClassicAssert.IsTrue(task1.Result);
-		ClassicAssert.IsTrue(task2.Result);
+		Assert.That(task1.Result, Is.True);
+		Assert.That(task2.Result, Is.True);
 	}
 
 	[Test]
@@ -214,8 +213,8 @@ public class ContextScopeTest {
 		task1.Start();
 		task2.Start();
 		Task.WaitAll(task1, task2);
-		ClassicAssert.IsTrue(task1.Result);
-		ClassicAssert.IsTrue(task2.Result);
+		Assert.That(task1.Result, Is.True);
+		Assert.That(task2.Result, Is.True);
 	}
 
 

@@ -10,8 +10,6 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Sphere10.Framework;
 using Sphere10.Framework.CryptoEx.PascalCoin;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 public class PascalBase58EncodingTests {
@@ -24,8 +22,8 @@ public class PascalBase58EncodingTests {
 		// Test values derived from Pascal implementation
 		const string keyBase58 = "3GhhbonKEE3SzPvRqPEeXbLc1v1LCcYvqY7wuxW8esJLCb2FCj4jofWmkmMTtqP1atrmioAMqEwigHA2CEwidxgB1i1gGhL39unBkk";
 		const string keyHex = "ca0220003ce142a2bfa1e2d4c6246bf7dfa8106d975f498133fb7084e83062f8941d09ea2000ab8fa84d3287d8efe04b865e50f9c7ff2a9a85187191c2528045e697ec9d8b5143db2899";
-		ClassicAssert.AreEqual(keyBase58, PascalBase58Encoding.Encode(keyHex.ToHexByteArray()));
-		ClassicAssert.AreEqual(keyHex, PascalBase58Encoding.Decode(keyBase58).ToHexString(true));
+		Assert.That(PascalBase58Encoding.Encode(keyHex.ToHexByteArray()), Is.EqualTo(keyBase58));
+		Assert.That(PascalBase58Encoding.Decode(keyBase58).ToHexString(true), Is.EqualTo(keyHex));
 	}
 
 }

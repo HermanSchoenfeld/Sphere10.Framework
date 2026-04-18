@@ -9,8 +9,6 @@
 using NUnit.Framework;
 using System.IO;
 using Sphere10.Framework.Maths.Compiler;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.UnitTests;
 
 [TestFixture]
@@ -28,24 +26,17 @@ public class MathCompilerParserTests {
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
 		// (-x) - y - z
-		ClassicAssert.IsInstanceOf(typeof(BinaryOperatorTree), tree);
-		ClassicAssert.AreEqual(Operator.Subtraction, ((BinaryOperatorTree)tree).Operator);
-		ClassicAssert.IsInstanceOf(typeof(BinaryOperatorTree),
-			((BinaryOperatorTree)tree).LeftHandSide);
-		ClassicAssert.AreEqual(Operator.Subtraction,
-			((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).Operator);
-		ClassicAssert.IsInstanceOf(typeof(UnaryOperatorTree),
-			((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).LeftHandSide);
-		ClassicAssert.IsInstanceOf(typeof(FactorTree),
-			((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).RightHandSide);
-		ClassicAssert.AreEqual(Operator.UnaryMinus,
-			((UnaryOperatorTree)((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).LeftHandSide).Operator);
+		Assert.That(tree, Is.InstanceOf(typeof(BinaryOperatorTree)));
+		Assert.That(((BinaryOperatorTree)tree).Operator, Is.EqualTo(Operator.Subtraction));
+		Assert.That(((BinaryOperatorTree)tree).LeftHandSide, Is.InstanceOf(typeof(BinaryOperatorTree)));
+		Assert.That(((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).Operator, Is.EqualTo(Operator.Subtraction));
+		Assert.That(((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).LeftHandSide, Is.InstanceOf(typeof(UnaryOperatorTree)));
+		Assert.That(((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).RightHandSide, Is.InstanceOf(typeof(FactorTree)));
+		Assert.That(((UnaryOperatorTree)((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).LeftHandSide).Operator, Is.EqualTo(Operator.UnaryMinus));
 		;
-		ClassicAssert.IsInstanceOf(typeof(FactorTree),
-			((UnaryOperatorTree)((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).LeftHandSide).Operand);
+		Assert.That(((UnaryOperatorTree)((BinaryOperatorTree)((BinaryOperatorTree)tree).LeftHandSide).LeftHandSide).Operand, Is.InstanceOf(typeof(FactorTree)));
 		;
-		ClassicAssert.IsInstanceOf(typeof(FactorTree),
-			((BinaryOperatorTree)tree).RightHandSide);
+		Assert.That(((BinaryOperatorTree)tree).RightHandSide, Is.InstanceOf(typeof(FactorTree)));
 	}
 
 	[Test]
@@ -53,7 +44,7 @@ public class MathCompilerParserTests {
 		string exp = "-x^2.5E-1";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("UnaryMinus(Power(Identifier(x),Scalar(2.5E-1)))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("UnaryMinus(Power(Identifier(x),Scalar(2.5E-1)))"));
 	}
 
 	[Test]
@@ -61,7 +52,7 @@ public class MathCompilerParserTests {
 		string exp = "-x*-y";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("Multiplication(UnaryMinus(Identifier(x)),UnaryMinus(Identifier(y)))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("Multiplication(UnaryMinus(Identifier(x)),UnaryMinus(Identifier(y)))"));
 	}
 
 	[Test]
@@ -69,7 +60,7 @@ public class MathCompilerParserTests {
 		string exp = "-x^-y";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("UnaryMinus(Power(Identifier(x),UnaryMinus(Identifier(y))))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("UnaryMinus(Power(Identifier(x),UnaryMinus(Identifier(y))))"));
 	}
 
 	[Test]
@@ -77,7 +68,7 @@ public class MathCompilerParserTests {
 		string exp = "-x^-y^-z";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("UnaryMinus(Power(Identifier(x),UnaryMinus(Power(Identifier(y),UnaryMinus(Identifier(z))))))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("UnaryMinus(Power(Identifier(x),UnaryMinus(Power(Identifier(y),UnaryMinus(Identifier(z))))))"));
 	}
 
 	[Test]
@@ -85,7 +76,7 @@ public class MathCompilerParserTests {
 		string exp = "x*y/z";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("Multiplication(Identifier(x),Division(Identifier(y),Identifier(z)))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("Multiplication(Identifier(x),Division(Identifier(y),Identifier(z)))"));
 	}
 
 	[Test]
@@ -93,7 +84,7 @@ public class MathCompilerParserTests {
 		string exp = "x/y/z";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("Division(Division(Identifier(x),Identifier(y)),Identifier(z))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("Division(Division(Identifier(x),Identifier(y)),Identifier(z))"));
 	}
 
 	[Test]
@@ -101,7 +92,7 @@ public class MathCompilerParserTests {
 		string exp = "x/y*z";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("Multiplication(Division(Identifier(x),Identifier(y)),Identifier(z))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("Multiplication(Division(Identifier(x),Identifier(y)),Identifier(z))"));
 	}
 
 	[Test]
@@ -109,7 +100,7 @@ public class MathCompilerParserTests {
 		string exp = "x+y-z";
 		Parser parser = new Parser(new Scanner(new StringReader(exp)));
 		SyntaxTree tree = parser.ParseExpression();
-		ClassicAssert.AreEqual("Subtraction(Addition(Identifier(x),Identifier(y)),Identifier(z))", tree.ToString());
+		Assert.That(tree.ToString(), Is.EqualTo("Subtraction(Addition(Identifier(x),Identifier(y)),Identifier(z))"));
 	}
 
 }

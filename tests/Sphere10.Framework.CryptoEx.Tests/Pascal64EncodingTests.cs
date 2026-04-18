@@ -10,8 +10,6 @@ using NUnit.Framework;
 using Sphere10.Framework.CryptoEx.PascalCoin;
 using Sphere10.Framework.NUnit;
 using System.Linq;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.CryptoEx.Tests;
 
 [TestFixture]
@@ -157,20 +155,20 @@ public class Pascal64EncodingTests {
 	public void Encoding_EscapeString() {
 		var escaped = @"\(a\)b\{c\}d\[e\]f\:g\""h\<i\>";
 		var unescaped = @"(a)b{c}d[e]f:g""h<i>";
-		ClassicAssert.AreEqual(escaped, Pascal64Encoding.Escape(unescaped));
-		ClassicAssert.AreEqual(escaped, Pascal64Encoding.Escape(Pascal64Encoding.Escape(unescaped)));
-		ClassicAssert.IsFalse(Pascal64Encoding.IsValidEscaped(unescaped));
-		ClassicAssert.IsTrue(Pascal64Encoding.IsValidEscaped(escaped));
+		Assert.That(Pascal64Encoding.Escape(unescaped), Is.EqualTo(escaped));
+		Assert.That(Pascal64Encoding.Escape(Pascal64Encoding.Escape(unescaped)), Is.EqualTo(escaped));
+		Assert.That(Pascal64Encoding.IsValidEscaped(unescaped), Is.False);
+		Assert.That(Pascal64Encoding.IsValidEscaped(escaped), Is.True);
 	}
 
 	[Test]
 	public void Encoding_UnescapedString() {
 		var escaped = @"\(a\)b\{c\}d\[e\]f\:g\""h\<i\>";
 		var unescaped = @"(a)b{c}d[e]f:g""h<i>";
-		ClassicAssert.AreEqual(unescaped, Pascal64Encoding.Unescape(escaped));
-		ClassicAssert.AreEqual(unescaped, Pascal64Encoding.Unescape(Pascal64Encoding.Unescape(escaped)));
-		ClassicAssert.IsFalse(Pascal64Encoding.IsValidUnescaped(escaped));
-		ClassicAssert.IsTrue(Pascal64Encoding.IsValidUnescaped(unescaped));
+		Assert.That(Pascal64Encoding.Unescape(escaped), Is.EqualTo(unescaped));
+		Assert.That(Pascal64Encoding.Unescape(Pascal64Encoding.Unescape(escaped)), Is.EqualTo(unescaped));
+		Assert.That(Pascal64Encoding.IsValidUnescaped(escaped), Is.False);
+		Assert.That(Pascal64Encoding.IsValidUnescaped(unescaped), Is.True);
 	}
 
 	#endregion

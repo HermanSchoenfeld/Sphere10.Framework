@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -17,27 +15,27 @@ public class ByteArrayComparerTests {
 
 	[Test]
 	public void TestNull() {
-		ClassicAssert.AreEqual(0, ByteArrayComparer.Instance.Compare(null, null));
+		Assert.That(ByteArrayComparer.Instance.Compare(null, null), Is.EqualTo(0));
 	}
 
 	[Test]
 	public void TestEmpty() {
-		ClassicAssert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[0], new byte[0]));
+		Assert.That(ByteArrayComparer.Instance.Compare(new byte[0], new byte[0]), Is.EqualTo(0));
 	}
 
 	[Test]
 	public void TestSame() {
-		ClassicAssert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }));
+		Assert.That(ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }), Is.EqualTo(0));
 	}
 
 	[Test]
 	public void TestSmaller() {
-		ClassicAssert.AreEqual(-1, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 3, 2, 1 }));
+		Assert.That(ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 3, 2, 1 }), Is.EqualTo(-1));
 	}
 
 	[Test]
 	public void TestGreater() {
-		ClassicAssert.AreEqual(1, ByteArrayComparer.Instance.Compare(new byte[] { 3, 2, 1 }, new byte[] { 1, 2, 3 }));
+		Assert.That(ByteArrayComparer.Instance.Compare(new byte[] { 3, 2, 1 }, new byte[] { 1, 2, 3 }), Is.EqualTo(1));
 	}
 }
 

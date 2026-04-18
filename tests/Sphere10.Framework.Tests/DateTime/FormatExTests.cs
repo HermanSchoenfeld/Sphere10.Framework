@@ -8,8 +8,6 @@
 
 using System;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -20,30 +18,30 @@ public class DateTimeTests {
 	public void NextDayOfWeek_Tomorrow() {
 		var startDayTime = new DateTime(2014, 09, 29); // Monday
 		var nextDayOfWeek = startDayTime.ToNextDayOfWeek(DayOfWeek.Tuesday);
-		ClassicAssert.AreEqual(DayOfWeek.Tuesday, nextDayOfWeek.DayOfWeek);
-		ClassicAssert.AreEqual(30, nextDayOfWeek.Day);
-		ClassicAssert.AreEqual(9, nextDayOfWeek.Month);
-		ClassicAssert.AreEqual(2014, nextDayOfWeek.Year);
+		Assert.That(nextDayOfWeek.DayOfWeek, Is.EqualTo(DayOfWeek.Tuesday));
+		Assert.That(nextDayOfWeek.Day, Is.EqualTo(30));
+		Assert.That(nextDayOfWeek.Month, Is.EqualTo(9));
+		Assert.That(nextDayOfWeek.Year, Is.EqualTo(2014));
 	}
 
 	[Test]
 	public void NextDayOfWeek_NextMonday() {
 		var startDayTime = new DateTime(2014, 09, 29); // Monday
 		var nextDayOfWeek = startDayTime.ToNextDayOfWeek(DayOfWeek.Monday);
-		ClassicAssert.AreEqual(DayOfWeek.Monday, nextDayOfWeek.DayOfWeek);
-		ClassicAssert.AreEqual(6, nextDayOfWeek.Day);
-		ClassicAssert.AreEqual(10, nextDayOfWeek.Month);
-		ClassicAssert.AreEqual(2014, nextDayOfWeek.Year);
+		Assert.That(nextDayOfWeek.DayOfWeek, Is.EqualTo(DayOfWeek.Monday));
+		Assert.That(nextDayOfWeek.Day, Is.EqualTo(6));
+		Assert.That(nextDayOfWeek.Month, Is.EqualTo(10));
+		Assert.That(nextDayOfWeek.Year, Is.EqualTo(2014));
 	}
 
 	[Test]
 	public void NextDayOfWeek_NextSunday() {
 		var startDayTime = new DateTime(2014, 09, 29); // Monday
 		var nextDayOfWeek = startDayTime.ToNextDayOfWeek(DayOfWeek.Sunday);
-		ClassicAssert.AreEqual(DayOfWeek.Sunday, nextDayOfWeek.DayOfWeek);
-		ClassicAssert.AreEqual(5, nextDayOfWeek.Day);
-		ClassicAssert.AreEqual(10, nextDayOfWeek.Month);
-		ClassicAssert.AreEqual(2014, nextDayOfWeek.Year);
+		Assert.That(nextDayOfWeek.DayOfWeek, Is.EqualTo(DayOfWeek.Sunday));
+		Assert.That(nextDayOfWeek.Day, Is.EqualTo(5));
+		Assert.That(nextDayOfWeek.Month, Is.EqualTo(10));
+		Assert.That(nextDayOfWeek.Year, Is.EqualTo(2014));
 	}
 
 
@@ -51,22 +49,22 @@ public class DateTimeTests {
 	public void NextDayOfWeek_1HourAhead() {
 		var startDayTime = new DateTime(2014, 09, 29, 11, 0, 0, 0); // Monday
 		var nextDayOfWeek = startDayTime.ToNextDayOfWeek(DayOfWeek.Monday, TimeSpan.FromHours(12));
-		ClassicAssert.AreEqual(nextDayOfWeek.DayOfWeek, startDayTime.DayOfWeek);
-		ClassicAssert.AreEqual(nextDayOfWeek.Day, startDayTime.Day);
-		ClassicAssert.AreEqual(nextDayOfWeek.Month, startDayTime.Month);
-		ClassicAssert.AreEqual(nextDayOfWeek.Year, startDayTime.Year);
-		ClassicAssert.AreEqual(12, nextDayOfWeek.Hour);
+		Assert.That(startDayTime.DayOfWeek, Is.EqualTo(nextDayOfWeek.DayOfWeek));
+		Assert.That(startDayTime.Day, Is.EqualTo(nextDayOfWeek.Day));
+		Assert.That(startDayTime.Month, Is.EqualTo(nextDayOfWeek.Month));
+		Assert.That(startDayTime.Year, Is.EqualTo(nextDayOfWeek.Year));
+		Assert.That(nextDayOfWeek.Hour, Is.EqualTo(12));
 	}
 
 	[Test]
 	public void NextDayOfWeek_168HoursAhead() {
 		var startDayTime = new DateTime(2014, 09, 29, 12, 0, 0, 0); // Monday
 		var nextDayOfWeek = startDayTime.ToNextDayOfWeek(DayOfWeek.Monday, TimeSpan.FromHours(12));
-		ClassicAssert.AreEqual(nextDayOfWeek.DayOfWeek, startDayTime.DayOfWeek);
-		ClassicAssert.AreEqual(6, nextDayOfWeek.Day);
-		ClassicAssert.AreEqual(10, nextDayOfWeek.Month);
-		ClassicAssert.AreEqual(2014, nextDayOfWeek.Year);
-		ClassicAssert.AreEqual(12, nextDayOfWeek.Hour);
+		Assert.That(startDayTime.DayOfWeek, Is.EqualTo(nextDayOfWeek.DayOfWeek));
+		Assert.That(nextDayOfWeek.Day, Is.EqualTo(6));
+		Assert.That(nextDayOfWeek.Month, Is.EqualTo(10));
+		Assert.That(nextDayOfWeek.Year, Is.EqualTo(2014));
+		Assert.That(nextDayOfWeek.Hour, Is.EqualTo(12));
 	}
 
 
@@ -74,10 +72,10 @@ public class DateTimeTests {
 	public void NextDayOfMonth_NextMonth() {
 		var start = new DateTime(2014, 09, 29); // Monday
 		var nextDayOfMonth = start.ToNextDayOfMonth(29);
-		ClassicAssert.AreEqual(DayOfWeek.Wednesday, nextDayOfMonth.DayOfWeek);
-		ClassicAssert.AreEqual(29, nextDayOfMonth.Day);
-		ClassicAssert.AreEqual(10, nextDayOfMonth.Month);
-		ClassicAssert.AreEqual(2014, nextDayOfMonth.Year);
+		Assert.That(nextDayOfMonth.DayOfWeek, Is.EqualTo(DayOfWeek.Wednesday));
+		Assert.That(nextDayOfMonth.Day, Is.EqualTo(29));
+		Assert.That(nextDayOfMonth.Month, Is.EqualTo(10));
+		Assert.That(nextDayOfMonth.Year, Is.EqualTo(2014));
 	}
 
 
@@ -85,31 +83,31 @@ public class DateTimeTests {
 	public void NextDayOfMonth_Tomorrow() {
 		var start = new DateTime(2014, 09, 29); // Monday
 		var nextDayOfMonth = start.ToNextDayOfMonth(30);
-		ClassicAssert.AreEqual(DayOfWeek.Tuesday, nextDayOfMonth.DayOfWeek);
-		ClassicAssert.AreEqual(30, nextDayOfMonth.Day);
-		ClassicAssert.AreEqual(9, nextDayOfMonth.Month);
-		ClassicAssert.AreEqual(2014, nextDayOfMonth.Year);
+		Assert.That(nextDayOfMonth.DayOfWeek, Is.EqualTo(DayOfWeek.Tuesday));
+		Assert.That(nextDayOfMonth.Day, Is.EqualTo(30));
+		Assert.That(nextDayOfMonth.Month, Is.EqualTo(9));
+		Assert.That(nextDayOfMonth.Year, Is.EqualTo(2014));
 	}
 
 	[Test]
 	public void NextDayOfMonth_1HourAhead() {
 		var start = new DateTime(2014, 09, 29, 11, 0, 0, 0); // Monday
 		var nextDayOfMonth = start.ToNextDayOfMonth(29, TimeSpan.FromHours(12));
-		ClassicAssert.AreEqual(nextDayOfMonth.DayOfWeek, start.DayOfWeek);
-		ClassicAssert.AreEqual(nextDayOfMonth.Day, start.Day);
-		ClassicAssert.AreEqual(nextDayOfMonth.Month, start.Month);
-		ClassicAssert.AreEqual(nextDayOfMonth.Year, start.Year);
-		ClassicAssert.AreEqual(12, nextDayOfMonth.Hour);
+		Assert.That(start.DayOfWeek, Is.EqualTo(nextDayOfMonth.DayOfWeek));
+		Assert.That(start.Day, Is.EqualTo(nextDayOfMonth.Day));
+		Assert.That(start.Month, Is.EqualTo(nextDayOfMonth.Month));
+		Assert.That(start.Year, Is.EqualTo(nextDayOfMonth.Year));
+		Assert.That(nextDayOfMonth.Hour, Is.EqualTo(12));
 	}
 
 	[Test]
 	public void NextDayOfMonth_MonthsHoursAhead() {
 		var start = new DateTime(2014, 09, 29, 12, 0, 0, 0); // Monday
 		var nextDayOfMonth = start.ToNextDayOfMonth(29, TimeSpan.FromHours(12));
-		ClassicAssert.AreEqual(29, nextDayOfMonth.Day);
-		ClassicAssert.AreEqual(10, nextDayOfMonth.Month);
-		ClassicAssert.AreEqual(2014, nextDayOfMonth.Year);
-		ClassicAssert.AreEqual(12, nextDayOfMonth.Hour);
+		Assert.That(nextDayOfMonth.Day, Is.EqualTo(29));
+		Assert.That(nextDayOfMonth.Month, Is.EqualTo(10));
+		Assert.That(nextDayOfMonth.Year, Is.EqualTo(2014));
+		Assert.That(nextDayOfMonth.Hour, Is.EqualTo(12));
 	}
 
 }

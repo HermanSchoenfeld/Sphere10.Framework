@@ -9,7 +9,6 @@
 using NUnit.Framework;
 using System;
 using System.Net;
-using NUnit.Framework.Legacy;
 
 namespace Sphere10.Framework.Tests;
 
@@ -18,13 +17,13 @@ public class ParserTests {
 
 	[Test]
 	public void Parse() {
-		ClassicAssert.AreEqual(1, Tools.Parser.Parse<byte>("1"));
-		ClassicAssert.AreEqual(1, Tools.Parser.Parse<int>("1"));
-		ClassicAssert.AreEqual(1, Tools.Parser.Parse<long>("1"));
-		ClassicAssert.AreEqual(1.0, Tools.Parser.Parse<float>("1"));
+		Assert.That(Tools.Parser.Parse<byte>("1"), Is.EqualTo(1));
+		Assert.That(Tools.Parser.Parse<int>("1"), Is.EqualTo(1));
+		Assert.That(Tools.Parser.Parse<long>("1"), Is.EqualTo(1));
+		Assert.That(Tools.Parser.Parse<float>("1"), Is.EqualTo(1.0));
 		var guid = Guid.NewGuid();
-		ClassicAssert.AreEqual(guid, Tools.Parser.Parse<Guid>(guid.ToString()));
-		ClassicAssert.AreEqual(guid, Tools.Parser.Parse<Guid>(guid.ToStrictAlphaString()));
+		Assert.That(Tools.Parser.Parse<Guid>(guid.ToString()), Is.EqualTo(guid));
+		Assert.That(Tools.Parser.Parse<Guid>(guid.ToStrictAlphaString()), Is.EqualTo(guid));
 	}
 
 	[Test]
@@ -35,21 +34,21 @@ public class ParserTests {
 
 	[Test]
 	public void Nullable() {
-		ClassicAssert.IsNull(Tools.Parser.Parse<int?>(""));
-		ClassicAssert.IsNull(Tools.Parser.Parse<int?>(null));
+		Assert.That(Tools.Parser.Parse<int?>(""), Is.Null);
+		Assert.That(Tools.Parser.Parse<int?>(null), Is.Null);
 	}
 
 	[Test]
 	public void SafeParse() {
 		//ClassicAssert.IsNull(Tools.Parser.SafeParseInt32("bad"));
-		ClassicAssert.IsNull(Tools.Parser.SafeParse<int?>("bad"));
-		ClassicAssert.AreEqual(default(int), Tools.Parser.SafeParse<int>("bad"));
+		Assert.That(Tools.Parser.SafeParse<int?>("bad"), Is.Null);
+		Assert.That(Tools.Parser.SafeParse<int>("bad"), Is.EqualTo(default(int)));
 	}
 
 
 	[Test]
 	public void IPAddr() {
-		ClassicAssert.AreEqual(IPAddress.Parse("127.0.0.1"), Tools.Parser.Parse<IPAddress>("127.0.0.1"));
+		Assert.That(Tools.Parser.Parse<IPAddress>("127.0.0.1"), Is.EqualTo(IPAddress.Parse("127.0.0.1")));
 		Assert.Throws<FormatException>(() => Tools.Parser.Parse<IPAddress>("asdfhaskdfj"));
 	}
 }

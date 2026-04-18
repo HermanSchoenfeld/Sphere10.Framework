@@ -9,8 +9,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -27,7 +25,7 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var sig = wots.Sign(key.PrivateKey, System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"));
 		var sig2 = wots.Sign(key.PrivateKey, System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"));
-		ClassicAssert.IsTrue(sig.AsFlatSpan().Slice(..^wots.Config.DigestSize).SequenceEqual(sig2.AsFlatSpan().Slice(..^wots.Config.DigestSize)));
+		Assert.That(sig.AsFlatSpan().Slice(..^wots.Config.DigestSize).SequenceEqual(sig2.AsFlatSpan().Slice(..^wots.Config.DigestSize)), Is.True);
 	}
 
 	[Test]
@@ -42,16 +40,13 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var sig = wots.SignDigest(key.PrivateKey, digest);
 		// signature should be 2^w-1'th hash into the hash chain (private key is 1st) (exclusing digest)
-		ClassicAssert.AreEqual(
-			sig.ToFlatArray().Take(wots.Config.SignatureDigits * wots.Config.DigestSize),
-			key
+		Assert.That(key
 				.PrivateKey
 				.GetRows()
 				.Take(wots.Config.SignatureDigits)
 				.Select(x => Hashers.Iterate(wots.Config.HashFunction, x, wots.Config.ChainLength))
 				.SelectMany(x => x)
-				.ToArray()
-		);
+				.ToArray(), Is.EqualTo(sig.ToFlatArray().Take(wots.Config.SignatureDigits * wots.Config.DigestSize)));
 	}
 
 	[Test]
@@ -66,10 +61,7 @@ public class WOTSTests {
 		var sig = wots.SignDigest(key.PrivateKey, digest);
 		// signature should be the private key (minus checksum)
 		var nonFracitionalSignatureDigits = wots.Config.SignatureDigits - (wots.Config.SignatureDigits % wots.Config.W);
-		ClassicAssert.AreEqual(
-			sig.ToFlatArray().Take(nonFracitionalSignatureDigits * wots.Config.DigestSize),
-			key.PrivateKey.ToFlatArray().Take(nonFracitionalSignatureDigits * wots.Config.DigestSize)
-		);
+		Assert.That(key.PrivateKey.ToFlatArray().Take(nonFracitionalSignatureDigits * wots.Config.DigestSize), Is.EqualTo(sig.ToFlatArray().Take(nonFracitionalSignatureDigits * wots.Config.DigestSize)));
 	}
 
 	[Test]
@@ -81,7 +73,7 @@ public class WOTSTests {
 		var wots = new WOTS(w, optimized);
 		var digest = Tools.Array.Gen<byte>(wots.Config.DigestSize, 0);
 		var key = wots.GenerateKeys();
-		ClassicAssert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
+		Assert.That(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest), Is.True);
 	}
 
 	[Test]
@@ -93,7 +85,7 @@ public class WOTSTests {
 		var wots = new WOTS(w, optimized);
 		var digest = Tools.Array.Gen<byte>(wots.Config.DigestSize, 1);
 		var key = wots.GenerateKeys();
-		ClassicAssert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
+		Assert.That(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest), Is.True);
 	}
 
 	[Test]
@@ -106,7 +98,7 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var message = System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = wots.Sign(key.PrivateKey, message);
-		ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+		Assert.That(wots.Verify(sig, key.PublicKey, message), Is.True);
 	}
 
 	[Test]
@@ -115,7 +107,7 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var message = System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = wots.Sign(key.PrivateKey, message);
-		ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+		Assert.That(wots.Verify(sig, key.PublicKey, message), Is.True);
 	}
 
 	[Test]
@@ -130,7 +122,7 @@ public class WOTSTests {
 		var sig = wots.Sign(key.PrivateKey, message);
 		unchecked {
 			sig[0, 0] = (byte)(sig[0, 0] + 1);
-			ClassicAssert.IsFalse(wots.Verify(sig, key.PublicKey, message));
+			Assert.That(wots.Verify(sig, key.PublicKey, message), Is.False);
 		}
 	}
 
@@ -147,7 +139,7 @@ public class WOTSTests {
 		for (var i = 0; i < TestRounds; i++) {
 			var message = RNG.NextBytes(RNG.Next(0, 100));
 			var sig = wots.Sign(key.PrivateKey, message);
-			ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+			Assert.That(wots.Verify(sig, key.PublicKey, message), Is.True);
 
 			// flip a random byte
 			var row = RNG.Next(0, sig.GetLength(0));
@@ -155,7 +147,7 @@ public class WOTSTests {
 			unchecked {
 				sig[row, col] += 1;
 			}
-			ClassicAssert.IsFalse(wots.Verify(sig, key.PublicKey, message));
+			Assert.That(wots.Verify(sig, key.PublicKey, message), Is.False);
 		}
 	}
 

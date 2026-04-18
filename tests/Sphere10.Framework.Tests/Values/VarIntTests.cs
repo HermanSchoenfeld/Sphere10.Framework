@@ -10,8 +10,6 @@ using System;
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Values;
 
 public class VarIntTests {
@@ -29,7 +27,7 @@ public class VarIntTests {
 		var stream = new MemoryStream();
 		var a = new VarInt(value);
 		a.Write(stream);
-		ClassicAssert.AreEqual(expectedByteLength, stream.Length);
+		Assert.That(stream.Length, Is.EqualTo(expectedByteLength));
 
 		stream.Seek(0, SeekOrigin.Begin);
 		ulong b = VarInt.Read(stream);
@@ -75,7 +73,7 @@ public class VarIntTests {
 			ulong val = (uint)rng.Next() + (uint)rng.Next();
 			VarInt.Write(val, memStream);
 			memStream.Seek(0, SeekOrigin.Begin);
-			ClassicAssert.AreEqual(val, VarInt.Read(memStream));
+			Assert.That(VarInt.Read(memStream), Is.EqualTo(val));
 		}
 	}
 

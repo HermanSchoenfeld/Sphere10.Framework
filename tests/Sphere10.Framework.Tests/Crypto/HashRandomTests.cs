@@ -12,8 +12,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework.Maths;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -115,8 +113,7 @@ public class HashRandomTests {
 		var rng2 = new HashRandom(seed);
 		var bytes1 = rng1.NextBytes(256);
 		var bytes2 = rng2.NextBytes(256);
-		ClassicAssert.AreEqual(bytes1, bytes2,
-			"Same seed must produce identical byte sequences");
+		Assert.That(bytes2, Is.EqualTo(bytes1), "Same seed must produce identical byte sequences");
 	}
 
 	[Test]
@@ -125,8 +122,7 @@ public class HashRandomTests {
 		var rng2 = new HashRandom(new Random(2).NextBytes(32));
 		var bytes1 = rng1.NextBytes(64);
 		var bytes2 = rng2.NextBytes(64);
-		ClassicAssert.IsFalse(bytes1.SequenceEqual(bytes2),
-			"Different seeds must produce different sequences");
+		Assert.That(bytes1.SequenceEqual(bytes2), Is.False, "Different seeds must produce different sequences");
 	}
 
 	[Test]
@@ -136,8 +132,7 @@ public class HashRandomTests {
 		var rng128 = new HashRandom(CHF.Blake2b_128, seed);
 		var bytes256 = rng256.NextBytes(64);
 		var bytes128 = rng128.NextBytes(64);
-		ClassicAssert.IsFalse(bytes256.SequenceEqual(bytes128),
-			"Same seed with different CHF must produce different sequences");
+		Assert.That(bytes256.SequenceEqual(bytes128), Is.False, "Same seed with different CHF must produce different sequences");
 	}
 
 	[Test]
@@ -152,8 +147,7 @@ public class HashRandomTests {
 		result1.Append(rng1.NextBytes(44));
 		// rng2: read in one call
 		var result2 = rng2.NextBytes(64);
-		ClassicAssert.AreEqual(result1.ToArray(), result2,
-			"Splitting reads across calls must produce the same concatenated result");
+		Assert.That(result2, Is.EqualTo(result1.ToArray()), "Splitting reads across calls must produce the same concatenated result");
 	}
 
 	#endregion
@@ -164,15 +158,14 @@ public class HashRandomTests {
 	public void Output_IsNotAllZeros() {
 		var rng = new HashRandom(new Random(1).NextBytes(32));
 		var bytes = rng.NextBytes(1024);
-		ClassicAssert.IsFalse(bytes.All(b => b == 0), "Output must not be all zeros");
+		Assert.That(bytes.All(b => b == 0), Is.False, "Output must not be all zeros");
 	}
 
 	[Test]
 	public void Output_IsNotAllSameByte() {
 		var rng = new HashRandom(new Random(1).NextBytes(32));
 		var bytes = rng.NextBytes(1024);
-		ClassicAssert.IsTrue(bytes.Distinct().Count() > 1,
-			"Output must contain more than one distinct byte value");
+		Assert.That(bytes.Distinct().Count() > 1, Is.True, "Output must contain more than one distinct byte value");
 	}
 
 	[Test]
@@ -185,8 +178,8 @@ public class HashRandomTests {
 		var min = counts.Min();
 		var max = counts.Max();
 		// With 200 expected per bucket, a 4x range is extremely generous for a CSPRNG
-		ClassicAssert.IsTrue(min > 50, $"Minimum bucket count {min} is suspiciously low");
-		ClassicAssert.IsTrue(max < 400, $"Maximum bucket count {max} is suspiciously high");
+		Assert.That(min > 50, Is.True, $"Minimum bucket count {min} is suspiciously low");
+		Assert.That(max < 400, Is.True, $"Maximum bucket count {max} is suspiciously high");
 	}
 
 	[Test]
@@ -194,8 +187,7 @@ public class HashRandomTests {
 		var rng = new HashRandom(new Random(3).NextBytes(32));
 		var block1 = rng.NextBytes(32);
 		var block2 = rng.NextBytes(32);
-		ClassicAssert.IsFalse(block1.SequenceEqual(block2),
-			"Successive output blocks must differ");
+		Assert.That(block1.SequenceEqual(block2), Is.False, "Successive output blocks must differ");
 	}
 
 	#endregion
@@ -206,14 +198,14 @@ public class HashRandomTests {
 	public void NextBytes_ZeroLength_ReturnsEmpty() {
 		var rng = new HashRandom(new Random(1).NextBytes(32));
 		var bytes = rng.NextBytes(0);
-		ClassicAssert.AreEqual(0, bytes.Length);
+		Assert.That(bytes.Length, Is.EqualTo(0));
 	}
 
 	[Test]
 	public void NextBytes_SingleByte_Succeeds() {
 		var rng = new HashRandom(new Random(1).NextBytes(32));
 		var bytes = rng.NextBytes(1);
-		ClassicAssert.AreEqual(1, bytes.Length);
+		Assert.That(bytes.Length, Is.EqualTo(1));
 	}
 
 	[Test]
@@ -221,7 +213,7 @@ public class HashRandomTests {
 		var digestSize = Hashers.GetDigestSizeBytes(chf);
 		var rng = new HashRandom(chf, new Random(1).NextBytes(32));
 		var bytes = rng.NextBytes(digestSize);
-		ClassicAssert.AreEqual(digestSize, bytes.Length);
+		Assert.That(bytes.Length, Is.EqualTo(digestSize));
 	}
 
 	[Test]
@@ -229,15 +221,15 @@ public class HashRandomTests {
 		var rng = new HashRandom(new Random(1).NextBytes(32));
 		var digestSize = Hashers.GetDigestSizeBytes(CHF.SHA2_256);
 		var bytes = rng.NextBytes(digestSize * 10 + 7);
-		ClassicAssert.AreEqual(digestSize * 10 + 7, bytes.Length);
+		Assert.That(bytes.Length, Is.EqualTo(digestSize * 10 + 7));
 	}
 
 	[Test]
 	public void NextBytes_VeryLargeRequest_Succeeds() {
 		var rng = new HashRandom(new Random(1).NextBytes(32));
 		var bytes = rng.NextBytes(100_000);
-		ClassicAssert.AreEqual(100_000, bytes.Length);
-		ClassicAssert.IsFalse(bytes.All(b => b == 0));
+		Assert.That(bytes.Length, Is.EqualTo(100_000));
+		Assert.That(bytes.All(b => b == 0), Is.False);
 	}
 
 	[Test]
@@ -246,15 +238,15 @@ public class HashRandomTests {
 		seed[0] = 1;
 		var rng = new HashRandom(seed);
 		var bytes = rng.NextBytes(32);
-		ClassicAssert.IsFalse(bytes.All(b => b == 0));
+		Assert.That(bytes.All(b => b == 0), Is.False);
 	}
 
 	[Test]
 	public void Constructor_DefaultParameterless_Succeeds() {
 		var rng = new HashRandom();
 		var bytes = rng.NextBytes(32);
-		ClassicAssert.AreEqual(32, bytes.Length);
-		ClassicAssert.IsFalse(bytes.All(b => b == 0));
+		Assert.That(bytes.Length, Is.EqualTo(32));
+		Assert.That(bytes.All(b => b == 0), Is.False);
 	}
 
 	#endregion
@@ -269,7 +261,7 @@ public class HashRandomTests {
 		).ToArray();
 		Assert.DoesNotThrow(() => Task.WaitAll(tasks));
 		foreach (var task in tasks)
-			ClassicAssert.AreEqual(1024, task.Result.Length);
+			Assert.That(task.Result.Length, Is.EqualTo(1024));
 	}
 
 	[Test]
@@ -282,8 +274,8 @@ public class HashRandomTests {
 		Task.WaitAll(tasks);
 		// All tasks got their bytes
 		foreach (var bytes in allBytes) {
-			ClassicAssert.IsNotNull(bytes);
-			ClassicAssert.AreEqual(256, bytes.Length);
+			Assert.That(bytes, Is.Not.Null);
+			Assert.That(bytes.Length, Is.EqualTo(256));
 		}
 	}
 
@@ -296,8 +288,7 @@ public class HashRandomTests {
 		var rng = new HashRandom(new Random(1).NextBytes(32));
 		var buffer = new byte[64];
 		rng.NextBytes(buffer.AsSpan());
-		ClassicAssert.IsFalse(buffer.All(b => b == 0),
-			"Span overload must fill the provided buffer");
+		Assert.That(buffer.All(b => b == 0), Is.False, "Span overload must fill the provided buffer");
 	}
 
 	[Test]
@@ -308,8 +299,7 @@ public class HashRandomTests {
 		var arrayResult = rng1.NextBytes(128);
 		var spanBuffer = new byte[128];
 		rng2.NextBytes(spanBuffer.AsSpan());
-		ClassicAssert.AreEqual(arrayResult, spanBuffer,
-			"Span and array overloads with same seed must produce identical output");
+		Assert.That(spanBuffer, Is.EqualTo(arrayResult), "Span and array overloads with same seed must produce identical output");
 	}
 
 	#endregion

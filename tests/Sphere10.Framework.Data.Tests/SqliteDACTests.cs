@@ -11,9 +11,6 @@ using System.Data;
 using NUnit.Framework;
 using System.IO;
 using Sphere10.Framework.Data.Tests.Properties;
-using NUnit.Framework.Legacy;
-
-
 namespace Sphere10.Framework.Data.Tests;
 
 [TestFixture]
@@ -31,7 +28,7 @@ public class SqliteDACTests {
 	public void Connection_CreateOpen() {
 		var dac = Tools.Sqlite.Open(DBFile);
 		using (var conn = dac.CreateOpenConnection()) {
-			ClassicAssert.AreEqual(conn.State, ConnectionState.Open);
+			Assert.That(ConnectionState.Open, Is.EqualTo(conn.State));
 		}
 	}
 
@@ -39,7 +36,7 @@ public class SqliteDACTests {
 	public void Connection_CreateClosed() {
 		var dac = Tools.Sqlite.Open(DBFile);
 		using (var conn = dac.CreateConnection()) {
-			ClassicAssert.AreEqual(conn.State, ConnectionState.Closed);
+			Assert.That(ConnectionState.Closed, Is.EqualTo(conn.State));
 		}
 	}
 
@@ -59,7 +56,7 @@ public class SqliteDACTests {
 			dac.ExecuteNonQuery(tableDDL);
 			dac.Insert("Table", new[] { new ColumnValue("Data1", guid) });
 			var read = dac.Select("Table", new[] { "Data1" }).Single().Get<Guid>(0);
-			ClassicAssert.AreEqual(guid, read);
+			Assert.That(read, Is.EqualTo(guid));
 		} finally {
 			if (File.Exists(dbFile))
 				File.Delete(dbFile);
@@ -84,7 +81,7 @@ public class SqliteDACTests {
 			dac.Insert("Table", new[] { new ColumnValue("Data1", guid) });
 
 			var read = dac.Select("Table", new[] { "Data1" }, columnMatches: new[] { new ColumnValue("Data1", guid), }).Single().Get<Guid>(0);
-			ClassicAssert.AreEqual(guid, read);
+			Assert.That(read, Is.EqualTo(guid));
 
 		} finally {
 			if (File.Exists(dbFile))
@@ -112,7 +109,7 @@ public class SqliteDACTests {
 			dac.Insert("Table", new[] { new ColumnValue("Data1", emptyGuid) });
 
 			var read = dac.Select("Table", new[] { "Data1" }, columnMatches: new[] { new ColumnValue("Data1", emptyGuid), }).Single().Get<Guid>(0);
-			ClassicAssert.AreEqual(emptyGuid, read);
+			Assert.That(read, Is.EqualTo(emptyGuid));
 
 		} finally {
 			if (File.Exists(dbFile))

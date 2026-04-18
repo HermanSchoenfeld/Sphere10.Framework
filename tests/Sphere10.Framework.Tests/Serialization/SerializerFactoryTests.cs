@@ -11,8 +11,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -96,7 +94,7 @@ public class SerializerFactoryTests {
 		var factory = new SerializerFactory();
 		factory.Register(typeof(List<>), typeof(ListSerializer<>));  // 0
 		factory.Register(PrimitiveSerializer<int>.Instance);  // 1
-		ClassicAssert.AreEqual(factory.GetSerializerHierarchy(typeof(List<int>)).Flatten(), new[] { SerializerFactory.PermanentTypeCodeStartDefault + 0, SerializerFactory.PermanentTypeCodeStartDefault + 1 });
+		Assert.That(new[] { SerializerFactory.PermanentTypeCodeStartDefault + 0, SerializerFactory.PermanentTypeCodeStartDefault + 1 }, Is.EqualTo(factory.GetSerializerHierarchy(typeof(List<int>)).Flatten()));
 	}
 
 	[Test]
@@ -114,7 +112,7 @@ public class SerializerFactoryTests {
 		//			float, 1 
 		//			List< 2
 		//				int>>>> 0
-		ClassicAssert.AreEqual(factory.GetSerializerHierarchy(typeof(List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>)).Flatten(), new[] { 2, 3, 2, 0, 3, 1, 2, 0 }.Select(x => SerializerFactory.PermanentTypeCodeStartDefault + x));
+		Assert.That(new[] { 2, 3, 2, 0, 3, 1, 2, 0 }.Select(x => SerializerFactory.PermanentTypeCodeStartDefault + x), Is.EqualTo(factory.GetSerializerHierarchy(typeof(List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>)).Flatten()));
 	}
 
 	[Test]
@@ -134,7 +132,7 @@ public class SerializerFactoryTests {
 			)
 		);
 		factory.Register(instance); // 4 (closed specific instance)
-		ClassicAssert.AreEqual(factory.GetSerializerHierarchy(typeof(List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>)).Flatten(), new[] { SerializerFactory.PermanentTypeCodeStartDefault + 4 });
+		Assert.That(new[] { SerializerFactory.PermanentTypeCodeStartDefault + 4 }, Is.EqualTo(factory.GetSerializerHierarchy(typeof(List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>)).Flatten()));
 	}
 
 	[Test]
@@ -186,7 +184,7 @@ public class SerializerFactoryTests {
 		);
 		factory.Register(instance); // 4 (closed specific instance)
 
-		ClassicAssert.AreEqual(factory.GetSerializerHierarchy(typeof(List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>)).Flatten(), new[] { SerializerFactory.PermanentTypeCodeStartDefault + 4 });
+		Assert.That(new[] { SerializerFactory.PermanentTypeCodeStartDefault + 4 }, Is.EqualTo(factory.GetSerializerHierarchy(typeof(List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>)).Flatten()));
 
 	}
 	

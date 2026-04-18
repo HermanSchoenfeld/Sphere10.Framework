@@ -7,9 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -24,15 +21,15 @@ public class MultiKeyDictionaryTest {
 		dict.Add(21, "2", "1");
 		dict.Add(22, "2", "2");
 
-		ClassicAssert.IsTrue(dict.ContainsKey("1", "1"));
-		ClassicAssert.IsTrue(dict.ContainsKey("1", "2"));
-		ClassicAssert.IsTrue(dict.ContainsKey("2", "1"));
-		ClassicAssert.IsTrue(dict.ContainsKey("2", "2"));
+		Assert.That(dict.ContainsKey("1", "1"), Is.True);
+		Assert.That(dict.ContainsKey("1", "2"), Is.True);
+		Assert.That(dict.ContainsKey("2", "1"), Is.True);
+		Assert.That(dict.ContainsKey("2", "2"), Is.True);
 
-		ClassicAssert.AreEqual(11, dict["1", "1"]);
-		ClassicAssert.AreEqual(12, dict["1", "2"]);
-		ClassicAssert.AreEqual(21, dict["2", "1"]);
-		ClassicAssert.AreEqual(22, dict["2", "2"]);
+		Assert.That(dict["1", "1"], Is.EqualTo(11));
+		Assert.That(dict["1", "2"], Is.EqualTo(12));
+		Assert.That(dict["2", "1"], Is.EqualTo(21));
+		Assert.That(dict["2", "2"], Is.EqualTo(22));
 
 	}
 
@@ -40,7 +37,7 @@ public class MultiKeyDictionaryTest {
 	public void LookupObjectKey_SameNumericTypeCode() {
 		var dict = new EnumerableKeyDictionary<object, string>();
 		dict.Add("magic", (int)1);
-		ClassicAssert.IsTrue(dict.ContainsKey((int)1));
+		Assert.That(dict.ContainsKey((int)1), Is.True);
 	}
 
 
@@ -48,28 +45,28 @@ public class MultiKeyDictionaryTest {
 	public void LookupObjectKey_VaryingNumericTypeCode_1() {
 		var dict = new EnumerableKeyDictionary<object, string>();
 		dict.Add("magic", (int)1);
-		ClassicAssert.IsTrue(dict.ContainsKey((uint)1));
+		Assert.That(dict.ContainsKey((uint)1), Is.True);
 	}
 
 	[Test]
 	public void LookupObjectKey_VaryingNumericTypeCode_2() {
 		var dict = new EnumerableKeyDictionary<object, string>();
 		dict.Add("magic", (sbyte)1);
-		ClassicAssert.IsTrue(dict.ContainsKey((ulong)1));
+		Assert.That(dict.ContainsKey((ulong)1), Is.True);
 	}
 
 	[Test]
 	public void LookupObjectKey_VaryingNumericTypeCode_3() {
 		var dict = new EnumerableKeyDictionary<object, string>();
 		dict.Add("magic", (int)1);
-		ClassicAssert.IsTrue(dict.ContainsKey((long)1));
+		Assert.That(dict.ContainsKey((long)1), Is.True);
 	}
 
 	[Test]
 	public void LookupObjectKey_VaryingNumericTypeCode_4() {
 		var dict = new EnumerableKeyDictionary<object, string>();
 		dict.Add("magic", (float)1);
-		ClassicAssert.IsTrue(dict.ContainsKey((double)1));
+		Assert.That(dict.ContainsKey((double)1), Is.True);
 	}
 
 }

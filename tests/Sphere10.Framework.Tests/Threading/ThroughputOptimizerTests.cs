@@ -8,8 +8,6 @@
 
 using System;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
@@ -27,14 +25,14 @@ public class ThroughputOptimizerTests {
 	[TestCaseSource("TestParameters")]
 	public void InitialDirection_1(long minSize, long maxSize, double adjustment, double tolerance) {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 	}
 
 	[Test]
 	[TestCaseSource("TestParameters")]
 	public void InitialDirection_2(long minSize, long maxSize, double adjustment, double tolerance) {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing, op.AdjustmentDirection);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing));
 	}
 
 	[Test]
@@ -47,14 +45,14 @@ public class ThroughputOptimizerTests {
 	[TestCaseSource("TestParameters")]
 	public void InitialSize_1(long minSize, long maxSize, double adjustment, double tolerance) {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
-		ClassicAssert.AreEqual(1000, op.SuggestedBatchSize);
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(1000));
 	}
 
 	[Test]
 	[TestCaseSource("TestParameters")]
 	public void InitialSize_2(long minSize, long maxSize, double adjustment, double tolerance) {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing);
-		ClassicAssert.AreEqual(10000, op.SuggestedBatchSize);
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(10000));
 	}
 
 	[Test]
@@ -64,7 +62,7 @@ public class ThroughputOptimizerTests {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		op.RegisterSample((long)Math.Round(minSize * (1 - (adjustment + tolerance + breach)).ClipTo(0, double.MaxValue), 0), TimeSpan.FromSeconds(1));
 		op.RegisterSample((long)Math.Round(minSize * (1 + (adjustment + tolerance + breach)).ClipTo(0, double.MaxValue), 0), TimeSpan.FromSeconds(1));
-		ClassicAssert.AreEqual(op.SampleCount, 0);
+		Assert.That(0, Is.EqualTo(op.SampleCount));
 	}
 
 	[Test]
@@ -74,7 +72,7 @@ public class ThroughputOptimizerTests {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing);
 		op.RegisterSample((long)Math.Round(maxSize * (1 - (adjustment + tolerance + breach)).ClipTo(0, double.MaxValue), 0), TimeSpan.FromSeconds(1));
 		op.RegisterSample((long)Math.Round(maxSize * (1 + (adjustment + tolerance + breach)).ClipTo(0, double.MaxValue), 0), TimeSpan.FromSeconds(1));
-		ClassicAssert.AreEqual(op.SampleCount, 0);
+		Assert.That(0, Is.EqualTo(op.SampleCount));
 	}
 
 	[Test]
@@ -82,8 +80,8 @@ public class ThroughputOptimizerTests {
 	public void Increase_Simple(long minSize, long maxSize, double adjustment, double tolerance) {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		op.RegisterSample(minSize, TimeSpan.FromSeconds(1));
-		ClassicAssert.AreEqual(1, op.SampleCount);
-		ClassicAssert.AreEqual((long)Math.Round(minSize * (1 + adjustment), 0), op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(1));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo((long)Math.Round(minSize * (1 + adjustment), 0)));
 	}
 
 	[Test]
@@ -91,8 +89,8 @@ public class ThroughputOptimizerTests {
 	public void Decrease_Simple(long minSize, long maxSize, double adjustment, double tolerance) {
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing);
 		op.RegisterSample(maxSize, TimeSpan.FromSeconds(1));
-		ClassicAssert.AreEqual(1, op.SampleCount);
-		ClassicAssert.AreEqual((long)Math.Round(maxSize * (1 - adjustment), 0), op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(1));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo((long)Math.Round(maxSize * (1 - adjustment), 0)));
 	}
 
 	[Test]
@@ -104,10 +102,10 @@ public class ThroughputOptimizerTests {
 		};
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		op.RegisterSample(samples[0].Item1, samples[0].Item2);
-		ClassicAssert.AreEqual(1, op.SampleCount);
+		Assert.That(op.SampleCount, Is.EqualTo(1));
 		op.RegisterSample(samples[1].Item1, samples[1].Item2);
-		ClassicAssert.AreEqual(2, op.SampleCount);
-		ClassicAssert.AreEqual((long)Math.Round(samples[1].Item1 * (1 + adjustment), 0), op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(2));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo((long)Math.Round(samples[1].Item1 * (1 + adjustment), 0)));
 	}
 
 	[Test]
@@ -120,10 +118,10 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing);
 		op.RegisterSample(samples[0].Item1, samples[0].Item2);
-		ClassicAssert.AreEqual(1, op.SampleCount);
+		Assert.That(op.SampleCount, Is.EqualTo(1));
 		op.RegisterSample(samples[1].Item1, samples[1].Item2);
-		ClassicAssert.AreEqual(2, op.SampleCount);
-		ClassicAssert.AreEqual((long)Math.Round(samples[1].Item1 * (1 - adjustment), 0), op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(2));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo((long)Math.Round(samples[1].Item1 * (1 - adjustment), 0)));
 	}
 
 	[Test]
@@ -138,22 +136,22 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		op.RegisterSample(samples[0].Item1, samples[0].Item2);
-		ClassicAssert.AreEqual(1, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(1));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 
 		op.RegisterSample(samples[1].Item1, samples[1].Item2);
-		ClassicAssert.AreEqual(2, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(2));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 
 		op.RegisterSample(samples[2].Item1, samples[2].Item2);
-		ClassicAssert.AreEqual(3, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(3));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 
 		op.RegisterSample(samples[3].Item1, samples[3].Item2);
-		ClassicAssert.AreEqual(4, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(4));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
 
-		ClassicAssert.AreEqual(samples[2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[2].Item1));
 
 	}
 
@@ -169,22 +167,22 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing);
 		op.RegisterSample(samples[0].Item1, samples[0].Item2);
-		ClassicAssert.AreEqual(1, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(1));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing));
 
 		op.RegisterSample(samples[1].Item1, samples[1].Item2);
-		ClassicAssert.AreEqual(2, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(2));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing));
 
 		op.RegisterSample(samples[2].Item1, samples[2].Item2);
-		ClassicAssert.AreEqual(3, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(3));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing));
 
 		op.RegisterSample(samples[3].Item1, samples[3].Item2);
-		ClassicAssert.AreEqual(4, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
+		Assert.That(op.SampleCount, Is.EqualTo(4));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
 
-		ClassicAssert.AreEqual(samples[2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[2].Item1));
 
 	}
 
@@ -204,13 +202,13 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
@@ -230,13 +228,13 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
@@ -256,13 +254,13 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing, op.AdjustmentDirection);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing));
 		Assert.That(Math.Round(lastSample.Item1 * (1.0 - adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
@@ -282,13 +280,13 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
@@ -308,14 +306,14 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 	}
 
 	[Test]
@@ -334,14 +332,14 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 	}
 
 	[Test]
@@ -360,14 +358,14 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 	}
 
 
@@ -387,13 +385,13 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing));
 		Assert.That(Math.Round(samples[samples.Length - 2].Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
@@ -414,14 +412,14 @@ public class ThroughputOptimizerTests {
 
 		var op = new ThroughputOptimizer(minSize, maxSize, adjustment, tolerance, ThroughputOptimizer.SamplingAdjustmentDirection.Increasing);
 		samples.ForEach(s => op.RegisterSample(s.Item1, s.Item2));
-		ClassicAssert.AreEqual(samples.Length, op.SampleCount);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.SampleCount, Is.EqualTo(samples.Length));
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
-		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized, op.AdjustmentDirection);
-		ClassicAssert.AreEqual(samples[samples.Length - 2].Item1, op.SuggestedBatchSize);
+		Assert.That(op.AdjustmentDirection, Is.EqualTo(ThroughputOptimizer.SamplingAdjustmentDirection.Stablized));
+		Assert.That(op.SuggestedBatchSize, Is.EqualTo(samples[samples.Length - 2].Item1));
 	}
 
 

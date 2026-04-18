@@ -10,8 +10,6 @@ using System;
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-
 namespace Sphere10.Framework.Tests.Values;
 
 public class CVarIntTests {
@@ -26,7 +24,7 @@ public class CVarIntTests {
 		var stream = new MemoryStream();
 		var a = new CVarInt(value);
 		a.Write(stream);
-		ClassicAssert.AreEqual(expectedByteLength, stream.Length);
+		Assert.That(stream.Length, Is.EqualTo(expectedByteLength));
 
 		stream.Seek(0, SeekOrigin.Begin);
 		ulong b = CVarInt.Read(stream);
@@ -44,7 +42,7 @@ public class CVarIntTests {
 		var stream = new MemoryStream();
 		var a = new CVarInt(value);
 		stream.Write(a.ToBytes());
-		ClassicAssert.AreEqual(expectedByteLength, stream.Length);
+		Assert.That(stream.Length, Is.EqualTo(expectedByteLength));
 
 		ulong b = CVarInt.From(stream.ToArray());
 		b.Should().Be(a).And.Be(value);
@@ -69,7 +67,7 @@ public class CVarIntTests {
 			ulong val = (uint)rng.Next() + (uint)rng.Next();
 			CVarInt.Write(val, memStream);
 			memStream.Seek(0, SeekOrigin.Begin);
-			ClassicAssert.AreEqual(val, CVarInt.Read(memStream));
+			Assert.That(CVarInt.Read(memStream), Is.EqualTo(val));
 		}
 	}
 }
