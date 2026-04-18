@@ -49,7 +49,7 @@ public class MuSigBuilder {
 	public MuSigBuilder(Schnorr.PrivateKey privateKey, byte[] messageDigest, byte[] sessionId = null) {
 		_privateKey = privateKey ?? throw new ArgumentNullException(nameof(privateKey));
 		_messageDigest = messageDigest;
-		Schnorr.ValidateBuffer(nameof(messageDigest), messageDigest, 32);
+		Schnorr.ValidateBuffer(messageDigest, 32);
 		_sessionId = sessionId;
 
 		if (_sessionId is not { Length: 32 }) {

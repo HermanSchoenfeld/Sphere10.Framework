@@ -118,8 +118,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
 		var sk = privateKey.AsInteger;
 		var message = messageDigest.ToArray();
-		ValidatePrivateKeyRange(nameof(sk), sk);
-		ValidateArray(nameof(message), message);
+		ValidatePrivateKeyRange(sk);
+		ValidateArray(message);
 
 		byte[] t = null;
 		byte[] rand = null;
@@ -131,7 +131,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 			var d = GetEvenKey(p, sk);
 
 			if (!auxRandomData.IsEmpty) {
-				ValidateBuffer(nameof(auxRandomData), auxRandomData, 32);
+				ValidateBuffer(auxRandomData, 32);
 			} else {
 				auxRandomData = RandomBytes(32);
 			}
@@ -193,9 +193,9 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	public bool BatchVerifyDigest(byte[][] signatures, byte[][] messageDigests, byte[][] publicKeys) {
 		// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#Batch_Verification
-		ValidateJaggedArray(nameof(signatures), signatures);
-		ValidateJaggedArray(nameof(messageDigests), messageDigests);
-		ValidateJaggedArray(nameof(publicKeys), publicKeys);
+		ValidateJaggedArray(signatures);
+		ValidateJaggedArray(messageDigests);
+		ValidateJaggedArray(publicKeys);
 		var leftSide = BigInteger.Zero;
 		ECPoint rightSide = null;
 		for (var i = 0; i < publicKeys.Length; i++) {
@@ -249,7 +249,7 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 
 	internal ECPoint LiftX(byte[] publicKey) {
 		var xPubKey = BytesToBigIntPositive(publicKey);
-		ValidatePublicKeyRange(nameof(xPubKey), xPubKey);
+		ValidatePublicKeyRange(xPubKey);
 		var c = xPubKey.Pow(3).Add(BigInteger.ValueOf(7)).Mod(P);
 		var y = c.ModPow(P.Add(BigInteger.One).Divide(BigInteger.Four), P);
 		Guard.Argument(c.CompareTo(y.ModPow(BigInteger.Two, P)) == 0, nameof(publicKey), "c is not equal to y^2");
@@ -319,8 +319,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return scalar.CompareTo(BigInteger.One) >= 0 && scalar.CompareTo(N.Subtract(BigInteger.One)) <= 0;
 	}
 
-	internal void ValidatePrivateKeyRange(string name, BigInteger scalar) {
-		Guard.Argument(ValidatePrivateKeyRangeNoThrow(scalar), name, "Must be an integer in the range 1..n-1");
+	internal void ValidatePrivateKeyRange(BigInteger scalar) {
+		Guard.Argument(ValidatePrivateKeyRangeNoThrow(scalar), nameof(scalar), "Must be an integer in the range 1..n-1");
 	}
 
 	/// <summary>
@@ -330,19 +330,19 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		return publicKey.CompareTo(BigInteger.Zero) >= 0 && publicKey.CompareTo(P.Subtract(BigInteger.One)) <= 0;
 	}
 
-	private void ValidatePublicKeyRange(string name, BigInteger publicKey) {
-		Guard.Argument(ValidatePublicKeyRangeNoThrow(publicKey), name, "Value is not in the range 0..p-1");
+	private void ValidatePublicKeyRange(BigInteger publicKey) {
+		Guard.Argument(ValidatePublicKeyRangeNoThrow(publicKey), nameof(publicKey), "Value is not in the range 0..p-1");
 	}
 
-	internal static void ValidateArray<T>(string name, T[] buffer) {
-		Guard.ArgumentNotNull(buffer, name);
-		Guard.Argument(buffer.Length > 0, name, "Array must not be empty");
+	internal static void ValidateArray<T>(T[] buffer) {
+		Guard.ArgumentNotNull(buffer, nameof(buffer));
+		Guard.Argument(buffer.Length > 0, nameof(buffer), "Array must not be empty");
 	}
 
-	internal static void ValidateJaggedArray<T>(string name, T[][] buffer) {
-		ValidateArray(name, buffer);
+	internal static void ValidateJaggedArray<T>(T[][] buffer) {
+		ValidateArray(buffer);
 		for (var i = 0; i < buffer.Length; i++)
-			ValidateArray($"{name}[{i}]", buffer[i]);
+			Guard.Argument(buffer[i]?.Length > 0, nameof(buffer), $"Element [{i}] must not be null or empty");
 	}
 
 	/// <summary>
@@ -353,9 +353,8 @@ public class Schnorr : StatelessDigitalSignatureScheme<Schnorr.PrivateKey, Schno
 		Guard.Argument(IsEven(point), nameof(point), "Point does not exist");
 	}
 
-	internal static void ValidateBuffer(string name, ReadOnlySpan<byte> buf, int len, int? idx = null) {
-		var idxStr = (idx.HasValue ? "[" + idx + "]" : "");
-		Guard.Argument(buf.Length == len, name, $"{name + idxStr} must be {len} bytes long");
+	internal static void ValidateBuffer(ReadOnlySpan<byte> buf, int len) {
+		Guard.Argument(buf.Length == len, nameof(buf), $"Buffer must be {len} bytes long");
 	}
 
 
