@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 
@@ -178,19 +179,29 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	#region Node Lifecycle
 
 	protected override long CreateLeafNode() {
-		var Record = new byte[_nodeSize];
-		Record[IsLeafOffset] = 1; // IsLeaf = true
-		// KeyCount = 0 and ChildCount = 0 are already zero in fresh array
-		return AllocateNode(Record);
+		var Record = ArrayPool<byte>.Shared.Rent(_nodeSize);
+		try {
+			Array.Clear(Record, 0, _nodeSize);
+			Record[IsLeafOffset] = 1; // IsLeaf = true
+			// KeyCount = 0 and ChildCount = 0 are already zero after clear
+			return AllocateNode(Record);
+		} finally {
+			ArrayPool<byte>.Shared.Return(Record);
+		}
 	}
 
 	protected override long CreateInternalNode() {
-		var Record = new byte[_nodeSize];
-		Record[IsLeafOffset] = 0; // IsLeaf = false
-		// Initialize all children slots to NoNode
-		for (var I = 0; I < Order + 1; I++)
-			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
-		return AllocateNode(Record);
+		var Record = ArrayPool<byte>.Shared.Rent(_nodeSize);
+		try {
+			Array.Clear(Record, 0, _nodeSize);
+			Record[IsLeafOffset] = 0; // IsLeaf = false
+			// Initialize all children slots to NoNode
+			for (var I = 0; I < Order + 1; I++)
+				Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
+			return AllocateNode(Record);
+		} finally {
+			ArrayPool<byte>.Shared.Return(Record);
+		}
 	}
 
 	protected override void DeleteNode(long node) {
@@ -432,15 +443,8 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 
 	private KeyValuePair<K, V> DeserializeKeyEntry(byte[] record, int keyIndex) {
 		var Offset = KeysOffset + (keyIndex * _keyEntrySize);
-
-		var KeyBytes = new byte[_keySize];
-		Buffer.BlockCopy(record, Offset, KeyBytes, 0, _keySize);
-		var Key = _keySerializer.DeserializeBytes(KeyBytes, _endianness);
-
-		var ValueBytes = new byte[_valueSize];
-		Buffer.BlockCopy(record, Offset + _keySize, ValueBytes, 0, _valueSize);
-		var Value = _valueSerializer.DeserializeBytes(ValueBytes, _endianness);
-
+		var Key = _keySerializer.DeserializeBytes(record.AsSpan(Offset, _keySize), _endianness);
+		var Value = _valueSerializer.DeserializeBytes(record.AsSpan(Offset + _keySize, _valueSize), _endianness);
 		return new KeyValuePair<K, V>(Key, Value);
 	}
 

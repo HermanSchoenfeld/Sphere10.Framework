@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 
@@ -192,27 +193,37 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	#region Node Lifecycle
 
 	protected override long CreateLeafNode() {
-		var Record = new byte[_nodeSize];
-		Record[IsLeafOffset] = 1;
-		// KeyCount = 0, ChildCount = 0 are already zero
-		// NextLeaf = NoNode
-		Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
-		// Initialize all children slots to NoNode (unused for leaves, but keeps the record clean)
-		for (var I = 0; I < Order + 1; I++)
-			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
-		return AllocateNode(Record);
+		var Record = ArrayPool<byte>.Shared.Rent(_nodeSize);
+		try {
+			Array.Clear(Record, 0, _nodeSize);
+			Record[IsLeafOffset] = 1;
+			// KeyCount = 0, ChildCount = 0 are already zero after clear
+			// NextLeaf = NoNode
+			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
+			// Initialize all children slots to NoNode (unused for leaves, but keeps the record clean)
+			for (var I = 0; I < Order + 1; I++)
+				Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
+			return AllocateNode(Record);
+		} finally {
+			ArrayPool<byte>.Shared.Return(Record);
+		}
 	}
 
 	protected override long CreateInternalNode() {
-		var Record = new byte[_nodeSize];
-		Record[IsLeafOffset] = 0;
-		// KeyCount = 0, ChildCount = 0 are already zero
-		// NextLeaf = NoNode (not used for internal nodes)
-		Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
-		// Initialize all children slots to NoNode
-		for (var I = 0; I < Order + 1; I++)
-			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
-		return AllocateNode(Record);
+		var Record = ArrayPool<byte>.Shared.Rent(_nodeSize);
+		try {
+			Array.Clear(Record, 0, _nodeSize);
+			Record[IsLeafOffset] = 0;
+			// KeyCount = 0, ChildCount = 0 are already zero after clear
+			// NextLeaf = NoNode (not used for internal nodes)
+			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
+			// Initialize all children slots to NoNode
+			for (var I = 0; I < Order + 1; I++)
+				Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
+			return AllocateNode(Record);
+		} finally {
+			ArrayPool<byte>.Shared.Return(Record);
+		}
 	}
 
 	protected override void DeleteNode(long node) {

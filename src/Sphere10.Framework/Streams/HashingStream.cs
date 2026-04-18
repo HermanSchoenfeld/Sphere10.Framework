@@ -52,7 +52,9 @@ public sealed class HashingStream : WriteOnlyStream {
 
 	public override void WriteByte(byte value) {
 		CheckCanWrite();
-		_hashFunction.Transform(new byte[] { value });
+		Span<byte> SingleByte = stackalloc byte[1];
+		SingleByte[0] = value;
+		_hashFunction.Transform(SingleByte);
 	}
 
 	protected override void Dispose(bool disposing) {
