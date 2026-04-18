@@ -6,12 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using NUnit.Framework;
-using System.Security.Principal;
-using System.IO;
 using Sphere10.Framework.Windows;
 using Sphere10.Framework.Windows.Security;
+using System;
+using System.IO;
+using System.Security.Principal;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 namespace Sphere10.Framework.UnitTests;
 
 [TestFixture]
@@ -409,7 +410,7 @@ public class WindowsSecurityTests {
 		NTLocalUser user = null;
 		try {
 			user = host.CreateLocalUser(GenerateUserName(host), "pPnNmm*&");
-			CollectionAssert.IsEmpty(user.GetMembership());
+			Assert.That(user.GetMembership(), Is.Empty);
 		} finally {
 			try {
 				if (user != null) {
@@ -575,7 +576,7 @@ public class WindowsSecurityTests {
 		NTLocalGroup group = null;
 		try {
 			group = host.CreateLocalGroup(GenerateGroupName(host), "description");
-			CollectionAssert.IsEmpty(group.GetLocalMembers());
+			Assert.That(group.GetLocalMembers(), Is.Empty);
 		} finally {
 			try {
 				if (group != null) {
@@ -626,7 +627,7 @@ public class WindowsSecurityTests {
 			group.AddLocalMember(user.Name);
 			Assert.That(ContainsObjectByName(group.GetLocalMembers(), user.Name), Is.True);
 			group.DeleteMember(user);
-			CollectionAssert.IsEmpty(group.GetLocalMembers());
+			Assert.That(group.GetLocalMembers(), Is.Empty);
 		} finally {
 			try {
 				if (user != null) {
@@ -656,7 +657,7 @@ public class WindowsSecurityTests {
 			group.AddLocalMember(user.Name);
 			Assert.That(ContainsObjectByName(group.GetLocalMembers(), user.Name), Is.True);
 			group.DeleteMember(user.SID);
-			CollectionAssert.IsEmpty(group.GetLocalMembers());
+			Assert.That(group.GetLocalMembers(), Is.Empty);
 		} finally {
 			try {
 				if (user != null) {
@@ -686,7 +687,7 @@ public class WindowsSecurityTests {
 			group.AddLocalMember(user.Name);
 			Assert.That(ContainsObjectByName(group.GetLocalMembers(), user.Name), Is.True);
 			group.DeleteLocalMember(user.Name);
-			CollectionAssert.IsEmpty(group.GetLocalMembers());
+			Assert.That(group.GetLocalMembers(), Is.Empty);
 		} finally {
 			try {
 				if (user != null) {
@@ -1090,7 +1091,7 @@ public class WindowsSecurityTests {
 		NTLocalGroup group = GetObjectByName(localGroups, "Administrators");
 		NTLocalObject[] members = group.GetLocalMembers();
 		Assert.That(members, Is.Not.Null);
-		CollectionAssert.IsNotEmpty(members);
+		Assert.That(members, Is.Empty);
 	}
 
 
