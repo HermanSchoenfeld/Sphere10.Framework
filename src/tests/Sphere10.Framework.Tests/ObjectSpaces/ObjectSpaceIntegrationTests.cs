@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -462,9 +462,11 @@ public class ObjectSpaceIntegrationTests {
 			acc.Owner = user;
 			os.Save(acc);
 			var perm = os.New<SB.Permission>();
-			perm.PermissionName = "send-permission";
-			perm.Description = "Can send funds";
-			perm.GrantedTo = user;
+			perm.Identity = user;
+			perm.Account = acc;
+			perm.CanSend = true;
+			perm.CanReceive = false;
+			perm.CanChangeName = true;
 			os.Save(perm);
 			Validate(os);
 			os.Flush();
@@ -493,11 +495,14 @@ public class ObjectSpaceIntegrationTests {
 			acc.Owner = user;
 			os.Save(acc);
 			var perm = os.New<SB.Permission>();
-			perm.PermissionName = "send-permission";
-			perm.Description = "Can send funds";
-			perm.PermissionName = "limited-perm";
+			perm.Identity = user;
+			perm.Account = acc;
+			perm.CanSend = false;
+			perm.CanReceive = false;
+			perm.CanChangeName = false;
 			os.Save(perm);
-			perm.GrantedTo = user;
+			perm.CanSend = true;
+			perm.CanReceive = true;
 			os.Save(perm);
 			Validate(os);
 			os.Flush();
@@ -538,12 +543,12 @@ public class ObjectSpaceIntegrationTests {
 			tx.Sender = senderAcc;
 			tx.Receiver = receiverAcc;
 			tx.Amount = 42m;
-			tx.TxHash = "tx-001";
+			tx.Fee = 0.01m;
 			os.Save(tx);
 			var block = os.New<SB.Block>();
-			block.Height = 1;
+			block.BlockNumber = 1;
 			block.Timestamp = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-			block.PreviousBlockHash = System.Text.Encoding.UTF8.GetBytes("genesis");
+			block.Miner = sender;
 			block.Transactions = new[] { tx };
 			os.Save(block);
 			Validate(os);
@@ -583,15 +588,15 @@ public class ObjectSpaceIntegrationTests {
 			tx.Sender = acc1;
 			tx.Receiver = acc2;
 			tx.Amount = 10m;
-			tx.TxHash = "tx-backref";
+			tx.Fee = 0.005m;
 			os.Save(tx);
 			var block = os.New<SB.Block>();
-			block.Height = 2;
+			block.BlockNumber = 2;
 			block.Timestamp = new DateTime(2024, 6, 15, 12, 0, 0, DateTimeKind.Utc);
-			block.PreviousBlockHash = System.Text.Encoding.UTF8.GetBytes("hash1");
+			block.Miner = miner;
 			block.Transactions = new[] { tx };
 			os.Save(block);
-			tx.OwnerBlock = block;
+			tx.Block = block;
 			os.Save(tx);
 			Validate(os);
 			os.Flush();
@@ -637,14 +642,14 @@ public class ObjectSpaceIntegrationTests {
 				tx.Sender = accounts[i];
 				tx.Receiver = accounts[(i + 1) % 3];
 				tx.Amount = 5m;
-				tx.TxHash = $"tx-{i}";
+				tx.Fee = 0.01m;
 				os.Save(tx);
 				txList.Add(tx);
 			}
 			var block = os.New<SB.Block>();
-			block.Height = 10;
+			block.BlockNumber = 10;
 			block.Timestamp = DateTime.UtcNow;
-			block.PreviousBlockHash = System.Text.Encoding.UTF8.GetBytes("prevhash");
+			block.Miner = users[0];
 			block.Transactions = txList.ToArray();
 			os.Save(block);
 			Validate(os);
@@ -689,14 +694,18 @@ public class ObjectSpaceIntegrationTests {
 			acc.Owner = admin;
 			os.Save(acc);
 			var adminPerm = os.New<SB.Permission>();
-			adminPerm.PermissionName = "admin-access";
-			adminPerm.Description = "Full admin access";
-			adminPerm.GrantedTo = admin;
+			adminPerm.Identity = admin;
+			adminPerm.Account = acc;
+			adminPerm.CanSend = true;
+			adminPerm.CanReceive = true;
+			adminPerm.CanChangeName = true;
 			os.Save(adminPerm);
 			var viewerPerm = os.New<SB.Permission>();
-			viewerPerm.PermissionName = "viewer-access";
-			viewerPerm.Description = "Read-only access";
-			viewerPerm.GrantedTo = admin;
+			viewerPerm.Identity = viewer;
+			viewerPerm.Account = acc;
+			viewerPerm.CanSend = false;
+			viewerPerm.CanReceive = true;
+			viewerPerm.CanChangeName = false;
 			os.Save(viewerPerm);
 			Validate(os);
 			os.Flush();

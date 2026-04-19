@@ -249,7 +249,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	public virtual void Dispose() {
-		if (FlushOnDispose)
+		if (FlushOnDispose && !Tools.Runtime.IsInExceptionContext())
 			Flush();
 		Unload();
 		_streams.Dispose();

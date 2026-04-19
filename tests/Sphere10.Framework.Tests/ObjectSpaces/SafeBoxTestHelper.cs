@@ -30,6 +30,9 @@ public static class SafeBoxTestHelper {
 		activationArgs ??= [];
 		var disposables = new Disposables();
 
+		MemoryStream memoryStream = activationArgs.TryGetValue("stream", out  var stream) ? (MemoryStream)stream : new MemoryStream();
+		disposables.Add(memoryStream);
+
 		var builder = new ObjectSpaceBuilder();
 		builder
 			.AutoLoad()
@@ -84,11 +87,7 @@ public static class SafeBoxTestHelper {
 
 		// Memory mapped
 		if (traits.HasFlag(TestTraits.MemoryMapped)) {
-			if (!activationArgs.TryGetValue("stream", out var stream)) {
-				stream = new MemoryStream();
-				disposables.Add((MemoryStream)stream);
-			}
-			builder.UseMemoryStream((MemoryStream)stream);
+			builder.UseMemoryStream(memoryStream);
 		}
 
 		// File mapped
@@ -99,6 +98,9 @@ public static class SafeBoxTestHelper {
 			}
 			var file = Path.Combine((string)folder, "safebox.db");
 			builder.UseFile(file);
+			// Write file content if hydrataing stream
+			if (memoryStream.Length > 0)
+				Tools.Streams.WriteStreamToFile(memoryStream, file);
 		}
 
 		// Merkleized
@@ -108,6 +110,14 @@ public static class SafeBoxTestHelper {
 		var objectSpace = builder.Build();
 		objectSpace.Disposables.Add(disposables);
 		return objectSpace;
+	}
+
+	/// <summary>
+	/// Creates an ObjectSpace from an existing stream (e.g. for freshly-hydrated round-trip tests).
+	/// Only applicable for memory-mapped traits.
+	/// </summary>
+	public static ObjectSpace CreateSafeBoxObjectSpace(TestTraits traits, Stream existingStream) {
+		return CreateSafeBoxObjectSpace(traits, new Dictionary<string, object> { ["stream"] = existingStream });
 	}
 
 	/// <summary>Memory-mapped test case subsets (fastest for integration loops).</summary>
