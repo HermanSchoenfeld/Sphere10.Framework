@@ -56,7 +56,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				context.NotifySized(contextIndex);
 				break;
 			case ReferenceType.IsNotNull:
-				if (!_supportsReferences)
+				if (!_supportsContextReferences)
 					if (context.IsSizingOrSerializingObject(item, out _))
 						throw new InvalidOperationException($"Cyclic-reference was encountered when sizing item  '{item}'. Please ensure context references are enabled sizing cyclic-referencing object graphs or ensure no cyclic references exist.");
 				context.NotifySizing(item, out contextIndex);
@@ -85,7 +85,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				context.NotifySerializedObject(contextIndex);
 				break;
 			case ReferenceType.IsNotNull:
-				if (!_supportsReferences)
+				if (!_supportsContextReferences)
 					if (context.IsSerializingObject(item, out _))
 						throw new InvalidOperationException($"Cyclic-reference was encountered when serializing item '{item}'. Please ensure context references are enabled serializing cyclic-referencing object graphs or ensure no cyclic references exist.");
 				context.NotifySerializingObject(item, out contextIndex);
