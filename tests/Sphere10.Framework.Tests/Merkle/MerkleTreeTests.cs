@@ -29,6 +29,22 @@ public class MerkleTreeTests {
 	}
 
 	[Test]
+	public void NullRootAfterClear(
+		[Values(CHF.SHA2_256)] CHF chf,
+		[Values(MerkleTreeImpl.Simple, MerkleTreeImpl.Flat, MerkleTreeImpl.Long)]
+		MerkleTreeImpl impl) {
+		var rng = new Random(31337);
+		var tree = CreateMerkleTree(impl, chf);
+		var data = rng.NextByteArrays(Hashers.GetDigestSizeBytes(chf), 1)[0];
+		tree.Leafs.Add(data);
+		Assert.That(tree.Root, Is.Not.Null);
+
+		tree.Leafs.Clear();
+		Assert.That(tree.Leafs.Count, Is.EqualTo(0));
+		Assert.That(tree.Root, Is.EqualTo(null));
+	}
+
+	[Test]
 	public void SingleRoot(
 		[Values(CHF.SHA2_256)] CHF chf,
 		[Values(MerkleTreeImpl.Simple, MerkleTreeImpl.Flat, MerkleTreeImpl.Long)]

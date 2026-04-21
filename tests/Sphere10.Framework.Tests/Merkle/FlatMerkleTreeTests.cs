@@ -19,6 +19,25 @@ namespace Sphere10.Framework.Tests.Merkle;
 public class FlatMerkleTreeTests {
 
 	[Test]
+	public void FlatMerkleTree_EmptyTree_HasNullRootAndEmptyStream([Values(CHF.SHA2_256)] CHF chf) {
+		var tree = new FlatMerkleTree(chf);
+		Assert.That(tree.Root, Is.Null);
+		Assert.That(tree.Leafs.Count, Is.EqualTo(0));
+		Assert.That(tree.ToBytes(), Is.Empty);
+	}
+
+		[Test]
+	public void FlatMerkleTree_EmptyTree_HasNullRootAndEmptyStreamAfterClear([Values(CHF.SHA2_256)] CHF chf) {
+		var tree = new FlatMerkleTree(chf);
+		tree.Leafs.Add(new byte[Hashers.GetDigestSizeBytes(chf)]);
+		tree.Leafs.Clear();
+		Assert.That(tree.Root, Is.Null);
+		Assert.That(tree.Leafs.Count, Is.EqualTo(0));
+		Assert.That(tree.ToBytes(), Is.Empty);
+	}
+
+
+	[Test]
 	public void Integration_AddRange_Single([Values(CHF.SHA2_256)] CHF chf) {
 		var rng = new Random(31337);
 		var reference = new SimpleMerkleTree(chf);

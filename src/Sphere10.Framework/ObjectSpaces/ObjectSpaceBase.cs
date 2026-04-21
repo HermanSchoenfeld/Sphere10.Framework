@@ -26,7 +26,6 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	protected readonly DictionaryList<Type, Dimension> _dimensions;
 	private readonly InstanceTracker _instanceTracker;
 	private bool _loaded;
-	protected readonly bool AutoSave;
 
 	/// <summary>
 	/// Whether GC is enabled for this ObjectSpace (set from <see cref="ObjectSpaceTraits.GarbageCollect"/>).
@@ -80,6 +79,8 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		_persistedOutRefs = null;
 		_persistedInRefs = null;
 	}
+
+	public bool AutoSave { get; set ; }
 
 	public override bool RequiresLoad => !_loaded || _streams.RequiresLoad;
 	
@@ -140,7 +141,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			var dimension = GetDimension<TItem>();
 			
 			// Range check
-			if (0 > index || index >= dimension.Container.Count)
+			if (0 > index || index >= dimension.Container.ListCount)  // we use ListCount since reaped objects are excluded in Count
 				return false;
 
 			// Reap check

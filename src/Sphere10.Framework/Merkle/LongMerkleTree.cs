@@ -54,6 +54,10 @@ public class LongMerkleTree : IDynamicMerkleTree {
 		_observableLeafs.Inserting += (o, args) => throw new NotSupportedException();
 		_observableLeafs.RemovingRange += (o, args) => throw new NotSupportedException();
 		_observableLeafs.Updating += (o, args) => throw new NotSupportedException();
+		_observableLeafs.Cleared += (o, args) => {
+			_subRoots.Clear();
+			_subRootCoords.Clear();
+		};
 		if (leafs != null) {
 			Leafs.AddRange(leafs);
 		}

@@ -55,9 +55,6 @@ public abstract class BTreeLookupStorageAttachmentBase<TKey, TValue> : Clustered
 		);
 	}
 
-	protected override void VerifyIntegrity() {
-	}
-
 	protected override void DetachInternal() {
 		_lookup?.Dispose();
 		_lookup = null;

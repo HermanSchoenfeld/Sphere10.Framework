@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT NON-AI software license, see the accompanying file
@@ -87,6 +87,8 @@ public class ObjectSpaceIntegrationTests {
 			id2.Name = "dup";
 			os.Save(id2);
 		}, Throws.InvalidOperationException);
+		if (traits.HasFlag(TestTraits.PersistentIgnorant))
+			os.AutoSave = false;
 	}
 
 	[Test]

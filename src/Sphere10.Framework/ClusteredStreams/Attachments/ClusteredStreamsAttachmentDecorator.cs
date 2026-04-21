@@ -30,6 +30,8 @@ public class ClusteredStreamsAttachmentDecorator<TInner> : IClusteredStreamsAtta
 	public virtual void Detach() => Inner.Detach();
 
 	public virtual void Flush() => Inner.Flush();
+
+	public virtual void VerifyIntegrity() => Inner.VerifyIntegrity();
 }
 
 

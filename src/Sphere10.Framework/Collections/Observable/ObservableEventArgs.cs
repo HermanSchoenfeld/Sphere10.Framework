@@ -113,3 +113,9 @@ public sealed class RemovingItemsEventArgs<T> : PreEventArgs<ItemsCallArgs<T>> {
 public sealed class RemovedItemsEventArgs<T> : PostEventArgs<ItemsCallArgs<T>, IEnumerable<bool>> {
 }
 
+public sealed class ClearingItemsEventArgs : PreEventArgs {
+}
+
+public sealed class ClearedItemsEventArgs : PostEventArgs {
+}
+

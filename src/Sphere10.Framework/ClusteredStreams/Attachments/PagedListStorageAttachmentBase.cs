@@ -32,8 +32,7 @@ public abstract class PagedListStorageAttachmentBase<TData> : ClusteredStreamsAt
 		);
 	}
 
-	protected override void VerifyIntegrity() {
-		
+	public override void VerifyIntegrity() {
 	}
 
 	protected override void DetachInternal() {

@@ -69,6 +69,39 @@ public class GeneralTests {
 		Assert.That(() => objectSpace.Delete(account1), Throws.Nothing);
 	}
 
+	[Test]
+	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
+	public void Delete_CreateTwoDeleteFirst(TestTraits testTraits) {
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
+		var rng = new Random(31337);
+		var account1 = TestsHelper.CreateAccount(rng);
+		var account2 = TestsHelper.CreateAccount(rng);
+		objectSpace.Save(account1);
+		objectSpace.Save(account2);
+		objectSpace.Delete(account1);
+		Assert.That(objectSpace.Count<Account>(), Is.EqualTo(1));
+	}
+
+	[Test]
+	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
+	public void Delete_CreateTwoWithReference_DeleteReferenced(TestTraits testTraits) {
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
+		var rng = new Random(31337);
+		var identity = new Identity {
+			DSS = DSS.PQC_WAMSSharp,
+			Key = Signers.DerivePublicKey(DSS.PQC_WAMSSharp, Signers.CreatePrivateKey(DSS.PQC_WAMSSharp, Hashers.Hash(CHF.SHA2_256, "test".ToAsciiByteArray())), 0).RawBytes
+		};
+		objectSpace.Save(identity);
+
+		var account = TestsHelper.CreateAccount(rng);
+		account.Identity = identity;
+		objectSpace.Save(account);
+
+		objectSpace.Delete(identity);
+		Assert.That(objectSpace.Count<Identity>(), Is.EqualTo(0));
+		Assert.That(objectSpace.Count<Account>(), Is.EqualTo(1));
+	}
+
 	#endregion
 
 	#region Clear
@@ -126,6 +159,8 @@ public class GeneralTests {
 		account1.Name = account2.Name = "alpha";
 		objectSpace.Save(account1);
 		Assert.That(() => objectSpace.Save(account2), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	[Test]
@@ -142,6 +177,8 @@ public class GeneralTests {
 		objectSpace.Save(account2);
 		account1.Name = "beta";
 		Assert.That(() => objectSpace.Save(account1), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	[Test]
@@ -158,6 +195,8 @@ public class GeneralTests {
 		objectSpace.Save(account2);
 		account2.Name = "alpha";
 		Assert.That(() => objectSpace.Save(account2), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	[Test]
@@ -216,6 +255,8 @@ public class GeneralTests {
 		account2.Name = null;
 		objectSpace.Save(account1);
 		Assert.That(() => objectSpace.Save(account2), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	[Test]
@@ -227,6 +268,8 @@ public class GeneralTests {
 		var account1 = TestsHelper.CreateAccount(rng);
 		account1.Name = null;
 		Assert.That(() => objectSpace.Save(account1), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	#endregion
@@ -268,6 +311,8 @@ public class GeneralTests {
 		account2.UniqueNumber = account1.UniqueNumber;
 		objectSpace.Save(account1);
 		Assert.That(() => objectSpace.Save(account2), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	[Test]
@@ -283,6 +328,8 @@ public class GeneralTests {
 		account1.UniqueNumber = account2.UniqueNumber;
 
 		Assert.That(() => objectSpace.Save(account1), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	[Test]
@@ -298,6 +345,8 @@ public class GeneralTests {
 		account2.UniqueNumber = account1.UniqueNumber;
 
 		Assert.That(() => objectSpace.Save(account2), Throws.InvalidOperationException);
+		if (testTraits.HasFlag(TestTraits.PersistentIgnorant))
+			objectSpace.AutoSave = false;
 	}
 
 	[Test]

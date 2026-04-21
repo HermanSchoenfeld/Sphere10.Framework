@@ -29,5 +29,7 @@ public interface IClusteredStreamsAttachment {
 	void Detach();
 
 	void Flush();
+
+	void VerifyIntegrity();
 }
 

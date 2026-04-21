@@ -38,6 +38,8 @@ public abstract class IndexBase<TStore> : ObjectStreamObserverBase, IClusteredSt
 
 	public virtual void Flush() => Store.Flush();
 
+	public virtual void VerifyIntegrity() => Store.VerifyIntegrity();
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected void CheckAttached()
 		=> Guard.Ensure(Store.IsAttached, "Index is not attached");

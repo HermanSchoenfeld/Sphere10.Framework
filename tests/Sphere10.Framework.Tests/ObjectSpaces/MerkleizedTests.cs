@@ -38,17 +38,19 @@ public class MerkleizedTests {
 
 		// Verify account dimension has single item root
 		using var dim1Scope = dim1.Container.ObjectStream.EnterAccessScope();
-		var accountRoot = dim1.Container.ObjectStream.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
+		var accountRoot = dim1.Container.ObjectStream.Streams.Header.MapExtensionProperty(0, sizeof(bool) + digestSize, new ConstantSizeNullableByteArraySerializer(digestSize)).Value;
 		Assert.That(accountRoot, Is.EqualTo(accountDigest).Using(ByteArrayEqualityComparer.Instance));
 
-		// Verify identity dimension has null root  (note: null is stored as 0 bytes)
+		// Verify identity dimension has null root (empty tree)
 		using var dim2Scope = dim2.Container.ObjectStream.EnterAccessScope();
-		var identityRoot = dim2.Container.ObjectStream.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
-		Assert.That(identityRoot, Is.EqualTo(new byte[digestSize]).Using(ByteArrayEqualityComparer.Instance));
+		var identityRoot = dim2.Container.ObjectStream.Streams.Header.MapExtensionProperty(0, sizeof(bool) + digestSize, new ConstantSizeNullableByteArraySerializer(digestSize)).Value;
+		Assert.That(identityRoot, Is.Null);
 			
 		// Verify spatial root is both account/identity
-		var spaceRoot = objectSpace.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
-		Assert.That(spaceRoot, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { accountRoot, identityRoot }, chf)).Using(ByteArrayEqualityComparer.Instance));
+		// Note: null roots are treated as zero hash for spatial root computation
+		var identityRootForSpatial = identityRoot ?? Hashers.ZeroHash(chf);
+		var spaceRoot = objectSpace.Streams.Header.MapExtensionProperty(0, sizeof(bool) + digestSize, new ConstantSizeNullableByteArraySerializer(digestSize)).Value;
+		Assert.That(spaceRoot, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { accountRoot, identityRootForSpatial }, chf)).Using(ByteArrayEqualityComparer.Instance));
 
 	}
 }

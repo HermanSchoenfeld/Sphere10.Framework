@@ -57,7 +57,11 @@ public class CompositeStorageAttachmentBase : IClusteredStreamsAttachment {
 			Child.Flush();
 	}
 
-	
+	public virtual void VerifyIntegrity() {
+		foreach (var Child in Children)
+			Child.VerifyIntegrity();
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected void CheckAttached() {
 		if (!IsAttached)

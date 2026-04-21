@@ -87,6 +87,8 @@ public class ObjectSpaceIntegrationTests {
 			id2.Name = "dup";
 			os.Save(id2);
 		}, Throws.InvalidOperationException);
+		if (traits.HasFlag(TestTraits.PersistentIgnorant))
+			os.AutoSave = false;
 	}
 
 	[Test]

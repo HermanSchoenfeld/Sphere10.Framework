@@ -106,10 +106,12 @@ internal class MerkleTreeStorageAttachment : ClusteredStreamsAttachmentBase, IDy
 		_streamLockingTreeLeafs = new StreamLockingList<byte[]>(_flatTree.Leafs, this);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		using (Streams.EnterAccessScope()) {
+			// Use ConstantSizeNullableByteArraySerializer to support both null roots (empty tree) 
+			// and zero hash roots (tree with all deleted items/tombstones) while maintaining constant size
 			_merkleRootProperty = Streams.Header.MapExtensionProperty(
 				0, 
-				hashSize, 
-				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm), ByteArrayEqualityComparer.Instance)
+				sizeof(bool) + hashSize,  // 1 byte for null flag + hash size
+				new ConstantSizeNullableByteArraySerializer(hashSize)
 			);
 
 			// When stream mapped root is changed, fire the root changed event (ensures not excessively triggered during dirty writes)
@@ -122,7 +124,7 @@ internal class MerkleTreeStorageAttachment : ClusteredStreamsAttachmentBase, IDy
 		}
 	}
 
-	protected override void VerifyIntegrity() {
+	public override void VerifyIntegrity() {
 		var errorHeader = $"{nameof(MerkleTreeStorageAttachment)} (reserved streams: {this.BaseReservedStreamIndex} - {this.BaseReservedStreamIndex + this.StreamCount}) integrity failure";
 
 		// Verify leaf-count matches item count

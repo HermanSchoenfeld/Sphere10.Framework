@@ -36,8 +36,8 @@ internal class MerkleTreeIndex : IndexBase<MerkleTreeStorageAttachment> {
 		=> Store.Leafs.RemoveAt(index);
 
 	protected override void OnReaped(long index) {
-		var digest = Hashers.ZeroHash(MerkleTree.HashAlgorithm);
-		Store.Leafs.Update(index, digest);
+		var tombstoneSentinel = Hashers.ZeroHash(MerkleTree.HashAlgorithm);
+		Store.Leafs.Update(index, tombstoneSentinel);
 	}
 	
 	protected override void OnContainerClearing() {

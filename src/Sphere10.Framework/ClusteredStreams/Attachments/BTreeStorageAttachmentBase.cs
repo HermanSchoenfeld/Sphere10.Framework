@@ -56,7 +56,7 @@ public abstract class BTreeStorageAttachmentBase<TKey, TValue> : ClusteredStream
 		);
 	}
 
-	protected override void VerifyIntegrity() {
+	public override void VerifyIntegrity() {
 	}
 
 	protected override void DetachInternal() {

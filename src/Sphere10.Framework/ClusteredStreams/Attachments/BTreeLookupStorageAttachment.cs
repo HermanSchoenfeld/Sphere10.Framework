@@ -128,6 +128,10 @@ public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAtta
 		return BTreeLookup.Validate(out error);
 	}
 
+	public override void VerifyIntegrity() {
+	 	Guard.Ensure(Validate(out var error), error);
+	}
+
 	#endregion
 
 	#region GetEnumerator

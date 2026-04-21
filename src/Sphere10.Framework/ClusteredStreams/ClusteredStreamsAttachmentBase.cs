@@ -82,7 +82,7 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 
 	protected abstract void AttachInternal();
 
-	protected abstract void VerifyIntegrity();
+	public abstract void VerifyIntegrity();
 
 	public void Detach() {
 		CheckAttached();

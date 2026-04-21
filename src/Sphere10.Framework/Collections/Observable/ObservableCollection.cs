@@ -28,8 +28,8 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 	public event EventHandlerEx<object, AddedEventArgs<TItem>> Added;
 	public event EventHandlerEx<object, RemovingItemsEventArgs<TItem>> RemovingItems;
 	public event EventHandlerEx<object, RemovedItemsEventArgs<TItem>> RemovedItems;
-	public event EventHandlerEx<object, PreEventArgs> Clearing;
-	public event EventHandlerEx<object, PostEventArgs> Cleared;
+	public event EventHandlerEx<object, ClearingItemsEventArgs> Clearing;
+	public event EventHandlerEx<object, ClearedItemsEventArgs> Cleared;
 	public event EventHandlerEx<object, PreEventArgs<CallArgs>> Copying;
 	public event EventHandlerEx<object, PostEventArgs<CallArgs>> Copied;
 	public event EventHandlerEx<object, EnumeratingItemEventArgs> EnumeratingItem;
@@ -112,8 +112,8 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 				base.Clear();
 				return 0;
 			},
-			() => new PreEventArgs(),
-			_ => new PostEventArgs(),
+			() => new ClearingItemsEventArgs(),
+			_ => new ClearedItemsEventArgs(),
 			(preEventArgs) => {
 				OnClearing(preEventArgs);
 				Clearing?.Invoke(this, preEventArgs);
@@ -307,10 +307,10 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 
 		// Post-operation notification
 		var postOpEventArgs = postOpArgsConstructor(result);
-		if (EventFilter.HasFlag(operationTrait) &&
-		    preOpEventArgs is PreEventArgs<ItemsCallArgs<TItem>> preOpEventArgs2 &&
-		    postOpEventArgs is PostEventArgs<ItemsCallArgs<TItem>> postOp2) {
-			postOp2.CallArgs = preOpEventArgs2.CallArgs;
+		if (EventFilter.HasFlag(operationTrait)) {
+			if (preOpEventArgs is PreEventArgs<ItemsCallArgs<TItem>> preOpEventArgs2  &&
+		        postOpEventArgs is PostEventArgs<ItemsCallArgs<TItem>> postOp2)
+				postOp2.CallArgs = preOpEventArgs2.CallArgs;
 			postEventNotify.Invoke(postOpEventArgs);
 		}
 
