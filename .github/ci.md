@@ -1,5 +1,7 @@
 # GitHub Actions tests
 
+For the framework overview, installation, and project documentation, see the [main README](../README.md).
+
 The [Build workflow](workflows/main.yml) builds the cross-platform solution once with the .NET 10 SDK, then runs independently retryable NUnit partitions using the compiled binaries. Windows runners preserve the current platform and native-library behavior.
 
 ## Adding tests

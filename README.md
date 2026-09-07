@@ -158,8 +158,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 
 The `tests/` directory contains **2000+ comprehensive unit and integration tests** covering all framework subsystems:
 
-GitHub Actions discovers tests automatically and runs independent partitions with concise failure summaries. See the [CI test guide](.github/README.md) for adding tests, finding failures, and rerunning a partition.
-
+GitHub Actions discovers tests automatically and runs independent partitions with concise failure summaries. Each partition publishes its test counts and failures, with full logs and TRX reports available as artifacts. Failed partitions can be rerun independently. See the [CI test guide](.github/ci.md) for adding tests, finding failures, and reproducing a partition locally.
 
 | Test Project | Purpose |
 |--------------|---------|
