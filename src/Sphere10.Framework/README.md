@@ -1747,3 +1747,27 @@ The SMTP sync and async helpers were exercised against a local SMTP server, incl
 `requiresSSL: true` uses STARTTLS, not implicit TLS. Supply the provider's STARTTLS port explicitly (typically `port: Tools.Mail.SMTPSubmissionPort`, 587). The existing omitted-port default remains 465, which is normally used for implicit TLS and is incompatible with `System.Net.Mail.SmtpClient`. See [Microsoft's supported SMTP TLS modes](https://learn.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient.enablessl?view=net-10.0).
 
 `UrlShortner.Google` and `GoogleAsync` target an API that [Google discontinued on March 30, 2019](https://developers.googleblog.com/transitioning-google-url-shortener-to-firebase-dynamic-links/). Updating the HTTP client cannot restore that service. `TinyUrl` and `TinyUrlAsync` target the third-party `tiny-url.info` service, not `tinyurl.com`; live shortening remains unverified without a supported service and credentials.
+
+## Length-preserving encrypted streams
+
+`EncryptedStream` (and `EncryptedStream<TStream>`) uses AES-CTR. It takes the backing stream, key, initial counter and optional `leaveOpen` flag. Writes encrypt immediately and reads decrypt; 10 plaintext bytes produce exactly 10 ciphertext bytes. The mode is fixed to preserve arbitrary byte lengths and independent random access, including overwrites that touch only the requested bytes. There is no separate cipher interface, factory or inheritance hierarchy.
+
+```csharp
+var key = Tools.Crypto.GenerateCryptographicallyRandomBytes(32);
+var initialCounter = Tools.Crypto.GenerateCryptographicallyRandomBytes(16);
+using var storage = new MemoryStream();
+using var encryptedStream = new EncryptedStream(storage, key, initialCounter, leaveOpen: true);
+encryptedStream.Write(new byte[10]);
+// storage.Length == 10
+encryptedStream.Position = 3;
+var plaintext = new byte[7];
+encryptedStream.ReadExactly(plaintext);
+```
+
+Use a 32-byte key for AES-256; AES-128 and AES-192 keys (16 and 24 bytes) are also accepted. The initial counter is always 16 bytes. Both arrays are copied. The stream owns its internal AES instance; `leaveOpen` controls only the backing stream. Counter blocks increment as big-endian integers, following NIST SP 800-38A section 6.5; AES vectors from appendix F.5 are covered by the tests.
+
+[.NET's `CipherMode` enum](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.ciphermode) has no CTR member. The small counter-mode loop therefore lives directly inside `EncryptedStream` and uses .NET AES to encrypt counter blocks without padding. It does not expose ECB as though it were the stream mode.
+
+Keep the key secret and store the initial counter separately. Never reuse the same key/counter blocks for different plaintext, including revisions of overwritten data. CTR supplies confidentiality; authenticate ciphertext separately before decrypting untrusted input. `Encrypted<T>` below supplies that authentication for stored objects.
+
+The stream supports array/span, async array/memory, byte-at-a-time, copy and legacy Begin/End operations. Seekable streams use absolute positions from the underlying stream's origin; reads and writes can start within a cipher block. Non-seekable streams process bytes sequentially from their position at wrapping. Resize and writes that create gaps are rejected, since underlying zero-filled gaps are not encrypted zeroes. Callers must serialize access to an instance and discard it after an underlying I/O failure. Closing/disposal adds no bytes.
