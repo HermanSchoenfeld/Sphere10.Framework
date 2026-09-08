@@ -151,7 +151,6 @@ public class MiscellaneousTests {
 			while (true) {
 				await Task.Delay(100);
 			}
-			ran2 = true;
 		}
 
 		Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(250), Throws.InstanceOf<TaskCanceledException>());

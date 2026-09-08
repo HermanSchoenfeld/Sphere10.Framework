@@ -67,10 +67,8 @@ namespace Sphere10.Framework.NUnit {
 			switch (sourceDAC.DBMSType) {
 				case DBMSType.Sqlite:
 					return new SqliteDAC(sourceDAC.ConnectionString, sourceDAC.Log);
-					break;
 				case DBMSType.SQLServer:
 					return new MSSQLDAC(sourceDAC.ConnectionString, sourceDAC.Log);
-					break;
 				default:
 					throw new NotSupportedException(sourceDAC.DBMSType.ToString());
 			}

@@ -552,9 +552,7 @@ public class MemoryPagedListTests {
 	[Test]
 	public void TestIteratorEmpty() {
 		using (var collection = new MemoryPagedList<string>(40, 1 * 40, str => str.Length * sizeof(char))) {
-			foreach (var item in collection) {
-				var xxx = 1;
-			}
+			Assert.That(collection, Is.Empty);
 		}
 	}
 
@@ -567,7 +565,7 @@ public class MemoryPagedListTests {
 			try {
 				foreach (var item in collection)
 					collection.Add("20");
-			} catch (Exception error) {
+			} catch (Exception) {
 				thrown = true;
 			}
 			Assert.That(thrown, Is.True, "Exception was not thrown");
@@ -583,7 +581,7 @@ public class MemoryPagedListTests {
 			try {
 				foreach (var item in collection)
 					collection.Add("20");
-			} catch (Exception error) {
+			} catch (Exception) {
 				thrown = true;
 			}
 			Assert.That(thrown, Is.True, "Exception was not thrown");
@@ -598,7 +596,7 @@ public class MemoryPagedListTests {
 				foreach (var item in collection) {
 					collection.Add("50");
 				}
-			} catch (Exception error) {
+			} catch (Exception) {
 			}
 
 

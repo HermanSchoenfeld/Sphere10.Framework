@@ -78,9 +78,6 @@ public class MerkleMathTests {
 				var dims = CalculateTreeDimensionsManual(leafCount);
 				var treeSize = MerkleSize.FromLeafCount(leafCount);
 				for (var k = 0; k < dims.Length; k++) {
-					if (k == 31 && leafCount == int.MaxValue) {
-						var xxx = 1;
-					}
 					Assert.That(MerkleMath.CalculateLevelLength(treeSize.LeafCount, k), Is.EqualTo(dims[k]));
 				}
 			}

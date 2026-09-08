@@ -214,7 +214,7 @@ public class ClusteredStreamsTests : StreamPersistedCollectionTestsBase {
 	public void OpenEmpty([Values(1, 4, 32)] int clusterSize, [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
 		var streams = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
-		using (_ = streams.Add()) ;
+		using (streams.Add()) { }
 		using (var stream = streams.OpenRead(0))
 			Assert.That(stream.Length, Is.EqualTo(0));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streams);

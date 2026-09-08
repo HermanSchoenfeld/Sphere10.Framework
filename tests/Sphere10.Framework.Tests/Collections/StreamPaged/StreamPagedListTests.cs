@@ -210,13 +210,6 @@ public class StreamPagedListTests {
 	}
 
 
-	private struct TestStruct {
-		public int X;
-		public int Y;
-		public int Z;
-		public byte U;
-	}
-
 
 	public enum StorageType {
 		MemoryStream,

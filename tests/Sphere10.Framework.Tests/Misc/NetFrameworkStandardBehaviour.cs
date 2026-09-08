@@ -297,7 +297,6 @@ public class NetFrameworkStandardBehaviour {
 			while (true) {
 				await Task.Delay(100);
 			}
-			ran2 = true;
 		}
 
 		Assert.That(() => Task.WhenAll(Task1(), Task2()).WithTimeout(1000), Throws.InstanceOf<TaskCanceledException>());

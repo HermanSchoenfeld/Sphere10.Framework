@@ -229,7 +229,7 @@ public class ContextScopeTest {
 					}
 				}
 			}
-		} catch (Exception error) {
+		} catch (Exception) {
 			return true;
 		}
 		return false;
@@ -238,7 +238,7 @@ public class ContextScopeTest {
 	private bool ExceptionOccuredAsync(ContextScopePolicy rootPolicy, ContextScopePolicy childPolicy, int delay1 = 0, int delay2 = 0, int delay3 = 0) {
 		try {
 			AsyncTest(Tuple.Create(rootPolicy, delay1), Tuple.Create(childPolicy, delay2), Tuple.Create(ContextScopePolicy.None, delay3)).Wait();
-		} catch (Exception error) {
+		} catch (Exception) {
 			return true;
 		}
 		return false;
@@ -247,7 +247,7 @@ public class ContextScopeTest {
 	private async Task<bool> ExceptionOccuredAsync2(ContextScopePolicy rootPolicy, ContextScopePolicy childPolicy, int delay1 = 0, int delay2 = 0, int delay3 = 0) {
 		try {
 			await AsyncTest2(Tuple.Create(rootPolicy, delay1), Tuple.Create(childPolicy, delay2), Tuple.Create(ContextScopePolicy.None, delay3));
-		} catch (Exception error) {
+		} catch (Exception) {
 			return true;
 		}
 		return false;

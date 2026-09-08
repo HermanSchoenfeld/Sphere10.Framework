@@ -67,7 +67,7 @@ public class NullableSerializerTests {
 	}
 
 	private struct TestStruct {
-		long x;
+
 	}
 }
 
