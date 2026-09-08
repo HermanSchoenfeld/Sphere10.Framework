@@ -4,9 +4,9 @@
   <img  src="resources/branding/sphere-10-framework-logo.jpg" alt="Sphere10 Framework logo">
 </p>
 
-![Version](https://img.shields.io/badge/version-3.0.3-blue)
+![Version](https://img.shields.io/badge/version-3.1.0-blue)
 [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework)
-![.NET](https://img.shields.io/badge/.NET-8.0-purple)
+![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![License](https://img.shields.io/badge/license-MIT%20NON--AI-green)
 
 # :rocket: Sphere10 Framework: Comprehensive .NET Application Framework
@@ -38,8 +38,8 @@ Copyright © Herman Schoenfeld, Sphere 10 Software 2005 - Present
 
 ## :wrench: Prerequisites
 
-- **.NET 8.0 SDK** or later
-- **Visual Studio 2022** (17.8+) or **JetBrains Rider** (2023.3+) recommended
+- **.NET 10.0 SDK** or later
+- An IDE that supports the **.NET 10 SDK**, such as Visual Studio or JetBrains Rider
 - **Windows** required for `Sphere10.Framework.Windows.*` projects
 - Two solution files available:
   - `src/Sphere10.Framework (CrossPlatform).sln` — Cross-platform projects only
@@ -60,6 +60,12 @@ dotnet add package Sphere10.Framework.Data.Sqlite
 dotnet add package Sphere10.Framework.CryptoEx
 dotnet add package Sphere10.Framework.Communications
 ```
+
+### Building and publishing packages
+
+Use Windows with the .NET 10 SDK to build the full package set. Set the intended release version in the shared `Version`, `VersionPrefix`, `AssemblyVersion`, `FileVersion`, and `InformationalVersion` fields in [Directory.Build.props](Directory.Build.props). For prereleases, keep the assembly and file versions numeric. Use a new package version for each release; published versions cannot be overwritten.
+
+From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It replaces `nuget-packages`, stops on command failure, and reports success only after packing completes. Packing does not run tests. After a successful pack, run `./publish.ps1 -WhatIf` to inspect the package list, then [publish.ps1](publish.ps1) to publish. The publisher prompts for the NuGet API key with hidden input and requires typing `publish` to continue.
 
 ## :mag: Tools.* Namespace — Global Utility Discovery
 

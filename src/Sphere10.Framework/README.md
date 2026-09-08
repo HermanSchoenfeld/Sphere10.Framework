@@ -25,12 +25,12 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 - **50+ string, enumerable, task, stream, and type extension methods**
 
 **Key Attributes**
-- **Language**: C# targeting .NET 8+ (with .NET Standard 2.0 compatibility where applicable)
+- **Language**: C# targeting .NET 10
 - **Dependencies**: Zero external dependencies for core functionality (optional: BouncyCastle, Newtonsoft.Json)
 - **Platform Support**: Windows, Linux, macOS, iOS, Android
 - **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
 - **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
-- **Maturity**: Production-ready (v3.0.3) with battle-tested core subsystems
+- **Maturity**: Production-ready (v3.1.0) with battle-tested core subsystems
 
 ## 📦 Installation
 
@@ -1684,7 +1684,7 @@ Sphere10 Framework is a mature library that has evolved over multiple years. Cor
 
 ### Compatibility
 
-- **Target Framework**: .NET 8.0+ (primary), with support for .NET Standard 2.0 where applicable
+- **Target Framework**: .NET 10.0
 - **Backward Compatibility**: The library does not guarantee API stability across major versions. Serialization formats may evolve, requiring migration strategies for persistent data.
 - **Platform Support**: Windows, Linux, macOS, iOS (via Xamarin/MAUI), Android (via Xamarin/MAUI)
 
@@ -1705,7 +1705,7 @@ Sphere10 Framework is a mature library that has evolved over multiple years. Cor
 
 ##  Dependencies
 
-- **.NET 8.0** or higher (primary target)
+- **.NET 10.0** or higher
 - **No external dependencies** for core functionality
 - **Optional**: BouncyCastle for advanced cryptography
 - **Optional**: Newtonsoft.Json for JSON support
@@ -1747,7 +1747,6 @@ The SMTP sync and async helpers were exercised against a local SMTP server, incl
 `requiresSSL: true` uses STARTTLS, not implicit TLS. Supply the provider's STARTTLS port explicitly (typically `port: Tools.Mail.SMTPSubmissionPort`, 587). The existing omitted-port default remains 465, which is normally used for implicit TLS and is incompatible with `System.Net.Mail.SmtpClient`. See [Microsoft's supported SMTP TLS modes](https://learn.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient.enablessl?view=net-10.0).
 
 `UrlShortner.Google` and `GoogleAsync` target an API that [Google discontinued on March 30, 2019](https://developers.googleblog.com/transitioning-google-url-shortener-to-firebase-dynamic-links/). Updating the HTTP client cannot restore that service. `TinyUrl` and `TinyUrlAsync` target the third-party `tiny-url.info` service, not `tinyurl.com`; live shortening remains unverified without a supported service and credentials.
-
 ## Length-preserving encrypted streams
 
 `EncryptedStream` (and `EncryptedStream<TStream>`) uses AES-CTR. It takes the backing stream, key, initial counter and optional `leaveOpen` flag. Writes encrypt immediately and reads decrypt; 10 plaintext bytes produce exactly 10 ciphertext bytes. The mode is fixed to preserve arbitrary byte lengths and independent random access, including overwrites that touch only the requested bytes. There is no separate cipher interface, factory or inheritance hierarchy.
