@@ -16,7 +16,7 @@ public class PackedEqualityComparer : IEqualityComparer<object> {
 		_projectedComparer = projectedComparer;
 	}
 
-	public bool Equals(object x, object y) => _projectedComparer.Equals(x, y);
+	public new bool Equals(object x, object y) => _projectedComparer.Equals(x, y);
 
 	public int GetHashCode(object obj) => _projectedComparer.GetHashCode(obj);
 

@@ -165,7 +165,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		NotifyAccessed();
 	}
 
-	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
+	public override IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
 		CheckLoaded();
 		NotifyAccessing();
 		CheckRange(index, count);

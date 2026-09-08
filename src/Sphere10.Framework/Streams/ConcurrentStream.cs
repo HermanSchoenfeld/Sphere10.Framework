@@ -157,6 +157,7 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 		return InnerStream.GetHashCode();
 	}
 
+	[Obsolete(".NET remoting is not supported.", DiagnosticId = "SYSLIB0010")]
 	public override object InitializeLifetimeService() {
 		CheckLocked();
 		return InnerStream.InitializeLifetimeService();

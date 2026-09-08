@@ -113,7 +113,7 @@ public static class ByteArrayExtensions {
 	}
 
 	public static byte[] Xor(this byte[] left, byte[] right) {
-#warning Should auto-wrap the right array
+// TODO: Should auto-wrap the right array
 
 		#region Pre-conditions
 

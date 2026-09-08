@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Text;
 
 namespace Sphere10.Framework;
@@ -27,6 +28,7 @@ public class StringSerializer : ItemSerializerBase<string> {
 
 	public static StringSerializer ASCII { get; } = new(Encoding.ASCII);
 
+	[Obsolete("UTF-7 is insecure. Use UTF8 for new data; retained for legacy serialization compatibility.", DiagnosticId = "SYSLIB0001")]
 	public static StringSerializer UTF7 { get; } = new(Encoding.UTF7);
 
 	public static StringSerializer Unicode { get; } = new(Encoding.Unicode);

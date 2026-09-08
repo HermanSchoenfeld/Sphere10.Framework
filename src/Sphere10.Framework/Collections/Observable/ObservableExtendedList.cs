@@ -60,7 +60,7 @@ public class ObservableExtendedList<TItem, TConcrete> : ObservableExtendedCollec
 		}
 	);
 
-	public virtual TItem Read(long index) => DoOperation(
+	public new virtual TItem Read(long index) => DoOperation(
 		EventTraits.Fetch,
 		() => InternalCollection.Read(index),
 		() => new FetchingByRangeEventArgs { CallArgs = new IndexCountCallArgs(index, 1) },

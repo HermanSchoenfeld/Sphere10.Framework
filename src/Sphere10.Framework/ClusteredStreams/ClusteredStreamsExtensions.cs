@@ -69,7 +69,7 @@ internal static class ClusteredStreamsExtensions {
 	public static void InsertBytes(this ClusteredStreams streams, long index, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.Insert(index);
-		if (bytes != null) {
+		if (!bytes.IsEmpty) {
 			stream.Seek(stream.Length, SeekOrigin.Current);
 			stream.Write(bytes);
 		}

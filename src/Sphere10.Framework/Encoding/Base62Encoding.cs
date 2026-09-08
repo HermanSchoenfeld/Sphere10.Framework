@@ -104,7 +104,7 @@ public static class Base62Encoding {
 		// Dump out the bytes
 		byte[] result = new byte[stream.Position / 8];
 		stream.Seek(0, SeekOrigin.Begin);
-		stream.Read(result, 0, result.Length * 8);
+		Guard.Ensure(stream.Read(result, 0, result.Length * 8) == result.Length * 8, "Unable to read the decoded bits");
 		return result;
 	}
 

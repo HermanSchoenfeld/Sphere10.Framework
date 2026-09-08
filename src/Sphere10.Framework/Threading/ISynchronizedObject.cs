@@ -26,7 +26,7 @@ public interface ISynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObj
 	where TReadScope : IDisposable
 	where TWriteScope : IDisposable {
 	new ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
-	ReaderWriterLockSlim ThreadLock { get; }
+	new ReaderWriterLockSlim ThreadLock { get; }
 
 	new TReadScope EnterReadScope();
 

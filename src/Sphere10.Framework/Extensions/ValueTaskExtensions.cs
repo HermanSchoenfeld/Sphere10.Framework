@@ -14,7 +14,7 @@ public static class ValueTaskExtensions {
 	public static Task ContinueOnSameThread(this ValueTask task) {
 		var tcs = new TaskCompletionSource<bool>();
 
-		SameThreadSynchronizationContext.Run(async () => {
+		_ = SameThreadSynchronizationContext.Run(async () => {
 			await task;
 			tcs.SetResult(true);
 		});
@@ -25,7 +25,7 @@ public static class ValueTaskExtensions {
 	public static Task<T> ContinueOnSameThread<T>(this ValueTask<T> task) {
 		var tcs = new TaskCompletionSource<T>();
 
-		SameThreadSynchronizationContext.Run(async () => {
+		_ = SameThreadSynchronizationContext.Run(async () => {
 			T result = await task;
 			tcs.SetResult(result);
 		});

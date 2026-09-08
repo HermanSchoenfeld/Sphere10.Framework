@@ -75,7 +75,7 @@ public class ObjectStream<T> : ObjectStream {
 	internal ClusteredStream SaveItemAndReturnStream(long index, T item, ObjectStreamOperationType operationType) 
 		=> SaveItemAndReturnStream(index, item as object, operationType);
 
-	internal new ClusteredStream LoadItemAndReturnStream(long index, out T item)  {
+	internal ClusteredStream LoadItemAndReturnStream(long index, out T item)  {
 		 var result = base.LoadItemAndReturnStream(index, out var obj);
 		item = (T)obj;
 		return result;

@@ -56,7 +56,7 @@ public class SameThreadSynchronizationContext : SynchronizationContext {
 
 		// When the async method finishes, mark the queue as complete,
 		// signalling that no more actions will be added to it
-		t.ContinueWith(_ => context._queue.CompleteAdding());
+		_ = t.ContinueWith(_ => context._queue.CompleteAdding());
 
 		// Start the event loop on the current thread
 		context.RunOnCurrentThread();

@@ -96,6 +96,7 @@ public abstract class StreamDecorator<TStream> : Stream where TStream : Stream {
 		return InnerStream.GetHashCode();
 	}
 
+	[Obsolete(".NET remoting is not supported.", DiagnosticId = "SYSLIB0010")]
 	public override object InitializeLifetimeService() {
 		return InnerStream.InitializeLifetimeService();
 	}

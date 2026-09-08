@@ -45,7 +45,6 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	public const string SmallerFormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 90%; height: 90%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
 
 	private readonly string _formID;
-	private readonly string _formClass;
 	private readonly IHtmlHelper _htmlHelper;
 	private readonly FormScopeOptions _options;
 	private bool _messageMarkerWritten;
@@ -68,7 +67,6 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 
 		_formID = formModel.ID;
 		_htmlHelper = htmlHelper;
-		_formClass = DefaultFormClasses;
 		_options = options;
 		_messageMarkerWritten = false;
 

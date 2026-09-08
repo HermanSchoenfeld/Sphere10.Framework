@@ -28,7 +28,7 @@ public static class TaskExtensions {
 		// This operation will wait for the original task to complete, 
 		// and then set the result or exception on the TaskCompletionSource.
 		// It does NOT need to be awaited.
-		SameThreadSynchronizationContext.Run(async () => {
+		_ = SameThreadSynchronizationContext.Run(async () => {
 			try {
 				// Await the original task.
 				await task;
@@ -60,7 +60,7 @@ public static class TaskExtensions {
 		// This operation will wait for the original task to complete, 
 		// and then set the result or exception on the TaskCompletionSource.
 		// It does NOT need to be awaited.
-		SameThreadSynchronizationContext.Run(async () => {
+		_ = SameThreadSynchronizationContext.Run(async () => {
 			try {
 				// Await the original task.
 				T result = await task;

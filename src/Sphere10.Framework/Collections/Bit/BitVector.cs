@@ -97,7 +97,7 @@ public class BitVector : RangedListBase<bool> {
 
 		if (startBitIndex > 0) {
 			_stream.Seek(byteIndex, SeekOrigin.Begin);
-			_stream.Read(buffer, 0, 1);
+			_stream.ReadExactly(buffer, 0, 1);
 		}
 
 		for (var i = 0; i < itemsArray.Length; i++) {
@@ -193,12 +193,12 @@ public class BitVector : RangedListBase<bool> {
 
 		if (startBitIndex > 0) {
 			_stream.Seek(byteIndex, SeekOrigin.Begin);
-			_stream.Read(buffer, 0, 1);
+			_stream.ReadExactly(buffer, 0, 1);
 		}
 
 		if (finalBitIndex > 0) {
 			_stream.Seek(byteIndex + bytesCount - 1, SeekOrigin.Begin);
-			_stream.Read(buffer, buffer.Length - 1, 1);
+			_stream.ReadExactly(buffer, buffer.Length - 1, 1);
 		}
 
 		for (var i = 0; i < itemsArray.Length; i++) {

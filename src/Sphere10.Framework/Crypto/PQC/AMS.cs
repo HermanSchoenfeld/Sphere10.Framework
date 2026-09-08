@@ -165,7 +165,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 	}
 
 	public bool IsWellFormedSignature(ReadOnlySpan<byte> signature) {
-		if (signature == null || signature.Length == 0)
+		if (signature.IsEmpty)
 			return false;
 		var h = signature[0];
 		return signature.Length == (

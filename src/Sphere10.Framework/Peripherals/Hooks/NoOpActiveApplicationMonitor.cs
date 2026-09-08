@@ -11,7 +11,8 @@ using System;
 namespace Sphere10.Framework;
 
 public class NoOpActiveApplicationMonitor : IActiveApplicationMonitor {
-	public event EventHandler<ApplicationChangedEvent> ApplicationChanged;
+	// This no-op implementation never raises application notifications.
+	public event EventHandler<ApplicationChangedEvent> ApplicationChanged { add { } remove { } }
 
 	public string GetActiveApplicationName() {
 		return "N/A";

@@ -104,7 +104,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	public ObjectSpaceDimensionBuilder<T> WithIdentifier<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) 
 		=> WithIdentifier(memberExpression.ToMember(), indexName);
 
-	public new ObjectSpaceDimensionBuilder<T> WithIdentifier(Member member, string indexName = null) 
+	public ObjectSpaceDimensionBuilder<T> WithIdentifier(Member member, string indexName = null)
 		=> (ObjectSpaceDimensionBuilder<T>)((IObjectSpaceDimensionBuilder)this).WithIdentifier(member, indexName);
 
 	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithIdentifier(Member member, string indexName) {
@@ -126,7 +126,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	public ObjectSpaceDimensionBuilder<T> WithIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) 
 		=> (ObjectSpaceDimensionBuilder<T>)((IObjectSpaceDimensionBuilder)this).WithIndexOn(member, indexName, nullPolicy);
 
-	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
+	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithIndexOn(Member member, string indexName, IndexNullPolicy nullPolicy) {
 		Guard.ArgumentNotNull(member, nameof(member));
 		Guard.Argument(typeof(T).IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(typeof(T)), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
 		var index = new ObjectSpaceDefinition.IndexDefinition {
@@ -146,7 +146,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		=> (ObjectSpaceDimensionBuilder<T>)((IObjectSpaceDimensionBuilder)this).WithUniqueIndexOn(member, indexName, nullPolicy);
 
 
-	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
+	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithUniqueIndexOn(Member member, string indexName, IndexNullPolicy nullPolicy) {
 		Guard.ArgumentNotNull(member, nameof(member));
 		Guard.Argument(typeof(T).IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(typeof(T)), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
 		var index = new ObjectSpaceDefinition.IndexDefinition {

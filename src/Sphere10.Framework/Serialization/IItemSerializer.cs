@@ -24,9 +24,9 @@ public interface IItemSerializer : IItemSizer {
 
 public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 
-	public new void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context);
+	public void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context);
 
-	public new TItem Deserialize(EndianBinaryReader reader, SerializationContext context);
+	public TItem Deserialize(EndianBinaryReader reader, SerializationContext context);
 
 	void IItemSerializer.PackedSerialize(object item, EndianBinaryWriter writer, SerializationContext context)
 		=> Serialize((TItem)item, writer, context);

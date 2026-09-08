@@ -22,7 +22,6 @@ public static class Runtime {
 	private static bool _hasDeterminedDesignMode = false;
 	private static bool _isDesignMode = false;
 	private static Assembly _entryAssembly = null;
-	private static bool? _isWebApp = null;
 	private static readonly Func<IntPtr> GetExceptionPointers = BuildGetExceptionPointersFunc();
 
 	public static bool IsWasmExecutable() => (int)Environment.OSVersion.Platform == 7;
@@ -57,7 +56,7 @@ public static class Runtime {
 
 	public static bool IsWebApp {
 		get {
-#warning IsWebApp needs testing for NET_CORE and NET STANDARD apps
+// TODO: IsWebApp needs testing for NET_CORE and NET STANDARD apps
 			return false;
 
 			//#if __MOBILE__

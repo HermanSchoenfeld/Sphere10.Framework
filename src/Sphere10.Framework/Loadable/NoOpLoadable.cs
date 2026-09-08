@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework;
 
 public class NoOpLoadable : ILoadable {
-	public event EventHandlerEx<object> Loading;
-	public event EventHandlerEx<object> Loaded;
+	// This no-op implementation never raises load notifications.
+	public event EventHandlerEx<object> Loading { add { } remove { } }
+	public event EventHandlerEx<object> Loaded { add { } remove { } }
 	public bool RequiresLoad => false;
 
 	public static readonly NoOpLoadable Instance = new();

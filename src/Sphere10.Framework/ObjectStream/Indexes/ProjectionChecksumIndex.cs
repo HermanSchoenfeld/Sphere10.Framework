@@ -64,7 +64,7 @@ internal sealed class ProjectionChecksumIndex<TItem, TProjection> : ProjectionIn
 		return (projection, checksum);
 	}
 
-	protected TProjection HydrateProjection(long index) => _projectionHydrator(index);
+	private TProjection HydrateProjection(long index) => _projectionHydrator(index);
 
 	protected override void OnAdded(TItem item, long index, (TProjection, int) keyChecksum) {
 		var checksum = keyChecksum.Item2;

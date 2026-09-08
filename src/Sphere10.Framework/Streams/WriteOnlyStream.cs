@@ -36,6 +36,8 @@ public class WriteOnlyStream<TStream> : StreamDecorator<TStream> where TStream :
 
 	public override bool Equals(object obj) => throw new NotSupportedException(ErrorMessage);
 
+	public override int GetHashCode() => base.GetHashCode();
+
 	public override int ReadByte() => throw new NotSupportedException(ErrorMessage);
 
 	public override int ReadTimeout => throw new NotSupportedException(ErrorMessage);

@@ -18,7 +18,7 @@ public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<lon
 	public SizeDescriptorSerializer(SizeDescriptorStrategy sizeDescriptorStrategy) : base(sizeDescriptorStrategy) {
 	}
 
-	public bool SupportsNull => false;
+	public override bool SupportsNull => false;
 
 	public void Serialize(long item, EndianBinaryWriter writer, SerializationContext context) {
 		var startPos = writer.BaseStream.Position;

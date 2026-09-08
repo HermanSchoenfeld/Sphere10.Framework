@@ -304,6 +304,7 @@ public class SerializerFactory {
 		var subTypes = requestedDataType switch {
 			{ IsArray: true } => new [] { requestedDataType.GetElementType() },
 			{ IsConstructedGenericType: true } => requestedDataType.GetGenericArguments(),
+			_ => Type.EmptyTypes,
 		};
 
 		var subTypeSerializers = requestedDataType switch {
