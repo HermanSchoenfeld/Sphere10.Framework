@@ -156,7 +156,7 @@ public class CustomIesEngine {
 
 		SimilarMacCompute(p2, l2, t2);
 
-		if (!Arrays.ConstantTimeAreEqual(t1, t2)) {
+		if (!Arrays.FixedTimeEquals(t1, t2)) {
 			throw new InvalidCipherTextException("invalid MAC");
 		}
 

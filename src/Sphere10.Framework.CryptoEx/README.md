@@ -288,7 +288,7 @@ Bitcoin-specific cryptography is available through `DSS.ECDSA_SECP256k1` with sp
 
 - **ECDSA & Hash Functions**: Production-tested, stable
 - **Post-Quantum Schemes (W-AMS)**: Reference implementations; audit before production cryptographic use
-- **.NET Target**: .NET 8.0+ (primary), .NET Standard 2.0 for some components
+- **.NET Target**: .NET 10 (`net10.0`)
 - **Thread Safety**: Hash functions and signature verification are thread-safe; key generation typically single-threaded per instance
 - **Performance**: ECDSA faster than post-quantum schemes; post-quantum trades speed for quantum resistance
 
@@ -306,7 +306,7 @@ See **Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)** documentatio
 
 - **Sphere10 Framework**: Core framework
 - **BouncyCastle.Cryptography**: Cryptographic primitives (EC, ECDSA, Hashing)
-- **.NET 8.0+**: Modern cryptography APIs
+- **.NET 10**: Modern cryptography APIs
 
 ## ⚖️ License
 

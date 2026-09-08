@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -18,23 +17,8 @@ using Sphere10.Framework.CryptoEx.IES;
 namespace Sphere10.Framework.CryptoEx.PascalCoin;
 
 public class PascalCoinIesEngine : CustomIesEngine {
-	// Structure for Compatibility with PascalCoin Original Implementation.
-	private struct SecureHead {
-		private byte _key;
-		private byte _mac;
-		private ushort _orig;
-		private ushort _body;
-	}
-
-
-	// SecureHeadSize must be equal to "6" to conform to PascalCoin Original Implementation
-	private static readonly int SecureHeadSize;
-
-	static unsafe PascalCoinIesEngine() {
-		SecureHeadSize = sizeof(SecureHead);
-		Trace.Assert(SecureHeadSize == 6);
-	}
-
+	// PascalCoin uses a fixed six-byte wire header: two bytes followed by two UInt16 values.
+	private const int SecureHeadSize = 6;
 
 	public PascalCoinIesEngine(IBasicAgreement agree, IDerivationFunction kdf, IMac mac) : base(agree, kdf, mac) {
 	}
@@ -80,7 +64,7 @@ public class PascalCoinIesEngine : CustomIesEngine {
 
 		Mac.DoFinal(t2, 0);
 
-		if (!Arrays.ConstantTimeAreEqual(t1, t2)) {
+		if (!Arrays.FixedTimeEquals(t1, t2)) {
 			throw new InvalidCipherTextException("invalid MAC");
 		}
 

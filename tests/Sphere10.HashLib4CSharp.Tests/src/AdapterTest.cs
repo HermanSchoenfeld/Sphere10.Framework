@@ -11,7 +11,7 @@ namespace HashLib4CSharp.Tests
         public void Setup()
         {
             HashAdapterInstance = HashFactory.Adapter.CreateHashAlgorithmFromHash(HashFactory.Crypto.CreateMD5());
-            HashAlgorithmInstance = new MD5CryptoServiceProvider();
+            HashAlgorithmInstance = MD5.Create();
         }
     }
 
@@ -22,7 +22,7 @@ namespace HashLib4CSharp.Tests
         public void Setup()
         {
             HashAdapterInstance = HashFactory.Adapter.CreateHashAlgorithmFromHash(HashFactory.Crypto.CreateSHA1());
-            HashAlgorithmInstance = new SHA1CryptoServiceProvider();
+            HashAlgorithmInstance = SHA1.Create();
         }
     }
 
@@ -33,7 +33,7 @@ namespace HashLib4CSharp.Tests
         public void Setup()
         {
             HashAdapterInstance = HashFactory.Adapter.CreateHashAlgorithmFromHash(HashFactory.Crypto.CreateSHA2_256());
-            HashAlgorithmInstance = new SHA256CryptoServiceProvider();
+            HashAlgorithmInstance = SHA256.Create();
         }
     }
 
@@ -44,7 +44,7 @@ namespace HashLib4CSharp.Tests
         public void Setup()
         {
             HashAdapterInstance = HashFactory.Adapter.CreateHashAlgorithmFromHash(HashFactory.Crypto.CreateSHA2_384());
-            HashAlgorithmInstance = new SHA384CryptoServiceProvider();
+            HashAlgorithmInstance = SHA384.Create();
         }
     }
 
@@ -55,7 +55,7 @@ namespace HashLib4CSharp.Tests
         public void Setup()
         {
             HashAdapterInstance = HashFactory.Adapter.CreateHashAlgorithmFromHash(HashFactory.Crypto.CreateSHA2_512());
-            HashAlgorithmInstance = new SHA512CryptoServiceProvider();
+            HashAlgorithmInstance = SHA512.Create();
         }
     }
 
@@ -144,7 +144,7 @@ namespace HashLib4CSharp.Tests
                 HashFactory.Adapter.CreateDeriveBytesFromKDFNotBuiltIn(
                     HashFactory.KDF.PBKDF2HMAC.CreatePBKDF2HMAC(HashFactory.Crypto.CreateSHA1(), password, salt,
                         (uint) iterations));
-            KDFInstance = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA1);
+            ExpectedKey = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA1, ByteCount);
         }
     }
 
@@ -163,7 +163,7 @@ namespace HashLib4CSharp.Tests
                 HashFactory.Adapter.CreateDeriveBytesFromKDFNotBuiltIn(
                     HashFactory.KDF.PBKDF2HMAC.CreatePBKDF2HMAC(HashFactory.Crypto.CreateSHA2_256(), password, salt,
                         (uint) iterations));
-            KDFInstance = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256);
+            ExpectedKey = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, ByteCount);
         }
     }
 
@@ -182,7 +182,7 @@ namespace HashLib4CSharp.Tests
                 HashFactory.Adapter.CreateDeriveBytesFromKDFNotBuiltIn(
                     HashFactory.KDF.PBKDF2HMAC.CreatePBKDF2HMAC(HashFactory.Crypto.CreateSHA2_384(), password, salt,
                         (uint) iterations));
-            KDFInstance = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA384);
+            ExpectedKey = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA384, ByteCount);
         }
     }
 
@@ -201,7 +201,7 @@ namespace HashLib4CSharp.Tests
                 HashFactory.Adapter.CreateDeriveBytesFromKDFNotBuiltIn(
                     HashFactory.KDF.PBKDF2HMAC.CreatePBKDF2HMAC(HashFactory.Crypto.CreateSHA2_512(), password, salt,
                         (uint) iterations));
-            KDFInstance = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA512);
+            ExpectedKey = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA512, ByteCount);
         }
     }
 }

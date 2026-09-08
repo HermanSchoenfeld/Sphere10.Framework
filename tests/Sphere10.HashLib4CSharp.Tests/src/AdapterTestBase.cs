@@ -120,14 +120,14 @@ namespace HashLib4CSharp.Tests
     {
         protected DeriveBytes KDFAdapterInstance { get; set; }
 
-        protected DeriveBytes KDFInstance { get; set; }
+        protected byte[] ExpectedKey { get; set; }
 
         protected int ByteCount { get; set; }
 
         [Test]
         public void TestKDFProducesSameResults()
         {
-            AssertAreEqual(KDFInstance.GetBytes(ByteCount), KDFAdapterInstance.GetBytes(ByteCount),
+            Assert.That(KDFAdapterInstance.GetBytes(ByteCount), Is.EqualTo(ExpectedKey),
                 "Computation mismatch when performing kdf");
         }
     }
