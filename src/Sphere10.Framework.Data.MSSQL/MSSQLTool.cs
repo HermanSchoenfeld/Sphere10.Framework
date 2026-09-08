@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Sphere10.Framework;
 using Sphere10.Framework.Data;
 
@@ -18,11 +18,13 @@ public static class MSSQL {
 	private const string CheckDatabaseExistsQuery = "SELECT CASE WHEN EXISTS(SELECT name FROM sys.databases WHERE name = '{0}') THEN 1 ELSE 0 END";
 
 
+#pragma warning disable CS0618 // Preserve the legacy ApplicationIntent parameter for existing consumers.
 	public static MSSQLDAC Open(string dataSource, string initialCatalog, string userID = null, string password = null, bool? integratedSecurity = null, string failoverPartner = null, string attachDBFilename = null, bool? persistSecurityInfo = null,
 	                            bool? enlist = null, bool? pooling = null, int? minPoolSize = null, int? maxPoolSize = null, bool? multipleActiveResultSets = null, bool? replication = null, TimeSpan? connectTimeout = null, bool? encrypt = null,
 	                            bool? trustServerCertificate = null, TimeSpan? loadBalanceTimeout = null, string networkLibrary = null, int? packetSize = null, string typeSystemVersion = null, string applicationName = null,
-	                            string currentLanguage = null, string workstationID = null, bool? userInstance = null, string transactionBinding = null, ApplicationIntent? applicationIntent = null, bool? multiSubnetFailover = null,
+	                            string currentLanguage = null, string workstationID = null, bool? userInstance = null, string transactionBinding = null, System.Data.SqlClient.ApplicationIntent? applicationIntent = null, bool? multiSubnetFailover = null,
 	                            ILogger logger = null) {
+#pragma warning restore CS0618
 		return new MSSQLDAC(
 			CreateConnectionString(dataSource,
 				initialCatalog,
@@ -111,7 +113,6 @@ public static class MSSQL {
 					case AlreadyExistsPolicy.Error:
 					default:
 						throw new SoftwareException("Database '{0}' already exists on server '{1}'", databaseName, server);
-						break;
 				}
 			} else {
 				shouldCreate = true;
@@ -167,12 +168,15 @@ public static class MSSQL {
 		}
 	}
 
+#pragma warning disable CS0618 // Preserve the legacy ApplicationIntent parameter for existing consumers.
 	public static string CreateConnectionString(string server = null, string initialCatalog = null, string userID = null, string password = null, bool? integratedSecurity = null, string failoverPartner = null, string attachDBFilename = null,
 	                                            bool? persistSecurityInfo = null, bool? enlist = null, bool? pooling = null, int? minPoolSize = null, int? maxPoolSize = null, bool? multipleActiveResultSets = null, bool? replication = null,
 	                                            TimeSpan? connectTimeout = null, bool? encrypt = null, bool? trustServerCertificate = null, TimeSpan? loadBalanceTimeout = null, int? packetSize = null, string typeSystemVersion = null,
-	                                            string applicationName = null, string currentLanguage = null, string workstationID = null, bool? userInstance = null, string transactionBinding = null, ApplicationIntent? applicationIntent = null,
+	                                            string applicationName = null, string currentLanguage = null, string workstationID = null, bool? userInstance = null, string transactionBinding = null, System.Data.SqlClient.ApplicationIntent? applicationIntent = null,
 	                                            bool? multiSubnetFailover = null, int? port = null) {
-		var connectionString = new SqlConnectionStringBuilder();
+#pragma warning restore CS0618
+		// Preserve the previous provider default when callers omit the encryption option.
+		var connectionString = new SqlConnectionStringBuilder { Encrypt = SqlConnectionEncryptOption.Optional };
 		if (!String.IsNullOrWhiteSpace(server))
 			connectionString.DataSource = server;
 
@@ -253,7 +257,7 @@ public static class MSSQL {
 			connectionString.TransactionBinding = transactionBinding;
 
 		if (applicationIntent != null)
-			connectionString.ApplicationIntent = applicationIntent.Value;
+			connectionString.ApplicationIntent = (ApplicationIntent)(int)applicationIntent.Value;
 
 		if (multiSubnetFailover != null)
 			connectionString.MultiSubnetFailover = multiSubnetFailover.Value;

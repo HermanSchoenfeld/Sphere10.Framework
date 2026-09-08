@@ -266,7 +266,7 @@ dac.ExecuteNonQuery("EXECUTE spProcessMonthlyBilling");
 
 ## 📊 Status & Compatibility
 
-- **Framework**: .NET 5.0+, .NET Framework 4.7+
+- **Framework**: .NET 10 (`net10.0`)
 - **SQL Server Versions**: 2016+, Azure SQL Database, SQL Express
 - **Performance**: Enterprise-grade, supports thousands of concurrent connections
 - **Scalability**: Horizontal scaling through multiple connection pools and read replicas
@@ -274,9 +274,10 @@ dac.ExecuteNonQuery("EXECUTE spProcessMonthlyBilling");
 ## 📦 Dependencies
 
 - **Sphere10.Framework.Data**: Data abstraction layer
-- **Microsoft.Data.SqlClient**: Modern SQL Server provider (recommended)
-- **System.Data.SqlClient**: Legacy provider (.NET Framework)
-- **.NET Standard 2.1+**: Cross-platform compatibility
+- **Microsoft.Data.SqlClient**: SQL Server connections, transactions, and bulk operations
+- **Microsoft.Data.SqlClient.Extensions.Azure**: Built-in Microsoft Entra authentication providers, kept on the same version as SqlClient
+- **System.Data.SqlClient**: Retained for the existing public `ApplicationIntent` parameter type
+- **.NET 10**: Cross-platform runtime (`net10.0`)
 
 ## 📚 Related Projects
 
@@ -293,4 +294,6 @@ dac.ExecuteNonQuery("EXECUTE spProcessMonthlyBilling");
 **Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
 
+`MSSQLDAC.CreateConnection()` returns a `Microsoft.Data.SqlClient.SqlConnection` through its existing `IDbConnection` contract. Consumers that cast to the concrete provider should use the Microsoft namespace. The existing `Tools.MSSQL` signatures still accept the legacy `System.Data.SqlClient.ApplicationIntent` enum. Omitted encryption settings retain the previous optional-encryption preference; explicit connection-string encryption settings are preserved. Certificate validation follows the current provider: when the server forces encryption, an omitted `Encrypt` option does not bypass certificate validation.
 
+SqlClient 7 separates Microsoft Entra authentication into `Microsoft.Data.SqlClient.Extensions.Azure`. This project includes that dependency so existing `Authentication=Active Directory ...` connection strings still have a built-in provider available. Provider registration is tested without opening a connection or requesting a token. See [Microsoft Entra authentication in SqlClient](https://learn.microsoft.com/en-us/sql/connect/ado-net/sql/azure-active-directory-authentication?view=sql-server-ver17).

@@ -9,7 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 
@@ -26,10 +27,11 @@ public class MSSQLDAC : DACBase {
 	}
 
 	public override IDbConnection CreateConnection() {
-		return
-			new SqlConnection {
-				ConnectionString = ConnectionString
-			};
+		var builder = new SqlConnectionStringBuilder(ConnectionString);
+		// An omitted Encrypt setting previously used optional encryption; keep explicit settings unchanged.
+		if (!builder.ShouldSerialize("Encrypt"))
+			builder.Encrypt = SqlConnectionEncryptOption.Optional;
+		return new SqlConnection(builder.ConnectionString);
 	}
 
 	public override ISQLBuilder CreateSQLBuilder() {
@@ -37,10 +39,9 @@ public class MSSQLDAC : DACBase {
 	}
 
 	public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
-		var mssqlConnection = connection as SqlConnection;
-		if (mssqlConnection == null)
-			throw new ArgumentException("Not an SqlConnection", "connection");
-		mssqlConnection.EnlistTransaction(transaction);
+		// DbConnection supports both the current provider and connections supplied by legacy consumers.
+		var sqlConnection = Guard.ArgumentCast<DbConnection>(connection, nameof(connection));
+		sqlConnection.EnlistTransaction(transaction);
 	}
 
 	public bool IsAzure() {

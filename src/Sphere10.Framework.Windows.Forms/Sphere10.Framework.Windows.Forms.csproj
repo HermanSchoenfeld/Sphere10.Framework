@@ -75,10 +75,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Data.SqlClient" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Sphere10.Framework.Application\Sphere10.Framework.Application.csproj" />
 		<ProjectReference Include="..\Sphere10.Framework.Data\Sphere10.Framework.Data.csproj" />
 		<ProjectReference Include="..\Sphere10.Framework.Drawing\Sphere10.Framework.Drawing.csproj" />
