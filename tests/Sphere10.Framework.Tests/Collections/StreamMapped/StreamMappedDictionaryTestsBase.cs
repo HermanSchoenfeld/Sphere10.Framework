@@ -111,13 +111,19 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 	[Test]
 	public void IntegrationTests_Heavy([Values(StorageType.MemoryStream)] StorageType storageType, [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values(250)] int maxItems) {
 		var keyGens = 0;
+		var completedIterations = 0;
 		using (CreateDictionary(EstimatedTestObjectSize * maxItems, storageType, policy, out var clusteredDictionary)) {
 			AssertEx.DictionaryIntegrationTest(
 				clusteredDictionary,
 				maxItems,
 				(rng) => ($"{keyGens++}_{rng.NextString(0, 100)}", new TestObject(rng)),
 				iterations: 250,
-				valueComparer: new TestObjectEqualityComparer()
+				valueComparer: new TestObjectEqualityComparer(),
+				endOfIterTest: () => {
+					completedIterations++;
+					if (completedIterations % 25 == 0)
+						TestContext.Progress.WriteLine($"{TestContext.CurrentContext.Test.FullName}: {completedIterations}/250 iterations completed.");
+				}
 			);
 		}
 	}

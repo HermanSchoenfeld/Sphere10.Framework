@@ -363,6 +363,7 @@ public abstract class ClusterMap {
 
 	internal void WriteClusterPrev(long cluster, long prev, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterPrevInternal(cluster, prev);
+		pendingEvent.ClusterLinksChanged = true;
 		pendingEvent.ModifiedClusters.Add(cluster);
 	}
 
@@ -386,6 +387,7 @@ public abstract class ClusterMap {
 
 	internal void WriteClusterNext(long cluster, long next, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterNextInternal(cluster, next);
+		pendingEvent.ClusterLinksChanged = true;
 		pendingEvent.ModifiedClusters.Add(cluster);
 	}
 

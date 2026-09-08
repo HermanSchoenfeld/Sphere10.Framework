@@ -57,6 +57,8 @@ public class ClusterMapChangedEventArgs : EventArgs {
 
 	public bool DecreasedChainSize => ChainNewEndCluster.HasValue && ClusterCountDelta < 0;
 
+	internal bool ClusterLinksChanged { get; set; }
+
 	public void InformMovedCluster(long from, long to) {
 		// Special case: When a cluster A is moved to B and then B is moved to C,
 		// it means A is moved to C and B was delted

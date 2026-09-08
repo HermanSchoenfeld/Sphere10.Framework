@@ -6,6 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+// Comment out this define and rebuild to disable logical-cluster checkpoint memoization.
+// Disabling it may cause long-running unit tests on GitHub Actions to exceed the timeout.
+#define LogicalClusterMemoizationOptimization
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +19,13 @@ namespace Sphere10.Framework;
 /// <summary>
 /// Used to track a (very large) logical sequence of clusters within a <see cref="ClusterMap"/>.
 /// </summary>
-internal class ClusterSeeker  {
-	// TODO: optimizations include:
-	// - Intelligent memoization of LogicalCluster -> Cluster. Algorithm should strive for equidistant memoization along chain, eg. max 1024
-	//   this would minimize seek-time on reused streams.
-
+internal class ClusterSeeker {
 	private readonly ClusterMap _clusters;
 	private readonly bool _integrityChecks;
+#if LogicalClusterMemoizationOptimization
+	private readonly Dictionary<long, long> _checkpoints = new();
+	internal const int MaxCheckpoints = 1024;
+#endif
 
 	public ClusterSeeker(ClusterMap clusteredMap, long terminalValue, long startCluster, long endCluster, long totalClusters, bool integrityChecks) {
 		_clusters = clusteredMap;
@@ -42,6 +46,14 @@ internal class ClusterSeeker  {
 	public ClusterPointer Pointer { get; }
 
 	public long TerminalValue { get; private set; }
+
+#if LogicalClusterMemoizationOptimization
+	internal static bool LogicalClusterMemoizationEnabled => true;
+
+	private long CheckpointInterval => Math.Max(1, (Pointer.Chain.TotalClusters - 1) / MaxCheckpoints + 1);
+#else
+	internal static bool LogicalClusterMemoizationEnabled => false;
+#endif
 
 	public void SeekStart() {
 		if (_integrityChecks) {
@@ -73,6 +85,11 @@ internal class ClusterSeeker  {
 		if (_integrityChecks) {
 			Guard.Ensure(Pointer.Chain.StartCluster >= 0, "Cannot seek as there are no clusters to seek");
 		}
+#if LogicalClusterMemoizationOptimization
+		CheckNotEmpty();
+		Guard.ArgumentInRange(logicalCluster, 0, Pointer.Chain.TotalClusters - 1, nameof(logicalCluster));
+		UseClosestCheckpoint(logicalCluster);
+#endif
 		FindShortestPathToLogicalCluster(logicalCluster, out var startCluster, out var steps, out var direction);
 		if (startCluster == Pointer.Chain.StartCluster) {
 			SeekStart();
@@ -114,6 +131,9 @@ internal class ClusterSeeker  {
 				Pointer.CheckTraits();
 			}
 			walkedClusters.Add(Pointer.CurrentCluster);
+#if LogicalClusterMemoizationOptimization
+			RememberCheckpoint();
+#endif
 		}
 	}
 
@@ -133,6 +153,9 @@ internal class ClusterSeeker  {
 				Pointer.CheckTraits();
 			}
 			walkedClusters.Add(Pointer.CurrentCluster);
+#if LogicalClusterMemoizationOptimization
+			RememberCheckpoint();
+#endif
 		}
 	}
 
@@ -155,6 +178,21 @@ internal class ClusterSeeker  {
 	}
 
 	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
+#if LogicalClusterMemoizationOptimization
+		var previousInterval = CheckpointInterval;
+		// Existing logical positions survive appends and tail removals. Relocate their physical checkpoints after tip migration.
+		if ((changedEvent.ChainTerminal == TerminalValue && (changedEvent.AddedChain || changedEvent.RemovedChain)) ||
+		    ((changedEvent.ClusterLinksChanged || changedEvent.ClusterCountDelta != 0) && !changedEvent.ChainTerminal.HasValue) ||
+		    (changedEvent.ChainOriginalStartCluster.HasValue && changedEvent.ChainNewStartCluster.HasValue)) {
+			_checkpoints.Clear();
+		} else if (changedEvent.MovedClusters.Count != 0) {
+			foreach (var checkpoint in _checkpoints.ToArray()) {
+				if (changedEvent.MovedClusters.TryGetValue(checkpoint.Value, out var movedCluster))
+					_checkpoints[checkpoint.Key] = movedCluster;
+			}
+		}
+#endif
+
 		// Process changes arising from tip migrations (no size changed here)
 		if (changedEvent.MovedClusters.TryGetValue(Pointer.Chain.StartCluster, out var newStart)) 
 			Pointer.Chain.StartCluster = newStart;
@@ -194,6 +232,14 @@ internal class ClusterSeeker  {
 				Pointer.CurrentTraits = CalculateCurrentTraits();
 			}
 		}
+#if LogicalClusterMemoizationOptimization
+		if (CheckpointInterval != previousInterval) {
+			_checkpoints.Clear();
+		} else if (changedEvent.ChainTerminal == TerminalValue && changedEvent.ClusterCountDelta < 0) {
+			foreach (var index in _checkpoints.Keys.Where(index => index >= Pointer.Chain.TotalClusters).ToArray())
+				_checkpoints.Remove(index);
+		}
+#endif
 	}
 
 	public void ProcessStreamSwapped(long record1Index, ClusteredStreamDescriptor descriptor1Data, long record2Index, ClusteredStreamDescriptor descriptor2Data) {
@@ -221,18 +267,48 @@ internal class ClusterSeeker  {
 		CalculatePathToLogicalCluster(Pointer.CurrentIndex, logicalCluster, Pointer.Chain.TotalClusters, out steps_, out dir);
 		paths.Add((Pointer.CurrentCluster, steps_, dir));
 
-		// TODO: future optimizations can intermittently remember cluster positions as walks (say 1024 positions, equidistant)
-
 		var result = paths.OrderBy(x => x.Steps).First();
 		closestKnownCluster = result.FromKnownCluster;
 		steps = result.Steps;
 		seekDirection = result.Dir;
 	}
 
+#if LogicalClusterMemoizationOptimization
+	private void RememberCheckpoint() {
+		if (Pointer.CurrentIndex % CheckpointInterval == 0)
+			_checkpoints[Pointer.CurrentIndex] = Pointer.CurrentCluster;
+	}
+
+	private void UseClosestCheckpoint(long logicalCluster) {
+		var interval = CheckpointInterval;
+		var lowerIndex = logicalCluster / interval * interval;
+		UseCheckpoint(lowerIndex, logicalCluster);
+		if (Pointer.Chain.TotalClusters - 1 - lowerIndex >= interval)
+			UseCheckpoint(lowerIndex + interval, logicalCluster);
+	}
+
+	private void UseCheckpoint(long checkpointIndex, long logicalCluster) {
+		if (!_checkpoints.TryGetValue(checkpointIndex, out var physicalCluster))
+			return;
+		var distance = Math.Abs(logicalCluster - checkpointIndex);
+		if (distance >= Math.Abs(logicalCluster - Pointer.CurrentIndex) ||
+		    distance >= logicalCluster ||
+		    distance >= Pointer.Chain.TotalClusters - 1 - logicalCluster)
+			return;
+		Pointer.CurrentIndex = checkpointIndex;
+		Pointer.CurrentCluster = physicalCluster;
+		Pointer.CurrentTraits = CalculateCurrentTraits();
+		if (_integrityChecks)
+			Pointer.CheckTraits();
+	}
+#endif
+
 	private ClusterTraits CalculateCurrentTraits() {
 		var traits = ClusterTraits.None;
-		traits.SetFlags(ClusterTraits.Start, Pointer.Chain.StartCluster != Cluster.Null &&  Pointer.CurrentCluster == Pointer.Chain.StartCluster);
-		traits.SetFlags(ClusterTraits.End, Pointer.Chain.EndCluster != Cluster.Null && Pointer.CurrentCluster == Pointer.Chain.EndCluster);
+		if (Pointer.Chain.StartCluster != Cluster.Null && Pointer.CurrentCluster == Pointer.Chain.StartCluster)
+			traits |= ClusterTraits.Start;
+		if (Pointer.Chain.EndCluster != Cluster.Null && Pointer.CurrentCluster == Pointer.Chain.EndCluster)
+			traits |= ClusterTraits.End;
 		return traits;
 	}
 
