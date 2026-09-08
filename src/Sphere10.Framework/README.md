@@ -1771,3 +1771,19 @@ Use a 32-byte key for AES-256; AES-128 and AES-192 keys (16 and 24 bytes) are al
 Keep the key secret and store the initial counter separately. Never reuse the same key/counter blocks for different plaintext, including revisions of overwritten data. CTR supplies confidentiality; authenticate ciphertext separately before decrypting untrusted input. `Encrypted<T>` below supplies that authentication for stored objects.
 
 The stream supports array/span, async array/memory, byte-at-a-time, copy and legacy Begin/End operations. Seekable streams use absolute positions from the underlying stream's origin; reads and writes can start within a cipher block. Non-seekable streams process bytes sequentially from their position at wrapping. Resize and writes that create gaps are rejected, since underlying zero-filled gaps are not encrypted zeroes. Callers must serialize access to an instance and discard it after an underlying I/O failure. Closing/disposal adds no bytes.
+
+### Encrypted objects
+
+`Encrypted.For(item, secret)` and `new Encrypted<T>(item, secret)` use the framework's `BinarySerializer` directly through `EncryptedStream`, including its type information, reference handling and null support. Callers no longer supply an item serializer.
+
+```csharp
+var secret = Encoding.UTF8.GetBytes("application secret");
+var encrypted = Encrypted.For("example", secret);
+if (encrypted.TryDecrypt(secret, out var value)) {
+    // value == "example"
+}
+```
+
+`EncryptedBytes.Length` equals the **BinarySerializer output length**, including serialization metadata. Salt, initial counter and a SHA-256 HMAC tag are held separately on the object, keeping ciphertext length unchanged. The object retains these values for `TryDecrypt`; `EncryptedBytes` alone is not a self-contained persistence format. The metadata accessors return defensive copies. Each `SetItem` generates fresh salt and counter values. PBKDF2-HMAC-SHA256 derives independent AES-256 and authentication keys; the configurable iteration count defaults to 600,000. HMAC covers the version domain, iteration count, salt, counter and ciphertext and is checked in constant time before deserialization. Wrong secrets or modified ciphertext return `false`; string secrets use UTF-8.
+
+The new binary-secret `PBKDF2.DeriveKey` overload requires an explicit hash algorithm. The existing string overload keeps its legacy SHA-1 behavior for compatibility.
