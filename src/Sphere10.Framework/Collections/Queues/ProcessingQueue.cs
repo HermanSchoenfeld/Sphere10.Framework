@@ -18,8 +18,11 @@ namespace Sphere10.Framework;
 /// many threads can be processed one-at-a-time in arrival sequence using this class without
 /// any blocking on the enqueue.
 /// </summary>
+/// <remarks>
+/// Consider <see cref="SerialThreadPool"/> for new action-based queues. This queue retains buffered
+/// batch processing and per-item success, failure, and error notifications.
+/// </remarks>
 /// <typeparam name="T"></typeparam>
-[Obsolete("Use SerialThreadPool instead")]
 public class ProcessingQueue<T> {
 	public const int DefaultMaxMessages = 1000000;
 	public EventHandlerEx<T> Succeeded;

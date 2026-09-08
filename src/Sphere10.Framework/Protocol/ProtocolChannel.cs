@@ -66,7 +66,7 @@ public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
 			SetState(ProtocolChannelState.Open);
 			NotifyOpened();
 			return true;
-		} catch (Exception error) {
+		} catch (Exception) {
 			// TODO: add Logging
 			return false;
 		}

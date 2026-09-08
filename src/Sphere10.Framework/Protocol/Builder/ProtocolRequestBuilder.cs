@@ -54,24 +54,24 @@ public class ProtocolRequestBuilder<TRequest>  {
 	}
 
 
-	public class ResponseBuilder<TRequest, TResponse> : ProtocolRequestBuilder<TRequest>  {
+	public class ResponseBuilder<TResponseRequest, TResponse> : ProtocolRequestBuilder<TResponseRequest>  {
 
-		private ProtocolRequestBuilder<TRequest> _requestBuilder;
+		private ProtocolRequestBuilder<TResponseRequest> _requestBuilder;
 
-		public ResponseBuilder(ProtocolRequestBuilder<TRequest> requestBuilder) {
+		public ResponseBuilder(ProtocolRequestBuilder<TResponseRequest> requestBuilder) {
 			_requestBuilder = requestBuilder;
 		}
 
-		public ProtocolRequestBuilder<TRequest> HandleResponseWith(Action<TResponse> handler)
+		public ProtocolRequestBuilder<TResponseRequest> HandleResponseWith(Action<TResponse> handler)
 			=> HandleResponseWith((_, response) => handler(response));
 
-		public ProtocolRequestBuilder<TRequest> HandleResponseWith(Action<TRequest, TResponse> handler)
+		public ProtocolRequestBuilder<TResponseRequest> HandleResponseWith(Action<TResponseRequest, TResponse> handler)
 			=> HandleResponseWith((_, request, response) => handler(request, response));
 
-		public ProtocolRequestBuilder<TRequest> HandleResponseWith(Action<ProtocolOrchestrator, TRequest, TResponse> handler)
-			=> HandleResponseWith(new ActionResponseHandler<TRequest, TResponse>(handler));
+		public ProtocolRequestBuilder<TResponseRequest> HandleResponseWith(Action<ProtocolOrchestrator, TResponseRequest, TResponse> handler)
+			=> HandleResponseWith(new ActionResponseHandler<TResponseRequest, TResponse>(handler));
 
-		public ProtocolRequestBuilder<TRequest> HandleResponseWith(IResponseHandler<TRequest, TResponse> handler) 
+		public ProtocolRequestBuilder<TResponseRequest> HandleResponseWith(IResponseHandler<TResponseRequest, TResponse> handler)
 			=> _requestBuilder.HandleWith(handler);
 
 	}

@@ -27,7 +27,6 @@ public class ProtocolHandshakeBuilder {
 	public ThreeWayHandshakeBuilder UseThreeWay() {
 		_specificBuilder = new ThreeWayHandshakeBuilder(this);
 		return (ThreeWayHandshakeBuilder)_specificBuilder;
-		return new(this);
 	}
 
 	public ProtocolHandshake Build() {
