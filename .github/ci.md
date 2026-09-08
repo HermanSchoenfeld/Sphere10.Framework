@@ -37,3 +37,7 @@ The logging options are documented by [Microsoft](https://learn.microsoft.com/en
 The earlier partitioned runner imposed a ten-minute watchdog that could terminate a busy test host during the original dictionary stress workload. That runner and its watchdog have been removed; test iteration counts and correctness checks are unchanged.
 
 Logical-cluster memoization remains controlled by the file-local `#define LogicalClusterMemoizationOptimization` in `src/Sphere10.Framework/ClusteredStreams/ClusterSeeker.cs`. Comment out that line and rebuild to compare against the original start/end/current traversal. The checkpoint limit is `MaxCheckpoints` in that file. Disabling memoization may increase runtime enough to hit CI job limits. Direct flag operations and data-only write handling are independent of that switch.
+
+## Stable dependencies
+
+`Directory.Packages.props` uses stable dependency versions for the stable `3.1.1` release. When updating packages, exclude prerelease versions so packing does not produce NU5104 warnings. Preview dependencies require an explicitly prerelease package version.
