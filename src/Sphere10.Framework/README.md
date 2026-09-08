@@ -344,6 +344,12 @@ Sphere10 Framework provides an extensive suite of collection types that extend b
 - **Synchronized Collections**: Thread-safe variants like `SynchronizedExtendedList<T>`, `SynchronizedDictionary<TKey, TValue>`, and `ProducerConsumerQueue<T>` for concurrent scenarios.
 - **Specialized Data Structures**: Bloom filters, binary heaps, circular lists, bounded lists, and bidirectional dictionaries address specific algorithmic needs.
 
+#### Memorizing an enumerable
+
+`MemorizingIterator<T>` lazily reads its source once and caches the values for repeated or interleaved traversals. Each traversal has its own position; struct copies and interface casts share the same cache. Its read-only collection members support `Count`, `Contains`, `CopyTo`, and LINQ materialization (`ToArray`/`ToList`). `Count` and `CopyTo` finish reading the source, retaining the memorized snapshot even if the original collection later changes.
+
+The source enumerator is disposed when exhausted or when reading fails. A partial traversal keeps the source open so later traversals can continue; finish enumeration when the source owns resources. Source failures are replayed after the same cached prefix. Access from multiple threads requires external synchronization.
+
 ### 🔗 Clustered Streams
 
 The `ClusteredStreams` subsystem provides a sophisticated mechanism for managing multiple logical streams within a single underlying stream. This enables:
