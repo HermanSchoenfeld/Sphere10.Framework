@@ -284,7 +284,7 @@ public class ECIESSecurityTests {
             var message = RandomBytes(new Random(i).Next(1, 512));
             var ciphertext = ecdsa.IES.Encrypt(message, pk);
             Assert.That(ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, sk), Is.True, $"Decryption failed at iteration {i}");
-            Assert.That(message.SequenceEqual(decrypted), Is.True, $"Decrypted message mismatch at iteration {i}");
+            Assert.That(decrypted, Is.EqualTo(message), $"Decrypted message mismatch at iteration {i}");
         }
     }
 

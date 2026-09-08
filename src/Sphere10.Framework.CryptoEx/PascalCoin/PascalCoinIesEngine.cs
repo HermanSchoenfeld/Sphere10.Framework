@@ -9,185 +9,182 @@
 using System;
 using System.IO;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Utilities;
 using Sphere10.Framework.CryptoEx.IES;
 
 namespace Sphere10.Framework.CryptoEx.PascalCoin;
 
+/// <summary>
+/// Implements PascalCoin's OpenSSL ECIES encoding and reads historical managed encodings.
+/// </summary>
+/// <remarks>
+/// The supplied block cipher must not add or remove padding. The legacy MAC authenticates the
+/// ciphertext body, not the header; original-length recovery does not authenticate that length.
+/// </remarks>
 public class PascalCoinIesEngine : CustomIesEngine {
-	// PascalCoin uses a fixed six-byte wire header: two bytes followed by two UInt16 values.
-	private const int SecureHeadSize = 6;
+	private const int _secureHeadSize = 6;
+	internal const int MaxPlaintextLength = 32000;
 
-	public PascalCoinIesEngine(IBasicAgreement agree, IDerivationFunction kdf, IMac mac) : base(agree, kdf, mac) {
+	public PascalCoinIesEngine(IBasicAgreement agree, IDerivationFunction kdf, IMac mac)
+		: base(agree, kdf, mac) {
 	}
 
 	public PascalCoinIesEngine(IBasicAgreement agree, IDerivationFunction kdf, IMac mac, BufferedBlockCipher cipher)
 		: base(agree, kdf, mac, cipher) {
+		Guard.ArgumentNot(cipher is PaddedBufferedBlockCipher, nameof(cipher), "Use an unpadded cipher; the PascalCoin engine handles padding.");
 	}
 
-	protected override byte[] DecryptBlock(
-		byte[] inEnc,
-		int inOff,
-		int inLen) {
-		// Ensure that the length of the input is greater than the MAC in bytes
-		if (inLen < (V.Length + Mac.GetMacSize())) {
-			throw new InvalidCipherTextException("Length of input must be greater than the MAC and V combined");
+	public override byte[] ProcessBlock(byte[] @in, int inOff, int inLen) {
+		Guard.ArgumentNotNull(@in, nameof(@in));
+		Guard.Argument(inOff >= 0 && inLen >= 0 && inOff <= @in.Length - inLen, nameof(inOff), "The input range is outside the buffer.");
+		Guard.Ensure(Cipher != null, "PascalCoin ECIES requires a block cipher.");
+
+		if (ForEncryption) {
+			Guard.ArgumentLTE(inLen, MaxPlaintextLength, nameof(inLen), "PascalCoin supports messages of at most 32,000 bytes.");
+			if (KeyPairGenerator != null) {
+				var ephemeralKeyPair = KeyPairGenerator.Generate();
+				PrivParam = ephemeralKeyPair.GetKeyPair().Private;
+				V = ephemeralKeyPair.GetEncodedPublicKey();
+			}
 		}
 
-		// note order is important: set up keys, do simple encryption, check mac, do final encryption.
-		if (Cipher == null) {
-			// Streaming mode.
-			throw new ArgumentNullException(string.Format("{0}", "Cipher Cannot be Null in This Mode."));
-		}
-		// Block cipher mode.
-
-		SetupBlockCipherAndMacKeyBytes(out byte[] k1, out byte[] k2);
-
-		ICipherParameters cp = new KeyParameter(k1);
-
-		// If IV provide use it to initialize the cipher
-		if (Iv != null) {
-			cp = new ParametersWithIV(cp, Iv);
-		}
-
-		Cipher.Init(false, cp);
-
-		// Verify the MAC.
-		byte[] t1 = new byte[Mac.GetMacSize()];
-		Array.Copy(inEnc, V.Length, t1, 0, t1.Length);
-
-		byte[] t2 = new byte[t1.Length];
-		Mac.Init(new KeyParameter(k2));
-		Mac.BlockUpdate(inEnc, inOff + V.Length + t2.Length, inLen - V.Length - t2.Length);
-
-		Mac.DoFinal(t2, 0);
-
-		if (!Arrays.FixedTimeEquals(t1, t2)) {
-			throw new InvalidCipherTextException("invalid MAC");
+		var header = ForEncryption ? default : ReadHeader(@in, inOff, inLen);
+		Agree.Init(PrivParam);
+		if (!ForEncryption) {
+			if (KeyParser != null) {
+				// Bound the parser to the encoded key and verify its length before any point decoding.
+				var fieldSize = Agree.GetFieldSize();
+				var pointEncoding = @in[inOff + _secureHeadSize];
+				var expectedKeyLength = pointEncoding switch {
+					2 or 3 => 1 + fieldSize,
+					4 or 6 or 7 => 1 + 2 * fieldSize,
+					_ => 0
+				};
+				Guard.Ensure(header.KeyLength > 0 && header.KeyLength == expectedKeyLength, "Invalid ephemeral public-key encoding or length.");
+				using var keyStream = new MemoryStream(@in, inOff + _secureHeadSize, header.KeyLength, false);
+				try {
+					PubParam = KeyParser.ReadKey(keyStream);
+				} catch (IOException error) {
+					throw new InvalidCipherTextException("Unable to recover ephemeral public key: " + error.Message, error);
+				} catch (ArgumentException error) {
+					throw new InvalidCipherTextException("Unable to recover ephemeral public key: " + error.Message, error);
+				}
+				Guard.Ensure(keyStream.Position == header.KeyLength, "The ephemeral public-key length does not match its encoding.");
+				V = @in.AsSpan(inOff + _secureHeadSize, header.KeyLength).ToArray();
+			} else {
+				Guard.Ensure(header.KeyLength == V.Length, "The ephemeral public-key length does not match the initialized engine.");
+			}
 		}
 
-		return Cipher.DoFinal(inEnc,
-			inOff + V.Length + Mac.GetMacSize(),
-			inLen - V.Length - t2.Length);
+		// Retain PascalCoin's fixed-width ECDH secret and hash-only SHA-512 derivation.
+		var sharedValue = Agree.CalculateAgreement(PubParam);
+		var sharedSecret = BigIntegers.AsUnsignedByteArray(Agree.GetFieldSize(), sharedValue);
+		using var secretScope = Tools.Scope.ExecuteOnDispose(() => Arrays.Fill(sharedSecret, 0));
+		Kdf.Init(new KdfParameters(sharedSecret, null));
+		if (ForEncryption)
+			return EncryptBlock(@in, inOff, inLen);
+
+		var paddedPlaintext = DecryptBlock(@in, inOff + _secureHeadSize, inLen - _secureHeadSize);
+		using var plaintextScope = Tools.Scope.ExecuteOnDispose(() => Arrays.Fill(paddedPlaintext, 0));
+		Guard.Ensure(paddedPlaintext.Length == header.BodyLength, "The cipher must return complete blocks without removing padding.");
+		for (var index = header.OriginalLength; index < paddedPlaintext.Length; index++)
+			Guard.Ensure(paddedPlaintext[index] == 0, "Invalid PascalCoin zero padding.");
+
+		// The header supplies the original length; scanning for zeros would remove genuine binary data.
+		return paddedPlaintext.AsSpan(0, header.OriginalLength).ToArray();
 	}
 
-	protected override unsafe byte[] EncryptBlock(
-		byte[] @in,
-		int inOff,
-		int inLen) {
-		if (Cipher == null) {
-			// Streaming mode.
-			throw new ArgumentNullException(string.Format("{0}", "Cipher Cannot be Null in This Mode."));
-		}
-		// Block cipher mode.
+	protected override byte[] DecryptBlock(byte[] inEnc, int inOff, int inLen) {
+		var macSize = Mac.GetMacSize();
+		Guard.Ensure(inLen >= V.Length + macSize, "The input does not contain the complete ephemeral key and MAC.");
+		SetupBlockCipherAndMacKeyBytes(out var cipherKey, out var macKey);
+		using var keyScope = Tools.Scope.ExecuteOnDispose(() => {
+			Arrays.Fill(cipherKey, 0);
+			Arrays.Fill(macKey, 0);
+		});
 
-		SetupBlockCipherAndMacKeyBytes(out byte[] k1, out byte[] k2);
+		var bodyOffset = inOff + V.Length + macSize;
+		var bodyLength = inLen - V.Length - macSize;
+		var expectedMac = inEnc.AsSpan(inOff + V.Length, macSize).ToArray();
+		var computedMac = new byte[macSize];
+		Mac.Init(new KeyParameter(macKey));
+		Mac.BlockUpdate(inEnc, bodyOffset, bodyLength);
+		Mac.DoFinal(computedMac, 0);
+		if (!Arrays.FixedTimeEquals(expectedMac, computedMac))
+			throw new InvalidCipherTextException("Invalid MAC");
 
+		// Authenticate the entire actual body, including any historical managed extra block, before decrypting.
+		ICipherParameters cipherParameters = new KeyParameter(cipherKey);
+		if (Iv != null)
+			cipherParameters = new ParametersWithIV(cipherParameters, Iv);
+		Cipher.Init(false, cipherParameters);
+		return Cipher.DoFinal(inEnc, bodyOffset, bodyLength);
+	}
 
-		// If iv provided use it to initialise the cipher
-		if (Iv != null) {
-			Cipher.Init(true, new ParametersWithIV(new KeyParameter(k1), Iv));
-		} else {
-			Cipher.Init(true, new KeyParameter(k1));
-		}
+	protected override byte[] EncryptBlock(byte[] @in, int inOff, int inLen) {
+		SetupBlockCipherAndMacKeyBytes(out var cipherKey, out var macKey);
+		using var keyScope = Tools.Scope.ExecuteOnDispose(() => {
+			Arrays.Fill(cipherKey, 0);
+			Arrays.Fill(macKey, 0);
+		});
 
-		byte[] c = Cipher.DoFinal(@in, inOff, inLen);
+		ICipherParameters cipherParameters = new KeyParameter(cipherKey);
+		if (Iv != null)
+			cipherParameters = new ParametersWithIV(cipherParameters, Iv);
+		Cipher.Init(true, cipherParameters);
 
+		// OpenSSL pads only a partial final block; aligned and empty messages get no extra block.
+		var blockSize = Cipher.GetBlockSize();
+		var paddingLength = (blockSize - inLen % blockSize) % blockSize;
+		var paddedPlaintext = new byte[inLen + paddingLength];
+		using var plaintextScope = Tools.Scope.ExecuteOnDispose(() => Arrays.Fill(paddedPlaintext, 0));
+		@in.AsSpan(inOff, inLen).CopyTo(paddedPlaintext);
+		var ciphertext = Cipher.DoFinal(paddedPlaintext);
+		Guard.Ensure(ciphertext.Length == paddedPlaintext.Length, "The cipher must not add automatic padding.");
+		Guard.Ensure(ciphertext.Length <= ushort.MaxValue && V.Length <= byte.MaxValue, "The encrypted message exceeds the PascalCoin header fields.");
 
-		// Apply the MAC.
-		byte[] T = new byte[Mac.GetMacSize()];
+		var authenticationTag = new byte[Mac.GetMacSize()];
+		Guard.Ensure(authenticationTag.Length <= byte.MaxValue, "The MAC exceeds the PascalCoin header field.");
+		Mac.Init(new KeyParameter(macKey));
+		Mac.BlockUpdate(ciphertext, 0, ciphertext.Length);
+		Mac.DoFinal(authenticationTag, 0);
 
-		Mac.Init(new KeyParameter(k2));
-		Mac.BlockUpdate(c, 0, c.Length);
-		Mac.DoFinal(T, 0);
-
-		int cipherBlockSize = Cipher.GetBlockSize();
-		int messageToEncryptSize = inLen - inOff;
-
-		int messageToEncryptPadSize = (messageToEncryptSize % cipherBlockSize) == 0
-			? 0
-			: cipherBlockSize -
-			  (messageToEncryptSize % cipherBlockSize);
-
-
-		// Output the quadruple (SECURE_HEAD_DETAILS,V,T,C).
-		// SECURE_HEAD_DETAILS :=
-		// [0] := Convert Byte(Length(V)) to a ByteArray,
-		// [1] := Convert Byte(Length(T)) to a ByteArray,
-		// [2] and [3] := Convert UInt16(MessageToEncryptSize) to a ByteArray,
-		// [4] and [5] := Convert UInt16(MessageToEncryptSize + MessageToEncryptPadSize) to a ByteArray,
-		// V := Ephemeral Public Key
-		// T := Authentication Message (MAC)
-		// C := Encrypted Payload
-
-		byte[] output = new byte[SecureHeadSize + V.Length + T.Length + c.Length];
-
-
-		fixed (byte* ptrByteOutput = output) {
-			ushort* ptrUShortOutput = (ushort*)ptrByteOutput;
-
-			*ptrByteOutput = (byte)(V.Length);
-			*(ptrByteOutput + 1) = (byte)(T.Length);
-			*(ptrUShortOutput + 1) = (ushort)(messageToEncryptSize);
-			*(ptrUShortOutput + 2) = (ushort)(messageToEncryptSize + messageToEncryptPadSize);
-		}
-
-
-		Array.Copy(V, 0, output, SecureHeadSize, V.Length);
-		Array.Copy(T, 0, output, SecureHeadSize + V.Length, T.Length);
-		Array.Copy(c, 0, output, SecureHeadSize + V.Length + T.Length, c.Length);
+		// Native PascalCoin uses little-endian UInt16 lengths in its six-byte wire header.
+		var output = new byte[_secureHeadSize + V.Length + authenticationTag.Length + ciphertext.Length];
+		output[0] = (byte)V.Length;
+		output[1] = (byte)authenticationTag.Length;
+		EndianBitConverter.Little.GetBytes((ushort)inLen).CopyTo(output, 2);
+		EndianBitConverter.Little.GetBytes((ushort)ciphertext.Length).CopyTo(output, 4);
+		V.CopyTo(output, _secureHeadSize);
+		authenticationTag.CopyTo(output, _secureHeadSize + V.Length);
+		ciphertext.CopyTo(output, _secureHeadSize + V.Length + authenticationTag.Length);
 		return output;
 	}
 
-	public override byte[] ProcessBlock(
-		byte[] @in,
-		int inOff,
-		int inLen) {
-		if (ForEncryption) {
-			if (KeyPairGenerator != null) {
-				EphemeralKeyPair ephKeyPair = KeyPairGenerator.Generate();
+	private (int KeyLength, int OriginalLength, int BodyLength) ReadHeader(byte[] input, int offset, int length) {
+		Guard.Ensure(length >= _secureHeadSize, "The PascalCoin header is incomplete.");
+		var keyLength = input[offset];
+		var macLength = input[offset + 1];
+		Guard.Ensure(macLength == Mac.GetMacSize(), "Invalid PascalCoin MAC length.");
+		Guard.Ensure(length >= _secureHeadSize + keyLength + macLength, "The ephemeral key or MAC is incomplete.");
+		var bodyLength = length - _secureHeadSize - keyLength - macLength;
+		var blockSize = Cipher.GetBlockSize();
+		Guard.Ensure(bodyLength % blockSize == 0, "The ciphertext body must contain complete blocks.");
 
-				PrivParam = ephKeyPair.GetKeyPair().Private;
-				V = ephKeyPair.GetEncodedPublicKey();
-			}
-		} else {
-			if (KeyParser != null) {
-				MemoryStream bIn = new MemoryStream(@in, inOff, inLen) { Position = SecureHeadSize };
-				try {
-					PubParam = KeyParser.ReadKey(bIn);
-				} catch (IOException e) {
-					throw new InvalidCipherTextException("unable to recover ephemeral public key: " + e.Message, e);
-				} catch (ArgumentException e) {
-					throw new InvalidCipherTextException("unable to recover ephemeral public key: " + e.Message, e);
-				}
+		var encodedOriginalLength = EndianBitConverter.Little.ToUInt16(input, offset + 2);
+		var encodedBodyLength = EndianBitConverter.Little.ToUInt16(input, offset + 4);
+		// Old managed writers allowed oversized messages and wrapped the UInt16 header fields.
+		// Actual body length and at most one block of padding uniquely recover the original length.
+		var paddingLength = (bodyLength - encodedOriginalLength) & ushort.MaxValue;
+		Guard.Ensure(paddingLength <= blockSize && paddingLength <= bodyLength, "Invalid PascalCoin original length.");
+		var originalLength = bodyLength - paddingLength;
+		var nativeBodyLength = originalLength + (long)((blockSize - originalLength % blockSize) % blockSize);
+		Guard.Ensure(encodedBodyLength == (nativeBodyLength & ushort.MaxValue), "The PascalCoin body length does not match its original length.");
 
-				int encLength = (inLen - (int)(bIn.Length - bIn.Position));
-				V = Arrays.CopyOfRange(@in, inOff + SecureHeadSize, inOff + encLength);
-			}
-		}
-
-		// Compute the common value and convert to byte array. 
-		Agree.Init(PrivParam);
-		BigInteger z = Agree.CalculateAgreement(PubParam);
-		byte[] bigZ = BigIntegers.AsUnsignedByteArray(Agree.GetFieldSize(), z);
-
-		try {
-			// Initialise the KDF.
-			KdfParameters kdfParam = new KdfParameters(bigZ, null);
-			Kdf.Init(kdfParam);
-
-			if (ForEncryption) {
-				return EncryptBlock(@in, inOff, inLen);
-			} else {
-				byte[] temp = new byte[inLen - SecureHeadSize];
-				Array.Copy(@in, inOff + SecureHeadSize, temp, 0, temp.Length);
-				return DecryptBlock(temp, inOff, temp.Length);
-			}
-		} finally {
-			Arrays.Fill(bigZ, 0);
-		}
+		// paddingLength == blockSize identifies the historical extra block on aligned managed messages.
+		// These consistency checks do not authenticate the header; callers need trusted outer authentication.
+		return (keyLength, originalLength, bodyLength);
 	}
 }
-

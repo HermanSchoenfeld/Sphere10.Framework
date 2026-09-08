@@ -11,7 +11,6 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Agreement;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
-using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Security;
 using Sphere10.Framework.CryptoEx.IES;
 using Sphere10.Framework.CryptoEx.PascalCoin;
@@ -23,6 +22,7 @@ public sealed class ECIES : IIESAlgorithm {
 	private static SecureRandom SecureRandom { get; } = new();
 
 	public byte[] Encrypt(ReadOnlySpan<byte> message, IPublicKey publicKey) {
+		Guard.ArgumentLTE(message.Length, PascalCoinIesEngine.MaxPlaintextLength, nameof(message), "PascalCoin supports messages of at most 32,000 bytes.");
 		// Encryption
 		var cipherEncrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
 		cipherEncrypt.Init(true, ((ECDSA.PublicKey)publicKey).Parameters, GetPascalCoinIesParameterSpec(), SecureRandom);
@@ -52,7 +52,8 @@ public sealed class ECIES : IIESAlgorithm {
 
 		// Set Up Block Cipher
 		var aesEngine = new AesEngine(); // AES Engine
-		BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CbcBlockCipher(aesEngine), new ZeroBytePadding()); // AES-256 CBC ZeroBytePadding
+		// PascalCoinIesEngine pads partial blocks and recovers the recorded original length.
+		var cipher = new BufferedBlockCipher(new CbcBlockCipher(aesEngine));
 
 		return new PascalCoinIesEngine(ecdhBasicAgreementInstance, kdfInstance, digestMacInstance, cipher);
 	}

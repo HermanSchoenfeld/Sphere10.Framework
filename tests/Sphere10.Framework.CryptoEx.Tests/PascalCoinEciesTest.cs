@@ -13,7 +13,6 @@ using Org.BouncyCastle.Crypto.Agreement;
 using Org.BouncyCastle.Crypto.EC;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
-using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
@@ -80,9 +79,7 @@ public class PascalCoinEciesTest {
 		// Set Up Block Cipher
 		AesEngine aesEngine = new AesEngine(); // AES Engine
 
-		BufferedBlockCipher cipher =
-			 new PaddedBufferedBlockCipher(new CbcBlockCipher(aesEngine),
-				 new ZeroBytePadding()); // AES-256 CBC ZeroBytePadding
+		var cipher = new BufferedBlockCipher(new CbcBlockCipher(aesEngine)); // The PascalCoin engine handles zero padding.
 
 		return new PascalCoinIesEngine(ecdhBasicAgreementInstance, kdfInstance,
 			 digestMacInstance, cipher);
