@@ -8,8 +8,8 @@
 
 
 using System;
-using System.IO;
-using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -26,8 +26,8 @@ public static class UrlShortner {
 			provider);
 
 		var address = new Uri(uriString);
-		var client = new System.Net.WebClient();
-		return await client.DownloadStringTaskAsync(address);
+		using var client = new HttpClient();
+		return await client.GetStringAsync(address);
 	}
 	public static string TinyUrl(string url, string apiKey, string provider = "0_mk") {
 		//string yourUrl = "http://your-site.com/your-url-for-minification";
@@ -40,23 +40,16 @@ public static class UrlShortner {
 			provider);
 
 		var address = new Uri(uriString);
-		var client = new System.Net.WebClient();
-		return client.DownloadString(address);
+		using var client = new HttpClient();
+		return client.GetStringAsync(address).ResultSafe();
 	}
 	public static async Task<string> GoogleAsync(string url, string apiKey) {
-		var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://www.googleapis.com/urlshortener/v1/url?key=" + apiKey);
-		httpWebRequest.ContentType = "application/json";
-		httpWebRequest.Method = "POST";
-
-		using (var streamWriter = new StreamWriter(await httpWebRequest.GetRequestStreamAsync())) {
-			var json = "{\"longUrl\":\"" + url + "\",\"key\":\"" + apiKey + "\"}";
-			await streamWriter.WriteAsync(json);
-		}
-		string responseJson = null;
-		var httpResponse = (HttpWebResponse)await httpWebRequest.GetResponseAsync();
-		using (var streamReader = new StreamReader(httpResponse.GetResponseStream())) {
-			responseJson = await streamReader.ReadToEndAsync();
-		}
+		using var client = new HttpClient();
+		var json = "{\"longUrl\":\"" + url + "\",\"key\":\"" + apiKey + "\"}";
+		using var content = new StringContent(json, Encoding.UTF8, "application/json");
+		using var response = await client.PostAsync("https://www.googleapis.com/urlshortener/v1/url?key=" + apiKey, content);
+		response.EnsureSuccessStatusCode();
+		var responseJson = await response.Content.ReadAsStringAsync();
 
 		/* {
 			 "kind": "urlshortener#url",
@@ -80,19 +73,12 @@ public static class UrlShortner {
 
 	}
 	public static string Google(string url, string apiKey) {
-		var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://www.googleapis.com/urlshortener/v1/url?key=" + apiKey);
-		httpWebRequest.ContentType = "application/json";
-		httpWebRequest.Method = "POST";
-
-		using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream())) {
-			var json = "{\"longUrl\":\"" + url + "\",\"key\":\"" + apiKey + "\"}";
-			streamWriter.Write(json);
-		}
-		string responseJson = null;
-		var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-		using (var streamReader = new StreamReader(httpResponse.GetResponseStream())) {
-			responseJson = streamReader.ReadToEnd();
-		}
+		using var client = new HttpClient();
+		var json = "{\"longUrl\":\"" + url + "\",\"key\":\"" + apiKey + "\"}";
+		using var content = new StringContent(json, Encoding.UTF8, "application/json");
+		using var response = client.PostAsync("https://www.googleapis.com/urlshortener/v1/url?key=" + apiKey, content).ResultSafe();
+		response.EnsureSuccessStatusCode();
+		var responseJson = response.Content.ReadAsStringAsync().ResultSafe();
 
 		/* {
 			 "kind": "urlshortener#url",

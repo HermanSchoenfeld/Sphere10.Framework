@@ -142,7 +142,6 @@ public static class Mail {
 		var smtpClient = new SmtpClient(smtpServer, port.Value);
 		if (requiresSSL) {
 			smtpClient.EnableSsl = true;
-			ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 		}
 		if (requiresLogon) {
 			smtpClient.UseDefaultCredentials = false;
@@ -213,7 +212,6 @@ public static class Mail {
 		var smtpClient = new SmtpClient(smtpServer, port.Value);
 		if (requiresSSL) {
 			smtpClient.EnableSsl = true;
-			ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 		}
 
 		if (requiresLogon) {

@@ -1725,3 +1725,19 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 ## Device hook cleanup
 
 `BaseDeviceHook.Dispose()` retains its public virtual signature and now delegates to `Dispose(true)` before suppressing finalization. The finalizer calls the protected virtual `Dispose(false)` cleanup hook directly, so public disposal overrides and their managed event callbacks are not invoked by finalization. Derived hooks that require cleanup during finalization should override `Dispose(bool disposing)`, restrict managed-resource work to `disposing == true`, and call the base implementation. Base hook cleanup is idempotent.
+
+## Default encryption and network compatibility
+
+Default text/file compression and the non-generic `Tools.Streams.Encrypt` / `Decrypt` overloads use `Aes.Create()`. The generic algorithm overloads remain available. AES key/block sizes, CBC/PKCS7 defaults, existing password derivation and the IV-prefixed encrypted format are retained; historical compressed data remains readable. `SystemCRNG` uses the platform cryptographic random-number factory.
+
+`Tools.Mail.SendEmail` and `SendEmailAsync` enable SMTP TLS when requested and use normal certificate validation. They no longer install a process-wide callback that accepts every certificate. With the default application policy, SMTP servers must present a certificate trusted by the host and valid for the server name. The helpers preserve any certificate policy installed by the application.
+
+`UrlShortner` uses `HttpClient` for its existing sync/async HTTP operations. Provider URLs and response parsing are retained; this transport update does not guarantee that a legacy external provider is still available.
+
+### SMTP and URL provider verification
+
+The SMTP sync and async helpers were exercised against a local SMTP server, including real STARTTLS negotiation, synthetic message delivery under an explicitly pinned test certificate, rejection of an untrusted certificate under the default policy, and rejection when a server does not offer STARTTLS. The test certificate is trusted only inside the isolated test process; no operating-system trust store is changed. This does not verify delivery through a particular external mail provider or its authentication requirements.
+
+`requiresSSL: true` uses STARTTLS, not implicit TLS. Supply the provider's STARTTLS port explicitly (typically `port: Tools.Mail.SMTPSubmissionPort`, 587). The existing omitted-port default remains 465, which is normally used for implicit TLS and is incompatible with `System.Net.Mail.SmtpClient`. See [Microsoft's supported SMTP TLS modes](https://learn.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient.enablessl?view=net-10.0).
+
+`UrlShortner.Google` and `GoogleAsync` target an API that [Google discontinued on March 30, 2019](https://developers.googleblog.com/transitioning-google-url-shortener-to-firebase-dynamic-links/). Updating the HTTP client cannot restore that service. `TinyUrl` and `TinyUrlAsync` target the third-party `tiny-url.info` service, not `tinyurl.com`; live shortening remains unverified without a supported service and credentials.
