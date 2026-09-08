@@ -119,6 +119,20 @@ var ciphertext2 = ecdsa.IES.Encrypt(plaintext, publicKey);
 Console.WriteLine(ciphertext.SequenceEqual(ciphertext2));  // false
 ```
 
+### PascalCoin ECIES Compatibility
+
+`ECDSA.IES` writes the original PascalCoin OpenSSL ECIES format for messages from 0 through 32,000 bytes; larger messages are rejected. It retains ECDH, SHA-512 key derivation, AES-256-CBC with a zero IV, HMAC-MD5 over the ciphertext, and the six-byte PascalCoin header. This is a compatibility correction to the existing scheme.
+
+Encryption zero-fills a partial AES block and adds no extra block when the message length is already a multiple of 16. Decryption uses the recorded original length to preserve every byte, including trailing zeros and all-zero messages. The reader also accepts older managed ciphertexts that include an extra zero block for an aligned message. Historical managed messages exceeding 32,000 bytes remain readable, including records whose 16-bit header lengths wrapped.
+
+**Reader migration:** upgrade managed readers before switching writers. Older readers infer the message length by stripping zero padding. When reading newly written native-format ciphertext, they can discard genuine trailing zeros from a message whose length is a multiple of 16.
+
+**Authentication limit:** the legacy ECIES MAC does not authenticate the original-length header. Successful decryption alone therefore does not establish the integrity of the exact returned message length. A verified PascalCoin transaction signature binds the complete encrypted payload, including this header; standalone `ECDSA.IES` calls do not verify an enclosing transaction or sender signature. Applications relying on exact message integrity must authenticate the complete encrypted envelope externally before trusting its plaintext.
+
+When constructing `PascalCoinIesEngine` directly, supply an unpadded `BufferedBlockCipher`, for example `new BufferedBlockCipher(new CbcBlockCipher(new AesEngine()))`. The engine now handles PascalCoin padding itself and rejects `PaddedBufferedBlockCipher`.
+
+See [PascalCoin ECIES issues and fixes](PascalCoin/ECIES-compatibility.md) for the compatibility defects and remaining native implementation issues.
+
 ### Multiple Elliptic Curves
 
 ```csharp

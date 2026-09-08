@@ -22,6 +22,7 @@ namespace Sphere10.Framework.CryptoEx.PascalCoin;
 /// <remarks>
 /// The supplied block cipher must not add or remove padding. The legacy MAC authenticates the
 /// ciphertext body, not the header; original-length recovery does not authenticate that length.
+/// See <see href="ECIES-compatibility.md"/> beside this file for the known issues, fixes and migration requirements.
 /// </remarks>
 public class PascalCoinIesEngine : CustomIesEngine {
 	private const int _secureHeadSize = 6;
