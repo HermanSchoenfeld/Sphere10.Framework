@@ -30,7 +30,7 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 - **Platform Support**: Windows, Linux, macOS, iOS, Android
 - **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
 - **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
-- **Maturity**: Production-ready (v3.1.0) with battle-tested core subsystems
+- **Maturity**: Production-ready (v3.1.1) with battle-tested core subsystems
 
 ## 📦 Installation
 

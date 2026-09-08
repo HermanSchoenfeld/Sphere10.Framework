@@ -4,6 +4,12 @@ The [Build workflow](workflows/main.yml) runs one Windows job named `build_and_t
 
 There are no discovery, partitioning, or reporting scripts, no compiled-test handoff, and no per-test watchdog. The workflow uses GitHub's default job timeout. Test failures and test-host crashes fail the job through the test runner's exit code.
 
+## Build versions
+
+The release version is `VersionPrefix` in `Directory.Build.props`. The build command passes `github.run_number` as `BuildRevision`, giving binaries a four-part file version such as `3.1.1.114`. Informational version carries that version plus the SDK's source revision metadata. NuGet package version stays `3.1.1` and assembly identity stays `3.1.1.0`.
+
+[GitHub's workflow run number](https://docs.github.com/en/actions/reference/workflows-and-actions/variables) increases with each new run and stays the same when retrying that run. It continues across releases rather than restarting at one. Local builds default to revision zero; append `-p:BuildRevision=1` to the build command to produce `3.1.1.1`. No scripts or source-file updates are needed during CI.
+
 ## Seeing failures and test output
 
 Open the workflow run, select `build_and_test`, then expand **Run unit tests**. The detailed console logger shows test names, failure messages, expected/actual values, stack traces, and test output directly in the GitHub log. NUnit standard output is enabled. Nothing redirects this output to a server-side log file.

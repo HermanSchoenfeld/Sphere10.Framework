@@ -14,11 +14,14 @@
     <IsPackable>false</IsPackable>
     
     <!-- Version Management -->
-    <Version>3.1.0</Version>
-    <VersionPrefix>3.1.0</VersionPrefix>
-    <AssemblyVersion>3.1.0</AssemblyVersion>
-    <FileVersion>3.1.0</FileVersion>
-    <InformationalVersion>3.1.0</InformationalVersion>
+    <VersionPrefix>3.1.1</VersionPrefix>
+    <Version>$(VersionPrefix)</Version>
+    <!-- CI supplies the fourth component; local builds default to zero. -->
+    <BuildRevision Condition="'$(BuildRevision)' == ''">0</BuildRevision>
+    <!-- Keep assembly identity stable across builds of the same release. -->
+    <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
+    <FileVersion>$(VersionPrefix).$(BuildRevision)</FileVersion>
+    <InformationalVersion>$(FileVersion)</InformationalVersion>
 
     <!-- Build Configuration -->
     <LangVersion>latest</LangVersion>

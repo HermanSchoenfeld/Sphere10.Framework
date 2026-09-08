@@ -4,7 +4,7 @@
   <img  src="resources/branding/sphere-10-framework-logo.jpg" alt="Sphere10 Framework logo">
 </p>
 
-![Version](https://img.shields.io/badge/version-3.1.0-blue)
+![Version](https://img.shields.io/badge/version-3.1.1-blue)
 [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework)
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![License](https://img.shields.io/badge/license-MIT%20NON--AI-green)
@@ -63,7 +63,7 @@ dotnet add package Sphere10.Framework.Communications
 
 ### Building and publishing packages
 
-Use Windows with the .NET 10 SDK to build the full package set. Set the intended release version in the shared `Version`, `VersionPrefix`, `AssemblyVersion`, `FileVersion`, and `InformationalVersion` fields in [Directory.Build.props](Directory.Build.props). For prereleases, keep the assembly and file versions numeric. Use a new package version for each release; published versions cannot be overwritten.
+Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.1.114`. Local builds default to `3.1.1.0`; override with `-p:BuildRevision=1` for `3.1.1.1`. The NuGet version remains `3.1.1`, and assembly identity remains `3.1.1.0` across builds. For prerelease packages, pass `-p:Version=3.1.1-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
 
 From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It replaces `nuget-packages`, stops on command failure, and reports success only after packing completes. Packing does not run tests. After a successful pack, run `./publish.ps1 -WhatIf` to inspect the package list, then [publish.ps1](publish.ps1) to publish. The publisher prompts for the NuGet API key with hidden input and requires typing `publish` to continue.
 

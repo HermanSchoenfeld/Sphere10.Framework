@@ -25,7 +25,7 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Build solution
-        run: dotnet build "./src/Sphere10.Framework (CrossPlatform).sln" --configuration Debug --verbosity minimal
+        run: dotnet build "./src/Sphere10.Framework (CrossPlatform).sln" --configuration Debug --verbosity minimal -p:BuildRevision=${{ github.run_number }}
       - name: Run unit tests
         run: >-
           dotnet test "./src/Sphere10.Framework (CrossPlatform).sln"
