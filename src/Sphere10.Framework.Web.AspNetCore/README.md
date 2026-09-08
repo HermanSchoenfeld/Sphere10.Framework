@@ -279,7 +279,7 @@ public class ProductController : Controller {
 ## ✅ Status & Compatibility
 
 - **Maturity**: Production-ready for web applications and APIs
-- **.NET Target**: .NET 8.0+ (primary), .NET 6.0+ (compatible)
+- **.NET Target**: .NET 10 (`net10.0`)
 - **Platform Support**: Cross-platform (Windows, Linux, macOS)
 
 ## 📖 Related Projects

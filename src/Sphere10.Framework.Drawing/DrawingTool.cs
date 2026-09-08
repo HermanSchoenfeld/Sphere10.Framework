@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.Versioning;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -131,6 +132,7 @@ public partial class Drawing {
 		return Color.FromArgb(solid ? 255 : Tools.Maths.RNG.Next(256), Tools.Maths.RNG.Next(256), Tools.Maths.RNG.Next(256));
 	}
 
+	[SupportedOSPlatform("windows6.1")]
 	public static bool IsRecognisedImageFile(string fileName) {
 		string targetExtension = Path.GetExtension(fileName);
 		if (String.IsNullOrEmpty(targetExtension))
@@ -151,6 +153,7 @@ public partial class Drawing {
 	/// </summary>
 	/// <param name="mimeType">String: Mimetype</param>
 	/// <returns>ImageCodecInfo: Mime info or null if not found</returns>
+	[SupportedOSPlatform("windows")]
 	public static ImageCodecInfo GetEncoderInfo(String mimeType) {
 		var encoders = ImageCodecInfo.GetImageEncoders();
 		return encoders.FirstOrDefault(t => t.MimeType == mimeType);
@@ -163,6 +166,7 @@ public partial class Drawing {
 	/// <param name="image">Image to save</param>
 	/// <param name="fileName">File name to save the image as. Note: suffix will not affect mime type which will be Jpeg.</param>
 	/// <param name="compression">Value between 0 and 100.</param>
+	[SupportedOSPlatform("windows")]
 	public static void SaveJpegWithCompression(Image image, string fileName, int compression) {
 		if (!(0 <= compression && compression <= 100))
 			throw new ArgumentOutOfRangeException("compression", "Must be between 0 and 100");
@@ -180,6 +184,7 @@ public partial class Drawing {
 	/// <param name="image">Image to save</param>
 	/// <param name="stream">The stream where the image will be saved.</param>
 	/// <param name="compression">Value between 0 and 100.</param>
+	[SupportedOSPlatform("windows")]
 	public static void SaveJpegWithCompression(Image image, Stream stream, int compression) {
 		if (!(0 <= compression && compression <= 100))
 			throw new ArgumentOutOfRangeException("compression", "Must be between 0 and 100");
@@ -190,12 +195,14 @@ public partial class Drawing {
 		image.Save(stream, ici, eps);
 	}
 
+	[SupportedOSPlatform("windows")]
 	public static bool TryGetImageFormatFromHeader(string filePath, out ImageFormat imageFormat) {
 		using (var fileStream = new FileStream(filePath, FileMode.Open)) {
 			return TryGetImageFormatFromHeader(fileStream, out imageFormat);
 		}
 	}
 
+	[SupportedOSPlatform("windows")]
 	public static bool TryGetImageFormatFromHeader(Stream imageStream, out ImageFormat imageFormat) {
 		const int mostBytesNeeded = 11; //For JPEG
 		imageFormat = null;
@@ -205,7 +212,8 @@ public partial class Drawing {
 		}
 
 		var headerBytes = new byte[mostBytesNeeded];
-		imageStream.Read(headerBytes, 0, mostBytesNeeded);
+		if (imageStream.ReadAtLeast(headerBytes, mostBytesNeeded, throwOnEndOfStream: false) != mostBytesNeeded)
+			return false;
 
 		//Sources:
 		//http://stackoverflow.com/questions/9354747
@@ -272,6 +280,7 @@ public partial class Drawing {
 		return false;
 	}
 
+	[SupportedOSPlatform("windows")]
 	public static bool TryGetImageFormatFromFilenameExtension(string filePath, out ImageFormat imageFormat) {
 		string extension = Path.GetExtension(filePath);
 		if (string.IsNullOrEmpty(extension))
@@ -308,6 +317,7 @@ public partial class Drawing {
 		}
 	}
 
+	[SupportedOSPlatform("windows")]
 	public static bool TryGetFileExtensionFromImageFormat(ImageFormat format, out string extension) {
 		extension = null;
 		var encoders = ImageCodecInfo.GetImageEncoders().ToArray();
@@ -329,6 +339,7 @@ public partial class Drawing {
 		return false;
 	}
 
+	[SupportedOSPlatform("windows")]
 	public static Icon Resizeicon(Icon icon, int squareDimension) {
 		return new Icon(icon, new Size(squareDimension, squareDimension));
 	}
@@ -339,6 +350,7 @@ public partial class Drawing {
 	/// <param name="image">The image to convert</param>
 	/// <param name="background">The Color of the background behind the image. The background parameter is used to calculate the fill color of the disabled image so that it is always visible against the background.</param>
 	/// <returns></returns>
+	[SupportedOSPlatform("windows")]
 	public static Image CreateDisabledImage(Image image, Color background) {
 		if (image == null)
 			return null;

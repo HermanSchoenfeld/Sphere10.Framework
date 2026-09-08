@@ -4,7 +4,7 @@
 
 **Unified 2D graphics abstraction layer** providing drawing utilities, color manipulation, image processing, and shape rendering for Windows desktop and cross-platform applications.
 
-Sphere10.Framework.Drawing enables **platform-agnostic graphics operations** through a high-level abstraction over GDI+, with utilities for color gradients, image manipulation, geometric transformations, and visual effects.
+Color and rectangle geometry helpers can be used across platforms. Image, icon, graphics-path, codec, and GDI+ drawing operations depend on Windows through System.Drawing.Common and declare that requirement with SupportedOSPlatform attributes. Image-header detection handles streams that return fewer bytes per read.
 
 ## 📦 Installation
 
@@ -271,7 +271,7 @@ Console.WriteLine($"Thumbnail: {thumb}");
 ## 📦 Dependencies
 
 - **Sphere10 Framework**: Core framework
-- **System.Drawing.Common**: .NET graphics abstraction (.NET built-in)
+- **System.Drawing.Common**: Windows image loading and GDI+ drawing APIs, supplied as a NuGet package
 - **System.Drawing.Primitives**: Primitive types (Point, Size, Rectangle)
 
 ## ⚠️ Best Practices
@@ -286,8 +286,8 @@ Console.WriteLine($"Thumbnail: {thumb}");
 ## ✅ Status & Compatibility
 
 - **Maturity**: Production-tested, stable for desktop applications
-- **.NET Target**: .NET 8.0+ (primary), .NET Framework 4.7+ (legacy)
-- **Platform Support**: Windows primary; limited cross-platform via System.Drawing.Common
+- **.NET Target**: .NET 10 (`net10.0`)
+- **Platform Support**: Color and geometry helpers are cross-platform; image loading and GDI+ drawing require Windows, including with System.Drawing.Common 11.
 - **Performance**: Resizing is CPU-intensive; cache results when possible
 
 ## 📖 Related Projects

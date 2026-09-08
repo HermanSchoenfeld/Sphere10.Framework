@@ -11,9 +11,11 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Runtime.Versioning;
 
 namespace Sphere10.Framework;
 
+[SupportedOSPlatform("windows")]
 public static class GraphicsExtensions {
 
 	public static void DrawCircle(this Graphics g, Pen pen, int x, int y, int radius) {

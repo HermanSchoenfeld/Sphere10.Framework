@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -8,9 +8,11 @@
 
 using System.IO;
 using System.Drawing;
+using System.Runtime.Versioning;
 
 namespace Sphere10.Framework;
 
+[SupportedOSPlatform("windows")]
 public static class DrawingByteArrayExtensions {
 
 	/// <summary>

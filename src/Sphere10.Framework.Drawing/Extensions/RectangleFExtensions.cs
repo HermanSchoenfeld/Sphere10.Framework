@@ -8,6 +8,7 @@
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.Versioning;
 
 namespace Sphere10.Framework;
 
@@ -225,6 +226,7 @@ public static class RectangleFExtensions {
 
 	#region Misc
 
+	[SupportedOSPlatform("windows")]
 	public static GraphicsPath GetRoundPath(this RectangleF r, float depth) {
 		GraphicsPath graphPath = new GraphicsPath();
 		graphPath.AddArc(r.X, r.Y, depth, depth, 180, 90);

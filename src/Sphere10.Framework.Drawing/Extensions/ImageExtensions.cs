@@ -11,9 +11,11 @@ using System.Drawing;
 using System.IO;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Runtime.Versioning;
 
 namespace Sphere10.Framework;
 
+[SupportedOSPlatform("windows")]
 public static class ImageExtensions {
 
 	static public Bitmap Copy(this Image srcImage, Rectangle section) {

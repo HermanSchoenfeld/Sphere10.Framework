@@ -81,7 +81,7 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
 
 		// EnsureSystemDataDirGloballyAccessibleInitializer
-		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)) {
+		if (OperatingSystem.IsWindows() && Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)) {
 			serviceCollection.AddInitializer<Sphere10.Framework.NET.EnsureSystemDataDirGloballyAccessibleInitializer>();
 		}
 	}

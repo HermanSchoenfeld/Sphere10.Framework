@@ -8,10 +8,12 @@
 
 using System;
 using System.Drawing;
+using System.Runtime.Versioning;
 
 
 namespace Sphere10.Framework;
 
+[SupportedOSPlatform("windows")]
 public static class IconExtensions {
 
 	public static Bitmap ToBitmap(this Icon icon, int width, int height) {

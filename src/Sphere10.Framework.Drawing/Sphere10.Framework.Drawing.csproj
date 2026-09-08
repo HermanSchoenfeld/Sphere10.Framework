@@ -4,7 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Description>Unified 2D graphics abstraction layer providing drawing utilities, color manipulation, image processing, and shape rendering for desktop and cross-platform applications. Includes platform-agnostic graphics helpers over GDI+ with support for gradients, geometric utilities, and common visual effects.</Description>
+		<Description>Drawing utilities with cross-platform color and geometry helpers, plus Windows image processing and GDI+ rendering. Includes gradients, geometric utilities, and common visual effects.</Description>
 		<PackageTags>sphere10 framework drawing graphics</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

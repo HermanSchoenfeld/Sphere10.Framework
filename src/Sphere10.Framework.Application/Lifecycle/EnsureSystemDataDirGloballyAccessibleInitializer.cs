@@ -9,10 +9,12 @@
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Runtime.Versioning;
 using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.NET;
 
+[SupportedOSPlatform("windows")]
 public class EnsureSystemDataDirGloballyAccessibleInitializer : ApplicationInitializerBase {
 
 	public override int Priority => -1;

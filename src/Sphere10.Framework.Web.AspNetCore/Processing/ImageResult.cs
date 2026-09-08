@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace Sphere10.Framework.Web.AspNetCore;
 /// <summary>
 /// Streams an Image into the output stream
 /// </summary>
+[SupportedOSPlatform("windows")]
 public class ImageResult : ActionResult {
 
 	public Image Image { get; set; }
