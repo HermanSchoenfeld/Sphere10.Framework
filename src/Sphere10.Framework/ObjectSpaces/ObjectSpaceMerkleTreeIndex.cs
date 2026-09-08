@@ -91,7 +91,9 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 
 	}
 
-	public void VerifyIntegrity() {
+	public override void VerifyIntegrity() {
+		base.VerifyIntegrity();
+
 		// re-compute spatial root from dimensional merkle tree roots
 		var dimensionRoots = new List<byte[]>();
 		for (var i = 0; i < _objectSpace.Dimensions.Count; i++) {
@@ -118,7 +120,6 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		if (!ByteArrayEqualityComparer.Instance.Equals(MerkleTree.Root, calculatedRoot))
 			throw new InvalidDataException($"ObjectSpace merkle-tree root did not match roots of dimension trees");
 
-		// NOTE: the checking of spatial-tree root matches the stream mapped property root is done by Inner.Attach() -> VerifyIntegrity()
 	}
 
 

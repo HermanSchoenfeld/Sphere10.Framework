@@ -53,5 +53,46 @@ public class MerkleizedTests {
 		Assert.That(spaceRoot, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { accountRoot, identityRootForSpatial }, chf)).Using(ByteArrayEqualityComparer.Instance));
 
 	}
-}
 
+	[Test]
+	public void IntegrityCheckThroughAttachmentRejectsCorruptHeaderRoot() {
+		using var objectSpace = TestsHelper.CreateObjectSpace(TestTraits.MemoryMapped | TestTraits.Merklized);
+		objectSpace.Flush();
+		using var access = objectSpace.EnterAccessScope();
+		var digestSize = Hashers.GetDigestSizeBytes(objectSpace.Definition.HashFunction);
+		var rootProperty = objectSpace.Streams.Header.MapExtensionProperty(0, sizeof(bool) + digestSize, new ConstantSizeNullableByteArraySerializer(digestSize));
+		var originalRoot = rootProperty.Value;
+		using var restore = Tools.Scope.ExecuteOnDispose(() => {
+			rootProperty.Value = originalRoot;
+			objectSpace.Streams.Header.FlushCache();
+		});
+		var corruptRoot = (byte[])originalRoot.Clone();
+		corruptRoot[0] ^= 1;
+		rootProperty.Value = corruptRoot;
+		objectSpace.Streams.Header.FlushCache();
+		IClusteredStreamsAttachment attachment = objectSpace.Streams.Attachments[Sphere10FrameworkDefaults.DefaultSpatialMerkleTreeIndexName];
+
+		Assert.That(() => attachment.VerifyIntegrity(), Throws.TypeOf<InvalidOperationException>().With.Message.Contains("header root"));
+	}
+
+	[Test]
+	public void IntegrityCheckThroughAttachmentRejectsMismatchedDimensionRoot() {
+		using var objectSpace = TestsHelper.CreateObjectSpace(TestTraits.MemoryMapped | TestTraits.Merklized);
+		objectSpace.Flush();
+		using var access = objectSpace.EnterAccessScope();
+		var spatialIndex = (ObjectSpaceMerkleTreeIndex)objectSpace.Streams.Attachments[Sphere10FrameworkDefaults.DefaultSpatialMerkleTreeIndexName];
+		var storage = (MerkleTreeStorageAttachment)spatialIndex.MerkleTree;
+		var originalLeaf = storage.Leafs.Read(0);
+		using var restore = Tools.Scope.ExecuteOnDispose(() => {
+			storage.Leafs.Update(0, originalLeaf);
+			storage.Flush();
+		});
+		var corruptLeaf = (byte[])originalLeaf.Clone();
+		corruptLeaf[0] ^= 1;
+		storage.Leafs.Update(0, corruptLeaf);
+		storage.Flush();
+		IClusteredStreamsAttachment attachment = spatialIndex;
+
+		Assert.That(() => attachment.VerifyIntegrity(), Throws.TypeOf<InvalidOperationException>().With.Message.Contains("dimension 0"));
+	}
+}
