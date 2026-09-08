@@ -3,7 +3,6 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
 		<NoWarn>$(NoWarn);WFO1000</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>

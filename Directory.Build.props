@@ -22,7 +22,8 @@
 
     <!-- Build Configuration -->
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
+    <!-- Keep existing nullable annotations without requiring nullable-reference flow analysis. -->
+    <Nullable>annotations</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
 

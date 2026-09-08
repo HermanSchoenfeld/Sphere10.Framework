@@ -1,6 +1,6 @@
 ---
 name: code-style
-description: Baseline C# style for this repo — Egyptian braces, tabs, PascalCase locals, member ordering, file-scoped namespaces, license header. Apply to every code change.
+description: Baseline C# style for this repo — Egyptian braces, tabs, camelCase locals, member ordering, file-scoped namespaces, license header. Apply to every code change.
 ---
 
 # Code Style Skill
@@ -17,14 +17,15 @@ Apply these rules to every file you create or edit. Full rules live in [../../co
 - Base/sibling constructor calls (`: base(...)`, `: this(...)`) on the next line, tab-indented.
 
 ## Naming
-- PascalCase for types, methods, properties, non-private fields — **and for local variables and parameters**.
+- PascalCase for types, methods, properties, and non-private fields.
+- camelCase for local variables and parameters, including lambda, loop, and catch variables.
 - `_camelCase` for private fields.
 - Self-describing names; no cryptic abbreviations.
 
 ## Structure
 - File-scoped namespaces (`namespace X;`), following `CompanyName.Product.Tier.Domain` — not folder structure.
 - `ImplicitUsings` is disabled: add explicit `using` directives.
-- Nullable enabled; `LangVersion` latest.
+- `Nullable` is `annotations`; `LangVersion` is `latest`. Existing annotations are supported, but nullable-reference analysis warnings are disabled. Declare reference types without `?` annotations and do not use postfix null-forgiving `!` operators. Configure nullable-reference warning suppression in the project instead. Keep nullable value types when the API requires them.
 
 ## Member order in a class
 1. Events

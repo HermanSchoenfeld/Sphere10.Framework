@@ -1,0 +1,8 @@
+[*.cs]
+# Use camelCase for local variables and parameters across source, tests, and utilities.
+dotnet_naming_rule.locals_and_parameters_are_camel_case.severity = suggestion
+dotnet_naming_rule.locals_and_parameters_are_camel_case.symbols = locals_and_parameters
+dotnet_naming_rule.locals_and_parameters_are_camel_case.style = camel_case_style
+dotnet_naming_symbols.locals_and_parameters.applicable_kinds = local, parameter
+dotnet_naming_symbols.locals_and_parameters.applicable_accessibilities = *
+dotnet_naming_style.camel_case_style.capitalization = camel_case

@@ -18,9 +18,9 @@ Static utility classes live in the **global `Tools` namespace** so they're disco
 | `new Random()` / `RandomNumberGenerator` | `Tools.Crypto.GenerateCryptographicallyRandomBytes(n)` |
 | `Activator.CreateInstance` | `Tools.Reflection.ActivateWithCompatibleArgs` |
 
-Key tool classes: `Tools.Array`, `Tools.Collection`, `Tools.Crypto`, `Tools.Text`, `Tools.Enum`, `Tools.Values` (futures: `Tools.Values.Future.Explicit(...)`, `.Reloadable(...)`), `Tools.Lambda`/`Tools.Expression`, `Tools.Reflection`, `Tools.Runtime` (`IsDebugBuild`), `Tools.FileSystem`, `Tools.Stream`, `Tools.Scope`, `Tools.Sqlite`/`Tools.MSSQL`/`Tools.Firebird`, `Tools.NUnit` (test helpers).
+Key tool classes: `Tools.Array`, `Tools.Collection`, `Tools.Crypto`, `Tools.Text`, `Tools.Enum`, `Tools.Values` (futures: `Tools.Values.Future.Explicit(...)`, `.Reloadable(...)`), `Tools.Lambda`/`Tools.Expression`, `Tools.Reflection`, `Tools.Runtime` (`IsDebugBuild`), `Tools.FileSystem`, `Tools.Streams`, `Tools.Scope`, `Tools.Sqlite`/`Tools.MSSQL`/`Tools.Firebird`, `Tools.NUnit` (test helpers).
 
-`WinTool` is a separate static facade with `[ThreadStatic]` singletons (`Registry`, `Services`, `Security`, `Processes`, `Win32`).
+`Tools.Windows` is a separate static facade with `[ThreadStatic]` singletons (`Registry`, `Services`, `Security`, `Processes`, `Win32`).
 
 ## Adding a new tool
 1. Create a `static class` in `namespace Tools;` anywhere in the codebase — discovery is automatic via `Tools.` intellisense.

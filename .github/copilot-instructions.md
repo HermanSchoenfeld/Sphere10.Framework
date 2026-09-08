@@ -10,7 +10,7 @@ These are project-level instructions for GitHub Copilot when working in the Sphe
 
 ## Project Overview
 
-Sphere10 Framework is a .NET framework targeting **.NET 8** and **.NET Standard 2.1**. It provides foundational libraries for application development including data access, cryptography, communications, Windows utilities, and WinForms UI components.
+Sphere10 Framework targets **.NET 10** (`net10.0` / `net10.0-windows`), with **.NET Standard 2.1** for HashLib4CSharp and **.NET Standard 2.0** for source generators. It provides foundational libraries for application development including data access, cryptography, communications, Windows utilities, and WinForms UI components.
 
 ## Code Style
 
@@ -26,7 +26,7 @@ Sphere10 Framework is a .NET framework targeting **.NET 8** and **.NET Standard 
 ### Naming Conventions
 - **PascalCase** for all types, methods, properties, and non-private fields.
 - **`_camelCase`** (underscore prefix) for private fields.
-- **PascalCase** for local variables and parameters (this codebase uses Pascal-cased locals).
+- **camelCase** for local variables and parameters, including lambda, loop, and catch variables. Use `_camelCase` for private fields; keep types and public members PascalCase.
 - Use **self-describing names**; avoid short, cryptic, or abbreviated names.
 
 ### Namespaces
@@ -55,7 +55,7 @@ Inside a class, order members as:
 
 ## Build Settings
 - `LangVersion` is set to `latest`.
-- `Nullable` is enabled globally.
+- `Nullable` is set to `annotations` globally: existing nullable annotations remain supported, while nullable-reference analysis warnings are disabled. Declare reference types without `?` annotations and do not use postfix null-forgiving `!` operators. Configure nullable-reference warning suppression in the project instead. Nullable value types remain appropriate when required by the API.
 - `ImplicitUsings` is **disabled** — always add explicit `using` directives.
 
 ## Architecture Patterns
@@ -72,12 +72,12 @@ Static utility/tool classes live in the **`Tools`** global namespace so consumer
 - **`Tools.Reflection`** — type inspection, property access, activation.
 - **`Tools.Runtime`** — `IsDebugBuild`, framework version, OS detection.
 - **`Tools.FileSystem`** — temp files, read/write, directory management.
-- **`Tools.Stream`** — stream decorators, bounded streams, read/write all bytes.
+- **`Tools.Streams`** — stream decorators, bounded streams, read/write all bytes.
 - **`Tools.Scope`** — transactional scope management.
 - **`Tools.Sqlite`** / **`Tools.MSSQL`** / **`Tools.Firebird`** — database helpers.
 - **`Tools.NUnit`** — test utilities (e.g., 2D array formatting).
 
-`WinTool` is a **static facade** with `[ThreadStatic]` singleton properties (`Registry`, `Services`, `Security`, `Processes`, `Win32`) that return instance-based utility classes (e.g., `RegistryUtil`, `ServicesUtil`).
+`Tools.Windows` is a **static facade** with `[ThreadStatic]` singleton properties (`Registry`, `Services`, `Security`, `Processes`, `Win32`) that return instance-based utility classes (e.g., `RegistryUtil`, `ServicesUtil`).
 
 To add a new tool, create a `static class` in the `Tools` namespace anywhere in the codebase — it becomes discoverable via `Tools.` intellisense automatically.
 
