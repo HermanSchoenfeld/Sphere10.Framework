@@ -34,4 +34,9 @@
 		<ProjectReference Include="..\..\src\Sphere10.Framework.NUnit\Sphere10.Framework.NUnit.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework.Generators\Sphere10.Framework.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="../../pack.ps1" Link="Packaging/pack.ps1" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="../../publish.ps1" Link="Packaging/publish.ps1" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
 </Project>

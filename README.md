@@ -65,7 +65,17 @@ dotnet add package Sphere10.Framework.Communications
 
 Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.1.114`. Local builds default to `3.1.1.0`; override with `-p:BuildRevision=1` for `3.1.1.1`. The NuGet version remains `3.1.1`, and assembly identity remains `3.1.1.0` across builds. For prerelease packages, pass `-p:Version=3.1.1-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
 
-From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It replaces `nuget-packages`, stops on command failure, and reports success only after packing completes. Packing does not run tests. After a successful pack, run `./publish.ps1 -WhatIf` to inspect the package list, then [publish.ps1](publish.ps1) to publish. The publisher prompts for the NuGet API key with hidden input and requires typing `publish` to continue.
+From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It builds into a staging directory, verifies matching package and symbol files, then replaces the framework packages in `nuget-packages`. Failed builds leave the previous packages intact; unrelated files and packages are preserved. Packing does not run tests. Use `-OutputDirectory` to select a different destination.
+
+```powershell
+.\pack.ps1
+.\publish.ps1 -IncludeSymbols -WhatIf
+.\publish.ps1 -IncludeSymbols
+```
+
+[publish.ps1](publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
+
+The publisher accepts `-ApiKey`, reads `NUGET_API_KEY`, or prompts with hidden input. Ordinary publication asks for PowerShell confirmation; use `-Confirm:$false` for an automated run with credentials supplied. `-Source`, `-SymbolSource`, and `-PackagesDirectory` override the default feeds and package directory. Both scripts support Windows PowerShell 5.1 and PowerShell 7 and resolve default paths relative to the script location.
 
 ## :mag: Tools.* Namespace — Global Utility Discovery
 
