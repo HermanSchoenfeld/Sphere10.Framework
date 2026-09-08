@@ -1,4 +1,5 @@
 name: Build
+
 on:
   push:
   workflow_dispatch:
@@ -10,22 +11,13 @@ concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-defaults:
-  run:
-    shell: pwsh
-
-env:
-  GITHUB_ACTIONS: 'true'
-  DOTNET_NOLOGO: 'true'
-  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
-
 jobs:
-  build:
-    name: Build and discover tests
+  build_and_test:
     runs-on: windows-latest
-    timeout-minutes: 30
-    outputs:
-      matrix: ${{ steps.tests.outputs.matrix }}
+    env:
+      GITHUB_ACTIONS: 'true'
+      DOTNET_NOLOGO: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET 10 SDK
@@ -34,84 +26,18 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Build solution
         run: dotnet build "./src/Sphere10.Framework (CrossPlatform).sln" --configuration Debug --verbosity minimal
-      - name: Discover tests and create partitions
-        id: tests
-        run: ./.github/scripts/New-TestMatrix.ps1
-      - name: Upload compiled tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: compiled-tests
-          path: TestResults/ci-build/
-          if-no-files-found: error
-          retention-days: 14
-      - name: Preserve discovery diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-discovery
-          path: TestResults/ci-build/
-          if-no-files-found: ignore
-          retention-days: 7
-
-  test:
-    name: ${{ matrix.name }}
-    needs: build
-    runs-on: windows-latest
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      max-parallel: 8
-      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup .NET 10 SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-      - name: Download compiled tests
-        uses: actions/download-artifact@v4
-        with:
-          name: compiled-tests
-          path: TestResults/ci-build
-      - name: Run test partition
-        env:
-          TEST_ASSEMBLY: ${{ matrix.assembly }}
-          TEST_SHARD: ${{ matrix.shard }}
-          TEST_SHARD_COUNT: ${{ matrix.shardCount }}
+      - name: Run unit tests
         run: >-
-          ./.github/scripts/Invoke-TestShard.ps1
-          -Assembly "TestResults/ci-build/$env:TEST_ASSEMBLY"
-          -Shard $env:TEST_SHARD
-          -ShardCount $env:TEST_SHARD_COUNT
-          -ResultsDirectory TestResults/current
-      - name: Summarize test results
-        if: always()
-        env:
-          TEST_TITLE: ${{ matrix.name }}
-        run: ./.github/scripts/Write-TestSummary.ps1 -ResultsDirectory TestResults/current -Title $env:TEST_TITLE
-      - name: Upload test results and full logs
+          dotnet test "./src/Sphere10.Framework (CrossPlatform).sln"
+          --configuration Debug --no-build
+          --logger "console;verbosity=detailed"
+          --logger trx --results-directory TestResults
+          -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
+      - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.id }}
-          path: TestResults/current/
-          if-no-files-found: warn
+          name: test-results
+          path: TestResults/**/*.trx
+          if-no-files-found: ignore
           retention-days: 14
-
-  build_and_test:
-    # Keep the existing check name available for branch protection.
-    name: build_and_test
-    if: always()
-    needs: [build, test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Require build and every test partition to pass
-        shell: bash
-        env:
-          BUILD_RESULT: ${{ needs.build.result }}
-          TEST_RESULT: ${{ needs.test.result }}
-        run: |
-          if [[ "$BUILD_RESULT" != "success" || "$TEST_RESULT" != "success" ]]; then
-            echo "::error::Build or test partitions failed, were cancelled, or were skipped."
-            exit 1
-          fi
