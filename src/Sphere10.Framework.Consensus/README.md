@@ -239,4 +239,4 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 
 **Herman Schoenfeld** - Software Engineer
 
-
+`PeriodicStatistics` requires a positive period. `Start()` records the UTC start time, and events can then be registered against initialized statistics.

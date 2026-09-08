@@ -25,6 +25,10 @@ public class PeriodicStatistics {
 	}
 
 	public PeriodicStatistics(TimeSpan period, int historyLength, IList<Statistics> store) {
+		Guard.ArgumentNotNull(store, nameof(store));
+		Guard.Argument(period > TimeSpan.Zero, nameof(period), "Period must be positive.");
+		_period = period;
+		_currentPeriodStats = new Statistics();
 		_history = store;
 		_started = false;
 	}
@@ -45,6 +49,7 @@ public class PeriodicStatistics {
 
 	public void Start() {
 		CheckNotStarted();
+		_startedOn = DateTime.UtcNow;
 		_started = true;
 	}
 
