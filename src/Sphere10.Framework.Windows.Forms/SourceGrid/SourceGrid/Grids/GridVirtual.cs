@@ -2155,8 +2155,6 @@ public abstract class GridVirtual : CustomScrollControl {
 	//      http://msdn2.microsoft.com/en-us/library/7d3337xw.aspx
 	//      "How to: Create Mirrored Windows Forms and Controls"  http://msdn2.microsoft.com/en-us/library/xwbz5ws0.aspx
 
-	const int WS_EX_LAYOUTRTL = 0x400000;
-	const int WS_EX_NOINHERITLAYOUT = 0x100000;
 	private bool m_Mirrored = false;
 
 	[Description("Change the right-to-left layout."), DefaultValue(false),
@@ -2176,7 +2174,7 @@ public abstract class GridVirtual : CustomScrollControl {
 			CreateParams CP;
 			CP = base.CreateParams;
 			if (Mirrored)
-				CP.ExStyle = CP.ExStyle | WS_EX_LAYOUTRTL;
+				CP.ExStyle = CP.ExStyle | WinAPI.USER32.WS_EX_LAYOUTRTL;
 			return CP;
 		}
 	}

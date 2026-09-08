@@ -10,7 +10,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.IO;
 
-namespace Sphere10.Framework.Windows.Forms;
+namespace Sphere10.Framework.Windows;
 
 public class SoundPlayerEx : IDisposable {
 	private byte[] _bytesToPlay;
@@ -21,9 +21,8 @@ public class SoundPlayerEx : IDisposable {
 	}
 
 	public void LoadStream(Stream stream) {
-		byte[] bytesToPlay = new byte[stream.Length];
-		stream.Read(bytesToPlay, 0, (int)stream.Length);
-		this.BytesToPlay = bytesToPlay;
+		Guard.ArgumentNotNull(stream, nameof(stream));
+		BytesToPlay = Tools.Streams.ReadByteArray(stream, closeStream: false);
 	}
 
 	public void PlaySync() {

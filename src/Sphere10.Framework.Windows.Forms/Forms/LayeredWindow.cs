@@ -40,12 +40,7 @@ class LayeredWindow : Form {
 
 	public void UpdateWindow(Bitmap image, byte opacity, int width, int height, Point pos) {
 		if (image != null) {
-			IntPtr hdcWindow = WinAPI.USER32.GetWindowDC(this.Handle);
-			IntPtr hDC = WinAPI.GDI32.CreateCompatibleDC(hdcWindow);
-			IntPtr hBitmap = image.GetHbitmap(Color.FromArgb(0));
-			IntPtr hOld = WinAPI.GDI32.SelectObject(hDC, hBitmap);
 			Size size = new Size(0, 0);
-			Point zero = new Point(0, 0);
 
 			if (width == -1 || height == -1) {
 				//No width and height specified, use the size of the image
@@ -60,18 +55,7 @@ class LayeredWindow : Form {
 			m_rect.Size = size;
 			m_rect.Location = pos;
 
-			WinAPI.USER32.BLENDFUNCTION blend = new Windows.WinAPI.USER32.BLENDFUNCTION();
-			blend.BlendOp = (byte)WinAPI.USER32.BlendOps.AC_SRC_OVER;
-			blend.SourceConstantAlpha = opacity;
-			blend.AlphaFormat = (byte)WinAPI.USER32.BlendOps.AC_SRC_ALPHA;
-			blend.BlendFlags = (byte)WinAPI.USER32.BlendFlags.None;
-
-			WinAPI.USER32.UpdateLayeredWindow(this.Handle, hdcWindow, ref pos, ref size, hDC, ref zero, 0, ref blend, WinAPI.USER32.BlendFlags.ULW_ALPHA);
-
-			WinAPI.GDI32.SelectObject(hDC, hOld);
-			WinAPI.GDI32.DeleteObject(hBitmap);
-			WinAPI.GDI32.DeleteDC(hDC);
-			WinAPI.USER32.ReleaseDC(this.Handle, hdcWindow);
+			Tools.Windows.Win32.UpdateLayeredWindow(Handle, image, opacity, pos, size);
 		}
 	}
 

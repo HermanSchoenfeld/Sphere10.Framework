@@ -10,7 +10,6 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -32,11 +31,6 @@ public class ApplicationScreenTabControl : TabControl {
 	private const int LogicalDockPreviewCornerSize = 4;
 	private const int LogicalDockToolTipGap = 4;
 	private const int LogicalMinimumTabWidth = 64;
-	private const int NativeSetTabItem = 0x133D;
-	private const int NativeSetMinimumTabWidth = 0x1331;
-	private const int NativePaint = 0x000F;
-	private const int NativePrint = 0x0317;
-	private const int NativePrintClient = 0x0318;
 	private static readonly (Color BackColor, Color ForeColor) _defaultDockPreviewColors = GetDefaultDockPreviewColors();
 	private readonly ContextMenuStrip _tabMenu;
 	private readonly ToolTip _dockPreviewTip;
@@ -313,30 +307,29 @@ public class ApplicationScreenTabControl : TabControl {
 		return base.ProcessCmdKey(ref Message, KeyData);
 	}
 
-	protected override void WndProc(ref Message Message) {
-		const int LeftButtonUp = 0x0202;
-		if (Message.Msg != LeftButtonUp) {
-			base.WndProc(ref Message);
-			if (Message.Msg == NativeSetTabItem && !_updatingCaptions)
-				ApplyTabCaption((int)Message.WParam);
+	protected override void WndProc(ref Message message) {
+		if (message.Msg != WinAPI.USER32.WM_LBUTTONUP) {
+			base.WndProc(ref message);
+			if (message.Msg == WinAPI.COMCTL32.TCM_SETITEMW && !_updatingCaptions)
+				ApplyTabCaption((int)message.WParam);
 			if (DockPreviewVisible && IsHandleCreated && !Disposing && !IsDisposed) {
-				if (Message.Msg == NativePaint && _dockPreviewBounds.Width > 0 && _dockPreviewBounds.Height > 0) {
-					using var Surface = Graphics.FromHwnd(Handle);
-					using var Buffer = BufferedGraphicsManager.Current.Allocate(Surface, Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds));
-					DrawDockPreview(Buffer.Graphics);
-					Buffer.Render(Surface);
-				} else if ((Message.Msg == NativePrint || Message.Msg == NativePrintClient) && Message.WParam != IntPtr.Zero) {
-					using var Surface = Graphics.FromHdc(Message.WParam);
-					DrawDockPreview(Surface);
+				if (message.Msg == WinAPI.USER32.WM_PAINT && _dockPreviewBounds.Width > 0 && _dockPreviewBounds.Height > 0) {
+					using var surface = Graphics.FromHwnd(Handle);
+					using var buffer = BufferedGraphicsManager.Current.Allocate(surface, Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds));
+					DrawDockPreview(buffer.Graphics);
+					buffer.Render(surface);
+				} else if ((message.Msg == WinAPI.USER32.WM_PRINT || message.Msg == WinAPI.USER32.WM_PRINTCLIENT) && message.WParam != IntPtr.Zero) {
+					using var surface = Graphics.FromHdc(message.WParam);
+					DrawDockPreview(surface);
 				}
 			}
 			return;
 		}
 		// Native mouse-up handling can release capture before OnMouseUp commits the drag.
-		var WasCompletingDrag = _completingDrag;
+		var wasCompletingDrag = _completingDrag;
 		_completingDrag = true;
-		using var Completion = Tools.Scope.ExecuteOnDispose(() => _completingDrag = WasCompletingDrag);
-		base.WndProc(ref Message);
+		using var completion = Tools.Scope.ExecuteOnDispose(() => _completingDrag = wasCompletingDrag);
+		base.WndProc(ref message);
 	}
 
 	protected override void OnSelecting(TabControlCancelEventArgs Args) {
@@ -456,9 +449,9 @@ public class ApplicationScreenTabControl : TabControl {
 		if (!IsHandleCreated || Disposing || IsDisposed || _updatingCaptions)
 			return;
 		HideDockPreview();
-		WinAPI.USER32.SendMessage(Handle, NativeSetMinimumTabWidth, IntPtr.Zero, (IntPtr)ScaleMetric(LogicalMinimumTabWidth));
-		for (var Index = 0; Index < TabCount; Index++)
-			ApplyTabCaption(Index);
+		WinAPI.USER32.SendMessage(Handle, WinAPI.COMCTL32.TCM_SETMINTABWIDTH, IntPtr.Zero, (IntPtr)ScaleMetric(LogicalMinimumTabWidth));
+		for (var index = 0; index < TabCount; index++)
+			ApplyTabCaption(index);
 		Invalidate(TabStripBounds, false);
 	}
 
@@ -494,14 +487,9 @@ public class ApplicationScreenTabControl : TabControl {
 		string Ellipsize(int CharacterCount) => Title[..(CharacterCount == Characters.Length ? Title.Length : Characters[CharacterCount])] + "\u2026";
 	}
 
-	private void SetNativeCaption(int Index, string Caption) {
+	private void SetNativeCaption(int index, string caption) {
 		// Native captions interpret ampersands as mnemonics, while the owner-drawn title displays every ampersand literally.
-		var Item = new NativeTabItem { Mask = 1, Text = Caption.Replace("&", "&&", StringComparison.Ordinal) };
-		var Buffer = Marshal.AllocHGlobal(Marshal.SizeOf<NativeTabItem>());
-		using var Memory = Tools.Scope.ExecuteOnDispose(() => Marshal.FreeHGlobal(Buffer));
-		Marshal.StructureToPtr(Item, Buffer, false);
-		using var TextMemory = Tools.Scope.ExecuteOnDispose(() => Marshal.DestroyStructure<NativeTabItem>(Buffer));
-		WinAPI.USER32.SendMessage(Handle, NativeSetTabItem, (IntPtr)Index, Buffer);
+		Tools.Windows.Win32.SetTabCaption(Handle, index, caption.Replace("&", "&&", StringComparison.Ordinal));
 	}
 
 	private IDisposable EnterReorderScope() {
@@ -531,14 +519,4 @@ public class ApplicationScreenTabControl : TabControl {
 			ScreenUndockRequested?.Invoke(Screen);
 	}
 
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-	private struct NativeTabItem {
-		public uint Mask;
-		public uint State;
-		public uint StateMask;
-		[MarshalAs(UnmanagedType.LPWStr)] public string? Text;
-		public int TextLength;
-		public int Image;
-		public IntPtr Parameter;
-	}
 }

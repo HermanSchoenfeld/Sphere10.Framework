@@ -69,8 +69,6 @@ public class CHMHelpProvider : IHelpServices {
 			helpableObject.HelpTopicID.Value.ToString()
 		);
 
-		// Use this to adjust the screen size of the help window
-		// UserInterfaceServices.ExecuteInUIFriendlyContext( () => MoveHelpWindow(new Rectangle(0, 0, 300, 200)));
 	}
 
 	public void ShowHelp() {
@@ -80,31 +78,6 @@ public class CHMHelpProvider : IHelpServices {
 		);
 	}
 
-
-	// Use this to adjust the size of the help window 
-	// Borrowed from http://stackoverflow.com/questions/4819570/how-can-i-control-the-size-of-the-help-window-using-system-windows-forms-help-sh
-	//private static void MoveHelpWindow(Rectangle rc) {
-	//    EnumThreadWndProc callback = (hWnd, lp) => {
-	//        // Check if this is the help window
-	//        StringBuilder sb = new StringBuilder(260);
-	//        GetClassName(hWnd, sb, sb.Capacity);
-	//        if (sb.ToString() != "HH Parent") return true;
-	//        MoveWindow(hWnd, rc.Left, rc.Top, rc.Width, rc.Height, false);
-	//        return false;
-	//    };
-	//    foreach (ProcessThread pth in Process.GetCurrentProcess().Threads) {
-	//        EnumThreadWindows(pth.Id, callback, IntPtr.Zero);
-	//    }
-	//}
-
-	//// P/Invoke declarations
-	//private delegate bool EnumThreadWndProc(IntPtr hWnd, IntPtr lp);
-	//[DllImport("user32.dll")]
-	//private static extern bool EnumThreadWindows(int tid, EnumThreadWndProc callback, IntPtr lp);
-	//[DllImport("user32.dll")]
-	//private static extern int GetClassName(IntPtr hWnd, StringBuilder buffer, int buflen);
-	//[DllImport("user32.dll")]
-	//private static extern bool MoveWindow(IntPtr hWnd, int x, int y, int w, int h, bool repaint);
 
 }
 

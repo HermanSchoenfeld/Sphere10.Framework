@@ -14,6 +14,22 @@ namespace Sphere10.Framework.Windows;
 public static partial class WinAPI {
 
 	public static class COMCTL32 {
+		public const int TCM_SETITEMW = 0x133D;
+		public const int TCM_SETMINTABWIDTH = 0x1331;
+		public const uint TCIF_TEXT = 1;
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct TCITEM {
+			public uint Mask;
+			public uint State;
+			public uint StateMask;
+			[MarshalAs(UnmanagedType.LPWStr)]
+			public string Text;
+			public int TextLength;
+			public int Image;
+			public IntPtr Parameter;
+		}
+
 
 		/// <summary>
 		/// Receives dynamic-link library (DLL)-specific version information. 

@@ -449,7 +449,7 @@ For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-ref
 ## ✅ Status & Compatibility
 
 - **Maturity**: Production-tested for Windows system integration
-- **.NET Target**: .NET 8.0+ (Windows), .NET Framework 4.7+ (legacy)
+- **.NET Target**: .NET 10 (`net10.0`)
 - **Platform**: Windows only (uses Windows-specific APIs)
 - **Privileges**: Most operations require administrative elevation
 
@@ -470,3 +470,10 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 
 **Herman Schoenfeld** - Software Engineer
 
+## Native interop and utility ownership
+
+Native declarations, message constants, and layouts live in `WinAPI` in this package. Use `Tools.Windows.Win32` for native message structures, cursor handles, rich-edit formatting, tab captions, and layered-window rendering. The Windows package has no dependency on Windows Forms; controls supply their native handles to these helpers.
+
+`SoundPlayerEx` now lives in `Sphere10.Framework.Windows`. `WinAPI.USER32` owns `ICONINFO`, `MINMAXINFO`, icon/cursor functions, and window-message constants. `WinAPI.RICHEDIT` owns rich-edit constants and the Unicode `CHARFORMAT`/`FORMATRANGE` layouts; `WinAPI.COMCTL32` owns `TCITEM` and tab-message constants. `CreateCursorHandle` returns a native handle owned by the caller; release it with `WinAPI.USER32.DestroyCursor` when no longer used.
+
+The assembly declares its Windows platform requirement. Bitmap/GDI helpers additionally declare `windows6.1`, matching their `System.Drawing.Common` dependencies. Keyboard and mouse hooks now raise their existing `Disposed` event once during explicit disposal; finalization releases the native hook without raising managed disposal events. `SoundPlayerEx.LoadStream` reads from the current position to the end, supports nonseekable streams and short reads, and leaves the input stream open.

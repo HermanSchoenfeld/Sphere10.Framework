@@ -8,7 +8,6 @@
 
 using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
@@ -82,126 +81,13 @@ public class RichTextGDI : RichText {
 
 	#endregion
 
-	#region Win32Api Layout
+	/// <summary>Calculates or renders the rich-edit control into the supplied bitmap.</summary>
+	public int FormatRange(bool measureOnly, SourceGrid.DevAgeControls.DevAgeRichTextBox rtb, ref Bitmap b, int charFrom, int charTo)
+		=> Tools.Windows.Win32.FormatRichText(rtb.Handle, b, measureOnly, charFrom, charTo);
 
-	/// <summary>
-	/// Convert between 1/100 inch (unit used by the .NET framework)
-	/// and twips (1/1440 inch, used by Win32 API calls)
-	/// </summary>
-	/// <param name="n">Value in 1/100 inch</param>
-	/// <returns>Value in twips</returns>
-	private Int32 HundredthInchToTwips(float n) {
-		return (Int32)(n * 14.4);
-	}
-
-
-	[StructLayout(LayoutKind.Sequential)]
-	private struct STRUCT_RECT {
-		public int Left;
-		public int Top;
-		public int Right;
-		public int Bottom;
-	}
-
-
-	[StructLayout(LayoutKind.Sequential)]
-	private struct STRUCT_CHARRANGE {
-		public int cpMin; //First character of range (0 for start of doc)
-		public int cpMax; //Last character of range (-1 for end of doc)
-	}
-
-
-	[StructLayout(LayoutKind.Sequential)]
-	private struct STRUCT_FORMATRANGE {
-		public IntPtr hdc; //Actual DC to draw on
-		public IntPtr hdcTarget; //Target DC for determining text formatting
-		public STRUCT_RECT rc; //Region of the DC to draw to (in twips)
-		public STRUCT_RECT rcPage; //Region of the whole DC (page size) (in twips)
-		public STRUCT_CHARRANGE chrg; //Range of text to draw (see earlier declaration)
-	}
-
-
-	[DllImport("USER32.dll")]
-	private static extern Int32 SendMessage(IntPtr hWnd, Int32 msg, Int32 wParam, IntPtr lParam);
-	private const int WM_USER = 0x0400;
-	private const int EM_FORMATRANGE = WM_USER + 57;
-
-	/// <summary>
-	/// Calculate or render the contents of our RichTextBox for printing
-	/// </summary>
-	/// <param name="measureOnly">If true, only the calculation is performed,
-	/// otherwise the text is rendered as well</param>
-	/// <param name="b"></param>
-	/// <param name="rtb"></param>
-	/// <param name="charFrom">Index of first character to be printed</param>
-	/// <param name="charTo">Index of last character to be printed</param>
-	/// <returns>(Index of last character that fitted on the
-	/// page) + 1</returns>
-	//public int FormatRange(bool measureOnly, PrintPageEventArgs e, int charFrom, int charTo)
-	public int FormatRange(bool measureOnly, Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox rtb,
-	                       ref Bitmap b, int charFrom, int charTo) {
-		// Specify which characters to print
-		STRUCT_CHARRANGE cr;
-		cr.cpMin = charFrom;
-		cr.cpMax = charTo;
-
-		// Specify the area inside page margins
-		STRUCT_RECT rc;
-		rc.Top = HundredthInchToTwips(0);
-		rc.Bottom = HundredthInchToTwips(b.Height);
-		rc.Left = HundredthInchToTwips(0);
-		rc.Right = HundredthInchToTwips(b.Width);
-
-		// Specify the page area
-		STRUCT_RECT rcPage;
-		rcPage.Top = HundredthInchToTwips(0);
-		rcPage.Bottom = HundredthInchToTwips(b.Height);
-		rcPage.Left = HundredthInchToTwips(0);
-		rcPage.Right = HundredthInchToTwips(b.Width);
-
-		// Get device context of output device
-		Graphics g = Graphics.FromImage(b);
-		IntPtr hdc = g.GetHdc();
-
-		// Fill in the FORMATRANGE struct
-		STRUCT_FORMATRANGE fr;
-		fr.chrg = cr;
-		fr.hdc = hdc;
-		fr.hdcTarget = hdc;
-		fr.rc = rc;
-		fr.rcPage = rcPage;
-
-		// Non-Zero wParam means render, Zero means measure
-		Int32 wParam = (measureOnly ? 0 : 1);
-
-		// Allocate memory for the FORMATRANGE struct and
-		// copy the contents of our struct to this memory
-		IntPtr lParam = Marshal.AllocCoTaskMem(Marshal.SizeOf(fr));
-		Marshal.StructureToPtr(fr, lParam, false);
-
-		// Send the actual Win32 message
-		int res = SendMessage(rtb.Handle, EM_FORMATRANGE, wParam, lParam);
-
-		// Free allocated memory
-		Marshal.FreeCoTaskMem(lParam);
-
-		// and release the device context
-		g.ReleaseHdc(hdc);
-
-		g.Dispose();
-
-		return res;
-	}
-
-	/// <summary>
-	/// Free cached data from rich edit control after printing
-	/// </summary>
-	public void FormatRangeDone(Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox RTB) {
-		IntPtr lParam = new IntPtr(0);
-		SendMessage(RTB.Handle, EM_FORMATRANGE, 0, lParam);
-	}
-
-	#endregion
+	/// <summary>Releases native rich-edit formatting data after printing.</summary>
+	public void FormatRangeDone(SourceGrid.DevAgeControls.DevAgeRichTextBox rtb)
+		=> Tools.Windows.Win32.ReleaseRichTextFormat(rtb.Handle);
 
 	#region Draw
 

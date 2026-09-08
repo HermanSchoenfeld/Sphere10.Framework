@@ -24,9 +24,7 @@ public abstract class BaseDeviceHook : IDeviceHook {
 	}
 
 	~BaseDeviceHook() {
-		if (!Disposed) {
-			Dispose();
-		}
+		Dispose(false);
 	}
 
 	public bool ProcessAsyncronously { get; set; }
@@ -66,8 +64,16 @@ public abstract class BaseDeviceHook : IDeviceHook {
 	public abstract void UninstallHook();
 
 	public virtual void Dispose() {
-		Disposing = true;
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>Releases the hook without invoking public managed disposal callbacks during finalization.</summary>
+	protected virtual void Dispose(bool disposing) {
 		lock (_syncObject) {
+			if (Disposed)
+				return;
+			Disposing = true;
 			try {
 				StopHook();
 			} finally {

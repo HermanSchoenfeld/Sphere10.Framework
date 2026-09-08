@@ -174,6 +174,13 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 	}
 
 
+	public override void Dispose() {
+		if (base.Disposed)
+			return;
+		base.Dispose();
+		Disposed?.Invoke(this, EventArgs.Empty);
+	}
+
 	public ISite Site { get; set; }
 
 }

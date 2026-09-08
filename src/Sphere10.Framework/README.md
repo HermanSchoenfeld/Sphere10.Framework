@@ -1721,3 +1721,7 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 ## 👤 Author
 
 **Herman Schoenfeld** - Software Engineer
+
+## Device hook cleanup
+
+`BaseDeviceHook.Dispose()` retains its public virtual signature and now delegates to `Dispose(true)` before suppressing finalization. The finalizer calls the protected virtual `Dispose(false)` cleanup hook directly, so public disposal overrides and their managed event callbacks are not invoked by finalization. Derived hooks that require cleanup during finalization should override `Dispose(bool disposing)`, restrict managed-resource work to `disposing == true`, and call the base implementation. Base hook cleanup is idempotent.

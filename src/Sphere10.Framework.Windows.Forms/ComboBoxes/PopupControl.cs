@@ -8,7 +8,7 @@
 
 using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
+using static Sphere10.Framework.Windows.WinAPI.USER32;
 using System.Security.Permissions;
 using System.Windows.Forms;
 
@@ -326,48 +326,6 @@ public class PopupDropDown : ToolStripDropDown {
 
 	#region Win32 message processing
 
-	#region Win32 stuff
-
-	protected const int WM_GETMINMAXINFO = 0x0024;
-	protected const int WM_NCHITTEST = 0x0084;
-
-	protected const int HTTRANSPARENT = -1;
-	protected const int HTLEFT = 10;
-	protected const int HTRIGHT = 11;
-	protected const int HTTOP = 12;
-	protected const int HTTOPLEFT = 13;
-	protected const int HTTOPRIGHT = 14;
-	protected const int HTBOTTOM = 15;
-	protected const int HTBOTTOMLEFT = 16;
-	protected const int HTBOTTOMRIGHT = 17;
-
-
-	[StructLayout(LayoutKind.Sequential)]
-	internal struct MINMAXINFO {
-		public Point reserved;
-		public Size maxSize;
-		public Point maxPosition;
-		public Size minTrackSize;
-		public Size maxTrackSize;
-	}
-
-
-	protected static int HIWORD(int n) {
-		return (n >> 16) & 0xffff;
-	}
-	protected static int HIWORD(IntPtr n) {
-		return HIWORD(unchecked((int)(long)n));
-	}
-	protected static int LOWORD(int n) {
-		return n & 0xffff;
-	}
-	protected static int LOWORD(IntPtr n) {
-		return LOWORD(unchecked((int)(long)n));
-	}
-
-	#endregion
-
-	[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 	protected override void WndProc(ref Message m) {
 		if (!ProcessGrip(ref m, false))
 			base.WndProc(ref m);
@@ -378,12 +336,9 @@ public class PopupDropDown : ToolStripDropDown {
 	/// </summary>
 	/// <param name="m">The message.</param>
 	/// <returns>true, if the WndProc method from the base class shouldn't be invoked.</returns>
-	[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 	public bool ProcessGrip(ref Message m) {
 		return ProcessGrip(ref m, true);
 	}
-
-	[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 	private bool ProcessGrip(ref Message m, bool contentControl) {
 		if (ResizeMode != PopupResizeMode.None) {
 			switch (m.Msg) {
@@ -396,31 +351,29 @@ public class PopupDropDown : ToolStripDropDown {
 		}
 		return false;
 	}
-
-	[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 	private bool OnGetMinMaxInfo(ref Message m) {
 		Control hostedControl = GetHostedControl();
 		if (hostedControl != null) {
-			MINMAXINFO minmax = (MINMAXINFO)Marshal.PtrToStructure(m.LParam, typeof(MINMAXINFO));
-			var WorkingArea = Screen.FromRectangle(_anchorBounds).WorkingArea;
-			var BorderAndGrip = new Size(2, IsGripShown ? 18 : 2);
+			var minmax = Tools.Windows.Win32.ReadStructure<MINMAXINFO>(m.LParam);
+			var workingArea = Screen.FromRectangle(_anchorBounds).WorkingArea;
+			var borderAndGrip = new Size(2, IsGripShown ? 18 : 2);
 
 			// Maximum size.
-			minmax.maxTrackSize.Width = hostedControl.MaximumSize.Width > 0 ? Math.Min(WorkingArea.Width, hostedControl.MaximumSize.Width + BorderAndGrip.Width) : WorkingArea.Width;
-			minmax.maxTrackSize.Height = hostedControl.MaximumSize.Height > 0 ? Math.Min(WorkingArea.Height, hostedControl.MaximumSize.Height + BorderAndGrip.Height) : WorkingArea.Height;
+			minmax.MaxTrackSize.Width = hostedControl.MaximumSize.Width > 0 ? Math.Min(workingArea.Width, hostedControl.MaximumSize.Width + borderAndGrip.Width) : workingArea.Width;
+			minmax.MaxTrackSize.Height = hostedControl.MaximumSize.Height > 0 ? Math.Min(workingArea.Height, hostedControl.MaximumSize.Height + borderAndGrip.Height) : workingArea.Height;
 
 			// Minimum size.
-			minmax.minTrackSize = new Size(32, 32);
-			minmax.minTrackSize.Width = Math.Min(minmax.maxTrackSize.Width, Math.Max(32, hostedControl.MinimumSize.Width + BorderAndGrip.Width));
-			minmax.minTrackSize.Height = Math.Min(minmax.maxTrackSize.Height, Math.Max(32, hostedControl.MinimumSize.Height + BorderAndGrip.Height));
+			minmax.MinTrackSize = new Size(32, 32);
+			minmax.MinTrackSize.Width = Math.Min(minmax.MaxTrackSize.Width, Math.Max(32, hostedControl.MinimumSize.Width + borderAndGrip.Width));
+			minmax.MinTrackSize.Height = Math.Min(minmax.MaxTrackSize.Height, Math.Max(32, hostedControl.MinimumSize.Height + borderAndGrip.Height));
 
-			Marshal.StructureToPtr(minmax, m.LParam, false);
+			Tools.Windows.Win32.WriteStructure(m.LParam, minmax);
 		}
 		return true;
 	}
 
 	private bool OnNcHitTest(ref Message m, bool contentControl) {
-		Point location = PointToClient(new Point(LOWORD(m.LParam), HIWORD(m.LParam)));
+		Point location = PointToClient(Tools.Windows.Win32.GetMessagePosition(m.LParam));
 		IntPtr transparent = new IntPtr(HTTRANSPARENT);
 
 		// Check for simple gripper dragging.

@@ -168,8 +168,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	#region IUserInterfaceServices Implementation
 
 	protected override void WndProc(ref Message m) {
-		const int WM_QUERYENDSESSION = 0x11;
-		if (m.Msg == WM_QUERYENDSESSION) {
+		if (m.Msg == WinAPI.USER32.WM_QUERYENDSESSION) {
 			// CloseActions Hide | Minimize will hold up session shutdown, and SystemEvents doesn't get fired!
 			CloseAction = FormCloseAction.Close;
 			SuppressExitConfirmation = true;

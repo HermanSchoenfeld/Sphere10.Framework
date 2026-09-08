@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Windows;
 
 public static partial class WinAPI {
 
-	public static class USER32 {
+	public static partial class USER32 {
 		// ReSharper disable InconsistentNaming
 
 		#region Constants
@@ -935,7 +935,7 @@ public static partial class WinAPI {
 			DT_EXPANDTABS = 0x00000040,
 
 			/// <summary>
-			/// Sets tab stops. Bits 15–8 (high-order byte of the low-order word) of the uFormat 
+			/// Sets tab stops. Bits 15â€“8 (high-order byte of the low-order word) of the uFormat
 			/// parameter specify the number of characters for each tab. The default number of 
 			/// characters per tab is eight. The DT_CALCRECT, DT_EXTERNALLEADING, DT_public, 
 			/// DT_NOCLIP, and DT_NOPREFIX values cannot be used with the DT_TABSTOP value

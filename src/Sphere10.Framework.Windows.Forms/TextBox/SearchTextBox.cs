@@ -38,11 +38,9 @@ public class SearchTextBox : TextBoxEx {
 		_pictureBox.Size = new Size(_pictureBox.Width, this.ClientSize.Height + 2);
 		_pictureBox.Location = new Point(this.ClientSize.Width - _pictureBox.Width, -1);
 		// Send EM_SETMARGINS to prevent text from disappearing underneath the button
-		SendMessage(this.Handle, 0xd3, (IntPtr)2, (IntPtr)(_pictureBox.Width << 16));
+		WinAPI.USER32.SendMessage(this.Handle, WinAPI.WindowMessageFlags.EM_SETMARGINS, (IntPtr)2, (IntPtr)(_pictureBox.Width << 16));
 	}
 
-	[System.Runtime.InteropServices.DllImport("user32.dll")]
-	private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wp, IntPtr lp);
 
 }
 

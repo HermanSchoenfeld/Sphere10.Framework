@@ -14,12 +14,13 @@ using System.Security.Permissions;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
+using static Sphere10.Framework.Windows.WinAPI.USER32;
+
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// <c>CustomComboBox</c> is an extension of <c>ComboBox</c> which provides drop-down customization.
 /// </summary>
-[SecurityPermissionAttribute(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 [Designer(typeof(CustomComboBoxDesigner))]
 public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 
@@ -202,21 +203,12 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 
 	#region Win32 message handlers
 
-	public const uint WM_COMMAND = 0x0111;
-	public const uint WM_USER = 0x0400;
-	public const uint WM_REFLECT = WM_USER + 0x1C00;
-	public const uint WM_LBUTTONDOWN = 0x0201;
 
-	public const uint CBN_DROPDOWN = 7;
-	public const uint CBN_CLOSEUP = 8;
 
-	public static uint HIWORD(int n) {
-		return (uint)(n >> 16) & 0xffff;
-	}
 
 	public override bool PreProcessMessage(ref Message m) {
 		if (m.Msg == (WM_REFLECT + WM_COMMAND)) {
-			if (HIWORD((int)m.WParam) == CBN_DROPDOWN)
+			if (Tools.Windows.Win32.HIWORD(m.WParam) == CBN_DROPDOWN)
 				return false;
 		}
 		return base.PreProcessMessage(ref m);
@@ -238,7 +230,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 		}
 
 		if (m.Msg == (WM_REFLECT + WM_COMMAND)) {
-			switch (HIWORD((int)m.WParam)) {
+			switch (Tools.Windows.Win32.HIWORD(m.WParam)) {
 				case CBN_DROPDOWN:
 					AutoDropDown();
 					return;

@@ -10,7 +10,6 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows;
 
@@ -240,57 +239,54 @@ public class ApplicationScreenForm : Form {
 		Host.ClearDockPreview();
 	}
 
-	protected override void WndProc(ref Message Message) {
-		const int WindowMoving = 0x0216;
-		const int WindowSizing = 0x0214;
-		const int CalculateClientArea = 0x0083;
-		if (Message.Msg == 0x0047) { // WM_WINDOWPOSCHANGED
-			var Style = WinAPI.USER32.GetWindowLong(Message.HWnd, -16).ToInt64();
-			var NativeState = (Style & 0x20000000) != 0 ? FormWindowState.Minimized : (Style & 0x01000000) != 0 ? FormWindowState.Maximized : FormWindowState.Normal;
-			var Restoring = _lastNativeWindowState != FormWindowState.Normal && NativeState == FormWindowState.Normal;
-			_lastNativeWindowState = NativeState;
-			if (Restoring) {
-				var Position = Marshal.PtrToStructure<WinAPI.WINDOWPOS>(Message.LParam);
-				var PreviousRestoreBounds = _nativeRestoreBounds;
-				using var RestorePlacement = Tools.Scope.ExecuteOnDispose(() => _nativeRestoreBounds = PreviousRestoreBounds);
-				_nativeRestoreBounds = new Rectangle(Position.x, Position.y, Position.cx, Position.cy);
-				base.WndProc(ref Message);
+	protected override void WndProc(ref Message message) {
+		if (message.Msg == 0x0047) { // WM_WINDOWPOSCHANGED
+			var style = WinAPI.USER32.GetWindowLong(message.HWnd, -16).ToInt64();
+			var nativeState = (style & 0x20000000) != 0 ? FormWindowState.Minimized : (style & 0x01000000) != 0 ? FormWindowState.Maximized : FormWindowState.Normal;
+			var restoring = _lastNativeWindowState != FormWindowState.Normal && nativeState == FormWindowState.Normal;
+			_lastNativeWindowState = nativeState;
+			if (restoring) {
+				var position = Tools.Windows.Win32.ReadStructure<WinAPI.WINDOWPOS>(message.LParam);
+				var previousRestoreBounds = _nativeRestoreBounds;
+				using var restorePlacement = Tools.Scope.ExecuteOnDispose(() => _nativeRestoreBounds = previousRestoreBounds);
+				_nativeRestoreBounds = new Rectangle(position.x, position.y, position.cx, position.cy);
+				base.WndProc(ref message);
 				return;
 			}
 		}
-		var WindowBounds = Message.Msg == CalculateClientArea ? Marshal.PtrToStructure<WinAPI.RECT>(Message.LParam) : default;
+		var windowBounds = message.Msg == WinAPI.USER32.WM_NCCALCSIZE ? Tools.Windows.Win32.ReadStructure<WinAPI.RECT>(message.LParam) : default;
 		if (_inMoveSize) {
-			if (Message.Msg == WindowMoving)
+			if (message.Msg == WinAPI.USER32.WM_MOVING)
 				_moving = true;
-			if (Message.Msg == WindowSizing) {
+			if (message.Msg == WinAPI.USER32.WM_SIZING) {
 				_resizing = true;
 				(_host as ApplicationScreenHost)?.ClearDockPreview();
 			}
 		}
-		base.WndProc(ref Message);
-		if (Message.Msg == CalculateClientArea) {
+		base.WndProc(ref message);
+		if (message.Msg == WinAPI.USER32.WM_NCCALCSIZE) {
 			// RECT is also the first field of NCCALCSIZE_PARAMS, so both native message variants use the same layout here.
-			var ClientBounds = Marshal.PtrToStructure<WinAPI.RECT>(Message.LParam);
-			_nativeTopResizeHeight = Math.Max(0, ClientBounds.Top - WindowBounds.Top);
-			ClientBounds.Top = Math.Min(ClientBounds.Bottom, WindowBounds.Top + LogicalToDeviceUnits(LogicalTopBorderHeight));
-			Marshal.StructureToPtr(ClientBounds, Message.LParam, false);
-			Message.Result = IntPtr.Zero;
+			var clientBounds = Tools.Windows.Win32.ReadStructure<WinAPI.RECT>(message.LParam);
+			_nativeTopResizeHeight = Math.Max(0, clientBounds.Top - windowBounds.Top);
+			clientBounds.Top = Math.Min(clientBounds.Bottom, windowBounds.Top + LogicalToDeviceUnits(LogicalTopBorderHeight));
+			Tools.Windows.Win32.WriteStructure(message.LParam, clientBounds);
+			message.Result = IntPtr.Zero;
 		}
-		if (Message.Msg == 0x0084 && _caption != null) { // WM_NCHITTEST
-			var Coordinates = Message.LParam.ToInt64();
-			var Position = new Point(unchecked((short)Coordinates), unchecked((short)(Coordinates >> 16)));
-			if (IsTopResizeArea(Position)) {
-				var ClientOrigin = PointToScreen(Point.Empty);
-				Message.Result = (IntPtr)(Position.X < ClientOrigin.X ? 13 : Position.X >= ClientOrigin.X + ClientSize.Width ? 14 : 12); // HTTOPLEFT, HTTOPRIGHT, HTTOP
-			} else if (Message.Result == (IntPtr)1 && _caption.IsDragArea(Position))
-				Message.Result = (IntPtr)2; // HTCAPTION: Windows handles moving, double-click, system menu and cancellation.
+		if (message.Msg == 0x0084 && _caption != null) { // WM_NCHITTEST
+			var coordinates = message.LParam.ToInt64();
+			var position = new Point(unchecked((short)coordinates), unchecked((short)(coordinates >> 16)));
+			if (IsTopResizeArea(position)) {
+				var clientOrigin = PointToScreen(Point.Empty);
+				message.Result = (IntPtr)(position.X < clientOrigin.X ? 13 : position.X >= clientOrigin.X + ClientSize.Width ? 14 : 12); // HTTOPLEFT, HTTOPRIGHT, HTTOP
+			} else if (message.Result == (IntPtr)1 && _caption.IsDragArea(position))
+				message.Result = (IntPtr)2; // HTCAPTION: Windows handles moving, double-click, system menu and cancellation.
 		}
-		if (Message.Msg == 0x0024) { // WM_GETMINMAXINFO
-			var Monitor = System.Windows.Forms.Screen.FromHandle(Message.HWnd);
-			var Limits = Marshal.PtrToStructure<WindowSizeLimits>(Message.LParam);
-			Limits.MaxPosition = new Point(Monitor.WorkingArea.Left - Monitor.Bounds.Left, Monitor.WorkingArea.Top - Monitor.Bounds.Top);
-			Limits.MaxSize = new Point(Monitor.WorkingArea.Width, Monitor.WorkingArea.Height);
-			Marshal.StructureToPtr(Limits, Message.LParam, false);
+		if (message.Msg == 0x0024) { // WM_GETMINMAXINFO
+			var monitor = System.Windows.Forms.Screen.FromHandle(message.HWnd);
+			var limits = Tools.Windows.Win32.ReadStructure<WinAPI.USER32.MINMAXINFO>(message.LParam);
+			limits.MaxPosition = new Point(monitor.WorkingArea.Left - monitor.Bounds.Left, monitor.WorkingArea.Top - monitor.Bounds.Top);
+			limits.MaxSize = new Size(monitor.WorkingArea.Width, monitor.WorkingArea.Height);
+			Tools.Windows.Win32.WriteStructure(message.LParam, limits);
 		}
 	}
 
@@ -322,15 +318,6 @@ public class ApplicationScreenForm : Form {
 				return NestedMenu;
 		}
 		return null;
-	}
-
-	[StructLayout(LayoutKind.Sequential)]
-	private struct WindowSizeLimits {
-		public Point Reserved;
-		public Point MaxSize;
-		public Point MaxPosition;
-		public Point MinTrackSize;
-		public Point MaxTrackSize;
 	}
 
 	private enum CaptionAction { Dock, Minimize, Maximize, Restore, Close }

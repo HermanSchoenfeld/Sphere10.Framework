@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using static Sphere10.Framework.Windows.WinAPI.RICHEDIT;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
 
@@ -320,67 +321,8 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 
 	#region Win32 API
 
-	protected const int CFM_BOLD = 1;
-	protected const int CFM_ITALIC = 2;
-	protected const int CFM_UNDERLINE = 4;
-	[CLSCompliant(false)] protected const uint CFM_FACE = 0x20000000;
-	[CLSCompliant(false)] protected const uint CFM_SIZE = 0x80000000;
-	[CLSCompliant(false)] protected const uint CFM_SUPERSCRIPT = 0x00030000;
-	[CLSCompliant(false)] protected const uint CFE_SUPERSCRIPT = 0x00020000;
-	[CLSCompliant(false)] protected const uint CFM_SUBSCRIPT = 0x00030000;
-	[CLSCompliant(false)] protected const uint CFE_SUBSCRIPT = 0x00010000;
-	protected const int CFM_UNDERLINETYPE = 8388608;
-	protected const int EM_SETCHARFORMAT = 1092;
-	protected const int EM_GETCHARFORMAT = 1082;
-	protected const int SCF_SELECTION = 1;
-	protected const int EM_FORMATRANGE = 1081;
-	protected const int WM_USER = 0x0400;
-	protected const int EM_SETEVENTMASK = 1073;
-	protected const int EM_GETPARAFORMAT = 1085;
-	protected const int EM_SETPARAFORMAT = 1095;
-	protected const int EM_SETTYPOGRAPHYOPTIONS = 1226;
-	protected const int WM_SETREDRAW = 11;
-	protected const int TO_ADVANCEDTYPOGRAPHY = 1;
-
-	[DllImport("user32", CharSet = CharSet.Auto)]
-	private static extern int SendMessage(HandleRef hWnd, int msg,
-	                                      int wParam, int lParam);
-
-
-	[StructLayout(LayoutKind.Sequential)]
-	protected struct CHARFORMAT {
-		public int cbSize;
-		[CLSCompliant(false)] public uint dwMask;
-		[CLSCompliant(false)] public uint dwEffects;
-		public int yHeight;
-		public int yOffset;
-		public int crTextColor;
-		public byte bCharSet;
-		public byte bPitchAndFamily;
-
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-		public char[] szFaceName;
-
-		// CHARFORMAT2 from here onwards.
-		public short wWeight;
-		public short sSpacing;
-		public int crBackColor;
-		public int LCID;
-		[CLSCompliant(false)] public uint dwReserved;
-		public short sStyle;
-		public short wKerning;
-		public byte bUnderlineType;
-		public byte bAnimation;
-		public byte bRevAuthor;
-	}
-
-
-	[DllImport("user32", CharSet = CharSet.Auto)]
-	private static extern int SendMessage(HandleRef hWnd,
-	                                      int msg, int wParam, ref CHARFORMAT lp);
-
 	protected void SetCharFormatMessage(ref CHARFORMAT fmt) {
-		SendMessage(new HandleRef(this, Handle),
+		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 			EM_SETCHARFORMAT,
 			SCF_SELECTION,
 			ref fmt);
@@ -397,11 +339,10 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// </remarks>
 	public UnderlineStyle SelectionUnderlineStyle {
 		get {
-			CHARFORMAT fmt = new CHARFORMAT();
-			fmt.cbSize = Marshal.SizeOf(fmt);
+			var fmt = Tools.Windows.Win32.CreateCharacterFormat();
 
 			// Get the underline style.
-			SendMessage(new HandleRef(this, Handle),
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 				EM_GETCHARFORMAT,
 				SCF_SELECTION,
 				ref fmt);
@@ -423,13 +364,12 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 			if (value == UnderlineStyle.None)
 				color = UnderlineColor.Black;
 
-			CHARFORMAT fmt = new CHARFORMAT();
-			fmt.cbSize = Marshal.SizeOf(fmt);
+			var fmt = Tools.Windows.Win32.CreateCharacterFormat();
 			fmt.dwMask = CFM_UNDERLINETYPE;
 			fmt.bUnderlineType = (byte)((byte)value | (byte)color);
 
 			// Set the underline type.
-			SendMessage(new HandleRef(this, Handle),
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 				EM_SETCHARFORMAT,
 				SCF_SELECTION,
 				ref fmt);
@@ -446,11 +386,10 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// </remarks>
 	public UnderlineColor SelectionUnderlineColor {
 		get {
-			CHARFORMAT fmt = new CHARFORMAT();
-			fmt.cbSize = Marshal.SizeOf(fmt);
+			var fmt = Tools.Windows.Win32.CreateCharacterFormat();
 
 			// Get the underline color.
-			SendMessage(new HandleRef(this, Handle),
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 				EM_GETCHARFORMAT,
 				SCF_SELECTION,
 				ref fmt);
@@ -472,13 +411,12 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 			if (style == UnderlineStyle.None)
 				value = UnderlineColor.Black;
 
-			CHARFORMAT fmt = new CHARFORMAT();
-			fmt.cbSize = Marshal.SizeOf(fmt);
+			var fmt = Tools.Windows.Win32.CreateCharacterFormat();
 			fmt.dwMask = CFM_UNDERLINETYPE;
 			fmt.bUnderlineType = (byte)((byte)style | (byte)value);
 
 			// Set the underline color.
-			SendMessage(new HandleRef(this, Handle),
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 				EM_SETCHARFORMAT,
 				SCF_SELECTION,
 				ref fmt);
@@ -510,8 +448,7 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// Set the selection to superscript
 	/// </summary>
 	private void SetSelectionSuper() {
-		CHARFORMAT fmt = new CHARFORMAT();
-		fmt.cbSize = Marshal.SizeOf(fmt);
+		var fmt = Tools.Windows.Win32.CreateCharacterFormat();
 		fmt.dwMask = CFM_SUPERSCRIPT;
 
 		fmt.dwEffects |= CFE_SUPERSCRIPT;
@@ -522,8 +459,7 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// Set the selection to subscript
 	/// </summary>
 	private void SetSelectionSub() {
-		CHARFORMAT fmt = new CHARFORMAT();
-		fmt.cbSize = Marshal.SizeOf(fmt);
+		var fmt = Tools.Windows.Win32.CreateCharacterFormat();
 		fmt.dwMask = CFM_SUBSCRIPT;
 
 		fmt.dwEffects |= CFE_SUBSCRIPT;
@@ -534,8 +470,7 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 	/// Set the selection to normal
 	/// </summary>
 	private void SetSelectionNormal() {
-		CHARFORMAT fmt = new CHARFORMAT();
-		fmt.cbSize = Marshal.SizeOf(fmt);
+		var fmt = Tools.Windows.Win32.CreateCharacterFormat();
 		fmt.dwMask = CFM_SUBSCRIPT | CFM_SUPERSCRIPT;
 
 		fmt.dwEffects &= ~CFE_SUPERSCRIPT;
@@ -673,13 +608,13 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 			return;
 
 		// Prevent the control from raising any events.
-		oldEventMask = SendMessage(new HandleRef(this, Handle),
+		oldEventMask = Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 			EM_SETEVENTMASK,
 			0,
 			0);
 
 		// Prevent the control from redrawing itself.
-		SendMessage(new HandleRef(this, Handle),
+		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 			WM_SETREDRAW,
 			0,
 			0);
@@ -701,13 +636,13 @@ public class DevAgeRichTextBox : System.Windows.Forms.RichTextBox {
 			return;
 
 		// Allow the control to redraw itself.
-		SendMessage(new HandleRef(this, Handle),
+		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 			WM_SETREDRAW,
 			1,
 			0);
 
 		// Allow the control to raise event messages.
-		SendMessage(new HandleRef(this, Handle),
+		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle),
 			EM_SETEVENTMASK,
 			0,
 			oldEventMask);

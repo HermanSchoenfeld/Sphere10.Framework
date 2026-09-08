@@ -34,39 +34,7 @@ public class PerPixelAlphaForm : Form {
 		if (bitmap.PixelFormat != PixelFormat.Format32bppArgb)
 			throw new ApplicationException("The bitmap must be 32ppp with alpha-channel.");
 
-		// The ideia of this is very simple,
-		// 1. Create a compatible DC with screen;
-		// 2. Select the bitmap with 32bpp with alpha-channel in the compatible DC;
-		// 3. Call the UpdateLayeredWindow.
-
-		IntPtr screenDc = WinAPI.USER32.GetDC(IntPtr.Zero);
-		IntPtr memDc = WinAPI.GDI32.CreateCompatibleDC(screenDc);
-		IntPtr hBitmap = IntPtr.Zero;
-		IntPtr oldBitmap = IntPtr.Zero;
-
-		try {
-			hBitmap = bitmap.GetHbitmap(Color.FromArgb(0)); // grab a GDI handle from this GDI+ bitmap
-			oldBitmap = WinAPI.GDI32.SelectObject(memDc, hBitmap);
-
-			Size size = new Size(bitmap.Width, bitmap.Height);
-			Point pointSource = new Point(0, 0);
-			Point topPos = new Point(Left, Top);
-			WinAPI.USER32.BLENDFUNCTION blend = new WinAPI.USER32.BLENDFUNCTION();
-			blend.BlendOp = (byte)WinAPI.USER32.BlendOps.AC_SRC_OVER;
-			blend.BlendFlags = 0;
-			blend.SourceConstantAlpha = opacity;
-			blend.AlphaFormat = (byte)WinAPI.USER32.BlendOps.AC_SRC_ALPHA;
-
-			WinAPI.USER32.UpdateLayeredWindow(Handle, screenDc, ref topPos, ref size, memDc, ref pointSource, 0, ref blend, WinAPI.USER32.BlendFlags.ULW_ALPHA);
-		} finally {
-			WinAPI.USER32.ReleaseDC(IntPtr.Zero, screenDc);
-			if (hBitmap != IntPtr.Zero) {
-				WinAPI.GDI32.SelectObject(memDc, oldBitmap);
-				//Windows.DeleteObject(hBitmap); // The documentation says that we have to use the Windows.DeleteObject... but since there is no such method I use the normal DeleteObject from Win32 GDI and it's working fine without any resource leak.
-				WinAPI.GDI32.DeleteObject(hBitmap);
-			}
-			WinAPI.GDI32.DeleteDC(memDc);
-		}
+		Tools.Windows.Win32.UpdateLayeredWindow(Handle, bitmap, opacity, new Point(Left, Top), bitmap.Size);
 	}
 
 

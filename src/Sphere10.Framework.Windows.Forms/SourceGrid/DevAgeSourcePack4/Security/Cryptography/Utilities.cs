@@ -89,14 +89,14 @@ public class Utilities {
 		/// <param name="p_StreamOutput"></param>
 		/// <param name="p_Key8chars">Must be of 8 characters length</param>
 		public static void EncryptStream(Stream p_StreamInput, Stream p_StreamOutput, string p_Key8chars) {
-			DESCryptoServiceProvider DESProvider = new DESCryptoServiceProvider();
-			DESProvider.Key = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
-			DESProvider.IV = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
-			ICryptoTransform DESEncrypt = DESProvider.CreateEncryptor();
+			using var desProvider = System.Security.Cryptography.DES.Create();
+			desProvider.Key = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
+			desProvider.IV = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
+			ICryptoTransform desEncrypt = desProvider.CreateEncryptor();
 
-			using (CryptoStream cryptoStream = new CryptoStream(p_StreamOutput, DESEncrypt, CryptoStreamMode.Write)) {
+			using (CryptoStream cryptoStream = new CryptoStream(p_StreamOutput, desEncrypt, CryptoStreamMode.Write)) {
 				byte[] bytearrayinput = new byte[p_StreamInput.Length];
-				p_StreamInput.Read(bytearrayinput, 0, bytearrayinput.Length);
+				_ = p_StreamInput.ReadAtLeast(bytearrayinput, bytearrayinput.Length, throwOnEndOfStream: false);
 				cryptoStream.Write(bytearrayinput, 0, bytearrayinput.Length);
 				cryptoStream.FlushFinalBlock();
 			}
@@ -109,14 +109,14 @@ public class Utilities {
 		/// <param name="p_StreamOutput"></param>
 		/// <param name="p_Key8chars">Must be of 8 characters length</param>
 		public static void DecryptStream(Stream p_StreamInput, Stream p_StreamOutput, string p_Key8chars) {
-			DESCryptoServiceProvider DESProvider = new DESCryptoServiceProvider();
-			DESProvider.Key = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
-			DESProvider.IV = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
-			ICryptoTransform desDecrypt = DESProvider.CreateDecryptor();
+			using var desProvider = System.Security.Cryptography.DES.Create();
+			desProvider.Key = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
+			desProvider.IV = ASCIIEncoding.ASCII.GetBytes(p_Key8chars);
+			ICryptoTransform desDecrypt = desProvider.CreateDecryptor();
 
 			using (CryptoStream cryptostreamDecr = new CryptoStream(p_StreamOutput, desDecrypt, CryptoStreamMode.Write)) {
 				byte[] buffer = new byte[p_StreamInput.Length];
-				p_StreamInput.Read(buffer, 0, buffer.Length);
+				_ = p_StreamInput.ReadAtLeast(buffer, buffer.Length, throwOnEndOfStream: false);
 				cryptostreamDecr.Write(buffer, 0, buffer.Length);
 				cryptostreamDecr.FlushFinalBlock();
 			}
@@ -138,11 +138,9 @@ public class Utilities {
 		/// <param name="p_Password"></param>
 		/// <returns></returns>
 		public static string HashPassword(string p_Password) {
-			SHA1CryptoServiceProvider l_shaProvider = new SHA1CryptoServiceProvider();
-
 			byte[] data = Encoding.UTF8.GetBytes(p_Password);
 
-			byte[] result = l_shaProvider.ComputeHash(data);
+			byte[] result = Hashers.Hash(CHF.SHA1_160, data);
 
 			return Convert.ToBase64String(result);
 		}

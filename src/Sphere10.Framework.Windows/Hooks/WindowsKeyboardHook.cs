@@ -147,6 +147,13 @@ public sealed class WindowsKeyboardHook : BaseKeyboardHook, IComponent {
 		return retval;
 	}
 
+	public override void Dispose() {
+		if (base.Disposed)
+			return;
+		base.Dispose();
+		Disposed?.Invoke(this, EventArgs.Empty);
+	}
+
 	public ISite Site { get; set; }
 }
 
