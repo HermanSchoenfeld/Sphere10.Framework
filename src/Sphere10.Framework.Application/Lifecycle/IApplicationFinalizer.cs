@@ -12,6 +12,8 @@ public interface IApplicationFinalizer {
 
 	int Priority { get; }
 
+#pragma warning disable CS0465 // Preserve the existing public application lifecycle contract.
 	void Finalize();
+#pragma warning restore CS0465
 }
 

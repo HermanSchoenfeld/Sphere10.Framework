@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -15,6 +15,8 @@ public abstract class ApplicationFinalizerBase : IApplicationFinalizer {
 
 	public virtual bool Parallelizable => false;
 
+#pragma warning disable CS0465 // Preserve the existing public application lifecycle contract.
 	public abstract void Finalize();
+#pragma warning restore CS0465
 }
 

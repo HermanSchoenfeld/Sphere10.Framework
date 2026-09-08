@@ -56,6 +56,9 @@ public class Sphere10Framework {
 
 	internal void FireRegistering() => Registering?.Invoke();
 
+	protected virtual void OnVersionChangeDetected(ProductInformation previousVersion, ProductInformation currentVersion)
+		=> VersionChangeDetected?.Invoke(previousVersion, currentVersion);
+
 	internal void StartInternal(IServiceProvider serviceProvider, ICoreModuleConfiguration[] modules, bool ownsProvider) {
 		CheckNotStarted();
 		ServiceProvider = serviceProvider;

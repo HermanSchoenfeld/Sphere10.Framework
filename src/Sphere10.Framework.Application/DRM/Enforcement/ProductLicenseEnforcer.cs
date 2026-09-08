@@ -193,7 +193,6 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 						return rights;
 					case ProductLicenseActionDTO.Downgrade:
 						return CalculateRightsForDefaultLicense(out _);
-						break;
 					case ProductLicenseActionDTO.Disable:
 						rights.Disable();
 						return rights;

@@ -472,7 +472,7 @@ See [AutoMouse](https://github.com/HermanSchoenfeld/AutoMouse) for a complete pr
 
 - **Core Framework**: Production-tested, stable
 - **DI Integration**: Full support for Microsoft.Extensions.DependencyInjection
-- **.NET Target**: .NET 8.0+ (primary)
+- **.NET Target**: .NET 10 (`net10.0`)
 - **Thread Safety**: Application-wide; services should handle their own thread safety
 
 ## ⚖️ License
@@ -485,3 +485,4 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 
 **Herman Schoenfeld** - Software Engineer
 
+Subclasses of `Sphere10Framework` can raise the existing `VersionChangeDetected` event through `OnVersionChangeDetected(previousVersion, currentVersion)`.

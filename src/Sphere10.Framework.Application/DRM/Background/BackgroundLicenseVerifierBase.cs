@@ -87,7 +87,7 @@ public abstract class BackgroundLicenseVerifierBase : IBackgroundLicenseVerifier
 				if (wasDisabledButDRMSaysEnable || aboutToExpire) {
 					try {
 						await LicenseActivator.ActivateLicense(currentActivation.License.Item.ProductKey);
-					} catch (Exception ex) {
+					} catch (Exception) {
 						// Logger.Exception(ex)
 						// We don't want to deal with exceptions here since this is a silent process
 					}

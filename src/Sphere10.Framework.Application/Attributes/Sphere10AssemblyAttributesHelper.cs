@@ -25,7 +25,7 @@ internal static class Sphere10AssemblyAttributesHelper {
 				return firstTitleAttr.Title;
 			}
 		}
-		return Path.GetFileNameWithoutExtension(Tools.Runtime.GetEntryAssembly().CodeBase);
+		return Path.GetFileNameWithoutExtension(Tools.Runtime.GetEntryAssembly().Location);
 	}
 
 	public static string GetAssemblyVersion() {
