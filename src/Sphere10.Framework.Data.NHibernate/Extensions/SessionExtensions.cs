@@ -21,7 +21,7 @@ public static class SessionExtensions {
 		IEntityPersister persister = session.GetSessionImplementation().GetEntityPersister(NHibernateProxyHelper.GuessClass(entity).FullName, entity);
 		Object[] fields = persister.GetPropertyValues(entity /*, session.ActiveEntityMode*/);
 		Object id = persister.GetIdentifier(entity /*, session.ActiveEntityMode*/);
-		EntityEntry entry = session.GetSessionImplementation().PersistenceContext.AddEntry(entity, Status.Loaded, fields, null, id, null, LockMode.None, true, persister, true, false);
+		EntityEntry entry = session.GetSessionImplementation().PersistenceContext.AddEntry(entity, Status.Loaded, fields, null, id, null, LockMode.None, true, persister, true);
 
 		return (entity);
 	}
