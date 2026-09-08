@@ -88,6 +88,7 @@ public class MissingFieldCsvException
 	/// </summary>
 	/// <param name="info">The <see cref="T:SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
 	/// <param name="context">The <see cref="T:StreamingContext"/> that contains contextual information about the source or destination.</param>
+	[Obsolete("Formatter-based serialization is obsolete and should not be used.")]
 	protected MissingFieldCsvException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {
 	}

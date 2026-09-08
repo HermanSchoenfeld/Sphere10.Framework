@@ -103,7 +103,7 @@ public sealed class TableNameCommand : SQLBuilderCommand {
 		TableName = tableName;
 		TableType = tableType;
 	}
-	public string TableName { get; set; }
+	public new string TableName { get; set; }
 	public TableType TableType { get; set; }
 	public override void Execute(ISQLBuilder builder) {
 		builder.TableName(TableName, TableType);
@@ -115,7 +115,7 @@ public sealed class ColumnNameCommand : SQLBuilderCommand {
 	public ColumnNameCommand(string columnName) {
 		ColumnName = columnName;
 	}
-	public string ColumnName { get; set; }
+	public new string ColumnName { get; set; }
 	public override void Execute(ISQLBuilder builder) {
 		builder.ColumnName(ColumnName);
 	}
@@ -126,7 +126,7 @@ public sealed class TriggerNameCommand : SQLBuilderCommand {
 	public TriggerNameCommand(string triggerName) {
 		TriggerName = triggerName;
 	}
-	public string TriggerName { get; set; }
+	public new string TriggerName { get; set; }
 	public override void Execute(ISQLBuilder builder) {
 		builder.TriggerName(TriggerName);
 	}
@@ -150,7 +150,7 @@ public sealed class SQLExpressionCommand : SQLBuilderCommand {
 		ExpessionArgs = formatArgs;
 		ResultType = expressionResultType;
 	}
-	public string Expression { get; set; }
+	public new string Expression { get; set; }
 	public object[] ExpessionArgs { get; set; }
 	public Type ResultType { get; set; }
 	public override void Execute(ISQLBuilder builder) {

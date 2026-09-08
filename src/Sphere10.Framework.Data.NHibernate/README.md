@@ -346,7 +346,7 @@ using (var session = sessionFactory.OpenSession()) {
 - **Sphere10.Framework.Data**: Data abstraction layer
 - **NHibernate**: ORM framework
 - **Database provider**: SQLite, SQL Server, Firebird, etc.
-- **.NET Standard 2.1+**: Cross-platform compatibility
+- **.NET 10**: Cross-platform runtime (`net10.0`)
 
 ## 📚 Related Projects
 

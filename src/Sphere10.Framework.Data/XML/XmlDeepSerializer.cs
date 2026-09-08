@@ -21,6 +21,9 @@ namespace Sphere10.Framework.Data;
 /// </summary>
 public class XmlDeepSerializer : IDisposable {
 
+	private static bool HasSerializableContract(Type type)
+		=> type.IsArray || type.IsEnum || typeof(Delegate).IsAssignableFrom(type) || Attribute.IsDefined(type, typeof(SerializableAttribute), false);
+
 	#region Members
 
 	private IXmlSerializationTag taglib = new XmlSerializationTag();
@@ -350,7 +353,7 @@ public class XmlDeepSerializer : IDisposable {
 			Type pt = value.GetType();
 
 			// Check whether this property can be serialized and deserialized
-			if (CheckPropertyHasToBeSerialized(pi) && (pt.IsSerializable || IgnoreSerializableAttribute) && (pi.CanWrite) && ((pt.IsPublic) || (pt.IsEnum))) {
+			if (CheckPropertyHasToBeSerialized(pi) && (HasSerializableContract(pt) || IgnoreSerializableAttribute) && (pi.CanWrite) && ((pt.IsPublic) || (pt.IsEnum))) {
 				XmlElement prop = parent.OwnerDocument.CreateElement(taglib.PROPERTY_TAG);
 
 				SetObjectInfoAttributes(pi.Name, pt, prop);
@@ -382,9 +385,9 @@ public class XmlDeepSerializer : IDisposable {
 				// Append the property node to the paren XmlNode
 				parent.AppendChild(prop);
 			}
-		} catch (Exception exc) {
+		} catch (Exception) {
 			if (!IgnoreSerialisationErrors) {
-				throw exc;
+				throw;
 			} else {
 				// perhaps logging
 			}
@@ -413,7 +416,7 @@ public class XmlDeepSerializer : IDisposable {
 				for (int j = 0; j < piarr2.Length; j++) {
 					PropertyInfo pi2 = piarr2[j];
 					// Check whether this property can be serialized and deserialized
-					if (CheckPropertyHasToBeSerialized(pi2) && (pi2.PropertyType.IsSerializable || IgnoreSerializableAttribute) && (pi2.CanWrite) && ((pi2.PropertyType.IsPublic) || (pi2.PropertyType.IsEnum))) {
+					if (CheckPropertyHasToBeSerialized(pi2) && (HasSerializableContract(pi2.PropertyType) || IgnoreSerializableAttribute) && (pi2.CanWrite) && ((pi2.PropertyType.IsPublic) || (pi2.PropertyType.IsEnum))) {
 						// Seems to be a complex type
 						complexclass = true;
 
@@ -482,9 +485,9 @@ public class XmlDeepSerializer : IDisposable {
 
 				bindata.InnerText = val.ToString();
 			}
-		} catch (Exception exc) {
+		} catch (Exception) {
 			if (!IgnoreSerialisationErrors) {
-				throw exc;
+				throw;
 			} else {
 				// perhaps logging
 			}
@@ -568,9 +571,9 @@ public class XmlDeepSerializer : IDisposable {
 					} // IsCollection?
 				} // Loop collection
 			} // IsDictionary?
-		} catch (Exception exc) {
+		} catch (Exception) {
 			if (!IgnoreSerialisationErrors) {
-				throw exc;
+				throw;
 			} else {
 				// perhaps logging
 			}
@@ -662,8 +665,8 @@ public class XmlDeepSerializer : IDisposable {
 				// Reset UseTypeDictionary
 				UseTypeDictionary = true;
 			}
-		} catch (Exception e) {
-			throw e;
+		} catch (Exception) {
+			throw;
 		} finally {
 			UseTypeDictionary = usedict;
 		}

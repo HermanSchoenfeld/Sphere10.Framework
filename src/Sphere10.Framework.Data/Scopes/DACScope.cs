@@ -49,7 +49,7 @@ public sealed class DACScope : SyncTransactionalScope<IDbTransaction> {
 	/// <summary>
 	/// Whether or not DAC commands are subject to a DACSCope transaction or system transaction
 	/// </summary>
-	public bool ParticipatesWithinTransaction => _withinSystemTransactionScope || Transaction != null;
+	public override bool ParticipatesWithinTransaction => _withinSystemTransactionScope || Transaction != null;
 
 	public void EnlistInSystemTransaction() {
 		if (Transaction != null) {

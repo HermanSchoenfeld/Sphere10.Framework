@@ -25,7 +25,7 @@ public sealed class RestrictedTransaction : DbTransactionDecorator {
 	public bool HasBeenCommitted { get; private set; }
 
 
-	public new IDbTransaction DangerousInternalTransaction {
+	public IDbTransaction DangerousInternalTransaction {
 		get { return base.InternalTransaction; }
 	}
 

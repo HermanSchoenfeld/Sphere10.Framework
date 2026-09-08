@@ -81,7 +81,7 @@ public partial class SqliteConnectionBar : ConnectionBarBase, IDatabaseConnectio
 		}
 	}
 
-	public virtual async Task<Result> TestConnection() {
+	public override async Task<Result> TestConnection() {
 		var result = Result.Default;
 		var dac = GetDAC();
 		try {

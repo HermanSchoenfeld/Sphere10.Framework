@@ -268,7 +268,7 @@ var product = dac.ExecuteQuery("SELECT * FROM Products WHERE ID = 1");
 
 - **Sphere10.Framework.Data**: Data abstraction layer
 - **System.Data.SQLite** or **Microsoft.Data.Sqlite**: SQLite database provider
-- **.NET Standard 2.1+**: Cross-platform compatibility
+- **.NET 10**: Cross-platform runtime (`net10.0`)
 
 ## 📚 Related Projects
 

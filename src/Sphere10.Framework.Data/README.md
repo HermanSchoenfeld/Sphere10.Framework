@@ -503,3 +503,4 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 
 **Herman Schoenfeld** - Software Engineer
 
+`DACDecorator.Executing` and `Executed` subscriptions are forwarded to the underlying DAC. `SqliteSQLBuilder.Cast` also dispatches correctly through `ISQLBuilder` and `SQLBuilderBase`. XML serialization preserves the original stack trace when rethrowing errors. Formatter-based CSV exception serialization members remain available but are marked obsolete, matching the .NET exception contract.

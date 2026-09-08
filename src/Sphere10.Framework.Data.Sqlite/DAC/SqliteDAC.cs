@@ -129,7 +129,7 @@ public class SqliteDAC : DACBase {
 					row["UniqueName"] = uniqueContraintsByCID.ContainsKey(column.cid) ? (object)uniqueContraintsByCID[column.cid] : DBNull.Value;
 					row["PrimaryKeyName"] = primaryKeyByCID.ContainsKey(column.cid) ? (object)primaryKeyByCID[column.cid] : DBNull.Value;
 					row["Sequence"] = null; // no manual sequences in sqlite
-#warning Detecting auto-increments via SQL create table statements is undesirable, no better known approach known (sequences created after first record inserted)
+// TODO: Detecting auto-increments via SQL create table statements is undesirable, no better known approach known (sequences created after first record inserted)
 					row["IsAutoIncrement"] = primaryKeyByCID.ContainsKey(column.cid) && table.sql.RemoveNonAlphaNumeric().ToUpperInvariant().Contains("PRIMARYKEYAUTOINCREMENT"); /* sequences.ContainsKey(table.name); */
 					if (foreignKeysByColName.ContainsKey(column.name)) {
 						var fk = foreignKeysByColName[column.name];

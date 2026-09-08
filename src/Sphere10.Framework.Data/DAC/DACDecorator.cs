@@ -15,8 +15,14 @@ namespace Sphere10.Framework.Data;
 public abstract class DACDecorator : IDAC {
 	protected readonly IDAC DecoratedDAC;
 
-	public event EventHandlerEx<IDAC, string> Executing;
-	public event EventHandlerEx<IDAC, string> Executed;
+	public event EventHandlerEx<IDAC, string> Executing {
+		add => DecoratedDAC.Executing += value;
+		remove => DecoratedDAC.Executing -= value;
+	}
+	public event EventHandlerEx<IDAC, string> Executed {
+		add => DecoratedDAC.Executed += value;
+		remove => DecoratedDAC.Executed -= value;
+	}
 
 
 	protected DACDecorator(IDAC decoratedDAC) {

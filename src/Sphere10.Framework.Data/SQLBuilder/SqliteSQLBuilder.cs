@@ -241,7 +241,7 @@ public class SqliteSQLBuilder : SQLBuilderBase {
 		return this;
 	}
 
-	public ISQLBuilder Cast(SQLBuilderStringValueKind valueKind, object value, Type type) {
+	public override ISQLBuilder Cast(SQLBuilderStringValueKind valueKind, object value, Type type) {
 		Emit("CAST(");
 		switch (valueKind) {
 			case SQLBuilderStringValueKind.LiteralValue:
@@ -252,6 +252,9 @@ public class SqliteSQLBuilder : SQLBuilderBase {
 				break;
 			case SQLBuilderStringValueKind.VariableName:
 				VariableName(value.ToString());
+				break;
+			case SQLBuilderStringValueKind.Auto:
+				Emit("{0}", value);
 				break;
 			default:
 				throw new SoftwareException("Unsupported SQLBuilderCastValueType {0}", valueKind);

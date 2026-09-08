@@ -128,6 +128,7 @@ public class MalformedCsvException
 	/// </summary>
 	/// <param name="info">The <see cref="T:SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
 	/// <param name="context">The <see cref="T:StreamingContext"/> that contains contextual information about the source or destination.</param>
+	[Obsolete("Formatter-based serialization is obsolete and should not be used.")]
 	protected MalformedCsvException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {
 		_message = info.GetString("MyMessage");
@@ -191,6 +192,7 @@ public class MalformedCsvException
 	/// </summary>
 	/// <param name="info">The <see cref="T:SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
 	/// <param name="context">The <see cref="T:StreamingContext"/> that contains contextual information about the source or destination.</param>
+	[Obsolete("Formatter-based serialization is obsolete and should not be used.")]
 	public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) {
 		base.GetObjectData(info, context);
 

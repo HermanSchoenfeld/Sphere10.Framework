@@ -22,7 +22,9 @@ namespace Sphere10.Framework.Data;
 [Obfuscation(Exclude = true)]
 [Serializable]
 [TypeConverter(typeof(BinaryContainerTypeConverter))]
+#pragma warning disable SYSLIB0050 // Preserve the existing formatter-based binary container contract.
 public class BinaryContainer : ISerializable, IObjectReference {
+#pragma warning restore SYSLIB0050
 	private byte[] _data = null;
 
 	/// <summary>

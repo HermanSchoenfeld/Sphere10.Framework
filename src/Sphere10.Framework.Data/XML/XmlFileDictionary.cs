@@ -67,7 +67,7 @@ public class XmlFileDictionary<T1, T2> : DictionaryDecorator<T1, T2>, IPersisted
 				var surrogate = _useSimpleXmlSerialization ? Tools.Xml.ReadFromFile<SerializableDictionarySurrogate<T1, T2>>(Filename) : Tools.Xml.DeepReadFromFile<SerializableDictionarySurrogate<T1, T2>>(Filename);
 				surrogate.ToDictionary(this);
 			}
-		} catch (Exception error) {
+		} catch (Exception) {
 
 			#region Attempt to recreate file
 

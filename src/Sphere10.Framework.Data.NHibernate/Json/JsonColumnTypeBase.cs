@@ -80,7 +80,7 @@ public abstract class JsonColumnTypeBase<T> : IUserType where T : class {
 		try {
 			result = Activator.CreateInstance(jsonType, true);
 		} catch (Exception) {
-			result = FormatterServices.GetUninitializedObject(jsonType);
+			result = System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(jsonType);
 		}
 
 		return (T)result;

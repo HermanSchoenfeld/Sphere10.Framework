@@ -285,7 +285,7 @@ dac.Update("Products",
 
 - **Sphere10.Framework.Data**: Data abstraction layer
 - **FirebirdSql.Data.FirebirdClient**: Firebird .NET provider
-- **.NET Standard 2.1+**: Cross-platform compatibility
+- **.NET 10**: Cross-platform runtime (`net10.0`)
 
 ## 📚 Related Projects
 

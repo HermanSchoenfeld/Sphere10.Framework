@@ -109,7 +109,7 @@ public abstract class DACBase : IDAC {
 						command.CommandText = batch;
 						Log.Debug(Environment.NewLine + batch);
 						//command.ExecuteNonQuery();
-#warning this code needs to be studied for optimization
+// TODO: this code needs to be studied for optimization
 
 						using (var reader = command.ExecuteReader(CommandBehavior.Default)) {
 							results.AddRange(reader.ToDataTables());

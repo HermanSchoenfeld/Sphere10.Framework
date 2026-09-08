@@ -45,7 +45,7 @@ public class TableSpecification2 : BaseSQLSpecificationObject {
 
 	public class PrimaryKeyConstraint : Constraint {
 
-		public string Name { get; set; }
+		public new string Name { get; set; }
 
 		public IEnumerable<string> Columns { get; set; }
 
