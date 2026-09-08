@@ -33,6 +33,12 @@
       </EmbeddedResource>
     </ItemGroup>
 
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\pascalCoinEciesCompatibilityVectors.json" />
+		<EmbeddedResource Include="Resources\pascalCoinEciesEncryptionVectors.json" />
+		<EmbeddedResource Include="Resources\pascalCoinEciesOversizedVectors.json" />
+	</ItemGroup>
+
 	<!-- In current version of BouncyCastle.Cryptography there is a problem with finding interfaces implementations. 
 	     See here https://github.com/bcgit/bc-csharp/issues/447 for more details. -->
 
