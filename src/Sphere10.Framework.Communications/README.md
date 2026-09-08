@@ -323,3 +323,4 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 
 **Herman Schoenfeld** - Software Engineer
 
+Anonymous-pipe sends wait for the preceding message to drain on Windows. Other platforms write through the pipe without invoking the Windows-only drain API. WebSocket close handling rejects unsupported communication-role enum values explicitly.

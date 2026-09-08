@@ -49,7 +49,8 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 			return false;
 		}
 		try {
-			await Task.Run(_writeStream.WaitForPipeDrain, cancellationToken); // ensure last message was read before new sent
+			if (OperatingSystem.IsWindows())
+				await Task.Run(_writeStream.WaitForPipeDrain, cancellationToken); // ensure last message was read before new sent
 			await _writer.WriteLineAsync(@string.AsMemory(), cancellationToken);
 			NotifySentString(@string);
 			return true;

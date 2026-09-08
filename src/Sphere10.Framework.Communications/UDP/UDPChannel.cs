@@ -81,7 +81,7 @@ public class UDPChannel : ProtocolChannel, IDisposable {
 			var sentLength = await _client.SendAsync(bytes.ToArray(), bytes.Length).WithCancellationToken(cancellationToken);
 			if (sentLength != bytes.Length)
 				return false;
-		} catch (Exception ex) {
+		} catch (Exception) {
 			return false;
 		}
 		return true;

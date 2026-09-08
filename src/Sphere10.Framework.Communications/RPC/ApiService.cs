@@ -137,7 +137,7 @@ public class ApiService {
 					return new JsonResponse { Result = null, Error = new JsonRpcException(-8, $"Agument #{i} is incompatible in method {methodName}.") };
 			}
 
-		} catch (Exception ex) {
+		} catch (Exception) {
 			return new JsonResponse { Result = null, Error = new JsonRpcException(-5, $"Wrong argument type in method {methodName}.") };
 		}
 

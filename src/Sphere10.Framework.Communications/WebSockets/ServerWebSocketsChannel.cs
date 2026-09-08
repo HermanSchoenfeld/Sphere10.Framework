@@ -150,6 +150,7 @@ public class ServerWebSocketsChannel : ProtocolChannel, IDisposable {
 				CloseInitiator = LocalRole switch {
 					CommunicationRole.Server => CommunicationRole.Client,
 					CommunicationRole.Client => CommunicationRole.Server,
+					_ => throw new SoftwareException("Unsupported communication role: {0}", LocalRole),
 				};
 				// handle close response
 				await RespondToCloseMessage();

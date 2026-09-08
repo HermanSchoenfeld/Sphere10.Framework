@@ -89,7 +89,7 @@ public class ClientWebSocketsChannel : ProtocolChannel, IDisposable {
 			}
 
 			SystemLog.Info($"ID: {Id}");
-		} catch (Exception ex) {
+		} catch (Exception) {
 
 		}
 
@@ -99,6 +99,7 @@ public class ClientWebSocketsChannel : ProtocolChannel, IDisposable {
 				CloseInitiator = LocalRole switch {
 					CommunicationRole.Server => CommunicationRole.Client,
 					CommunicationRole.Client => CommunicationRole.Server,
+					_ => throw new SoftwareException("Unsupported communication role: {0}", LocalRole),
 				};
 				// handle close response
 				await RespondToCloseMessage();

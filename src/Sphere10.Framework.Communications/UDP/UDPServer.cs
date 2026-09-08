@@ -146,7 +146,7 @@ public class UDPServer : AsyncDisposable {
 				var sentLength = await _client.SendAsync(bytes.ToArray(), bytes.Length).WithCancellationToken(cancellationToken);
 				if (sentLength != bytes.Length)
 					return false;
-			} catch (Exception error) {
+			} catch (Exception) {
 				return false;
 			}
 			return true;

@@ -192,7 +192,7 @@ public class JsonRpcClientHandler : JsonRpcClient {
 				Config.Logger?.Error($"{EndPoint.GetDescription()} JsonRpcClientHandler Exception :" + e.ToString());
 				//end loop on socket exceptions
 				Stop();
-			} catch (System.IO.IOException e) {
+			} catch (System.IO.IOException) {
 				Config.Logger?.Error($"{EndPoint.GetDescription()} Client disconnected");
 				//end loop on socket/IO exceptions
 				Stop();
