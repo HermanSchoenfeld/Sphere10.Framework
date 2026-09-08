@@ -150,9 +150,7 @@ public class ComponentFactory {
 
 		string source = classBuilder.ToString();
 
-		Microsoft.CSharp.CSharpCodeProvider cp
-			= new Microsoft.CSharp.CSharpCodeProvider();
-		System.CodeDom.Compiler.ICodeCompiler ic = cp.CreateCompiler();
+		using var cp = new Microsoft.CSharp.CSharpCodeProvider();
 		System.CodeDom.Compiler.CompilerParameters cpar
 			= new System.CodeDom.Compiler.CompilerParameters();
 		cpar.GenerateInMemory = true;
@@ -162,7 +160,7 @@ public class ComponentFactory {
 		}
 
 		System.CodeDom.Compiler.CompilerResults cr
-			= ic.CompileAssemblyFromSource(cpar, source);
+			= cp.CompileAssemblyFromSource(cpar, source);
 
 		foreach (System.CodeDom.Compiler.CompilerError ce in cr.Errors) {
 			errorMessages.Add(ce.ErrorText);

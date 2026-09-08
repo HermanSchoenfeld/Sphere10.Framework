@@ -32,7 +32,7 @@ internal class StandardFunctionResolver {
 				src += "Math.E";
 				break;
 			case "phi":
-#warning Emit proper reference here
+// TODO: Emit proper reference here
 				src += "Math.Phi WILL RETURN FAILURE";
 				break;
 			default:

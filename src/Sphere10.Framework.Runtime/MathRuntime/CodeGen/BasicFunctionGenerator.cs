@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -61,14 +61,13 @@ public class BasicFunctionGenerator {
 		string srcCode = EmitFunctionInCSharp(strongName, typeCheckedTree);
 
 		// compile c-sharp code
-		CSharpCodeProvider cp = new CSharpCodeProvider();
-		ICodeCompiler ic = cp.CreateCompiler();
+		using var cp = new CSharpCodeProvider();
 		CompilerParameters cpar = new CompilerParameters();
 		cpar.GenerateInMemory = true;
 		cpar.GenerateExecutable = false;
 		cpar.ReferencedAssemblies.Add("system.dll");
 		cpar.ReferencedAssemblies.Add("SchoenfeldSoftware.Mathematics.dll");
-		CompilerResults cr = ic.CompileAssemblyFromSource(cpar, srcCode);
+		CompilerResults cr = cp.CompileAssemblyFromSource(cpar, srcCode);
 
 		Debug.Assert(cr.Errors.Count == 0);
 		Debug.Assert(cr.CompiledAssembly != null);
