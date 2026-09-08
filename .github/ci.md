@@ -1,8 +1,8 @@
 # GitHub Actions tests
 
-The [Build workflow](workflows/main.yml) runs one Windows job named `build_and_test`: check out the code, install .NET 10, build the cross-platform solution, and run its unit tests directly with `dotnet test`.
+The [Build workflow](workflows/main.yml) runs two Windows jobs: **Build** compiles the cross-platform solution with .NET 10 and uploads the test output folders; **Test** waits for Build, downloads those folders, and runs the compiled assemblies directly with `dotnet vstest`. Test does not rebuild the solution or restore packages.
 
-There are no discovery, partitioning, or reporting scripts, no compiled-test handoff, and no per-test watchdog. The workflow uses GitHub's default job timeout. Test failures and test-host crashes fail the job through the test runner's exit code.
+There are no discovery, partitioning, or reporting scripts and no per-test watchdog. The workflow uses GitHub's default job timeout. Test failures and test-host crashes fail the job through the test runner's exit code.
 
 ## Build versions
 
@@ -12,15 +12,15 @@ The release version is `VersionPrefix` in `Directory.Build.props`. The build com
 
 ## Seeing failures and test output
 
-Open the workflow run, select `build_and_test`, then expand **Run unit tests**. The detailed console logger shows test names, failure messages, expected/actual values, stack traces, and test output directly in the GitHub log. NUnit standard output is enabled. Nothing redirects this output to a server-side log file.
+Open the workflow run, select **Test**, then expand **Run unit tests**. The detailed console logger shows test names, failure messages, expected/actual values, stack traces, and test output directly in the GitHub log. NUnit standard output is enabled. Nothing redirects this output to a server-side log file.
 
-The optional **test-results** artifact contains TRX reports even when tests fail. Downloading it is not necessary to read failures. Use GitHub's **Re-run failed jobs** to rebuild and rerun the job.
+The optional **test-results** artifact contains TRX reports even when tests fail. Downloading it is not necessary to read failures. Use GitHub's **Re-run failed jobs** to retry Test using the existing compiled-tests artifact. Both artifacts are retained for 14 days; after that, rerun all jobs to rebuild. Required branch checks should use the new **Build** and **Test** job names.
 
 ## Adding and running tests
 
-Add fixtures and test cases normally; NUnit discovers them automatically. New test projects need to be added to `src/Sphere10.Framework (CrossPlatform).sln` to run in this workflow. Windows-only projects outside that solution retain their existing exclusion. Explicit tests remain opt-in, and existing `GITHUB_ACTIONS` skips remain in effect.
+Add fixtures and test cases normally; NUnit discovers them automatically. For a new test project, add it to `src/Sphere10.Framework (CrossPlatform).sln` and add its compiled DLL path to the Test command in the workflow. Individual test methods and fixtures need no YAML changes. Windows-only projects outside that solution retain their existing exclusion. Explicit tests remain opt-in, and existing `GITHUB_ACTIONS` skips remain in effect.
 
-Run the same commands locally from the repository root:
+For local development, build and run tests from the repository root:
 
 ```powershell
 $env:GITHUB_ACTIONS = 'true'

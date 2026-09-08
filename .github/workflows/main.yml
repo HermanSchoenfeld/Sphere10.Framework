@@ -11,13 +11,15 @@ concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GITHUB_ACTIONS: 'true'
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+
 jobs:
-  build_and_test:
+  build:
+    name: Build
     runs-on: windows-latest
-    env:
-      GITHUB_ACTIONS: 'true'
-      DOTNET_NOLOGO: 'true'
-      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET 10 SDK
@@ -26,12 +28,37 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Build solution
         run: dotnet build "./src/Sphere10.Framework (CrossPlatform).sln" --configuration Debug --verbosity minimal -p:BuildRevision=${{ github.run_number }}
+      - name: Upload compiled tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-tests
+          path: tests/**/bin/Debug/**
+          if-no-files-found: error
+          retention-days: 14
+
+  test:
+    name: Test
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Download compiled tests
+        uses: actions/download-artifact@v4
+        with:
+          name: compiled-tests
+          path: compiled-tests
       - name: Run unit tests
         run: >-
-          dotnet test "./src/Sphere10.Framework (CrossPlatform).sln"
-          --configuration Debug --no-build
-          --logger "console;verbosity=detailed"
-          --logger trx --results-directory TestResults
+          dotnet vstest
+          "compiled-tests/Sphere10.Framework.Tests/bin/Debug/net10.0/Sphere10.Framework.Tests.dll"
+          "compiled-tests/Sphere10.Framework.CryptoEx.Tests/bin/Debug/net10.0/Sphere10.Framework.CryptoEx.Tests.dll"
+          "compiled-tests/Sphere10.Framework.Data.Tests/bin/Debug/net10.0/Sphere10.Framework.Data.Tests.dll"
+          "compiled-tests/Sphere10.Framework.Communications.Tests/bin/Debug/net10.0/Sphere10.Framework.Communications.Tests.dll"
+          /Logger:"console;verbosity=detailed"
+          /Logger:trx /ResultsDirectory:TestResults
           -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1
       - name: Upload test reports
         if: always()
