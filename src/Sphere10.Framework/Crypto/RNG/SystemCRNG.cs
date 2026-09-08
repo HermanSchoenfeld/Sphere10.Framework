@@ -17,13 +17,13 @@ namespace Sphere10.Framework;
 /// </summary>
 public class SystemCRNG : IRandomNumberGenerator {
 
-	private readonly RNGCryptoServiceProvider _rng;
+	private readonly RandomNumberGenerator _rng;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SystemCRNG"/> class.
 	/// </summary>
 	public SystemCRNG() {
-		_rng = new RNGCryptoServiceProvider();
+		_rng = RandomNumberGenerator.Create();
 	}
 
 	/// <summary>

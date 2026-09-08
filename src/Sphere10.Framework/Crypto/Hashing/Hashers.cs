@@ -231,10 +231,10 @@ public static class Hashers {
 	public static void RegisterDefaultAlgorithms() {
 		Register(CHF.ConcatBytes, () => new ConcatBytes());
 		if (!Tools.Runtime.IsWasmExecutable()) {
-			Register(CHF.SHA2_512, () => new HashAlgorithmAdapter(new SHA512Managed()));
-			Register(CHF.SHA2_384, () => new HashAlgorithmAdapter(new SHA384Managed()));
-			Register(CHF.SHA2_256, () => new HashAlgorithmAdapter(new SHA256Managed()));
-			Register(CHF.SHA1_160, () => new HashAlgorithmAdapter(new SHA1Managed()));
+			Register(CHF.SHA2_512, () => new HashAlgorithmAdapter(SHA512.Create()));
+			Register(CHF.SHA2_384, () => new HashAlgorithmAdapter(SHA384.Create()));
+			Register(CHF.SHA2_256, () => new HashAlgorithmAdapter(SHA256.Create()));
+			Register(CHF.SHA1_160, () => new HashAlgorithmAdapter(SHA1.Create()));
 		}
 		Register(CHF.Blake2b_512, () => new Blake2b(Blake2b._512Config));
 		Register(CHF.Blake2b_384, () => new Blake2b(Blake2b._384Config));

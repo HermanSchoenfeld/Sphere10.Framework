@@ -234,9 +234,6 @@ public abstract class EndianBitConverter {
 	/// startIndex is less than zero or greater than the length of value minus bytesRequired.
 	/// </exception>
 	private static void CheckByteArgument(ReadOnlySpan<byte> value, int startIndex, int bytesRequired) {
-		if (value == null) {
-			throw new ArgumentNullException("value");
-		}
 		if (startIndex < 0 || startIndex > value.Length - bytesRequired) {
 			throw new ArgumentOutOfRangeException("startIndex");
 		}
@@ -632,9 +629,6 @@ public abstract class EndianBitConverter {
 	/// <param name="buffer">The byte array to copy the bytes into</param>
 	/// <param name="index">The first index into the array to copy the bytes into</param>
 	private void WriteToInternal(long value, int bytes, Span<byte> buffer, int index) {
-		if (buffer == null) {
-			throw new ArgumentNullException(nameof(buffer), "Byte array must not be null");
-		}
 		if (buffer.Length < index + bytes) {
 			throw new ArgumentOutOfRangeException("Buffer not big enough for value");
 		}

@@ -13,6 +13,8 @@ public class WithSubstitutionChecksummer<TItem> : ItemChecksummerDecorator<TItem
 	private readonly int _substitution;
 	public WithSubstitutionChecksummer(IItemChecksummer<TItem> innerChecksummer, int reservedChecksumValue, int substitutionChecksumValue)
 		: base(innerChecksummer) {
+		_reserved = reservedChecksumValue;
+		_substitution = substitutionChecksumValue;
 	}
 
 	public int ReservedChecksum => _reserved;

@@ -260,9 +260,6 @@ public class EndianBinaryWriter : IDisposable {
 	/// </summary>
 	/// <param name="value">The values to write</param>
 	public void Write(ReadOnlySpan<byte> value) {
-		if (value == null) {
-			throw (new ArgumentNullException(nameof(value)));
-		}
 		WriteInternal(value, value.Length);
 	}
 
@@ -291,9 +288,6 @@ public class EndianBinaryWriter : IDisposable {
 	/// </summary>
 	/// <param name="value">An array containing the characters to write</param>
 	public void Write(ReadOnlySpan<char> value) {
-		if (value == null) {
-			throw new ArgumentNullException(nameof(value));
-		}
 		CheckDisposed();
 		byte[] data = new byte[sizeof(char) * value.Length];
 		Encoding.GetBytes(value, data);

@@ -24,7 +24,7 @@ public static class StringExtensions {
 
 	#region General
 
-	public static string Truncate(this string value, int maxLength, string truncationSuffix = "…") {
+	public static string Truncate(this string value, int maxLength, string truncationSuffix = "â€¦") {
 		return value?.Length > maxLength
 			? value.Substring(0, maxLength) + truncationSuffix
 			: value;
@@ -371,7 +371,7 @@ public static class StringExtensions {
 	public static string ToCleanPathString(this string path) {
 		path = path.Trim();
 		if (path.Length == 3 && path[2] == '\\') {
-#warning its drive so dont trim back slash from it Make this code better.
+// TODO: its drive so dont trim back slash from it Make this code better.
 			return path;
 		} else {
 			return path.Trim().TrimEnd(Path.DirectorySeparatorChar);

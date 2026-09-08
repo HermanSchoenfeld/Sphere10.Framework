@@ -11,7 +11,10 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework;
 
 public class ScopeDecorator<TScope> : IScope where TScope : IScope {
-	public event EventHandlerEx ScopeEnd;
+	public event EventHandlerEx ScopeEnd {
+		add => Internal.ScopeEnd += value;
+		remove => Internal.ScopeEnd -= value;
+	}
 
 	protected internal TScope Internal;
 

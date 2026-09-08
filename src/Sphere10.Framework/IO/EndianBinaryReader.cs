@@ -455,9 +455,6 @@ public class EndianBinaryReader : IDisposable {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public int Read(Span<byte> buffer) {
 		CheckDisposed();
-		if (buffer == null) {
-			throw new ArgumentNullException(nameof(buffer));
-		}
 		return _stream.Read(buffer);
 	}
 

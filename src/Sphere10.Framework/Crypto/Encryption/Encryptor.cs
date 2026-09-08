@@ -38,15 +38,15 @@ public static class Encryptor {
 			throw new ArgumentNullException(nameof(sharedSecret));
 
 		string outStr = null; // Encrypted string to return
-		AesManaged aesAlg = null; // RijndaelManaged object used to encrypt the data.
+		Aes aesAlg = null; // RijndaelManaged object used to encrypt the data.
 
 		try {
 			// generate the key from the shared secret and the salt
-			Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, salt);
+			// Keep the original 1000 iterations and SHA-1 PRF for ciphertext compatibility.
 
 			// Create a RijndaelManaged object
-			aesAlg = new AesManaged();
-			aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
+			aesAlg = Aes.Create();
+			aesAlg.Key = PBKDF2.DeriveKey(sharedSecret, salt, 1000, aesAlg.KeySize / 8);
 
 			// Create a decryptor to perform the stream transform.
 			var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
@@ -92,7 +92,7 @@ public static class Encryptor {
 
 		// Declare the RijndaelManaged object
 		// used to decrypt the data.
-		AesManaged aesAlg = null;
+		Aes aesAlg = null;
 
 		// Declare the string used to hold
 		// the decrypted text.
@@ -100,15 +100,15 @@ public static class Encryptor {
 
 		try {
 			// generate the key from the shared secret and the salt
-			Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, salt);
+			// Keep the original 1000 iterations and SHA-1 PRF for ciphertext compatibility.
 
 			// Create the streams used for decryption.                
 			byte[] bytes = Convert.FromBase64String(cipherText);
 			using (MemoryStream msDecrypt = new MemoryStream(bytes)) {
 				// Create a RijndaelManaged object
 				// with the specified key and IV.
-				aesAlg = new AesManaged();
-				aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
+				aesAlg = Aes.Create();
+				aesAlg.Key = PBKDF2.DeriveKey(sharedSecret, salt, 1000, aesAlg.KeySize / 8);
 				// Get the initialization vector from the encrypted stream
 				aesAlg.IV = ReadByteArray(msDecrypt);
 				// Create a decrytor to perform the stream transform.
@@ -164,16 +164,22 @@ public static class Encryptor {
 			Tools.Streams.RouteStream(decryptor, output);
 	}
 
+	public static SymmetricAlgorithm PrepareSymmetricAlgorithm(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
+		=> PrepareSymmetricAlgorithm(Aes.Create(), password, salt, paddingMode, cipherMode);
+
 	public static SymmetricAlgorithm PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
-		where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
-		salt ??= new byte[0];
-		var algorithm = new TSymmetricAlgorithm {
-			Padding = paddingMode,
-			Mode = cipherMode,
-		};
+		where TSymmetricAlgorithm : SymmetricAlgorithm, new()
+		=> PrepareSymmetricAlgorithm(new TSymmetricAlgorithm(), password, salt, paddingMode, cipherMode);
+
+	private static SymmetricAlgorithm PrepareSymmetricAlgorithm(SymmetricAlgorithm algorithm, string password, byte[] salt, PaddingMode paddingMode, CipherMode cipherMode) {
+		salt ??= Array.Empty<byte>();
+		algorithm.Padding = paddingMode;
+		algorithm.Mode = cipherMode;
+		// Preserve the existing key derivation and raw-IV stream format for stored ciphertext.
 		algorithm.Key = PBKDF2.DeriveKey(password, salt, 100, algorithm.KeySize / 8);
 		algorithm.IV = Tools.Crypto.GenerateCryptographicallyRandomBytes(algorithm.BlockSize / 8);
 		return algorithm;
 	}
+
 }
 

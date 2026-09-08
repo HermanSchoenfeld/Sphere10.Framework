@@ -65,6 +65,10 @@ public class Crypto {
 		=> Encryptor.DecryptStream(input, output, symmetricAlgorithm);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static SymmetricAlgorithm PrepareSymmetricAlgorithm(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
+		=> Encryptor.PrepareSymmetricAlgorithm(password, salt, paddingMode, cipherMode);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static SymmetricAlgorithm PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
 		where TSymmetricAlgorithm : SymmetricAlgorithm, new()
 		=> Encryptor.PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(password, salt, paddingMode, cipherMode);

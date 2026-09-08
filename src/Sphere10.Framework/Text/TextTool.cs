@@ -241,35 +241,37 @@ public static class Text {
 		return new string(bytes.Select(Convert.ToChar).ToArray());
 	}
 
-	public static byte[] CompressText(string text, string sharedSecret = null) {
-		return CompressText<AesManaged>(text, sharedSecret);
-	}
+	public static byte[] CompressText(string text, string sharedSecret = null)
+		=> CompressText(text, sharedSecret, (source, destination) => Streams.Encrypt(source, destination, sharedSecret));
 
-	public static string DecompressText(byte[] bytes, string sharedSecret = null) {
-		return DecompressText<AesManaged>(bytes, sharedSecret);
-	}
+	public static string DecompressText(byte[] bytes, string sharedSecret = null)
+		=> DecompressText(bytes, sharedSecret, (source, destination) => Streams.Decrypt(source, destination, sharedSecret));
 
-	public static byte[] CompressText<TSymmetricAlgorithm>(string text, string password = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
+	public static byte[] CompressText<TSymmetricAlgorithm>(string text, string password = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) where TSymmetricAlgorithm : SymmetricAlgorithm, new()
+		=> CompressText(text, password, (source, destination) => Streams.Encrypt<TSymmetricAlgorithm>(source, destination, password, null, paddingMode, cipherMode));
+
+	public static string DecompressText<TSymmetricAlgorithm>(byte[] bytes, string password = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) where TSymmetricAlgorithm : SymmetricAlgorithm, new()
+		=> DecompressText(bytes, password, (source, destination) => Streams.Decrypt<TSymmetricAlgorithm>(source, destination, password, null, paddingMode, cipherMode));
+
+	private static byte[] CompressText(string text, string password, Action<Stream, Stream> encrypt) {
 		var hasPassword = !String.IsNullOrEmpty(password);
-		Action<Stream, Stream> compressor = Streams.GZipCompress;
-		Action<Stream, Stream> encryptor = (source, dest) => Streams.Encrypt<TSymmetricAlgorithm>(source, dest, password, null, paddingMode, cipherMode);
-		Action<Stream, Stream> noop = (source, dest) => Streams.RouteStream(source, dest);
+		Action<Stream, Stream> compress = Streams.GZipCompress;
+		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
 		using var sourceStream = new MemoryStream(ConvertToByteArray(text));
 		using var destStream = new MemoryStream();
-		using var streamPipeline = new StreamPipeline(compressor, hasPassword ? encryptor : noop);
-		streamPipeline.Run(sourceStream, destStream);
+		using var pipeline = new StreamPipeline(compress, hasPassword ? encrypt : copy);
+		pipeline.Run(sourceStream, destStream);
 		return destStream.ToArray();
 	}
 
-	public static string DecompressText<TSymmetricAlgorithm>(byte[] bytes, string password = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
+	private static string DecompressText(byte[] bytes, string password, Action<Stream, Stream> decrypt) {
 		var hasPassword = !String.IsNullOrEmpty(password);
-		Action<Stream, Stream> decompressor = Streams.GZipDecompress;
-		Action<Stream, Stream> decryptor = (source, dest) => Streams.Decrypt<TSymmetricAlgorithm>(source, dest, password, null, paddingMode, cipherMode);
-		Action<Stream, Stream> noop = (source, dest) => Streams.RouteStream(source, dest);
+		Action<Stream, Stream> decompress = Streams.GZipDecompress;
+		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
 		using var sourceStream = new MemoryStream(bytes);
 		using var destStream = new MemoryStream();
-		using var streamPipeline = new StreamPipeline(hasPassword ? decryptor : noop, decompressor);
-		streamPipeline.Run(sourceStream, destStream);
+		using var pipeline = new StreamPipeline(hasPassword ? decrypt : copy, decompress);
+		pipeline.Run(sourceStream, destStream);
 		return ConvertToString(destStream.ToArray());
 	}
 

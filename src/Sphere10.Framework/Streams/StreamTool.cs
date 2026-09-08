@@ -241,6 +241,16 @@ public static class Streams {
 	}
 
 
+	public static void Encrypt(Stream input, Stream output, string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) {
+		using var algorithm = Crypto.PrepareSymmetricAlgorithm(password, salt, paddingMode, cipherMode);
+		Tools.Crypto.EncryptStream(input, output, algorithm);
+	}
+
+	public static void Decrypt(Stream input, Stream output, string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) {
+		using var algorithm = Crypto.PrepareSymmetricAlgorithm(password, salt, paddingMode, cipherMode);
+		Tools.Crypto.DecryptStream(input, output, algorithm);
+	}
+
 	public static void Encrypt<TSymmetricAlgorithm>(Stream input, Stream output, string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
 		where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
 		Tools.Crypto.EncryptStream(input, output, Crypto.PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(password, salt, paddingMode, cipherMode));

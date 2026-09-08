@@ -485,43 +485,42 @@ public static class FileSystem {
 		}
 	}
 
-	public static void CompressFile(string sourcePath, string destPath, string password = null) {
-		CompressFile<AesManaged>(sourcePath, destPath, password);
-	}
+	public static void CompressFile(string sourcePath, string destPath, string password = null)
+		=> CompressFile(sourcePath, destPath, password, (source, destination) => Streams.Encrypt(source, destination, password));
 
-	public static void DecompressFile(string sourcePath, string destPath, string password = null) {
-		DecompressFile<AesManaged>(sourcePath, destPath, password);
-	}
+	public static void DecompressFile(string sourcePath, string destPath, string password = null)
+		=> DecompressFile(sourcePath, destPath, password, (source, destination) => Streams.Decrypt(source, destination, password));
 
 	public static void CompressFile<TSymmetricAlgorithm>(string sourcePath, string destPath,
 	                                                     string password = null,
 	                                                     PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
-		where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
-		var hasPassword = !String.IsNullOrEmpty(password);
-		Action<Stream, Stream> compressor = Streams.GZipCompress;
-		Action<Stream, Stream> encryptor = (source, dest) =>
-			Streams.Encrypt<TSymmetricAlgorithm>(source, dest, password, null, paddingMode, cipherMode);
-		Action<Stream, Stream> noop = (source, dest) => Streams.RouteStream(source, dest);
-		using (var sourceStream = File.OpenRead(sourcePath))
-		using (var destStream = File.OpenWrite(destPath))
-		using (var streamPipeline = new StreamPipeline(compressor, hasPassword ? encryptor : noop)) {
-			streamPipeline.Run(sourceStream, destStream);
-		}
-	}
+		where TSymmetricAlgorithm : SymmetricAlgorithm, new()
+		=> CompressFile(sourcePath, destPath, password, (source, destination) => Streams.Encrypt<TSymmetricAlgorithm>(source, destination, password, null, paddingMode, cipherMode));
 
 	public static void DecompressFile<TSymmetricAlgorithm>(string sourcePath, string destPath,
 	                                                       string password = null, PaddingMode paddingMode = PaddingMode.PKCS7,
 	                                                       CipherMode cipherMode = CipherMode.CBC)
-		where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
+		where TSymmetricAlgorithm : SymmetricAlgorithm, new()
+		=> DecompressFile(sourcePath, destPath, password, (source, destination) => Streams.Decrypt<TSymmetricAlgorithm>(source, destination, password, null, paddingMode, cipherMode));
+
+	private static void CompressFile(string sourcePath, string destPath, string password, Action<Stream, Stream> encrypt) {
 		var hasPassword = !String.IsNullOrEmpty(password);
-		Action<Stream, Stream> decryptor = (source, dest) =>
-			Streams.Decrypt<TSymmetricAlgorithm>(source, dest, password, null, paddingMode, cipherMode);
-		Action<Stream, Stream> decompressor = Streams.GZipDecompress;
-		Action<Stream, Stream> noop = (source, dest) => Streams.RouteStream(source, dest);
-		using (var sourceStream = File.OpenRead(sourcePath))
-		using (var destStream = File.OpenWrite(destPath))
-		using (var streamPipeline = new StreamPipeline(hasPassword ? decryptor : noop, decompressor))
-			streamPipeline.Run(sourceStream, destStream);
+		Action<Stream, Stream> compress = Streams.GZipCompress;
+		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
+		using var sourceStream = File.OpenRead(sourcePath);
+		using var destStream = File.OpenWrite(destPath);
+		using var pipeline = new StreamPipeline(compress, hasPassword ? encrypt : copy);
+		pipeline.Run(sourceStream, destStream);
+	}
+
+	private static void DecompressFile(string sourcePath, string destPath, string password, Action<Stream, Stream> decrypt) {
+		var hasPassword = !String.IsNullOrEmpty(password);
+		Action<Stream, Stream> decompress = Streams.GZipDecompress;
+		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
+		using var sourceStream = File.OpenRead(sourcePath);
+		using var destStream = File.OpenWrite(destPath);
+		using var pipeline = new StreamPipeline(hasPassword ? decrypt : copy, decompress);
+		pipeline.Run(sourceStream, destStream);
 	}
 
 	public static string GetTempEmptyDirectory(bool create = true) {

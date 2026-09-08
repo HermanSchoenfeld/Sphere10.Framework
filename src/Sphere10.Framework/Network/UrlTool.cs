@@ -20,7 +20,7 @@ using Sphere10.Framework;
 namespace Tools;
 
 public static class Url {
-	static readonly Regex WordDelimiters = new Regex(@"[\s—–_]", RegexOptions.Compiled); // white space, em-dash, en-dash, underscore
+	static readonly Regex WordDelimiters = new Regex(@"[\sâ€”â€“_]", RegexOptions.Compiled); // white space, em-dash, en-dash, underscore
 	static readonly Regex InvalidChars = new Regex(@"[^a-z0-9\-]", RegexOptions.Compiled); // characters that are not valid
 	static readonly Regex MultipleHyphens = new Regex(@"-{2,}", RegexOptions.Compiled); // multiple hyphens
 	static readonly Regex AsciiLetters = new Regex(@"[a-zA-Z]", RegexOptions.Compiled); // characters that are not valid
@@ -220,8 +220,8 @@ public static class Url {
 			System.Array.ConvertAll(queryParams.AllKeys,
 				key =>
 					queryParams[key] == null
-						? Uri.EscapeUriString(key)
-						: String.Format("{0}={1}", Uri.EscapeUriString(key), Uri.EscapeUriString(queryParams[key]))));
+						? Uri.EscapeDataString(key)
+						: String.Format("{0}={1}", Uri.EscapeDataString(key), Uri.EscapeDataString(queryParams[key]))));
 
 		if (!String.IsNullOrEmpty(queryString))
 			url = String.Format("{0}{1}{2}", url, (url.Contains("?") ? "&" : "?"), queryString);
