@@ -11,7 +11,7 @@ using System;
 namespace Sphere10.Framework.Windows.BITS;
 
 /// <summary>
-/// Encapsulates a job by name. Will create if doesn't exist, or fetch if already exists.
+/// Encapsulates a job by name, replacing any existing job when initialized.
 /// Good for monitoring jobs over application load boundary.
 /// </summary>
 public abstract class JobEx {
@@ -25,24 +25,13 @@ public abstract class JobEx {
 		BitsManager bitsManager = new BitsManager();
 		bitsManager.OnInterfaceError += new EventHandler<BitsInterfaceNotificationEventArgs>(bitsManager_OnInterfaceError);
 		BitsJobs jobs = bitsManager.EnumJobs(Owner);
-		bool foundJob = false;
+		// Preserve the existing restart behavior for jobs with the same name.
 		foreach (BitsJob job in jobs.Values) {
-			if (job.DisplayName == Name) {
-				// if not transferring, then it is dangling so remove it
-#warning Fix behaviour here
-				if (true) {
-					//job.State != JobState.Transferring) {
-					job.Cancel();
-				} else {
-					UnderlyingJob = job;
-					foundJob = true;
-				}
-			}
+			if (job.DisplayName == Name)
+				job.Cancel();
 		}
-		if (!foundJob) {
-			UnderlyingJob = bitsManager.CreateJob(Name, JobType);
-			OnCreate(UnderlyingJob);
-		}
+		UnderlyingJob = bitsManager.CreateJob(Name, JobType);
+		OnCreate(UnderlyingJob);
 		UnderlyingJob.OnJobErrorEvent += new EventHandler<JobErrorNotificationEventArgs>(UnderlyingJob_OnJobErrorEvent);
 		UnderlyingJob.OnJobTransferredEvent += new EventHandler<JobNotificationEventArgs>(UnderlyingJob_OnJobTransferredEvent);
 	}

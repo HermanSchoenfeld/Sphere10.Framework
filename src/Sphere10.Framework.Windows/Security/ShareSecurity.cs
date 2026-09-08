@@ -28,8 +28,6 @@ public sealed class ShareSecurity : NativeObjectSecurity {
 	public ShareSecurity()
 		: base(true, ResourceType.LMShare) {
 	}
-
-	[SecurityPermission(SecurityAction.Assert, UnmanagedCode = true)]
 	public ShareSecurity(string name, AccessControlSections includeSections)
 		: base(
 			true,

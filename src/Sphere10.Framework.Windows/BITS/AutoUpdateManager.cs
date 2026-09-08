@@ -122,8 +122,7 @@ public class AutoUpdater {
 		try {
 			// complete the job
 			_downloadJob.Complete();
-			CodeDomProvider provider = new Microsoft.CSharp.CSharpCodeProvider();
-			ICodeCompiler compiler = provider.CreateCompiler();
+			using var provider = new Microsoft.CSharp.CSharpCodeProvider();
 			CompilerParameters cpar = new CompilerParameters();
 			cpar.GenerateInMemory = true;
 			cpar.GenerateExecutable = false;
@@ -135,7 +134,7 @@ public class AutoUpdater {
 			cpar.ReferencedAssemblies.Add("System.Windows.Forms.dll");
 			cpar.ReferencedAssemblies.Add("RSIWarrior.Common.dll");
 			cpar.ReferencedAssemblies.Add("RSIWarrior.AutoUpdate.dll");
-			CompilerResults cres = compiler.CompileAssemblyFromFile(
+			CompilerResults cres = provider.CompileAssemblyFromFile(
 				cpar,
 				LocalPatchFile
 			);
@@ -154,7 +153,7 @@ public class AutoUpdater {
 				}
 			}
 
-		} catch (Exception ex) {
+		} catch (Exception) {
 		} finally {
 			try {
 				File.Delete(LocalPatchFile);

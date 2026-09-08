@@ -104,7 +104,7 @@ public class NTHost : NTObject {
 			#endregion
 
 		} catch {
-#warning Dodgy workaround - can't get host SID for domain controllers. Ignorning for now
+// TODO: Dodgy workaround - can't get host SID for domain controllers. Ignorning for now
 			try {
 				SidNameUsage = WinAPI.ADVAPI32.SidNameUse.Invalid;
 				SID = new SecurityIdentifier(WellKnownSidType.BuiltinDomainSid, null);
@@ -296,8 +296,8 @@ public class NTHost : NTObject {
 				user.Refresh();
 				localUsers.Add(user);
 			}
-		} catch (Exception error) {
-#warning Need to fix this
+		} catch (Exception) {
+// TODO: Need to fix this
 			//throw new ApplicationException(
 
 		} finally {

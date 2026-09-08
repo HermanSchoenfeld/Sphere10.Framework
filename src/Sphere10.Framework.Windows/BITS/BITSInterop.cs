@@ -9,7 +9,7 @@
 // For more information see the Updater Application Block Implementation Overview. 
 // 
 //============================================================================================================
-// Copyright © Microsoft Corporation.  All rights reserved.
+// Copyright Â© Microsoft Corporation.  All rights reserved.
 // THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY
 // OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT
 // LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
@@ -39,7 +39,6 @@ namespace Sphere10.Framework.Windows.BITS;
 [GuidAttribute("4991D34B-80A1-4291-83B6-3328366B9097")]
 [ClassInterfaceAttribute(ClassInterfaceType.None)]
 [ComImportAttribute()]
-[SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
 internal class BackgroundCopyManager {
 }
 
