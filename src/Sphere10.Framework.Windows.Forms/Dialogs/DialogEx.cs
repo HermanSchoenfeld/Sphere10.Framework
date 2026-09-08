@@ -153,7 +153,7 @@ public partial class DialogEx : FormEx {
 	private async void button1_Click(object sender, EventArgs e) {
 		try {
 			await OnProcessButtonAsync(DialogExResult.Button1);
-		} catch (Exception error) {
+		} catch (Exception) {
 			//
 		}
 	}
@@ -161,7 +161,7 @@ public partial class DialogEx : FormEx {
 	private async void button2_Click(object sender, EventArgs e) {
 		try {
 			await OnProcessButtonAsync(DialogExResult.Button2);
-		} catch (Exception error) {
+		} catch (Exception) {
 			//
 		}
 
@@ -170,7 +170,7 @@ public partial class DialogEx : FormEx {
 	private async void button3_Click(object sender, EventArgs e) {
 		try {
 			await OnProcessButtonAsync(DialogExResult.Button3);
-		} catch (Exception error) {
+		} catch (Exception) {
 			//
 		}
 
@@ -179,7 +179,7 @@ public partial class DialogEx : FormEx {
 	private async void button4_Click(object sender, EventArgs e) {
 		try {
 			await OnProcessButtonAsync(DialogExResult.Button4);
-		} catch (Exception error) {
+		} catch (Exception) {
 			//
 		}
 

@@ -36,6 +36,7 @@ public class DevAgeApplicationException : ApplicationException {
 	/// </summary>
 	/// <param name="p_Info"></param>
 	/// <param name="p_StreamingContext"></param>
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected DevAgeApplicationException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}

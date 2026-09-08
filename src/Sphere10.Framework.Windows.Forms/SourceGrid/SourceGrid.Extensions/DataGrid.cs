@@ -527,6 +527,7 @@ public class EndEditingException : SourceGridException {
 	public EndEditingException(Exception innerException) :
 		base(innerException.Message, innerException) {
 	}
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected EndEditingException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}

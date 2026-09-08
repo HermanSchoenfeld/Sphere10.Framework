@@ -11,8 +11,8 @@ using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-#warning Add Option Dialogs
-#warning Add 8x8 special icon (outlook bar bottom)
+// TODO: Add Option Dialogs
+// TODO: Add 8x8 special icon (outlook bar bottom)
 
 
 public interface IApplicationBlock : IDisposable {

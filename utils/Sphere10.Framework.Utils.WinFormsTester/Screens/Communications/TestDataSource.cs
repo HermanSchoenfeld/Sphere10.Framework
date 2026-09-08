@@ -15,8 +15,6 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 public class DataSource1<TItem> : SyncBatchDataSourceBase<TestClass> {
 	List<TestClass> AllItems = new List<TestClass>();
 
-	public event EventHandlerEx<IEnumerable<CrudActionItem<TestClass>>> MutatedItems;
-
 	public void RefreshData() {
 		AllItems = LoadData(73);
 	}
@@ -24,12 +22,6 @@ public class DataSource1<TItem> : SyncBatchDataSourceBase<TestClass> {
 	// create some dummy data
 	public DataSource1() {
 		RefreshData();
-
-		MutatedItems += DataSource1_MutatedItems;
-	}
-
-	private void DataSource1_MutatedItems(IEnumerable<CrudActionItem<TestClass>> arg) {
-		throw new NotImplementedException();
 	}
 
 	static List<TestClass> LoadData(int size) {

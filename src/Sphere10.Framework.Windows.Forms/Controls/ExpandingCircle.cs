@@ -39,7 +39,6 @@ public class ExpandingCircle : Form {
 	public ExpandingCircle()
 		: this(0, 0, DefaultCircleStartRadius, DefaultCircleThickness, DefaultExpansionSpeed, DefaultCircleColor, DefaultCircleMaxRadius) {
 		Enabled = false;
-		Keys s;
 	}
 
 

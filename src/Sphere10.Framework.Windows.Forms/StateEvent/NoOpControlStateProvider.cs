@@ -12,7 +12,10 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public sealed class NoOpControlStateProvider : IControlStateEventProvider {
-	public event EventHandlerEx StateChanged;
+	public event EventHandlerEx StateChanged {
+		add { }
+		remove { }
+	}
 
 	public void Clear() {
 		// do nothing

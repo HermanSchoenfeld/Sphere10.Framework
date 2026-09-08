@@ -95,8 +95,8 @@ public class FormBase : System.Windows.Forms.Form {
 		}
 	}
 
-	protected override void OnClosing(CancelEventArgs e) {
-		base.OnClosing(e);
+	protected override void OnFormClosing(FormClosingEventArgs e) {
+		base.OnFormClosing(e);
 
 		try {
 			if (DesignMode == false &&

@@ -26,7 +26,7 @@ public class FormSingleton {
 
 			m_Form.CreateControl();
 
-			m_Form.Closed += new EventHandler(m_Form_Closed);
+			m_Form.FormClosed += m_Form_Closed;
 		}
 
 		return m_Form;
@@ -37,7 +37,7 @@ public class FormSingleton {
 	}
 
 	private void m_Form_Closed(object sender, EventArgs e) {
-		m_Form.Closed -= new EventHandler(m_Form_Closed);
+		m_Form.FormClosed -= m_Form_Closed;
 		m_Form = null;
 	}
 }

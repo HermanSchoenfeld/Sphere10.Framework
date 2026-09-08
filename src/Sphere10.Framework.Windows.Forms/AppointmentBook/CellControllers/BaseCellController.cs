@@ -14,13 +14,9 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
 internal class BaseCellController : SourceGrid.Cells.Controllers.ControllerBase {
-	private Cursor _previousCursor;
-	private MouseCursor _cursor;
 
 	internal BaseCellController(BaseAppointmentBook owner) {
 		Owner = owner;
-		_previousCursor = null;
-		_cursor = null;
 	}
 
 	protected BaseAppointmentBook Owner { get; set; }

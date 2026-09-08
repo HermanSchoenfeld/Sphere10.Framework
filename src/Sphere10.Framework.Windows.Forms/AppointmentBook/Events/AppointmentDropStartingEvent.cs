@@ -9,7 +9,7 @@
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
 public class AppointmentDropStartingEvent : AppointmentDropEvent {
-	public AppointmentColumn TargetColumn { get; set; }
+	public new AppointmentColumn TargetColumn { get; set; }
 	public bool Cancel { get; set; }
 	public string ErrorMessage { get; set; }
 }

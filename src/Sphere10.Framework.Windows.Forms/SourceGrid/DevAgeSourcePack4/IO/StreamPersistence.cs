@@ -60,15 +60,15 @@ public static class StreamPersistence {
 	public static void Write(Stream p_Stream, Boolean p_Value) {
 		WriteBytes(p_Stream, BitConverter.GetBytes(p_Value));
 	}
-	[CLSCompliant(false)]
+
 	public static void Write(Stream p_Stream, UInt16 p_Value) {
 		WriteBytes(p_Stream, BitConverter.GetBytes(p_Value));
 	}
-	[CLSCompliant(false)]
+
 	public static void Write(Stream p_Stream, UInt32 p_Value) {
 		WriteBytes(p_Stream, BitConverter.GetBytes(p_Value));
 	}
-	[CLSCompliant(false)]
+
 	public static void Write(Stream p_Stream, UInt64 p_Value) {
 		WriteBytes(p_Stream, BitConverter.GetBytes(p_Value));
 	}
@@ -176,7 +176,7 @@ public static class StreamPersistence {
 		return val;
 	}
 
-	[CLSCompliant(false)]
+
 	public static UInt16 ReadUInt16(Stream p_Stream) {
 		System.UInt16 val;
 		byte[] l_tmp = BitConverter.GetBytes((UInt16)0);
@@ -185,7 +185,7 @@ public static class StreamPersistence {
 		return val;
 	}
 
-	[CLSCompliant(false)]
+
 	public static UInt32 ReadUInt32(Stream p_Stream) {
 		System.UInt32 val;
 		byte[] l_tmp = BitConverter.GetBytes((UInt32)0);
@@ -194,7 +194,7 @@ public static class StreamPersistence {
 		return val;
 	}
 
-	[CLSCompliant(false)]
+
 	public static UInt64 ReadUInt64(Stream p_Stream) {
 		System.UInt64 val;
 		byte[] l_tmp = BitConverter.GetBytes((UInt64)0);
@@ -290,6 +290,7 @@ public class InvalidDataException : DevAgeApplicationException {
 	public InvalidDataException(string p_strErrDescription, Exception p_InnerException) :
 		base(p_strErrDescription, p_InnerException) {
 	}
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected InvalidDataException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -308,6 +309,7 @@ public class TypeNotSupportedException : DevAgeApplicationException {
 	public TypeNotSupportedException(string p_strErrDescription, Exception p_InnerException) :
 		base(p_strErrDescription, p_InnerException) {
 	}
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected TypeNotSupportedException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}

@@ -353,7 +353,6 @@ public class ExpandoSurrogate : ISerializable {
 	/// </summary>
 	/// <param name="info">The SerializationInfo to populate with data</param>
 	/// <param name="context">The destination for this serialization</param>
-	[SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
 	public void GetObjectData(SerializationInfo info, StreamingContext context) {
 		info.AddValue("Version", this.Version);
 
@@ -400,7 +399,6 @@ public class ExpandoSurrogate : ISerializable {
 	/// </summary>
 	/// <param name="info">The information to populate the ExpandoSurrogate</param>
 	/// <param name="context">The source from which the ExpandoSurrogate is deserialized</param>
-	[SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
 	protected ExpandoSurrogate(SerializationInfo info, StreamingContext context)
 		: base() {
 		int version = info.GetInt32("Version");

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -234,7 +234,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 
 		#endregion
 
-		private MergeableMenuStrip mergeableMenuStrip1;
+
 		private System.Windows.Forms.ToolStripMenuItem cToolStripMenuItem;
 		private MergeableMenuStrip mergeableMenuStrip2;
 		private System.Windows.Forms.ToolStripMenuItem aAToolStripMenuItem;

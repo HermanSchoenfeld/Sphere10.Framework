@@ -243,9 +243,6 @@ public partial class BaseAppointmentBook : UserControl {
 
 	public virtual bool IsCellSelected(int col, int row) {
 		if (!SelectState.IsIn(GridSelectingState.None, GridSelectingState.Dragging)) {
-			if (SelectionStart == null || SelectionEnd == null) {
-				var x = 1;
-			}
 			if ((SelectionStart.Item1 <= col && col <= SelectionEnd.Item1 &&
 			     SelectionStart.Item2 <= row && row <= SelectionEnd.Item2) ||
 			    (SelectionEnd.Item1 <= col && col <= SelectionStart.Item1 &&

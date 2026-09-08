@@ -22,7 +22,7 @@ public partial class RegionToolTestScreen : ApplicationScreen {
 	}
 
 	private void button1_Click(object sender, EventArgs e) {
-		foreach (var culture in CultureInfo.GetCultures(CultureTypes.FrameworkCultures)) {
+		foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures)) {
 			if (culture.IsNeutralCulture)
 				_outputTextWriter.WriteLine("NETRUAL {0}: {1}", culture.EnglishName, culture.TwoLetterISOLanguageName);
 			else

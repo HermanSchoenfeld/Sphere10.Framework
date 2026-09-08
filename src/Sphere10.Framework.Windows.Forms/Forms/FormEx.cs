@@ -136,7 +136,7 @@ public partial class FormEx : Form, IUpdatable {
 	protected virtual void OnStateChanged() {
 	}
 
-	protected override void OnClosing(CancelEventArgs e) {
+	protected override void OnFormClosing(FormClosingEventArgs e) {
 		if (!CloseAction.HasFlag(FormCloseAction.Close)) {
 			e.Cancel = true;
 			if (CloseAction.HasFlag(FormCloseAction.Hide)) {
@@ -146,6 +146,7 @@ public partial class FormEx : Form, IUpdatable {
 				WindowState = FormWindowState.Minimized;
 			}
 		}
+		base.OnFormClosing(e);
 	}
 
 	private void NotifyStateChanged() {

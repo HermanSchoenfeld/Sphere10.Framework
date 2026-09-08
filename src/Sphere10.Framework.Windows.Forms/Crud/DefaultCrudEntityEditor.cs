@@ -49,7 +49,7 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 		_propertyGrid.Refresh();
 	}
 
-	public IEnumerable<string> Validate() => Enumerable.Empty<string>();
+	public new IEnumerable<string> Validate() => Enumerable.Empty<string>();
 
 	protected virtual void OnPropertyChanged(object Entity, object PropertyName, object OldValue, object NewValue) {
 	}

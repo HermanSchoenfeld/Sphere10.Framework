@@ -719,12 +719,12 @@ public class Expando : Control, ISupportInitialize {
 		// it changed. Having that information, analyzing every frame of the 
 		// animation I could see that it would always be formed of 23 steps.
 		//    Once having all of the animation, frame by frame, I could see 
-		// that the expando's height obeyed to a bézier curve. For testing 
-		// purposes, I have created an application that draws the bézier curve 
+		// that the expando's height obeyed to a bÃ©zier curve. For testing
+		// purposes, I have created an application that draws the bÃ©zier curve
 		// on top of the frames put side by side, and it matches 100%.
 		//    The height of the expando in each step would be the vertical 
-		// position of the bézier in the horizontal position(i.e. the step).
-		//    A bézier should be drawn into a Graphics object, with x1 set to 
+		// position of the bÃ©zier in the horizontal position(i.e. the step).
+		//    A bÃ©zier should be drawn into a Graphics object, with x1 set to
 		// 0 (initial step = 0) and y1 to the initial height of the expando to 
 		// be animated. The first control point (x2,y2) is defined by:
 		//    x2 = (numAnimationSteps / 4) * 3
@@ -1521,7 +1521,6 @@ public class Expando : Control, ISupportInitialize {
 	/// </summary>
 	/// <param name="dx">The ratio by which to scale the control horizontally</param>
 	/// <param name="dy">The ratio by which to scale the control vertically</param>
-	[Obsolete]
 	protected override void ScaleCore(float dx, float dy) {
 		// fix: need to adjust expanded height when scaling
 		//      AndrewEames (andrew@cognex.com)

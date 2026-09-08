@@ -17,7 +17,6 @@ public class StartupFolderAutoRunServicesProvider : IAutoRunServices {
 		switch (type) {
 			case AutoRunType.CurrentUser:
 				return File.Exists(Tools.Windows.Shell.DetermineStartupShortcutFilename(applicationName));
-				break;
 			default:
 				throw new SoftwareException("AutoRunType '{0}' not supported", type);
 		}

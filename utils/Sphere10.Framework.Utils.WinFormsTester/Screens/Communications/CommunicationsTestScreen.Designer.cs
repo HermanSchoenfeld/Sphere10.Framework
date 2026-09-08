@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -49,7 +49,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester
             this.label6 = new System.Windows.Forms.Label();
             this.MyIPs = new System.Windows.Forms.ListView();
             this.IP = new System.Windows.Forms.ColumnHeader();
-            this.Type = new System.Windows.Forms.ColumnHeader();
+            this._typeColumn = new System.Windows.Forms.ColumnHeader();
             this.label1 = new System.Windows.Forms.Label();
             this.MyIp = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -175,7 +175,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester
             // 
             this.MyIPs.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.IP,
-            this.Type});
+            this._typeColumn});
             this.MyIPs.Location = new System.Drawing.Point(75, 3);
             this.MyIPs.Name = "MyIPs";
             this.MyIPs.Size = new System.Drawing.Size(254, 117);
@@ -187,9 +187,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester
             // 
             this.IP.Width = 100;
             // 
-            // Type
+            // _typeColumn
             // 
-            this.Type.Width = 150;
+            this._typeColumn.Width = 150;
             // 
             // label1
             // 
@@ -357,7 +357,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.ListView MyIPs;
 		private System.Windows.Forms.ColumnHeader IP;
-		private System.Windows.Forms.ColumnHeader Type;
+		private System.Windows.Forms.ColumnHeader _typeColumn;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox MyIp;
 		private System.Windows.Forms.Label label7;

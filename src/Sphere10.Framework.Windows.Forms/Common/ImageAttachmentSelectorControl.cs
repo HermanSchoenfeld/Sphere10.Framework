@@ -59,11 +59,11 @@ public partial class ImageAttachmentSelectorControl : UserControl {
 		get {
 			ImageAttachmentSource retval = ImageAttachmentSource.None;
 			if (_filenameRadioButton.Checked) {
-				ImageAttachmentSource source = ImageAttachmentSource.File;
+				retval = ImageAttachmentSource.File;
 			} else if (_clipboardRadioButton.Checked) {
-				ImageAttachmentSource source = ImageAttachmentSource.Clipboard;
+				retval = ImageAttachmentSource.Clipboard;
 			} else if (_noneRadioButton.Checked) {
-				ImageAttachmentSource source = ImageAttachmentSource.None;
+				retval = ImageAttachmentSource.None;
 			}
 			return retval;
 		}

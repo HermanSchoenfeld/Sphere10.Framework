@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -28,7 +28,7 @@ public class WizardScreen<T> : UserControlEx, IWizardScreen<T> {
 	public virtual async Task OnNext() {
 	}
 
-	public virtual async Task<Result> Validate() {
+	public new virtual async Task<Result> Validate() {
 		return Result.Default;
 	}
 

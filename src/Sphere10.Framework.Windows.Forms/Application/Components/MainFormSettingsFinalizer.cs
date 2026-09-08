@@ -20,15 +20,18 @@ public class MainFormSettingsFinalizer : ApplicationFinalizerBase {
 	public IDisposable Attach(Form Window, string SettingsID = "MainForm")
 		=> Tools.WinForms.TrackWindowSettings(Window, SettingsID, Settings => _pendingSettings = Settings);
 
+	// Preserve the public application lifecycle method; it is not a CLR finalizer.
+#pragma warning disable CS0465
 	public override void Finalize() {
-		var Settings = _pendingSettings;
+#pragma warning restore CS0465
+		var settings = _pendingSettings;
 		_pendingSettings = null;
-		if (Settings == null)
+		if (settings == null)
 			return;
 		try {
-			Settings.Save();
-		} catch (Exception Error) {
-			SystemLog.Exception(Error);
+			settings.Save();
+		} catch (Exception error) {
+			SystemLog.Exception(error);
 		}
 	}
 }

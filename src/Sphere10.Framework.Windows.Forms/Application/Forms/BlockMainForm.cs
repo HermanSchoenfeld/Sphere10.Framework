@@ -18,9 +18,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-#warning Add icons
-#warning Add menus
-#warning Add plugin stuff to menus
+// TODO: Add icons
+// TODO: Add menus
+// TODO: Add plugin stuff to menus
 
 public partial class BlockMainForm : MainForm, IBlockManager {
 	private readonly SidebarToggleButton _navigationPaneToggleButton;
@@ -176,7 +176,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 		RebuildToolBar();
 
-#warning Execute these on form load rather than now?
+// TODO: Execute these on form load rather than now?
 		foreach (IMenu menu in plugin.Menus) {
 			foreach (IMenuItem menuItem in menu.Items) {
 				if (menuItem.ExecuteOnLoad) {
@@ -372,7 +372,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 				IMenuItem menuItem = MenuItemBindings[taskItem];
 				ExecuteMenuItem(menuItem);
 			} else {
-#warning TaskItem did not bind to a IMenuItem
+// TODO: TaskItem did not bind to a IMenuItem
 			}
 		}
 	}
@@ -384,7 +384,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 				ILinkMenuItem menuItem = MenuItemBindings[taskItem] as ILinkMenuItem;
 				ExecuteMenuItem(menuItem);
 			} else {
-#warning TaskItem did not bind to a IMenuItem
+// TODO: TaskItem did not bind to a IMenuItem
 			}
 		}
 	}
@@ -438,7 +438,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 				IMenuItem menuItem = ToolStripBindings[stripItem];
 				ExecuteMenuItem(menuItem);
 			} else {
-#warning TaskItem did not bind to a IMenuItem
+// TODO: TaskItem did not bind to a IMenuItem
 			}
 		}
 	}
@@ -684,11 +684,11 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Handlers
 
-	protected virtual void ContextHelp_Click(object sender, EventArgs e) {
+	protected override void ContextHelp_Click(object sender, EventArgs e) {
 		ShowActiveScreenContextHelp();
 	}
 
-	protected virtual void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
+	protected override void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
 		ShowActiveScreenContextHelp();
 	}
 

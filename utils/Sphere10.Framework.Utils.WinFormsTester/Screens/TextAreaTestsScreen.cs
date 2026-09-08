@@ -310,8 +310,6 @@ public partial class TextAreaTestsScreen : ApplicationScreen {
 
 			_standardTextBox.Clear();
 			_standardTextBox.AppendText(epasaPattern.ToString());
-
-			Match subregex;
 			{
 				//subregex = new Regex(unescapedSafeAnsiCharPattern, RegexOptions.None).Match("77-44[0x1234]:121f");
 				_standardTextBox.AppendLine("const string safeAnsiCharPattern = \"" + safeAnsiCharPattern + "\"");

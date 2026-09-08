@@ -437,3 +437,19 @@ See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT Li
 ## 👤 Author
 
 **Herman Schoenfeld** - Software Engineer
+
+## Native helper migration
+
+Reusable native interop now lives in `Sphere10.Framework.Windows`, accessed through `WinAPI` and `Tools.Windows.Win32`. Windows Forms retains control lifecycle, message dispatch, and wrappers such as `Tools.WinForms.CreateCursor`. Sound playback moved to `Sphere10.Framework.Windows.SoundPlayerEx`.
+
+Code using the former low-level APIs should update these references:
+
+- `Tools.WinForms.IconInfo`, `CreateIconIndirect`, and `GetIconInfo` moved to `WinAPI.USER32.ICONINFO`, `WinAPI.USER32.CreateIconIndirect`, and `WinAPI.USER32.GetIconInfo`.
+- `DevAgeRichTextBox`'s native constants and protected `CHARFORMAT` moved to `WinAPI.RICHEDIT`; derived controls should pass `WinAPI.RICHEDIT.CHARFORMAT` to `SetCharFormatMessage`.
+- Popup/combo-box native constants moved to `WinAPI.USER32`; word extraction helpers moved to `Tools.Windows.Win32`. Native sizing/tab structures now use `WinAPI.USER32.MINMAXINFO` and `WinAPI.COMCTL32.TCITEM`.
+
+These low-level moves require recompilation and the listed source updates for consumers of the moved members. Rich-edit formatting, cursor hotspots, native struct sizes, and hook disposal have regression coverage in `WindowsInteropTests`. The cursor wrapper does not transfer native-handle ownership to `Cursor.Dispose`; direct native consumers should use `CreateCursorHandle` and release their handle explicitly.
+
+Custom closing behavior should override `OnFormClosing(FormClosingEventArgs)`. The framework forms use this supported lifecycle hook. Image attachment selection now returns the selected file or clipboard source instead of always reporting `None`.
+
+Legacy DES stream helpers retain their existing full-length input buffer and zero-filled tail at end of input; short reads are completed before encryption or decryption. The existing DES key, IV, and ciphertext format are preserved.

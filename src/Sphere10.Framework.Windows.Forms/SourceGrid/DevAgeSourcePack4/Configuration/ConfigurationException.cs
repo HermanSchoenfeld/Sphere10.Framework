@@ -19,6 +19,7 @@ public class ConfigurationException : DevAgeApplicationException {
 		base(p_strErrDescription, p_InnerException) {
 	}
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected ConfigurationException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}

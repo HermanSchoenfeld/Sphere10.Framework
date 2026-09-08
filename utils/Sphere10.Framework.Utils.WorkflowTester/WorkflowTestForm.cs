@@ -64,8 +64,8 @@ public partial class WorkflowTestForm : Form {
 			ErrorStep = 3;
 	}
 
-	protected override void OnClosed(EventArgs e) {
-		base.OnClosed(e);
+	protected override void OnFormClosed(FormClosedEventArgs e) {
+		base.OnFormClosed(e);
 		_workflowHost.Stop();
 	}
 

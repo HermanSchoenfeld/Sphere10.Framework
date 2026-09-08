@@ -29,9 +29,9 @@ public partial class EnterTextDialog : Form {
 
 	public string UserInput { get; set; }
 
-	protected override void OnClosing(CancelEventArgs e) {
-		base.OnClosing(e);
+	protected override void OnFormClosing(FormClosingEventArgs e) {
 		UserInput = _textBox.Text;
+		base.OnFormClosing(e);
 	}
 
 	/// <summary>Awaitably shows the dialog, returning the entered text and whether OK was pressed.</summary>

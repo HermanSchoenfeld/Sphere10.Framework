@@ -91,6 +91,7 @@ public class SourceGridException : ApplicationException {
 	public SourceGridException(string p_strErrDescription, Exception p_InnerException) :
 		base(p_strErrDescription, p_InnerException) {
 	}
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected SourceGridException(SerializationInfo p_Info, StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -102,6 +103,7 @@ public class EditingCellException : SourceGridException {
 	public EditingCellException(Exception innerException) :
 		base(innerException.Message, innerException) {
 	}
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected EditingCellException(SerializationInfo p_Info, StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}

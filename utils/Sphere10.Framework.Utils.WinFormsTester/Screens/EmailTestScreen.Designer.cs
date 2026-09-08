@@ -349,7 +349,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester.Screens {
 		private System.Windows.Forms.TextBox _smtpUsernameTextBox;
 		private System.Windows.Forms.TextBox _smtpPasswordTextBox;
 		private System.Windows.Forms.TextBox _fromTextBox;
-		private System.Windows.Forms.TextBox textBox4;
+
 		private System.Windows.Forms.Label label6;
 		private Sphere10.Framework.Windows.Forms.IntBox _smtpPortIntBox;
 		private System.Windows.Forms.CheckBox _sslCheckBox;

@@ -522,7 +522,8 @@ public class ApplicationScreenTabTests {
 
 	private class TestTabs : ApplicationScreenTabControl {
 		private bool _processingNativePaint;
-		public Size RuntimeCaptureSize;
+		[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+		public Size RuntimeCaptureSize { get; set; }
 		public int RuntimeCaptionPixels;
 		public float RuntimeBufferOffsetX;
 

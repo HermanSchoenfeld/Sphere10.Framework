@@ -17,6 +17,7 @@ public class InvalidFieldLengthException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected InvalidFieldLengthException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -31,6 +32,7 @@ public class ValueNotValidLengthException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected ValueNotValidLengthException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -45,6 +47,7 @@ public class ValueNotSupportedException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected ValueNotSupportedException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -59,6 +62,7 @@ public class TypeNotSupportedException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected TypeNotSupportedException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -73,6 +77,7 @@ public class RegExException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected RegExException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -87,6 +92,7 @@ public class FieldParseException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected FieldParseException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -101,6 +107,7 @@ public class FieldStringConvertException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected FieldStringConvertException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -129,6 +136,7 @@ public class FieldNotDefinedException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected FieldNotDefinedException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -143,6 +151,7 @@ public class FailedPropertySetFieldException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected FailedPropertySetFieldException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
@@ -157,6 +166,7 @@ public class FailedPropertyGetFieldException : DevAgeApplicationException {
 	}
 
 #if !MINI
+	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
 	protected FailedPropertyGetFieldException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
 		base(p_Info, p_StreamingContext) {
 	}
