@@ -15,12 +15,10 @@
   </PropertyGroup>
   <ItemGroup>
     <None Update="README.md" Pack="true" PackagePath="/" />
-    <None Update="LICENSE" Pack="true" PackagePath="/" />
     <None Update="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/" />
     <None Update="buildTransitive/Sphere10.VisualRenderer.targets" Pack="true" PackagePath="buildTransitive/Sphere10.VisualRenderer.targets" />
     <None Remove="Themes/default/resources/mathjax/LICENSE" />
     <None Include="Themes/default/resources/mathjax/LICENSE" Pack="true" PackagePath="third-party/MathJax/" />
-    <None Update="sphere10-icon.png" Pack="true" PackagePath="/" />
     <EmbeddedResource Include="Themes/**/*" Exclude="Themes/**/*.cs" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
