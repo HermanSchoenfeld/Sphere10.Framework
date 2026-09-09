@@ -1,6 +1,6 @@
 # Sphere10.Framework.Windows.Forms.MySQL
 
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **MySQL connection editors for Windows Forms**, backed by `MySqlConnector` and the framework's `MySQLDAC`. The package provides a compact connection bar and a larger panel for collecting server, database, account, password, and port settings.
 
@@ -181,6 +181,6 @@ The project references the shared WinForms library and matching data provider. D
 
 ## License and author
 
-Distributed under the [MIT License](../../LICENSE). See the [standard MIT license text](https://opensource.org/license/mit).
+Distributed under the [MIT License](../../LICENSE).
 
-**Author:** Herman Schoenfeld, Sphere 10 Software (sphere10.com). Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+**Author:** Herman Schoenfeld (sphere10.com). Copyright © 2018-Present Herman Schoenfeld. All rights reserved.

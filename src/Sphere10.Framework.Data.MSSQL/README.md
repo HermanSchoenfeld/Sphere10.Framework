@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 # 💾 Sphere10.Framework.Data.MSSQL
 
@@ -291,8 +291,8 @@ dac.ExecuteNonQuery("EXECUTE spProcessMonthlyBilling");
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
-**Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
-**Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+**Author**: Herman Schoenfeld (sphere10.com)  
+**Copyright**: © 2018-Present Herman Schoenfeld. All rights reserved.
 
 `MSSQLDAC.CreateConnection()` returns a `Microsoft.Data.SqlClient.SqlConnection` through its existing `IDbConnection` contract. Consumers that cast to the concrete provider should use the Microsoft namespace. The existing `Tools.MSSQL` signatures still accept the legacy `System.Data.SqlClient.ApplicationIntent` enum. Omitted encryption settings retain the previous optional-encryption preference; explicit connection-string encryption settings are preserved. Certificate validation follows the current provider: when the server forces encryption, an omitted `Encrypt` option does not bypass certificate validation.
 

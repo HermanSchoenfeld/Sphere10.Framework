@@ -1,6 +1,6 @@
 # ⛓️ Sphere10.Framework.Consensus
 
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Blockchain state transitions, chain management, and proof-of-work primitives** for building a ledger with your own block format, state model, and consensus rules.
 

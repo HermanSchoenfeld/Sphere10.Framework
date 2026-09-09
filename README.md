@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 <p align="center">
   <img  src="resources/branding/sphere-10-framework-logo.jpg" alt="Sphere10 Framework logo">
@@ -11,7 +11,7 @@
 
 # :rocket: Sphere10 Framework: Comprehensive .NET Application Framework
 
-Copyright © Herman Schoenfeld, Sphere 10 Software 2005 - Present
+Copyright © Herman Schoenfeld 2005 - Present
 
 **A mature, production-ready .NET framework** providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, Sphere10 Framework has evolved into a comprehensive general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and utilities for high-performance .NET development.
 
@@ -242,9 +242,7 @@ Please follow the [Code Styling Guidelines](docs/guidelines/code-styling.md).
 
 ## :balance_scale: License
 
-Sphere10 Framework is distributed under the standard **MIT License**.
-
-> :warning: This is **not** a standard MIT license. See [LICENSE](LICENSE) for the full terms.
+Sphere10 Framework is distributed under the **MIT License**.
 
 More information: [MIT License](https://opensource.org/license/mit)
 

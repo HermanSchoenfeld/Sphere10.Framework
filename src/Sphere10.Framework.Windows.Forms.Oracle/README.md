@@ -1,6 +1,6 @@
 # Sphere10.Framework.Windows.Forms.Oracle
 
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Oracle connection editors for Windows Forms**, backed by `Oracle.ManagedDataAccess.Core` and the framework's `OracleDAC`. The package provides a compact connection bar and a larger panel for host/service connections or an existing Oracle data-source descriptor.
 
@@ -187,6 +187,6 @@ The project references the shared WinForms library and matching data provider. D
 
 ## License and author
 
-Distributed under the [MIT License](../../LICENSE). See the [standard MIT license text](https://opensource.org/license/mit).
+Distributed under the [MIT License](../../LICENSE).
 
-**Author:** Herman Schoenfeld, Sphere 10 Software (sphere10.com). Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+**Author:** Herman Schoenfeld (sphere10.com). Copyright © 2018-Present Herman Schoenfeld. All rights reserved.

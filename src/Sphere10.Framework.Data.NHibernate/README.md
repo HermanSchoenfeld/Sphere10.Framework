@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 # 💾 Sphere10.Framework.Data.NHibernate
 
@@ -359,7 +359,7 @@ using (var session = sessionFactory.OpenSession()) {
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
-**Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)  
-**Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+**Author**: Herman Schoenfeld (sphere10.com)  
+**Copyright**: © 2018-Present Herman Schoenfeld. All rights reserved.
 
 

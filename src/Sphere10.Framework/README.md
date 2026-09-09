@@ -1715,7 +1715,7 @@ Sphere10 Framework is a mature library that has evolved over multiple years. Cor
 
 Distributed under the **MIT License**.
 
-See the repository [LICENSE](../../LICENSE) for the standard MIT terms.
+Sphere10 Framework is distributed under the [MIT License](../../LICENSE).
 
 More information: [MIT License](https://opensource.org/license/mit)
 

@@ -1,6 +1,6 @@
 # 💾 Sphere10.Framework.Data
 
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Database-agnostic data access layer** providing the `IDAC` interface, SQL builders, transaction scopes, schema introspection, and data format utilities for CSV, JSON, and XML.
 

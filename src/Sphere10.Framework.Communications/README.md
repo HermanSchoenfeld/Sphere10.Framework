@@ -1,6 +1,6 @@
 # 📡 Sphere10.Framework.Communications
 
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 **Multi-protocol networking and RPC framework** providing JSON-RPC servers/clients, anonymous pipes, TCP endpoints, WebSockets, and protocol channel abstractions.
 

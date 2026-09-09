@@ -1,6 +1,6 @@
 # Sphere10 Framework Documentation
 
-**Copyright © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.**
+**Copyright © 2018-Present Herman Schoenfeld. All rights reserved.**
 
 Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET 8.0 framework for building high-performance applications across desktop, mobile, and web platforms.
 

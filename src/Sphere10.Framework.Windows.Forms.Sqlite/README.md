@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 # Sphere10.Framework.Windows.Forms.Sqlite
 
@@ -137,8 +137,8 @@ dotnet build src/Sphere10.Framework.Windows.Forms.Sqlite/Sphere10.Framework.Wind
 
 ## License & Author
 
-**License**: [MIT](../../LICENSE) ([standard MIT text](https://opensource.org/license/mit))
+**License**: [MIT License](../../LICENSE)
 
-**Author**: Herman Schoenfeld, Sphere 10 Software (sphere10.com)
+**Author**: Herman Schoenfeld (sphere10.com)
 
-**Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved.
+**Copyright**: © 2018-Present Herman Schoenfeld. All rights reserved.
