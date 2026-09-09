@@ -1,0 +1,1 @@
+﻿data-aos="fade-up"

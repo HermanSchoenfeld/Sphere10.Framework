@@ -31,7 +31,7 @@ if (-not (Test-Path -LiteralPath $solutionPath -PathType Leaf)) {
 $outputRoot = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($outputDirectory)
 $stageRoot = Join-Path $PSScriptRoot 'publish/.staging'
 $stageDirectory = Join-Path $stageRoot "framework-$([guid]::NewGuid().ToString('N'))"
-$packageNamePattern = '^(?:Sphere10\.Framework(?:\.[A-Za-z][A-Za-z0-9_-]*)*|Sphere10\.HashLib4CSharp)\.[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?\.(?:nupkg|snupkg)$'
+$packageNamePattern = '^(?:Sphere10\.Framework(?:\.[A-Za-z][A-Za-z0-9_-]*)*|Sphere10\.HashLib4CSharp|Sphere10\.VisualRenderer)\.[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?\.(?:nupkg|snupkg)$'
 $pathComparison = if ([IO.Path]::DirectorySeparatorChar -eq '\') { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
 
 function Remove-StagingDirectory {
