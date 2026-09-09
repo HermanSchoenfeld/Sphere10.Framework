@@ -14,7 +14,7 @@
     <IsPackable>false</IsPackable>
     
     <!-- Version Management -->
-    <VersionPrefix>3.1.1</VersionPrefix>
+    <VersionPrefix>3.1.2</VersionPrefix>
     <Version>$(VersionPrefix)</Version>
     <!-- CI supplies the fourth component; local builds default to zero. -->
     <BuildRevision Condition="'$(BuildRevision)' == ''">0</BuildRevision>
