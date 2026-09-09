@@ -4,7 +4,7 @@
 
 **Developer**: Herman Schoenfeld  
 **Copyright**: © 2018-Present Herman Schoenfeld  
-**License**: MIT NON-AI  
+**License**: MIT<br>
 **Status**: Production-Ready
 
 ---
@@ -1713,11 +1713,11 @@ Sphere10 Framework is a mature library that has evolved over multiple years. Cor
 
 ## ⚖️ License
 
-Distributed under the **MIT NON-AI License**.
+Distributed under the **MIT License**.
 
-This license encourages ethical AI development and prevents use in certain AI/ML contexts without explicit permission. See the LICENSE file for full details.
+See the repository [LICENSE](../../LICENSE) for the standard MIT terms.
 
-More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
+More information: [MIT License](https://opensource.org/license/mit)
 
 ## 📖 Resources
 

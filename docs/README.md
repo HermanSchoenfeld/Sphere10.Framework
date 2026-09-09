@@ -172,6 +172,6 @@ See [Tools Reference](tools-reference.md) for the complete catalog.
 
 ## ⚖️ License
 
-Sphere10 Framework is distributed under the **MIT NON-AI License**.
+Sphere10 Framework is distributed under the **MIT License**.
 
 See [LICENSE](../LICENSE) for details.

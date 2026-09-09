@@ -7,7 +7,7 @@
 ![Version](https://img.shields.io/badge/version-3.1.1-blue)
 [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework)
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
-![License](https://img.shields.io/badge/license-MIT%20NON--AI-green)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 # :rocket: Sphere10 Framework: Comprehensive .NET Application Framework
 
@@ -242,9 +242,9 @@ Please follow the [Code Styling Guidelines](docs/guidelines/code-styling.md).
 
 ## :balance_scale: License
 
-Sphere10 Framework is distributed under the **MIT NON-AI License** — standard MIT permissions with an additional restriction prohibiting use of the code for training machine learning / AI models.
+Sphere10 Framework is distributed under the standard **MIT License**.
 
 > :warning: This is **not** a standard MIT license. See [LICENSE](LICENSE) for the full terms.
 
-More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
+More information: [MIT License](https://opensource.org/license/mit)
 

@@ -13,4 +13,4 @@ Sphere10.Framework.Generators is intended to provide **C# source generators** fo
 
 ## License
 
-MIT NON-AI (see [LICENSE](../../LICENSE) in repository root)
+MIT (see [LICENSE](../../LICENSE) in repository root)

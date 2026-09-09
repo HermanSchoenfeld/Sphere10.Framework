@@ -9,7 +9,7 @@
     <RepositoryUrl>https://github.com/HermanSchoenfeld/Sphere10.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://sphere10.com/tech/framework</PackageProjectUrl>
-    <PackageLicenseFile Condition="'$(PackageLicenseFile)' == ''">LICENSE</PackageLicenseFile>
+    <PackageLicenseExpression Condition="'$(PackageLicenseExpression)' == ''">MIT</PackageLicenseExpression>
     <PackageIcon>sphere10-icon.png</PackageIcon>
     <IsPackable>false</IsPackable>
     

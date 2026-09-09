@@ -462,9 +462,9 @@ For complete Tools reference, see [docs/tools-reference.md](../../docs/tools-ref
 
 ## ⚖️ License
 
-Distributed under the **MIT NON-AI License**.
+Distributed under the **MIT License**.
 
-See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
+See the LICENSE file for full details. More information: [MIT License](https://opensource.org/license/mit)
 
 ## 👤 Author
 
