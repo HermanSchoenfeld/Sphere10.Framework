@@ -4,7 +4,7 @@
   <img  src="resources/branding/sphere-10-framework-logo.jpg" alt="Sphere10 Framework logo">
 </p>
 
-![Version](https://img.shields.io/badge/version-3.1.1-blue)
+![Version](https://img.shields.io/badge/version-3.1.3-blue)
 [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework)
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -59,12 +59,11 @@ dotnet add package Sphere10.Framework.Data
 dotnet add package Sphere10.Framework.Data.Sqlite
 dotnet add package Sphere10.Framework.CryptoEx
 dotnet add package Sphere10.Framework.Communications
-dotnet add package Sphere10.VisualRenderer
 ```
 
 ### Building and publishing packages
 
-Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.1.114`. Local builds default to `3.1.1.0`; override with `-p:BuildRevision=1` for `3.1.1.1`. The NuGet version remains `3.1.1`, and assembly identity remains `3.1.1.0` across builds. For prerelease packages, pass `-p:Version=3.1.1-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
+Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.3.114`. Local builds default to `3.1.3.0`; override with `-p:BuildRevision=1` for `3.1.3.1`. The NuGet version remains `3.1.3`, and assembly identity remains `3.1.3.0` across builds. For prerelease packages, pass `-p:Version=3.1.3-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
 
 From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It builds into a staging directory, verifies matching package and symbol files, then replaces the framework packages in `nuget-packages`. Failed builds leave the previous packages intact; unrelated files and packages are preserved. Packing does not run tests. Use `-OutputDirectory` to select a different destination.
 
@@ -74,7 +73,7 @@ From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows
 .\publish.ps1 -IncludeSymbols
 ```
 
-[publish.ps1](publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, `Sphere10.HashLib4CSharp`, and `Sphere10.VisualRenderer` are selected. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
+[publish.ps1](publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Independent packages such as `Sphere10.VisualRenderer` live under `Components/` and are packed separately. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
 
 The publisher accepts `-ApiKey`, reads `NUGET_API_KEY`, or prompts with hidden input. Ordinary publication asks for PowerShell confirmation; use `-Confirm:$false` for an automated run with credentials supplied. `-Source`, `-SymbolSource`, and `-PackagesDirectory` override the default feeds and package directory. Both scripts support Windows PowerShell 5.1 and PowerShell 7 and resolve default paths relative to the script location.
 

@@ -6,9 +6,9 @@ There are no discovery, partitioning, or reporting scripts and no per-test watch
 
 ## Build versions
 
-The release version is `VersionPrefix` in `Directory.Build.props`. The build command passes `github.run_number` as `BuildRevision`, giving binaries a four-part file version such as `3.1.1.114`. Informational version carries that version plus the SDK's source revision metadata. NuGet package version stays `3.1.1` and assembly identity stays `3.1.1.0`.
+The release version is `VersionPrefix` in `Directory.Build.props`. The build command passes `github.run_number` as `BuildRevision`, giving binaries a four-part file version such as `3.1.3.114`. Informational version carries that version plus the SDK's source revision metadata. NuGet package version stays `3.1.3` and assembly identity stays `3.1.3.0`.
 
-[GitHub's workflow run number](https://docs.github.com/en/actions/reference/workflows-and-actions/variables) increases with each new run and stays the same when retrying that run. It continues across releases rather than restarting at one. Local builds default to revision zero; append `-p:BuildRevision=1` to the build command to produce `3.1.1.1`. No scripts or source-file updates are needed during CI.
+[GitHub's workflow run number](https://docs.github.com/en/actions/reference/workflows-and-actions/variables) increases with each new run and stays the same when retrying that run. It continues across releases rather than restarting at one. Local builds default to revision zero; append `-p:BuildRevision=1` to the build command to produce `3.1.3.1`. No scripts or source-file updates are needed during CI.
 
 ## Seeing failures and test output
 
@@ -40,4 +40,4 @@ Logical-cluster memoization remains controlled by the file-local `#define Logica
 
 ## Stable dependencies
 
-`Directory.Packages.props` uses stable dependency versions for the stable `3.1.1` release. When updating packages, exclude prerelease versions so packing does not produce NU5104 warnings. Preview dependencies require an explicitly prerelease package version.
+`Directory.Packages.props` uses stable dependency versions for the stable `3.1.3` release. When updating packages, exclude prerelease versions so packing does not produce NU5104 warnings. Preview dependencies require an explicitly prerelease package version.

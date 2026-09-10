@@ -57,7 +57,6 @@ jobs:
           "compiled-tests/Sphere10.Framework.CryptoEx.Tests/bin/Debug/net10.0/Sphere10.Framework.CryptoEx.Tests.dll"
           "compiled-tests/Sphere10.Framework.Data.Tests/bin/Debug/net10.0/Sphere10.Framework.Data.Tests.dll"
           "compiled-tests/Sphere10.Framework.Communications.Tests/bin/Debug/net10.0/Sphere10.Framework.Communications.Tests.dll"
-          "compiled-tests/Sphere10.VisualRenderer.Tests/bin/Debug/net10.0/Sphere10.VisualRenderer.Tests.dll"
           /Logger:"console;verbosity=detailed"
           /Logger:trx /ResultsDirectory:TestResults
           -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1

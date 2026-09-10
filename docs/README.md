@@ -79,7 +79,7 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 |---------|-------------|--------|
 | **Sphere10.Framework.Web.AspNetCore** | Middleware, filters, HTML utilities | [View](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
 | **Sphere10.Framework.Drawing** | Graphics and image manipulation | [View](../src/Sphere10.Framework.Drawing/README.md) |
-| **Sphere10.VisualRenderer** | Visual document model to HTML and plain text | [View](../src/Sphere10.VisualRenderer/README.md) |
+| **Sphere10.VisualRenderer** | Visual document model to HTML and plain text | Independent component at `Components/Sphere10.VisualRenderer` |
 | **Sphere10.Framework.iOS** | Xamarin.iOS integration | [View](../src/Sphere10.Framework.iOS/README.md) |
 | **Sphere10.Framework.Android** | Xamarin.Android integration | [View](../src/Sphere10.Framework.Android/README.md) |
 | **Sphere10.Framework.macOS** | Xamarin.macOS integration | [View](../src/Sphere10.Framework.macOS/README.md) |

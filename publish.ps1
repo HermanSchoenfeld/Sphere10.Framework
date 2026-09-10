@@ -99,9 +99,9 @@ function Get-PackageMetadata {
 		}
 		$idNode = $metadata.SelectSingleNode('*[local-name()="id"]')
 		$versionNode = $metadata.SelectSingleNode('*[local-name()="version"]')
-		if ($null -eq $idNode -or $idNode.InnerText -notmatch '^Sphere10\.(?:Framework(?:\.[A-Za-z][A-Za-z0-9_-]*)*|HashLib4CSharp|VisualRenderer)$' -or
+		if ($null -eq $idNode -or $idNode.InnerText -notmatch '^Sphere10\.(?:Framework(?:\.[A-Za-z][A-Za-z0-9_-]*)*|HashLib4CSharp)$' -or
 			$null -eq $versionNode -or [string]::IsNullOrWhiteSpace($versionNode.InnerText)) {
-			throw "Package must have a Sphere10 Framework, Sphere10.HashLib4CSharp, or Sphere10.VisualRenderer identity and version: $packagePath"
+			throw "Package must have a Sphere10 Framework or Sphere10.HashLib4CSharp identity and version: $packagePath"
 		}
 		if (-not (Test-PackageVersion $versionNode.InnerText)) {
 			throw "Invalid NuGet package version '$($versionNode.InnerText)': $packagePath"
@@ -117,7 +117,7 @@ if (-not (Test-Path -LiteralPath $packagesDirectory -PathType Container)) {
 }
 $packagesRoot = (Resolve-Path -LiteralPath $packagesDirectory).ProviderPath
 $packages = @(Get-ChildItem -LiteralPath $packagesRoot -File -Filter '*.nupkg' |
-	Where-Object { $_.Name -match '^(?:Sphere10\.Framework(?:\.|$)|Sphere10\.HashLib4CSharp\.|Sphere10\.VisualRenderer\.)' } | Sort-Object Name)
+	Where-Object { $_.Name -match '^(?:Sphere10\.Framework(?:\.|$)|Sphere10\.HashLib4CSharp\.)' } | Sort-Object Name)
 if ($packages.Count -eq 0) {
 	throw "No Sphere10 Framework packages found in $packagesRoot. Run pack.ps1 first."
 }
