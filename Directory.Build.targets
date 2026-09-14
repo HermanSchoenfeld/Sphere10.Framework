@@ -1,0 +1,79 @@
+<Project>
+  <UsingTask TaskName="AllocateSphere10FrameworkBuildRevision"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <CounterFile ParameterType="System.String" Required="true" />
+      <BuildRevision ParameterType="System.Int32" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Threading" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        if (string.IsNullOrWhiteSpace(CounterFile))
+          throw new InvalidOperationException("A local build-number counter file is required.");
+        var directory = Path.GetDirectoryName(CounterFile);
+        if (!string.IsNullOrEmpty(directory))
+          Directory.CreateDirectory(directory);
+
+        var telemetrySession = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_SESSIONID");
+        var sessionKey = !string.IsNullOrWhiteSpace(telemetrySession)
+          ? telemetrySession
+          : (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("VisualStudioVersion")) ? "visualstudio" : "local");
+        foreach (var invalid in Path.GetInvalidFileNameChars())
+          sessionKey = sessionKey.Replace(invalid, '-');
+        var sessionDirectory = Path.Combine(directory, "obj");
+        Directory.CreateDirectory(sessionDirectory);
+        var sessionFile = Path.Combine(sessionDirectory, "local-build-session-" + sessionKey + ".txt");
+        var reuseExactSession = !string.IsNullOrWhiteSpace(telemetrySession);
+
+        using (var mutex = new Mutex(false, "Sphere10.Framework.LocalBuildRevision"))
+        {
+          try { mutex.WaitOne(); }
+          catch (AbandonedMutexException) { }
+          try
+          {
+            var allocated = false;
+            if (File.Exists(sessionFile))
+            {
+              var reuse = reuseExactSession;
+              if (!reuse)
+                reuse = DateTime.UtcNow - File.GetLastWriteTimeUtc(sessionFile) < TimeSpan.FromMinutes(5);
+              if (reuse && int.TryParse(File.ReadAllText(sessionFile).Trim(), out var existing) && existing > 0)
+              {
+                BuildRevision = existing;
+                allocated = true;
+              }
+            }
+
+            if (!allocated)
+            {
+              var current = 0;
+              if (File.Exists(CounterFile))
+                int.TryParse(File.ReadAllText(CounterFile).Trim(), out current);
+              if (current < 0) current = 0;
+              if (current >= 65534)
+                throw new InvalidOperationException("Local build number exceeded 65534.");
+              BuildRevision = current + 1;
+              File.WriteAllText(CounterFile, BuildRevision.ToString());
+              File.WriteAllText(sessionFile, BuildRevision.ToString());
+            }
+          }
+          finally { mutex.ReleaseMutex(); }
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="AllocateSphere10FrameworkBuildRevisionForLocalBuild"
+          BeforeTargets="GetAssemblyVersion;GetAssemblyAttributes;GenerateNuspec;PrepareForBuild"
+          Condition="'$(DesignTimeBuild)' != 'true' And '$(_FrameworkExplicitBuildRevision)' == '' And '$(GITHUB_ACTIONS)' != 'true' And '$(TF_BUILD)' != 'true' And '$(CI)' != 'true'">
+    <AllocateSphere10FrameworkBuildRevision CounterFile="$(_FrameworkBuildCounterFile)">
+      <Output TaskParameter="BuildRevision" PropertyName="BuildRevision" />
+    </AllocateSphere10FrameworkBuildRevision>
+    <PropertyGroup>
+      <FileVersion>$(VersionPrefix).$(BuildRevision)</FileVersion>
+      <InformationalVersion>$(FileVersion)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+</Project>

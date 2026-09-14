@@ -1,3 +1,6 @@
+# Local build counter (solution folder; not source-controlled)
+/LOCAL-BUILD-NUMBER
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

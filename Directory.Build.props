@@ -16,12 +16,16 @@
     <!-- Version Management -->
     <VersionPrefix>3.1.3</VersionPrefix>
     <Version>$(VersionPrefix)</Version>
-    <!-- CI supplies the fourth component; local builds default to zero. -->
+    <!-- Capture before defaulting an omitted BuildRevision to 0. -->
+    <_FrameworkExplicitBuildRevision>$(BuildRevision)</_FrameworkExplicitBuildRevision>
+    <_FrameworkBuildCounterFile>$(MSBuildThisFileDirectory)LOCAL-BUILD-NUMBER</_FrameworkBuildCounterFile>
+    <!-- CI supplies the fourth component; local builds allocate the next number from LOCAL-BUILD-NUMBER when omitted. -->
     <BuildRevision Condition="'$(BuildRevision)' == ''">0</BuildRevision>
     <!-- Keep assembly identity stable across builds of the same release. -->
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <FileVersion>$(VersionPrefix).$(BuildRevision)</FileVersion>
     <InformationalVersion>$(FileVersion)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <!-- Build Configuration -->
     <LangVersion>latest</LangVersion>

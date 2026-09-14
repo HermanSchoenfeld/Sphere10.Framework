@@ -6,9 +6,9 @@ There are no discovery, partitioning, or reporting scripts and no per-test watch
 
 ## Build versions
 
-The release version is `VersionPrefix` in `Directory.Build.props`. The build command passes `github.run_number` as `BuildRevision`, giving binaries a four-part file version such as `3.1.3.114`. Informational version carries that version plus the SDK's source revision metadata. NuGet package version stays `3.1.3` and assembly identity stays `3.1.3.0`.
+The release version is `VersionPrefix` in `Directory.Build.props`. The build command passes `github.run_number` as `BuildRevision`, giving binaries a four-part file version such as `3.1.3.114`. Informational version matches that file version and does not include a git SHA. NuGet package version stays `3.1.3` and assembly identity stays `3.1.3.0`.
 
-[GitHub's workflow run number](https://docs.github.com/en/actions/reference/workflows-and-actions/variables) increases with each new run and stays the same when retrying that run. It continues across releases rather than restarting at one. Local builds default to revision zero; append `-p:BuildRevision=1` to the build command to produce `3.1.3.1`. No scripts or source-file updates are needed during CI.
+[GitHub's workflow run number](https://docs.github.com/en/actions/reference/workflows-and-actions/variables) increases with each new run and stays the same when retrying that run. It continues across releases rather than restarting at one. Local builds allocate the next build number from `LOCAL-BUILD-NUMBER` in the solution folder (gitignored) so FileVersion is `3.1.3.N` instead of `.0`. Pass `-p:BuildRevision=1` to stamp a specific number. CI does not touch the local counter.
 
 ## Seeing failures and test output
 
