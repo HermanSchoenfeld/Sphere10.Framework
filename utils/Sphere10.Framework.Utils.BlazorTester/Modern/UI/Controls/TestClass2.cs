@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes;
+using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 using Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls.BlazorGrid.Components;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls;

@@ -11,7 +11,7 @@ using System;
 namespace Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls;
 
 public class TestClass {
-	private static readonly string[] Names = { "Bitcoin", "Ethereum", "Polkadot", "Litecoin" };
+	private static readonly string[] _names = { "Bitcoin", "Ethereum", "Polkadot", "Litecoin" };
 
 	public int Id { get; set; }
 
@@ -23,19 +23,26 @@ public class TestClass {
 
 	public decimal Age { get; set; }
 
+	public bool IsActive { get; set; } = true;
+
 	public string Details { get; set; } = "Test Details";
 
 	public string Note { get; set; } = "Test Note";
 
+	public TestClass RelatedItem { get; set; }
+
 	public void FillWithTestData(int id) {
 		Id = id;
-		Name = Names[id % Names.Length];
+		Name = _names[id % _names.Length];
 		Color = (TestEnum)(id % 6);
 		CreationDate = new DateTime(2020 + id % 5, id % 12 + 1, 1);
 		Age = id % 100;
+		IsActive = id % 2 == 0;
 	}
 
-	public override string ToString() => $"Id: {Id} Name: {Name} Color: {Color} CreationDate: {CreationDate:d} Age: {Age} Details: {Details} Note: {Note}";
+	public override string ToString() =>
+		$"Id: {Id} Name: {Name} Color: {Color} CreationDate: {CreationDate:d} Age: {Age} Active: {IsActive} " +
+		$"Details: {Details} Note: {Note} Related: {RelatedItem?.Name ?? "None"}";
 
 	public enum TestEnum {
 		Black,

@@ -1,0 +1,88 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@inject ViewService ViewService
+
+<section class="demo-example" data-demo="grid">
+<h2>Editable grid</h2>
+<p>Search names, details or notes; click a sortable header and select a row to edit or delete it.
+	Changes remain in the editor until Save. Try a blank name or age 151 to see validation, then correct the value or Cancel.</p>
+<p>Polkadot records are protected from deletion. The Active checkbox, Color list, date field, custom Note editor and Related record picker demonstrate typed editing.</p>
+<BlazorGrid TItem="TestClass" Id="TestGrid" PageSize="10" DataSource="_dataSource"
+	Columns="_columns" Actions="_actions" SelectedItemChanged="SelectItem" />
+<p role="status" data-testid="grid-selection">
+	@(_selectedItem == null ? "No record selected." : $"Selected: {_selectedItem.Name} (ID {_selectedItem.Id}).")
+</p>
+</section>
+
+@code {
+	private readonly TestClassDataSource _dataSource = new();
+	private GridAction<TestClass>[] _actions = Array.Empty<GridAction<TestClass>>();
+	private BlazorGridColumn<TestClass>[] _columns = Array.Empty<BlazorGridColumn<TestClass>>();
+	private BlazorGridColumn<TestClass>[] _referenceColumns = Array.Empty<BlazorGridColumn<TestClass>>();
+	private TestClass _selectedItem;
+
+	protected override void OnInitialized() {
+		var id = BlazorGridColumn<TestClass>.For(item => item.Id, "ID");
+		id.CanEditCell = false;
+		id.Width = 65;
+		var name = BlazorGridColumn<TestClass>.For(item => item.Name);
+		name.ExpandsToFit = true;
+		var color = BlazorGridColumn<TestClass>.For(item => item.Color);
+		color.Width = 110;
+		var created = BlazorGridColumn<TestClass>.For(item => item.CreationDate, "Created");
+		created.Width = 150;
+		var age = BlazorGridColumn<TestClass>.For(item => item.Age);
+		age.Width = 90;
+		var active = BlazorGridColumn<TestClass>.For(item => item.IsActive, "Active");
+		active.Width = 90;
+		var note = BlazorGridColumn<TestClass>.For(item => item.Note);
+		note.Width = 180;
+		note.ExpandsToFit = true;
+		note.EditorTemplate = context => @<input class="form-control" aria-label="Record note" maxlength="120"
+			value="@context.Value" @onchange="args => context.ValueChanged.InvokeAsync(args.Value)" />;
+		var referenceId = BlazorGridColumn<TestClass>.For(item => item.Id, "ID");
+		referenceId.CanEditCell = false;
+		referenceId.Width = 65;
+		var referenceName = BlazorGridColumn<TestClass>.For(item => item.Name);
+		referenceName.CanEditCell = false;
+		referenceName.ExpandsToFit = true;
+		_referenceColumns = new[] { referenceId, referenceName };
+		var related = new BlazorGridColumn<TestClass> {
+			ColumnName = "Related record",
+			PropertyName = nameof(TestClass.RelatedItem),
+			DataType = typeof(TestClass),
+			PropertyValue = item => item.RelatedItem,
+			SetPropertyValue = (item, value) => item.RelatedItem = (TestClass)value,
+			CanEditCell = true,
+			Width = 180,
+			Template = item => @<span>@(item.RelatedItem == null ? "None" : RelatedItemText(item.RelatedItem))</span>,
+			EditorTemplate = context => @<BlazorGridReferencePicker TItem="TestClass" DataSource="_dataSource" Columns="_referenceColumns"
+				Value="@(context.Value as TestClass)" ValueChanged="item => context.ValueChanged.InvokeAsync(item)"
+				DisplayText="RelatedItemText" Label="related record" />
+		};
+		var summary = new BlazorGridColumn<TestClass> {
+			ColumnName = "Summary",
+			DataType = typeof(string),
+			PropertyValue = item => item.Details,
+			CanEditCell = false,
+			Width = 220,
+			Template = item => @<span title="@item.Details"><strong>@item.Name</strong> · @item.Age years</span>
+		};
+		_columns = new[] { id, name, color, created, age, active, note, related, summary };
+		_actions = new[] { new GridAction<TestClass>("Details", item => item, "ℹ") { ActionWorkAsync = ShowDetailsAsync } };
+	}
+
+	private static string RelatedItemText(TestClass item) => $"{item.Name} (ID {item.Id})";
+
+	private void SelectItem(TestClass item) => _selectedItem = item;
+
+	private Task ShowDetailsAsync(TestClass item) => ViewService.DialogAsync("Record details", item.ToString());
+}

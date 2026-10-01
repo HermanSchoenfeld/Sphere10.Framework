@@ -8,7 +8,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes;
+using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls.BlazorGrid.Components;
 
