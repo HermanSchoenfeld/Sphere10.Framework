@@ -1,0 +1,38 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+@typeparam TItem where TItem : class
+
+<div class="sphere10-reference-picker" @onkeydown:stopPropagation="_open">
+	<button @ref="_trigger" type="button" class="sphere10-reference-trigger" @onclick="ToggleOpen" disabled="@Disabled"
+		aria-label="@($"Choose {Label}")" aria-haspopup="dialog" aria-controls="@_panelId" aria-expanded="@_open.ToString().ToLowerInvariant()" title="@ValueText">
+		<span class="sphere10-reference-value">@ValueText</span>
+		<svg class="sphere10-reference-arrow" aria-hidden="true" viewBox="0 0 16 16" width="12" height="12">
+			<path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+		</svg>
+	</button>
+	@if (AllowNull) {
+		<button type="button" class="sphere10-reference-clear" @onclick="ClearAsync" disabled="@(Disabled || Value is null)"
+			aria-label="@($"Clear {Label}")" title="@($"Clear {Label}")">
+			<svg aria-hidden="true" viewBox="0 0 16 16" width="12" height="12">
+				<path d="m4 4 8 8m0-8-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+			</svg>
+		</button>
+	}
+	@if (_open) {
+		<section @ref="_panel" id="@_panelId" class="sphere10-reference-panel" popover="auto" role="dialog" tabindex="-1" aria-label="@($"Choose {Label}")">
+			<BlazorGrid TItem="TItem" DataSource="DataSource" Columns="Columns" Caption="@($"Available {Label}")"
+				AllowedCapabilities="ReadCapabilities" AllowCellEditing="false" SelectedItemChanged="Select" PageSize="PageSize" />
+			<div class="sphere10-reference-actions">
+				<button type="button" @onclick="ChooseAsync" disabled="@(!_hasSelection || Disabled)">Use selected</button>
+				<button type="button" @onclick="Cancel">Cancel</button>
+			</div>
+		</section>
+	}
+</div>
