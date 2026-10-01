@@ -8,7 +8,7 @@ description: Create fluent FooBuilder classes with chainable With*/Add*/Configur
 The codebase favors fluent builders for configuring complex objects. Follow the existing builders exactly:
 `SerializerBuilder` (`src/Sphere10.Framework/Serialization/Builder/SerializerBuilder.cs`),
 `ProtocolBuilder` (`src/Sphere10.Framework/Protocol/Builder/ProtocolBuilder.cs`),
-`ApplicationBlockBuilder` (`src/Sphere10.Framework.Windows.Forms/Application/Builder/ApplicationBlockBuilder.cs`),
+`WinFormsApplicationBlockBuilder` (`src/Sphere10.Framework.Windows.Forms/Application/Builder/WinFormsApplicationBlockBuilder.cs`),
 `WizardBuilder<T>` (`src/Sphere10.Framework.Windows.Forms/Wizard/WizardBuilder.cs`),
 `JobBuilder` (`src/Sphere10.Framework/Scheduler/JobBuilder.cs`).
 

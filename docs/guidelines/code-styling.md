@@ -59,6 +59,26 @@ public class PascalCasedClassName {
 
 
 
+### Platform-specific application UI types
+
+Shared contracts and models in `Sphere10.Framework.Application.UI` retain unprefixed names such as `IApplicationBlock` and `ApplicationBlock`. A platform extension must identify its platform in its name, for example `IBlazorApplicationBlock : IApplicationBlock` or `IWinFormsApplicationBlock : IApplicationBlock`. Their implementations are `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Apply this convention consistently to menus, screens, hosts, builders and decorators.
+
+Use the shared type directly when no platform-specific extension is needed. Avoid redeclaring the shared name in a platform namespace and then relying on aliases to distinguish the two.
+
+### Collection-valued data properties
+
+Use arrays (`T[]`) for sequence-valued properties on data objects and interfaces. Do not expose these properties as `IEnumerable<T>`, `IReadOnlyList<T>`, `IReadOnlyCollection<T>`, `IList<T>`, `ICollection<T>` or `List<T>`. Apply the same array type to implementations, base classes, decorators and consumers.
+
+Materialize sequences before exposing them and use `Array.Empty<T>()` for an empty collection. Preserve ownership where it matters: copy incoming arrays and return copies when changing collection membership must not mutate stored configuration or state. Arrays do not make the elements immutable. Mutable lists may be kept as implementation details. Dictionary properties remain appropriate for keyed mappings.
+
+This rule concerns data properties. `IEnumerable<T>` remains appropriate for method parameters and methods that intentionally produce a sequence.
+
+```csharp
+public interface IApplicationMenu {
+	IApplicationMenuItem[] Items { get; }
+}
+```
+
 ### Member Ordering
 
 Class members should be ordered according to the following guide

@@ -22,10 +22,21 @@ Apply these rules to every file you create or edit. Full rules live in [../../co
 - `_camelCase` for private fields.
 - Self-describing names; no cryptic abbreviations.
 
+## Platform-specific extensions
+
+- Reserve unprefixed application UI names for the shared `Sphere10.Framework.Application.UI` layer. Platform extensions use `Blazor` or `WinForms`, including interfaces: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`.
+- Apply the prefix consistently to corresponding models, builders, hosts and decorators. Reuse shared types directly when no extension is required; avoid same-name platform redeclarations and the namespace aliases they force.
+
 ## Structure
 - File-scoped namespaces (`namespace X;`), following `CompanyName.Product.Tier.Domain` — not folder structure.
 - `ImplicitUsings` is disabled: add explicit `using` directives.
 - `Nullable` is `annotations`; `LangVersion` is `latest`. Existing annotations are supported, but nullable-reference analysis warnings are disabled. Declare reference types without `?` annotations and do not use postfix null-forgiving `!` operators. Configure nullable-reference warning suppression in the project instead. Keep nullable value types when the API requires them.
+
+## Collection-valued data properties
+
+- Use `T[]` for sequence-valued properties on data objects and interfaces, including their base classes and decorators. Do not expose these properties as `IEnumerable<T>`, read-only collection interfaces or list types.
+- Materialize sequences; use `Array.Empty<T>()` for empty collections. Copy arrays where needed to preserve ownership of stored collection membership. Mutable lists may remain implementation details; keyed mappings may remain dictionaries.
+- Enumerable method inputs and intentionally sequence-producing methods remain appropriate. See [the coding guide](../../../docs/guidelines/code-styling.md#collection-valued-data-properties).
 
 ## Member order in a class
 1. Events

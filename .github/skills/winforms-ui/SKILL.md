@@ -1,21 +1,21 @@
 ---
 name: winforms-ui
-description: WinForms screens, wizards, and application blocks. Trigger when creating ApplicationScreen, WizardBuilder wizards, ApplicationBlockBuilder navigation, or CrudGrid screens.
+description: WinForms screens, wizards, and application blocks. Trigger when creating WinFormsApplicationScreen, WizardBuilder wizards, WinFormsApplicationBlockBuilder navigation, or CrudGrid screens.
 ---
 
 # WinForms UI Skill
 
 ## Application blocks & screens
-- Navigation via `ApplicationBlock` + `ApplicationBlockBuilder`:
+- Navigation via `WinFormsApplicationBlock` + `WinFormsApplicationBlockBuilder`:
   ```csharp
   var block =
-	  new ApplicationBlockBuilder()
+	  new WinFormsApplicationBlockBuilder()
 		  .WithName("Admin")
 		  .WithDefaultScreen<DashboardScreen>()
 		  .AddMenu(mb => mb.AddScreenItem<UsersScreen>())
 		  .Build();
   ```
-- Derive screens from `ApplicationScreen`.
+- Derive screens from `WinFormsApplicationScreen`.
 - Use the [crud-grid](../crud-grid/SKILL.md) skill for `CrudGrid` binding, editing, reference pickers, paging, and dropdown layout; use [data-source](../data-source/SKILL.md) when implementing its `IDataSource<T>`.
 
 ## Wizards

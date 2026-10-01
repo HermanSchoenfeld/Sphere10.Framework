@@ -29,9 +29,21 @@ Sphere10 Framework targets **.NET 10** (`net10.0` / `net10.0-windows`), with **.
 - **camelCase** for local variables and parameters, including lambda, loop, and catch variables. Use `_camelCase` for private fields; keep types and public members PascalCase.
 - Use **self-describing names**; avoid short, cryptic, or abbreviated names.
 
+### Platform-specific Extensions
+
+- Keep UI-independent application contracts and models in `Sphere10.Framework.Application.UI` with unprefixed names such as `IApplicationBlock` and `ApplicationBlock`.
+- Name platform extensions explicitly: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`, with corresponding `BlazorApplicationBlock` and `WinFormsApplicationBlock` classes. Apply the same convention to related menus, screens, hosts, builders and decorators.
+- Reuse shared contracts and value types directly when no platform extension is needed. Do not redeclare an identically named platform type or introduce a namespace alias to conceal an avoidable naming collision.
+
 ### Namespaces
 - Use **file-scoped namespace declarations** (`namespace X;`).
 - Namespaces are **not** strictly tied to folder structure. They follow a logical `CompanyName.ProductName.Tier.Domain` pattern and should not be overly granular.
+
+### Collection-valued Data Properties
+
+- Sequence-valued properties on data objects and interfaces must use arrays (`T[]`), not `IEnumerable<T>`, read-only collection interfaces or list types. Keep implementations, base classes and decorators consistent.
+- Materialize sequences before exposing them; use `Array.Empty<T>()` for empty collections. Preserve ownership with defensive copies where callers must not change stored collection membership. Mutable lists may remain implementation details; keyed mappings may remain dictionaries.
+- This rule applies to data properties. Enumerable method parameters and methods that intentionally return sequences remain appropriate. See [the coding guide](../docs/guidelines/code-styling.md#collection-valued-data-properties).
 
 ### Member Ordering
 Inside a class, order members as:
@@ -85,7 +97,7 @@ To add a new tool, create a `static class` in the `Tools` namespace anywhere in 
 The codebase favors **fluent builder classes** for configuring complex objects. Builders accumulate state via chainable `With*`/`Add*`/`Configure*` methods and finalize with `.Build()`. Key examples:
 - **`SerializerBuilder`** — builds `IItemSerializer<T>` by specifying member serializers: `SerializerBuilder.For<T>().Serialize(x => x.Prop, serializer).Build()`. Also supports `.SerializeMembersAutomatically()` for convention-based assembly.
 - **`ProtocolBuilder`** — builds communication `Protocol` objects with handshake, request/response, and command handlers per mode.
-- **`ApplicationBlockBuilder`** — builds WinForms `ApplicationBlock` with screens and menus: `.WithName().WithDefaultScreen<T>().AddMenu(mb => ...).Build()`.
+- **`WinFormsApplicationBlockBuilder`** — builds `WinFormsApplicationBlock` with screens and menus: `.WithName().WithDefaultScreen<T>().AddMenu(mb => ...).Build()`.
 - **`WizardBuilder<T>`** — builds multi-step wizard dialogs: `.WithTitle().WithModel().AddScreen().OnFinished().Build()`.
 
 When creating new complex configuration APIs, follow this pattern: create a `FooBuilder` class with chainable methods and a terminal `.Build()`.
@@ -139,8 +151,8 @@ Logging uses a simple `ILogger` interface with `Debug`, `Info`, `Warning`, `Erro
 - Default options: `VerboseProfile` in debug builds, `StandardProfile` otherwise (set via `Tools.Runtime.IsDebugBuild`).
 
 ### WinForms UI Pattern
-- `ApplicationBlock` + `ApplicationBlockBuilder` for navigation registration (`.WithDefaultScreen<T>()`, `.AddMenu(mb => mb.AddScreenItem<T>())`).
-- `ApplicationScreen` base class for screens within a block.
+- `WinFormsApplicationBlock` + `WinFormsApplicationBlockBuilder` for navigation registration (`.WithDefaultScreen<T>()`, `.AddMenu(mb => mb.AddScreenItem<T>())`).
+- `WinFormsApplicationScreen` base class for screens within a block.
 - `CrudGrid` for data-bound grid screens backed by `IDataSource<T>`.
 
 ### Guard Pattern (Argument & Invariant Checking)

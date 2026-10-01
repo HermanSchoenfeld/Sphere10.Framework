@@ -5,7 +5,7 @@ description: Configure or extend WinForms CrudGrid, CRUD entity editors, and CRU
 
 # CRUD Grid
 
-Use `CrudGrid` with `IDataSource<TEntity>` in an `ApplicationScreen`. Follow [winforms-ui](../winforms-ui/SKILL.md) for screen registration and [data-source](../data-source/SKILL.md) when implementing the source. Inspect [CrudTestScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/CrudTestScreen.cs) for a working example; its **CRUD Grid** entry opens a new screen instance each time.
+Use `CrudGrid` with `IDataSource<TEntity>` in a `WinFormsApplicationScreen`. Follow [winforms-ui](../winforms-ui/SKILL.md) for screen registration and [data-source](../data-source/SKILL.md) when implementing the source. Inspect [CrudTestScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/CrudTestScreen.cs) for a working example; its **CRUD Grid** entry opens a new screen instance each time.
 
 ## Bind the source and columns
 
