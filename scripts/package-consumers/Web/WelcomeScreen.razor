@@ -7,7 +7,54 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
-@inherits Sphere10.Framework.Web.AspNetCore.Blazor.Logic.ApplicationScreen
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Components
+@inherits BlazorApplicationScreen
+@using System
+@using Sphere10.Framework
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid
+
 <p id="package-screen">ApplicationBlock loaded from NuGet</p>
-<SearchInput />
+<p>Select a row and Edit to change its name or choose a related record. Save applies the draft; Cancel keeps the previous values.</p>
+<BlazorGrid TItem="PackageRecord" Id="package-grid" DataSource="_source" Columns="_columns" PageSize="10" />
+
+@code {
+	private readonly PackageDataSource _source = new();
+	private BlazorGridColumn<PackageRecord>[] _columns = Array.Empty<BlazorGridColumn<PackageRecord>>();
+	private BlazorGridColumn<PackageRecord>[] _referenceColumns = Array.Empty<BlazorGridColumn<PackageRecord>>();
+
+	protected override void OnInitialized() {
+		var first = new PackageRecord { Name = "Packed record Alpha" };
+		var second = new PackageRecord { Name = "Packed record Beta", Related = first };
+		_source.CreateRange(new[] { first, second });
+		var name = BlazorGridColumn<PackageRecord>.For(item => item.Name);
+		name.ExpandsToFit = true;
+		var referenceName = BlazorGridColumn<PackageRecord>.For(item => item.Name);
+		referenceName.CanEditCell = false;
+		referenceName.ExpandsToFit = true;
+		_referenceColumns = new[] { referenceName };
+		var related = BlazorGridColumn<PackageRecord>.For(item => item.Related, "Related record");
+		related.CanEditCell = true;
+		related.SortName = null;
+		related.Width = 240;
+		related.Template = item => @<span>@(item.Related?.Name ?? "None")</span>;
+		related.EditorTemplate = context => @<BlazorGridReferencePicker TItem="PackageRecord" DataSource="_source" Columns="_referenceColumns"
+			Value="@(context.Value as PackageRecord)" ValueChanged="item => context.ValueChanged.InvokeAsync(item)"
+			DisplayText="item => item.Name" Label="related record" />;
+		_columns = new[] { name, related };
+	}
+
+	private sealed class PackageDataSource : ListDataSource<PackageRecord> {
+		public PackageDataSource()
+			: base(new ExtendedList<PackageRecord>()) {
+		}
+
+		public override DataSourceCapabilities Capabilities => DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanRead
+			| DataSourceCapabilities.CanUpdate | DataSourceCapabilities.CanDelete | DataSourceCapabilities.CanPage;
+	}
+
+	public class PackageRecord {
+		public string Name { get; set; }
+
+		public PackageRecord Related { get; set; }
+	}
+}

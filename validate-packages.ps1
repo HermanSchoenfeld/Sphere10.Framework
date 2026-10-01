@@ -40,6 +40,20 @@ function Write-TextFile {
 	[IO.File]::WriteAllText($path, $content + [Environment]::NewLine, (New-Object Text.UTF8Encoding($false)))
 }
 
+function Assert-UiIndependentConsumer {
+	param([string]$projectPath)
+	$assetsPath = Join-Path (Split-Path -Parent $projectPath) 'obj/project.assets.json'
+	$assets = Get-Content -LiteralPath $assetsPath -Raw | ConvertFrom-Json
+	$forbidden = '^(Microsoft\.(AspNetCore|JSInterop|Maui|WindowsDesktop)|System\.(Windows\.Forms|Drawing\.Common)|Sphere10\.Framework\.(Windows|Web\.AspNetCore|Drawing)|PresentationCore|PresentationFramework|WindowsBase)([./]|$)'
+	$unexpectedLibraries = @($assets.libraries.PSObject.Properties.Name | Where-Object { $_ -match $forbidden })
+	if ($unexpectedLibraries.Count) { throw "UI dependency leaked into $projectPath`: $($unexpectedLibraries -join ', ')" }
+	foreach ($framework in $assets.project.frameworks.PSObject.Properties) {
+		$frameworkReferences = $framework.Value.PSObject.Properties['frameworkReferences']
+		if ($null -eq $frameworkReferences) { continue }
+		$unexpectedFrameworks = @($frameworkReferences.Value.PSObject.Properties.Name | Where-Object { $_ -match $forbidden })
+		if ($unexpectedFrameworks.Count) { throw "UI framework leaked into $projectPath`: $($unexpectedFrameworks -join ', ')" }
+	}
+}
 function New-Consumer {
 	param([string]$name, [string[]]$packageIds, [string]$sdk = 'Microsoft.NET.Sdk', [string]$targetFramework = 'net10.0')
 	$directory = Join-Path $workspace $name
@@ -154,7 +168,15 @@ foreach ($package in $packages) {
 		$archive.Dispose()
 	}
 }
-foreach ($asset in @('staticwebassets/css/app.css', 'staticwebassets/js/functions.js', 'staticwebassets/js/BlazorGrid.js')) {
+$requiredBlazorAssets = @(
+	'staticwebassets/css/app.css',
+	'staticwebassets/js/functions.js',
+	'staticwebassets/js/BlazorGrid.js',
+	'staticwebassets/css/themes.css',
+	'staticwebassets/UI/Controls/BlazorGrid/BlazorGrid.razor.js',
+	'staticwebassets/UI/Controls/BlazorGrid/BlazorGridReferencePicker.razor.js'
+)
+foreach ($asset in $requiredBlazorAssets) {
 	if ($asset -notin $blazorEntries) { throw "Blazor package is missing $asset" }
 }
 if (-not @($blazorEntries | Where-Object { $_ -like 'buildTransitive/*.props' }).Count) { throw 'Blazor static web asset integration is missing.' }
@@ -174,8 +196,9 @@ Write-TextFile $nugetConfig @"
 </configuration>
 "@
 $coreProject = New-Consumer 'Core' @('Sphere10.Framework.Web')
-$coreAssets = Get-Content -LiteralPath (Join-Path (Split-Path $coreProject) 'obj/project.assets.json') -Raw
-if ($coreAssets -match 'Microsoft.AspNetCore') { throw 'Pure Web unexpectedly requires ASP.NET Core.' }
+Assert-UiIndependentConsumer $coreProject
+$applicationProject = New-Consumer 'Application' @('Sphere10.Framework.Application')
+Assert-UiIndependentConsumer $applicationProject
 $libraryIds = @($packageIds | Where-Object { $_ -notlike 'Sphere10.Framework.Windows*' -and $_ -notlike 'Sphere10.Framework.Web.AspNetCore*' })
 $null = New-Consumer 'Libraries' $libraryIds
 $desktopIds = @($packageIds | Where-Object { $_ -like 'Sphere10.Framework.Windows*' })
@@ -223,15 +246,23 @@ try {
 		Start-Sleep -Milliseconds 250
 	}
 	if (-not $baseUrl) { throw "Published app did not start. Inspect $stdout and $stderr" }
-	$routes = @('/', '/sitemap.xml', '/PackageConsumer.Web.styles.css')
+	$routes = @('/', '/sitemap.xml', '/PackageConsumer.Web.styles.css', '/_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes.css')
 	$routes += @($blazorEntries | Where-Object { $_ -match '^staticwebassets/.*\.(?:js|mjs)$' } | ForEach-Object {
 		'/_content/Sphere10.Framework.Web.AspNetCore.Blazor/' + $_.Substring('staticwebassets/'.Length)
 	})
 	foreach ($route in $routes) {
 		$response = Invoke-WebRequest -Uri ($baseUrl + $route) -UseBasicParsing -TimeoutSec 15
 		if ($response.StatusCode -ne 200) { throw "Published route failed: $route" }
-		if ($route -eq '/' -and $response.Content -notmatch 'ApplicationBlock loaded from NuGet') {
-			throw 'The packaged ApplicationBlock screen did not render.'
+		if ($route -eq '/') {
+			foreach ($expected in @('ApplicationBlock loaded from NuGet', 'Package grid', 'data-sphere10-theme="light"', 'aria-label="Theme"',
+				'id="package-grid"', 'Packed record Alpha', 'Packed record Beta', 'Related record')) {
+				if ($response.Content -notmatch [regex]::Escape($expected)) {
+					throw "The packaged plugin, theme or typed grid did not render: $expected"
+				}
+			}
+		}
+		if ($route.EndsWith('/css/themes.css') -and $response.Content -notmatch '--sphere10-surface') {
+			throw 'Packaged theme styles were not served.'
 		}
 		if ($route -eq '/sitemap.xml' -and $response.Content -notmatch 'urlset') { throw 'Packaged MVC XML result did not render.' }
 	}
@@ -244,9 +275,9 @@ $report = [PSCustomObject]@{
 	Version = $version
 	Solution = $solutionPath
 	Packages = @($packageIds | Sort-Object)
-	Consumers = @('Core', 'Libraries', 'Web') + $(if ($desktopIds.Count) { 'Desktop' })
+	Consumers = @('Core', 'Application', 'Libraries', 'Web') + $(if ($desktopIds.Count) { 'Desktop' })
 	PublishedWeb = $publishDirectory
-	HttpChecks = 'ApplicationBlock SSR, MVC XML, scoped CSS, JavaScript'
+	HttpChecks = 'Plugin and ApplicationBlock SSR, typed grid, theme CSS, MVC XML, scoped CSS, grid and picker JavaScript'
 }
 Write-TextFile (Join-Path $workspace 'validation.json') ($report | ConvertTo-Json -Depth 5)
 Write-Host "Validated $($packages.Count) packages, external consumers and published Razor assets. Artifacts: $workspace" -ForegroundColor Green

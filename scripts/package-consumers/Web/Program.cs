@@ -16,7 +16,12 @@ using PackageConsumer.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddApplicationBlock(block => block.WithName("Package block").WithDefaultScreen<WelcomeScreen>("Package screen"));
+builder.Services.AddSphere10BlazorPlugin(plugin => plugin
+	.WithName("Package plugin")
+	.AddBlock(block => block.WithId("package").WithName("Package block")
+		.WithDefaultScreen<WelcomeScreen>("Package screen")
+		.AddMenu(menu => menu.WithId("records").WithText("Records")
+			.ConfigureItem(item => item.WithId("grid").WithText("Package grid").WithScreen<WelcomeScreen>()))));
 var app = builder.Build();
 app.UseAntiforgery();
 app.MapStaticAssets();
