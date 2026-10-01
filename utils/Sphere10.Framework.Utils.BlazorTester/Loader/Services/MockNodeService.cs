@@ -70,7 +70,7 @@ public sealed class MockNodeService : INodeService, IDisposable {
 	/// </summary>
 	/// <returns> response</returns>
 	public Task<ItemsResponse<Block>> GetBlocksAsync(ItemRequest request) {
-		return Task.FromResult(new ItemsResponse<Block>(Blocks.Skip(request.Index).Take(request.Count),
+		return Task.FromResult(new ItemsResponse<Block>(Blocks.Skip(request.Index).Take(request.Count).ToArray(),
 			Blocks.Count));
 	}
 

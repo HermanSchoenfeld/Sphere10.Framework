@@ -16,7 +16,7 @@
 
 <LoadingOverlay IsLoading="@(!ViewModel.IsInitialized)"/>
 
-<h1 class="h3 mb-2 text-gray-800">Tables</h1>
+<h1 class="h3 mb-2 text-gray-800">Legacy tables</h1>
 <div class="row">
     <div class="col-md-4">
         <div class="card shadow">
@@ -98,10 +98,10 @@
 
 @code
 {
-    List<Block> Blocks { get; } = Enumerable.Range(0, 100).Select(x => new Block() {
+    Block[] Blocks { get; } = Enumerable.Range(0, 100).Select(x => new Block() {
         Address = Guid.NewGuid().ToString(),
         Number = x
-    }).ToList();
+    }).ToArray();
 
     private async Task OnClickRowAsync(Block block) {
         await ModalService.ShowAsync<InfoDialog>(new Dictionary<string, object> {

@@ -1,0 +1,68 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using System.Threading
+@using System.Runtime.CompilerServices
+@inject ViewService ViewService
+@implements IDisposable
+
+<section class="demo-example" data-demo="tables">
+<h2>Tables</h2>
+<div class="row">
+	<div class="col-md-4">
+		<h3>Paged table</h3>
+		<PagedTable TItem="int" Items="_numbers" PageSize="5" OnRowSelect="ShowNumberAsync" Class="table table-striped">
+			<HeaderTemplate><tr><th>Number</th></tr></HeaderTemplate>
+			<ItemTemplate Context="number"><tr><td>@number</td></tr></ItemTemplate>
+		</PagedTable>
+	</div>
+	<div class="col-md-4">
+		<h3>Virtual paged table</h3>
+		<VirtualPagedTable TItem="int" ItemsProvider="ProvideNumbersAsync" PageSize="5" OnRowSelect="ShowNumberAsync" Class="table table-striped">
+			<HeaderTemplate><tr><th>Number</th></tr></HeaderTemplate>
+			<ItemTemplate Context="number"><tr><td>@number</td></tr></ItemTemplate>
+		</VirtualPagedTable>
+	</div>
+	<div class="col-md-4">
+		<h3>Rapid table</h3>
+		<RapidTable TItem="int" Source="_stream" ItemLimit="5" OnRowSelect="ShowNumberAsync" Class="table table-striped">
+			<HeaderTemplate><tr><th>Number</th></tr></HeaderTemplate>
+			<ItemTemplate Context="number"><tr><td>@number</td></tr></ItemTemplate>
+		</RapidTable>
+	</div>
+</div>
+
+</section>
+
+@code {
+	private readonly int[] _numbers = Enumerable.Range(1, 99).ToArray();
+	private readonly CancellationTokenSource _cancellation = new();
+	private IAsyncEnumerable<int> _stream;
+
+	protected override void OnInitialized() => _stream = StreamNumbersAsync(_cancellation.Token);
+
+	public void Dispose() {
+		_cancellation.Cancel();
+		_cancellation.Dispose();
+	}
+
+	private Task ShowNumberAsync(int number) => ViewService.DialogAsync("Number", number.ToString());
+
+	private Task<ItemsResponse<int>> ProvideNumbersAsync(ItemRequest request) =>
+		Task.FromResult(new ItemsResponse<int>(_numbers.Skip(request.Index).Take(request.Count).ToArray(), _numbers.Length));
+
+	private async IAsyncEnumerable<int> StreamNumbersAsync([EnumeratorCancellation] CancellationToken cancellationToken) {
+		var number = 0;
+		while (!cancellationToken.IsCancellationRequested) {
+			await Task.Delay(1000, cancellationToken);
+			yield return ++number;
+		}
+	}
+}
