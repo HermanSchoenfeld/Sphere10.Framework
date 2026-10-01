@@ -1,0 +1,96 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.sphere10-search {
+	position: relative;
+	width: 100%;
+	min-width: 0;
+	font: inherit;
+}
+
+.sphere10-search-field {
+	display: flex;
+	min-width: 0;
+}
+
+.sphere10-search-field input {
+	width: 100%;
+	min-width: 0;
+	padding: .65rem .85rem;
+	border: 1px solid var(--sphere10-border, #e3e6f0);
+	border-right: 0;
+	border-radius: .35rem 0 0 .35rem;
+	color: var(--sphere10-text, #3a3b45);
+	background: var(--sphere10-background, #f8f9fc);
+	font: inherit;
+	font-size: .85rem;
+}
+
+.sphere10-search-field button {
+	display: grid;
+	place-items: center;
+	padding: .65rem .85rem;
+	border: 1px solid var(--sphere10-accent, #4e73df);
+	border-radius: 0 .35rem .35rem 0;
+	color: var(--sphere10-accent-contrast, #fff);
+	background: var(--sphere10-accent, #4e73df);
+	cursor: pointer;
+}
+
+.sphere10-search-field svg {
+	width: 1rem;
+	height: 1rem;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+}
+
+.sphere10-search-results {
+	position: absolute;
+	inset: calc(100% + .25rem) 0 auto;
+	z-index: 1100;
+	max-height: min(24rem, 60vh);
+	overflow-y: auto;
+	padding: .35rem 0;
+	border: 1px solid var(--sphere10-border, #e3e6f0);
+	border-radius: .35rem;
+	color: var(--sphere10-text, #3a3b45);
+	background: var(--sphere10-surface, #fff);
+	box-shadow: var(--sphere10-shadow, 0 .15rem 1.75rem #3a3b4526);
+}
+
+.sphere10-search-results ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sphere10-search-results a {
+	display: block;
+	padding: .6rem .85rem;
+	color: inherit;
+	text-decoration: none;
+	overflow-wrap: anywhere;
+}
+
+.sphere10-search-results p {
+	margin: 0;
+	padding: .6rem .85rem;
+	color: var(--sphere10-muted, #858796);
+}
+
+.sphere10-search-results a:hover,
+.sphere10-search-results a:focus-visible {
+	background: var(--sphere10-hover, #eaecf4);
+}
+
+.sphere10-search :is(input, button, a):focus-visible {
+	outline: 2px solid var(--sphere10-focus, #224abe);
+	outline-offset: 2px;
+}

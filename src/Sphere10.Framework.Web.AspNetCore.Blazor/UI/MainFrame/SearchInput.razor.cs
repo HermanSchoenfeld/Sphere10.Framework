@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -48,7 +49,7 @@ public partial class SearchInput {
 	/// <summary>
 	/// Gets or sets the current search term result set.
 	/// </summary>
-	public IEnumerable<string> Results { get; set; } = new List<string>();
+	public string[] Results { get; set; } = Array.Empty<string>();
 
 	/// <summary>
 	/// Gets or sets the throttle object use
@@ -76,7 +77,7 @@ public partial class SearchInput {
 							await Throttle.WaitAsync();
 
 							var results = await SearchProvider(latest);
-							Results = results;
+							Results = results.ToArray();
 						}
 					} finally {
 						Semaphore.Release();

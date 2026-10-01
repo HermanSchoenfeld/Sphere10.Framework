@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Services;
@@ -34,7 +33,7 @@ public interface IEndpointManager {
 	/// <summary>
 	/// Gets the available endpoints
 	/// </summary>
-	public IEnumerable<Uri> Endpoints { get; }
+	public Uri[] Endpoints { get; }
 
 	/// <summary>
 	/// Sets the current in use endpoint.

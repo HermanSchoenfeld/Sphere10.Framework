@@ -9,31 +9,33 @@
 *@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Models
-<div class="input-group dropdown">
-    <input type="text" class="form-control bg-light border-0 small search-input" @bind-value="@SearchTerm" @bind-value:event="oninput" placeholder="Search for..." @onkeyup="() => OnSearchAsync(SearchTerm)"
-           aria-label="Search">
 
-    <div class="input-group-append">
-        <button class="btn btn-primary" type="button">
-            <i class="fas fa-search fa-sm"></i>
-        </button>
-    </div>
-
-    <div class="dropdown-menu search-input-results animated--fade-in" aria-labelledby="dropdownMenuButton">
-        @if (Results.Any()) {
-            @foreach (SearchResult result in Results.Take(ResultsCount)) {
-                <a class="dropdown-item" href="@result.Route">@result.Name</a>
-            }
-        } else {
-            <div class="dropdown-item small text-gray-500"> No Results</div>
-        }
-
-    </div>
+<div class="sphere10-search" @onkeydown="HandleKeyDown">
+	<div class="sphere10-search-field">
+		<input type="search" aria-label="Search" aria-controls="@_resultsId" aria-expanded="@(_isOpen ? "true" : "false")"
+			   autocomplete="off" placeholder="Search for..." value="@_searchTerm" @oninput="HandleInputAsync" @onkeydown="HandleSearchKeyAsync" />
+		<button type="button" aria-label="Search pages" @onclick="() => OnSearchAsync(_searchTerm)">
+			<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+				<circle cx="8" cy="8" r="5.5" />
+				<path d="M12 12l5 5" />
+			</svg>
+		</button>
+	</div>
+	@if (_isOpen) {
+		<div id="@_resultsId" class="sphere10-search-results" aria-label="Search results">
+			@if (_isSearching) {
+				<p role="status">Searching...</p>
+			} else if (_error != null) {
+				<p role="status">@_error</p>
+			} else if (VisibleResults.Any()) {
+				<ul>
+					@foreach (var result in VisibleResults) {
+						<li><a href="@result.Route" @onclick="DismissResults">@result.Name</a></li>
+					}
+				</ul>
+			} else {
+				<p role="status">No results</p>
+			}
+		</div>
+	}
 </div>
-
-@code
-{
-#nullable enable
-
-    private string SearchTerm { get; set; } = string.Empty;
-}
