@@ -1,0 +1,191 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: David Price
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+@using Microsoft.JSInterop
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes
+@typeparam TItem
+@inject IJSRuntime JSRuntime
+
+<div class="ResizableClass">
+	<button type="button" @onclick="RefreshAsync">Reload</button>
+	<table class="TableClass" style="width: 100%" id="@Id">
+		<thead>
+			<tr>
+				@if (GridType.HasFlag(GridTypes.ActionColumn)) {
+					<th>Actions</th>
+				}
+				@foreach (var header in Header) {
+					<th style="width: @(header.Width)px">@header.Name</th>
+				}
+				@foreach (var column in ColumnDefinitions) {
+					<th>@GetColumnName(column)</th>
+				}
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var row in Rows) {
+				<tr>
+					@if (GridType.HasFlag(GridTypes.ActionColumn)) {
+						<td>
+							@foreach (var action in Actions) {
+								if (action.IsActionAvailable?.Invoke((TItem)row[0].Tag) ?? true) {
+									<button type="button" title="@action.Name" class="btn btn-success ActionButton"
+											@onclick="() => PerformActionAsync(action, (TItem)row[0].Tag)">@action.Name</button>
+								}
+							}
+						</td>
+					}
+					@foreach (var cell in row) {
+						<td style="width: @(cell.Width)px">
+							@if (cell.TypeInfo.Type == typeof(bool)) {
+								<input type="checkbox" checked="@((bool)cell.TypeInfo.PropertyInfo.GetValue(cell.Tag))"
+									   disabled="@(!cell.TypeInfo.PropertyInfo.CanWrite)" @onchange="args => CellDataChangedAsync(args.Value, cell)" />
+							} else {
+								<input class="ResizableClass" type="@cell.GetInputType()" list="@GetListName(cell)"
+									   value="@cell.Text" readonly="@(!cell.TypeInfo.PropertyInfo.CanWrite)"
+									   @onchange="args => CellDataChangedAsync(args.Value, cell)" />
+							}
+						</td>
+					}
+					@foreach (var column in ColumnDefinitions) {
+						<td>@RenderDataEnd((TItem)row[0].Tag, column)</td>
+					}
+				</tr>
+			}
+		</tbody>
+	</table>
+	<div class="d-flex gap-2 align-items-center">
+		@if (GridType.HasFlag(GridTypes.NewItem)) {
+			<button type="button" @onclick="NewAsync">New</button>
+		}
+		<button type="button" disabled="@(CurrentPage == 0)" @onclick="() => SetPageAsync(0)">First</button>
+		<button type="button" disabled="@(CurrentPage == 0)" @onclick="() => SetPageAsync(CurrentPage - 1)">Previous</button>
+		<input class="PagingInput" aria-label="Current page" type="number" min="1" max="@TotalPages" value="@(CurrentPage + 1)"
+			   @onchange="ChangePageAsync" />
+		<span>of @TotalPages</span>
+		<button type="button" disabled="@(CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(CurrentPage + 1)">Next</button>
+		<button type="button" disabled="@(CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(TotalPages - 1)">Last</button>
+	</div>
+	@foreach (var header in Header.Where(cell => cell.TypeInfo.IsEnum)) {
+		<datalist id="@GetListName(header)">
+			@foreach (var enumValue in header.TypeInfo.EnumValues) {
+				<option value="@enumValue"></option>
+			}
+		</datalist>
+	}
+</div>
+
+@code {
+	[Flags]
+	public enum GridTypes {
+		DataSupplied = 1,
+		DataOnDemand = 1 << 1,
+		ActionColumn = 1 << 2,
+		NewItem = 1 << 3
+	}
+
+	private readonly List<Cell> Header = new();
+	private readonly List<List<Cell>> Rows = new();
+
+	[Parameter]
+	public string Id { get; set; } = $"sphere10-grid-{Guid.NewGuid():N}";
+
+	[Parameter]
+	public int PageSize { get; set; } = 10;
+
+	[Parameter]
+	public IDataSource<TItem> DataSource { get; set; }
+
+	[Parameter]
+	public GridTypes GridType { get; set; }
+
+	[Parameter]
+	public List<GridAction<TItem>> Actions { get; set; } = new();
+
+	[Parameter]
+	public List<object> ColumnDefinitions { get; set; } = new();
+
+	public int CurrentPage { get; private set; }
+
+	public int TotalDataCount { get; private set; }
+
+	public int TotalPages => Math.Max(1, (int)Math.Ceiling((double)TotalDataCount / PageSize));
+
+	public async Task RefreshAsync() {
+		Guard.Ensure(DataSource != null, "DataSource is required.");
+		Guard.ArgumentGT(PageSize, 0, nameof(PageSize));
+		var response = await DataSource.ReadRangeAsync(string.Empty, PageSize, CurrentPage, string.Empty, SortDirection.Ascending);
+		CurrentPage = response.Page;
+		TotalDataCount = response.TotalCount;
+		DrawGrid(response.Items ?? Array.Empty<TItem>());
+		await InvokeAsync(StateHasChanged);
+	}
+
+	public async Task SetPageAsync(int page) {
+		CurrentPage = Math.Clamp(page, 0, TotalPages - 1);
+		await RefreshAsync();
+	}
+
+	protected override Task OnParametersSetAsync() {
+		Guard.ArgumentNotNullOrEmpty(Id, nameof(Id));
+		Guard.ArgumentNotNull(Actions, nameof(Actions));
+		Guard.ArgumentNotNull(ColumnDefinitions, nameof(ColumnDefinitions));
+		return RefreshAsync();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		await LoadJavascript();
+	}
+
+	public Task LoadJavascript() => JSRuntime.InvokeVoidAsync("ResizableColumnTable", Id).AsTask();
+
+	private void DrawGrid(IEnumerable<TItem> items) {
+		Header.Clear();
+		Rows.Clear();
+		var properties = typeof(TItem).GetProperties().Where(property => property.CanRead && property.GetIndexParameters().Length == 0).ToArray();
+		foreach (var property in properties) {
+			var name = Utility.AddSpacesForCamelCase(property.Name);
+			Header.Add(new Cell(new HeaderData(name, HeaderData.DefaultWidth), new RowData(20), new ObjectTypeInfo(property), name, null, Header.Count));
+		}
+		foreach (var item in items) {
+			var row = new List<Cell>();
+			for (var index = 0; index < properties.Length; index++) {
+				var header = Header[index];
+				row.Add(new Cell(header.Header, header.Row, header.TypeInfo, Cell.GetCellText(item, properties[index]), item, index));
+			}
+			Rows.Add(row);
+		}
+	}
+
+	private async Task CellDataChangedAsync(object value, Cell cell) {
+		cell.UpdateData(value?.ToString() ?? string.Empty);
+		await DataSource.UpdateAsync((TItem)cell.Tag);
+		await RefreshAsync();
+	}
+
+	private async Task NewAsync() {
+		await DataSource.CreateAsync(DataSource.New());
+		await RefreshAsync();
+	}
+
+	private async Task PerformActionAsync(GridAction<TItem> action, TItem item) {
+		action.ActionWork(item);
+		await RefreshAsync();
+	}
+
+	private Task ChangePageAsync(ChangeEventArgs args) =>
+		int.TryParse(args.Value?.ToString(), out var page) ? SetPageAsync(page - 1) : Task.CompletedTask;
+
+	private string GetListName(Cell cell) => cell.TypeInfo.IsEnum ? $"{Id}-values-{cell.DataIndex}" : null;
+
+	private static string GetColumnName(object column) => ((dynamic)column).Name;
+
+	private static RenderFragment RenderDataEnd(TItem item, object column) => builder => ((dynamic)column).Render(item, builder);
+}
+
