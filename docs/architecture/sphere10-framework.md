@@ -192,7 +192,9 @@ Each framework project contributes its own Tools classes:
 | Sphere10.Framework | Tools.Crypto, Tools.Text, Tools.Collection, etc. | Core utilities |
 | Sphere10.Framework.Windows | Tools.WinTool | Registry, services, events |
 | Sphere10.Framework.Data.Sqlite | Tools.Sqlite | SQLite operations |
-| Sphere10.Framework.Web.AspNetCore | Tools.HtmlTool, Tools.XmlTool | Web utilities |
+| Sphere10.Framework.Web | Tools.Web.Html | ASP.NET-independent web utilities |
+| Sphere10.Framework.Web.AspNetCore | Tools.Web.AspNetCore | Shared ASP.NET Core utilities |
+| Sphere10.Framework.Web.AspNetCore.MVC | Tools.Web.Mvc | MVC utilities |
 | Sphere10.Framework.Drawing | Tools.Drawing | Graphics operations |
 
 ### Design Rationale

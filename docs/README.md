@@ -77,7 +77,10 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.Web.AspNetCore** | Middleware, filters, HTML utilities | [View](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
+| **Sphere10.Framework.Web** | ASP.NET-independent HTML and web models | [View](../src/Sphere10.Framework.Web/README.md) |
+| **Sphere10.Framework.Web.AspNetCore** | Shared HTTP, middleware, logging, and lifecycle | [View](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
+| **Sphere10.Framework.Web.AspNetCore.MVC** | MVC forms, filters, routing, and results | [View](../src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) |
+| **Sphere10.Framework.Web.AspNetCore.Blazor** | Razor components, grids, dialogs, and wizards | [View](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) |
 | **Sphere10.Framework.Drawing** | Graphics and image manipulation | [View](../src/Sphere10.Framework.Drawing/README.md) |
 | **Sphere10.VisualRenderer** | Visual document model to HTML and plain text | Independent component at `Components/Sphere10.VisualRenderer` |
 | **Sphere10.Framework.iOS** | Xamarin.iOS integration | [View](../src/Sphere10.Framework.iOS/README.md) |

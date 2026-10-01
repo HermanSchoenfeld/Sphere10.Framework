@@ -1,4 +1,4 @@
-﻿# Framework Domains
+# Framework Domains
 
 The Sphere10 Framework comprises a variety of interconnected projects and domains. A **domain** is a collection of code artifacts that are logically related in the abstraction they model. Domains can span multiple architectural tiers (UI, Business Logic, Data) and represent a vertical slice through the architecture.
 
@@ -76,8 +76,10 @@ UI frameworks for desktop, web, and cross-platform applications.
 | **Windows Forms + SQLite** | Windows Forms with SQLite data binding | Tools.WinForms.Sqlite |
 | **Windows Forms + SQL Server** | Windows Forms with SQL Server data binding | Tools.WinForms.MSSQL |
 | **Windows Forms + Firebird** | Windows Forms with Firebird data binding | Tools.WinForms.Firebird |
-| **Web / ASP.NET Core** | ASP.NET Core middleware, routing, form components | Tools.Web.AspNetCore |
-| **Blazor Components** | Web UI components (modals, grids, wizards, etc.) | Tools.Blazor |
+| **Web** | HTML formatting, sitemaps, presentation models | Tools.Web.Html |
+| **ASP.NET Core** | HTTP, middleware, logging, lifecycle | Tools.Web.AspNetCore |
+| **ASP.NET Core MVC** | Routing, forms, filters, action results | Tools.Web.Mvc |
+| **ASP.NET Core Blazor** | Restored modals, tables, grids, wizards, application shells | Sphere10.Framework.Web.AspNetCore.Blazor |
 | **Drawing** | Cross-platform graphics, image manipulation | Tools.Drawing |
 
 ### Windows Integration Domains (Sphere10.Framework.Windows.*)

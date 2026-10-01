@@ -353,20 +353,23 @@ Color lightDark = Tools.DrawingTool.CalculateLightDarkColor(baseColor, factor);
 
 ### Web Platform
 
-#### **Tools.Web.Html** (Sphere10.Framework.Web.AspNetCore)
-HTML generation, parsing, manipulation.
+#### **Tools.Web.Html** (Sphere10.Framework.Web)
+HTML presentation formatting and Animate.css class names, independent of ASP.NET Core.
 ```csharp
-string sanitized = Tools.Web.Html.SanitizeHtml(userHtml);
-string encoded = Tools.Web.Html.EncodeHtml(text);
-var dom = Tools.Web.Html.ParseHtml(htmlString);
+var percentage = Tools.Web.Html.Percent(0.25m);
+var animationClass = Tools.Web.Html.AnimationClass(Sphere10.Framework.Web.AnimateCss.Animation.fadeIn);
 ```
 
 #### **Tools.Web.AspNetCore** (Sphere10.Framework.Web.AspNetCore)
-ASP.NET Core integration.
+Shared ASP.NET Core utilities, including network parsing.
 ```csharp
-var result = Tools.Web.AspNetCore.CreateResponse(data);
-var error = Tools.Web.AspNetCore.CreateErrorResponse(message);
-string animationClass = Tools.Web.AspNetCore.GetAnimationClass(animation, delay);
+var network = Tools.Web.AspNetCore.ParseNetwork("192.168.1.0/24");
+```
+
+#### **Tools.Web.Mvc** (Sphere10.Framework.Web.AspNetCore.MVC)
+MVC select-list helpers, moved from `Tools.Web.AspNetCore`.
+```csharp
+var options = Tools.Web.Mvc.ToSelectList<DayOfWeek>();
 ```
 
 #### **Tools.Web.Downloader** (Sphere10.Framework)

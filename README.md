@@ -65,6 +65,8 @@ dotnet add package Sphere10.Framework.Communications
 
 Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.3.114`. Local builds allocate the next number from `LOCAL-BUILD-NUMBER` in the solution folder (gitignored); override with `-p:BuildRevision=1` for `3.1.3.1`. The NuGet version remains `3.1.3`, and assembly identity remains `3.1.3.0` across builds. For prerelease packages, pass `-p:Version=3.1.3-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
 
+Before release packaging, run [validate-packages.ps1](validate-packages.ps1). It packs every active public library under a unique local validation version, checks package metadata and internal dependencies, and restores external consumers from an isolated feed and package cache. It builds core, database/testing/generator and Windows consumers, publishes a Blazor ApplicationBlock host, and verifies Razor assets. Files and logs remain in the reported temporary directory; nothing is published. See [package consumer validation](scripts/package-consumers/README.md) for details. `Sphere10.Framework.NUnit`, `Sphere10.Framework.NUnit.DB` and `Sphere10.Framework.Generators` are distributable packages; the runtime/compiler support project remains internal.
+
 From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It builds into a staging directory, verifies matching package and symbol files, then replaces the framework packages in `nuget-packages`. Failed builds leave the previous packages intact; unrelated files and packages are preserved. Packing does not run tests. Use `-OutputDirectory` to select a different destination.
 
 ```powershell
@@ -162,7 +164,10 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 
 | Project | Purpose | NuGet |
 |---------|---------|-------|
-| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | ASP.NET Core integration: middleware, filters, routing, forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
+| [**Sphere10.Framework.Web**](src/Sphere10.Framework.Web/README.md) | HTML, sitemap, and presentation models independent of ASP.NET Core | |
+| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | Shared ASP.NET Core HTTP, middleware, logging, and lifecycle integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
+| [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC controllers, forms, filters, routing, and action results | |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Restored Razor components, tables, grids, dialogs, wizards, and application shells | |
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) |
 | [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | |
 | [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | |
@@ -174,7 +179,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 
 The `tests/` directory contains **2000+ comprehensive unit and integration tests** covering all framework subsystems:
 
-GitHub Actions discovers tests automatically and runs independent partitions with concise failure summaries. Each partition publishes its test counts and failures, with full logs and TRX reports available as artifacts. Failed partitions can be rerun independently. See the [CI test guide](.github/ci.md) for adding tests, finding failures, and reproducing a partition locally.
+GitHub Actions builds the cross-platform solution and runs the configured NUnit test assemblies, including the restored Blazor tests. Console output and TRX artifacts include test results and failures. See the [CI test guide](.github/ci.md) for adding tests and reproducing failures locally.
 
 | Test Project | Purpose |
 |--------------|---------|
@@ -183,6 +188,8 @@ GitHub Actions discovers tests automatically and runs independent partitions wit
 | [**Sphere10.Framework.CryptoEx.Tests**](tests/Sphere10.Framework.CryptoEx.Tests) | Cryptography implementation tests |
 | [**Sphere10.Framework.Data.Tests**](tests/Sphere10.Framework.Data.Tests) | Database access layer tests |
 | [**Sphere10.Framework.Tests**](tests/Sphere10.Framework.Tests) | Core framework tests |
+| [**Sphere10.Framework.Web.AspNetCore.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Tests) | Shared web and MVC integration regressions |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests) | Restored table, wizard, plugin, and navigation tests |
 | [**Sphere10.Framework.Windows.LevelDB.Tests**](tests/Sphere10.Framework.Windows.LevelDB.Tests) | LevelDB integration tests |
 | [**Sphere10.Framework.Windows.Tests**](tests/Sphere10.Framework.Windows.Tests) | Windows platform tests |
 
@@ -199,7 +206,10 @@ GitHub Actions discovers tests automatically and runs independent partitions wit
 ### Web & Cross-Platform UI
 | Project | Purpose |
 |---------|---------|
-| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | ASP.NET Core integration with middleware, filters, routing, and form components |
+| [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC forms, controller helpers, filters, and results |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Both restored Blazor component generations in one Razor class library |
+| [**Sphere10.Framework.Utils.BlazorTester**](utils/Sphere10.Framework.Utils.BlazorTester/README.md) | Runnable widget gallery and Blazor demonstrations |
+| [**Sphere10.Framework.Utils.MvcTester**](utils/Sphere10.Framework.Utils.MvcTester/README.md) | Minimal runnable MVC test application |
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities for all platforms |
 
 ## :books: Documentation & Learning

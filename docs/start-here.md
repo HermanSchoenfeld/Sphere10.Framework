@@ -1,4 +1,4 @@
-﻿# 🚀 Getting Started with Sphere10 Framework
+# 🚀 Getting Started with Sphere10 Framework
 
 Welcome! This guide gets you oriented with Sphere10 Framework quickly.
 
@@ -52,7 +52,10 @@ src/                              # 45+ framework projects
 ├── Sphere10.Framework.Communications/  # Networking & RPC
 ├── Sphere10.Framework.CryptoEx/  # Advanced cryptography
 ├── Sphere10.Framework.Windows/   # Windows integration
-├── Sphere10.Framework.Web.AspNetCore/  # Web framework
+├── Sphere10.Framework.Web/             # ASP.NET-independent web utilities
+├── Sphere10.Framework.Web.AspNetCore/  # Shared ASP.NET Core integration
+├── Sphere10.Framework.Web.AspNetCore.MVC/     # MVC helpers and forms
+├── Sphere10.Framework.Web.AspNetCore.Blazor/  # Razor components and application shells
 ├── Sphere10.Framework.Drawing/   # Graphics utilities
 └── ... (more platforms)
 
