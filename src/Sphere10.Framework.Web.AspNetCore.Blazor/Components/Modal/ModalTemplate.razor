@@ -12,21 +12,28 @@
 	<div class="modal-content">
 		<div class="modal-header">
 			@HeaderTemplate
-			<button type="button" class="close" @onclick="OnCloseAsync" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
-			</button>
+			@if (ShowCloseButton) {
+				<button type="button" class="close" @onclick="OnCloseAsync" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			}
 		</div>
 		<div class="modal-body" style="min-width: @ToPixelString(Width?.min); max-width: @ToPixelString(Width?.max); min-height: @ToPixelString(Height?.min); max-height: @ToPixelString(Height?.max);">
 			@BodyTemplate
 		</div>
 
-		<div class="modal-footer">
-			@FooterTemplate
-		</div>
+		@if (FooterTemplate != null) {
+			<div class="modal-footer">
+				@FooterTemplate
+			</div>
+		}
 	</div>
 </div>
 
 @code {
+
+	[Parameter]
+	public bool ShowCloseButton { get; set; } = true;
 
 	[Parameter]
 	public RenderFragment HeaderTemplate { get; set; }

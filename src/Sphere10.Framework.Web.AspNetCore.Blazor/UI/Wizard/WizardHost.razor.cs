@@ -7,181 +7,147 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
-/// <summary>
-/// Wizard component.
-/// </summary>
-// HS: almost all of this should be merged into WizardViewModel<TModel>
+/// <summary>Renders wizard steps and applies their validation and cancellation policies.</summary>
 public partial class WizardHost {
-	/// <summary>
-	/// Call back, invoked when wizard is finished. cascaded from a parent component is used to signal
-	/// the completion of the wizard.
-	/// </summary>
+	private IWizard _renderedWizard;
+	private WizardStepBase _currentStepInstance;
+	private bool _finishing;
+	private bool _cancelling;
+	private bool _finished;
+
 	[CascadingParameter(Name = "OnFinished")]
 	public EventCallback OnFinished { get; set; }
 
-	/// <summary>
-	/// Call back, invoked when wizard is cancelled. cascaded from a parent component is used to signal
-	/// the cancellation of the wizard.
-	/// </summary>
 	[CascadingParameter(Name = "OnCancelled")]
 	public EventCallback OnCancelled { get; set; }
 
-	/// <summary>
-	/// Call back, invoked when step changes - used to notify parent component.
-	/// </summary>
 	[CascadingParameter(Name = "OnStepChange")]
 	public EventCallback OnStepChange { get; set; }
 
-	/// <summary>
-	/// Gets or sets the wizard model instance.
-	/// </summary>
 	[CascadingParameter]
 	public IWizard Wizard { get; set; }
 
-	/// <inheritdoc />
-	protected override void OnParametersSet() {
-		if (Wizard is null) {
-			throw new InvalidOperationException("Wizard parameter is required.");
-		}
-	}
+	public string[] ErrorMessages { get; private set; } = Array.Empty<string>();
 
-	/// <summary>
-	/// Gets a list of error messages zzs
-	/// </summary>
-	public List<string> ErrorMessages { get; } = new();
-
-	/// <summary>
-	/// Gets or sets the title of the current wizard and step.
-	/// </summary>
 	public string Title { get; set; }
 
-	/// <summary>
-	/// Current step instance
-	/// </summary>
-	private WizardStepBase _currentStepInstance;
+	public bool IsBusy => _finishing || _cancelling;
 
-	/// <summary>
-	/// Gets or sets the component ref instance of the current step.
-	/// </summary>
+	public bool CanCancel => Wizard?.IsCancellable == true && (CurrentStepInstance?.IsCancellable ?? true);
+
 	private WizardStepBase CurrentStepInstance {
 		get => _currentStepInstance;
 		set {
 			_currentStepInstance = value;
-			Title = $"{Wizard?.Title} -> {CurrentStepInstance?.Title}";
+			Title = $"{Wizard.Title} -> {value?.Title}";
+			StateHasChanged();
 			OnStepChange.InvokeAsync();
 		}
 	}
 
-	/// <summary>
-	/// Gets or sets the current render fragment representation of the current step.
-	/// </summary>
 	private RenderFragment CurrentStep { get; set; }
 
-	/// <summary>
-	/// Move to the next step in the wizard.
-	/// </summary>
-	/// <returns></returns>
-	/// <exception cref="InvalidOperationException"> thrown if there is no next step</exception>
-	private async Task NextAsync() {
-		Result result = await CurrentStepInstance!.OnNextAsync();
-		ErrorMessages.Clear();
+	public Task NextAsync() => AdvanceAsync();
 
-		if (result.IsSuccess) {
-			if (Wizard.HasNext && Wizard.Next()) {
-				CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
-			} else {
-				var finishResult = await Wizard.FinishAsync();
-				if (finishResult.IsSuccess)
-					await OnFinished.InvokeAsync();
-				else
-					ErrorMessages.AddRange(finishResult.ErrorMessages);
-			}
-		} else {
-			ErrorMessages.AddRange(result.ErrorMessages);
-		}
-	}
-
-	/// <summary>
-	/// Move to previous step in wizard
-	/// </summary>
-	/// <returns></returns>
-	/// <exception cref="InvalidOperationException"> thrown if there is no previous</exception>
-	private Task PreviousAsync() {
-		var prev = Wizard.Previous();
-		ErrorMessages.Clear();
-
-		if (prev) {
-			CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
-		} else {
-			ErrorMessages.AddRange(prev.ErrorMessages);
-		}
-
+	public Task PreviousAsync() {
+		if (IsBusy)
+			return Task.CompletedTask;
+		var result = Wizard.Previous();
+		ErrorMessages = Array.Empty<string>();
+		if (result)
+			CurrentStep = CreateStepFragment(Wizard.CurrentStep);
+		else
+			ErrorMessages = result.ErrorMessages.ToArray();
+		StateHasChanged();
 		return Task.CompletedTask;
 	}
 
-	/// <summary>
-	/// Finish the wizard workflow. 
-	/// </summary>
-	/// <returns></returns>
-	private async Task FinishAsync() {
-		ErrorMessages.Clear();
-		Result stepResult = await CurrentStepInstance!.OnNextAsync();
+	public Task FinishAsync() => AdvanceAsync();
 
-		if (stepResult.IsSuccess) {
-			Result result = await Wizard.FinishAsync();
-
-			if (result.IsSuccess) {
-				await OnFinished.InvokeAsync();
-			} else {
-				ErrorMessages.AddRange(result.ErrorMessages);
-			}
-		} else {
-			ErrorMessages.AddRange(stepResult.ErrorMessages);
-		}
-	}
-
-	/// <summary>
-	/// Cancel the wizard workflow
-	/// </summary>
-	/// <returns></returns>
-	private async Task CancelAsync() {
-		Result result = await Wizard.CancelAsync();
-		ErrorMessages.Clear();
-
-		if (result.IsSuccess) {
+	public async Task CancelAsync() {
+		if (await RequestCancelAsync())
 			await OnCancelled.InvokeAsync();
-		} else {
-			ErrorMessages.AddRange(result.ErrorMessages);
+	}
+
+	public async Task<bool> RequestCancelAsync() {
+		if (IsBusy || !CanCancel)
+			return false;
+		_cancelling = true;
+		using var scope = Tools.Scope.ExecuteOnDispose(() => {
+			_cancelling = false;
+			StateHasChanged();
+		});
+		ErrorMessages = Array.Empty<string>();
+		StateHasChanged();
+		var wizard = Wizard;
+		var result = await wizard.CancelAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return false;
+		ErrorMessages = result.ErrorMessages.ToArray();
+		return CanCancel && result.IsSuccess && result.Value;
+	}
+
+	protected override void OnParametersSet() {
+		Guard.Ensure(Wizard != null, "Wizard parameter is required.");
+		if (ReferenceEquals(_renderedWizard, Wizard))
+			return;
+		_renderedWizard = Wizard;
+		_currentStepInstance = null;
+		_finished = false;
+		ErrorMessages = Array.Empty<string>();
+		Title = Wizard.Title;
+		CurrentStep = CreateStepFragment(Wizard.CurrentStep);
+	}
+
+	private async Task AdvanceAsync() {
+		if (IsBusy || _finished)
+			return;
+		Guard.Ensure(CurrentStepInstance != null, "The current wizard step has not rendered.");
+		_finishing = true;
+		using var scope = Tools.Scope.ExecuteOnDispose(() => {
+			_finishing = false;
+			StateHasChanged();
+		});
+		ErrorMessages = Array.Empty<string>();
+		StateHasChanged();
+		var validation = await CurrentStepInstance.OnNextAsync();
+		if (!validation.IsSuccess) {
+			ErrorMessages = validation.ErrorMessages.ToArray();
+			StateHasChanged();
+			return;
 		}
+		if (Wizard.HasNext) {
+			var navigation = Wizard.Next();
+			if (navigation)
+				CurrentStep = CreateStepFragment(Wizard.CurrentStep);
+			else
+				ErrorMessages = navigation.ErrorMessages.ToArray();
+			StateHasChanged();
+			return;
+		}
+		var result = await Wizard.FinishAsync();
+		if (result.IsSuccess && result.Value) {
+			_finished = true;
+			await OnFinished.InvokeAsync();
+		} else {
+			ErrorMessages = result.ErrorMessages.ToArray();
+		}
+		StateHasChanged();
 	}
 
-	/// <inheritdoc />
-	protected override Task OnParametersSetAsync() {
-		CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
-		return base.OnParametersSetAsync();
-	}
 
-	/// <summary>
-	/// Create render fragment of wizard step type.
-	/// </summary>
-	/// <param name="componentType"> type of step</param>
-	/// <returns></returns>
-	private RenderFragment CreateStepBaseFragment(Type componentType) {
-		return builder => {
-			
-
-			builder.OpenComponent(0, componentType);
-			builder.AddAttribute(1, nameof(Wizard), Wizard);
-			builder.AddComponentReferenceCapture(2, o => CurrentStepInstance = (WizardStepBase)o);
-			builder.CloseComponent();
-		};
-	}
+	private RenderFragment CreateStepFragment(Type componentType) => builder => {
+		builder.OpenComponent(0, componentType);
+		builder.SetKey(Wizard);
+		builder.AddAttribute(1, nameof(Wizard), Wizard);
+		builder.AddComponentReferenceCapture(2, component => CurrentStepInstance = (WizardStepBase)component);
+		builder.CloseComponent();
+	};
 }

@@ -29,9 +29,9 @@ public static class IServiceCollectionExtensions {
 		services.TryAddScoped<IGenericEventAggregator, BasicGenericEventAggregator>();
 		services.TryAddScoped<IModalService, ModalService>();
 		services.TryAddTransient(typeof(IWizardBuilder<>), typeof(DefaultWizardBuilder<>));
-		services.TryAddTransient(typeof(Logic.Wizard.IWizardBuilder<>), typeof(Logic.Wizard.DefaultWizardBuilder<>));
-		services.TryAddScoped<Logic.Modal.ModalService>();
-		services.TryAddScoped<Logic.Modal.ViewService>();
+		services.TryAddTransient(typeof(Wizard.IWizardBuilder<>), typeof(Wizard.DefaultWizardBuilder<>));
+		services.TryAddScoped<Modal.ModalService>();
+		services.TryAddScoped<Modal.ViewService>();
 		services.TryAddSingleton<IApplicationBlockCatalog, ApplicationBlockCatalog>();
 		services.TryAddScoped<IApplicationScreenHost, ApplicationScreenHost>();
 		services.TryAddScoped<IThemeService, ThemeService>();

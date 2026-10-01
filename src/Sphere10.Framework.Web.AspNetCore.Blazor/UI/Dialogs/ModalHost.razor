@@ -9,9 +9,9 @@
 *@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal
-@inherits ModalHostBase<ModalComponent, Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal.ModalResult>
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@inherits ModalHostBase<ModalComponent, Sphere10.Framework.Web.AspNetCore.Blazor.Modal.ModalResult>
 
-<div @ref="ModalElement" class="modal fade" id="modal" tabindex="-1" role="dialog" aria-label="Dialog" aria-hidden="true">
+<div @ref="ModalElement" class="modal fade" id="@Id" tabindex="-1" role="dialog" aria-label="Dialog" aria-hidden="true">
 	@DisplayedContent
 </div>

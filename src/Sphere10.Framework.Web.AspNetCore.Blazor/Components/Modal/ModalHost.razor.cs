@@ -14,6 +14,8 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal;
 
 /// <summary>Hosts a modal component until its interaction finishes.</summary>
 public sealed partial class ModalHost : ModalHostBase<ModalComponentBase, ModalResult> {
+	protected override ModalResult CanceledResult => ModalResult.Cancel;
+
 	public Task<ModalResult> ShowAsync<T>(ParameterView? parameterView = null) where T : ModalComponentBase {
 		var parameters = new Dictionary<string, object>();
 		if (parameterView.HasValue) {

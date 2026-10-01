@@ -10,7 +10,7 @@ using System;
 using System.Threading.Tasks;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 /// <summary>
 /// Wizard builder
@@ -19,6 +19,8 @@ public interface IWizardBuilder<TModel> {
 	IWizardBuilder<TModel> NewWizard(string title);
 
 	IWizardBuilder<TModel> WithModel(TModel instance);
+
+	IWizardBuilder<TModel> WithCancellation(bool isCancellable);
 
 	IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase;
 

@@ -21,6 +21,9 @@ public interface IWizard<TModel> : IWizard {
 
 
 public interface IWizard {
+	/// <summary>Whether cancellation is offered. The cancellation callback remains authoritative.</summary>
+	bool IsCancellable => true;
+
 	string Title { get; }
 
 	Type CurrentStep { get; }

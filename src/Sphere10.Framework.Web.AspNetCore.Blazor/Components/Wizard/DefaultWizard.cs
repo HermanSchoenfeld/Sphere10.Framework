@@ -77,6 +77,9 @@ public class DefaultWizard<TModel> : IWizard<TModel> {
 	/// </summary>
 	public string Title { get; }
 
+	/// <summary>Gets or sets whether this wizard permits cancellation.</summary>
+	public bool IsCancellable { get; set; } = true;
+
 	/// <summary>
 	/// Gets or sets the current step
 	/// </summary>
@@ -126,6 +129,8 @@ public class DefaultWizard<TModel> : IWizard<TModel> {
 
 	/// <inheritdoc />
 	public async Task<Result<bool>> CancelAsync() {
+		if (!IsCancellable)
+			return false;
 		return OnCancel is not null ? await OnCancel.Invoke(Model) : true;
 	}
 
@@ -183,13 +188,14 @@ public class DefaultWizard<TModel> : IWizard<TModel> {
 	/// <param name="steps"> steps</param>
 	/// <returns> whether or not a step update of this type has been applied for these step types.</returns>
 	private bool StepUpdateIsApplied(StepUpdateType type, IEnumerable<Type> steps) {
-		if (Updates is null) {
-			Updates = steps.ToLookup(x => type);
-			return false;
-		} else {
-			return steps.All(x => Updates[type].Contains(x));
-		}
+		var types = steps.ToArray();
+		var remainingSteps = Steps.Skip(CurrentStepIndex + 1);
+		return type switch {
+			StepUpdateType.Inject => remainingSteps.Take(types.Length).SequenceEqual(types),
+			StepUpdateType.ReplaceAllNext => remainingSteps.SequenceEqual(types),
+			StepUpdateType.ReplaceAll => Steps.SequenceEqual(types),
+			StepUpdateType.RemoveNext => !remainingSteps.Intersect(types).Any(),
+			_ => false
+		};
 	}
 }
-
-

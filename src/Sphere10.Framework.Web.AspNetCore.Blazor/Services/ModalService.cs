@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 

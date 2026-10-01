@@ -9,6 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +31,59 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ComponentParameterLifecycleTests {
+	[TestCase(typeof(PageSizeSelector), 5)]
+	[TestCase(typeof(PageSizeSelector), 7)]
+	[TestCase(typeof(PageSizeSelector), 10)]
+	[TestCase(typeof(UI.Grids.PageSizeSelector), 5)]
+	[TestCase(typeof(UI.Grids.PageSizeSelector), 7)]
+	[TestCase(typeof(UI.Grids.PageSizeSelector), 10)]
+	public async Task PageSizeSelectorIncludesItsCurrentValueAndDoesNotDuplicatePresetOptions(Type selectorType, int pageSize) {
+		await using var provider = CreateServices();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var parameters = new Dictionary<string, object> {
+				["Value"] = pageSize,
+				["ValueExpression"] = (Expression<Func<int>>)(() => pageSize)
+			};
+			if (selectorType == typeof(PageSizeSelector))
+				parameters["Model"] = new object();
+			var rendered = await renderer.RenderComponentAsync<ComponentHost>(HostParameters(selectorType, parameters, _ => { }));
+			var html = rendered.ToHtmlString();
+			var options = Regex.Matches(html, "<option[^>]*value=\"(?<value>[0-9]+)\"")
+				.Select(match => int.Parse(match.Groups["value"].Value)).ToArray();
+			Assert.That(options, Does.Contain(pageSize));
+			Assert.That(options, Does.Contain(5));
+			Assert.That(options, Is.Unique);
+			Assert.That(Regex.IsMatch(html, $"<option(?=[^>]*value=\"{pageSize}\")(?=[^>]*selected)[^>]*>"), Is.True,
+				"The browser must have a selected option for the active page size.");
+		});
+	}
+
+	[TestCase(typeof(PagedTable<int>))]
+	[TestCase(typeof(VirtualPagedTable<int>))]
+	[TestCase(typeof(UI.Grids.PagedTable<int>))]
+	[TestCase(typeof(UI.Grids.VirtualPagedTable<int>))]
+	public async Task TablePagerExposesCurrentPageWithoutVisibleScreenReaderMarker(Type tableType) {
+		await using var provider = CreateServices();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var parameters = TableParameters();
+			if (tableType == typeof(VirtualPagedTable<int>))
+				parameters["ItemsProvider"] = (VirtualPagedTable<int>.ItemsProviderDelegate)(_ => Task.FromResult(new ItemsResponse<int>(Array.Empty<int>(), 0)));
+			else if (tableType == typeof(UI.Grids.VirtualPagedTable<int>))
+				parameters["ItemsProvider"] = (UI.Grids.VirtualPagedTable<int>.ItemsProviderDelegate)(_ => Task.FromResult(new UI.Grids.ItemsResponse<int>(Array.Empty<int>(), 0)));
+			else
+				parameters["Items"] = Array.Empty<int>();
+			var rendered = await renderer.RenderComponentAsync<ComponentHost>(HostParameters(tableType, parameters, _ => { }));
+			var html = rendered.ToHtmlString();
+			var currentPage = Regex.Match(html, "<span[^>]*aria-current=\"page\"[^>]*>(?<text>.*?)</span>", RegexOptions.Singleline);
+			Assert.That(currentPage.Success, Is.True);
+			Assert.That(currentPage.Groups["text"].Value.Trim(), Is.EqualTo("1"));
+			Assert.That(html, Does.Contain("aria-label=\"Table pages\""));
+			if (tableType.Namespace == typeof(UI.Grids.PagedTable<int>).Namespace)
+				Assert.That(Regex.Replace(html, "\\s+", " "), Does.Contain("Showing 0 to 0 of 0 entries"));
+		});
+	}
 	[TestCase(typeof(PagedTable<int>))]
 	[TestCase(typeof(UI.Grids.PagedTable<int>))]
 	public async Task PageSizeAssignedBeforeItemsStartsAtFirstPageAndShrinkingItemsClampsPage(Type tableType) {
@@ -138,7 +193,7 @@ public class ComponentParameterLifecycleTests {
 	}
 
 	[Test]
-	public async Task DisposingModalHostCancelsPendingInteractionAndDisposesItsModule() {
+	public async Task DisposingModalHostReturnsCancelAndDisposesItsModule() {
 		var runtime = new ModalJsRuntime();
 		await using var provider = CreateServices(runtime);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -151,9 +206,54 @@ public class ComponentParameterLifecycleTests {
 			if (interaction.IsCompleted)
 				await interaction;
 			await modal.DisposeAsync();
-			await Assert.ThatAsync(async () => await interaction, Throws.InstanceOf<OperationCanceledException>());
+			Assert.That(await interaction, Is.EqualTo("cancelled"));
+			Assert.That(interaction.IsCompletedSuccessfully, Is.True);
 			Assert.That(runtime.Module.Disposed, Is.True);
 			Assert.That(runtime.ImportPath, Is.EqualTo("./_content/Sphere10.Framework.Web.AspNetCore.Blazor/js/modal.js"));
+		});
+	}
+
+
+	[TestCase("render")]
+	[TestCase("import")]
+	[TestCase("show")]
+	public async Task HostDisposalDuringModalStartupReturnsCancellationWithoutAnException(string stage) {
+		var runtime = new ModalJsRuntime { DelayImport = stage == "import" };
+		runtime.Module.DelayShow = stage == "show";
+		await using var provider = CreateServices(runtime);
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			ComponentHost host = null;
+			await renderer.RenderComponentAsync<ComponentHost>(HostParameters(typeof(ModalProbe), new Dictionary<string, object>(), value => host = value));
+			var modal = (ModalProbe)host.Component;
+			if (stage == "render")
+				modal.RenderCompletion = new TaskCompletionSource().Task;
+			var interaction = modal.ShowAsync();
+			if (stage == "import")
+				await runtime.ImportStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			else if (stage == "show")
+				await runtime.Module.Shown.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await modal.DisposeAsync();
+			Assert.That(await interaction.WaitAsync(TimeSpan.FromSeconds(5)), Is.EqualTo("cancelled"));
+			Assert.That(interaction.IsCompletedSuccessfully, Is.True);
+			Assert.That(runtime.Module.Disposed, Is.EqualTo(stage == "show"));
+		});
+	}
+
+	[Test]
+	public async Task UnrelatedModalCancellationStillPropagatesAndClearsTheDialog() {
+		var runtime = new ModalJsRuntime();
+		await using var provider = CreateServices(runtime);
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			ComponentHost host = null;
+			await renderer.RenderComponentAsync<ComponentHost>(HostParameters(typeof(ModalProbe), new Dictionary<string, object>(), value => host = value));
+			var modal = (ModalProbe)host.Component;
+			var interaction = modal.ShowAsync();
+			await runtime.Module.Shown.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			modal.Result.TrySetCanceled();
+			await Assert.ThatAsync(async () => await interaction, Throws.InstanceOf<OperationCanceledException>());
+			Assert.That(runtime.Module.Calls, Is.EqualTo(new[] { "show", "hide" }));
 		});
 	}
 
@@ -326,9 +426,13 @@ public class ComponentParameterLifecycleTests {
 	public class ModalProbe : ModalHostBase<ComponentBase, string> {
 		public TaskCompletionSource<string> Result { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+		public Task RenderCompletion { get; set; } = Task.CompletedTask;
+
+		protected override string CanceledResult => "cancelled";
+
 		public Task<string> ShowAsync() => ShowCoreAsync<ModalProbeContent>(new Dictionary<string, object>());
 
-		protected override Task WaitUntilRenderedAsync(ComponentBase component) => Task.CompletedTask;
+		protected override Task WaitUntilRenderedAsync(ComponentBase component) => RenderCompletion;
 
 		public ModalProbeContent CurrentContent { get; private set; }
 
@@ -353,21 +457,33 @@ public class ComponentParameterLifecycleTests {
 	private sealed class ModalJsRuntime : IJSRuntime {
 		public ModalJsModule Module { get; } = new();
 
+		public TaskCompletionSource ImportStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		public TaskCompletionSource<IJSObjectReference> PendingImport { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		public bool DelayImport { get; set; }
+
 		public string ImportPath { get; private set; }
 
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+
+		public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
 			Assert.That(identifier, Is.EqualTo("import"));
 			ImportPath = (string)args[0];
-			return ValueTask.FromResult((TValue)(object)Module);
+			ImportStarted.TrySetResult();
+			var module = DelayImport ? await PendingImport.Task.WaitAsync(cancellationToken) : Module;
+			return (TValue)(object)module;
 		}
-
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 	}
 
 	private sealed class ModalJsModule : IJSObjectReference {
 		public TaskCompletionSource<bool> Shown { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+		public TaskCompletionSource ShowCompletion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
 		public List<string> Calls { get; } = new();
+
+		public bool DelayShow { get; set; }
 
 		public bool Disposed { get; private set; }
 
@@ -376,14 +492,17 @@ public class ComponentParameterLifecycleTests {
 			return ValueTask.CompletedTask;
 		}
 
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+
+		public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
 			Assert.That(args.Single(), Is.TypeOf<ElementReference>());
 			Calls.Add(identifier);
-			if (identifier == "show")
+			if (identifier == "show") {
 				Shown.TrySetResult(true);
-			return ValueTask.FromResult(default(TValue));
+				if (DelayShow)
+					await ShowCompletion.Task.WaitAsync(cancellationToken);
+			}
+			return default;
 		}
-
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 	}
 }

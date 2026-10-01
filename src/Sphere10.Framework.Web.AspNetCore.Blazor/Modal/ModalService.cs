@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 /// <summary>
 /// Modal service - provides modal facilities.
 /// </summary>

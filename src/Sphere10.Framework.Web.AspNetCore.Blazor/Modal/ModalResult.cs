@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 
 /// <summary>
 /// Modal result - the result of a modal interaction.

@@ -9,11 +9,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
 
 public partial class ModalHost {
+	protected override ModalResult CanceledResult => ModalResult.Cancel;
+
 	public Task<ModalResult> ShowAsync<T>(ParameterView parameters, ModalOptions options = null) where T : ModalComponent {
 		var values = new Dictionary<string, object> {
 			[nameof(ModalComponent.Options)] = options ?? new ModalOptions()

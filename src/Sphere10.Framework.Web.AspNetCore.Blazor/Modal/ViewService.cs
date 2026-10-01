@@ -10,12 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs.Content;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 
 /// <summary>
 /// View service - provides common services to views.

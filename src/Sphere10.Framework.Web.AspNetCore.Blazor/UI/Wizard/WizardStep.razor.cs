@@ -8,7 +8,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
@@ -43,6 +43,9 @@ public abstract class WizardStepBase : ComponentBase {
 	/// Gets the next button text for this step.
 	/// </summary>
 	public virtual string NextButtonText { get; } = "Next";
+
+	/// <summary>Gets the final action text, retaining custom Next text from existing steps.</summary>
+	public virtual string FinishButtonText => NextButtonText == "Next" ? "Finish" : NextButtonText;
 
 	/// <summary>
 	/// Gets the back button text for this step.

@@ -23,15 +23,21 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 	private bool _showing;
 	private bool _disposed;
 
-	[Inject]
-	private IJSRuntime JsRuntime { get; set; }
+	protected ElementReference ModalElement;
+
+	[Parameter]
+	public string Id { get; set; } = "modal";
 
 	[Parameter]
 	public RenderFragment Content { get; set; }
 
-	protected ElementReference ModalElement;
+	[Inject]
+	private IJSRuntime JsRuntime { get; set; }
 
 	protected RenderFragment DisplayedContent => _activeContent ?? Content;
+
+	/// <summary>The normal dismissal result returned when the renderer removes this host.</summary>
+	protected virtual TResult CanceledResult => default;
 
 	public async ValueTask DisposeAsync() {
 		if (_disposed)
@@ -44,6 +50,8 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 		try {
 			var module = await _moduleTask;
 			await module.DisposeAsync();
+		} catch (OperationCanceledException) {
+			// Disposing the host cancels a pending JavaScript import.
 		} catch (JSDisconnectedException) {
 			// The browser observer removes the backdrop when the host leaves the DOM.
 		}
@@ -65,16 +73,26 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 			try {
 				if (module != null && !_disposed)
 					await module.InvokeVoidAsync("hide", ModalElement);
+			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+				// Teardown can interrupt an in-flight hide request.
 			} catch (JSDisconnectedException) {
 				// A disconnected circuit cannot perform browser cleanup.
 			}
 		});
 		var rendered = new TaskCompletionSource<TComponent>(TaskCreationOptions.RunContinuationsAsynchronously);
-		Func<Task<bool>> close = async () => await RequestCloseAsync(await rendered.Task.WaitAsync(cancellationToken));
+		async Task<bool> CloseAsync() {
+			if (_disposed)
+				return true;
+			try {
+				return await RequestCloseAsync(await rendered.Task.WaitAsync(cancellationToken));
+			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+				return true;
+			}
+		}
 		_activeContent = builder => {
 			builder.OpenComponent<CascadingValue<Func<Task<bool>>>>(0);
 			builder.AddAttribute(1, nameof(CascadingValue<Func<Task<bool>>>.Name), "CloseModal");
-			builder.AddAttribute(2, nameof(CascadingValue<Func<Task<bool>>>.Value), close);
+			builder.AddAttribute(2, nameof(CascadingValue<Func<Task<bool>>>.Value), (Func<Task<bool>>)CloseAsync);
 			builder.AddAttribute(3, nameof(CascadingValue<Func<Task<bool>>>.ChildContent), (RenderFragment)(content => {
 				content.OpenComponent<T>(0);
 				content.AddMultipleAttributes(1, parameters);
@@ -83,13 +101,18 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 			}));
 			builder.CloseComponent();
 		};
-		await InvokeAsync(StateHasChanged);
-		var component = await rendered.Task.WaitAsync(cancellationToken);
-		await WaitUntilRenderedAsync(component).WaitAsync(cancellationToken);
-		_moduleTask ??= JsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/js/modal.js").AsTask();
-		module = await _moduleTask.WaitAsync(cancellationToken);
-		await module.InvokeVoidAsync("show", cancellationToken, ModalElement);
-		return await GetResultAsync(component).WaitAsync(cancellationToken);
+		try {
+			await InvokeAsync(StateHasChanged);
+			var component = await rendered.Task.WaitAsync(cancellationToken);
+			await WaitUntilRenderedAsync(component).WaitAsync(cancellationToken);
+			_moduleTask ??= JsRuntime.InvokeAsync<IJSObjectReference>("import", cancellationToken, "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/js/modal.js").AsTask();
+			module = await _moduleTask.WaitAsync(cancellationToken);
+			await module.InvokeVoidAsync("show", cancellationToken, ModalElement);
+			return await GetResultAsync(component).WaitAsync(cancellationToken);
+		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+			// Host removal is ordinary dismissal, not a failed Blazor event callback.
+			return CanceledResult;
+		}
 	}
 
 	protected abstract Task WaitUntilRenderedAsync(TComponent component);

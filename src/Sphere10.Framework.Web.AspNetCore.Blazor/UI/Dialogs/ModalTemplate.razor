@@ -8,27 +8,34 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
 
 <div class="modal-dialog @SizeClass" role="document">
 	<div class="modal-content">
 		<div class="modal-header">
 			@HeaderTemplate
-			<button type="button" class="close" @onclick="OnCloseAsync" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
-			</button>
+			@if (ShowCloseButton) {
+				<button type="button" class="close" @onclick="OnCloseAsync" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			}
 		</div>
 		<div class="modal-body">
 			@BodyTemplate
 		</div>
 
-		<div class="modal-footer">
-			@FooterTemplate
-		</div>
+		@if (FooterTemplate != null) {
+			<div class="modal-footer">
+				@FooterTemplate
+			</div>
+		}
 	</div>
 </div>
 
 @code {
+
+	[Parameter]
+	public bool ShowCloseButton { get; set; } = true;
 
 	[Parameter]
 	public RenderFragment HeaderTemplate { get; set; }

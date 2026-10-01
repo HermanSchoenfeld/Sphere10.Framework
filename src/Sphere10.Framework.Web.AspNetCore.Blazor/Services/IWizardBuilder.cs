@@ -20,6 +20,8 @@ public interface IWizardBuilder<TModel> {
 
 	IWizardBuilder<TModel> WithModel(TModel instance);
 
+	IWizardBuilder<TModel> WithCancellation(bool isCancellable);
+
 	IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase;
 
 	IWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished);

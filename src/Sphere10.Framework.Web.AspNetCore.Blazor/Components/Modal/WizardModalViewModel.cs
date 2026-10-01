@@ -24,24 +24,19 @@ public class WizardModalViewModel : ModalViewModel {
 	/// <summary>
 	/// Gets or sets the wizard host component instance.
 	/// </summary>
-	public WizardHost? WizardHost;
+	public WizardHost WizardHost;
+
+	public bool CanCancel => Wizard?.IsCancellable == true && (WizardHost?.ViewModel.CanCancel ?? true);
 
 	/// <summary>
 	/// Modal closed result. Passes request to the wizard instance to determine whether close OK.
 	/// </summary>
 	public override async Task<bool> RequestCloseAsync() {
-		Result<bool> result = await Wizard.CancelAsync();
-
-		if (result) {
-			await base.RequestCloseAsync();
-			return result;
-		} else {
-
-
-			WizardHost?.ViewModel!.ErrorMessages.Clear();
-			WizardHost?.ViewModel!.ErrorMessages.AddRange(result.ErrorMessages);
-			return result;
-		}
+		if (!CanCancel)
+			return false;
+		if (WizardHost != null)
+			return await WizardHost.ViewModel.RequestCancelAsync() && await base.RequestCloseAsync();
+		var result = await Wizard.CancelAsync();
+		return CanCancel && result.IsSuccess && result.Value && await base.RequestCloseAsync();
 	}
 }
-

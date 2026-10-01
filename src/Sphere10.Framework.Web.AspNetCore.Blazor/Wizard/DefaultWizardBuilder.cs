@@ -8,112 +8,76 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
-/// <summary>
-/// Wizard builder - constructs wizard component and produces render fragment delegate
-/// to be used with view / component.
-/// </summary>
+/// <summary>Configures a wizard and its completion and cancellation callbacks.</summary>
 public class DefaultWizardBuilder<TModel> : IWizardBuilder<TModel> {
-	private WizardBuilderParameters<TModel> _parameters = null!;
+	private WizardBuilderParameters<TModel> _parameters;
 
-	/// <summary>
-	/// Add wizard type to builder
-	/// </summary>
-	/// <returns></returns>
-	/// <exception cref="InvalidOperationException"> if called more than once</exception>
 	public IWizardBuilder<TModel> NewWizard(string title) {
-		_parameters = new WizardBuilderParameters<TModel>() {
-			Title = title
-		};
-
+		Guard.ArgumentNotNull(title, nameof(title));
+		_parameters = new WizardBuilderParameters<TModel> { Title = title };
 		return this;
 	}
 
-
-	/// <summary>
-	/// Set the model instance to be used with this wizard
-	/// </summary>
-	/// <param name="instance"></param>
-	/// <typeparam name="TModel"></typeparam>
-	/// <returns></returns>
-	/// <exception cref="ArgumentNullException"></exception>
 	public IWizardBuilder<TModel> WithModel(TModel instance) {
-		if (instance is null) {
-			throw new ArgumentNullException(nameof(instance), "Model instance must not be null.");
-		}
-
+		Guard.ArgumentNotNull(instance, nameof(instance));
+		EnsureStarted();
 		_parameters.Model = instance;
 		return this;
 	}
 
-	/// <summary>
-	/// Add step to the wizard
-	/// </summary>
-	/// <typeparam name="TWizardStep"></typeparam>
-	/// <returns></returns>
+	public IWizardBuilder<TModel> WithCancellation(bool isCancellable) {
+		EnsureStarted();
+		_parameters.IsCancellable = isCancellable;
+		return this;
+	}
+
 	public IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase {
+		EnsureStarted();
 		_parameters.Steps.Add(typeof(TWizardStep));
 		return this;
 	}
 
 	public IWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished) {
-		_parameters.OnFinishedFunc = onFinished ?? throw new ArgumentNullException(nameof(onFinished));
+		Guard.ArgumentNotNull(onFinished, nameof(onFinished));
+		EnsureStarted();
+		_parameters.OnFinishedFunc = onFinished;
 		return this;
 	}
 
 	public IWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled) {
-		_parameters.OnCancelledFunc = onCancelled ?? throw new ArgumentNullException(nameof(onCancelled));
+		Guard.ArgumentNotNull(onCancelled, nameof(onCancelled));
+		EnsureStarted();
+		_parameters.OnCancelledFunc = onCancelled;
 		return this;
 	}
 
-	/// <summary>
-	/// Build the wizard render fragment
-	/// </summary>
-	/// <returns></returns>
-	/// <exception cref="InvalidOperationException"> thrown if components of the wizard have not been added using builder.</exception>
 	public IWizard<TModel> Build() {
-		if (_parameters.Model is null) {
-			throw new InvalidOperationException("Model has not been set, use WithModel<TModel>(TModel instance)");
-		}
-
-		if (!_parameters.Steps.Any()) {
-			throw new InvalidOperationException(
-				"Steps have not been added to the wizard, at least one step required");
-		}
-
-		return new DefaultWizard<TModel>(_parameters.Title!, _parameters.Steps, _parameters.Model, _parameters.OnFinishedFunc, _parameters.OnCancelledFunc);
+		EnsureStarted();
+		Guard.Ensure(_parameters.Model is not null, "Model has not been set. Use WithModel(instance).");
+		Guard.Ensure(_parameters.Steps.Count > 0, "At least one wizard step is required.");
+		return new DefaultWizard<TModel>(_parameters.Title, new List<Type>(_parameters.Steps), _parameters.Model, _parameters.OnFinishedFunc, _parameters.OnCancelledFunc) {
+			IsCancellable = _parameters.IsCancellable
+		};
 	}
+
+	private void EnsureStarted() => Guard.Ensure(_parameters != null, "Start the wizard with NewWizard(title).");
 }
 
-
 internal class WizardBuilderParameters<TModel> {
-	/// <summary>
-	/// Gets or sets the wizard title
-	/// </summary>
-	internal string? Title { get; set; }
+	internal string Title { get; set; }
 
-	/// <summary>
-	/// Gets or sets the model 
-	/// </summary>
-	internal TModel? Model { get; set; }
+	internal TModel Model { get; set; }
 
-	/// <summary>
-	/// Gets or sets the on finished func
-	/// </summary>
-	internal Func<TModel, Task<Result<bool>>>? OnFinishedFunc { get; set; }
+	internal bool IsCancellable { get; set; } = true;
 
-	/// <summary>
-	/// Gets or sets the cancelled func.
-	/// </summary>
-	internal Func<TModel, Task<Result<bool>>>? OnCancelledFunc { get; set; }
+	internal Func<TModel, Task<Result<bool>>> OnFinishedFunc { get; set; }
 
-	/// <summary>
-	/// Gets or sets the wizard steps
-	/// </summary>
+	internal Func<TModel, Task<Result<bool>>> OnCancelledFunc { get; set; }
+
 	internal List<Type> Steps { get; } = new();
 }

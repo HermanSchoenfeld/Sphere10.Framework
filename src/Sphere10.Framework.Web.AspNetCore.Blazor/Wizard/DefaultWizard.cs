@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 /// <summary>
 /// Default wizard
@@ -81,6 +81,9 @@ public class DefaultWizard<TModel> : IWizard<TModel> {
 	/// </summary>
 	public string Title { get; }
 
+	/// <summary>Gets or sets whether this wizard permits cancellation.</summary>
+	public bool IsCancellable { get; set; } = true;
+
 	/// <summary>
 	/// Gets or sets the current step
 	/// </summary>
@@ -135,6 +138,8 @@ public class DefaultWizard<TModel> : IWizard<TModel> {
 
 	/// <inheritdoc />
 	public async Task<Result<bool>> CancelAsync() {
+		if (!IsCancellable)
+			return false;
 		return OnCancel is not null ? await OnCancel.Invoke(Model) : true;
 	}
 
