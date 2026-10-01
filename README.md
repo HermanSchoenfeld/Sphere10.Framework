@@ -26,7 +26,7 @@ Copyright © Herman Schoenfeld 2005 - Present
 
 **Application Development**
 - **Desktop UI Framework**: Full-featured Windows Forms component library with data binding, validation, and plugin support
-- **Web Integration**: ASP.NET Core middleware, filters, routing, and form components for server-side web applications
+- **Web Integration**: ASP.NET Core hosting and MVC forms, plus a Blazor ApplicationBlock workspace and a CRUD grid with typed columns, validation and reference editors
 - **Cross-Platform**: Run applications on Windows, macOS, iOS, Android, or .NET Core/5+
 - **Plugin Architecture**: Dynamic plugin loading and lifecycle management for extensible applications
 
@@ -65,7 +65,7 @@ dotnet add package Sphere10.Framework.Communications
 
 Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.3.114`. Local builds allocate the next number from `LOCAL-BUILD-NUMBER` in the solution folder (gitignored); override with `-p:BuildRevision=1` for `3.1.3.1`. The NuGet version remains `3.1.3`, and assembly identity remains `3.1.3.0` across builds. For prerelease packages, pass `-p:Version=3.1.3-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
 
-Before release packaging, run [validate-packages.ps1](validate-packages.ps1). It packs every active public library under a unique local validation version, checks package metadata and internal dependencies, and restores external consumers from an isolated feed and package cache. It builds core, database/testing/generator and Windows consumers, publishes a Blazor ApplicationBlock host, and verifies Razor assets. Files and logs remain in the reported temporary directory; nothing is published. See [package consumer validation](scripts/package-consumers/README.md) for details. `Sphere10.Framework.NUnit`, `Sphere10.Framework.NUnit.DB` and `Sphere10.Framework.Generators` are distributable packages; the runtime/compiler support project remains internal.
+Before release packaging, run [validate-packages.ps1](validate-packages.ps1). It packs every active public library under a unique local validation version, checks package metadata and internal dependencies, and restores external consumers from an isolated feed and package cache. It builds core, Application-only, database/testing/generator and Windows consumers, publishes a Blazor ApplicationBlock host, and verifies Razor assets. Files and logs remain in the reported temporary directory; nothing is published. See [package consumer validation](scripts/package-consumers/README.md) for details. `Sphere10.Framework.NUnit`, `Sphere10.Framework.NUnit.DB` and `Sphere10.Framework.Generators` are distributable packages; the runtime/compiler support project remains internal.
 
 From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It builds into a staging directory, verifies matching package and symbol files, then replaces the framework packages in `nuget-packages`. Failed builds leave the previous packages intact; unrelated files and packages are preserved. Packing does not run tests. Use `-OutputDirectory` to select a different destination.
 
@@ -129,7 +129,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, command-line interface, and presentation framework | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
 | [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
 | [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation | |
-| [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/README.md) | Runtime environment detection, diagnostics, and platform utilities | |
+| [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Runtime environment detection, diagnostics, and platform utilities | |
 | [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) |
 
 ### :lock: Cryptography & Security
@@ -167,13 +167,15 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | [**Sphere10.Framework.Web**](src/Sphere10.Framework.Web/README.md) | HTML, sitemap, and presentation models independent of ASP.NET Core | |
 | [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | Shared ASP.NET Core HTTP, middleware, logging, and lifecycle integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
 | [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC controllers, forms, filters, routing, and action results | |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Restored Razor components, tables, grids, dialogs, wizards, and application shells | |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Interactive Blazor workspace and CRUD grid with typed columns, validation, reference editors, dialogs and wizards | |
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) |
 | [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | |
 | [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | |
 | [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Xamarin.iOS integration for native iOS apps | |
 | [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Xamarin.Android integration for native Android apps | |
 | [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Xamarin.macOS integration for native macOS apps | |
+
+For web development, start with the [Blazor host and complete CRUD grid example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start), the [custom editor and reference-picker example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions), or the [MVC quick start](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md). Run the [Blazor tester](utils/Sphere10.Framework.Utils.BlazorTester/README.md) to exercise the grid and ApplicationBlock workspace.
 
 ## :test_tube: Test Projects
 
@@ -188,8 +190,9 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 | [**Sphere10.Framework.CryptoEx.Tests**](tests/Sphere10.Framework.CryptoEx.Tests) | Cryptography implementation tests |
 | [**Sphere10.Framework.Data.Tests**](tests/Sphere10.Framework.Data.Tests) | Database access layer tests |
 | [**Sphere10.Framework.Tests**](tests/Sphere10.Framework.Tests) | Core framework tests |
+| [**Sphere10.Framework.Application.Tests**](tests/Sphere10.Framework.Application.Tests/README.md) | Shared presentation behavior and UI-independent dependency tests |
 | [**Sphere10.Framework.Web.AspNetCore.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Tests) | Shared web and MVC integration regressions |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests) | Restored table, wizard, plugin, and navigation tests |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests) | CRUD grid, table, wizard, plugin, ApplicationBlock and lifecycle regression tests |
 | [**Sphere10.Framework.Windows.LevelDB.Tests**](tests/Sphere10.Framework.Windows.LevelDB.Tests) | LevelDB integration tests |
 | [**Sphere10.Framework.Windows.Tests**](tests/Sphere10.Framework.Windows.Tests) | Windows platform tests |
 
@@ -208,7 +211,7 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 |---------|---------|
 | [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC forms, controller helpers, filters, and results |
 | [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Both restored Blazor component generations in one Razor class library |
-| [**Sphere10.Framework.Utils.BlazorTester**](utils/Sphere10.Framework.Utils.BlazorTester/README.md) | Runnable widget gallery and Blazor demonstrations |
+| [**Sphere10.Framework.Utils.BlazorTester**](utils/Sphere10.Framework.Utils.BlazorTester/README.md) | Runnable ApplicationBlock workspace, editable CRUD grid and component galleries |
 | [**Sphere10.Framework.Utils.MvcTester**](utils/Sphere10.Framework.Utils.MvcTester/README.md) | Minimal runnable MVC test application |
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities for all platforms |
 

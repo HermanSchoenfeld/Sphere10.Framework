@@ -2,7 +2,7 @@
 
 **Copyright © 2018-Present Herman Schoenfeld. All rights reserved.**
 
-Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET 8.0 framework for building high-performance applications across desktop, mobile, and web platforms.
+Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET 10 framework for building high-performance applications across desktop, mobile, and web platforms.
 
 ---
 
@@ -34,9 +34,9 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | Project | Description | README |
 |---------|-------------|--------|
 | **Sphere10.Framework** | Collections, serialization, cryptography, streams, extensions | [View](../src/Sphere10.Framework/README.md) |
-| **Sphere10.Framework.Application** | DI integration, settings, lifecycle, CLI | [View](../src/Sphere10.Framework.Application/README.md) |
+| **Sphere10.Framework.Application** | DI, settings, lifecycle, CLI and shared presentation contracts/engines | [View](../src/Sphere10.Framework.Application/README.md) |
 | **Sphere10.Framework.Generators** | C# source generators for compile-time code generation | [View](../src/Sphere10.Framework.Generators/README.md) |
-| **Sphere10.Framework.Runtime** | Runtime environment detection and diagnostics | [View](../src/Sphere10.Framework.Runtime/README.md) |
+| **Sphere10.Framework.Runtime** | Runtime environment detection and diagnostics | [View](../src/Sphere10.Framework.Runtime/) |
 | **Sphere10.HashLib4CSharp** | Hashing algorithms (MD5, SHA, BLAKE2, CRC) | [View](../src/Sphere10.HashLib4CSharp/README.md) |
 
 ### Data Access
@@ -80,7 +80,7 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | **Sphere10.Framework.Web** | ASP.NET-independent HTML and web models | [View](../src/Sphere10.Framework.Web/README.md) |
 | **Sphere10.Framework.Web.AspNetCore** | Shared HTTP, middleware, logging, and lifecycle | [View](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
 | **Sphere10.Framework.Web.AspNetCore.MVC** | MVC forms, filters, routing, and results | [View](../src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) |
-| **Sphere10.Framework.Web.AspNetCore.Blazor** | Razor components, grids, dialogs, and wizards | [View](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) |
+| **Sphere10.Framework.Web.AspNetCore.Blazor** | ApplicationBlock workspace, CRUD grid, custom editors, dialogs and wizards | [View](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) |
 | **Sphere10.Framework.Drawing** | Graphics and image manipulation | [View](../src/Sphere10.Framework.Drawing/README.md) |
 | **Sphere10.VisualRenderer** | Visual document model to HTML and plain text | Independent component at `Components/Sphere10.VisualRenderer` |
 | **Sphere10.Framework.iOS** | Xamarin.iOS integration | [View](../src/Sphere10.Framework.iOS/README.md) |
@@ -108,6 +108,10 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | Networking & RPC | [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) |
 | Windows desktop | [Sphere10.Framework.Windows.Forms](../src/Sphere10.Framework.Windows.Forms/README.md) |
 | ASP.NET Core web | [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
+| Editable Blazor grids | [Complete grid example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start) |
+| Custom grid editors and related records | [Editor, reference picker and action example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions) |
+| Blazor navigation workspace | [ApplicationBlock setup](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#register-a-workspace) |
+| Run the web demos | [Blazor tester](../utils/Sphere10.Framework.Utils.BlazorTester/README.md) / [MVC tester](../utils/Sphere10.Framework.Utils.MvcTester/README.md) |
 | Mobile development | [iOS](../src/Sphere10.Framework.iOS/README.md) / [Android](../src/Sphere10.Framework.Android/README.md) |
 
 ---
