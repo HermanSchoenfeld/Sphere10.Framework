@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sphere10.Framework.DApp.Presentation.Components.Wizard;
-using Sphere10.Framework.DApp.Presentation.Services;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Services;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 
 /// <summary>
 /// Wizard builder - constructs wizard component and produces render fragment delegate

@@ -10,11 +10,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Sphere10.Framework.DApp.Presentation.Components.Modal;
-using Sphere10.Framework.DApp.Presentation.Components.Wizard;
-using Sphere10.Framework.DApp.Presentation.Services;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Services;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 
 public class ModalService : IModalService {
 	private ModalHost? ModalInstance { get; set; }
