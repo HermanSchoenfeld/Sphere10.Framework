@@ -9,6 +9,7 @@
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Playwright" PrivateAssets="all" />
     <ProjectReference Include="..\..\src\Sphere10.Framework.Web.AspNetCore.Blazor\Sphere10.Framework.Web.AspNetCore.Blazor.csproj" />
     <ProjectReference Include="..\..\utils\Sphere10.Framework.Utils.BlazorTester\Sphere10.Framework.Utils.BlazorTester.csproj" />
   </ItemGroup>
