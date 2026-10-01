@@ -8,28 +8,31 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework.Application;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Application.UI;
 
-/// <summary>A Blazor application screen with shared help metadata and asynchronous lifecycle hooks.</summary>
-/// <remarks>
-/// Derive from ApplicationScreen for automatic attachment and detachment. Implementations used directly must
-/// attach their renderer-created instance to IApplicationScreenHost. Guard and lifecycle callbacks execute inside
-/// a serialized transition and must not await another host transition. Resolve scoped dependencies through DI.
-/// </remarks>
+/// <summary>Shared help metadata and asynchronous lifecycle contract for application screens.</summary>
+/// <remarks>UI adapters own rendering, thread affinity, attachment and disposal.</remarks>
 public interface IApplicationScreen : IHelpableObject {
-	/// <summary>Used for external-navigation confirmation; notify the host when this value changes.</summary>
 	bool HasUnsavedChanges => false;
 
 	/// <summary>Allows or vetoes hiding, closing, or navigating away; may be called for a hidden screen.</summary>
-	Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) => Task.FromResult(true);
+	Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(true);
+	}
 
 	/// <summary>Runs on first active attachment and whenever this retained screen is selected again.</summary>
-	Task OnActivatedAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+	Task OnActivatedAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.CompletedTask;
+	}
 
 	/// <summary>Runs before the active screen is hidden or removed, after its guard permits the operation.</summary>
-	Task OnDeactivatedAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+	Task OnDeactivatedAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.CompletedTask;
+	}
 
 	HelpType IHelpableObject.Type => HelpType.None;
 

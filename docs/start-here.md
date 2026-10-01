@@ -45,7 +45,7 @@ See the [main README](../README.md#package-installation) for the complete list o
 ```
 src/                              # 45+ framework projects
 ├── Sphere10.Framework/           # Core library
-├── Sphere10.Framework.Application/  # App lifecycle, DI, settings
+├── Sphere10.Framework.Application/  # App lifecycle, DI, settings, shared presentation
 ├── Sphere10.Framework.Data/      # Database abstraction
 ├── Sphere10.Framework.Data.Sqlite/  # SQLite provider
 ├── Sphere10.Framework.Data.MSSQL/   # SQL Server provider

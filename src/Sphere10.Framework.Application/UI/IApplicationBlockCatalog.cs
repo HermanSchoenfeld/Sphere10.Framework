@@ -6,13 +6,10 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
+namespace Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+public interface IApplicationBlockCatalog<out TBlock> where TBlock : class, IApplicationBlock {
+	TBlock[] Blocks { get; }
 
-public interface IApplicationBlockCatalog {
-	IReadOnlyList<IApplicationBlock> Blocks { get; }
-
-	IApplicationBlock Get(string id);
+	TBlock Get(string id);
 }
-

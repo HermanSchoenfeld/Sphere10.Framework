@@ -135,6 +135,7 @@ Application lifecycle and configuration:
 - **Settings Management**: Type-safe settings with persistence
 - **Command-Line Parsing**: Attribute-based CLI with validation
 - **Lifecycle Hooks**: Startup, configuration, and shutdown events
+- **Shared UI**: UI-independent block/menu contracts, metadata, builders, snapshots, catalog validation and activation policies, reused by the WinForms and Blazor adapters
 
 ### Data Tier (Sphere10.Framework.Data.*)
 

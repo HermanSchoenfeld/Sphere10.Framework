@@ -8,8 +8,10 @@
 
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class ApplicationBlockCatalogBase<TBlock> : IApplicationBlockCatalog<TBlock> where TBlock : class, IApplicationBlock {
-	public abstract TBlock[] Blocks { get; }
+public interface IApplicationMenu {
+	string Id => Text;
 
-	public abstract TBlock Get(string id);
+	string Text { get; }
+
+	IApplicationMenuItem[] Items { get; }
 }

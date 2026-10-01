@@ -12,6 +12,44 @@ Sphere10.Framework.Application enables **rapid application development** by prov
 dotnet add package Sphere10.Framework.Application
 ```
 
+## Shared UI framework
+
+`Sphere10.Framework.Application.UI` contains the common ApplicationBlock model used by the WinForms and Blazor adapters. The Application package targets `net10.0` and has no ASP.NET Core, Windows desktop or other UI framework dependency. The `UI` folder also contains the existing help, website launcher and user-interface services, which retain their `Sphere10.Framework.Application` namespace.
+
+| Shared responsibility | Types |
+|---|---|
+| Block, menu and item contracts | `IApplicationBlock`, `IApplicationMenu`, `IApplicationMenuItem`, `IScreenMenuItem` |
+| Mutable metadata and notification handlers | `ApplicationBlock`, `ApplicationMenu<TItem>`, `ApplicationMenuItem` |
+| Builder state and validation | `ApplicationBlockBuilderBase<TMenu, TBlock>`, `ApplicationMenuBuilderBase<TItem, TMenu>`, `ApplicationMenuItemBuilderBase` |
+| Snapshot traversal, stable IDs and ordering | `ApplicationBlockSnapshotBase<TBlock, TMenu, TItem>`, `ApplicationBlockCatalog<TBlock>` |
+| Activation policy and lifecycle | `ScreenActivationPolicyRegistry`, `ScreenActivationMode`, `IApplicationScreen` |
+| Awaitable menu actions | `ApplicationAction` |
+
+Platform-specific extensions use explicit names: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`, implemented by `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Their menus, builders and screen hosts follow the same convention. Import the shared UI namespace normally alongside the platform namespace; the APIs do not require namespace aliases. Both platforms use the shared `ScreenActivationMode` directly.
+
+The shared `ApplicationBlock` stores `IApplicationMenu` directly, allowing different menu implementations in the same block. The shared models can be constructed without either UI adapter:
+
+```csharp
+using Sphere10.Framework.Application.UI;
+
+var block = new ApplicationBlock {
+	Id = "administration",
+	Name = "Administration",
+	Position = 10
+};
+var menu = new ApplicationMenu<ApplicationMenuItem> { Id = "tools", Text = "Tools" };
+menu.AddItem(new ApplicationMenuItem { Id = "refresh", Title = "Refresh" });
+block.AddMenu(menu);
+```
+
+IDs default to their display names when omitted. The shared builder bases copy menu, item and parameter collections when building; Blazor uses this to isolate registration snapshots. WinForms builders retain and update the same mutable native product across builds to preserve desktop ownership semantics. Snapshot factories copy platform metadata while the shared engine validates names, screen types, duplicate IDs and the reserved `__default` item ID. The catalog snapshots registrations before ordering blocks by position and indexing their IDs. The `Menus`, `Items` and catalog `Blocks` properties expose arrays. Shared models and catalogs return a fresh membership snapshot on each read, so replacing or reordering slots in a returned array cannot alter stored membership or catalog lookup. Previously returned arrays do not track later add/remove calls; use the model methods to change its membership and read the property again. These array copies preserve element identity rather than deep-cloning arbitrary objects. Enumerable method parameters remain available for registration and traversal.
+
+Activation-policy declaration batches are atomic: incompatible policies or invalid screens reject the entire batch. Explicit declarations are distinguished from policies inferred when a host creates an instance. `IApplicationScreen` supplies UI-independent help metadata, cancellation-aware activation/deactivation hooks and a navigation guard. `ApplicationAction.ExecuteAsync` receives the executing service provider and cancellation token; callbacks should resolve scoped services there. Registration-time callbacks must not capture scoped services or mutable per-user state.
+
+The [WinForms adapter](../Sphere10.Framework.Windows.Forms/README.md) retains controls, images, UI-thread dispatch and desktop screen ownership. The [Blazor adapter](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) retains component validation, rendering, circuit scopes and browser interaction. Each supplies factories and platform validation to the shared engines. An ApplicationBlock describes navigation metadata; `ModuleConfiguration` continues to handle service registration and framework startup.
+
+The [Application test suite](../../tests/Sphere10.Framework.Application.Tests/README.md) exercises the shared behavior using ordinary .NET classes and checks the framework assembly dependency graph. [NuGet validation](../../scripts/package-consumers/README.md) also builds a consumer referencing only the Application package and rejects UI dependencies in its resolved packages and framework references.
+
 ## Awaitable UI services
 
 `IUserInterfaceServices.ShowNagScreen`, `ShowSendCommentDialog`, `ShowSubmitBugReportDialog`, `ShowRequestFeatureDialog`, and `ShowAboutBox` return `Task`. Await them to preserve sequencing and observe errors. `IProductLicenseEnforcer.EnforceLicense(bool)` also returns `Task`, and completes after any licensing dialog closes. Implementations with no UI work return `Task.CompletedTask`.

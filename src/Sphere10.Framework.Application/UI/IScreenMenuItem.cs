@@ -6,10 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class ApplicationBlockCatalogBase<TBlock> : IApplicationBlockCatalog<TBlock> where TBlock : class, IApplicationBlock {
-	public abstract TBlock[] Blocks { get; }
+/// <summary>A screen declaration. A null activation mode leaves the platform's screen default in effect.</summary>
+public interface IScreenMenuItem : IApplicationMenuItem {
+	Type ScreenType { get; }
 
-	public abstract TBlock Get(string id);
+	ScreenActivationMode? ActivationMode { get; }
+
+	string ScreenTitle => null;
 }

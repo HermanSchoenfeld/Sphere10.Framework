@@ -42,7 +42,7 @@ Core utilities usable across any .NET application (desktop, web, mobile, server,
 
 ### Processing Tier Domains (Sphere10.Framework.Application)
 
-Application lifecycle, DI, configuration, and plugin management.
+Application lifecycle, DI, configuration, plugin management, and UI-independent presentation logic.
 
 | Domain | Purpose | Tools |
 |--------|---------|-------|
@@ -50,6 +50,9 @@ Application lifecycle, DI, configuration, and plugin management.
 | **Configuration** | Settings management, environment-aware configuration | Tools.Configuration |
 | **Plugin System** | Dynamic plugin loading, lifecycle management, plugin discovery | Tools.Plugins |
 | **Command-Line** | CLI argument parsing, command execution, help text generation | Tools.CommandLine |
+| **UI** | Shared block/menu models, builder state, snapshots, catalog validation and screen activation policies | Tools.UI |
+
+The [shared UI framework](../../src/Sphere10.Framework.Application/README.md#shared-ui-framework) has no UI framework dependencies. WinForms and Blazor supply their control/component types, rendering, UI dispatch and resource ownership through platform adapters.
 
 ### Data Tier Domains (Sphere10.Framework.Data.*)
 

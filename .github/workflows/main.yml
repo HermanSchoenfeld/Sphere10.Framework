@@ -54,6 +54,7 @@ jobs:
         run: >-
           dotnet vstest
           "compiled-tests/Sphere10.Framework.Tests/bin/Debug/net10.0/Sphere10.Framework.Tests.dll"
+          "compiled-tests/Sphere10.Framework.Application.Tests/bin/Debug/net10.0/Sphere10.Framework.Application.Tests.dll"
           "compiled-tests/Sphere10.Framework.CryptoEx.Tests/bin/Debug/net10.0/Sphere10.Framework.CryptoEx.Tests.dll"
           "compiled-tests/Sphere10.Framework.Data.Tests/bin/Debug/net10.0/Sphere10.Framework.Data.Tests.dll"
           "compiled-tests/Sphere10.Framework.Communications.Tests/bin/Debug/net10.0/Sphere10.Framework.Communications.Tests.dll"

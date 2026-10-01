@@ -2,14 +2,13 @@
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows.Forms;
+namespace Sphere10.Framework.Application.UI;
 
 public enum ScreenActivationMode {
 	SingleInstance = 0,
 	MultiInstance = 1
 }
-

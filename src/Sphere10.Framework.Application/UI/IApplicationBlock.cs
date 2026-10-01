@@ -6,10 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class ApplicationBlockCatalogBase<TBlock> : IApplicationBlockCatalog<TBlock> where TBlock : class, IApplicationBlock {
-	public abstract TBlock[] Blocks { get; }
+/// <summary>UI-independent application block metadata. Platform adapters retain ownership of presentation resources.</summary>
+public interface IApplicationBlock {
+	string Id => Name;
 
-	public abstract TBlock Get(string id);
+	string Name { get; }
+
+	int Position { get; }
+
+	IApplicationMenu[] Menus { get; }
+
+	Type DefaultScreen { get; }
+
+	string DefaultScreenTitle => null;
 }
