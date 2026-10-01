@@ -11,9 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Sphere10.Framework.DApp.Presentation.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// App manager

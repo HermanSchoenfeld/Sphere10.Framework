@@ -6,21 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using Sphere10.Framework.DApp.Presentation.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-/// <summary>
-/// Finds available plugin types.
-/// </summary>
-public interface IPluginLocator {
+public interface IMenuProvider {
 	/// <summary>
-	/// Locate plugins.
+	/// Gets this apps menu items.
 	/// </summary>
-	/// <returns> <see cref="IPlugin"/> implementing plugin types.</returns>
-	IEnumerable<Type> LocatePlugins();
+	IEnumerable<MenuItem> MenuItems { get; }
 }
 
 

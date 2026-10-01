@@ -8,7 +8,7 @@
 
 using Microsoft.AspNetCore.Components;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 public static class NavigationManagerExtensions {
 	/// <summary>

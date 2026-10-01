@@ -7,9 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.DApp.Presentation.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Page selected event args

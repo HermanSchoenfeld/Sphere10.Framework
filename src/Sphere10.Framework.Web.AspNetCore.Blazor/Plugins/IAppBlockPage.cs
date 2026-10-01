@@ -6,23 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using Sphere10.Framework.DApp.Presentation.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
-/// Args for app selected event.
+/// App block page
 /// </summary>
-public class AppSelectedEventArgs : EventArgs {
-	/// <summary>
-	/// Gets the newly selected app.
-	/// </summary>
-	public IApp SelectedApp { get; }
-
-	public AppSelectedEventArgs(IApp selectedApp) {
-		SelectedApp = selectedApp;
-	}
+public interface IAppBlockPage : IRoutablePage, INamedItem, IIconItem, IMenuProvider {
 }
 
 

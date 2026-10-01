@@ -8,22 +8,23 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Framework.DApp.Presentation.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
-/// Manages plugins.
+/// VelocityNET application plugin. VelocityNET client application will locate implementations of this
+/// interface and 
 /// </summary>
-public interface IPluginManager {
+public interface IPlugin {
 	/// <summary>
-	/// Gets the currently available plugins
+	/// Gets the applications this plugin provides.
 	/// </summary>
-	IEnumerable<IPlugin> Plugins { get; }
+	IEnumerable<IApp> Apps { get; }
 
 	/// <summary>
-	/// Configures the service collection with services from plugins.
+	/// Configure the service collection with this plugin's services.
 	/// </summary>
+	/// <param name="serviceCollection"> services</param>
 	IServiceCollection ConfigureServices(IServiceCollection serviceCollection);
 }
 

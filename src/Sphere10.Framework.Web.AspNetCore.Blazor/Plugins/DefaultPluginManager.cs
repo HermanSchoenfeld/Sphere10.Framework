@@ -11,9 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sphere10.Framework.DApp.Presentation.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Default plugin managers
@@ -42,8 +42,8 @@ public class DefaultPluginManager : IPluginManager {
 
 		IEnumerable<Type> types = PluginLocator.LocatePlugins();
 
-		Plugins = types.Select(Activator.CreateInstance)
-			.Cast<IPlugin>();
+		Plugins = types.Select(type => type.ActivateWithCompatibleArgs())
+			.Cast<IPlugin>().ToArray();
 	}
 
 	/// <summary>
