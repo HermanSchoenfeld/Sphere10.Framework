@@ -22,7 +22,7 @@ public partial class MainForm : LiteMainForm {
 
 	public MainForm() {
 		InitializeComponent();
-		ScreenHost = new ApplicationScreenHost { Dock = DockStyle.Fill };
+		ScreenHost = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill };
 		Controls.Add(ScreenHost);
 		ScreenHost.BringToFront();
 		ScreenHost.ActiveScreenChanging += OnActiveScreenChanging;
@@ -36,10 +36,10 @@ public partial class MainForm : LiteMainForm {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ApplicationScreenHost ScreenHost { get; }
+	public WinFormsApplicationScreenHost ScreenHost { get; }
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ApplicationScreen? ActiveScreen {
+	public WinFormsApplicationScreen? ActiveScreen {
 		get => ScreenHost.ActiveScreen;
 		set {
 			if (value != null)
@@ -49,9 +49,9 @@ public partial class MainForm : LiteMainForm {
 		}
 	}
 
-	public bool ShowScreen(ApplicationScreen Screen) => ScreenHost.ShowScreen(Screen);
+	public bool ShowScreen(WinFormsApplicationScreen Screen) => ScreenHost.ShowScreen(Screen);
 
-	protected virtual void OnActiveScreenChanging(ApplicationScreen? Screen) {
+	protected virtual void OnActiveScreenChanging(WinFormsApplicationScreen? Screen) {
 		RestoreScreenToolBar();
 		if (_screenMenu != null) {
 			_screenMenu.DropDownItems.Clear();
@@ -61,7 +61,7 @@ public partial class MainForm : LiteMainForm {
 		}
 	}
 
-	protected virtual void OnActiveScreenChanged(ApplicationScreen? Screen) {
+	protected virtual void OnActiveScreenChanged(WinFormsApplicationScreen? Screen) {
 		if (Screen == null)
 			return;
 		if (Screen.ShowInApplicationMenuStrip) {

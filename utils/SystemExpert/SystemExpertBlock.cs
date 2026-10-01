@@ -3,10 +3,10 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert;
 
-public class SystemExpertBlock : ApplicationBlock {
+public class SystemExpertBlock : WinFormsApplicationBlock {
 
-	public static ApplicationBlock Build() {
-		return new ApplicationBlockBuilder()
+	public static WinFormsApplicationBlock Build() {
+		return new WinFormsApplicationBlockBuilder()
 			.WithName("System Expert")
 			.WithDefaultScreen<SystemInfoScreen>(title: "System Info")
 			.AddMenu(Menu => Menu

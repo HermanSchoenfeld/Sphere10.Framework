@@ -12,24 +12,24 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Owns screen instances, selection and their docked or detached presentation.</summary>
-public interface IApplicationScreenHost {
-	event EventHandlerEx<ApplicationScreen?> ActiveScreenChanging;
-	event EventHandlerEx<ApplicationScreen?> ActiveScreenChanged;
+public interface IWinFormsApplicationScreenHost {
+	event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanging;
+	event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanged;
 	ScreenMode ScreenMode { get; set; }
-	ApplicationScreen? ActiveScreen { get; }
-	IReadOnlyCollection<ApplicationScreen> Screens { get; }
-	IReadOnlyCollection<ApplicationScreen> OpenScreens { get; }
+	WinFormsApplicationScreen? ActiveScreen { get; }
+	WinFormsApplicationScreen[] Screens { get; }
+	WinFormsApplicationScreen[] OpenScreens { get; }
 	/// <summary>Registers a block's explicit screen type policies before activating any screen. Conflicting declarations are rejected atomically.</summary>
-	void RegisterScreenTypes(IApplicationBlock Block);
+	void RegisterScreenTypes(IWinFormsApplicationBlock Block);
 	/// <summary>Creates a screen or selects its existing single instance, including when registered through another block.</summary>
-	ApplicationScreen? ActivateScreen(IApplicationBlock Block, Type ScreenType, string? Title = null);
+	WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null);
 	/// <summary>Shows a supplied instance using its registered type policy. Rejects duplicate single-instance screens and conflicting constructor defaults.</summary>
-	bool ShowScreen(ApplicationScreen Screen);
-	bool CloseScreen(ApplicationScreen Screen);
-	bool CloseScreens(IEnumerable<ApplicationScreen> Screens);
-	bool CanCloseScreens(IEnumerable<ApplicationScreen> Screens);
-	bool UndockScreen(ApplicationScreen Screen);
-	bool DockScreen(ApplicationScreen Screen);
-	bool IsScreenUndocked(ApplicationScreen Screen);
+	bool ShowScreen(WinFormsApplicationScreen Screen);
+	bool CloseScreen(WinFormsApplicationScreen Screen);
+	bool CloseScreens(IEnumerable<WinFormsApplicationScreen> Screens);
+	bool CanCloseScreens(IEnumerable<WinFormsApplicationScreen> Screens);
+	bool UndockScreen(WinFormsApplicationScreen Screen);
+	bool DockScreen(WinFormsApplicationScreen Screen);
+	bool IsScreenUndocked(WinFormsApplicationScreen Screen);
 	bool TrySetScreenMode(ScreenMode Mode);
 }

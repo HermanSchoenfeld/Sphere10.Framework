@@ -10,5 +10,5 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace PackageConsumer.Desktop;
 
-public sealed class PackageUsage : ApplicationScreen {
+public sealed class PackageUsage : WinFormsApplicationScreen {
 }

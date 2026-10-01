@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.ComponentModel;
@@ -23,7 +24,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// NOTE: The ApplicationServiceProvider property, which defines the underlying provider all
 /// such  calls are routed to, is guaranteed to be set post-construction.
 /// </summary>
-public class ApplicationScreen : ApplicationControl, IHelpableObject {
+public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicationScreen {
 	public event EventHandler ScreenLoaded;
 	public event EventHandler ScreenDisplayed;
 	public event EventHandler ScreenDisplayedFirstTime;
@@ -35,11 +36,11 @@ public class ApplicationScreen : ApplicationControl, IHelpableObject {
 	private ScreenActivationMode _activationMode;
 	private readonly List<ToolStripItem> _menuStripItems;
 
-	public ApplicationScreen()
+	public WinFormsApplicationScreen()
 		: this(null) {
 	}
 
-	public ApplicationScreen(IApplicationBlock applicationBlock) {
+	public WinFormsApplicationScreen(IWinFormsApplicationBlock applicationBlock) {
 		ApplicationBlock = applicationBlock;
 		Url = FileName = null;
 		Type = HelpType.None;
@@ -62,7 +63,7 @@ public class ApplicationScreen : ApplicationControl, IHelpableObject {
 	public ScreenActivationMode ActivationMode {
 		get => _activationMode;
 		protected set {
-			Guard.Argument(value == ScreenActivationMode.SingleInstance || value == ScreenActivationMode.MultiInstance, nameof(value), "Unknown activation mode");
+			Tools.UI.ValidateActivationMode(value);
 			Guard.Ensure(ScreenHost == null, "A screen's activation mode cannot change while it belongs to a host");
 			_activationMode = value;
 		}
@@ -74,9 +75,9 @@ public class ApplicationScreen : ApplicationControl, IHelpableObject {
 		set => Text = value;
 	}
 
-	[Browsable(false)] public IApplicationBlock ApplicationBlock { get; set; }
+	[Browsable(false)] public IWinFormsApplicationBlock ApplicationBlock { get; set; }
 
-	internal IApplicationScreenHost? ScreenHost { get; set; }
+	internal IWinFormsApplicationScreenHost? ScreenHost { get; set; }
 
 	/// <summary>
 	/// The menu items associated with this screen.
@@ -151,6 +152,18 @@ public class ApplicationScreen : ApplicationControl, IHelpableObject {
 				);
 			}
 		}
+	}
+
+	bool IWinFormsApplicationScreen.CanDeactivate() {
+		var cancel = false;
+		NotifyHideScreen(ref cancel);
+		return !cancel;
+	}
+
+	void IWinFormsApplicationScreen.OnActivated() => NotifyShow();
+
+	void IWinFormsApplicationScreen.OnDeactivated() {
+		// The native hide notification already runs as part of its cancelable guard.
 	}
 
 	internal void ConfigureActivationMode(ScreenActivationMode Mode) => ActivationMode = Mode;

@@ -11,20 +11,20 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationScreenHost where TConcrete : IApplicationScreenHost {
-	public event EventHandlerEx<ApplicationScreen?> ActiveScreenChanging {
+public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : IWinFormsApplicationScreenHost where TConcrete : IWinFormsApplicationScreenHost {
+	public event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanging {
 		add => InternalHost.ActiveScreenChanging += value;
 		remove => InternalHost.ActiveScreenChanging -= value;
 	}
 
-	public event EventHandlerEx<ApplicationScreen?> ActiveScreenChanged {
+	public event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanged {
 		add => InternalHost.ActiveScreenChanged += value;
 		remove => InternalHost.ActiveScreenChanged -= value;
 	}
 
 	protected readonly TConcrete InternalHost;
 
-	protected ApplicationScreenHostDecorator(TConcrete Host) {
+	protected WinFormsApplicationScreenHostDecorator(TConcrete Host) {
 		Guard.ArgumentNotNull(Host, nameof(Host));
 		InternalHost = Host;
 	}
@@ -34,36 +34,36 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 		set => InternalHost.ScreenMode = value;
 	}
 
-	public virtual ApplicationScreen? ActiveScreen => InternalHost.ActiveScreen;
+	public virtual WinFormsApplicationScreen? ActiveScreen => InternalHost.ActiveScreen;
 
-	public virtual IReadOnlyCollection<ApplicationScreen> Screens => InternalHost.Screens;
+	public virtual WinFormsApplicationScreen[] Screens => InternalHost.Screens;
 
-	public virtual IReadOnlyCollection<ApplicationScreen> OpenScreens => InternalHost.OpenScreens;
+	public virtual WinFormsApplicationScreen[] OpenScreens => InternalHost.OpenScreens;
 
-	public virtual void RegisterScreenTypes(IApplicationBlock Block) => InternalHost.RegisterScreenTypes(Block);
+	public virtual void RegisterScreenTypes(IWinFormsApplicationBlock Block) => InternalHost.RegisterScreenTypes(Block);
 
-	public virtual ApplicationScreen? ActivateScreen(IApplicationBlock Block, Type ScreenType, string? Title = null)
+	public virtual WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null)
 		=> InternalHost.ActivateScreen(Block, ScreenType, Title);
 
-	public virtual bool ShowScreen(ApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
+	public virtual bool ShowScreen(WinFormsApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
 
-	public virtual bool CloseScreen(ApplicationScreen Screen) => InternalHost.CloseScreen(Screen);
+	public virtual bool CloseScreen(WinFormsApplicationScreen Screen) => InternalHost.CloseScreen(Screen);
 
-	public virtual bool CloseScreens(IEnumerable<ApplicationScreen> Screens) => InternalHost.CloseScreens(Screens);
+	public virtual bool CloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) => InternalHost.CloseScreens(Screens);
 
-	public virtual bool CanCloseScreens(IEnumerable<ApplicationScreen> Screens) => InternalHost.CanCloseScreens(Screens);
+	public virtual bool CanCloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) => InternalHost.CanCloseScreens(Screens);
 
-	public virtual bool UndockScreen(ApplicationScreen Screen) => InternalHost.UndockScreen(Screen);
+	public virtual bool UndockScreen(WinFormsApplicationScreen Screen) => InternalHost.UndockScreen(Screen);
 
-	public virtual bool DockScreen(ApplicationScreen Screen) => InternalHost.DockScreen(Screen);
+	public virtual bool DockScreen(WinFormsApplicationScreen Screen) => InternalHost.DockScreen(Screen);
 
-	public virtual bool IsScreenUndocked(ApplicationScreen Screen) => InternalHost.IsScreenUndocked(Screen);
+	public virtual bool IsScreenUndocked(WinFormsApplicationScreen Screen) => InternalHost.IsScreenUndocked(Screen);
 
 	public virtual bool TrySetScreenMode(ScreenMode Mode) => InternalHost.TrySetScreenMode(Mode);
 }
 
-public abstract class ApplicationScreenHostDecorator : ApplicationScreenHostDecorator<IApplicationScreenHost> {
-	protected ApplicationScreenHostDecorator(IApplicationScreenHost Host)
+public abstract class WinFormsApplicationScreenHostDecorator : WinFormsApplicationScreenHostDecorator<IWinFormsApplicationScreenHost> {
+	protected WinFormsApplicationScreenHostDecorator(IWinFormsApplicationScreenHost Host)
 		: base(Host) {
 	}
 }

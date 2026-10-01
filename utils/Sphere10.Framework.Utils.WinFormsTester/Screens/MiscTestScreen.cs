@@ -17,7 +17,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class MiscTestScreen : ApplicationScreen {
+public partial class MiscTestScreen : WinFormsApplicationScreen {
 	public MiscTestScreen() {
 		InitializeComponent();
 	}

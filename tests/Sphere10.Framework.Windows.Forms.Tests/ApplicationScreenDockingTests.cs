@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
@@ -37,7 +38,7 @@ public class ApplicationScreenDockingTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void GripDropAcceptsOnlyTheTabHeaderBand(bool HasDockedScreen) {
-		using var Host = new ApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
+		using var Host = new WinFormsApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
 		if (HasDockedScreen)
 			Host.ShowScreen(new DockingScreen());
 		var Detached = new DockingScreen();
@@ -61,13 +62,13 @@ public class ApplicationScreenDockingTests {
 	[TestCase(-1)]
 	[TestCase(1)]
 	public void CursorOverHeaderCannotDockAWindowWhoseCaptionIsFarAway(int Direction) {
-		using var Host = new ApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
+		using var Host = new WinFormsApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
 		var Detached = new DockingScreen();
 		Host.ShowScreen(Detached);
 		Host.UndockScreen(Detached);
 		_ = Host.Handle;
 		var Pointer = Center(Host.DockTargetBounds);
-		var Window = (ApplicationScreenForm)Detached.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Detached.FindForm()!;
 		var Caption = new Rectangle(Pointer.X - Window.Width / 2, Pointer.Y - Window.CaptionBounds.Height / 2, Window.Width, Window.CaptionBounds.Height);
 		Assert.That(Host.UpdateDockPreview(Detached, Pointer, Caption), Is.True);
 		Caption.Offset(0, Direction * Host.Height);
@@ -79,14 +80,14 @@ public class ApplicationScreenDockingTests {
 
 	[Test]
 	public void CaptionProximityUsesWindowGeometryRatherThanThePointerHeight() {
-		using var Host = new ApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
+		using var Host = new WinFormsApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
 		var Detached = new DockingScreen();
 		Host.ShowScreen(Detached);
 		Host.UndockScreen(Detached);
 		_ = Host.Handle;
 		var Target = Host.DockTargetBounds;
 		var CenterLocation = Center(Target);
-		var Window = (ApplicationScreenForm)Detached.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Detached.FindForm()!;
 		var Caption = new Rectangle(CenterLocation.X - Window.Width / 2, CenterLocation.Y - Window.CaptionBounds.Height / 2, Window.Width, Window.CaptionBounds.Height);
 		var Pointer = new Point(CenterLocation.X, Target.Bottom + Target.Height);
 		Assert.That(Host.UpdateDockPreview(Detached, Pointer), Is.False);
@@ -99,7 +100,7 @@ public class ApplicationScreenDockingTests {
 
 	[Test]
 	public void SingleViewAndForeignScreensHaveNoDockTarget() {
-		using var Host = new ApplicationScreenHost { Size = new Size(800, 400) };
+		using var Host = new WinFormsApplicationScreenHost { Size = new Size(800, 400) };
 		using var ForeignScreen = new DockingScreen();
 		Assert.That(Host.DockTargetBounds, Is.EqualTo(Rectangle.Empty));
 		Host.ScreenMode = ScreenMode.MultiView;
@@ -111,7 +112,7 @@ public class ApplicationScreenDockingTests {
 	[Test]
 	public void DockTargetTracksTheActualHeaderHeight() {
 		using var LargerFont = new Font(SystemFonts.DefaultFont.FontFamily, SystemFonts.DefaultFont.Size * 2);
-		using var Host = new ApplicationScreenHost { Size = new Size(800, 600), ScreenMode = ScreenMode.MultiView };
+		using var Host = new WinFormsApplicationScreenHost { Size = new Size(800, 600), ScreenMode = ScreenMode.MultiView };
 		Host.ShowScreen(new DockingScreen());
 		_ = Host.Handle;
 		_ = Host.TabControl.Handle;
@@ -126,7 +127,7 @@ public class ApplicationScreenDockingTests {
 	[TestCase(1.5)]
 	[TestCase(2.0)]
 	public void DetachedWindowUsesMonitorDpiAndPreservesExistingScreenScale(double ScreenScale) {
-		using var Host = new ApplicationScreenHost();
+		using var Host = new WinFormsApplicationScreenHost();
 		using var Screen = new DockingScreen { Title = "DPI startup" };
 		var ExistingButton = new Button {
 			Size = new Size((int)(120 * ScreenScale), (int)(40 * ScreenScale)),
@@ -136,7 +137,7 @@ public class ApplicationScreenDockingTests {
 		Screen.Controls.Add(ExistingButton);
 		var OriginalButtonBounds = ExistingButton.Bounds;
 		var OriginalButtonPadding = ExistingButton.Padding;
-		using var Window = new ApplicationScreenForm(Host, Screen);
+		using var Window = new WinFormsApplicationScreenForm(Host, Screen);
 		var Dpi = Window.DeviceDpi;
 		Assert.That(Window.AutoScaleDimensions, Is.EqualTo(new SizeF(Dpi, Dpi)));
 		Assert.That(Window.ClientSize, Is.EqualTo(Window.LogicalToDeviceUnits(new Size(900, 650))),
@@ -147,7 +148,7 @@ public class ApplicationScreenDockingTests {
 
 	private static Point Center(Rectangle Bounds) => new(Bounds.Left + Bounds.Width / 2, Bounds.Top + Bounds.Height / 2);
 
-	private class DockingScreen : ApplicationScreen {
+	private class DockingScreen : WinFormsApplicationScreen {
 		public DockingScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
 	}
 }

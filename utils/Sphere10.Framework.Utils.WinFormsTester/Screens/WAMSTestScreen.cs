@@ -15,7 +15,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class WAMSTestScreen : ApplicationScreen {
+public partial class WAMSTestScreen : WinFormsApplicationScreen {
 	private readonly ILogger _outputLogger;
 	private bool _runningKeyMatchingTests;
 	private bool _runningVerificationTests;

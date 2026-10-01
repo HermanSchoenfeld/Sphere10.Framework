@@ -15,7 +15,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class SettingsTest : ApplicationScreen {
+public partial class SettingsTest : WinFormsApplicationScreen {
 	private readonly TextWriter _outputWriter;
 	public SettingsTest() {
 		InitializeComponent();

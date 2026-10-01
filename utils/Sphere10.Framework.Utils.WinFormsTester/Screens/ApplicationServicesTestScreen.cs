@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ApplicationServicesTestScreen : ApplicationScreen {
+public partial class ApplicationServicesTestScreen : WinFormsApplicationScreen {
 	public ApplicationServicesTestScreen() {
 		InitializeComponent();
 	}

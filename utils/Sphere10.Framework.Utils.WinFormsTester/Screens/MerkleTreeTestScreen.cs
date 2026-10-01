@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class MerkleTreeTestScreen : ApplicationScreen {
+public partial class MerkleTreeTestScreen : WinFormsApplicationScreen {
 	private TextWriter _outputWriter;
 
 	public MerkleTreeTestScreen() {

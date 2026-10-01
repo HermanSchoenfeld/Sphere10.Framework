@@ -7,12 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Windows.Forms;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 /// <summary>A content-only screen for checking that detached hosts do not reserve empty menu or toolbar rows.</summary>
-public class ScreenHostingPlainTestScreen : ApplicationScreen {
+public class ScreenHostingPlainTestScreen : WinFormsApplicationScreen {
 	public ScreenHostingPlainTestScreen() {
 		Title = "Plain screen";
 		ActivationMode = ScreenActivationMode.SingleInstance;

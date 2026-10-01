@@ -10,36 +10,34 @@ using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class LinkMenuItem : MenuItem, ILinkMenuItem {
-	private string _text;
+public class WinFormsLinkMenuItem : WinFormsApplicationMenuItem, IWinFormsLinkMenuItem {
 
-	public LinkMenuItem()
+	public WinFormsLinkMenuItem()
 		: this(string.Empty) {
 	}
 
-	public LinkMenuItem(string text)
+	public WinFormsLinkMenuItem(string text)
 		: this(text, null) {
 	}
 
-	public LinkMenuItem(string text, Image image16x16)
+	public WinFormsLinkMenuItem(string text, Image image16x16)
 		: this(text, image16x16, true, true, false) {
 	}
 
-	public LinkMenuItem(string text, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad)
+	public WinFormsLinkMenuItem(string text, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad)
 		: base(image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad) {
 
-		_text = text;
+		Title = text;
 	}
 
 
 	public virtual string Text {
-		get { return _text; }
-		set { _text = value; }
+		get => Title;
+		set => Title = value;
 	}
 
 
-	public virtual void OnSelect() {
-	}
+	public virtual void OnSelect() => NotifySelect();
 
 	public override void Dispose() {
 		base.Dispose();

@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -129,7 +130,7 @@ public class ApplicationScreenTabTests {
 		using var Screen = new DragScreen();
 		Tabs.TabPages.AddRange(new[] { new TabPage("First") { Tag = Screen }, new TabPage("Second") });
 		_ = Tabs.Handle;
-		ApplicationScreen? RequestedScreen = null;
+		WinFormsApplicationScreen? RequestedScreen = null;
 		Tabs.ScreenUndockRequested += Requested => RequestedScreen = Requested;
 		Tabs.BeginDrag(Tabs.TabPages[0]);
 		var DropLocation = new Point(20, 150);
@@ -200,7 +201,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void DockPreviewNeverChangesTabsWidthsSelectionOrPageLayout() {
-		using var Tabs = new ApplicationScreenTabControl { Size = new Size(800, 400) };
+		using var Tabs = new WinFormsApplicationScreenTabControl { Size = new Size(800, 400) };
 		Tabs.TabPages.AddRange(new[] { new TabPage("First"), new TabPage("Second") });
 		_ = Tabs.Handle;
 		var OriginalPages = Tabs.TabPages.Cast<TabPage>().ToArray();
@@ -252,7 +253,7 @@ public class ApplicationScreenTabTests {
 	[TestCase(0)]
 	[TestCase(2)]
 	public void DockPreviewPaintsALargeHighlightedTabAndRestoresTheHeader(int PageCount) {
-		using var Tabs = new ApplicationScreenTabControl { Size = new Size(800, 400) };
+		using var Tabs = new WinFormsApplicationScreenTabControl { Size = new Size(800, 400) };
 		for (var Index = 0; Index < PageCount; Index++)
 			Tabs.TabPages.Add(new TabPage($"Screen {Index}"));
 		_ = Tabs.Handle;
@@ -310,7 +311,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void DockPreviewUsesExplorerBarColorsAndSupportsThemeChangesWithoutRelayout() {
-		using var Tabs = new ApplicationScreenTabControl { Size = new Size(800, 400) };
+		using var Tabs = new WinFormsApplicationScreenTabControl { Size = new Size(800, 400) };
 		using var Pane = new TaskPane();
 		Assert.That(Tabs.DockPreviewBackColor, Is.EqualTo(Pane.GradientStartColor), "Docking must use the same blue as the navigation pane");
 		Assert.That(Tabs.DockPreviewForeColor.GetBrightness(), Is.LessThan(Tabs.DockPreviewBackColor.GetBrightness()));
@@ -340,7 +341,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void PreviewInvalidatesOnlyTheOldAndNewHeaderAreas() {
-		using var Tabs = new ApplicationScreenTabControl { Size = new Size(800, 400) };
+		using var Tabs = new WinFormsApplicationScreenTabControl { Size = new Size(800, 400) };
 		Tabs.TabPages.AddRange(new[] { new TabPage("First"), new TabPage("Second") });
 		_ = Tabs.Handle;
 		var Invalidations = 0;
@@ -357,7 +358,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void EmptyPreviewDoesNotCreateATabOrSelectAPage() {
-		using var Tabs = new ApplicationScreenTabControl { Size = new Size(800, 400) };
+		using var Tabs = new WinFormsApplicationScreenTabControl { Size = new Size(800, 400) };
 		_ = Tabs.Handle;
 		var Header = Tabs.TabStripBounds;
 		Assert.That(Header.Width, Is.EqualTo(Tabs.ClientSize.Width));
@@ -374,7 +375,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void TabWidthsFitTheirTitlesUntilTheMaximumAndKeepFullToolTips() {
-		using var Tabs = new ApplicationScreenTabControl { Size = new Size(1100, 400), MaximumTabWidth = 260 };
+		using var Tabs = new WinFormsApplicationScreenTabControl { Size = new Size(1100, 400), MaximumTabWidth = 260 };
 		var LongTitle = new string('W', 150);
 		Tabs.TabPages.AddRange(new[] { new TabPage("Edit"), new TabPage("Application settings"), new TabPage(LongTitle) });
 		_ = Tabs.Handle;
@@ -395,7 +396,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void TitlesBelowTheMaximumHaveRoomForEveryLiteralCharacter() {
-		using var Tabs = new ApplicationScreenTabControl { Size = new Size(1800, 400), MaximumTabWidth = 260 };
+		using var Tabs = new WinFormsApplicationScreenTabControl { Size = new Size(1800, 400), MaximumTabWidth = 260 };
 		var Titles = new[] { "Application settings", "Finance & Administration", "A && B && C", "&&&&&&&&&&&&&&&&", "A very wide application settings" };
 		Tabs.TabPages.AddRange(Titles.Select(Title => new TabPage(Title)).ToArray());
 		_ = Tabs.Handle;
@@ -465,14 +466,14 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void EmptyHostAlsoShowsDockPreviewAndRemovesItWhenLeaving() {
-		using var Host = new ApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
+		using var Host = new WinFormsApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
 		var Screen = new DragScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
 		_ = Host.Handle;
 		Assert.That(Host.UpdateDockPreview(Screen, Host.PointToScreen(new Point(10, 10))), Is.True);
 		Assert.That(Host.TabControl.DockPreviewVisible, Is.True);
-		Assert.That(Host.OpenScreens.Count, Is.EqualTo(1), "A preview is not an open screen");
+		Assert.That(Host.OpenScreens.Length, Is.EqualTo(1), "A preview is not an open screen");
 		Assert.That(Host.ActiveScreen, Is.Null);
 		Assert.That(Host.UpdateDockPreview(Screen, Host.PointToScreen(new Point(-30, -30))), Is.False);
 		Assert.That(Host.TabControl.TabCount, Is.Zero);
@@ -480,7 +481,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void DropUsesPreviewInsertionPositionAndCancelledDockClearsHint() {
-		using var Host = new ApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
+		using var Host = new WinFormsApplicationScreenHost { Size = new Size(800, 400), ScreenMode = ScreenMode.MultiView };
 		var First = new DragScreen { Title = "First" };
 		var Second = new DragScreen { Title = "Second" };
 		var Detached = new DragScreen { Title = "Detached" };
@@ -505,7 +506,7 @@ public class ApplicationScreenTabTests {
 
 	[Test]
 	public void ReorderingKeepsActiveScreenAndDoesNotRedisplayIt() {
-		using var Host = new ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var First = new DragScreen();
 		var Second = new DragScreen();
 		Host.ShowScreen(First);
@@ -520,7 +521,7 @@ public class ApplicationScreenTabTests {
 
 	private static Point Center(Rectangle Bounds) => new(Bounds.Left + Bounds.Width / 2, Bounds.Top + Bounds.Height / 2);
 
-	private class TestTabs : ApplicationScreenTabControl {
+	private class TestTabs : WinFormsApplicationScreenTabControl {
 		private bool _processingNativePaint;
 		[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 		public Size RuntimeCaptureSize { get; set; }
@@ -591,7 +592,7 @@ public class ApplicationScreenTabTests {
 		public void PerformClick() => ClickCount++;
 	}
 
-	private class DragScreen : ApplicationScreen {
+	private class DragScreen : WinFormsApplicationScreen {
 		public DragScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
 	}
 }

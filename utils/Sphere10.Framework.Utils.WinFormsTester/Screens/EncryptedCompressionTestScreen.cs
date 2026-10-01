@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class EncryptedCompressionTestScreen : ApplicationScreen {
+public partial class EncryptedCompressionTestScreen : WinFormsApplicationScreen {
 	private readonly TextBoxWriter _output;
 	public EncryptedCompressionTestScreen() {
 		InitializeComponent();

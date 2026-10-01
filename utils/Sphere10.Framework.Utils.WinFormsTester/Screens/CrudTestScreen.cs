@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -17,7 +18,7 @@ using Sphere10.Framework.Windows.Forms.Crud;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class CrudTestScreen : ApplicationScreen {
+public partial class CrudTestScreen : WinFormsApplicationScreen {
 	static readonly string[] Subjects = new string[] { "Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5", "Subject 6", "Subject 7", "Subject 8", "Subject 9", "Subject 10" };
 	static readonly string[] Streets = new string[] { "Alpha", "Beta", "Gamma", "Delta", "Omega", "Phi", "Psi", "Andromeda", "Milky Way", "Ursur Minor" };
 	static readonly string[] StreetTypes = new string[] { "St", "Rd", "Way", "Pde", "Ct" };

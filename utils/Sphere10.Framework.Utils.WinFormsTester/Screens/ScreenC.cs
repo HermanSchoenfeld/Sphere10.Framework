@@ -10,7 +10,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ScreenC : ApplicationScreen {
+public partial class ScreenC : WinFormsApplicationScreen {
 	public ScreenC() {
 		InitializeComponent();
 		taskPane1.Padding.Bottom = 0;

@@ -16,7 +16,7 @@ using Exception = System.Exception;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class TransactionalCollectionScreen : ApplicationScreen {
+public partial class TransactionalCollectionScreen : WinFormsApplicationScreen {
 	private TextWriter _outputWriter;
 
 	public TransactionalCollectionScreen() {

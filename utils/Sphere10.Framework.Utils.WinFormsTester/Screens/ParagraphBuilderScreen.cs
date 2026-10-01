@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ParagraphBuilderScreen : ApplicationScreen {
+public partial class ParagraphBuilderScreen : WinFormsApplicationScreen {
 	public ParagraphBuilderScreen() {
 		InitializeComponent();
 		Builder = new ParagraphBuilder();

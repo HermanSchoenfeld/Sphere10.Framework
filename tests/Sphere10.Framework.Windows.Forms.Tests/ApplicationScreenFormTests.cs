@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -43,7 +44,7 @@ public class ApplicationScreenFormTests {
 		var Screen = new MenuScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		var Caption = Window.Controls.Find("_screenCaption", true).Single();
 		var Actions = Caption.Controls.OfType<Button>().ToArray();
 		var Style = WinAPI.USER32.GetWindowLong(Window.Handle, -16).ToInt64();
@@ -66,7 +67,7 @@ public class ApplicationScreenFormTests {
 		var Screen = new MenuScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		var Caption = Window.Controls.Find("_screenCaption", true).Single();
 		var CaptionPoint = Caption.PointToScreen(new Point(20, Caption.Height / 2));
 		Assert.That(HitTest(Caption, CaptionPoint), Is.EqualTo(-1), "The real child HWND must defer to its parent's caption hit test");
@@ -85,7 +86,7 @@ public class ApplicationScreenFormTests {
 		var Screen = new MenuScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		Assert.That(Window.CaptionBounds.Top - Window.Top, Is.EqualTo(Window.LogicalToDeviceUnits(1)), "Only the thin outer border belongs above the caption");
 		System.Windows.Forms.Application.DoEvents();
 		Assert.That(Window.ClientSize, Is.EqualTo(Window.LogicalToDeviceUnits(new Size(900, 650))), "Initial native layout must preserve the configured client size");
@@ -110,7 +111,7 @@ public class ApplicationScreenFormTests {
 		var Screen = new PartialChromeScreen(HasMenu, HasToolbar);
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		var Caption = Window.Controls.Find("_screenCaption", true).Single();
 		var Strips = Window.Controls.OfType<ToolStrip>().Concat(Screen.Controls.OfType<ToolStrip>()).ToArray();
 		Assert.That(Strips.Length, Is.EqualTo((HasMenu ? 1 : 0) + (HasToolbar ? 1 : 0)), "Do not create placeholder strips for missing screen commands");
@@ -126,7 +127,7 @@ public class ApplicationScreenFormTests {
 	[Test]
 	public void RecreatingTheWindowHandlePreservesItsLatestResizedBounds() {
 		using var Host = new HiddenHost();
-		using var Screen = new ApplicationScreen();
+		using var Screen = new WinFormsApplicationScreen();
 		using var Window = new RecreatedScreenForm(Host, Screen) { Opacity = 0 };
 		Window.Show();
 		Window.Size = new Size(780, 470);
@@ -147,7 +148,7 @@ public class ApplicationScreenFormTests {
 		Screen.Controls.Add(Screen.ToolBar);
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		Assert.That(Screen.ToolBar.Visible, Is.False);
 		Assert.That(Screen.Content.Top, Is.Zero);
 		using var Command = new ToolStripButton("Save");
@@ -167,7 +168,7 @@ public class ApplicationScreenFormTests {
 		var Screen = new MenuScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		var OriginalBounds = Window.Bounds;
 		var Maximize = FindAction(Window, "_maximizeButton");
 		for (var Index = 0; Index < 2; Index++) {
@@ -189,7 +190,7 @@ public class ApplicationScreenFormTests {
 		var Screen = new MenuScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		var OriginalBounds = Window.Bounds;
 		FindAction(Window, "_minimizeButton").PerformClick();
 		Assert.That(Window.WindowState, Is.EqualTo(FormWindowState.Minimized));
@@ -207,7 +208,7 @@ public class ApplicationScreenFormTests {
 		var Screen = new MenuScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		var Action = FindAction(Window, ActionName);
 		Screen.CancelHide = true;
 		Action.PerformClick();
@@ -241,7 +242,7 @@ public class ApplicationScreenFormTests {
 		Host.ShowScreen(Screen);
 		for (var Iteration = 0; Iteration < 3; Iteration++) {
 			Host.UndockScreen(Screen);
-			var Window = (ApplicationScreenForm)Screen.FindForm()!;
+			var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 			Assert.That(Toolbar.FindForm(), Is.SameAs(Window));
 			Assert.That(Toolbar.Parent, Is.SameAs(Parent), "A designer toolbar keeps its original screen layout");
 			Assert.That(Toolbar.Visible, Is.True);
@@ -271,7 +272,7 @@ public class ApplicationScreenFormTests {
 	[TestCase(true)]
 	public void ExternalToolbarIsReparentedWholeAndRestoredBeforeWindowDisposal(bool HasOriginalParent) {
 		using var Host = new HiddenHost();
-		using var Screen = new ApplicationScreen();
+		using var Screen = new WinFormsApplicationScreen();
 		using var OriginalParent = new Panel { Size = new Size(500, 400) };
 		Screen.ToolBar = new ToolStrip { Dock = DockStyle.None, Anchor = AnchorStyles.Bottom | AnchorStyles.Right, AutoSize = false, Bounds = new Rectangle(20, 40, 220, 35) };
 		Screen.ToolBar.Items.Add(new ToolStripButton("Save"));
@@ -283,7 +284,7 @@ public class ApplicationScreenFormTests {
 		var Toolbar = Screen.ToolBar;
 		var OriginalBounds = Toolbar.Bounds;
 		var OriginalIndex = HasOriginalParent ? OriginalParent.Controls.GetChildIndex(Toolbar) : -1;
-		using (var Window = new ApplicationScreenForm(Host, Screen) { Opacity = 0 }) {
+		using (var Window = new WinFormsApplicationScreenForm(Host, Screen) { Opacity = 0 }) {
 			Window.Show();
 			Assert.That(Toolbar.Parent, Is.SameAs(Window));
 			Assert.That(Toolbar.Visible, Is.True);
@@ -303,14 +304,14 @@ public class ApplicationScreenFormTests {
 	[Test]
 	public void ExistingScreenMenuStripRemainsTheNativeKeyboardMenu() {
 		using var Host = new HiddenHost();
-		using var Screen = new ApplicationScreen();
+		using var Screen = new WinFormsApplicationScreen();
 		var Panel = new Panel { Dock = DockStyle.Fill };
 		var Menu = new MenuStrip();
 		var File = new ToolStripMenuItem("&File");
 		Menu.Items.Add(File);
 		Panel.Controls.Add(Menu);
 		Screen.Controls.Add(Panel);
-		using (var Window = new ApplicationScreenForm(Host, Screen) { Opacity = 0 }) {
+		using (var Window = new WinFormsApplicationScreenForm(Host, Screen) { Opacity = 0 }) {
 			Window.Show();
 			Assert.That(Window.MainMenuStrip, Is.SameAs(Menu));
 			Assert.That(Menu.Parent, Is.SameAs(Panel));
@@ -327,7 +328,7 @@ public class ApplicationScreenFormTests {
 		var Menu = new MenuStrip { Dock = DockStyle.Top };
 		Screen.Controls.Add(Menu);
 		Assert.That(Menu.Visible, Is.True);
-		using (var Window = new ApplicationScreenForm(Host, Screen) { Opacity = 0 }) {
+		using (var Window = new WinFormsApplicationScreenForm(Host, Screen) { Opacity = 0 }) {
 			Window.Show();
 			Assert.That(Window.MainMenuStrip, Is.SameAs(Menu));
 			Assert.That(Menu.Visible, Is.False);
@@ -348,18 +349,18 @@ public class ApplicationScreenFormTests {
 	[Test]
 	public void EmbeddedMenuIsFoundWhenThePreviousMainWindowWasNotShown() {
 		using var Main = new MainForm { ScreenMode = ScreenMode.MultiView, Opacity = 0 };
-		var Screen = new ApplicationScreen();
+		var Screen = new WinFormsApplicationScreen();
 		var Menu = new MenuStrip();
 		Menu.Items.Add(new ToolStripMenuItem("&File"));
 		Screen.Controls.Add(Menu);
 		Screen.ScreenLoaded += (_, _) => {
-			if (Screen.FindForm() is ApplicationScreenForm Detached)
+			if (Screen.FindForm() is WinFormsApplicationScreenForm Detached)
 				Detached.Opacity = 0;
 		};
 		Main.ShowScreen(Screen);
 		Assert.That(Menu.Visible, Is.False, "The menu inherits the unshown main window's visibility");
 		Main.ScreenHost.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		Assert.That(Window.MainMenuStrip, Is.SameAs(Menu));
 		Assert.That(Menu.Visible, Is.True);
 		Assert.That(Main.ScreenHost.DockScreen(Screen), Is.True);
@@ -376,34 +377,34 @@ public class ApplicationScreenFormTests {
 		var Screen = new MenuScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
-		var Window = (ApplicationScreenForm)Screen.FindForm()!;
+		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
 		Screen.Title = "Renamed design";
 		Assert.That(Window.Text, Is.EqualTo(Screen.Title));
 		Assert.That(Window.Controls.Find("_screenCaption", true).Single().AccessibleName, Is.EqualTo(Screen.Title));
 	}
 
-	private static Button FindAction(ApplicationScreenForm Window, string Name) => (Button)Window.Controls.Find(Name, true).Single();
+	private static Button FindAction(WinFormsApplicationScreenForm Window, string Name) => (Button)Window.Controls.Find(Name, true).Single();
 
 	private static long HitTest(Control Window, Point Position) => WinAPI.USER32.SendMessage(Window.Handle, 0x0084, IntPtr.Zero, PackPoint(Position)).ToInt64();
 
 	private static IntPtr PackPoint(Point Position) => new((Position.Y << 16) | (Position.X & 0xFFFF));
 
-	private sealed class HiddenHost : ApplicationScreenHost {
+	private sealed class HiddenHost : WinFormsApplicationScreenHost {
 		public HiddenHost() => ScreenMode = ScreenMode.MultiView;
 
-		protected override ApplicationScreenForm CreateScreenForm(ApplicationScreen Screen)
+		protected override WinFormsApplicationScreenForm CreateScreenForm(WinFormsApplicationScreen Screen)
 			=> new(this, Screen) { Opacity = 0, StartPosition = FormStartPosition.Manual, Location = new Point(80, 80) };
 	}
 
-	private sealed class RecreatedScreenForm : ApplicationScreenForm {
-		public RecreatedScreenForm(IApplicationScreenHost Host, ApplicationScreen Screen)
+	private sealed class RecreatedScreenForm : WinFormsApplicationScreenForm {
+		public RecreatedScreenForm(IWinFormsApplicationScreenHost Host, WinFormsApplicationScreen Screen)
 			: base(Host, Screen) {
 		}
 
 		public void RecreateWindowHandle() => RecreateHandle();
 	}
 
-	private sealed class PartialChromeScreen : ApplicationScreen {
+	private sealed class PartialChromeScreen : WinFormsApplicationScreen {
 		public PartialChromeScreen(bool HasMenu, bool HasToolbar) {
 			Title = "Screen chrome";
 			ActivationMode = ScreenActivationMode.MultiInstance;
@@ -421,7 +422,7 @@ public class ApplicationScreenFormTests {
 		public Panel Content { get; }
 	}
 
-	private sealed class MenuScreen : ApplicationScreen {
+	private sealed class MenuScreen : WinFormsApplicationScreen {
 		public MenuScreen() {
 			Title = "Design document";
 			ActivationMode = ScreenActivationMode.MultiInstance;

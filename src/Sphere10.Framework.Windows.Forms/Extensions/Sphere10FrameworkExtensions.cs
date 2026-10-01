@@ -90,7 +90,7 @@ public static class Sphere10FrameworkExtensions {
 		if (MainForm is not Form)
 			throw new SoftwareException("Registered IMainForm is not a WinForms Form");
 		if (MainForm is IBlockManager BlockManager) {
-			var Blocks = Sphere10Framework.Instance.ServiceProvider.GetServices<IApplicationBlock>().OrderBy(b => b.Position);
+			var Blocks = Sphere10Framework.Instance.ServiceProvider.GetServices<IWinFormsApplicationBlock>().OrderBy(b => b.Position);
 			Blocks.ForEach(BlockManager.RegisterBlock);
 		}
 		if (_size != null)

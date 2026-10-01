@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class CompressionTestScreen : ApplicationScreen {
+public partial class CompressionTestScreen : WinFormsApplicationScreen {
 	private TextBoxWriter _output;
 	public CompressionTestScreen() {
 		InitializeComponent();

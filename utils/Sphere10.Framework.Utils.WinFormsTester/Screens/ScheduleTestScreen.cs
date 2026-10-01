@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ScheduleTestScreen : ApplicationScreen {
+public partial class ScheduleTestScreen : WinFormsApplicationScreen {
 	private readonly TextBoxWriter _textWriter;
 	private readonly ILogger _logger;
 

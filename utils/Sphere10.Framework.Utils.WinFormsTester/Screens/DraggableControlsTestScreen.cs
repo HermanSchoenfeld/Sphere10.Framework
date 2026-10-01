@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class DraggableControlsTestScreen : ApplicationScreen {
+public partial class DraggableControlsTestScreen : WinFormsApplicationScreen {
 	public DraggableControlsTestScreen() {
 		InitializeComponent();
 		_pictureBox1.Draggable(true);

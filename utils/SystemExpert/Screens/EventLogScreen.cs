@@ -8,7 +8,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert.Screens;
 
-public partial class EventLogScreen : ApplicationScreen {
+public partial class EventLogScreen : WinFormsApplicationScreen {
 	private EventLogDataSource _dataSource;
 	private readonly IEnumerable<ICrudGridColumn> _gridBindings;
 

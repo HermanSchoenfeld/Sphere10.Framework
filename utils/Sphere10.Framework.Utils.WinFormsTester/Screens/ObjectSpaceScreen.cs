@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ObjectSpaceScreen : ApplicationScreen {
+public partial class ObjectSpaceScreen : WinFormsApplicationScreen {
 	private ScreenSettings _settings;
 
 	public ObjectSpaceScreen() {

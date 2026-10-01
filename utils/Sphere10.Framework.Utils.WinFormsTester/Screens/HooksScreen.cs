@@ -16,7 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class HooksScreen : ApplicationScreen {
+public partial class HooksScreen : WinFormsApplicationScreen {
 	private readonly WindowsKeyboardHook _keyHook;
 	private readonly WindowsMouseHook _mouseHook;
 	private readonly System.Windows.Forms.Timer _refreshTimer;

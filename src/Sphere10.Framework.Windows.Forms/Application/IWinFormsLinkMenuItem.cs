@@ -8,7 +8,7 @@
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface ILinkMenuItem : IMenuItem {
+public interface IWinFormsLinkMenuItem : IWinFormsApplicationMenuItem {
 	string Text { get; }
 
 	void OnSelect();

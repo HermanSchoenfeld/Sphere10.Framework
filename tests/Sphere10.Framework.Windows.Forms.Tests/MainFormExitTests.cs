@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -328,7 +329,7 @@ public class MainFormExitTests {
 		Assert.That(Completed, Is.True, "The message loop must run the asynchronous exit test to completion.");
 	}
 
-	private sealed class ExitProbeScreen : ApplicationScreen {
+	private sealed class ExitProbeScreen : WinFormsApplicationScreen {
 		public ExitProbeScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
 
 		[DefaultValue(false)] public bool CancelHide { get; set; }

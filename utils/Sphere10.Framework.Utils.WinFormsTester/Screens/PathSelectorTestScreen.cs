@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class PathSelectorTestScreen : ApplicationScreen {
+public partial class PathSelectorTestScreen : WinFormsApplicationScreen {
 	public PathSelectorTestScreen() {
 		InitializeComponent();
 	}

@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ConnectionBarTestScreen : ApplicationScreen {
+public partial class ConnectionBarTestScreen : WinFormsApplicationScreen {
 	public ConnectionBarTestScreen() {
 		InitializeComponent();
 	}

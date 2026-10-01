@@ -6,7 +6,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert.Screens;
 
-public partial class NetworkScreen : ApplicationScreen {
+public partial class NetworkScreen : WinFormsApplicationScreen {
 	private readonly NetworkConnectionDataSource _dataSource;
 	private readonly IEnumerable<ICrudGridColumn> _gridBindings;
 	private Timer _autoRefreshTimer;

@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class UrlIDTestScreen : ApplicationScreen {
+public partial class UrlIDTestScreen : WinFormsApplicationScreen {
 	public UrlIDTestScreen() {
 		InitializeComponent();
 	}

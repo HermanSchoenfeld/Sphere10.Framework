@@ -8,41 +8,47 @@
 
 using System;
 using System.Drawing;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ActionMenuItem : MenuItem, ILinkMenuItem {
-	private Action _selectAction;
+public class WinFormsActionMenuItem : WinFormsApplicationMenuItem, IWinFormsLinkMenuItem {
+	private readonly ApplicationAction _action = new();
 
-	public ActionMenuItem(Action onClick)
+	public WinFormsActionMenuItem(Action onClick)
 		: this(string.Empty, onClick) {
 	}
 
-	public ActionMenuItem(string text, Action select) {
+	public WinFormsActionMenuItem(string text, Action select) {
 		Guard.ArgumentNotNull(select, nameof(select));
 		Text = text;
-		_selectAction = select;
+		_action.Action = select;
 	}
 
-	public ActionMenuItem(string text, Image image16x16, Action OnClick)
+	public WinFormsActionMenuItem(string text, Image image16x16, Action OnClick)
 		: this(text, image16x16, true, true, false) {
 	}
 
-	public ActionMenuItem(
+	public WinFormsActionMenuItem(
 		string text,
 		Image image16x16,
 		bool showOnExplorerBar = true,
 		bool showOnToolBar = true,
 		bool executeOnLoad = false
-	) : base(image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad) {
+	)
+		: base(image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad) {
 		Text = text;
 	}
 
 
-	public virtual string Text { get; set; }
+	public virtual string Text {
+		get => Title;
+		set => Title = value;
+	}
 
 	public virtual void OnSelect() {
-		_selectAction();
+		_action.Execute();
+		NotifySelect();
 	}
 
 	public override void Dispose() {

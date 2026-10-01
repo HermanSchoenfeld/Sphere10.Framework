@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ExpandoTesterScreen : ApplicationScreen {
+public partial class ExpandoTesterScreen : WinFormsApplicationScreen {
 	private TaskPane taskPane1;
 	private Expando expando1;
 	private TaskItem taskItem1;

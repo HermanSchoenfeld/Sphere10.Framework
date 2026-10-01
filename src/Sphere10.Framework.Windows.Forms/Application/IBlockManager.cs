@@ -6,21 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-
 namespace Sphere10.Framework.Windows.Forms;
 
 public interface IBlockManager {
 
-	void RegisterBlock(IApplicationBlock plugin);
+	void RegisterBlock(IWinFormsApplicationBlock plugin);
 
-	void UnregisterBlock(IApplicationBlock plugin);
+	void UnregisterBlock(IWinFormsApplicationBlock plugin);
 
-	bool IsBlockRegistered(IApplicationBlock plugin);
+	bool IsBlockRegistered(IWinFormsApplicationBlock plugin);
 
-	IEnumerable<IApplicationBlock> RegisteredBlocks { get; }
+	IWinFormsApplicationBlock[] RegisteredBlocks { get; }
 
-	void ExecuteMenuItem(IMenuItem menuItem);
+	void ExecuteMenuItem(IWinFormsApplicationMenuItem menuItem);
 
 }
 

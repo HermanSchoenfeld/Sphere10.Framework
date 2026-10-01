@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ValidationIndicatorTestScreen : ApplicationScreen {
+public partial class ValidationIndicatorTestScreen : WinFormsApplicationScreen {
 	private TextWriter _outputTextWriter;
 
 	public ValidationIndicatorTestScreen() {

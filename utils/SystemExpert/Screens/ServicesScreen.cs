@@ -7,7 +7,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert.Screens;
 
-public partial class ServicesScreen : ApplicationScreen {
+public partial class ServicesScreen : WinFormsApplicationScreen {
 	private readonly ServiceDataSource _dataSource;
 	private readonly IEnumerable<ICrudGridColumn> _gridBindings;
 	private Timer _autoRefreshTimer;

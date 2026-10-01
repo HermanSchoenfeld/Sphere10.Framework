@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -260,7 +261,7 @@ public class NavigationPaneTests {
 	public void DefaultSidebarFitsLongScreenNames() {
 		using var Form = new NavigationLayoutProbeMainForm { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000) };
 		using var Icon = new Bitmap(16, 16);
-		using var Block = new ApplicationBlockBuilder()
+		using var Block = new WinFormsApplicationBlockBuilder()
 			.WithName("Navigation width")
 			.AddMenu(Menu => Menu.WithText("Screens")
 				.AddScreenItem<NavigationScreen>("ApplicationServicesTester", Icon)
@@ -472,8 +473,8 @@ public class NavigationPaneTests {
 	[TestCase(true)]
 	public void DockPreviewFollowsSelectedNavigationPaneWithoutSwitchingScreens(bool Collapsed) {
 		using var Form = new ProbeMainForm { ScreenMode = ScreenMode.MultiView, NavigationPaneCollapsed = Collapsed };
-		using var FirstBlock = new ApplicationBlock { Name = "First" };
-		using var SecondBlock = new ApplicationBlock { Name = "Second" };
+		using var FirstBlock = new WinFormsApplicationBlock { Name = "First" };
+		using var SecondBlock = new WinFormsApplicationBlock { Name = "Second" };
 		Form.RegisterBlock(FirstBlock);
 		Form.RegisterBlock(SecondBlock);
 		var FirstPane = Form.PluginBindings[FirstBlock];
@@ -507,7 +508,7 @@ public class NavigationPaneTests {
 	[Test]
 	public void DockPreviewTracksLivePaneSettingsAndSystemThemeChanges() {
 		using var Form = new BlockMainForm();
-		using var Block = new ApplicationBlock { Name = "Themed" };
+		using var Block = new WinFormsApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
 		var Pane = Form.PluginBindings[Block];
 		Pane.CustomSettings.GradientStartColor = Color.MidnightBlue;
@@ -525,7 +526,7 @@ public class NavigationPaneTests {
 		using var Form = new BlockMainForm();
 		var DefaultBackColor = Form.ScreenHost.TabControl.DockPreviewBackColor;
 		var DefaultForeColor = Form.ScreenHost.TabControl.DockPreviewForeColor;
-		var Block = new ApplicationBlock { Name = "Themed" };
+		var Block = new WinFormsApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
 		Form.PluginBindings[Block].CustomSettings.GradientStartColor = Color.MidnightBlue;
 		Form.UnregisterBlock(Block);
@@ -576,7 +577,7 @@ public class NavigationPaneTests {
 		public override void ReportError(Exception Error) => LayoutErrors.Add(Error);
 	}
 
-	private class NavigationScreen : ApplicationScreen {
+	private class NavigationScreen : WinFormsApplicationScreen {
 		public NavigationScreen() {
 			ActivationMode = ScreenActivationMode.MultiInstance;
 			ToolBar = new ToolStrip();

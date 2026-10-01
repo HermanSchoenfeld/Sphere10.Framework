@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert.Screens;
 
-public partial class SystemInfoScreen : ApplicationScreen {
+public partial class SystemInfoScreen : WinFormsApplicationScreen {
 	private Timer _refreshTimer;
 	private PerformanceCounter _cpuCounter;
 	private Label _osLabel;

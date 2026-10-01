@@ -39,11 +39,11 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		InitializeComponent();
 
 		// initialize local members
-		PluginBindings = new Dictionary<IApplicationBlock, TaskPane>();
-		MenuBindings = new Dictionary<IMenu, Expando>();
-		MenuItemBindings = new Dictionary<Control, IMenuItem>();
-		ToolStripBindings = new Dictionary<ToolStripItem, IMenuItem>();
-		Plugins = new List<IApplicationBlock>();
+		PluginBindings = new Dictionary<IWinFormsApplicationBlock, TaskPane>();
+		MenuBindings = new Dictionary<IWinFormsApplicationMenu, Expando>();
+		MenuItemBindings = new Dictionary<Control, IWinFormsApplicationMenuItem>();
+		ToolStripBindings = new Dictionary<ToolStripItem, IWinFormsApplicationMenuItem>();
+		Plugins = new List<IWinFormsApplicationBlock>();
 		ActivePlugin = null;
 		_navigationPaneWidth = _splitContainer.SplitterDistance;
 		_navigationPaneDpi = DeviceDpi;
@@ -114,21 +114,21 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
-	public IDictionary<IApplicationBlock, TaskPane> PluginBindings { get; set; }
+	public IDictionary<IWinFormsApplicationBlock, TaskPane> PluginBindings { get; set; }
 
-	public IApplicationBlock ActiveBlock { get; set; }
+	public IWinFormsApplicationBlock ActiveBlock { get; set; }
 
-	public List<IApplicationBlock> Blocks { get; set; }
+	public IWinFormsApplicationBlock[] Blocks { get; set; }
 
-	private IDictionary<IMenu, Expando> MenuBindings { get; set; }
+	private IDictionary<IWinFormsApplicationMenu, Expando> MenuBindings { get; set; }
 
-	private IDictionary<Control, IMenuItem> MenuItemBindings { get; set; }
+	private IDictionary<Control, IWinFormsApplicationMenuItem> MenuItemBindings { get; set; }
 
-	private IDictionary<ToolStripItem, IMenuItem> ToolStripBindings { get; set; }
+	private IDictionary<ToolStripItem, IWinFormsApplicationMenuItem> ToolStripBindings { get; set; }
 
-	private IList<IApplicationBlock> Plugins { get; set; }
+	private IList<IWinFormsApplicationBlock> Plugins { get; set; }
 
-	private IApplicationBlock ActivePlugin { get; set; }
+	private IWinFormsApplicationBlock ActivePlugin { get; set; }
 
 	private bool HasUsableNavigationPaneBounds => WindowState != FormWindowState.Minimized &&
 		Math.Min(ClientSize.Width, _splitContainer.Width) - _splitContainer.SplitterWidth - Math.Round(_navigationPaneMinimumContentWidth) >= _splitContainer.Panel1MinSize;
@@ -137,7 +137,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Block management
 
-	public virtual void RegisterBlock(IApplicationBlock plugin) {
+	public virtual void RegisterBlock(IWinFormsApplicationBlock plugin) {
 
 		#region Pre-conditions
 
@@ -177,8 +177,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		RebuildToolBar();
 
 // TODO: Execute these on form load rather than now?
-		foreach (IMenu menu in plugin.Menus) {
-			foreach (IMenuItem menuItem in menu.Items) {
+		foreach (IWinFormsApplicationMenu menu in plugin.Menus) {
+			foreach (IWinFormsApplicationMenuItem menuItem in menu.Items) {
 				if (menuItem.ExecuteOnLoad) {
 					ExecuteMenuItem(menuItem);
 				}
@@ -189,7 +189,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			ScreenHost.ActivateScreen(plugin, plugin.DefaultScreen, plugin.DefaultScreenTitle);
 	}
 
-	public virtual void UnregisterBlock(IApplicationBlock Block) {
+	public virtual void UnregisterBlock(IWinFormsApplicationBlock Block) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
 		Guard.Argument(PluginBindings.ContainsKey(Block), nameof(Block), "Block is not registered");
 		if (!ScreenHost.CloseScreens(ScreenHost.Screens.Where(Screen => ReferenceEquals(Screen.ApplicationBlock, Block))))
@@ -217,7 +217,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		Block.Dispose();
 		RebuildToolBar();
 	}
-	public virtual bool IsBlockRegistered(IApplicationBlock plugin) {
+	public virtual bool IsBlockRegistered(IWinFormsApplicationBlock plugin) {
 
 		#region Pre-conditions
 
@@ -228,42 +228,40 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		return PluginBindings.ContainsKey(plugin);
 	}
 
-	public virtual IEnumerable<IApplicationBlock> RegisteredBlocks {
-		get { return Plugins; }
-	}
+	public virtual IWinFormsApplicationBlock[] RegisteredBlocks => Plugins.ToArray();
 
-	public virtual void ExecuteMenuItem(IMenuItem menuItem) {
+	public virtual void ExecuteMenuItem(IWinFormsApplicationMenuItem menuItem) {
 		try {
-			if (menuItem is IControlMenuItem) {
-				ExecuteControlMenuItem(menuItem as IControlMenuItem);
-			} else if (menuItem is IScreenMenuItem) {
-				ExecuteViewMenuItem(menuItem as IScreenMenuItem);
-			} else if (menuItem is ILinkMenuItem) {
-				ExecuteLinkMenuItem(menuItem as ILinkMenuItem);
+			if (menuItem is IWinFormsControlMenuItem) {
+				ExecuteControlMenuItem(menuItem as IWinFormsControlMenuItem);
+			} else if (menuItem is IWinFormsScreenMenuItem) {
+				ExecuteViewMenuItem(menuItem as IWinFormsScreenMenuItem);
+			} else if (menuItem is IWinFormsLinkMenuItem) {
+				ExecuteLinkMenuItem(menuItem as IWinFormsLinkMenuItem);
 			}
 		} catch (Exception e) {
 			_ = ExceptionDialog.ShowAsync(e);
 		}
 	}
 
-	private void ExecuteViewMenuItem(IScreenMenuItem ViewItem) {
+	private void ExecuteViewMenuItem(IWinFormsScreenMenuItem ViewItem) {
 		if (ScreenHost.ActivateScreen(ViewItem.Parent.Parent, ViewItem.Screen, ViewItem.ScreenTitle ?? ViewItem.Text) != null)
 			ExecuteLinkMenuItem(ViewItem);
 	}
 
-	private void ExecuteLinkMenuItem(ILinkMenuItem linkItem) {
+	private void ExecuteLinkMenuItem(IWinFormsLinkMenuItem linkItem) {
 		linkItem.OnSelect();
 	}
 
-	private void ExecuteControlMenuItem(IControlMenuItem controlItem) {
+	private void ExecuteControlMenuItem(IWinFormsControlMenuItem controlItem) {
 		throw new NotImplementedException();
 	}
 
-	private Control CreateControlMenuItem(IControlMenuItem item) {
+	private Control CreateControlMenuItem(IWinFormsControlMenuItem item) {
 		return item.ControlToShow;
 	}
 
-	private Control CreateViewMenuItem(IScreenMenuItem viewItem) {
+	private Control CreateViewMenuItem(IWinFormsScreenMenuItem viewItem) {
 		TaskItem taskItem = new TaskItem();
 		taskItem.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		taskItem.BackColor = System.Drawing.Color.Transparent;
@@ -276,7 +274,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		return taskItem;
 	}
 
-	private Control CreateLinkMenuItem(ILinkMenuItem item) {
+	private Control CreateLinkMenuItem(IWinFormsLinkMenuItem item) {
 		TaskItem taskItem = new TaskItem();
 		taskItem.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		taskItem.BackColor = System.Drawing.Color.Transparent;
@@ -290,7 +288,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		return taskItem;
 	}
 
-	private Control CreateMenuItem(IMenuItem item) {
+	private Control CreateMenuItem(IWinFormsApplicationMenuItem item) {
 
 		#region Pre-conditions
 
@@ -299,12 +297,12 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		#endregion
 
 		Control menuItem = null;
-		if (item is IControlMenuItem) {
-			menuItem = CreateControlMenuItem(item as IControlMenuItem);
-		} else if (item is IScreenMenuItem) {
-			menuItem = CreateViewMenuItem(item as IScreenMenuItem);
-		} else if (item is ILinkMenuItem) {
-			menuItem = CreateLinkMenuItem(item as ILinkMenuItem);
+		if (item is IWinFormsControlMenuItem) {
+			menuItem = CreateControlMenuItem(item as IWinFormsControlMenuItem);
+		} else if (item is IWinFormsScreenMenuItem) {
+			menuItem = CreateViewMenuItem(item as IWinFormsScreenMenuItem);
+		} else if (item is IWinFormsLinkMenuItem) {
+			menuItem = CreateLinkMenuItem(item as IWinFormsLinkMenuItem);
 		}
 		MenuItemBindings.Add(
 			menuItem,
@@ -320,7 +318,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		return menuItem;
 	}
 
-	private Expando CreateMenu(IMenu menu) {
+	private Expando CreateMenu(IWinFormsApplicationMenu menu) {
 		Expando expando = new Expando();
 		expando.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		expando.Animate = true;
@@ -333,7 +331,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		expando.Text = menu.Text;
 		expando.TitleImage = menu.Image32x32;
 		expando.SizeChanged += expando_SizeChanged;
-		foreach (IMenuItem item in menu.Items) {
+		foreach (IWinFormsApplicationMenuItem item in menu.Items) {
 			if (item.ShowOnExplorerBar) {
 				expando.Items.Add(
 					CreateMenuItem(item)
@@ -348,7 +346,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	void expando_SizeChanged(object sender, EventArgs e) {
 	}
 
-	private TaskPane CreateApplicationBlockPane(IApplicationBlock plugin) {
+	private TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock plugin) {
 		TaskPane taskPane = new TaskPane();
 		taskPane.AutoScroll = true;
 		taskPane.AutoScrollMargin = new System.Drawing.Size(12, 12);
@@ -357,7 +355,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		taskPane.Name = plugin.Name + " TaskPane";
 		taskPane.TabIndex = 0;
 		taskPane.Text = "N/A";
-		foreach (IMenu menu in plugin.Menus) {
+		foreach (IWinFormsApplicationMenu menu in plugin.Menus) {
 			taskPane.Expandos.Add(
 				CreateMenu(menu)
 			);
@@ -369,7 +367,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		if (sender is TaskItem) {
 			TaskItem taskItem = sender as TaskItem;
 			if (MenuItemBindings.ContainsKey(taskItem)) {
-				IMenuItem menuItem = MenuItemBindings[taskItem];
+				IWinFormsApplicationMenuItem menuItem = MenuItemBindings[taskItem];
 				ExecuteMenuItem(menuItem);
 			} else {
 // TODO: TaskItem did not bind to a IMenuItem
@@ -381,7 +379,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		if (sender is TaskItem) {
 			TaskItem taskItem = sender as TaskItem;
 			if (MenuItemBindings.ContainsKey(taskItem)) {
-				ILinkMenuItem menuItem = MenuItemBindings[taskItem] as ILinkMenuItem;
+				IWinFormsLinkMenuItem menuItem = MenuItemBindings[taskItem] as IWinFormsLinkMenuItem;
 				ExecuteMenuItem(menuItem);
 			} else {
 // TODO: TaskItem did not bind to a IMenuItem
@@ -393,7 +391,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Menu & Toolbar management
 
-	private void RegisterBlockInMenu(IApplicationBlock block) {
+	private void RegisterBlockInMenu(IWinFormsApplicationBlock block) {
 		ToolStripMenuItem blockHeader = new ToolStripMenuItem(
 			block.Name
 		);
@@ -401,14 +399,14 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		blockHeader.Tag = block;
 
 		// register each menu in block
-		foreach (IMenu menu in block.Menus) {
+		foreach (IWinFormsApplicationMenu menu in block.Menus) {
 
 			if (menu.ShowInMenuStrip) {
 
 				ToolStripMenuItem menuHeader = new ToolStripMenuItem(menu.Text);
 				menuHeader.Tag = menu;
-				foreach (IMenuItem item in menu.Items) {
-					ILinkMenuItem linkItem = item as ILinkMenuItem;
+				foreach (IWinFormsApplicationMenuItem item in menu.Items) {
+					IWinFormsLinkMenuItem linkItem = item as IWinFormsLinkMenuItem;
 					if (linkItem.ShowOnExplorerBar) {
 						ToolStripMenuItem newItem = new ToolStripMenuItem(
 							linkItem.Text,
@@ -435,7 +433,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		if (sender is ToolStripItem) {
 			ToolStripItem stripItem = sender as ToolStripItem;
 			if (ToolStripBindings.ContainsKey(stripItem)) {
-				IMenuItem menuItem = ToolStripBindings[stripItem];
+				IWinFormsApplicationMenuItem menuItem = ToolStripBindings[stripItem];
 				ExecuteMenuItem(menuItem);
 			} else {
 // TODO: TaskItem did not bind to a IMenuItem
@@ -464,15 +462,15 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 		#region Add screen list buttons
 
-		foreach (IApplicationBlock block in Plugins) {
+		foreach (IWinFormsApplicationBlock block in Plugins) {
 			if (block.ShowInToolStrip) {
 				if (ToolStrip.Items.Count > 0) {
 					ToolStrip.Items.Add(new ToolStripSeparator());
 				}
-				foreach (IMenu menu in block.Menus) {
-					foreach (IMenuItem item in menu.Items) {
-						if (item is ILinkMenuItem) {
-							ILinkMenuItem linkItem = item as ILinkMenuItem;
+				foreach (IWinFormsApplicationMenu menu in block.Menus) {
+					foreach (IWinFormsApplicationMenuItem item in menu.Items) {
+						if (item is IWinFormsLinkMenuItem) {
+							IWinFormsLinkMenuItem linkItem = item as IWinFormsLinkMenuItem;
 							if (linkItem.ShowOnToolStrip) {
 								ToolStripButton button = new ToolStripButton(
 									string.Empty,
@@ -531,7 +529,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Screen management
 
-	protected override void OnActiveScreenChanged(ApplicationScreen? Screen) {
+	protected override void OnActiveScreenChanged(WinFormsApplicationScreen? Screen) {
 		if (Screen != null) {
 			ActiveBlock = Screen.ApplicationBlock;
 			if (Screen.DisplayMode == ScreenDisplayMode.Maximized || Screen.DisplayMode == ScreenDisplayMode.FilledAndMaximized)
@@ -599,7 +597,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		ApplyNavigationPaneWidth(_navigationPaneWidth);
 	}
 
-	private void UpdateNavigationPane(ApplicationScreen? Screen) {
+	private void UpdateNavigationPane(WinFormsApplicationScreen? Screen) {
 		var ScreenFillsWindow = Screen?.DisplayMode is ScreenDisplayMode.Filled or ScreenDisplayMode.FilledAndMaximized;
 		var Collapsed = NavigationPaneCollapsed || ScreenFillsWindow;
 		_splitContainer.SuspendLayout();
@@ -743,7 +741,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			TaskPane pane = (TaskPane)_applicationBar.ApplicationBarControl;
 			foreach (Control control in PluginBindings.Values) {
 				if (pane == control) {
-					foreach (IApplicationBlock block in PluginBindings.Keys) {
+					foreach (IWinFormsApplicationBlock block in PluginBindings.Keys) {
 						if (PluginBindings[block] == control) {
 							ActiveBlock = block;
 							break;

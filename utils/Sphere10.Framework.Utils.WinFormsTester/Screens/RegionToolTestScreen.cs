@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class RegionToolTestScreen : ApplicationScreen {
+public partial class RegionToolTestScreen : WinFormsApplicationScreen {
 	private readonly TextWriter _outputTextWriter;
 
 	public RegionToolTestScreen() {

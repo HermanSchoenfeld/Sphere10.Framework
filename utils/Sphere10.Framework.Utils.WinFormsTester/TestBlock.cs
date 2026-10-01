@@ -7,18 +7,18 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Sphere10.Framework.Utils.WinFormsTester.Wizard;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
 using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
-using Menu = Sphere10.Framework.Windows.Forms.Menu;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public class TestBlock : ApplicationBlock {
+public class TestBlock : WinFormsApplicationBlock {
 	
-	public static ApplicationBlock Build() {
-		return new ApplicationBlockBuilder()
+	public static WinFormsApplicationBlock Build() {
+		return new WinFormsApplicationBlockBuilder()
 			.WithName("Block 1")
 			.WithImage32x32(Resources.TestBlock32x32)
 			.WithImage8x8(Resources.TestBlock8x8)
@@ -154,12 +154,12 @@ public class TestBlock : ApplicationBlock {
 			null,
 			null,
 			null,
-			new Menu[] {
-				new Menu(
+			new WinFormsApplicationMenu[] {
+				new WinFormsApplicationMenu(
 					"Wizard",
 					null,
-					new IMenuItem[] {
-						new ActionMenuItem("Wizard Demo",
+					new IWinFormsApplicationMenuItem[] {
+						new WinFormsActionMenuItem("Wizard Demo",
 							async () => {
 								var wiz = new WizardBuilder<DemoWizardModel>()
 									.WithTitle("Demo Wizard")
@@ -184,68 +184,68 @@ public class TestBlock : ApplicationBlock {
 					}
 				),
 
-				new Menu(
+				new WinFormsApplicationMenu(
 					"Tests",
 					null,
-					new IMenuItem[] {
-						new ScreenMenuItem("ObjectSpace", typeof(ObjectSpaceScreen), null),
-						new ScreenMenuItem("Emailer", typeof(EmailTestScreen), null),
-						new ScreenMenuItem("TransactionalList Test", typeof(TransactionalCollectionScreen), null),
-						new ScreenMenuItem("WebSockets Test", typeof(CommunicationsTestScreen), null),
-						new ScreenMenuItem("Merkle Tree", typeof(MerkleTreeTestScreen), null),
-						new ScreenMenuItem("WAMS-8 Tests", typeof(WAMSTestScreen), null),
-						new ScreenMenuItem("Expando Launcher", typeof(ExpandoTesterScreen), null),
-						new ScreenMenuItem("ApplicationServicesTester", typeof(ApplicationServicesTestScreen), null),
-						new ScreenMenuItem("ParagraphBuilderForm", typeof(ParagraphBuilderScreen), null),
+					new IWinFormsApplicationMenuItem[] {
+						new WinFormsScreenMenuItem("ObjectSpace", typeof(ObjectSpaceScreen), null),
+						new WinFormsScreenMenuItem("Emailer", typeof(EmailTestScreen), null),
+						new WinFormsScreenMenuItem("TransactionalList Test", typeof(TransactionalCollectionScreen), null),
+						new WinFormsScreenMenuItem("WebSockets Test", typeof(CommunicationsTestScreen), null),
+						new WinFormsScreenMenuItem("Merkle Tree", typeof(MerkleTreeTestScreen), null),
+						new WinFormsScreenMenuItem("WAMS-8 Tests", typeof(WAMSTestScreen), null),
+						new WinFormsScreenMenuItem("Expando Launcher", typeof(ExpandoTesterScreen), null),
+						new WinFormsScreenMenuItem("ApplicationServicesTester", typeof(ApplicationServicesTestScreen), null),
+						new WinFormsScreenMenuItem("ParagraphBuilderForm", typeof(ParagraphBuilderScreen), null),
 
 					}
 				),
-				new Menu(
+				new WinFormsApplicationMenu(
 					"Tests 2",
 					null,
-					new IMenuItem[] {
-						new ScreenMenuItem("VisualInheritanceFixerSub", typeof(VisualInheritanceFixerSubForm), null),
-						new ScreenMenuItem("Hooks", typeof(HooksScreen), null),
-						new ScreenMenuItem("Test Sounds", typeof(TestSoundsScreen), null),
-						new ScreenMenuItem("Decay Gauge", typeof(DecayGaugeScreen), null),
-						new ScreenMenuItem("TabControl", typeof(TabControlTestScreen), null),
-						new ScreenMenuItem("ArtificialKeys", typeof(TestArtificialKeysScreen), null),
-						new ScreenMenuItem("EnumCombo", typeof(EnumComboScreen), null),
-						new ScreenMenuItem("Compression", typeof(CompressionTestScreen), null),
-						new ScreenMenuItem("AppointmentBook", typeof(AppointmentBookScreen), null),
-						new ScreenMenuItem("FlagsCheckedBoxList", typeof(FlagsCheckedBoxListScreen), null),
-						new ScreenMenuItem("CRUD Grid", typeof(CrudTestScreen), null) { ActivationMode = ScreenActivationMode.MultiInstance, ScreenTitle = "CRUD Grid" },
-						new ScreenMenuItem("LoadingCircle", typeof(LoadingCircleTestScreen), null),
-						new ScreenMenuItem("PlaceHolder", typeof(PlaceHolderTestScreen), null),
-						new ScreenMenuItem("PadLock", typeof(PadLockTestScreen), null),
-						new ScreenMenuItem("PasswordDialog", typeof(PasswordDialogTestScreen), null),
-						new ScreenMenuItem("ValidationIndicator", typeof(ValidationIndicatorTestScreen), null),
-						new ScreenMenuItem("RegionTool", typeof(RegionToolTestScreen), null),
-						new ScreenMenuItem("CustomComboBox", typeof(CustomComboBoxScreen), null),
-						new ScreenMenuItem("Misc", typeof(MiscTestScreen), null, false, false, true),
-						new ScreenMenuItem("ConnectionPanel", typeof(ConnectionPanelTestScreen), null),
-						new ScreenMenuItem("DraggableControls", typeof(DraggableControlsTestScreen), null),
-						new ScreenMenuItem("EncryptedCompression", typeof(EncryptedCompressionTestScreen), null),
-						new ScreenMenuItem("CBACSVConverter", typeof(CBACSVConverterScreen), null),
-						new ScreenMenuItem("Settings", typeof(SettingsTest), null),
-						new ScreenMenuItem("ImageResize", typeof(ImageResizeScreen), null),
-						new ScreenMenuItem("Schedule", typeof(ScheduleTestScreen), null),
-						new ScreenMenuItem("ObservableCollections", typeof(ObservableCollectionsTestScreen), null),
-						new ScreenMenuItem("PathSelector", typeof(PathSelectorTestScreen), null),
-						new ScreenMenuItem("ConnectionBar", typeof(ConnectionBarTestScreen), null),
-						new ScreenMenuItem("TextAreaTests", typeof(TextAreaTestsScreen), null),
-						new ScreenMenuItem("BloomFilterAnalysisScreen", typeof(BloomFilterAnalysisScreen), null),
-						new ScreenMenuItem("UrlID", typeof(UrlIDTestScreen), null),
+					new IWinFormsApplicationMenuItem[] {
+						new WinFormsScreenMenuItem("VisualInheritanceFixerSub", typeof(VisualInheritanceFixerSubForm), null),
+						new WinFormsScreenMenuItem("Hooks", typeof(HooksScreen), null),
+						new WinFormsScreenMenuItem("Test Sounds", typeof(TestSoundsScreen), null),
+						new WinFormsScreenMenuItem("Decay Gauge", typeof(DecayGaugeScreen), null),
+						new WinFormsScreenMenuItem("TabControl", typeof(TabControlTestScreen), null),
+						new WinFormsScreenMenuItem("ArtificialKeys", typeof(TestArtificialKeysScreen), null),
+						new WinFormsScreenMenuItem("EnumCombo", typeof(EnumComboScreen), null),
+						new WinFormsScreenMenuItem("Compression", typeof(CompressionTestScreen), null),
+						new WinFormsScreenMenuItem("AppointmentBook", typeof(AppointmentBookScreen), null),
+						new WinFormsScreenMenuItem("FlagsCheckedBoxList", typeof(FlagsCheckedBoxListScreen), null),
+						new WinFormsScreenMenuItem("CRUD Grid", typeof(CrudTestScreen), null) { ActivationMode = ScreenActivationMode.MultiInstance, ScreenTitle = "CRUD Grid" },
+						new WinFormsScreenMenuItem("LoadingCircle", typeof(LoadingCircleTestScreen), null),
+						new WinFormsScreenMenuItem("PlaceHolder", typeof(PlaceHolderTestScreen), null),
+						new WinFormsScreenMenuItem("PadLock", typeof(PadLockTestScreen), null),
+						new WinFormsScreenMenuItem("PasswordDialog", typeof(PasswordDialogTestScreen), null),
+						new WinFormsScreenMenuItem("ValidationIndicator", typeof(ValidationIndicatorTestScreen), null),
+						new WinFormsScreenMenuItem("RegionTool", typeof(RegionToolTestScreen), null),
+						new WinFormsScreenMenuItem("CustomComboBox", typeof(CustomComboBoxScreen), null),
+						new WinFormsScreenMenuItem("Misc", typeof(MiscTestScreen), null, false, false, true),
+						new WinFormsScreenMenuItem("ConnectionPanel", typeof(ConnectionPanelTestScreen), null),
+						new WinFormsScreenMenuItem("DraggableControls", typeof(DraggableControlsTestScreen), null),
+						new WinFormsScreenMenuItem("EncryptedCompression", typeof(EncryptedCompressionTestScreen), null),
+						new WinFormsScreenMenuItem("CBACSVConverter", typeof(CBACSVConverterScreen), null),
+						new WinFormsScreenMenuItem("Settings", typeof(SettingsTest), null),
+						new WinFormsScreenMenuItem("ImageResize", typeof(ImageResizeScreen), null),
+						new WinFormsScreenMenuItem("Schedule", typeof(ScheduleTestScreen), null),
+						new WinFormsScreenMenuItem("ObservableCollections", typeof(ObservableCollectionsTestScreen), null),
+						new WinFormsScreenMenuItem("PathSelector", typeof(PathSelectorTestScreen), null),
+						new WinFormsScreenMenuItem("ConnectionBar", typeof(ConnectionBarTestScreen), null),
+						new WinFormsScreenMenuItem("TextAreaTests", typeof(TextAreaTestsScreen), null),
+						new WinFormsScreenMenuItem("BloomFilterAnalysisScreen", typeof(BloomFilterAnalysisScreen), null),
+						new WinFormsScreenMenuItem("UrlID", typeof(UrlIDTestScreen), null),
 					}
 				),
 
-				new Menu(
+				new WinFormsApplicationMenu(
 					"Menu 2",
 					null,
-					new ScreenMenuItem[] {
-						new ScreenMenuItem("Option 1", typeof(ScreenA), null),
-						new ScreenMenuItem("Option 2", typeof(ScreenB), null),
-						new ScreenMenuItem("Option 2", typeof(ScreenC), null),
+					new WinFormsScreenMenuItem[] {
+						new WinFormsScreenMenuItem("Option 1", typeof(ScreenA), null),
+						new WinFormsScreenMenuItem("Option 2", typeof(ScreenB), null),
+						new WinFormsScreenMenuItem("Option 2", typeof(ScreenC), null),
 					}
 				)
 			}
@@ -256,10 +256,10 @@ public class TestBlock : ApplicationBlock {
 }
 
 
-public class TestBlock2 : ApplicationBlock {
+public class TestBlock2 : WinFormsApplicationBlock {
 	
-	public static ApplicationBlock Build() {
-		return new ApplicationBlockBuilder()
+	public static WinFormsApplicationBlock Build() {
+		return new WinFormsApplicationBlockBuilder()
 			.WithName("Block 2")
 			.WithImage32x32(Resources.TestBlock32x32)
 			.WithImage8x8(Resources.TestBlock8x8)
@@ -286,24 +286,24 @@ public class TestBlock2 : ApplicationBlock {
 			null,
 			null,
 			null,
-			new Menu[] {
-				new Menu(
+			new WinFormsApplicationMenu[] {
+				new WinFormsApplicationMenu(
 					"Menu 1",
 					null,
-					new ScreenMenuItem[] {
-						new ScreenMenuItem("Opt 1", typeof(ScreenA), null),
-						new ScreenMenuItem("Opt 2", typeof(ScreenA), null),
+					new WinFormsScreenMenuItem[] {
+						new WinFormsScreenMenuItem("Opt 1", typeof(ScreenA), null),
+						new WinFormsScreenMenuItem("Opt 2", typeof(ScreenA), null),
 					}
 				),
 
-				new Menu(
+				new WinFormsApplicationMenu(
 					"Menu 2",
 					null,
-					new ScreenMenuItem[] {
-						new ScreenMenuItem("Opt 1", typeof(ScreenA), null),
-						new ScreenMenuItem("Opt 2", typeof(ScreenA), null),
-						new ScreenMenuItem("Opt 3", typeof(ScreenA), null),
-						new ScreenMenuItem("Opt 4", typeof(ScreenA), null),
+					new WinFormsScreenMenuItem[] {
+						new WinFormsScreenMenuItem("Opt 1", typeof(ScreenA), null),
+						new WinFormsScreenMenuItem("Opt 2", typeof(ScreenA), null),
+						new WinFormsScreenMenuItem("Opt 3", typeof(ScreenA), null),
+						new WinFormsScreenMenuItem("Opt 4", typeof(ScreenA), null),
 					}
 				)
 			}

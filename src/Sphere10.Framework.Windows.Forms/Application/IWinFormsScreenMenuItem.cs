@@ -7,13 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IScreenMenuItem : ILinkMenuItem {
+public interface IWinFormsScreenMenuItem : IWinFormsLinkMenuItem, IScreenMenuItem {
 	Type Screen { get; }
-	/// <summary>Optional declaration of the screen type's instance policy, shared by every menu entry for that type.</summary>
-	ScreenActivationMode? ActivationMode => null;
-	string? ScreenTitle => null;
-}
 
+	/// <summary>An optional per-type policy; absent declarations retain the native screen constructor's default.</summary>
+	new ScreenActivationMode? ActivationMode => null;
+
+	new string ScreenTitle => null;
+
+	Type IScreenMenuItem.ScreenType => Screen;
+	ScreenActivationMode? IScreenMenuItem.ActivationMode => ActivationMode;
+	string IScreenMenuItem.ScreenTitle => ScreenTitle;
+}

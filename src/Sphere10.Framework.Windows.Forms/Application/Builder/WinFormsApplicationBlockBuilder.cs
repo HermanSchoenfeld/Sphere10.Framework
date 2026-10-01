@@ -7,75 +7,124 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ApplicationBlockBuilder {
-	private readonly ApplicationBlock _block;
+public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<IWinFormsApplicationMenu, WinFormsApplicationBlock> {
+	private WinFormsApplicationBlock _block;
+	private Image _image32x32;
+	private Image _image8x8;
+	private string _helpFile;
+	private bool _showInMenuStrip;
+	private bool _showInToolStrip;
 
-	public ApplicationBlockBuilder() {
-		_block = new ApplicationBlock();
-	}
-
-	public ApplicationBlockBuilder WithName(string name) {
-		_block.Name = name;
+	public WinFormsApplicationBlockBuilder WithName(string name) {
+		SetName(name);
+		if (_block != null) {
+			_block.Name = name;
+			_block.Id = Id;
+		}
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithImage32x32(Image image) {
-		_block.Image32x32 = image;
+	public WinFormsApplicationBlockBuilder WithId(string id) {
+		SetId(id);
+		if (_block != null)
+			_block.Id = id;
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithImage8x8(Image image) {
-		_block.Image8x8 = image;
+	public WinFormsApplicationBlockBuilder WithPosition(int position) {
+		SetPosition(position);
+		if (_block != null)
+			_block.Position = position;
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithHelpFile(string helpFile) {
-		_block.HelpFileCHM = helpFile;
+	public WinFormsApplicationBlockBuilder WithImage32x32(Image image) {
+		_image32x32 = image;
+		if (_block != null)
+			_block.Image32x32 = image;
 		return this;
 	}
 
-	public ApplicationBlockBuilder ShowInMenuStrip(bool show = true) {
-		_block.ShowInMenuStrip = show;
+	public WinFormsApplicationBlockBuilder WithImage8x8(Image image) {
+		_image8x8 = image;
+		if (_block != null)
+			_block.Image8x8 = image;
 		return this;
 	}
 
-	public ApplicationBlockBuilder ShowInToolStrip(bool show = true) {
-		_block.ShowInToolStrip = show;
+	public WinFormsApplicationBlockBuilder WithHelpFile(string helpFile) {
+		_helpFile = helpFile;
+		if (_block != null)
+			_block.HelpFileCHM = helpFile;
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithDefaultScreen(Type screenType, string? title = null) {
-		Guard.ArgumentNotNull(screenType, nameof(screenType));
-		Guard.Argument(typeof(ApplicationScreen).IsAssignableFrom(screenType) && !screenType.IsAbstract, nameof(screenType), "A concrete ApplicationScreen type is required");
-		_block.DefaultScreen = screenType;
-		_block.DefaultScreenTitle = title;
+	public WinFormsApplicationBlockBuilder ShowInMenuStrip(bool show = true) {
+		_showInMenuStrip = show;
+		if (_block != null)
+			_block.ShowInMenuStrip = show;
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithDefaultScreen<TScreen>(string? title = null) where TScreen : ApplicationScreen {
+	public WinFormsApplicationBlockBuilder ShowInToolStrip(bool show = true) {
+		_showInToolStrip = show;
+		if (_block != null)
+			_block.ShowInToolStrip = show;
+		return this;
+	}
+
+	public WinFormsApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null) {
+		SetDefaultScreen(screenType, title);
+		if (_block != null) {
+			_block.DefaultScreen = screenType;
+			_block.DefaultScreenTitle = title;
+		}
+		return this;
+	}
+
+	public WinFormsApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null) where TScreen : WinFormsApplicationScreen {
 		return WithDefaultScreen(typeof(TScreen), title);
 	}
 
-	public ApplicationBlockBuilder AddMenu(Action<MenuBuilder> menuBuild) {
-		var menuBuilder = new MenuBuilder();
+	public WinFormsApplicationBlockBuilder AddMenu(Action<WinFormsApplicationMenuBuilder> menuBuild) {
+		Guard.ArgumentNotNull(menuBuild, nameof(menuBuild));
+		var menuBuilder = new WinFormsApplicationMenuBuilder();
 		menuBuild(menuBuilder);
-		var menu = menuBuilder.Build();
-		_block.AddMenu(menu);
+		return AddMenu(menuBuilder.Build());
+	}
+
+	public WinFormsApplicationBlockBuilder AddMenu(IWinFormsApplicationMenu menu) {
+		AddMenuDefinition(menu);
+		_block?.AddMenu(menu);
 		return this;
 	}
 
-	public ApplicationBlockBuilder AddMenu(IMenu menu) {
-		Guard.ArgumentNotNull(menu, nameof(menu));
-		_block.AddMenu(menu);
-		return this;
-	}
-
-	public ApplicationBlock Build() {
+	public override WinFormsApplicationBlock Build() {
+		if (_block == null)
+			return base.Build();
 		Guard.Ensure(!string.IsNullOrEmpty(_block.Name), "Block name is required");
+		return _block;
+	}
+
+	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
+
+	protected override WinFormsApplicationBlock CreateBlock(IReadOnlyList<IWinFormsApplicationMenu> menus) {
+		if (_block != null)
+			return _block;
+		_block = new WinFormsApplicationBlock(Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null) {
+			Id = Id,
+			Position = Position,
+			DefaultScreen = DefaultScreen,
+			DefaultScreenTitle = DefaultScreenTitle
+		};
+		foreach (var menu in menus)
+			_block.AddMenu(menu);
 		return _block;
 	}
 }

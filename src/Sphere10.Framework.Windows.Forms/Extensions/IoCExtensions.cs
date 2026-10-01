@@ -28,12 +28,12 @@ public static class IoCExtensions {
 			serviceCollection.AddSingleton(provider => (IBlockManager)provider.GetService<IMainForm>());
 	}
 
-	public static void AddApplicationBlock<T>(this IServiceCollection serviceCollection) where T : class, IApplicationBlock
-		=> serviceCollection.AddTransient<IApplicationBlock, T>();
+	public static void AddApplicationBlock<T>(this IServiceCollection serviceCollection) where T : class, IWinFormsApplicationBlock
+		=> serviceCollection.AddTransient<IWinFormsApplicationBlock, T>();
 
-	public static void AddApplicationBlock(this IServiceCollection serviceCollection, IApplicationBlock block) {
+	public static void AddApplicationBlock(this IServiceCollection serviceCollection, IWinFormsApplicationBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		serviceCollection.AddSingleton<IApplicationBlock>(block);
+		serviceCollection.AddSingleton<IWinFormsApplicationBlock>(block);
 	}
 
 	public static void AddControlStateEventProvider<TControl, TProvider>(this IServiceCollection servicesCollection)

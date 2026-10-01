@@ -8,7 +8,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert.Screens;
 
-public partial class ProcessesScreen : ApplicationScreen {
+public partial class ProcessesScreen : WinFormsApplicationScreen {
  private readonly ProcessInfoDataSource _dataSource;
 	private readonly IEnumerable<ICrudGridColumn> _gridBindings;
 	private Timer _autoRefreshTimer;

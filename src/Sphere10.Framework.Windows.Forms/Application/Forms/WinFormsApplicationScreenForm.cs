@@ -16,11 +16,11 @@ using Sphere10.Framework.Windows;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Detached screen window. The originating host retains ownership of the screen.</summary>
-public class ApplicationScreenForm : Form {
+public class WinFormsApplicationScreenForm : Form {
 	private static readonly Size LogicalDefaultClientSize = new(900, 650);
 	private static readonly Size LogicalMinimumSize = new(240, 160);
 	private const int LogicalTopBorderHeight = 1;
-	private readonly IApplicationScreenHost _host;
+	private readonly IWinFormsApplicationScreenHost _host;
 	private readonly MenuStrip? _menuStrip;
 	private readonly MenuStrip? _screenMenuStrip;
 	private readonly bool _screenMenuVisible;
@@ -43,7 +43,7 @@ public class ApplicationScreenForm : Form {
 	private FormWindowState _lastNativeWindowState;
 	private Size? _requestedClientSize;
 
-	public ApplicationScreenForm(IApplicationScreenHost Host, ApplicationScreen Screen) {
+	public WinFormsApplicationScreenForm(IWinFormsApplicationScreenHost Host, WinFormsApplicationScreen Screen) {
 		Guard.ArgumentNotNull(Host, nameof(Host));
 		Guard.ArgumentNotNull(Screen, nameof(Screen));
 		SuspendLayout();
@@ -102,7 +102,7 @@ public class ApplicationScreenForm : Form {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ApplicationScreen Screen { get; }
+	public WinFormsApplicationScreen Screen { get; }
 
 	/// <summary>The actual title area in desktop coordinates, measured at the window's current DPI.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -156,7 +156,7 @@ public class ApplicationScreenForm : Form {
 		if (_released)
 			return;
 		_released = true;
-		(_host as ApplicationScreenHost)?.ClearDockPreview();
+		(_host as WinFormsApplicationScreenHost)?.ClearDockPreview();
 		Screen.TextChanged -= ScreenTextChanged;
 		MainMenuStrip = null;
 		Controls.Remove(Screen);
@@ -219,7 +219,7 @@ public class ApplicationScreenForm : Form {
 
 	protected override void OnMove(EventArgs Args) {
 		base.OnMove(Args);
-		if (_inMoveSize && !_released && _host is ApplicationScreenHost Host) {
+		if (_inMoveSize && !_released && _host is WinFormsApplicationScreenHost Host) {
 			if (_moving && !_resizing && WindowState == FormWindowState.Normal && Location != _moveStartLocation)
 				Host.UpdateDockPreview(Screen, Cursor.Position, CaptionBounds);
 			else
@@ -232,7 +232,7 @@ public class ApplicationScreenForm : Form {
 		var Dock = _moving && !_resizing && WindowState == FormWindowState.Normal && Location != _moveStartLocation;
 		_inMoveSize = false;
 		_moving = false;
-		if (_released || _host is not ApplicationScreenHost Host)
+		if (_released || _host is not WinFormsApplicationScreenHost Host)
 			return;
 		if (Dock)
 			Host.CompleteScreenDock(Screen, Cursor.Position, CaptionBounds);
@@ -260,7 +260,7 @@ public class ApplicationScreenForm : Form {
 				_moving = true;
 			if (message.Msg == WinAPI.USER32.WM_SIZING) {
 				_resizing = true;
-				(_host as ApplicationScreenHost)?.ClearDockPreview();
+				(_host as WinFormsApplicationScreenHost)?.ClearDockPreview();
 			}
 		}
 		base.WndProc(ref message);
@@ -327,11 +327,11 @@ public class ApplicationScreenForm : Form {
 		private const int LogicalButtonWidth = 32;
 		private const int LogicalPadding = 8;
 		private const int BorderThickness = 1;
-		private readonly ApplicationScreenForm _window;
+		private readonly WinFormsApplicationScreenForm _window;
 		private readonly ToolTip _toolTip;
 		private readonly CaptionActionButton _maximizeButton;
 
-		public ScreenCaption(ApplicationScreenForm Window) {
+		public ScreenCaption(WinFormsApplicationScreenForm Window) {
 			_window = Window;
 			_toolTip = new ToolTip();
 			Font = SystemFonts.SmallCaptionFont;
@@ -452,7 +452,7 @@ public class ApplicationScreenForm : Form {
 		}
 
 		protected override void WndProc(ref Message Message) {
-			if (Message.Msg == 0x0084 && FindForm() is ApplicationScreenForm Window) { // WM_NCHITTEST
+			if (Message.Msg == 0x0084 && FindForm() is WinFormsApplicationScreenForm Window) { // WM_NCHITTEST
 				var Coordinates = Message.LParam.ToInt64();
 				var Position = new Point(unchecked((short)Coordinates), unchecked((short)(Coordinates >> 16)));
 				if (Window.IsTopResizeArea(Position)) {

@@ -6,100 +6,56 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 using System.Drawing;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class Menu : IMenu {
-	string _text;
-	List<IMenuItem> _items;
-	IApplicationBlock _parent;
-	Image _image32x32;
-	bool _showInMenuStrip;
-
-
-	public Menu()
+public class WinFormsApplicationMenu : ApplicationMenu<IWinFormsApplicationMenuItem>, IWinFormsApplicationMenu {
+	public WinFormsApplicationMenu()
 		: this(string.Empty) {
 	}
 
-	public Menu(string title)
+	public WinFormsApplicationMenu(string title)
 		: this(title, null) {
 	}
 
-
-	public Menu(string title, IMenuItem[] items)
+	public WinFormsApplicationMenu(string title, IWinFormsApplicationMenuItem[] items)
 		: this(title, null, items) {
-
 	}
 
-	public Menu(string title, Image image32x32, IMenuItem[] items)
+	public WinFormsApplicationMenu(string title, Image image32x32, IWinFormsApplicationMenuItem[] items)
 		: this(title, false, image32x32, items) {
 	}
 
-	public Menu(string title, bool showInMenuStrip, Image image32x32, IMenuItem[] items) {
-		_parent = null;
-		_text = title;
-		_image32x32 = image32x32;
-		_items = new List<IMenuItem>();
-		_showInMenuStrip = showInMenuStrip;
-		if (items != null) {
-			foreach (IMenuItem item in items) {
+	public WinFormsApplicationMenu(string title, bool showInMenuStrip, Image image32x32, IWinFormsApplicationMenuItem[] items) {
+		Text = title;
+		Image32x32 = image32x32;
+		ShowInMenuStrip = showInMenuStrip;
+		if (items != null)
+			foreach (var item in items)
 				AddItem(item);
-			}
-		}
 	}
 
-	public bool ShowInMenuStrip {
-		get { return _showInMenuStrip; }
-		set { _showInMenuStrip = value; }
-	}
+	public bool ShowInMenuStrip { get; set; }
 
-	public virtual IApplicationBlock Parent {
-		get { return _parent; }
-		set { _parent = value; }
-	}
+	public virtual IWinFormsApplicationBlock Parent { get; set; }
 
-	public virtual string Text {
-		get { return _text; } 
-		set { _text = value; }
-	}
+	public override IWinFormsApplicationMenuItem[] Items => base.Items;
 
-	public virtual void AddItem(IMenuItem item) {
-		if (item is ScreenMenuItem) {
-			if (item.Parent == null) {
-				item.Parent = this;
-			}
-		}
-		_items.Add(item);
-	}
+	public Image Image32x32 { get; set; }
 
-	public virtual bool ContainsItem(IMenuItem item) {
-		return _items.Contains(item);
-	}
-
-	public virtual void RemoveItem(IMenuItem item) {
-		_items.Remove(item);
-	}
-
-	public virtual IMenuItem[] Items {
-		get { return _items.ToArray(); }
-	}
-
-	public Image Image32x32 {
-		get { return _image32x32; }
-		set { _image32x32 = value; }
+	public override void AddItem(IWinFormsApplicationMenuItem item) {
+		Guard.ArgumentNotNull(item, nameof(item));
+		if (item is WinFormsScreenMenuItem && item.Parent == null)
+			item.Parent = this;
+		base.AddItem(item);
 	}
 
 	public virtual void Dispose() {
-		_parent = null;
-		foreach (IMenuItem menuItem in _items) {
-			menuItem.Dispose();
-		}
-		if (_image32x32 != null) {
-			_image32x32.Dispose();
-		}
+		Parent = null;
+		foreach (var item in ItemCollection)
+			item.Dispose();
+		Image32x32?.Dispose();
 	}
-
 }
-

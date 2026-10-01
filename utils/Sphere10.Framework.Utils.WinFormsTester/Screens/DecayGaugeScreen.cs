@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class DecayGaugeScreen : ApplicationScreen {
+public partial class DecayGaugeScreen : WinFormsApplicationScreen {
 	private IMouseHook _mouseHook;
 	private IKeyboardHook _keyboardHook;
 

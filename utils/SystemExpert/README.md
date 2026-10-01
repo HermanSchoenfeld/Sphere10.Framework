@@ -1,6 +1,6 @@
 # SystemExpert
 
-A WinForms system monitor built on the ApplicationBlock screen host. It starts in `ScreenMode.MultiView`, with one reusable instance of each tool: System Info, Processes, Services, Network, Event Log, and Environment. Selecting a tool again activates its existing tab or detached window.
+A WinForms system monitor built on the WinFormsApplicationBlock screen host. It starts in `ScreenMode.MultiView`, with one reusable instance of each tool: System Info, Processes, Services, Network, Event Log, and Environment. Selecting a tool again activates its existing tab or detached window.
 
 Build and run on Windows:
 

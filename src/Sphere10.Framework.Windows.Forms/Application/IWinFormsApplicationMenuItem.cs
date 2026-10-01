@@ -8,19 +8,16 @@
 
 using System;
 using System.Drawing;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IMenuItem : IDisposable {
-	IMenu Parent { get; set; }
-
+public interface IWinFormsApplicationMenuItem : IDisposable, IApplicationMenuItem {
+	IWinFormsApplicationMenu Parent { get; set; }
 	Image Image16x16 { get; }
-
 	bool ShowOnExplorerBar { get; }
-
 	bool ShowOnToolStrip { get; }
-
 	bool ExecuteOnLoad { get; }
 
+	string IApplicationMenuItem.Title => this is IWinFormsLinkMenuItem link ? link.Text : string.Empty;
 }
-

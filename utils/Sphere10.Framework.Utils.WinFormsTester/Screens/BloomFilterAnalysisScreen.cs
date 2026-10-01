@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class BloomFilterAnalysisScreen : ApplicationScreen {
+public partial class BloomFilterAnalysisScreen : WinFormsApplicationScreen {
 	private readonly TextWriter _writer;
 
 	public BloomFilterAnalysisScreen() {

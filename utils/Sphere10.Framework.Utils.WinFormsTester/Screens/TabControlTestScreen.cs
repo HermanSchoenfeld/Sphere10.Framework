@@ -10,7 +10,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class TabControlTestScreen : ApplicationScreen {
+public partial class TabControlTestScreen : WinFormsApplicationScreen {
 	public TabControlTestScreen() {
 		InitializeComponent();
 	}

@@ -7,26 +7,27 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Drawing;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class MenuItem : IMenuItem {
-	private IMenu _parent;
+public class WinFormsApplicationMenuItem : ApplicationMenuItem, IWinFormsApplicationMenuItem {
+	private IWinFormsApplicationMenu _parent;
 	private Image _image16x16;
 	private bool _showOnExplorerBar;
 	private bool _showOnToolBar;
 	private bool _executeOnLoad;
 
 
-	public MenuItem()
+	public WinFormsApplicationMenuItem()
 		: this(null) {
 	}
 
-	public MenuItem(Image image16x16)
+	public WinFormsApplicationMenuItem(Image image16x16)
 		: this(image16x16, true, true, false) {
 	}
 
-	public MenuItem(Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad) {
+	public WinFormsApplicationMenuItem(Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad) {
 		_parent = null;
 		_image16x16 = image16x16;
 		_showOnExplorerBar = showOnExplorerBar;
@@ -34,7 +35,7 @@ public class MenuItem : IMenuItem {
 		_executeOnLoad = executeOnLoad;
 	}
 
-	public IMenu Parent {
+	public IWinFormsApplicationMenu Parent {
 		get { return _parent; }
 		set { _parent = value; }
 	}

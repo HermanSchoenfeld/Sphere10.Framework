@@ -7,27 +7,28 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ScreenMenuItem : LinkMenuItem, IScreenMenuItem {
+public class WinFormsScreenMenuItem : WinFormsLinkMenuItem, IWinFormsScreenMenuItem {
 	private Type _screen;
 
-	public ScreenMenuItem()
+	public WinFormsScreenMenuItem()
 		: this(string.Empty, null) {
 	}
 
-	public ScreenMenuItem(string text, Type viewType)
+	public WinFormsScreenMenuItem(string text, Type viewType)
 		: this(text, viewType, null) {
 	}
 
 
-	public ScreenMenuItem(string text, Type screenType, Image image16x16)
+	public WinFormsScreenMenuItem(string text, Type screenType, Image image16x16)
 		: this(text, screenType, image16x16, true, true, false) {
 	}
 
-	public ScreenMenuItem(string text, Type screenType, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool isStartScreen)
+	public WinFormsScreenMenuItem(string text, Type screenType, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool isStartScreen)
 		: base(text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
 		_screen = screenType;
 	}
@@ -39,7 +40,7 @@ public class ScreenMenuItem : LinkMenuItem, IScreenMenuItem {
 
 	public virtual ScreenActivationMode? ActivationMode { get; set; }
 
-	public virtual string? ScreenTitle { get; set; }
+	public virtual string ScreenTitle { get; set; }
 
 	public override void Dispose() {
 		base.Dispose();

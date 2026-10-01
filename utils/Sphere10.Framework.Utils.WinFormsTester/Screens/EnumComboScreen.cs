@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class EnumComboScreen : ApplicationScreen {
+public partial class EnumComboScreen : WinFormsApplicationScreen {
 	public EnumComboScreen() {
 		InitializeComponent();
 		_enumComboBox.EnumType = typeof(TestEnum);

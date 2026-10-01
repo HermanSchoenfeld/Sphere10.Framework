@@ -16,7 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class TestSoundsScreen : ApplicationScreen {
+public partial class TestSoundsScreen : WinFormsApplicationScreen {
 	public TestSoundsScreen() {
 		InitializeComponent();
 	}

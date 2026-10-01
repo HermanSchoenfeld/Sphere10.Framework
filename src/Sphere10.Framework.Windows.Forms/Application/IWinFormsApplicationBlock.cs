@@ -8,24 +8,27 @@
 
 using System;
 using System.Drawing;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-// TODO: Add Option Dialogs
-// TODO: Add 8x8 special icon (outlook bar bottom)
-
-
-public interface IApplicationBlock : IDisposable {
-	int Position { get; }
-	string Name { get; }
-	IMenu[] Menus { get; }
+/// <summary>A native application block with platform-specific images and menu placement.</summary>
+public interface IWinFormsApplicationBlock : IDisposable, IApplicationBlock {
+	new int Position { get; }
+	new string Name { get; }
+	new IWinFormsApplicationMenu[] Menus { get; }
 	Image Image32x32 { get; }
 	Image Image8x8 { get; }
 	string HelpFileCHM { get; }
 	bool ShowInMenuStrip { get; }
 	bool ShowInToolStrip { get; }
+	new Type DefaultScreen { get; }
+	new string DefaultScreenTitle => null;
 
-	Type DefaultScreen { get; }
-	string? DefaultScreenTitle => null;
+	string IApplicationBlock.Id => Name;
+	string IApplicationBlock.Name => Name;
+	int IApplicationBlock.Position => Position;
+	Type IApplicationBlock.DefaultScreen => DefaultScreen;
+	string IApplicationBlock.DefaultScreenTitle => DefaultScreenTitle;
+	IApplicationMenu[] IApplicationBlock.Menus => Menus;
 }
-

@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class LoadingCircleTestScreen : ApplicationScreen {
+public partial class LoadingCircleTestScreen : WinFormsApplicationScreen {
 	public LoadingCircleTestScreen() {
 		InitializeComponent();
 	}

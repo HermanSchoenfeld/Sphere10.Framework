@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
-public partial class EmailTestScreen : ApplicationScreen {
+public partial class EmailTestScreen : WinFormsApplicationScreen {
 	private EmailerSettings _settings;
 
 	public EmailTestScreen() {

@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class PadLockTestScreen : ApplicationScreen {
+public partial class PadLockTestScreen : WinFormsApplicationScreen {
 	private readonly TextWriter _outputTextWriter;
 	public PadLockTestScreen() {
 		InitializeComponent();

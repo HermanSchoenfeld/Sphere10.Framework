@@ -6,7 +6,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace SystemExpert.Screens;
 
-public partial class EnvironmentScreen : ApplicationScreen {
+public partial class EnvironmentScreen : WinFormsApplicationScreen {
 	private readonly EnvironmentVariableDataSource _dataSource;
 	private readonly IEnumerable<ICrudGridColumn> _gridBindings;
 

@@ -15,7 +15,7 @@ using Tuple = System.Tuple;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class TextAreaTestsScreen : ApplicationScreen {
+public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 	public TextAreaTestsScreen() {
 		InitializeComponent();
 	}

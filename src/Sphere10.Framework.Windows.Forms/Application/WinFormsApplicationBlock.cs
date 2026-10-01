@@ -6,114 +6,75 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ApplicationBlock : IApplicationBlock {
-	private string _name;
-	private List<IMenu> _menus;
-	private Image _image32x32;
-	private Image _image8x8;
-	private string _helpFile;
-	private bool _showInMenuStrip;
-	private bool _showInToolStrip;
-
-
-	public ApplicationBlock()
+public class WinFormsApplicationBlock : ApplicationBlock, IWinFormsApplicationBlock {
+	public WinFormsApplicationBlock()
 		: this(string.Empty, null, null, null) {
 	}
 
-	public ApplicationBlock(string title, Image image32x32, Image image8x8, string helpFile)
+	public WinFormsApplicationBlock(string title, Image image32x32, Image image8x8, string helpFile)
 		: this(title, image32x32, image8x8, helpFile, null) {
 	}
 
-	public ApplicationBlock(string title, Image image32x32, Image image8x8, string helpFile, Menu[] menus)
+	public WinFormsApplicationBlock(string title, Image image32x32, Image image8x8, string helpFile, WinFormsApplicationMenu[] menus)
 		: this(title, false, false, image32x32, image8x8, helpFile, menus) {
 	}
 
-	public ApplicationBlock(string title, bool showInToolStrip, bool showInMenuStrip, Image image32x32, Image image8x8, string helpFile, Menu[] menus) {
-		_showInMenuStrip = showInMenuStrip;
-		_showInToolStrip = showInToolStrip;
-		_helpFile = helpFile;
-		_name = title;
-		_image32x32 = image32x32;
-		_image8x8 = image8x8;
-		_menus = new List<IMenu>();
-		if (menus != null) {
-			foreach (Menu menu in menus) {
+	public WinFormsApplicationBlock(string title, bool showInToolStrip, bool showInMenuStrip, Image image32x32, Image image8x8, string helpFile, WinFormsApplicationMenu[] menus) {
+		Name = title;
+		ShowInMenuStrip = showInMenuStrip;
+		ShowInToolStrip = showInToolStrip;
+		HelpFileCHM = helpFile;
+		Image32x32 = image32x32;
+		Image8x8 = image8x8;
+		if (menus != null)
+			foreach (var menu in menus)
 				AddMenu(menu);
-			}
-		}
-		Position = 0;
 	}
 
-	public bool ShowInToolStrip {
-		get { return _showInToolStrip; }
-		set { _showInToolStrip = value; }
+	public bool ShowInToolStrip { get; set; }
+
+	public virtual bool ShowInMenuStrip { get; set; }
+
+	public virtual Image Image32x32 { get; set; }
+
+	public Image Image8x8 { get; set; }
+
+	public override IWinFormsApplicationMenu[] Menus => MenuCollection.Cast<IWinFormsApplicationMenu>().ToArray();
+
+	public string HelpFileCHM { get; set; }
+
+	public override void AddMenu(IApplicationMenu menu) {
+		Guard.ArgumentNotNull(menu, nameof(menu));
+		AddMenu(Guard.ArgumentCast<IWinFormsApplicationMenu>(menu, nameof(menu)));
 	}
 
-	public virtual bool ShowInMenuStrip {
-		get { return _showInMenuStrip; }
-		set { _showInMenuStrip = value; }
-	}
-
-	public int Position { get; }
-
-	public virtual string Name {
-		get { return _name; }
-		set { _name = value; }
-	}
-
-	public virtual Image Image32x32 {
-		get { return _image32x32; }
-		set { _image32x32 = value; }
-	}
-
-	public Image Image8x8 {
-		get { return _image8x8; }
-		set { _image8x8 = value; }
-	}
-
-	public virtual IMenu[] Menus {
-		get { return _menus.ToArray(); }
-	}
-
-	public string HelpFileCHM {
-		get { return _helpFile; }
-		set { _helpFile = value; }
-	}
-
-	public Type DefaultScreen { get; set; }
-
-	public string? DefaultScreenTitle { get; set; }
-
-	public virtual void AddMenu(IMenu menu) {
+	public virtual void AddMenu(IWinFormsApplicationMenu menu) {
+		Guard.ArgumentNotNull(menu, nameof(menu));
 		menu.Parent = this;
-		_menus.Add(menu);
+		base.AddMenu(menu);
 	}
 
-	public virtual bool ContainsMenu(IMenu menu) {
-		return _menus.Contains(menu);
+	public override bool ContainsMenu(IApplicationMenu menu) => menu is IWinFormsApplicationMenu nativeMenu && ContainsMenu(nativeMenu);
+
+	public virtual bool ContainsMenu(IWinFormsApplicationMenu menu) => base.ContainsMenu(menu);
+
+	public override void RemoveMenu(IApplicationMenu menu) {
+		if (menu is IWinFormsApplicationMenu nativeMenu)
+			RemoveMenu(nativeMenu);
 	}
 
-	public virtual void RemoveMenu(IMenu menu) {
-		_menus.Remove(menu);
-	}
+	public virtual void RemoveMenu(IWinFormsApplicationMenu menu) => base.RemoveMenu(menu);
 
 	public virtual void Dispose() {
-		foreach (IMenu menu in _menus) {
+		foreach (IWinFormsApplicationMenu menu in MenuCollection)
 			menu.Dispose();
-		}
-		if (_image8x8 != null) {
-			_image8x8.Dispose();
-		}
-		if (_image32x32 != null) {
-			_image32x32.Dispose();
-		}
+		Image8x8?.Dispose();
+		Image32x32?.Dispose();
 	}
-
 }
-

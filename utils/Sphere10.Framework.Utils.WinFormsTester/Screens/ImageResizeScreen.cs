@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ImageResizeScreen : ApplicationScreen {
+public partial class ImageResizeScreen : WinFormsApplicationScreen {
 	private readonly PictureBoxEx[,] Boxes;
 	public ImageResizeScreen() {
 		InitializeComponent();

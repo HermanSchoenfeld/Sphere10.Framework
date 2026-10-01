@@ -8,7 +8,7 @@
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IControlMenuItem : IMenuItem {
+public interface IWinFormsControlMenuItem : IWinFormsApplicationMenuItem {
 	ApplicationControl ControlToShow { get; }
 
 }

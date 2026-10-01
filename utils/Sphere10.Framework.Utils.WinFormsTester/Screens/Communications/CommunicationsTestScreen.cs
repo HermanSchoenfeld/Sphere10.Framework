@@ -18,7 +18,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class CommunicationsTestScreen : ApplicationScreen {
+public partial class CommunicationsTestScreen : WinFormsApplicationScreen {
 	const int NodeDiscoveryPort = 21000;
 	private readonly Timer _reportTimer;
 	private bool _initialized;

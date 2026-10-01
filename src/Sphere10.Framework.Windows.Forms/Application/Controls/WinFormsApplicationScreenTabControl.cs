@@ -15,9 +15,9 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Screen tabs with close buttons, a context menu, reordering and drag-out requests.</summary>
-public class ApplicationScreenTabControl : TabControl {
-	public event EventHandlerEx<ApplicationScreen>? ScreenCloseRequested;
-	public event EventHandlerEx<ApplicationScreen>? ScreenUndockRequested;
+public class WinFormsApplicationScreenTabControl : TabControl {
+	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenCloseRequested;
+	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenUndockRequested;
 
 	private const int LogicalDpi = 96;
 	private const int LogicalHorizontalPadding = 20;
@@ -51,7 +51,7 @@ public class ApplicationScreenTabControl : TabControl {
 	private int _maximumTabWidth = 260;
 	private int _metricsDpi = LogicalDpi;
 
-	public ApplicationScreenTabControl() {
+	public WinFormsApplicationScreenTabControl() {
 		DrawMode = TabDrawMode.OwnerDrawFixed;
 		SizeMode = TabSizeMode.Normal;
 		_metricsDpi = DeviceDpi;
@@ -510,12 +510,12 @@ public class ApplicationScreenTabControl : TabControl {
 	}
 
 	private void RequestClose(TabPage? Page) {
-		if (Page?.Tag is ApplicationScreen Screen)
+		if (Page?.Tag is WinFormsApplicationScreen Screen)
 			ScreenCloseRequested?.Invoke(Screen);
 	}
 
 	private void RequestUndock(TabPage? Page) {
-		if (Page?.Tag is ApplicationScreen Screen)
+		if (Page?.Tag is WinFormsApplicationScreen Screen)
 			ScreenUndockRequested?.Invoke(Screen);
 	}
 

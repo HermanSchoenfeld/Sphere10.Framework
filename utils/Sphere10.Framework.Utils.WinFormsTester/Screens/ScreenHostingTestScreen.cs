@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
-public abstract class ScreenHostingTestScreen : ApplicationScreen {
+public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 	private const int LogicalContentPadding = 16;
 	private const int LogicalInstructionsSpacing = 12;
 	private const int LogicalStatusSpacing = 10;
@@ -120,7 +121,7 @@ public abstract class ScreenHostingTestScreen : ApplicationScreen {
 	}
 
 	private void CloseScreen() {
-		if (FindForm() is ApplicationScreenForm DetachedWindow)
+		if (FindForm() is WinFormsApplicationScreenForm DetachedWindow)
 			DetachedWindow.Close();
 		else if (FindForm() is MainForm MainWindow)
 			MainWindow.ScreenHost.CloseScreen(this);

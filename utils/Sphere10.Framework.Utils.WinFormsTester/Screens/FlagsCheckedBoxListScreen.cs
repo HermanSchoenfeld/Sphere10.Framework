@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 // There is an issue dealing with flags that have value '0'. How is such a flag to be interpreted?
-public partial class FlagsCheckedBoxListScreen : ApplicationScreen {
+public partial class FlagsCheckedBoxListScreen : WinFormsApplicationScreen {
 	private readonly TextWriter _textWriter;
 
 	public FlagsCheckedBoxListScreen() {
