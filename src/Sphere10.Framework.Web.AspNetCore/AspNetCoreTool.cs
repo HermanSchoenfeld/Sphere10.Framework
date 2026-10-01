@@ -6,66 +6,26 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Reflection;
 using Sphere10.Framework;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using IPNetwork = System.Net.IPNetwork;
 
 namespace Tools.Web;
 
 public static partial class AspNetCore {
-
-
 	public static IPNetwork ParseNetwork(string cidr) {
+		Guard.ArgumentNotNullOrWhitespace(cidr, nameof(cidr));
 		var parts = cidr.Split('/');
-		var ipAddressString = parts[0];
-		var prefixLength = int.Parse(parts[1]);
+		Guard.Argument(parts.Length == 2, nameof(cidr), "Expected an IP address and prefix length separated by '/'.");
+		Guard.Argument(IPAddress.TryParse(parts[0], out var address), nameof(cidr), "Invalid IP address.");
+		Guard.Argument(int.TryParse(parts[1], out var prefixLength), nameof(cidr), "Invalid prefix length.");
+		var networkBytes = address.GetAddressBytes();
+		Guard.ArgumentInRange(prefixLength, 0, networkBytes.Length * 8, nameof(cidr));
 
-		var ipAddress = IPAddress.Parse(ipAddressString);
-		var ipAddressBytes = ipAddress.GetAddressBytes();
-
-		var bits = ipAddressBytes.Length * 8;
-		var networkMask = (1 << prefixLength) - 1;
-		var networkBytes = new byte[ipAddressBytes.Length];
-		for (var i = 0; i < ipAddressBytes.Length; i++) {
-			networkBytes[i] = (byte)(ipAddressBytes[i] & (networkMask >> (bits - 8)));
-			bits -= 8;
+		// Clear host bits independently in each byte for both IPv4 and IPv6.
+		for (var index = 0; index < networkBytes.Length; index++) {
+			var prefixBits = (prefixLength - index * 8).ClipTo(0, 8);
+			networkBytes[index] &= (byte)(0xff << (8 - prefixBits));
 		}
-
-		var networkAddress = new IPAddress(networkBytes);
-		var network = new IPNetwork(networkAddress, prefixLength);
-
-		return network;
-	}
-
-	public static SelectList ToSelectList<TEnum>(object selectedItem = default, SortDirection? sort = null) where TEnum : Enum
-		=> ToSelectList(typeof(TEnum), selectedItem, sort);
-
-	public static SelectList ToSelectList(Type enumType, object selectedItem = default, SortDirection? sort = null) {
-		List<SelectListItem> items = new List<SelectListItem>();
-		foreach (Enum item in Enum.GetValues(enumType)) {
-			FieldInfo fi = enumType.GetField(item.ToString());
-			//var attribute =  fi.GetCustomAttributes(typeof(DescriptionAttribute), true).FirstOrDefault();
-			var title = Tools.Enums.GetDescription(item); //  attribute == null ? item.ToString() : ((DescriptionAttribute)attribute).Description;
-			var listItem = new SelectListItem {
-				Value = item.ToString(),
-				Text = title,
-				Selected = selectedItem switch { null => false, _ => selectedItem.Equals(item) }
-			};
-			items.Add(listItem);
-		}
-		if (sort != null) {
-			IComparer<SelectListItem> comparer = new ProjectionComparer<SelectListItem, string>(x => x.Text, StringComparer.InvariantCultureIgnoreCase);
-			if (sort.Value == SortDirection.Descending)
-				comparer = comparer.AsInverted();
-			items.Sort(comparer);
-		}
-
-		return new SelectList(items, "Value", "Text");
+		return new IPNetwork(new IPAddress(networkBytes), prefixLength);
 	}
 }
-
