@@ -9,8 +9,8 @@
 using System;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes;
-public class DataEnd<TInItem, TOutItem> {
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
+public class DataEnd<TInItem, TOutItem> : IBlazorGridLegacyColumn {
 	public string Name { get; set; }
 	public Func<object, object> DataExtractor { get; set; }
 
@@ -25,7 +25,7 @@ public class DataEnd<TInItem, TOutItem> {
 	public void Render(object item, RenderTreeBuilder builder) {
 		var extractedData = (IColumnDefinition)DataExtractor(item);
 		var componentType = extractedData.GetComponentType();
-		dynamic component = Activator.CreateInstance(componentType);
+		var component = Guard.ArgumentCast<IGridComponent<TOutItem>>(componentType.ActivateWithCompatibleArgs(), nameof(componentType));
 		component.Render((TOutItem)extractedData, builder);
 	}
 }

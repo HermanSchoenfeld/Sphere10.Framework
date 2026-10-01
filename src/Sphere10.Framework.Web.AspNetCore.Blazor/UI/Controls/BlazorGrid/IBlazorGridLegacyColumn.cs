@@ -1,14 +1,18 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: David Price
+// Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
-public interface IGridComponent<TItem> {
-	public void Render(TItem item, RenderTreeBuilder builder);
+
+/// <summary>Compatibility contract for the original DataEnd columns. Prefer typed BlazorGridColumn templates for new grids.</summary>
+public interface IBlazorGridLegacyColumn {
+	string Name { get; }
+
+	void Render(object item, RenderTreeBuilder builder);
 }

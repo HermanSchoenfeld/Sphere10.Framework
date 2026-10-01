@@ -9,7 +9,8 @@
 using System;
 using System.Reflection;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
+/// <summary>Retained for legacy cell-based consumers. New grids use BlazorGridColumn and buffered editors.</summary>
 public class Cell {
 	public HeaderData Header { get; set; }
 	public RowData Row { get; set; }
@@ -42,25 +43,6 @@ public class Cell {
 		IsEnum = TypeInfo.IsEnum;
 	}
 
-/*
-	public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, PropertyInfo propertyInfo, int dataIndex) 
-		:this(header, row, typeInfo, propertyInfo, header.Name, dataIndex)
-	{
-	}
-
-	public Cell(HeaderData header, RowData row, ObjectTypeInfo typeInfo, PropertyInfo propertyInfo, object underlyingData, int dataIndex)
-	{
-		Header = header;
-		Row = row;
-		TypeInfo = typeInfo;
-		PropertyInfo = propertyInfo;
-		Tag = underlyingData;
-		DataIndex = dataIndex;
-		IsEnum = TypeInfo.IsEnum;
-
-		Text = GetText();
-	}
-*/
 	public string GetInputType() {
 		switch (TypeInfo.Type.Name.ToLower()) {
 			case "datetime": return "date";
@@ -83,7 +65,6 @@ public class Cell {
 		return string.Empty;
 	}
 
-	// improve this, they way it is called, maybe store the data on the cell
 	public static string GetCellText(object cellData, PropertyInfo property) {
 		var value = property.GetValue(cellData);
 		var typeName = property.PropertyType.Name.ToString();
@@ -92,66 +73,8 @@ public class Cell {
 			default: return value?.ToString() ?? string.Empty;
 		}
 	}
-	/*
-			public string GetText() 
-			{
-				object value;
-				string typeName;
-
-				try 
-				{
-					value = PropertyInfo.GetValue(Tag);
-					typeName = PropertyInfo.PropertyType.Name.ToString();
-					switch (typeName) 
-					{
-						case "DateTime": return ((DateTime)value).ToString("yyyy-MM-dd");
-						default: return value?.ToString() ?? string.Empty;
-					}
-				}
-				catch (Exception ex) 
-				{
-					return "Error";
-				}
-			}
-	*/
-	public void UpdateData(string newValue) {
+		public void UpdateData(string newValue) {
 		var objectValue = Tools.Parser.Parse(TypeInfo.Type, newValue);
 		TypeInfo.PropertyInfo.SetValue(Tag, objectValue);
-/*
-		object objectValue = null;
-
-		if (IsEnum) 
-		{
-			objectValue = Enum.Parse(TypeInfo.Type, newValue);
-		} 
-		else 
-		{
-			switch (TypeInfo.TypeName.ToLower()) 
-			{
-				case "string": objectValue = newValue; break;
-				case "datetime": objectValue = DateTime.Parse(newValue); break;
-				case "decimal": objectValue = decimal.Parse(newValue); break;
-				case "double": objectValue = double.Parse(newValue); break;
-				case "float":
-				case "single:": objectValue = float.Parse(newValue); break;
-				case "long":
-				case "int64": objectValue = long.Parse(newValue); break;
-				case "int":
-				case "int32": objectValue = int.Parse(newValue); break;
-				case "uint": objectValue = uint.Parse(newValue); break;
-				case "short":
-				case "int16": objectValue = short.Parse(newValue); break;
-				case "ushort": objectValue = ushort.Parse(newValue); break;
-				case "bool": objectValue = bool.Parse(newValue); break;
-				case "char": objectValue = char.Parse(newValue); break;
-				case "byte": objectValue = byte.Parse(newValue); break;
-				case "sbyte": objectValue = sbyte.Parse(newValue); break;
-				default: throw new Exception("Cell.UpdateData Unknown Data Type; ");
-			}
-		}
-
-		// handle arrays, IEnumerable, classes, trees of classes
-		TypeInfo.PropertyInfo.SetValue(Tag, objectValue);
-*/
 	}
 }

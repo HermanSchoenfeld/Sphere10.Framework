@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 
 public class ObjectTypeInfo {
 	public ObjectTypeInfo(PropertyInfo propertyInfo) {
@@ -22,7 +22,7 @@ public class ObjectTypeInfo {
 		TypeFullName = Type.FullName;
 		IsEnum = Type.IsEnum;
 		if (IsEnum)
-			EnumValues.AddRange(Type.GetEnumNames());
+			EnumValues = Type.GetEnumNames();
 	}
 
 	public ObjectTypeInfo(string name) {
@@ -42,6 +42,6 @@ public class ObjectTypeInfo {
 
 	public bool IsEnum { get; set; }
 
-	public List<string> EnumValues { get; set; } = new();
+	public string[] EnumValues { get; set; } = Array.Empty<string>();
 }
 

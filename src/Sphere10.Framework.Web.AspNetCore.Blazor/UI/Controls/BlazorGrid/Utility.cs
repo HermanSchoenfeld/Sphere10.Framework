@@ -8,7 +8,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 public static class Utility {
 
 	public static bool IsNullOrEmpty(this string text) {

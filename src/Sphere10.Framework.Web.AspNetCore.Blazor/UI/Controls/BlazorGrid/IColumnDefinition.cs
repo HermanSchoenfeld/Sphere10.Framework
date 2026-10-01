@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 public interface IColumnDefinition {
 	public Type GetComponentType();
 }

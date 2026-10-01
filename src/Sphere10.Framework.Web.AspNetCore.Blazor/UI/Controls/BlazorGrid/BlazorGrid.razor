@@ -7,185 +7,154 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
-@using Microsoft.JSInterop
-@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid.Classes
 @typeparam TItem
-@inject IJSRuntime JSRuntime
 
-<div class="ResizableClass">
-	<button type="button" @onclick="RefreshAsync">Reload</button>
-	<table class="TableClass" style="width: 100%" id="@Id">
-		<thead>
-			<tr>
-				@if (GridType.HasFlag(GridTypes.ActionColumn)) {
-					<th>Actions</th>
-				}
-				@foreach (var header in Header) {
-					<th style="width: @(header.Width)px">@header.Name</th>
+<div class="sphere10-grid" @ref="_element" aria-busy="@IsBusy.ToString().ToLowerInvariant()">
+	<div class="sphere10-grid-toolbar">
+		@if (Can(DataSourceCapabilities.CanSearch)) {
+			<label for="@(Id)-search">Search</label>
+			<input id="@(Id)-search" type="search" @bind="_searchText" @bind:event="oninput" @onkeydown="SearchKeyDownAsync" disabled="@NavigationDisabled" />
+			<button type="button" @onclick="SearchAsync" disabled="@NavigationDisabled">Search</button>
+			<button type="button" @onclick="ClearSearchAsync" disabled="@(NavigationDisabled || string.IsNullOrEmpty(Controller.SearchTerm))">Clear</button>
+		}
+		<button type="button" @onclick="RefreshAsync" disabled="@(NavigationDisabled || !Can(DataSourceCapabilities.CanRead))">Reload</button>
+		@if (Can(DataSourceCapabilities.CanCreate) && (GridType == 0 || GridType.HasFlag(GridTypes.NewItem))) {
+			<button type="button" @onclick="BeginCreateAsync" disabled="@NavigationDisabled">New</button>
+		}
+		@if (Can(DataSourceCapabilities.CanUpdate)) {
+			<button type="button" @onclick="EditSelectedAsync" disabled="@(NavigationDisabled || !Controller.HasSelection)">Edit</button>
+		}
+		@if (Can(DataSourceCapabilities.CanDelete) && Controller.HasSelection) {
+			<button type="button" @onclick="RequestDelete" disabled="@NavigationDisabled">Delete</button>
+		}
+	</div>
+	@if (!string.IsNullOrEmpty(ErrorMessage)) {
+		<div class="sphere10-grid-error" role="alert">@ErrorMessage</div>
+	}
+	@if (Controller.ValidationErrors.Length > 0) {
+		<ul class="sphere10-grid-error" role="alert">
+			@foreach (var error in Controller.ValidationErrors) {
+				<li>@error</li>
+			}
+		</ul>
+	}
+	@if (_confirmDelete) {
+		<div class="sphere10-grid-confirm" role="group" aria-label="Confirm deletion">
+			<span>Delete the selected item?</span>
+			<button type="button" @onclick="ConfirmDeleteAsync" disabled="@IsBusy">Delete item</button>
+			<button type="button" @onclick="CancelDelete" disabled="@IsBusy">Cancel</button>
+		</div>
+	}
+	@if (Controller.IsEditing) {
+		<div class="sphere10-grid-edit-bar" role="group" aria-label="Edit item">
+			<strong>@(Controller.IsNewItem ? "New item" : "Editing selected item")</strong>
+			<button type="button" @onclick="SaveAsync" disabled="@(IsBusy || _editErrors.Count > 0)">Save</button>
+			<button type="button" @onclick="CancelEdit" disabled="@IsBusy">Cancel</button>
+			<span>Changes are saved only when you choose Save.</span>
+		</div>
+	}
+	<div class="sphere10-grid-viewport" style="@(AutoPageSize ? $"height: {Height}px" : null)">
+		<table id="@Id" class="sphere10-grid-table" style="min-width: @(MinimumTableWidth)px">
+			<caption class="sphere10-grid-caption">@Caption</caption>
+			<colgroup>
+				@foreach (var column in _columns) {
+					<col @key="column" data-grid-width="@Math.Max(40, column.Width)" data-grid-expands="@column.ExpandsToFit.ToString().ToLowerInvariant()" style="@ColumnStyle(column)" />
 				}
 				@foreach (var column in ColumnDefinitions) {
-					<th>@GetColumnName(column)</th>
+					<col @key="column" data-grid-width="140" style="width: 140px" />
 				}
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var row in Rows) {
+				@if (ShowActions) {
+					<col data-grid-width="120" style="width: 120px" />
+				}
+			</colgroup>
+
+			<thead>
 				<tr>
-					@if (GridType.HasFlag(GridTypes.ActionColumn)) {
-						<td>
-							@foreach (var action in Actions) {
-								if (action.IsActionAvailable?.Invoke((TItem)row[0].Tag) ?? true) {
-									<button type="button" title="@action.Name" class="btn btn-success ActionButton"
-											@onclick="() => PerformActionAsync(action, (TItem)row[0].Tag)">@action.Name</button>
-								}
-							}
-						</td>
-					}
-					@foreach (var cell in row) {
-						<td style="width: @(cell.Width)px">
-							@if (cell.TypeInfo.Type == typeof(bool)) {
-								<input type="checkbox" checked="@((bool)cell.TypeInfo.PropertyInfo.GetValue(cell.Tag))"
-									   disabled="@(!cell.TypeInfo.PropertyInfo.CanWrite)" @onchange="args => CellDataChangedAsync(args.Value, cell)" />
+					@foreach (var column in _columns) {
+						<th scope="col" aria-sort="@GetAriaSort(column)">
+							@if (Can(DataSourceCapabilities.CanSort) && !string.IsNullOrEmpty(column.SortName)) {
+								<button type="button" class="sphere10-grid-sort" @onclick="() => SortAsync(column)" disabled="@NavigationDisabled">
+									@column.ColumnName
+									@if (Controller.SortProperty == column.SortName) {
+										<span aria-hidden="true">@(Controller.SortDirection == SortDirection.Ascending ? "▲" : "▼")</span>
+									}
+								</button>
 							} else {
-								<input class="ResizableClass" type="@cell.GetInputType()" list="@GetListName(cell)"
-									   value="@cell.Text" readonly="@(!cell.TypeInfo.PropertyInfo.CanWrite)"
-									   @onchange="args => CellDataChangedAsync(args.Value, cell)" />
+								@column.ColumnName
 							}
-						</td>
+							<span class="sphere10-grid-resizer" aria-hidden="true"></span>
+						</th>
 					}
 					@foreach (var column in ColumnDefinitions) {
-						<td>@RenderDataEnd((TItem)row[0].Tag, column)</td>
+						<th scope="col">@GetLegacyColumnName(column)</th>
+					}
+					@if (ShowActions) {
+						<th scope="col">Actions</th>
 					}
 				</tr>
-			}
-		</tbody>
-	</table>
-	<div class="d-flex gap-2 align-items-center">
-		@if (GridType.HasFlag(GridTypes.NewItem)) {
-			<button type="button" @onclick="NewAsync">New</button>
-		}
-		<button type="button" disabled="@(CurrentPage == 0)" @onclick="() => SetPageAsync(0)">First</button>
-		<button type="button" disabled="@(CurrentPage == 0)" @onclick="() => SetPageAsync(CurrentPage - 1)">Previous</button>
-		<input class="PagingInput" aria-label="Current page" type="number" min="1" max="@TotalPages" value="@(CurrentPage + 1)"
-			   @onchange="ChangePageAsync" />
-		<span>of @TotalPages</span>
-		<button type="button" disabled="@(CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(CurrentPage + 1)">Next</button>
-		<button type="button" disabled="@(CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(TotalPages - 1)">Last</button>
+			</thead>
+			<tbody>
+				@if (Controller.IsEditing && Controller.IsNewItem) {
+					<tr class="sphere10-grid-editing" @onkeydown="args => RowKeyDownAsync(Controller.EditingItem, args)">
+						@foreach (var column in _columns) {
+							<td>@RenderEditor(column)</td>
+						}
+						@if (ColumnDefinitions.Length > 0 || ShowActions) {
+							<td colspan="@(ColumnDefinitions.Length + (ShowActions ? 1 : 0))"></td>
+						}
+					</tr>
+				}
+				@foreach (var item in Controller.Items) {
+					var selected = IsSelected(item);
+					var editing = selected && Controller.IsEditing && !Controller.IsNewItem;
+					<tr class="@(selected ? "sphere10-grid-selected" : null)" aria-selected="@selected.ToString().ToLowerInvariant()"
+						tabindex="0" @onclick="args => SelectRowAsync(item, args)" @ondblclick="() => BeginInlineEditAsync(item)" @onkeydown="args => RowKeyDownAsync(item, args)">
+						@foreach (var column in _columns) {
+							<td>
+								@if (editing && column.CanEdit(item)) {
+									@RenderEditor(column)
+								} else if (column.Template != null) {
+									@column.Template(item)
+								} else {
+									@FormatCell(item, column)
+								}
+							</td>
+						}
+						@foreach (var column in ColumnDefinitions) {
+							<td>@RenderLegacyColumn(item, column)</td>
+						}
+						@if (ShowActions) {
+							<td class="sphere10-grid-actions" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+								@foreach (var action in Actions) {
+									if (action.IsActionAvailable?.Invoke(item) ?? true) {
+										<button type="button" title="@action.Name" @onclick="() => PerformActionAsync(action, item)" disabled="@NavigationDisabled">@action.Name</button>
+									}
+								}
+							</td>
+						}
+					</tr>
+				}
+				@if (Controller.Items.Length == 0 && !Controller.IsNewItem) {
+					<tr><td colspan="@ColumnCount" class="sphere10-grid-empty">@(Controller.IsLoading ? "Loading…" : EmptyText)</td></tr>
+				}
+			</tbody>
+		</table>
 	</div>
-	@foreach (var header in Header.Where(cell => cell.TypeInfo.IsEnum)) {
-		<datalist id="@GetListName(header)">
-			@foreach (var enumValue in header.TypeInfo.EnumValues) {
-				<option value="@enumValue"></option>
+	<div class="sphere10-grid-footer">
+		<span role="status">@(Controller.IsLoading ? "Loading…" : $"{TotalDataCount} items")</span>
+		@if (Can(DataSourceCapabilities.CanPage)) {
+			<button type="button" disabled="@(NavigationDisabled || CurrentPage == 0)" @onclick="() => SetPageAsync(0)">First</button>
+			<button type="button" disabled="@(NavigationDisabled || CurrentPage == 0)" @onclick="() => SetPageAsync(CurrentPage - 1)">Previous</button>
+			<label for="@(Id)-page">Page</label>
+			<input id="@(Id)-page" aria-label="Current page" type="number" min="1" max="@TotalPages" value="@(CurrentPage + 1)"
+				disabled="@NavigationDisabled" @onchange="ChangePageAsync" />
+			<span>of @TotalPages</span>
+			<button type="button" disabled="@(NavigationDisabled || CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(CurrentPage + 1)">Next</button>
+			<button type="button" disabled="@(NavigationDisabled || CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(TotalPages - 1)">Last</button>
+			@if (!AutoPageSize) {
+				<label for="@(Id)-page-size">Rows per page</label>
+				<input id="@(Id)-page-size" type="number" min="1" max="9999" value="@Controller.PageSize" disabled="@NavigationDisabled" @onchange="ChangePageSizeAsync" />
 			}
-		</datalist>
-	}
+		}
+	</div>
 </div>
-
-@code {
-	[Flags]
-	public enum GridTypes {
-		DataSupplied = 1,
-		DataOnDemand = 1 << 1,
-		ActionColumn = 1 << 2,
-		NewItem = 1 << 3
-	}
-
-	private readonly List<Cell> Header = new();
-	private readonly List<List<Cell>> Rows = new();
-
-	[Parameter]
-	public string Id { get; set; } = $"sphere10-grid-{Guid.NewGuid():N}";
-
-	[Parameter]
-	public int PageSize { get; set; } = 10;
-
-	[Parameter]
-	public IDataSource<TItem> DataSource { get; set; }
-
-	[Parameter]
-	public GridTypes GridType { get; set; }
-
-	[Parameter]
-	public List<GridAction<TItem>> Actions { get; set; } = new();
-
-	[Parameter]
-	public List<object> ColumnDefinitions { get; set; } = new();
-
-	public int CurrentPage { get; private set; }
-
-	public int TotalDataCount { get; private set; }
-
-	public int TotalPages => Math.Max(1, (int)Math.Ceiling((double)TotalDataCount / PageSize));
-
-	public async Task RefreshAsync() {
-		Guard.Ensure(DataSource != null, "DataSource is required.");
-		Guard.ArgumentGT(PageSize, 0, nameof(PageSize));
-		var response = await DataSource.ReadRangeAsync(string.Empty, PageSize, CurrentPage, string.Empty, SortDirection.Ascending);
-		CurrentPage = response.Page;
-		TotalDataCount = response.TotalCount;
-		DrawGrid(response.Items ?? Array.Empty<TItem>());
-		await InvokeAsync(StateHasChanged);
-	}
-
-	public async Task SetPageAsync(int page) {
-		CurrentPage = Math.Clamp(page, 0, TotalPages - 1);
-		await RefreshAsync();
-	}
-
-	protected override Task OnParametersSetAsync() {
-		Guard.ArgumentNotNullOrEmpty(Id, nameof(Id));
-		Guard.ArgumentNotNull(Actions, nameof(Actions));
-		Guard.ArgumentNotNull(ColumnDefinitions, nameof(ColumnDefinitions));
-		return RefreshAsync();
-	}
-
-	protected override async Task OnAfterRenderAsync(bool firstRender) {
-		await LoadJavascript();
-	}
-
-	public Task LoadJavascript() => JSRuntime.InvokeVoidAsync("ResizableColumnTable", Id).AsTask();
-
-	private void DrawGrid(IEnumerable<TItem> items) {
-		Header.Clear();
-		Rows.Clear();
-		var properties = typeof(TItem).GetProperties().Where(property => property.CanRead && property.GetIndexParameters().Length == 0).ToArray();
-		foreach (var property in properties) {
-			var name = Utility.AddSpacesForCamelCase(property.Name);
-			Header.Add(new Cell(new HeaderData(name, HeaderData.DefaultWidth), new RowData(20), new ObjectTypeInfo(property), name, null, Header.Count));
-		}
-		foreach (var item in items) {
-			var row = new List<Cell>();
-			for (var index = 0; index < properties.Length; index++) {
-				var header = Header[index];
-				row.Add(new Cell(header.Header, header.Row, header.TypeInfo, Cell.GetCellText(item, properties[index]), item, index));
-			}
-			Rows.Add(row);
-		}
-	}
-
-	private async Task CellDataChangedAsync(object value, Cell cell) {
-		cell.UpdateData(value?.ToString() ?? string.Empty);
-		await DataSource.UpdateAsync((TItem)cell.Tag);
-		await RefreshAsync();
-	}
-
-	private async Task NewAsync() {
-		await DataSource.CreateAsync(DataSource.New());
-		await RefreshAsync();
-	}
-
-	private async Task PerformActionAsync(GridAction<TItem> action, TItem item) {
-		action.ActionWork(item);
-		await RefreshAsync();
-	}
-
-	private Task ChangePageAsync(ChangeEventArgs args) =>
-		int.TryParse(args.Value?.ToString(), out var page) ? SetPageAsync(page - 1) : Task.CompletedTask;
-
-	private string GetListName(Cell cell) => cell.TypeInfo.IsEnum ? $"{Id}-values-{cell.DataIndex}" : null;
-
-	private static string GetColumnName(object column) => ((dynamic)column).Name;
-
-	private static RenderFragment RenderDataEnd(TItem item, object column) => builder => ((dynamic)column).Render(item, builder);
-}
-

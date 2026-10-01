@@ -1,0 +1,60 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+@typeparam TItem
+
+<div @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
+	@if (ValueType.IsEnum || ValueType == typeof(bool) && IsNullable) {
+		<select aria-label="@Context.Column.ColumnName" value="@InputValue" @onchange="ChangeAsync" disabled="@Disabled">
+			@if (IsNullable) {
+				<option value="">(None)</option>
+			}
+			@if (ValueType == typeof(bool)) {
+				<option value="True">Yes</option>
+				<option value="False">No</option>
+			} else {
+				@foreach (var name in ValueType.GetEnumNames()) {
+					<option value="@name">@name</option>
+				}
+			}
+		</select>
+	} else if (ValueType == typeof(bool)) {
+		<input type="checkbox" aria-label="@Context.Column.ColumnName" checked="@(Context.Value is true)" @onchange="ChangeAsync" disabled="@Disabled" />
+	} else {
+		<input type="@Tools.BlazorGrid.GetInputType(Context.Column.DataType)" aria-label="@Context.Column.ColumnName" value="@InputValue"
+			step="any" @onchange="ChangeAsync" disabled="@Disabled" />
+	}
+</div>
+
+@code {
+	private string _input;
+	private object _lastValue;
+
+	[Parameter] public BlazorGridCellEditContext<TItem> Context { get; set; }
+
+	[Parameter] public bool Disabled { get; set; }
+
+	private Type ValueType => Nullable.GetUnderlyingType(Context.Column.DataType) ?? Context.Column.DataType;
+
+	private bool IsNullable => Nullable.GetUnderlyingType(Context.Column.DataType) != null;
+
+	private string InputValue => _input ?? Tools.BlazorGrid.FormatValue(Context.Value, Context.Column.DataType);
+
+	protected override void OnParametersSet() {
+		if (!Equals(_lastValue, Context.Value)) {
+			_lastValue = Context.Value;
+			_input = null;
+		}
+	}
+
+	private async Task ChangeAsync(ChangeEventArgs args) {
+		_input = args.Value?.ToString() ?? string.Empty;
+		await Context.ValueChanged.InvokeAsync(args.Value);
+	}
+}

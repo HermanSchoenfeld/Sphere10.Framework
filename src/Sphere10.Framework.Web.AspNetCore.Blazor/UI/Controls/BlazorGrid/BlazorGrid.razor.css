@@ -1,0 +1,82 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+
+.sphere10-grid {
+	min-width: 0;
+	max-width: 100%;
+	--grid-border: var(--sphere10-border, #d5dce5);
+	--grid-accent: var(--sphere10-focus, #1263a1);
+	color: var(--sphere10-text, inherit);
+	font: inherit;
+	border: 1px solid var(--grid-border);
+	border-radius: .4rem;
+	background: var(--sphere10-surface, #fff);
+}
+.sphere10-grid-toolbar, .sphere10-grid-footer, .sphere10-grid-edit-bar, .sphere10-grid-confirm {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .5rem;
+	padding: .65rem;
+}
+.sphere10-grid-toolbar, .sphere10-grid-edit-bar, .sphere10-grid-confirm {
+	border-bottom: 1px solid var(--grid-border);
+}
+.sphere10-grid-footer { border-top: 1px solid var(--grid-border); }
+.sphere10-grid-toolbar label, .sphere10-grid-footer label { margin: 0; }
+.sphere10-grid button, .sphere10-grid input, .sphere10-grid select {
+	font: inherit;
+	border: 1px solid var(--sphere10-border-strong, #adb9c8);
+	border-radius: .25rem;
+	padding: .25rem .5rem;
+	background: var(--sphere10-surface, #fff);
+	color: var(--sphere10-text, #172f47);
+}
+.sphere10-grid button:not(:disabled):hover { background: var(--sphere10-hover, #eaf3fa); }
+.sphere10-grid button:disabled { opacity: .5; cursor: default; }
+.sphere10-grid button:focus-visible, .sphere10-grid input:focus-visible, .sphere10-grid select:focus-visible, .sphere10-grid tr:focus-visible {
+	outline: 2px solid var(--grid-accent);
+	outline-offset: 2px;
+}
+.sphere10-grid-viewport { min-width: 0; max-width: 100%; overflow: auto; }
+.sphere10-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.sphere10-grid-table th, .sphere10-grid-table td {
+	box-sizing: border-box;
+	padding: .5rem .6rem;
+	border-bottom: 1px solid var(--sphere10-border, #e4e9f0);
+	text-align: left;
+	vertical-align: middle;
+	overflow-wrap: anywhere;
+}
+.sphere10-grid-table th {
+	position: sticky;
+	top: 0;
+	background: var(--sphere10-surface-raised, #edf2f7);
+	z-index: 1;
+	font-weight: 600;
+}
+.sphere10-grid-table tbody tr:hover { background: var(--sphere10-hover, #f5f8fc); }
+.sphere10-grid-table tbody tr.sphere10-grid-selected { background: var(--sphere10-selected, #deeffd); }
+.sphere10-grid-table tbody tr.sphere10-grid-editing { background: var(--sphere10-editing, #f2f8ed); }
+.sphere10-grid-table .sphere10-grid-empty { padding: 2rem; text-align: center; color: var(--sphere10-muted, #58687b); }
+.sphere10-grid-table .sphere10-grid-sort { background: transparent; border: 0; padding: 0; text-align: left; }
+.sphere10-grid-resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; touch-action: none; }
+.sphere10-grid-resizer:hover { background: var(--sphere10-accent, #1263a160); }
+.sphere10-grid-footer input { width: 5rem; }
+.sphere10-grid-footer [role="status"] { margin-right: auto; }
+.sphere10-grid-error { color: var(--sphere10-danger, #a51c30); padding: .5rem .8rem; }
+.sphere10-grid-confirm { background: var(--sphere10-warning-background, #fff6e2); }
+.sphere10-grid-edit-bar { background: var(--sphere10-hover, #eaf3fa); }
+.sphere10-grid-caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.sphere10-grid ::deep .sphere10-grid-editor > input:not([type="checkbox"]), .sphere10-grid ::deep .sphere10-grid-editor > select { width: 100%; min-width: 3rem; }
+.sphere10-grid ::deep .sphere10-grid-editor > input, .sphere10-grid ::deep .sphere10-grid-editor > select { border: 1px solid var(--sphere10-border-strong, #adb9c8); padding: .25rem; border-radius: .2rem; }
+.sphere10-grid ::deep .sphere10-grid-editor > .sphere10-grid-error { display: block; padding: .25rem 0; }
+.sphere10-grid-actions button { margin: .1rem; }
+.sphere10-grid ::deep fieldset.sphere10-grid-editor { border: 0; margin: 0; padding: 0; min-width: 0; }
