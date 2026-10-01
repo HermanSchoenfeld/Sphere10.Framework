@@ -11,19 +11,18 @@
 @inherits WizardStep<NewWidgetModel, WidgetDimensionsStepViewModel>
 
 <EditForm Model="ViewModel.Model">
-
-    <div class="form-group">
-        <label for="Name">Height</label>
-        <InputNumber id="Name" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Height"/>
-    </div>
-
-    <div class="form-group">
-        <label for="Description">Length</label>
-        <InputNumber id="Description" class="form-control form-control-sm" @bind-Value="ViewModel.Model.Length"/>
-    </div>
-
+	<div class="row g-3">
+		<div class="col-12 col-sm-6">
+			<label for="widget-height" class="form-label">Height</label>
+			<InputNumber id="widget-height" class="form-control" @bind-Value="ViewModel.Model.Height" />
+		</div>
+		<div class="col-12 col-sm-6">
+			<label for="widget-length" class="form-label">Length</label>
+			<InputNumber id="widget-length" class="form-control" @bind-Value="ViewModel.Model.Length" />
+		</div>
+	</div>
 </EditForm>
 
 @code {
-    public override string Title { get; } = "Properties";
+	public override string Title { get; } = "Properties";
 }

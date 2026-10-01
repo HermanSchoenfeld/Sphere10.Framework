@@ -8,59 +8,46 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard
 @inherits WizardStep<NewWalletModel>
 
-<h6 class="mb-3">Select wallet type</h6>
 <EditForm Model="Model">
-    <fieldset class="form-group">
-        <div class="row">
-            <label class="col-form-label col-auto pt-sm-0">Wallet type:</label>
-            <div class="col-sm-9">
-                <div class="custom-controls-stacked">
-                    <InputRadioGroup @bind-Value="@Model.Type">
-                        <label class="custom-control custom-radio">
-                            <InputRadio class="custom-control-input" checked="" Value="WalletType.Standard"/>
-                            <span class="custom-control-label">Standard</span>
-                        </label>
-
-                        <label class="custom-control custom-radio">
-                            <InputRadio class="custom-control-input" checked="" Value="WalletType.Restore"/>
-                            <span class="custom-control-label">Restored</span>
-                        </label>
-                    </InputRadioGroup>
-                </div>
-            </div>
-        </div>
-    </fieldset>
+	<fieldset>
+		<legend class="fs-6">Wallet type</legend>
+		<InputRadioGroup @bind-Value="Model.Type">
+			<div class="form-check mb-2">
+				<InputRadio id="wallet-standard" class="form-check-input" Value="WalletType.Standard" />
+				<label for="wallet-standard" class="form-check-label">Standard</label>
+			</div>
+			<div class="form-check">
+				<InputRadio id="wallet-restored" class="form-check-input" Value="WalletType.Restore" />
+				<label for="wallet-restored" class="form-check-label">Restored</label>
+			</div>
+		</InputRadioGroup>
+	</fieldset>
 </EditForm>
 
-
 @code {
-    public override string Title { get; } = "Wallet Type";
+	public override string Title { get; } = "Wallet Type";
 
-    protected override void OnParametersSet() {
-        IsCancellable = false;
-        base.OnParametersSet();
-    }
 
-    public override Task<Result> OnNextAsync() {
-        if (Model.Type is WalletType.Standard) {
-            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
-                typeof(PasswordStep),
-                typeof(SummaryStep)
-            });
-        }
-        if (Model.Type is WalletType.Restore) {
-            Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
-                typeof(RestoreStep),
-                typeof(SummaryStep)
-            });
-        }
+	public override Task<Result> OnNextAsync() {
+		if (Model.Type is WalletType.Standard) {
+			Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
+				typeof(PasswordStep),
+				typeof(SummaryStep)
+			});
+		}
+		if (Model.Type is WalletType.Restore) {
+			Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
+				typeof(RestoreStep),
+				typeof(SummaryStep)
+			});
+		}
 
-        return Task.FromResult(Result.Success);
-    }
+		return Task.FromResult(Result.Success);
+	}
 
-    public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
+	public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
 
 }

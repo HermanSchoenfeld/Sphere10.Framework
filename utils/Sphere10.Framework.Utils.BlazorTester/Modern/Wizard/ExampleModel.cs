@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.BlazorTester.Modern.Logic.Wizard;
+namespace Sphere10.Framework.Utils.BlazorTester.Modern.Wizard;
 
 public class ExampleModel {
 	public int EvenNumber { get; set; }

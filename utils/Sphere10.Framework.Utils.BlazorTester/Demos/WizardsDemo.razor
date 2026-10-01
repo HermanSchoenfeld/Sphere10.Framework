@@ -1,0 +1,44 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@inject ViewService ViewService
+
+<section class="demo-example" data-demo="wizards">
+	<h2>Branching wallet wizard</h2>
+	<p>Choose a wallet name and type, follow its steps, and review the result. This example does not create or persist a wallet.</p>
+	<div class="form-check mb-3">
+		<input id="wallet-allow-cancellation" type="checkbox" class="form-check-input" @bind="_allowCancellation" />
+		<label for="wallet-allow-cancellation" class="form-check-label">Allow cancellation</label>
+	</div>
+	<button type="button" class="btn btn-primary" @onclick="WizardAsync"><i class="fas fa-magic" aria-hidden="true"></i> New Wallet</button>
+	<p role="status">@_result</p>
+</section>
+
+@code {
+	private string _result;
+	private bool _allowCancellation = true;
+
+	private async Task WizardAsync() {
+		var wizard = new DefaultWizardBuilder<NewWalletModel>()
+			.NewWizard("New Wallet")
+			.WithCancellation(_allowCancellation)
+			.AddStep<WalletNameStep>()
+			.AddStep<WalletTypeStep>()
+			.AddStep<SummaryStep>()
+			.WithModel(new NewWalletModel())
+			.OnFinished(model => {
+				_result = $"Demo wallet '{model.Name}' completed ({model.Type}). No wallet is stored.";
+				return Task.FromResult<Result<bool>>(true);
+			})
+			.Build();
+		await ViewService.WizardDialogAsync(wizard);
+	}
+
+}

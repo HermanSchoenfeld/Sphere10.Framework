@@ -29,11 +29,10 @@ public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetMod
 	public override async Task<Result> OnNextAsync() {
 		ValidationResult result = await Validator.ValidateAsync(Model);
 
-		if (result.IsValid) {
-			if (Model.AreDimensionsKnown) {
-				Wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(WidgetDimensionsStep) });
-			}
-		}
+		if (result.IsValid)
+			Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, Model.AreDimensionsKnown
+				? new[] { typeof(WidgetDimensionsStep), typeof(NewWidgetSummaryStep) }
+				: new[] { typeof(NewWidgetSummaryStep) });
 
 		return result.ToResult();
 	}

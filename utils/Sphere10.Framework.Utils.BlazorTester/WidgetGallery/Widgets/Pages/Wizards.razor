@@ -12,38 +12,38 @@
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Services
 @inherits ComponentWithViewModel<WizardsViewModel>
 
-<button @onclick="ShowWizardAsync" class="btn-primary btn btn-sm"> New Widget</button>
+<h1>Legacy widget wizard</h1><p>Original wizard steps and widget validation.</p>
+<div class="form-check mb-3">
+	<input id="widget-allow-cancellation" type="checkbox" class="form-check-input" @bind="ViewModel.AllowCancellation" />
+	<label for="widget-allow-cancellation" class="form-check-label">Allow cancellation</label>
+</div>
+<button type="button" @onclick="ShowWizardAsync" class="btn btn-primary">New Widget</button>
 
 <table class="table table-borderless">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Price</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var widget in ViewModel.Widgets) {
-        <tr>
-            <td>@widget.Name</td>
-            <td>@widget.Description</td>
-            <td>@widget.Price</td>
-        </tr>
-    }
-    </tbody>
+	<thead>
+	<tr>
+		<th>Name</th>
+		<th>Description</th>
+		<th>Price</th>
+	</tr>
+	</thead>
+	<tbody>
+	@foreach (var widget in ViewModel.Widgets) {
+		<tr>
+			<td>@widget.Name</td>
+			<td>@widget.Description</td>
+			<td>@widget.Price</td>
+		</tr>
+	}
+	</tbody>
 </table>
 
-@code
-{
-    [Inject]
-    // ReSharper disable once UnusedAutoPropertyAccessor.Local
-    private IModalService ModalService { get; set; }
+@code {
+	[Inject]
+	// ReSharper disable once UnusedAutoPropertyAccessor.Local
+	private IModalService ModalService { get; set; }
 
-    private async Task ShowWizardAsync() {
-        await ModalService.ShowWizardAsync(ViewModel.NewWidetWizard(), new Dictionary<string, object>() {
-            {
-                nameof(WizardModal.Height), (375, 500)
-            }
-        });
-    }
+	private async Task ShowWizardAsync() {
+		await ModalService.ShowWizardAsync(ViewModel.NewWidetWizard());
+	}
 }

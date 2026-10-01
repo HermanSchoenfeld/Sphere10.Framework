@@ -1,0 +1,40 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@inject ViewService ViewService
+
+<section class="demo-example" data-demo="dialogs">
+	<h2>Awaited dialogs</h2>
+	<p>Open information, confirmation or custom content. Each dialog returns control to its caller when closed.</p>
+	<div class="d-flex flex-wrap gap-2">
+		<button type="button" class="btn btn-primary" @onclick="ConfirmAsync"><i class="fas fa-question-circle" aria-hidden="true"></i> Confirm dialog</button>
+		<button type="button" class="btn btn-info" @onclick="InformationAsync"><i class="fas fa-info-circle" aria-hidden="true"></i> Information dialog</button>
+		<button type="button" class="btn btn-secondary" @onclick="CustomAsync"><i class="fas fa-window-maximize" aria-hidden="true"></i> Custom dialog</button>
+	</div>
+	<p role="status">@_result</p>
+</section>
+
+@code {
+	private string _result;
+
+	private async Task ConfirmAsync() =>
+		_result = await ViewService.ConfirmDialogAsync("Confirm", "Continue with the demonstration?", "Continue") ? "Confirmed" : "Cancelled";
+
+	private Task InformationAsync() => ViewService.DialogAsync("Information", "Sphere10 dialogs share the application theme and modal host.");
+
+	private Task CustomAsync() {
+		RenderFragment body = builder => {
+			builder.OpenElement(0, "p");
+			builder.AddContent(1, "This dialog hosts an arbitrary render fragment.");
+			builder.CloseElement();
+		};
+		return ViewService.DialogAsync(body, "Custom content");
+	}
+}

@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
@@ -17,6 +18,8 @@ using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 namespace Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.ViewModels;
 
 public class WizardsViewModel : ComponentViewModelBase {
+	private readonly List<NewWidgetModel> _widgets = new();
+
 	/// <summary>
 	/// Gets the wizard builder.
 	/// </summary>
@@ -25,7 +28,9 @@ public class WizardsViewModel : ComponentViewModelBase {
 	/// <summary>
 	/// Gets list of widgets 
 	/// </summary>
-	public List<NewWidgetModel> Widgets { get; } = new();
+	public NewWidgetModel[] Widgets => _widgets.ToArray();
+
+	public bool AllowCancellation { get; set; } = true;
 
 	/// <summary>
 	/// Wizards view model
@@ -44,13 +49,9 @@ public class WizardsViewModel : ComponentViewModelBase {
 			.WithModel(new NewWidgetModel())
 			.AddStep<NewWidgetWizardStep>()
 			.AddStep<NewWidgetSummaryStep>()
-			.OnCancelled(modal => {
-				var result = new Result<bool>(false);
-				result.AddError("Cancel not allowed!");
-				return Task.FromResult(result);
-			})
+			.WithCancellation(AllowCancellation)
 			.OnFinished(model => {
-				Widgets.Add(model);
+				_widgets.Add(model);
 				return Task.FromResult<Result<bool>>(true);
 			})
 			.Build();
