@@ -13,7 +13,7 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 // ReSharper disable once CheckNamespace
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.PluginManagerTests;
 
-internal class TestPluginLocator : IPluginLocator {
+internal class TestPluginLocator : IBlazorRoutedPluginLocator {
 	public IEnumerable<Type> LocatePlugins() {
 		return new[] { typeof(TestPlugin) };
 	}

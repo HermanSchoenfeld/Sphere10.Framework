@@ -8,22 +8,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Application block
 /// </summary>
-public class AppBlock : IAppBlock {
+public class BlazorRoutedApplicationBlock : IBlazorRoutedApplicationBlock {
+	private readonly IBlazorRoutedApplicationPage[] _appBlockPages;
+
 	/// <summary>
-	/// Initializes a new instance of the <see cref="AppBlock"/> class.
+	/// Initializes a new instance of the <see cref="BlazorRoutedApplicationBlock"/> class.
 	/// </summary>
 	/// <param name="name"> name</param>
 	/// <param name="appBlockPages"> pages</param>
 	/// <param name="icon"> icon</param>
-	public AppBlock(string name, string icon, IEnumerable<IAppBlockPage> appBlockPages) {
+	public BlazorRoutedApplicationBlock(string name, string icon, IEnumerable<IBlazorRoutedApplicationPage> appBlockPages) {
 		Name = name ?? throw new ArgumentNullException(nameof(name));
-		AppBlockPages = appBlockPages ?? throw new ArgumentNullException(nameof(appBlockPages));
+		Guard.ArgumentNotNull(appBlockPages, nameof(appBlockPages));
+		_appBlockPages = appBlockPages.ToArray();
 		Icon = icon ?? throw new ArgumentNullException(nameof(icon));
 	}
 
@@ -33,7 +37,7 @@ public class AppBlock : IAppBlock {
 	public string Name { get; }
 
 	/// <inheritdoc />
-	public IEnumerable<IAppBlockPage> AppBlockPages { get; }
+	public IBlazorRoutedApplicationPage[] AppBlockPages => Tools.Array.Clone(_appBlockPages);
 
 	/// <summary>
 	/// Gets the icon font-awesome ccs classes for this app block.

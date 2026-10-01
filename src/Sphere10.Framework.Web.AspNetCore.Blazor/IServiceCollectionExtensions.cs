@@ -42,11 +42,11 @@ public static class IServiceCollectionExtensions {
 	/// Registers navigation services using the application's plugin locator.
 	/// </summary>
 	public static IServiceCollection AddSphere10BlazorPlugins<TPluginLocator>(this IServiceCollection services)
-		where TPluginLocator : class, IPluginLocator {
+		where TPluginLocator : class, IBlazorRoutedPluginLocator {
 		Guard.ArgumentNotNull(services, nameof(services));
-		services.TryAddScoped<IPluginLocator, TPluginLocator>();
-		services.TryAddScoped<IPluginManager, DefaultPluginManager>();
-		services.TryAddScoped<IAppManager, DefaultAppManager>();
+		services.TryAddScoped<IBlazorRoutedPluginLocator, TPluginLocator>();
+		services.TryAddScoped<IBlazorRoutedPluginManager, DefaultBlazorRoutedPluginManager>();
+		services.TryAddScoped<IBlazorRoutedApplicationManager, DefaultBlazorRoutedApplicationManager>();
 		return services;
 	}
 

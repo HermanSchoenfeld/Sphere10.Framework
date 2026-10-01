@@ -6,19 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
-/// Plugin base
+/// BlazorRoutedPlugin base
 /// </summary>
-public abstract class Plugin : IPlugin {
+public abstract class BlazorRoutedPlugin : IBlazorRoutedPlugin {
 	/// <summary>
 	/// Gets the applications this plugin provides.
 	/// </summary>
-	public abstract IEnumerable<IApp> Apps { get; }
+	public abstract IBlazorRoutedApplication[] Apps { get; }
 
 	/// <summary>
 	/// Configure this plugin's services. Automatically configures view model services.

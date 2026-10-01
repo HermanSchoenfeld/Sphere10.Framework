@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 /// <summary>
 /// Menu item extensions
 /// </summary>
-public static class MenuItemExtensions {
+public static class BlazorRoutedMenuItemExtensions {
 	/// <summary>
 	/// Merges a collection of menu items, producing a new collection that contains both merged. Original
 	/// menu collection and items should be unchanged (Pure Function). If the first list contains an item with the same header, then it will be unchanged. Recursively merges
@@ -25,32 +25,20 @@ public static class MenuItemExtensions {
 	/// <param name="target"></param>
 	/// <exception cref="ArgumentNullException"></exception>
 	/// <returns> merged list</returns>
-	public static IEnumerable<MenuItem> Merge(this IEnumerable<MenuItem> items, IEnumerable<MenuItem> target) {
-		if (items == null) {
-			throw new ArgumentNullException(nameof(items));
-		}
-
-		List<MenuItem> result = items.Copy().ToList();
-		return MergeInner(result, target);
-
-		IEnumerable<MenuItem> MergeInner(List<MenuItem> a, IEnumerable<MenuItem> b) {
-			if (a == null)
-				throw new ArgumentNullException(nameof(a));
-			if (b == null)
-				throw new ArgumentNullException(nameof(b));
-
-			foreach (MenuItem menuItem in b) {
-				MenuItem? match = a.FirstOrDefault(x => x.Heading == menuItem.Heading);
-
-				if (match is null) {
-					a.Add(menuItem);
-				} else {
-					MergeInner(match.Children, menuItem.Children);
-				}
+	public static IEnumerable<BlazorRoutedMenuItem> Merge(this IEnumerable<BlazorRoutedMenuItem> items, IEnumerable<BlazorRoutedMenuItem> target) {
+		Guard.ArgumentNotNull(items, nameof(items));
+		Guard.ArgumentNotNull(target, nameof(target));
+		var result = items.Copy().ToList();
+		foreach (var menuItem in target) {
+			var index = result.FindIndex(item => item.Heading == menuItem.Heading);
+			if (index < 0) {
+				result.Add(new BlazorRoutedMenuItem(menuItem.Heading, menuItem.Route, menuItem.Children.Copy().ToList(), menuItem.IconPath));
+				continue;
 			}
-
-			return a;
+			var match = result[index];
+			result[index] = new BlazorRoutedMenuItem(match.Heading, match.Route, match.Children.Merge(menuItem.Children).ToList(), match.IconPath);
 		}
+		return result;
 	}
 
 	/// <summary>
@@ -58,11 +46,11 @@ public static class MenuItemExtensions {
 	/// </summary>
 	/// <param name="target"> to be copied</param>
 	/// <returns> copied</returns>
-	public static IEnumerable<MenuItem> Copy(this IEnumerable<MenuItem> target) {
-		List<MenuItem> menu = new();
+	public static IEnumerable<BlazorRoutedMenuItem> Copy(this IEnumerable<BlazorRoutedMenuItem> target) {
+		List<BlazorRoutedMenuItem> menu = new();
 
-		foreach (MenuItem item in target) {
-			menu.Add(new MenuItem(item.Heading, item.Route, item.Children.Copy().ToList(), item.IconPath));
+		foreach (BlazorRoutedMenuItem item in target) {
+			menu.Add(new BlazorRoutedMenuItem(item.Heading, item.Route, item.Children.Copy().ToList(), item.IconPath));
 		}
 
 		return menu;

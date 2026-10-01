@@ -21,28 +21,28 @@ public class BlockMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// <summary>
 	/// Gets the app manager
 	/// </summary>
-	private IAppManager AppManager { get; }
+	private IBlazorRoutedApplicationManager AppManager { get; }
 
 	/// <summary>
 	/// Gets or sets the selected app.
 	/// </summary>
-	public IApp SelectedApp { get; set; }
+	public IBlazorRoutedApplication SelectedApp { get; set; }
 
 	/// <summary>
 	/// Gets or sets the selected app block.
 	/// </summary>
-	public IAppBlock SelectedAppBlock { get; set; }
+	public IBlazorRoutedApplicationBlock SelectedAppBlock { get; set; }
 
 	/// <summary>
 	/// Gets the app blocks for the selected app
 	/// </summary>
-	public IEnumerable<IAppBlock> AppBlocks => SelectedApp?.AppBlocks ?? Enumerable.Empty<IAppBlock>();
+	public IBlazorRoutedApplicationBlock[] AppBlocks => SelectedApp?.AppBlocks ?? Array.Empty<IBlazorRoutedApplicationBlock>();
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BlockMenuViewModel"/> class.
 	/// </summary>
 	/// <param name="appManager"></param>
-	public BlockMenuViewModel(IAppManager appManager) {
+	public BlockMenuViewModel(IBlazorRoutedApplicationManager appManager) {
 		Guard.ArgumentNotNull(appManager, nameof(appManager));
 		AppManager = appManager;
 		AppManager.AppSelected += AppManagerOnAppSelected;
@@ -60,7 +60,7 @@ public class BlockMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	private void AppManagerOnAppBlockPageSelected(object sender, AppBlockPageSelectedEventArgs e) {
+	private void AppManagerOnAppBlockPageSelected(object sender, BlazorRoutedApplicationPageSelectedEventArgs e) {
 		SelectedAppBlock = AppManager.SelectedApp.AppBlocks.First(x =>
 			x.AppBlockPages.Any(y => y.Route == e.AppBlockPage.Route));
 		StateHasChangedDelegate?.Invoke();
@@ -71,7 +71,7 @@ public class BlockMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	private void AppManagerOnAppSelected(object sender, AppSelectedEventArgs e) {
+	private void AppManagerOnAppSelected(object sender, BlazorRoutedApplicationSelectedEventArgs e) {
 		SelectedApp = e.SelectedApp;
 		StateHasChangedDelegate?.Invoke();
 	}

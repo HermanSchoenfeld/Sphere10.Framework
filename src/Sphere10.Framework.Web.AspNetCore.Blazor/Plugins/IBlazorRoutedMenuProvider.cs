@@ -6,15 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-public interface IMenuProvider {
+public interface IBlazorRoutedMenuProvider {
 	/// <summary>
 	/// Gets this apps menu items.
 	/// </summary>
-	IEnumerable<MenuItem> MenuItems { get; }
+	BlazorRoutedMenuItem[] MenuItems { get; }
 }
 
 

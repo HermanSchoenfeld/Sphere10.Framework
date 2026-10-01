@@ -6,7 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
@@ -15,11 +14,11 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 /// VelocityNET application plugin. VelocityNET client application will locate implementations of this
 /// interface and 
 /// </summary>
-public interface IPlugin {
+public interface IBlazorRoutedPlugin {
 	/// <summary>
 	/// Gets the applications this plugin provides.
 	/// </summary>
-	IEnumerable<IApp> Apps { get; }
+	IBlazorRoutedApplication[] Apps { get; }
 
 	/// <summary>
 	/// Configure the service collection with this plugin's services.

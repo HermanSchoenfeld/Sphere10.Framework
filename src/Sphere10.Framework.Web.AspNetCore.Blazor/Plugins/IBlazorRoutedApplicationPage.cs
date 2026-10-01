@@ -10,9 +10,9 @@
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
-/// App block page
+/// BlazorRoutedApplication block page
 /// </summary>
-public interface IAppBlockPage : IRoutablePage, INamedItem, IIconItem, IMenuProvider {
+public interface IBlazorRoutedApplicationPage : IRoutablePage, INamedItem, IIconItem, IBlazorRoutedMenuProvider {
 }
 
 

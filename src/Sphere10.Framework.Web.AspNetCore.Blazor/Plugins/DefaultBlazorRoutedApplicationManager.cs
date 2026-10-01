@@ -11,38 +11,39 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
-/// App manager
+/// BlazorRoutedApplication manager
 /// </summary>
-public class DefaultAppManager : IAppManager, IDisposable {
+public class DefaultBlazorRoutedApplicationManager : IBlazorRoutedApplicationManager, IDisposable {
 	/// <summary>
 	/// Raised when an app is selected
 	/// </summary>
-	public event EventHandler<AppSelectedEventArgs>? AppSelected;
+	public event EventHandler<BlazorRoutedApplicationSelectedEventArgs>? AppSelected;
 
 	/// <summary>
 	/// Raised when an app block page is selected
 	/// </summary>
-	public event EventHandler<AppBlockPageSelectedEventArgs>? AppBlockPageSelected;
+	public event EventHandler<BlazorRoutedApplicationPageSelectedEventArgs>? AppBlockPageSelected;
+
+	private readonly IBlazorRoutedApplication[] _apps;
 
 	/// <summary>
 	/// Gets the available apps.
 	/// </summary>
-	public IEnumerable<IApp> Apps { get; }
+	public IBlazorRoutedApplication[] Apps => Tools.Array.Clone(_apps);
 
 	/// <summary>
 	/// Gets or sets the selected app.
 	/// </summary>
-	public IApp? SelectedApp { get; private set; }
+	public IBlazorRoutedApplication? SelectedApp { get; private set; }
 
 	/// <summary>
 	/// Gets the selected app block page
 	/// </summary>
-	public IAppBlockPage? SelectedPage { get; private set; }
+	public IBlazorRoutedApplicationPage? SelectedPage { get; private set; }
 
 	/// <summary>
 	/// Gets the navigation manager
@@ -50,13 +51,13 @@ public class DefaultAppManager : IAppManager, IDisposable {
 	private NavigationManager NavigationManager { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="DefaultAppManager"/> class.
+	/// Initializes a new instance of the <see cref="DefaultBlazorRoutedApplicationManager"/> class.
 	/// </summary>
 	/// <param name="pluginManager"></param>
 	/// <param name="navigationManager"></param>
-	public DefaultAppManager(IPluginManager pluginManager, NavigationManager navigationManager) {
-		Apps = pluginManager.Plugins.SelectMany(x => x.Apps) ??
-		       throw new ArgumentNullException(nameof(navigationManager));
+	public DefaultBlazorRoutedApplicationManager(IBlazorRoutedPluginManager pluginManager, NavigationManager navigationManager) {
+		Guard.ArgumentNotNull(pluginManager, nameof(pluginManager));
+		_apps = pluginManager.Plugins.SelectMany(plugin => plugin.Apps).ToArray();
 		NavigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
 
 		NavigationManager.LocationChanged += NavigationManagerOnLocationChanged;
@@ -89,11 +90,11 @@ public class DefaultAppManager : IAppManager, IDisposable {
 				.TrimQueryParameters());
 
 		if (SelectedApp is not null) {
-			AppSelected?.Invoke(this, new AppSelectedEventArgs(SelectedApp));
+			AppSelected?.Invoke(this, new BlazorRoutedApplicationSelectedEventArgs(SelectedApp));
 		}
 
 		if (SelectedPage is not null) {
-			AppBlockPageSelected?.Invoke(this, new AppBlockPageSelectedEventArgs(SelectedPage));
+			AppBlockPageSelected?.Invoke(this, new BlazorRoutedApplicationPageSelectedEventArgs(SelectedPage));
 		}
 	}
 

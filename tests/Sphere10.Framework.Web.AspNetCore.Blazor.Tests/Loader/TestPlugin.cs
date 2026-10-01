@@ -12,43 +12,43 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 
-public class TestPlugin : Plugin {
+public class TestPlugin : BlazorRoutedPlugin {
 	public TestPlugin() {
 		Apps = new[] {
-			new Sphere10.Framework.Web.AspNetCore.Blazor.Plugins.App("/",
+			new Sphere10.Framework.Web.AspNetCore.Blazor.Plugins.BlazorRoutedApplication("/",
 				"Home",
 				"abc",
 				new[] {
-					new AppBlock("test",
+					new BlazorRoutedApplicationBlock("test",
 						"abc",
 						new[] {
-							new AppBlockPage("/test",
+							new BlazorRoutedApplicationPage("/test",
 								"test page",
 								"abc",
 								new[] {
-									new MenuItem("Test Menu", "/app1/page1", new List<MenuItem>())
+									new BlazorRoutedMenuItem("Test Menu", "/app1/page1", new List<BlazorRoutedMenuItem>())
 								})
 						})
 				}),
-			new Sphere10.Framework.Web.AspNetCore.Blazor.Plugins.App("/app1",
+			new Sphere10.Framework.Web.AspNetCore.Blazor.Plugins.BlazorRoutedApplication("/app1",
 				"app1",
 				"abc",
 				new[] {
-					new AppBlock("app1",
+					new BlazorRoutedApplicationBlock("app1",
 						"abc",
 						new[] {
-							new AppBlockPage("/app1/page1",
+							new BlazorRoutedApplicationPage("/app1/page1",
 								"app1 page",
 								"abc",
 								new[] {
-									new MenuItem("Test Menu", "/app1/page1", new List<MenuItem>())
+									new BlazorRoutedMenuItem("Test Menu", "/app1/page1", new List<BlazorRoutedMenuItem>())
 								})
 						})
 				})
 		};
 	}
 
-	public override IEnumerable<IApp> Apps { get; }
+	public override IBlazorRoutedApplication[] Apps { get; }
 
 	protected override void ConfigureServicesInternal(IServiceCollection serviceCollection) {
 		serviceCollection.AddTransient<TestViewModel>();

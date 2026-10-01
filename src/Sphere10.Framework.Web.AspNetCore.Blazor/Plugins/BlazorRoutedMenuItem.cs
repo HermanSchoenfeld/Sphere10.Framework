@@ -8,13 +8,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Menu item view model
 /// </summary>
-public class MenuItem {
+public class BlazorRoutedMenuItem {
+	private readonly BlazorRoutedMenuItem[] _children;
+
 	/// <summary>
 	/// Gets the menu heading
 	/// </summary>
@@ -23,7 +26,7 @@ public class MenuItem {
 	/// <summary>
 	/// Gets the child menu items.
 	/// </summary>
-	public List<MenuItem> Children { get; }
+	public BlazorRoutedMenuItem[] Children => Tools.Array.Clone(_children);
 
 	/// <summary>
 	/// Gets the route / path that this menu item should navigate to.
@@ -36,27 +39,28 @@ public class MenuItem {
 	public string? IconPath { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MenuItem"/> class.
+	/// Initializes a new instance of the <see cref="BlazorRoutedMenuItem"/> class.
 	/// </summary>
 	/// <param name="heading"></param>
 	/// <param name="route"></param>
 	/// <param name="children"></param>
 	/// <param name="iconPath"></param>
-	public MenuItem(string heading, string route, List<MenuItem> children, string? iconPath = null) {
+	public BlazorRoutedMenuItem(string heading, string route, List<BlazorRoutedMenuItem> children, string? iconPath = null) {
 		Heading = heading ?? throw new ArgumentNullException(nameof(heading));
-		Children = children ?? throw new ArgumentNullException(nameof(children));
+		Guard.ArgumentNotNull(children, nameof(children));
+		_children = children.ToArray();
 		Route = route ?? throw new ArgumentNullException(nameof(route));
 
 		IconPath = iconPath;
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MenuItem"/> class.
+	/// Initializes a new instance of the <see cref="BlazorRoutedMenuItem"/> class.
 	/// </summary>
 	/// <param name="heading"></param>
 	/// <param name="route"></param>
 	/// <param name="iconPath"></param>
-	public MenuItem(string heading, string route, string? iconPath = null) : this(heading, route, new List<MenuItem>(), iconPath) {
+	public BlazorRoutedMenuItem(string heading, string route, string? iconPath = null) : this(heading, route, new List<BlazorRoutedMenuItem>(), iconPath) {
 	}
 }
 

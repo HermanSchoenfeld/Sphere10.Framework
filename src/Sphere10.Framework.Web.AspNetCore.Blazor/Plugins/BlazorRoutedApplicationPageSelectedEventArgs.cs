@@ -7,24 +7,23 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Page selected event args
 /// </summary>
-public class AppBlockPageSelectedEventArgs : EventArgs {
+public class BlazorRoutedApplicationPageSelectedEventArgs : EventArgs {
 	/// <summary>
 	/// Gets the selected page
 	/// </summary>
-	public IAppBlockPage AppBlockPage { get; }
+	public IBlazorRoutedApplicationPage AppBlockPage { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="AppBlockPageSelectedEventArgs"/> class.
+	/// Initializes a new instance of the <see cref="BlazorRoutedApplicationPageSelectedEventArgs"/> class.
 	/// </summary>
 	/// <param name="appBlockPage"> selected page</param>
-	public AppBlockPageSelectedEventArgs(IAppBlockPage appBlockPage) {
+	public BlazorRoutedApplicationPageSelectedEventArgs(IBlazorRoutedApplicationPage appBlockPage) {
 		AppBlockPage = appBlockPage ?? throw new ArgumentNullException(nameof(appBlockPage));
 	}
 }

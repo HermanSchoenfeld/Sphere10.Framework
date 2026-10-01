@@ -7,20 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Args for app selected event.
 /// </summary>
-public class AppSelectedEventArgs : EventArgs {
+public class BlazorRoutedApplicationSelectedEventArgs : EventArgs {
 	/// <summary>
 	/// Gets the newly selected app.
 	/// </summary>
-	public IApp SelectedApp { get; }
+	public IBlazorRoutedApplication SelectedApp { get; }
 
-	public AppSelectedEventArgs(IApp selectedApp) {
+	public BlazorRoutedApplicationSelectedEventArgs(IBlazorRoutedApplication selectedApp) {
 		SelectedApp = selectedApp;
 	}
 }

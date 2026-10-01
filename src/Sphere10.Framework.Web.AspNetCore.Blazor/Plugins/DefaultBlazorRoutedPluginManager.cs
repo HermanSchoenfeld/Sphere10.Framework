@@ -11,39 +11,40 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Default plugin managers
 /// </summary>
-public class DefaultPluginManager : IPluginManager {
+public class DefaultBlazorRoutedPluginManager : IBlazorRoutedPluginManager {
+	private readonly IBlazorRoutedPlugin[] _plugins;
+
 	/// <summary>
 	/// Gets the plugin locator
 	/// </summary>
-	private IPluginLocator PluginLocator { get; }
+	private IBlazorRoutedPluginLocator PluginLocator { get; }
 
-	private ILogger<DefaultPluginManager> Logger { get; }
+	private ILogger<DefaultBlazorRoutedPluginManager> Logger { get; }
 
 	/// <summary>
 	/// Gets the available loaded plugins.
 	/// </summary>
-	public IEnumerable<IPlugin> Plugins { get; private set; } = new List<IPlugin>();
+	public IBlazorRoutedPlugin[] Plugins => Tools.Array.Clone(_plugins);
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="DefaultPluginManager"/> class.
+	/// Initializes a new instance of the <see cref="DefaultBlazorRoutedPluginManager"/> class.
 	/// </summary>
 	/// <param name="pluginLocator"> plugin locator</param>
 	/// <param name="logger"> logger</param>
-	public DefaultPluginManager(IPluginLocator pluginLocator, ILogger<DefaultPluginManager> logger) {
+	public DefaultBlazorRoutedPluginManager(IBlazorRoutedPluginLocator pluginLocator, ILogger<DefaultBlazorRoutedPluginManager> logger) {
 		PluginLocator = pluginLocator;
 		Logger = logger;
 
 		IEnumerable<Type> types = PluginLocator.LocatePlugins();
 
-		Plugins = types.Select(type => type.ActivateWithCompatibleArgs())
-			.Cast<IPlugin>().ToArray();
+		_plugins = types.Select(type => type.ActivateWithCompatibleArgs())
+			.Cast<IBlazorRoutedPlugin>().ToArray();
 	}
 
 	/// <summary>

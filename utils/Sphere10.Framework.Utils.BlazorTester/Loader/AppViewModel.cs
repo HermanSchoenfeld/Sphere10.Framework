@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
@@ -15,14 +14,16 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 namespace Sphere10.Framework.Utils.BlazorTester.Loader;
 
 public class AppViewModel {
-	public IEnumerable<Assembly> RoutingAssemblies { get; }
+	private readonly Assembly[] _routingAssemblies;
 
-	public AppViewModel(IPluginLocator pluginLocator) {
+	public Assembly[] RoutingAssemblies => Tools.Array.Clone(_routingAssemblies);
+
+	public AppViewModel(IBlazorRoutedPluginLocator pluginLocator) {
 		Guard.ArgumentNotNull(pluginLocator, nameof(pluginLocator));
 
-		RoutingAssemblies = pluginLocator.LocatePlugins().Select(x => x.Assembly)
+		_routingAssemblies = pluginLocator.LocatePlugins().Select(x => x.Assembly)
 			.Where(x => x.FullName != typeof(Program).Assembly.FullName)
-			.Distinct();
+			.Distinct().ToArray();
 	}
 }
 

@@ -28,9 +28,9 @@ public class BlockMenuTests {
 		services.AddLogging();
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/app1/page1"));
 		services.AddTransient<BlockMenuViewModel>();
-		services.AddScoped<IAppManager, DefaultAppManager>();
-		services.AddScoped<IPluginManager, DefaultPluginManager>();
-		services.AddScoped<IPluginLocator, TestPluginLocator>();
+		services.AddScoped<IBlazorRoutedApplicationManager, DefaultBlazorRoutedApplicationManager>();
+		services.AddScoped<IBlazorRoutedPluginManager, DefaultBlazorRoutedPluginManager>();
+		services.AddScoped<IBlazorRoutedPluginLocator, TestPluginLocator>();
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var html = await renderer.Dispatcher.InvokeAsync(async () => {

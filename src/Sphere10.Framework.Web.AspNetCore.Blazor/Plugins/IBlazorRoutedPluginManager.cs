@@ -6,20 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Manages plugins.
 /// </summary>
-public interface IPluginManager {
+public interface IBlazorRoutedPluginManager {
 	/// <summary>
 	/// Gets the currently available plugins
 	/// </summary>
-	IEnumerable<IPlugin> Plugins { get; }
+	IBlazorRoutedPlugin[] Plugins { get; }
 
 	/// <summary>
 	/// Configures the service collection with services from plugins.

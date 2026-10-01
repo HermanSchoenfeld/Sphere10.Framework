@@ -20,24 +20,24 @@ public class AppsMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// <summary>
 	/// Gets the available apps.zs
 	/// </summary>
-	public IEnumerable<IApp> Apps => AppManager.Apps;
+	public IBlazorRoutedApplication[] Apps => AppManager.Apps;
 
 	/// <summary>
 	/// Gets the selected app
 	/// </summary>
-	public IApp SelectedApp { get; private set; }
+	public IBlazorRoutedApplication SelectedApp { get; private set; }
 
 	/// <summary>
 	/// Gets the navigation manager
 	/// </summary>
-	private IAppManager AppManager { get; }
+	private IBlazorRoutedApplicationManager AppManager { get; }
 
 	/// <summary>
 	/// Initialize an instance of the <see cref="AppsMenuViewModel"/> class.
 	/// </summary>
 	/// <param name="appManager"></param>
 	public AppsMenuViewModel(
-		IAppManager appManager) {
+		IBlazorRoutedApplicationManager appManager) {
 		Guard.ArgumentNotNull(appManager, nameof(appManager));
 		AppManager = appManager;
 
@@ -52,7 +52,7 @@ public class AppsMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	private void AppManagerOnAppSelected(object sender, AppSelectedEventArgs e) {
+	private void AppManagerOnAppSelected(object sender, BlazorRoutedApplicationSelectedEventArgs e) {
 		SelectedApp = e.SelectedApp;
 		StateHasChangedDelegate?.Invoke();
 	}

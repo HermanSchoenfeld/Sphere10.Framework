@@ -6,15 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-public interface IApp : IRoutablePage, INamedItem, IIconItem {
+public interface IBlazorRoutedApplication : IRoutablePage, INamedItem, IIconItem {
 	/// <summary>
 	/// Gets the app blocks that are part of this 
 	/// </summary>
-	IEnumerable<IAppBlock> AppBlocks { get; }
+	IBlazorRoutedApplicationBlock[] AppBlocks { get; }
 }
 
 

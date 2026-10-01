@@ -8,18 +8,17 @@
 
 using System;
 using System.Collections.Generic;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
 /// Finds available plugin types.
 /// </summary>
-public interface IPluginLocator {
+public interface IBlazorRoutedPluginLocator {
 	/// <summary>
 	/// Locate plugins.
 	/// </summary>
-	/// <returns> <see cref="IPlugin"/> implementing plugin types.</returns>
+	/// <returns> <see cref="IBlazorRoutedPlugin"/> implementing plugin types.</returns>
 	IEnumerable<Type> LocatePlugins();
 }
 

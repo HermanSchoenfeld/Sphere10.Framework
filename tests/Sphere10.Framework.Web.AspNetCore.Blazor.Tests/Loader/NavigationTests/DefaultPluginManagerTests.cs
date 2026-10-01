@@ -21,16 +21,16 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.NavigationTests;
 public class DefaultPluginManagerTests {
 	[Test]
 	public void PluginManagerLoadCorrectPlugins() {
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager manager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager manager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
 
-		Assert.That(manager.Plugins.Count(), Is.EqualTo(1));
+		Assert.That(manager.Plugins.Length, Is.EqualTo(1));
 	}
 
 	[Test]
 	public void PluginManagerAddsPluginServices() {
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager manager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager manager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
 
 		var collection = new ServiceCollection();
 		manager.ConfigureServices(collection);

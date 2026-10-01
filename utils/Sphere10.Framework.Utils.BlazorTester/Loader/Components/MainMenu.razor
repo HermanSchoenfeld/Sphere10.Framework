@@ -11,7 +11,7 @@
 @inherits ComponentWithViewModel<Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels.MainMenuViewModel>
 <nav class="navbar navbar-expand bg-white topbar mb-2 static-top shadow">
     <ul class="navbar-nav mr-auto">
-        @foreach (MenuItem item in ViewModel.MenuItems) {
+        @foreach (BlazorRoutedMenuItem item in ViewModel.MenuItems) {
             @if (item.Children.Any()) {
                 <li class="nav-item dropdown hover-dropdown">
                     <a class="nav-link h-auto my-2 dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -22,7 +22,7 @@
                         @item.Heading
                     </a>
                     <div class="dropdown-menu animated--fade-in" aria-labelledby="navbarDropdown">
-                        @foreach (MenuItem child in item.Children) {
+                        @foreach (BlazorRoutedMenuItem child in item.Children) {
                             <a class="ml-2" href="@child.Route">
                                 @if (child.IconPath is not null) {
                                     <i class="fa @child.IconPath fa-sm fa-fw mr-2 text-gray-400"></i>

@@ -20,18 +20,20 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.NavigationTests;
 public class AppMenuTests {
 	[Test]
 	public void AppMenuInitializedWithApps() {
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager pluginManager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
 		var navigationManager = new TestNavigationManager();
-		IAppManager appManager = new DefaultAppManager(pluginManager, navigationManager);
+		IBlazorRoutedApplicationManager appManager = new DefaultBlazorRoutedApplicationManager(pluginManager, navigationManager);
 		AppsMenuViewModel appsMenuViewModel = new AppsMenuViewModel(appManager);
 		BlockMenuViewModel blockMenuViewModel = new BlockMenuViewModel(appManager);
 
 		navigationManager.NavigateTo("/");
 
-		Assert.That(appsMenuViewModel.Apps, Is.SameAs(appManager.Apps));
+		Assert.That(appsMenuViewModel.Apps, Is.EqualTo(appManager.Apps));
+		Assert.That(appsMenuViewModel.Apps[0], Is.SameAs(appManager.Apps[0]));
 		Assert.That(appsMenuViewModel.SelectedApp, Is.SameAs(appManager.SelectedApp));
-		Assert.That(blockMenuViewModel.AppBlocks, Is.SameAs(appManager.SelectedApp?.AppBlocks));
+		Assert.That(blockMenuViewModel.AppBlocks, Is.EqualTo(appManager.SelectedApp.AppBlocks));
+		Assert.That(blockMenuViewModel.AppBlocks[0], Is.SameAs(appManager.SelectedApp.AppBlocks[0]));
 	}
 }
 

@@ -7,39 +7,37 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 /// <summary>
-/// App manager
+/// BlazorRoutedApplication manager
 /// </summary>
-public interface IAppManager {
+public interface IBlazorRoutedApplicationManager {
 	/// <summary>
 	/// Raised when an app is selected
 	/// </summary>
-	event EventHandler<AppSelectedEventArgs> AppSelected;
+	event EventHandler<BlazorRoutedApplicationSelectedEventArgs> AppSelected;
 
 	/// <summary>
 	/// Raised when an app page is selected.
 	/// </summary>
-	event EventHandler<AppBlockPageSelectedEventArgs> AppBlockPageSelected;
+	event EventHandler<BlazorRoutedApplicationPageSelectedEventArgs> AppBlockPageSelected;
 
 	/// <summary>
 	/// Gets the available apps.
 	/// </summary>
-	IEnumerable<IApp> Apps { get; }
+	IBlazorRoutedApplication[] Apps { get; }
 
 	/// <summary>
 	/// Gets or sets the selected app.
 	/// </summary>
-	IApp? SelectedApp { get; }
+	IBlazorRoutedApplication? SelectedApp { get; }
 
 	/// <summary>
 	/// Selected page
 	/// </summary>
-	IAppBlockPage? SelectedPage { get; }
+	IBlazorRoutedApplicationPage? SelectedPage { get; }
 }
 
 

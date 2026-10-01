@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 
@@ -17,41 +18,41 @@ namespace Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
 /// View model for topbar menu
 /// </summary>
 public class MainMenuViewModel : ComponentViewModelBase, IDisposable {
+	private BlazorRoutedMenuItem[] _menuItems;
+
 	/// <summary>
 	/// Gets the app manager
 	/// </summary>
-	private IAppManager AppManager { get; }
+	private IBlazorRoutedApplicationManager AppManager { get; }
 
 	/// <summary>
 	/// Gets the default menu items
 	/// </summary>
-	private IEnumerable<MenuItem> DefaultMenuItems { get; }
+	private BlazorRoutedMenuItem[] DefaultMenuItems { get; }
 
 	/// <summary>
 	/// Gets the list of menu items.
 	/// </summary>
-	public List<MenuItem> MenuItems { get; }
+	public BlazorRoutedMenuItem[] MenuItems => Tools.Array.Clone(_menuItems);
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MainMenuViewModel"/> class.
 	/// </summary>
 	/// <param name="appManager"> app manager</param>
-	public MainMenuViewModel(IAppManager appManager) {
+	public MainMenuViewModel(IBlazorRoutedApplicationManager appManager) {
 		Guard.ArgumentNotNull(appManager, nameof(appManager));
 		AppManager = appManager;
-		DefaultMenuItems = new MenuItem[] {
-			new MenuItem("File", "/", iconPath: "fa-list"),
-			new("Help", "/", new List<MenuItem>(), "fa-info")
+		DefaultMenuItems = new BlazorRoutedMenuItem[] {
+			new BlazorRoutedMenuItem("File", "/", iconPath: "fa-list"),
+			new("Help", "/", new List<BlazorRoutedMenuItem>(), "fa-info")
 		};
 
-		MenuItems = new List<MenuItem>(DefaultMenuItems);
+		_menuItems = Tools.Array.Clone(DefaultMenuItems);
 
 		AppManager.AppBlockPageSelected += AppManagerOnAppBlockPageSelected;
 
 		if (AppManager.SelectedPage is not null) {
-			IEnumerable<MenuItem> newItems = DefaultMenuItems.Merge(AppManager.SelectedPage.MenuItems);
-			MenuItems.Clear();
-			MenuItems.AddRange(newItems);
+			_menuItems = DefaultMenuItems.Merge(AppManager.SelectedPage.MenuItems).ToArray();
 		}
 	}
 
@@ -60,11 +61,8 @@ public class MainMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	private void AppManagerOnAppBlockPageSelected(object sender, AppBlockPageSelectedEventArgs e) {
-		IEnumerable<MenuItem> newItems = DefaultMenuItems.Merge(e.AppBlockPage.MenuItems);
-
-		MenuItems.Clear();
-		MenuItems.AddRange(newItems);
+	private void AppManagerOnAppBlockPageSelected(object sender, BlazorRoutedApplicationPageSelectedEventArgs e) {
+		_menuItems = DefaultMenuItems.Merge(e.AppBlockPage.MenuItems).ToArray();
 		StateHasChangedDelegate?.Invoke();
 	}
 	public void Dispose() {

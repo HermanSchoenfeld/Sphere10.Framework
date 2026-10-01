@@ -22,20 +22,20 @@ public class DefaultAppManagerTests {
 	public void AppManagerLoadsPluginApps() {
 		TestPlugin expected = new TestPlugin();
 
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
-		IAppManager appManager = new DefaultAppManager(pluginManager, new TestNavigationManager());
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager pluginManager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
+		IBlazorRoutedApplicationManager appManager = new DefaultBlazorRoutedApplicationManager(pluginManager, new TestNavigationManager());
 
-		Assert.That(appManager.Apps.Count(), Is.EqualTo(expected.Apps.Count()));
+		Assert.That(appManager.Apps.Length, Is.EqualTo(expected.Apps.Length));
 	}
 
 	[Test]
 	public void AppManagerSelectsDefaultAppOrNone() {
 		TestPlugin expected = new TestPlugin();
 
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
-		IAppManager appManager = new DefaultAppManager(pluginManager, new TestNavigationManager());
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager pluginManager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
+		IBlazorRoutedApplicationManager appManager = new DefaultBlazorRoutedApplicationManager(pluginManager, new TestNavigationManager());
 
 		Assert.That(appManager.SelectedApp, Is.Not.Null);
 
@@ -46,9 +46,9 @@ public class DefaultAppManagerTests {
 	public void AppManagerNoSelectedAppOnBadNav() {
 		var nav = new TestNavigationManager();
 
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
-		IAppManager appManager = new DefaultAppManager(pluginManager, nav);
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager pluginManager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
+		IBlazorRoutedApplicationManager appManager = new DefaultBlazorRoutedApplicationManager(pluginManager, nav);
 
 		nav.NavigateTo(nav.Uri + "unknown");
 
@@ -59,9 +59,9 @@ public class DefaultAppManagerTests {
 	public void NavToApp() {
 		var nav = new TestNavigationManager();
 
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
-		IAppManager appManager = new DefaultAppManager(pluginManager, nav);
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager pluginManager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
+		IBlazorRoutedApplicationManager appManager = new DefaultBlazorRoutedApplicationManager(pluginManager, nav);
 
 		var app = appManager.Apps.First(x => x.Name != appManager.SelectedApp?.Name);
 
@@ -75,12 +75,12 @@ public class DefaultAppManagerTests {
 	public void NavToAppPage() {
 		var nav = new TestNavigationManager();
 
-		IPluginLocator locator = new TestPluginLocator();
-		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
-		IAppManager appManager = new DefaultAppManager(pluginManager, nav);
+		IBlazorRoutedPluginLocator locator = new TestPluginLocator();
+		IBlazorRoutedPluginManager pluginManager = new DefaultBlazorRoutedPluginManager(locator, new NullLogger<DefaultBlazorRoutedPluginManager>());
+		IBlazorRoutedApplicationManager appManager = new DefaultBlazorRoutedApplicationManager(pluginManager, nav);
 
-		IApp app = appManager.Apps.First(x => x.Name != appManager.SelectedApp?.Name);
-		IAppBlockPage page = app.AppBlocks.First().AppBlockPages.First();
+		IBlazorRoutedApplication app = appManager.Apps.First(x => x.Name != appManager.SelectedApp?.Name);
+		IBlazorRoutedApplicationPage page = app.AppBlocks.First().AppBlockPages.First();
 
 		nav.NavigateTo(page.Route);
 
