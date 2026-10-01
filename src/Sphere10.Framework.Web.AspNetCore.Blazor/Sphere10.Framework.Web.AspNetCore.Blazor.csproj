@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>sphere10 framework aspnetcore blazor razor components grid wizard modal</PackageTags>
+    <Description>Sphere10 Framework Blazor components, application shells, dialogs, wizards and data grids.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\Sphere10.Framework.Web.AspNetCore\Sphere10.Framework.Web.AspNetCore.csproj" />
+  </ItemGroup>
+</Project>

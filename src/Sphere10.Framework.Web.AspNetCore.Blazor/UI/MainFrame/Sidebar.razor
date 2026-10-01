@@ -1,0 +1,36 @@
+@*
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
+
+<nav class="sidebar" aria-label="Application navigation">
+	<div class="sidebar-content">
+		<SidebarBrand Title="@Title" HomeUrl="@HomeUrl" />
+		<ApplicationBlockMenu Blocks="Blocks" ActiveBlock="ActiveBlock" OnSelect="OnSelectBlock" />
+		<ApplicationMenus Block="ActiveBlock" OnSelect="OnSelectItem" />
+		@ChildContent
+	</div>
+</nav>
+
+@code {
+	[Parameter] public string Title { get; set; } = "Sphere10 Framework";
+
+	[Parameter] public string HomeUrl { get; set; } = "./";
+
+	[Parameter] public IReadOnlyList<IApplicationBlock> Blocks { get; set; } = Array.Empty<IApplicationBlock>();
+
+	[Parameter] public IApplicationBlock ActiveBlock { get; set; }
+
+	[Parameter] public EventCallback<IApplicationBlock> OnSelectBlock { get; set; }
+
+	[Parameter] public EventCallback<IApplicationMenuItem> OnSelectItem { get; set; }
+
+	[Parameter] public RenderFragment ChildContent { get; set; }
+}

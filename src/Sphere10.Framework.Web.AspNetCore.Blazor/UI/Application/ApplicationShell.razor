@@ -1,0 +1,52 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame
+
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="ScreenHost.HasUnsavedChanges" />
+<div class="sphere10-application">
+	<header class="sphere10-header">
+		@if (Header != null) {
+			@Header
+		} else {
+			<strong>@Title</strong>
+		}
+	</header>
+	<aside class="sphere10-sidebar" aria-label="Application navigation">
+		<ApplicationBlockMenu Blocks="ScreenHost.Blocks" ActiveBlock="ScreenHost.ActiveBlock" OnSelect="ActivateBlockAsync" />
+		<ApplicationMenus Block="ScreenHost.ActiveBlock" OnSelect="ExecuteMenuItemAsync" />
+		@Sidebar
+	</aside>
+	<main class="sphere10-content">
+		@if (_routeError != null) {
+			<p role="alert">@_routeError</p>
+		}
+		@if (ScreenHost.OpenScreens.Count > 0) {
+			<nav class="sphere10-screens" aria-label="Open screens">
+				@foreach (var session in ScreenHost.OpenScreens) {
+					<div @key="session.Id" class="sphere10-screen-tab">
+						<button type="button" aria-current="@(ScreenHost.ActiveScreen == session ? "page" : null)" aria-controls="@($"screen-{session.Id:N}")"
+							@onclick="() => ShowScreenAsync(session.Id)">@session.Title</button>
+						<button type="button" aria-label="@($"Close {session.Title}")" @onclick="() => CloseScreenAsync(session.Id)">×</button>
+					</div>
+				}
+			</nav>
+			<ApplicationScreenHostView />
+		} else if (EmptyContent != null) {
+			@EmptyContent
+		} else {
+			<p>Select an application block to open a screen.</p>
+		}
+	</main>
+	@if (Footer != null) {
+		<footer class="sphere10-footer">@Footer</footer>
+	}
+</div>

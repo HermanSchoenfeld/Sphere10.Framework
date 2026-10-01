@@ -1,0 +1,4 @@
+.application-blocks { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.5rem; }
+.application-blocks button { display: flex; align-items: center; gap: .5rem; padding: .75rem; border: 1px solid #c7d1df; border-radius: .3rem; background: white; color: #202b3d; text-align: left; cursor: pointer; }
+.application-blocks button[aria-current="page"] { background: #2456a6; border-color: #2456a6; color: white; }
+.application-blocks button:focus-visible { outline: 2px solid #2456a6; outline-offset: 2px; }

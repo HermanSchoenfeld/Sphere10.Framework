@@ -1,0 +1,25 @@
+@*
+// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Hamish Rose
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+<a class="sidebar-brand" href="@HomeUrl">
+	@if (ChildContent != null) {
+		@ChildContent
+	} else {
+		<span>@Title</span>
+	}
+</a>
+
+@code {
+	[Parameter] public string Title { get; set; } = "Sphere10 Framework";
+
+	[Parameter] public string HomeUrl { get; set; } = "./";
+
+	[Parameter] public RenderFragment ChildContent { get; set; }
+}
