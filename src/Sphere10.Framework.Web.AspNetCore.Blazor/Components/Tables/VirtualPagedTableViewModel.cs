@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Models;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
@@ -16,13 +14,14 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 
 public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel, IDisposable {
+	private TItem[] _page = Array.Empty<TItem>();
 	private int _currentPage = 1;
 	private int _requestVersion;
 	private bool _disposed;
 
 	public VirtualPagedTable<TItem>.ItemsProviderDelegate ItemsProvider { get; set; }
 
-	public IEnumerable<TItem> Page { get; private set; } = Array.Empty<TItem>();
+	public TItem[] Page => Tools.Array.Clone(_page);
 
 	public int PageSize { get; set; } = 10;
 
@@ -58,7 +57,7 @@ public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedC
 
 	public Task SetPageSizeAsync(int pageSize) {
 		Guard.ArgumentGT(pageSize, 0, nameof(pageSize));
-		var lastVisibleIndex = (CurrentPage - 1) * PageSize + Page.Count();
+		var lastVisibleIndex = (CurrentPage - 1) * PageSize + _page.Length;
 		PageSize = pageSize;
 		CurrentPage = Math.Max(1, (int)Math.Ceiling((double)lastVisibleIndex / PageSize));
 		return RefreshAsync();
@@ -80,7 +79,7 @@ public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedC
 			await RefreshAsync();
 			return;
 		}
-		Page = response.Items ?? Array.Empty<TItem>();
+		_page = Tools.Array.Clone(response.Items) ?? Array.Empty<TItem>();
 		StateHasChangedDelegate?.Invoke();
 	}
 

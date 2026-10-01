@@ -39,7 +39,7 @@ public partial class RapidTable<TItem> : IDisposable {
 	[Parameter]
 	public string Class { get; set; }
 
-	private List<TItem> Items => _viewModel.Items;
+	private TItem[] Items => _viewModel.Items;
 
 	public void Dispose() => _viewModel.Dispose();
 

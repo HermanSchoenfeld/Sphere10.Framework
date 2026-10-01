@@ -73,7 +73,7 @@ public class StreamingAndPagingRegressionTests {
 		var values = Enumerable.Range(0, 11).ToArray();
 		var model = new VirtualPagedTableViewModel<int> {
 			PageSize = 5,
-			ItemsProvider = request => Task.FromResult(new ItemsResponse<int>(values.Skip(request.Index).Take(request.Count), values.Length))
+			ItemsProvider = request => Task.FromResult(new ItemsResponse<int>(values.Skip(request.Index).Take(request.Count).ToArray(), values.Length))
 		};
 		await model.InitAsync();
 		Assert.That(model.Page, Is.EqualTo(new[] { 0, 1, 2, 3, 4 }));

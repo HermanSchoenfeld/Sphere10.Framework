@@ -12,10 +12,10 @@
 
 <EditForm Model="Model">
 	<label for="@_inputId">Page Size</label>
-	<InputSelect id="@_inputId" class="form-control form-control-sm w-auto" Value="Value" ValueChanged="ValueChanged" ValueExpression="ValueExpression">
-		<option value="10">10</option>
-		<option value="25">25</option>
-		<option value="50">50</option>
+	<InputSelect id="@_inputId" class="form-select form-select-sm w-auto" Value="Value" ValueChanged="ValueChanged" ValueExpression="ValueExpression">
+		@foreach (var pageSize in AvailablePageSizes) {
+			<option value="@pageSize">@pageSize</option>
+		}
 	</InputSelect>
 </EditForm>
 
@@ -47,6 +47,9 @@
 	[Parameter]
 	public Expression<Func<int>> ValueExpression { get; set; }
 
+
+
+	private int[] AvailablePageSizes => new[] { 5, 10, 25, 50, Value }.Where(size => size > 0).Distinct().OrderBy(size => size).ToArray();
 
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Model, nameof(Model));

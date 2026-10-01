@@ -10,11 +10,11 @@
 
 @typeparam TItem
 
-<label>
+<div class="d-flex align-items-center gap-2 mb-2">
 	Show
 	<PageSizeSelector Value="_viewModel.PageSize" ValueChanged="SetPageSizeAsync" ValueExpression="() => _viewModel.PageSize"/>
 	entries
-</label>
+</div>
 
 <table class="@Class">
 	<thead>
@@ -28,40 +28,37 @@
 	}
 </table>
 
-<div class="row">
-	<div class="col-md-5 text-left">
+<div class="sphere10-table-footer">
+	<p class="sphere10-table-summary" role="status">
 		Showing @(TotalItems > 0 ? (CurrentPage - 1) * _viewModel.PageSize + 1 : 0)
-		to @((CurrentPage - 1) * _viewModel.PageSize + Page.Count()) of @TotalItems entries
-	</div>
-	<div class="col-md-7 text-right">
-		<nav>
-			<ul class="pagination justify-content-end">
-				<li class="page-item @(HasPrevPage ? string.Empty : "disabled")">
-					<button type="button" class="page-link" @onclick="PrevPageAsync" disabled="@(!HasPrevPage)">Previous</button>
+		to @(TotalItems > 0 ? (CurrentPage - 1) * _viewModel.PageSize + Page.Count() : 0) of @TotalItems entries
+	</p>
+	<nav aria-label="Table pages">
+		<ul class="pagination pagination-sm">
+			<li class="page-item @(HasPrevPage ? string.Empty : "disabled")">
+				<button type="button" class="page-link" @onclick="PrevPageAsync" disabled="@(!HasPrevPage)">Previous</button>
+			</li>
+			@if (HasPrevPage) {
+				<li class="page-item">
+					<button type="button" class="page-link" @onclick="PrevPageAsync"> @(CurrentPage - 1)</button>
 				</li>
-				@if (HasPrevPage) {
-					<li class="page-item">
-						<button type="button" class="page-link" @onclick="PrevPageAsync"> @(CurrentPage - 1)</button>
-					</li>
-				}
+			}
 
-				<li class="page-item active">
-					<span class="page-link" aria-current="page">
-						@CurrentPage <span class="sr-only">(current)</span>
-					</span>
+			<li class="page-item active">
+				<span class="page-link" aria-current="page">
+					@CurrentPage
+				</span>
+			</li>
+
+			@if (HasNextPage) {
+				<li class="page-item">
+					<button type="button" class="page-link" @onclick="NextPageAsync">@(CurrentPage + 1)</button>
 				</li>
+			}
 
-				@if (HasNextPage) {
-					<li class="page-item">
-						<button type="button" class="page-link" @onclick="NextPageAsync">@(CurrentPage + 1)</button>
-					</li>
-				}
-
-				<li class="page-item @(HasNextPage ? string.Empty : "disabled")">
-					<button type="button" class="page-link" @onclick="NextPageAsync" disabled="@(!HasNextPage)">Next</button>
-				</li>
-			</ul>
-		</nav>
-	</div>
-
+			<li class="page-item @(HasNextPage ? string.Empty : "disabled")">
+				<button type="button" class="page-link" @onclick="NextPageAsync" disabled="@(!HasNextPage)">Next</button>
+			</li>
+		</ul>
+	</nav>
 </div>

@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
@@ -41,7 +40,7 @@ public partial class VirtualPagedTable<TItem> : IDisposable {
 	[Parameter]
 	public string Class { get; set; }
 
-	private IEnumerable<TItem> Page => _viewModel.Page;
+	private TItem[] Page => _viewModel.Page;
 
 	private int TotalItems => _viewModel.TotalItems;
 

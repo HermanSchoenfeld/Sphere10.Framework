@@ -6,10 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Models;
 
-public record ItemsResponse<TItem>(IEnumerable<TItem> Items, int TotalItems);
+public record ItemsResponse<TItem>(TItem[] Items, int TotalItems);
 
 

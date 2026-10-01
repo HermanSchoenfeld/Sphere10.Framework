@@ -27,6 +27,14 @@ public class RapidTableViewModelTests {
 	}
 
 	[Test]
+	public async Task ReturnedArrayCannotReplaceStreamedItems() {
+		using var model = new RapidTableViewModel<bool> { Source = DataSource(), ItemLimit = 2 };
+		await model.InitAsync();
+		model.Items[0] = false;
+		Assert.That(model.Items, Is.EqualTo(new[] { true, true }));
+	}
+
+	[Test]
 	public async Task InitVmPopulatesItems() {
 		var vm = new RapidTableViewModel<bool> {
 			Source = DataSource()
@@ -35,7 +43,7 @@ public class RapidTableViewModelTests {
 		await vm.InitAsync();
 		await Task.Delay(10);
 
-		Assert.That(vm.Items.Count, Is.EqualTo(10));
+		Assert.That(vm.Items.Length, Is.EqualTo(10));
 	}
 
 	[Test]
@@ -48,7 +56,7 @@ public class RapidTableViewModelTests {
 		await vm.InitAsync();
 		await Task.Delay(10);
 
-		Assert.That(vm.Items.Count, Is.EqualTo(2));
+		Assert.That(vm.Items.Length, Is.EqualTo(2));
 	}
 }
 

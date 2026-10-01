@@ -9,7 +9,7 @@
 *@
 
 <nav aria-label="Table pages">
-	<ul class="pagination">
+	<ul class="pagination pagination-sm">
 		<li class="page-item @PreviousItemClass">
 			<button type="button" class="page-link" @onclick="Model.PrevPageAsync" disabled="@(!Model.HasPrevPage)">Previous</button>
 		</li>
@@ -21,7 +21,7 @@
 
 		<li class="page-item active">
 			<span class="page-link" aria-current="page">
-				@Model.CurrentPage <span class="sr-only">(current)</span>
+				@Model.CurrentPage
 			</span>
 		</li>
 

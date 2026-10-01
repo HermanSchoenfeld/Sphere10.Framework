@@ -16,6 +16,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 
 /// <summary>Maintains a bounded table of streamed items until cancellation or disposal.</summary>
 public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, IAsyncDisposable {
+	private readonly List<TItem> _items = new();
 	private CancellationTokenSource _streamCancellation;
 	private Task _enumeratorTask = Task.CompletedTask;
 	private IAsyncEnumerable<TItem> _activeSource;
@@ -25,7 +26,7 @@ public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, I
 
 	public IAsyncEnumerable<TItem> Source { get; set; }
 
-	public List<TItem> Items { get; } = new();
+	public TItem[] Items => _items.ToArray();
 
 	public CancellationToken CancellationToken { get; set; }
 
@@ -35,8 +36,8 @@ public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, I
 		Guard.Ensure(!_disposed, "The table has been disposed.");
 		Guard.ArgumentNotNull(source, nameof(source));
 		Guard.ArgumentGT(ItemLimit, 0, nameof(ItemLimit));
-		while (Items.Count > ItemLimit)
-			Items.RemoveAt(0);
+		while (_items.Count > ItemLimit)
+			_items.RemoveAt(0);
 		if (ReferenceEquals(source, _activeSource) && cancellationToken == _activeToken)
 			return;
 
@@ -50,7 +51,7 @@ public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, I
 		if (_disposed || version != _sourceVersion)
 			return;
 
-		Items.Clear();
+		_items.Clear();
 		_streamCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		_enumeratorTask = EnumerateAsync(source, _streamCancellation.Token);
 	}
@@ -86,9 +87,9 @@ public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, I
 				await InvokeAsync(() => {
 					if (_disposed || cancellationToken.IsCancellationRequested)
 						return;
-					while (Items.Count >= ItemLimit)
-						Items.RemoveAt(0);
-					Items.Add(item);
+					while (_items.Count >= ItemLimit)
+						_items.RemoveAt(0);
+					_items.Add(item);
 					StateHasChangedDelegate?.Invoke();
 				});
 			}

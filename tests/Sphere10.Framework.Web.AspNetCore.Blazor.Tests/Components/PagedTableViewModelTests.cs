@@ -23,6 +23,19 @@ public class PagedTableTests {
 	private Fixture AutoFixture { get; } = new();
 
 	[Test]
+	public async Task ReturnedArraysDoNotChangeStoredItemsOrPaging() {
+		var items = new[] { 1, 2, 3 };
+		var model = new PagedTableViewModel<int> { PageSize = 2, Items = items };
+		items[0] = 99;
+		model.Items[0] = 98;
+		model.Page[0] = 97;
+		Assert.That(model.Page, Is.EqualTo(new[] { 1, 2 }));
+		await model.NextPageAsync();
+		Assert.That(model.Page, Is.EqualTo(new[] { 3 }));
+		Assert.That(model.TotalPages, Is.EqualTo(2));
+	}
+
+	[Test]
 	public async Task ProgressThroughPagesCorrectly() {
 		var vm = new PagedTableViewModel<Block>();
 
@@ -30,17 +43,17 @@ public class PagedTableTests {
 		int rowCount = 14;
 
 		vm.PageSize = pageSize;
-		vm.Items = AutoFixture.CreateMany<Block>(rowCount).ToList();
+		vm.Items = AutoFixture.CreateMany<Block>(rowCount).ToArray();
 
-		Assert.That(vm.Page.Count(), Is.EqualTo(5));
+		Assert.That(vm.Page.Length, Is.EqualTo(5));
 
 		await vm.NextPageAsync();
 		Assert.That(vm.CurrentPage, Is.EqualTo(2));
-		Assert.That(vm.Page.Count(), Is.EqualTo(5));
+		Assert.That(vm.Page.Length, Is.EqualTo(5));
 
 		await vm.NextPageAsync();
 		Assert.That(vm.CurrentPage, Is.EqualTo(3));
-		Assert.That(vm.Page.Count(), Is.EqualTo(4));
+		Assert.That(vm.Page.Length, Is.EqualTo(4));
 
 		Assert.That(vm.NextPageAsync, Throws.TypeOf<InvalidOperationException>());
 	}
@@ -53,7 +66,7 @@ public class PagedTableTests {
 		int rowCount = 15;
 
 		vm.PageSize = pageSize;
-		vm.Items = AutoFixture.CreateMany<Block>(rowCount).ToList();
+		vm.Items = AutoFixture.CreateMany<Block>(rowCount).ToArray();
 
 		var first = vm.Page;
 
@@ -69,7 +82,7 @@ public class PagedTableTests {
 	public async Task HasNextAsExpected() {
 		var vm = new PagedTableViewModel<Block> {
 			PageSize = 3,
-			Items = AutoFixture.CreateMany<Block>(9).ToList()
+			Items = AutoFixture.CreateMany<Block>(9).ToArray()
 		};
 
 		Assert.That(vm.HasNextPage, Is.True);
@@ -90,7 +103,7 @@ public class PagedTableTests {
 	public async Task ChangePageSizeSetsPage() {
 		var vm = new PagedTableViewModel<Block> {
 			PageSize = 1,
-			Items = AutoFixture.CreateMany<Block>(10).ToList()
+			Items = AutoFixture.CreateMany<Block>(10).ToArray()
 		};
 
 		Assert.That(vm.TotalPages, Is.EqualTo(10));

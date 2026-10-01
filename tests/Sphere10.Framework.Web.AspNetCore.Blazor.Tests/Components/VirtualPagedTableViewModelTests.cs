@@ -31,10 +31,23 @@ public class VirtualPagedTableViewModelTests {
 
 		public int TotalItems => Data.Count;
 		internal Task<ItemsResponse<T>> GetAsync(ItemRequest request) {
-			return Task.FromResult(new ItemsResponse<T>(Data.Skip(request.Index).Take(request.Count), Data.Count));
+			return Task.FromResult(new ItemsResponse<T>(Data.Skip(request.Index).Take(request.Count).ToArray(), Data.Count));
 		}
 	}
 
+
+	[Test]
+	public async Task ProviderAndReturnedArraysDoNotChangeTheLoadedPage() {
+		var items = new[] { 1, 2 };
+		using var model = new VirtualPagedTableViewModel<int> {
+			ItemsProvider = _ => Task.FromResult(new ItemsResponse<int>(items, items.Length))
+		};
+		await model.RefreshAsync();
+		items[0] = 99;
+		model.Page[1] = 98;
+		Assert.That(model.Page, Is.EqualTo(new[] { 1, 2 }));
+		Assert.That(model.TotalItems, Is.EqualTo(2));
+	}
 
 	[Test]
 	public async Task FirstPageOnInit() {
@@ -46,7 +59,7 @@ public class VirtualPagedTableViewModelTests {
 
 		await vm.InitAsync();
 
-		Assert.That(vm.Page.Count(), Is.EqualTo(vm.PageSize));
+		Assert.That(vm.Page.Length, Is.EqualTo(vm.PageSize));
 		Assert.That(vm.TotalItems, Is.EqualTo(service.TotalItems));
 		Assert.That(vm.TotalPages, Is.EqualTo((int)Math.Ceiling((double)service.TotalItems / vm.PageSize)));
 	}

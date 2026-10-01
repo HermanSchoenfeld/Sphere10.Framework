@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -18,7 +17,7 @@ public class PagedTable<TItem> : ComponentWithViewModel<PagedTableViewModel<TIte
 	private int _appliedPageSize;
 
 	[Parameter]
-	public IEnumerable<TItem> Items { get; set; }
+	public TItem[] Items { get; set; }
 
 	[Parameter]
 	public int PageSize { get; set; } = 10;

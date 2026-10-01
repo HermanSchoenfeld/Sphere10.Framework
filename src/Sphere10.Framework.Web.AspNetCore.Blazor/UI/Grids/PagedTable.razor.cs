@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -20,7 +19,7 @@ public partial class PagedTable<TItem> {
 	private int _appliedPageSize;
 
 	[Parameter]
-	public IEnumerable<TItem> Items { get; set; }
+	public TItem[] Items { get; set; }
 
 	[Parameter]
 	public RenderFragment<TItem> ItemTemplate { get; set; }
@@ -37,11 +36,11 @@ public partial class PagedTable<TItem> {
 	[Parameter]
 	public int PageSize { get; set; } = 10;
 
-	public IEnumerable<TItem> Page => Items.Skip((CurrentPage - 1) * _effectivePageSize).Take(_effectivePageSize).ToList();
+	public TItem[] Page => Items.Skip((CurrentPage - 1) * _effectivePageSize).Take(_effectivePageSize).ToArray();
 
 	public int CurrentPage { get; set; } = 1;
 
-	public int TotalPages => (int)Math.Ceiling((double)Items.Count() / _effectivePageSize);
+	public int TotalPages => (int)Math.Ceiling((double)Items.Length / _effectivePageSize);
 
 	public bool HasNextPage => CurrentPage < TotalPages;
 
@@ -87,7 +86,7 @@ public partial class PagedTable<TItem> {
 
 	private void SetPageSize(int pageSize) {
 		Guard.ArgumentGT(pageSize, 0, nameof(pageSize));
-		var index = (CurrentPage - 1) * _effectivePageSize + Page.Count();
+		var index = (CurrentPage - 1) * _effectivePageSize + Page.Length;
 		_effectivePageSize = pageSize;
 		CurrentPage = Math.Max(1, (int)Math.Ceiling((double)index / pageSize));
 	}

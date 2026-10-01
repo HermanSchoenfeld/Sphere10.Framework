@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
@@ -19,16 +18,23 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 /// </summary>
 /// <typeparam name="TItem"> type of item being displayed</typeparam>
 public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel {
+	private TItem[] _items = Array.Empty<TItem>();
+
 	/// <summary>
 	/// Gets or sets the items collection
 	/// </summary>
-	public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+	public TItem[] Items {
+		get => Tools.Array.Clone(_items);
+		set {
+			Guard.ArgumentNotNull(value, nameof(value));
+			_items = Tools.Array.Clone(value);
+		}
+	}
 
 	/// <summary>
 	/// Gets the current page of items being displayed
 	/// </summary>
-	public IEnumerable<TItem> Page => Items.Skip((CurrentPage - 1) * PageSize).Take(PageSize)
-		.ToList();
+	public TItem[] Page => _items.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToArray();
 
 	/// <summary>
 	/// backing field for page size
@@ -45,8 +51,8 @@ public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollecti
 			Guard.ArgumentGT(value, 0, nameof(value));
 			if (value == _pageSize)
 				return;
-			if (Items.Any()) {
-				int index = (CurrentPage - 1) * PageSize + Page.Count();
+			if (_items.Length > 0) {
+				int index = (CurrentPage - 1) * PageSize + Page.Length;
 				_pageSize = value;
 				CurrentPage = Math.Max(1, (int)Math.Ceiling((double)index / _pageSize));
 			} else {
@@ -76,7 +82,7 @@ public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollecti
 	/// <summary>
 	/// Gets the total number of pages based on total items and page size.
 	/// </summary>
-	public int TotalPages => (int)Math.Ceiling((double)Items.Count() / PageSize);
+	public int TotalPages => (int)Math.Ceiling((double)_items.Length / PageSize);
 
 	/// <summary>
 	/// Gets a value indicating whether there is a next page.
