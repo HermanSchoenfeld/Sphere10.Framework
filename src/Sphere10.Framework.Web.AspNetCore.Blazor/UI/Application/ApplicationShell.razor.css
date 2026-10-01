@@ -1,11 +1,11 @@
-.sphere10-application { display: grid; grid-template-columns: 16rem minmax(0, 1fr); grid-template-rows: auto 1fr auto; min-height: 100vh; color: #202b3d; background: #f4f6fa; }
-.sphere10-header { grid-column: 1 / -1; padding: 1rem 1.5rem; background: #14253c; color: white; }
-.sphere10-sidebar { padding: 1rem; border-right: 1px solid #dce2eb; background: white; }
+.sphere10-application { display: grid; grid-template-columns: 16rem minmax(0, 1fr); grid-template-rows: auto 1fr auto; min-height: 100vh; color: var(--sphere10-text, #202b3d); background: var(--sphere10-background, #f4f6fa); }
+.sphere10-header { grid-column: 1 / -1; padding: 1rem 1.5rem; background: var(--sphere10-header-background, #14253c); color: var(--sphere10-header-text, white); }
+.sphere10-sidebar { padding: 1rem; border-right: 1px solid var(--sphere10-border, #dce2eb); background: var(--sphere10-surface, white); }
 .sphere10-content { min-width: 0; padding: 1.5rem; }
 .sphere10-screens { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
-.sphere10-screen-tab { display: flex; border: 1px solid #c7d1df; border-radius: .3rem; overflow: hidden; }
-.sphere10-screen-tab button { border: 0; padding: .5rem .75rem; background: white; color: inherit; cursor: pointer; }
-.sphere10-screen-tab button[aria-current="page"] { background: #2456a6; color: white; }
-.sphere10-screen-tab button:focus-visible { outline: 2px solid #2456a6; outline-offset: -3px; }
-.sphere10-footer { grid-column: 1 / -1; padding: .75rem 1.5rem; border-top: 1px solid #dce2eb; }
-@media (max-width: 700px) { .sphere10-application { grid-template-columns: 1fr; } .sphere10-sidebar { border-right: 0; border-bottom: 1px solid #dce2eb; } }
+.sphere10-screen-tab { display: flex; border: 1px solid var(--sphere10-border-strong, #c7d1df); border-radius: .3rem; overflow: hidden; }
+.sphere10-screen-tab button { border: 0; padding: .5rem .75rem; background: var(--sphere10-surface, white); color: inherit; cursor: pointer; }
+.sphere10-screen-tab button[aria-current="page"] { background: var(--sphere10-accent, #2456a6); color: var(--sphere10-accent-contrast, white); }
+.sphere10-screen-tab button:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: -3px; }
+.sphere10-footer { grid-column: 1 / -1; padding: .75rem 1.5rem; border-top: 1px solid var(--sphere10-border, #dce2eb); }
+@media (max-width: 700px) { .sphere10-application { grid-template-columns: 1fr; } .sphere10-sidebar { border-right: 0; border-bottom: 1px solid var(--sphere10-border, #dce2eb); } }

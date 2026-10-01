@@ -1,4 +1,4 @@
 .application-menus h2 { font-size: 1rem; font-weight: 600; margin: 1rem 0 .5rem; }
 .application-menus ul { padding: 0; list-style: none; }
-.application-menus button { width: 100%; padding: .5rem; border: 0; border-radius: .25rem; background: transparent; color: #2456a6; cursor: pointer; text-align: left; }
-.application-menus button:hover, .application-menus button:focus-visible { background: #edf2fa; }
+.application-menus button { width: 100%; padding: .5rem; border: 0; border-radius: .25rem; background: transparent; color: var(--sphere10-accent, #2456a6); cursor: pointer; text-align: left; }
+.application-menus button:hover, .application-menus button:focus-visible { background: var(--sphere10-hover, #edf2fa); }

@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -33,6 +34,7 @@ public static class IServiceCollectionExtensions {
 		services.TryAddScoped<Logic.Modal.ViewService>();
 		services.TryAddSingleton<IApplicationBlockCatalog, ApplicationBlockCatalog>();
 		services.TryAddScoped<IApplicationScreenHost, ApplicationScreenHost>();
+		services.TryAddScoped<IThemeService, ThemeService>();
 		return services;
 	}
 

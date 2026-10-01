@@ -1,0 +1,25 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.sphere10-theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: .5rem;
+	border: 1px solid var(--sphere10-border-strong, #adb9c8);
+	border-radius: .4rem;
+	padding: .45rem .75rem;
+	font: inherit;
+	color: var(--sphere10-text, #202b3d);
+	background: var(--sphere10-surface, #fff);
+	cursor: pointer;
+}
+.sphere10-theme-toggle:hover { background: var(--sphere10-hover, #eaf1fa); }
+.sphere10-theme-toggle[aria-pressed="true"] { background: var(--sphere10-selected, #deeffd); }
+.sphere10-theme-toggle:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: 3px; }
+.sphere10-theme-toggle svg { flex: 0 0 auto; }

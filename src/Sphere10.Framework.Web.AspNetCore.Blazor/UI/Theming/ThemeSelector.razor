@@ -1,0 +1,22 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+@namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Theming
+@inherits ThemedComponentBase
+
+<label class="sphere10-theme-selector @Class">
+	<span>Theme</span>
+	<select aria-label="Theme" @onchange="ChangeTheme">
+		<option value="classic-blue" selected="@(ThemeService.CurrentTheme == ThemeMode.ClassicBlue)">Classic blue</option>
+		<option value="blue" selected="@(ThemeService.CurrentTheme == ThemeMode.Blue)">Blue</option>
+		<option value="light" selected="@(ThemeService.CurrentTheme == ThemeMode.Light)">Light</option>
+		<option value="dark" selected="@(ThemeService.CurrentTheme == ThemeMode.Dark)">Dark</option>
+	</select>
+</label>

@@ -1,0 +1,158 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+/* Tokens are inherited within a provider; loading this sheet does not theme the host document. */
+.sphere10-theme,
+[data-sphere10-theme="light"] {
+	--sphere10-font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 500;
+	--sphere10-background: #f4f6fa;
+	--sphere10-surface: #ffffff;
+	--sphere10-surface-raised: #edf2f7;
+	--sphere10-text: #202b3d;
+	--sphere10-muted: #58687b;
+	--sphere10-border: #d5dce5;
+	--sphere10-border-strong: #adb9c8;
+	--sphere10-accent: #2456a6;
+	--sphere10-accent-contrast: #ffffff;
+	--sphere10-hover: #eaf1fa;
+	--sphere10-selected: #deeffd;
+	--sphere10-editing: #edf6e7;
+	--sphere10-danger: #a51c30;
+	--sphere10-success: #246b42;
+	--sphere10-warning-background: #fff6e2;
+	--sphere10-focus: #2456a6;
+	--sphere10-shadow: 0 .25rem .75rem #17324d20;
+	--sphere10-header-background: #14253c;
+	--sphere10-header-text: #ffffff;
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: var(--sphere10-surface);
+	--sphere10-navigation-text: var(--sphere10-text);
+	--sphere10-navigation-active-text: var(--sphere10-text);
+	--sphere10-navigation-icon: var(--sphere10-muted);
+	--sphere10-navigation-muted: var(--sphere10-muted);
+	--sphere10-navigation-hover: var(--sphere10-hover);
+	--sphere10-navigation-selected: var(--sphere10-selected);
+	--sphere10-navigation-border: var(--sphere10-border);
+	color-scheme: light;
+}
+
+[data-sphere10-theme="dark"] {
+	--sphere10-font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 500;
+	--sphere10-background: #131a26;
+	--sphere10-surface: #1b2433;
+	--sphere10-surface-raised: #243248;
+	--sphere10-text: #e9eef7;
+	--sphere10-muted: #aebcd0;
+	--sphere10-border: #354359;
+	--sphere10-border-strong: #5b6c85;
+	--sphere10-accent: #8cbeff;
+	--sphere10-accent-contrast: #091a2f;
+	--sphere10-hover: #263650;
+	--sphere10-selected: #243e5e;
+	--sphere10-editing: #1c4037;
+	--sphere10-danger: #ff9caa;
+	--sphere10-success: #8ad5aa;
+	--sphere10-warning-background: #463719;
+	--sphere10-focus: #8cbeff;
+	--sphere10-shadow: 0 .25rem .75rem #00000050;
+	--sphere10-header-background: #243248;
+	--sphere10-header-text: #e9eef7;
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: var(--sphere10-surface);
+	--sphere10-navigation-text: var(--sphere10-text);
+	--sphere10-navigation-active-text: var(--sphere10-text);
+	--sphere10-navigation-icon: var(--sphere10-muted);
+	--sphere10-navigation-muted: var(--sphere10-muted);
+	--sphere10-navigation-hover: var(--sphere10-hover);
+	--sphere10-navigation-selected: var(--sphere10-selected);
+	--sphere10-navigation-border: var(--sphere10-border);
+	color-scheme: dark;
+}
+
+/* Both blue skins share their palette; Classic blue restores the original Loader typography and topbar. */
+[data-sphere10-theme="blue"],
+[data-sphere10-theme="classic-blue"] {
+	--sphere10-font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 500;
+	--sphere10-background: #f8f9fc;
+	--sphere10-surface: #ffffff;
+	--sphere10-surface-raised: #f3f5fc;
+	--sphere10-text: #3a3b45;
+	--sphere10-muted: #6b6d7d;
+	--sphere10-border: #e3e6f0;
+	--sphere10-border-strong: #b5bdd5;
+	--sphere10-accent: #4e73df;
+	--sphere10-accent-contrast: #ffffff;
+	--sphere10-hover: #eaecf4;
+	--sphere10-selected: #e3eafd;
+	--sphere10-editing: #e3f6ed;
+	--sphere10-danger: #b92c23;
+	--sphere10-success: #137d5c;
+	--sphere10-warning-background: #fff4d9;
+	--sphere10-focus: #224abe;
+	--sphere10-shadow: 0 .15rem 1.75rem #3a3b4526;
+	--sphere10-header-background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+	--sphere10-header-text: #ffffff;
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+	--sphere10-navigation-text: #ffffff;
+	--sphere10-navigation-active-text: #ffffff;
+	--sphere10-navigation-icon: #ffffff;
+	--sphere10-navigation-muted: #ffffffcc;
+	--sphere10-navigation-hover: #ffffff1f;
+	--sphere10-navigation-selected: #ffffff2e;
+	--sphere10-navigation-border: #ffffff26;
+	color-scheme: light;
+}
+
+[data-sphere10-theme="classic-blue"] {
+	--sphere10-font-family: Roboto, Helvetica, Arial, sans-serif;
+	--sphere10-heading-text: #5a5c69;
+	--sphere10-heading-weight: 400;
+	--sphere10-header-background: #ffffff;
+	--sphere10-header-text: #858796;
+	--sphere10-navigation-icon: #ffffff80;
+	--sphere10-navigation-text: #ffffffcc;
+}
+
+.sphere10-theme {
+	/* Bootstrap is optional. These variables keep Bootstrap controls aligned when a host includes it. */
+	--bs-body-font-family: var(--sphere10-font-family);
+	--bs-heading-color: var(--sphere10-heading-text);
+	--bs-body-bg: var(--sphere10-background);
+	--bs-body-color: var(--sphere10-text);
+	--bs-secondary-color: var(--sphere10-muted);
+	--bs-secondary-bg: var(--sphere10-surface-raised);
+	--bs-tertiary-bg: var(--sphere10-surface-raised);
+	--bs-border-color: var(--sphere10-border);
+	--bs-link-color: var(--sphere10-accent);
+	--bs-link-hover-color: var(--sphere10-accent);
+	--bs-emphasis-color: var(--sphere10-text);
+	font-family: var(--sphere10-font-family);
+	color: var(--sphere10-text);
+	background: var(--sphere10-background);
+}
+
+.sphere10-theme :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]), select, textarea) {
+	color: var(--sphere10-text);
+	background-color: var(--sphere10-surface);
+	border-color: var(--sphere10-border-strong);
+}
+
+.sphere10-theme :where(h1, h2, h3, h4, h5, h6) { color: var(--sphere10-heading-text); font-weight: var(--sphere10-heading-weight); }
+.sphere10-theme :where(input, textarea)::placeholder { color: var(--sphere10-muted); opacity: 1; }
+.sphere10-theme :where(a:not(.btn)) { color: var(--sphere10-accent); }
+.sphere10-theme :where(.text-muted) { color: var(--sphere10-muted) !important; }
+.sphere10-theme :where(.text-danger, .validation-message) { color: var(--sphere10-danger) !important; }
+.sphere10-theme :where(.text-success) { color: var(--sphere10-success) !important; }
