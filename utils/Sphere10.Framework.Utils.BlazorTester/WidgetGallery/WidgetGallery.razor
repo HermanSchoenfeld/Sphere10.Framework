@@ -10,5 +10,12 @@
 
 @page "/widget-gallery"
 @inherits ComponentWithViewModel<WidgetGalleryViewModel>
-<h1 class="h3 mb-2 text-gray-800">Widget Gallery</h1>
+<h1 class="h3 mb-2 text-gray-800">Legacy plugin gallery</h1>
 <p> A random number: @ViewModel.NumberService.GetRandomNumber()</p>
+<p>These original plugin examples retain their models and services inside the common demo shell.</p>
+<div class="demo-card-grid">
+	<a class="demo-card" href="widget-gallery/modals"><i class="fas fa-comment" aria-hidden="true"></i><h2>Original dialogs</h2><p>Information and confirmation from the original modal service.</p></a>
+	<a class="demo-card" href="widget-gallery/tables"><i class="fas fa-list" aria-hidden="true"></i><h2>Original tables</h2><p>Plugin view models with local paged and streaming data.</p></a>
+	<a class="demo-card" href="widget-gallery/wizards"><i class="fas fa-magic" aria-hidden="true"></i><h2>Original wizard</h2><p>Create a sample widget through validated steps.</p></a>
+	<a class="demo-card" href="servers"><i class="fas fa-server" aria-hidden="true"></i><h2>Endpoint sample</h2><p>Select or add a local sample endpoint; no server is contacted.</p></a>
+</div>

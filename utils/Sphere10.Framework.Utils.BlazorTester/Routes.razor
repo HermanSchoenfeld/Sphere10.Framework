@@ -8,12 +8,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Utils.BlazorTester.Loader.Layouts
+@using Sphere10.Framework.Utils.BlazorTester.Layouts
 @using Sphere10.Framework.Utils.BlazorTester.Loader.Pages
 
 <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(NotFound)">
 	<Found Context="routeData">
-		<RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+		<RouteView RouteData="routeData" DefaultLayout="typeof(DemoLayout)" />
 		<FocusOnNavigate RouteData="routeData" Selector="h1" />
 	</Found>
 </Router>

@@ -9,14 +9,8 @@
 *@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Utils.BlazorTester.Demos
 @inherits BlazorApplicationScreen
 
-<h1>Scratchpad</h1>
-<p>Each selection of “New scratchpad” opens an independent screen. Scratchpad text is temporary.</p>
-<label for="@($"scratch-{Session.Id:N}")">Notes</label>
-<textarea id="@($"scratch-{Session.Id:N}")" class="form-control" @bind="_notes" @bind:event="oninput"></textarea>
-<p class="mt-3">Instance: @Session.Id</p>
-
-@code {
-	private string _notes = string.Empty;
-}
+<h1>Dialogs workspace</h1>
+<DialogsDemo />

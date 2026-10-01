@@ -1,0 +1,66 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@inherits LayoutComponentBase
+@using Sphere10.Framework.Utils.BlazorTester.Loader.Components
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
+@using LegacyModalHost = Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal.ModalHost
+@using ModernModalHost = Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs.ModalHost
+@inject Sphere10.Framework.Web.AspNetCore.Blazor.Services.IModalService LegacyModalService
+@inject Sphere10.Framework.Web.AspNetCore.Blazor.Modal.ModalService ModernModalService
+
+<ThemeProvider>
+	<div class="demo-shell" data-testid="demo-shell">
+		<a class="demo-skip-link" href="#demo-main">Skip to content</a>
+		<aside class="demo-sidebar" aria-label="Demo navigation">
+			<div class="demo-endpoint"><SidebarBrand /></div>
+			<div id="demo-navigation" class="demo-navigation @(_navigationExpanded ? "expanded" : "")">
+				@foreach (var group in DemoNavigation.Groups) {
+					<nav class="demo-nav-group" aria-label="@group.Title">
+						<h2>@group.Title</h2>
+						@foreach (var link in group.Links) {
+							<NavLink class="demo-nav-link" href="@link.Href" Match="NavLinkMatch.All">
+								<i class="@link.Icon" aria-hidden="true"></i><span>@link.Title</span>
+							</NavLink>
+						}
+					</nav>
+				}
+			</div>
+			<div class="demo-blocks">
+				<h2>Application blocks</h2>
+				<DemoBlockDock />
+			</div>
+		</aside>
+		<header class="demo-header">
+			<button type="button" class="demo-menu-toggle" aria-controls="demo-navigation" aria-expanded="@(_navigationExpanded ? "true" : "false")"
+				@onclick="() => _navigationExpanded = !_navigationExpanded"><i class="fas fa-bars" aria-hidden="true"></i> Menu</button>
+			<a class="demo-brand" href="/">Blazor demos</a>
+			<div class="demo-search"><Sphere10.Framework.Web.AspNetCore.Blazor.Components.SearchInput SearchProvider="DemoNavigation.SearchAsync" /></div>
+			<div class="demo-header-actions"><ThemeSelector /></div>
+		</header>
+		<main id="demo-main" class="demo-main" tabindex="-1">@Body</main>
+		<footer class="demo-footer">Sphere10 Framework · Local sample data · Changes are not persisted</footer>
+	</div>
+	<Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal.ModalHost Id="legacy-modal" @ref="_legacyModal" />
+	<Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs.ModalHost Id="modern-modal" @ref="_modernModal" />
+</ThemeProvider>
+
+@code {
+	private LegacyModalHost _legacyModal;
+	private ModernModalHost _modernModal;
+	private bool _navigationExpanded;
+
+	protected override void OnAfterRender(bool firstRender) {
+		if (!firstRender)
+			return;
+		LegacyModalService.Initialize(_legacyModal);
+		ModernModalService.Initialize(_modernModal);
+	}
+}

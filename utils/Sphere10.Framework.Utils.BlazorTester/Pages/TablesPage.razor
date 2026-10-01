@@ -8,7 +8,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@inherits LayoutComponentBase
-@layout Sphere10.Framework.Utils.BlazorTester.Layouts.DemoLayout
+@page "/components/tables"
+@using Sphere10.Framework.Utils.BlazorTester.Demos
 
-<div class="demo-workspace">@Body</div>
+<PageTitle>Tables · Sphere10 demos</PageTitle>
+<header class="demo-page-header">
+	<h1><i class="fas fa-list-alt" aria-hidden="true"></i> Tables</h1>
+	<p>Paged, virtual and streaming rows share the same shell.</p>
+</header>
+<TablesDemo />

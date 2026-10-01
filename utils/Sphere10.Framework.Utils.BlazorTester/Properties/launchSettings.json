@@ -4,7 +4,7 @@
     "Sphere10.Framework.Utils.BlazorTester": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "application",
+      "launchUrl": "components/grid",
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5187",
       "environmentVariables": {

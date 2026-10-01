@@ -1,0 +1,105 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+Distributed under the MIT software license, see LICENSE or https://opensource.org/license/mit.
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.demo-shell {
+	display: grid;
+	grid-template-columns: 14rem minmax(0, 1fr);
+	grid-template-rows: auto 1fr auto;
+	min-height: 100vh;
+	color: var(--sphere10-text);
+	background: var(--sphere10-background);
+}
+
+.demo-sidebar {
+	grid-column: 1;
+	grid-row: 1 / 4;
+	position: sticky;
+	top: 0;
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	height: 100dvh;
+	min-height: 0;
+	border-right: 1px solid var(--sphere10-navigation-border);
+	background: var(--sphere10-navigation-background);
+	color: var(--sphere10-navigation-text);
+}
+
+.demo-endpoint { padding: 1.2rem 1rem; border-bottom: 1px solid var(--sphere10-navigation-border); }
+.demo-navigation { flex: 1; min-height: 0; overflow-y: auto; padding: 1rem .75rem; scrollbar-width: thin; }
+.demo-nav-group { margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--sphere10-navigation-border); }
+.demo-nav-group:last-child { margin-bottom: 0; border-bottom: 0; padding-bottom: 0; }
+.demo-nav-group h2, .demo-blocks h2 { margin: 0 0 .5rem; padding: 0 .5rem; font-size: .65rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--sphere10-navigation-muted); }
+.demo-blocks { flex: none; padding: .85rem .75rem; border-top: 1px solid var(--sphere10-navigation-border); }
+
+.demo-sidebar ::deep .demo-nav-link {
+	display: flex;
+	align-items: center;
+	gap: .65rem;
+	padding: .65rem .5rem;
+	border-radius: .35rem;
+	color: var(--sphere10-navigation-text);
+	text-decoration: none;
+	font-size: .85rem;
+}
+
+.demo-sidebar ::deep .demo-nav-link i { width: 1.25rem; text-align: center; color: var(--sphere10-navigation-icon); }
+.demo-sidebar ::deep .demo-nav-link:hover { background: var(--sphere10-navigation-hover); }
+.demo-sidebar ::deep .demo-nav-link.active { background: var(--sphere10-navigation-selected); color: var(--sphere10-navigation-active-text); font-weight: 700; }
+.demo-sidebar ::deep .demo-nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+
+.demo-header {
+	grid-column: 2;
+	grid-row: 1;
+	display: flex;
+	align-items: center;
+	gap: 1.25rem;
+	min-width: 0;
+	min-height: 4.375rem;
+	padding: .75rem 1.5rem;
+	background: var(--sphere10-header-background);
+	color: var(--sphere10-header-text);
+	border-bottom: 1px solid var(--sphere10-border);
+	box-shadow: var(--sphere10-header-shadow);
+	z-index: 1;
+}
+
+.demo-brand { color: inherit; text-decoration: none; font-size: 1rem; font-weight: 600; white-space: nowrap; }
+.demo-search { flex: 1; max-width: 25rem; min-width: 8rem; }
+.demo-header-actions { margin-left: auto; }
+.demo-menu-toggle { display: none; }
+.demo-main { grid-column: 2; grid-row: 2; min-width: 0; padding: 1.5rem; }
+.demo-footer { grid-column: 2; grid-row: 3; padding: 1.25rem 1.5rem; background: var(--sphere10-surface); border-top: 1px solid var(--sphere10-border); font-size: .8rem; color: var(--sphere10-muted); }
+.demo-skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 2000; padding: .7rem; background: var(--sphere10-surface); color: var(--sphere10-text); }
+.demo-skip-link:focus { top: .5rem; }
+.demo-main ::deep h1:focus { outline: none; }
+.demo-main ::deep .demo-page-header { margin-bottom: 2rem; }
+.demo-main ::deep .demo-page-header h1 { font-size: 1.8rem; font-weight: var(--sphere10-heading-weight); }
+.demo-main ::deep .demo-page-header p { color: var(--sphere10-muted); }
+.demo-main ::deep .demo-example { min-width: 0; }
+.demo-main ::deep .demo-example h2 { font-size: 1.35rem; margin-bottom: 1rem; }
+.demo-main ::deep .demo-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: 1rem; }
+.demo-main ::deep .demo-card { display: block; padding: 1.5rem; border: 1px solid var(--sphere10-border); border-radius: .35rem; background: var(--sphere10-surface); color: var(--sphere10-text); text-decoration: none; }
+.demo-main ::deep .demo-card:hover { border-color: var(--sphere10-accent); background: var(--sphere10-hover); }
+.demo-main ::deep .demo-card > i { color: var(--sphere10-accent); font-size: 1.5rem; margin-bottom: .8rem; }
+.demo-main ::deep .demo-card h2 { font-size: 1.15rem; }
+.demo-main ::deep .demo-card p { margin: 0; color: var(--sphere10-muted); }
+
+@media (max-width: 850px) {
+	.demo-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; }
+	.demo-header { grid-column: 1; grid-row: 1; flex-wrap: wrap; gap: .75rem; padding: .75rem 1rem; }
+	.demo-brand { display: none; }
+	.demo-menu-toggle { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid var(--sphere10-border); border-radius: .35rem; padding: .5rem .65rem; color: var(--sphere10-text); background: var(--sphere10-surface); }
+	.demo-search { order: 1; flex: 1 0 100%; max-width: none; }
+	.demo-sidebar { grid-column: 1; grid-row: 2; position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--sphere10-navigation-border); }
+	.demo-endpoint { padding: .75rem 1rem; }
+	.demo-navigation { display: none; overflow-y: visible; }
+	.demo-navigation.expanded { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; }
+	.demo-blocks { display: flex; align-items: center; gap: .75rem; padding: .65rem 1rem; }
+	.demo-blocks h2 { margin: 0; padding: 0; }
+	.demo-main { grid-column: 1; grid-row: 3; padding: 1.25rem; }
+	.demo-footer { grid-column: 1; grid-row: 4; }
+}

@@ -6,16 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 using Sphere10.Framework.Utils.BlazorTester.Loader;
-using Sphere10.Framework.Utils.BlazorTester.Loader.Plugins;
-using Sphere10.Framework.Utils.BlazorTester.Loader.Services;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery;
 
 namespace Sphere10.Framework.Utils.BlazorTester;
@@ -35,16 +30,9 @@ public static class Program {
 	}
 
 	public static void ConfigureServices(IServiceCollection services) {
-		services.AddSphere10Blazor();
-		Application.WorkspaceRegistration.AddWorkspace(services);
-		services.AddViewModelsFromAssembly(typeof(Program).Assembly);
-		services.AddScoped<IPluginLocator, StaticPluginLocator>();
-		services.AddScoped<IPluginManager, DefaultPluginManager>();
-		services.AddScoped<IAppManager, DefaultAppManager>();
-		services.AddScoped<INodeService, MockNodeService>();
-		services.AddScoped<IEndpointManager, DefaultEndpointManager>();
-		new Sphere10Plugin().ConfigureServices(services);
-		new WidgetGalleryPlugin().ConfigureServices(services);
+		services.AddScoped<IThemeService>(_ => new ThemeService(ThemeMode.ClassicBlue));
+		services.AddSphere10Blazor()
+			.AddSphere10BlazorPlugin(Sphere10Plugin.Configure)
+			.AddSphere10BlazorPlugin(WidgetGalleryPlugin.Configure);
 	}
-
 }

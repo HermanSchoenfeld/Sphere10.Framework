@@ -1,46 +1,58 @@
-html, body { font-family: Roboto, Helvetica, Arial, sans-serif; }
+/* Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+ * Distributed under the MIT software license. See LICENSE.
+ */
 
-a, .btn-link { color: #0366d6; }
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+html, body {
+	margin: 0;
+	font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-.valid.modified:not([type=checkbox]) { outline: 1px solid #26b050; }
+body {
+	min-width: 320px;
+}
 
-.invalid { outline: 1px solid red; }
+a {
+	text-underline-offset: .18em;
+}
 
-.validation-message { color: red; }
+button, input, select, textarea {
+	font: inherit;
+}
+
+.valid.modified:not([type=checkbox]) {
+	outline: 1px solid var(--sphere10-success);
+}
+
+.invalid {
+	outline: 1px solid var(--sphere10-danger);
+}
+
+.validation-message {
+	color: var(--sphere10-danger);
+}
 
 #blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
+	background: var(--sphere10-warning-background);
+	color: var(--sphere10-text);
+	bottom: 0;
+	box-shadow: var(--sphere10-shadow);
+	display: none;
+	left: 0;
+	padding: .75rem 1.25rem;
+	position: fixed;
+	width: 100%;
+	z-index: 2000;
 }
 
 #blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
+	cursor: pointer;
+	position: absolute;
+	right: .75rem;
+	top: .5rem;
 }
 
 .loading-page {
-    height: 100px;
-    top: 50%;
-    left: 50%;
-    display: block;
-    position: absolute;
-    width: 220px;
-    margin-top: -50px;
-    margin-left: -100px;
-    text-align: center;
+	display: grid;
+	min-height: 12rem;
+	place-items: center;
 }
