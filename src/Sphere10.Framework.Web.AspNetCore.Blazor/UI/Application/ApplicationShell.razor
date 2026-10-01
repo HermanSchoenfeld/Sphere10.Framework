@@ -8,7 +8,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="ScreenHost.HasUnsavedChanges" />
@@ -29,7 +28,7 @@
 		@if (_routeError != null) {
 			<p role="alert">@_routeError</p>
 		}
-		@if (ScreenHost.OpenScreens.Count > 0) {
+		@if (ScreenHost.OpenScreens.Length > 0) {
 			<nav class="sphere10-screens" aria-label="Open screens">
 				@foreach (var session in ScreenHost.OpenScreens) {
 					<div @key="session.Id" class="sphere10-screen-tab">

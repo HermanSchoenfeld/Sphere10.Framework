@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -29,7 +28,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	private bool _synchronizeLocation;
 	private bool _disposed;
 
-	[Inject] public IApplicationScreenHost ScreenHost { get; set; }
+	[Inject] public IBlazorApplicationScreenHost ScreenHost { get; set; }
 
 	[Inject] public NavigationManager Navigation { get; set; }
 
@@ -85,8 +84,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 			if (existing != null) {
 				await ScreenHost.ShowScreenAsync(existing.Id, token);
 			} else if (!string.IsNullOrEmpty(request.ScreenId)) {
-				if (!block.Menus.SelectMany(menu => menu.Items).OfType<ShowScreenMenuItem>().Any(item => item.Id == request.ScreenId)
-					&& !(request.ScreenId == ApplicationBlockSnapshot.DefaultScreenItemId && block.DefaultScreen != null)) {
+				if (!block.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>().Any(item => item.Id == request.ScreenId)
+					&& !(request.ScreenId == BlazorApplicationBlockSnapshot.DefaultScreenItemId && block.DefaultScreen != null)) {
 					_routeError = "The requested screen was not found.";
 					return;
 				}
@@ -116,12 +115,12 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		ScreenHost.Changed -= OnHostChanged;
 	}
 
-	private Task ActivateBlockAsync(IApplicationBlock block) => RunInteractionAsync(async token => {
+	private Task ActivateBlockAsync(IBlazorApplicationBlock block) => RunInteractionAsync(async token => {
 		var session = await ScreenHost.ActivateBlockAsync(block.Id, token);
 		return session != null || ScreenHost.ActiveBlock?.Id == block.Id;
 	}, false);
 
-	private Task ExecuteMenuItemAsync(IApplicationMenuItem item) {
+	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) {
 		var block = ScreenHost.ActiveBlock;
 		return block == null ? Task.CompletedTask : RunInteractionAsync(token => ScreenHost.ExecuteMenuItemAsync(block.Id, item.Id, token), false);
 	}

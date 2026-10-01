@@ -6,24 +6,25 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Application.UI;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Application;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A renderer-owned application screen with asynchronous activation and navigation guards.</summary>
-public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAsyncDisposable {
+public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicationScreen, IAsyncDisposable {
 	private Guid? _attachedSessionId;
 	private bool _disposed;
 
 	[CascadingParameter]
-	public ApplicationScreenSession Session { get; set; }
+	public BlazorApplicationScreenSession Session { get; set; }
 
 	[Inject]
-	public IApplicationScreenHost ScreenHost { get; set; }
+	public IBlazorApplicationScreenHost ScreenHost { get; set; }
 
 	public virtual bool HasUnsavedChanges => false;
 

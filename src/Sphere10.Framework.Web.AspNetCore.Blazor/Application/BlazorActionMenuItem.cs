@@ -9,25 +9,26 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class ActionMenuItem : ApplicationMenuItem {
-	/// <summary>Compatibility callback for synchronous actions.</summary>
-	public Action Action { get; init; }
+public class BlazorActionMenuItem : BlazorApplicationMenuItem {
+	private readonly ApplicationAction _action = new();
 
-	/// <summary>Executes against the current circuit's provider; registration must not capture scoped service instances.</summary>
-	public Func<IServiceProvider, CancellationToken, Task> AsyncAction { get; init; }
+	public Action Action {
+		get => _action.Action;
+		init => _action.Action = value;
+	}
+
+	/// <summary>Resolves scoped services at execution time; registration must not capture scoped instances.</summary>
+	public Func<IServiceProvider, CancellationToken, Task> AsyncAction {
+		get => _action.AsyncAction;
+		init => _action.AsyncAction = value;
+	}
 
 	public async Task ExecuteAsync(IServiceProvider services, CancellationToken cancellationToken = default) {
-		Guard.ArgumentNotNull(services, nameof(services));
-		cancellationToken.ThrowIfCancellationRequested();
-		if (AsyncAction != null)
-			await AsyncAction(services, cancellationToken);
-		else {
-			Guard.Ensure(Action != null, "The action has no callback.");
-			Action();
-		}
+		await _action.ExecuteAsync(services, cancellationToken);
 		NotifySelect();
 	}
 }

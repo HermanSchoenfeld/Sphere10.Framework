@@ -1,4 +1,44 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+
 .application-blocks { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.5rem; }
-.application-blocks button { display: flex; align-items: center; gap: .5rem; padding: .75rem; border: 1px solid #c7d1df; border-radius: .3rem; background: white; color: #202b3d; text-align: left; cursor: pointer; }
-.application-blocks button[aria-current="page"] { background: #2456a6; border-color: #2456a6; color: white; }
-.application-blocks button:focus-visible { outline: 2px solid #2456a6; outline-offset: 2px; }
+.application-blocks button, .application-blocks a {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	padding: .75rem;
+	border: 1px solid var(--sphere10-border-strong, #c7d1df);
+	border-radius: .3rem;
+	background: var(--sphere10-surface, white);
+	color: var(--sphere10-text, #202b3d);
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+}
+.application-blocks button:hover, .application-blocks a:hover { background: var(--sphere10-hover, #edf2f7); }
+.application-blocks button[aria-current="page"], .application-blocks a[aria-current="page"] {
+	background: var(--sphere10-accent, #2456a6);
+	border-color: var(--sphere10-accent, #2456a6);
+	color: var(--sphere10-accent-contrast, white);
+}
+.application-blocks button:focus-visible, .application-blocks a:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: 2px; }
+.application-blocks img {
+	box-sizing: border-box;
+	flex: 0 0 auto;
+	object-fit: contain;
+	padding: .15rem;
+	border-radius: .2rem;
+	background: var(--sphere10-block-icon-background, #fff);
+}
+.application-blocks-compact { flex-direction: row; flex-wrap: wrap; gap: .75rem; margin: 0; }
+.application-blocks-compact button, .application-blocks-compact a { justify-content: center; padding: .65rem; }
+.application-blocks-compact img, .application-block-fallback { width: 2rem; height: 2rem; }
+.application-block-fallback { display: grid; place-items: center; font-size: 1.4rem; font-weight: 700; }
+.application-blocks-compact .application-block-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

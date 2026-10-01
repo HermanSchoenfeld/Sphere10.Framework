@@ -6,25 +6,24 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class ApplicationBlockCatalogDecorator<TConcrete> : IApplicationBlockCatalog where TConcrete : IApplicationBlockCatalog {
+public abstract class BlazorApplicationBlockCatalogDecorator<TConcrete> : IBlazorApplicationBlockCatalog where TConcrete : IBlazorApplicationBlockCatalog {
 	protected readonly TConcrete InternalCatalog;
 
-	protected ApplicationBlockCatalogDecorator(TConcrete catalog) {
+	protected BlazorApplicationBlockCatalogDecorator(TConcrete catalog) {
 		Guard.ArgumentNotNull(catalog, nameof(catalog));
 		InternalCatalog = catalog;
 	}
 
-	public virtual IReadOnlyList<IApplicationBlock> Blocks => InternalCatalog.Blocks;
+	public virtual IBlazorApplicationBlock[] Blocks => InternalCatalog.Blocks;
 
-	public virtual IApplicationBlock Get(string id) => InternalCatalog.Get(id);
+	public virtual IBlazorApplicationBlock Get(string id) => InternalCatalog.Get(id);
 }
 
-public abstract class ApplicationBlockCatalogDecorator : ApplicationBlockCatalogDecorator<IApplicationBlockCatalog> {
-	protected ApplicationBlockCatalogDecorator(IApplicationBlockCatalog catalog)
+public abstract class BlazorApplicationBlockCatalogDecorator : BlazorApplicationBlockCatalogDecorator<IBlazorApplicationBlockCatalog> {
+	protected BlazorApplicationBlockCatalogDecorator(IBlazorApplicationBlockCatalog catalog)
 		: base(catalog) {
 	}
 }

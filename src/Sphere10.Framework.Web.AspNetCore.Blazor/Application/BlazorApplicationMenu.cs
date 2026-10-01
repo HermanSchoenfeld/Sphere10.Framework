@@ -6,19 +6,32 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class ApplicationMenu : IApplicationMenu {
-	public string Id { get; init; }
+/// <summary>Immutable Blazor facade over shared menu metadata.</summary>
+public class BlazorApplicationMenu : IBlazorApplicationMenu {
+	private readonly ApplicationMenu<IBlazorApplicationMenuItem> _definition = new();
+
+	public string Id {
+		get => _definition.Id;
+		init => _definition.Id = value;
+	}
 
 	public string Icon { get; init; }
 
-	public string Text { get; init; }
+	public string Text {
+		get => _definition.Text;
+		init => _definition.Text = value;
+	}
 
-	public IReadOnlyList<IApplicationMenuItem> Items { get; init; } = Array.Empty<IApplicationMenuItem>();
-
-	IEnumerable<IApplicationMenuItem> IApplicationMenu.Items => Items;
+	public IBlazorApplicationMenuItem[] Items {
+		get => _definition.Items;
+		init {
+			Guard.ArgumentNotNull(value, nameof(value));
+			foreach (var item in value)
+				_definition.AddItem(item);
+		}
+	}
 }

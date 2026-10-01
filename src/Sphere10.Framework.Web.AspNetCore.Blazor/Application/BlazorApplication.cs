@@ -12,29 +12,29 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class Application : Disposable, IApplication {
+public abstract class BlazorApplication : Disposable, IBlazorApplication {
 	public event EventHandlerEx Initializing;
 
 	public event EventHandlerEx Initialized;
 
 	public event EventHandlerEx Finishing;
 
-	private readonly List<IPlugin> _plugins = new();
+	private readonly List<IBlazorPlugin> _plugins = new();
 
-	public IReadOnlyList<IPlugin> LoadedPlugins => _plugins;
+	public IBlazorPlugin[] LoadedPlugins => _plugins.ToArray();
 
-	public IApplicationBlock ActiveBlock => ScreenHost?.ActiveBlock;
+	public IBlazorApplicationBlock ActiveBlock => ScreenHost?.ActiveBlock;
 
-	public IPlugin ActivePlugin => _plugins.FirstOrDefault(plugin => plugin.Blocks.Any(block => block.Id == ActiveBlock?.Id));
+	public IBlazorPlugin ActivePlugin => _plugins.FirstOrDefault(plugin => plugin.Blocks.Any(block => block.Id == ActiveBlock?.Id));
 
-	public IApplicationScreen ActiveScreen => ScreenHost?.ActiveScreen?.Screen;
+	public IBlazorApplicationScreen ActiveScreen => ScreenHost?.ActiveScreen?.Screen;
 
 	/// <summary>The circuit-local runtime attached to this legacy startup/configuration object.</summary>
-	public IApplicationScreenHost ScreenHost { get; private set; }
+	public IBlazorApplicationScreenHost ScreenHost { get; private set; }
 
-	public void AttachScreenHost(IApplicationScreenHost screenHost) {
+	public void AttachScreenHost(IBlazorApplicationScreenHost screenHost) {
 		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
 		Guard.Ensure(ScreenHost == null || ReferenceEquals(ScreenHost, screenHost), "The application is already attached to another screen host.");
 		ScreenHost = screenHost;
@@ -47,8 +47,8 @@ public abstract class Application : Disposable, IApplication {
 		Initializing?.Invoke();
 
 		foreach (var pluginType in GetPlugins()) {
-			var plugin = pluginType.ActivateWithCompatibleArgs() as IPlugin;
-			Guard.Ensure(plugin != null, $"'{pluginType.Name}' was not an {nameof(IPlugin)}");
+			var plugin = pluginType.ActivateWithCompatibleArgs() as IBlazorPlugin;
+			Guard.Ensure(plugin != null, $"'{pluginType.Name}' was not an {nameof(IBlazorPlugin)}");
 			plugin.Load(services);
 			_plugins.Add(plugin);
 		}

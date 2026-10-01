@@ -8,78 +8,66 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class ApplicationBlockBuilder {
-	private readonly List<IApplicationMenu> _menus = new();
-	private string _id;
-	private string _name;
-	private int _position;
-	private string _iconUrl;
-	private string _tooltip;
-	private Type _defaultScreen;
-	private string _defaultScreenTitle;
-
-	public ApplicationBlockBuilder WithId(string id) {
-		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
-		_id = id;
+public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<IBlazorApplicationMenu, BlazorApplicationBlock> {
+	public BlazorApplicationBlockBuilder WithId(string id) {
+		SetId(id);
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithName(string name) {
+	public BlazorApplicationBlockBuilder WithName(string name) {
 		Guard.ArgumentNotNullOrEmpty(name, nameof(name));
-		_name = name;
+		SetName(name);
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithTitle(string title) => WithName(title);
+	public BlazorApplicationBlockBuilder WithTitle(string title) => WithName(title);
 
-	public ApplicationBlockBuilder WithPosition(int position) {
-		_position = position;
+	public BlazorApplicationBlockBuilder WithPosition(int position) {
+		SetPosition(position);
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithIconUrl(string iconUrl) {
-		_iconUrl = iconUrl;
+	public BlazorApplicationBlockBuilder WithIconUrl(string iconUrl) {
+		SetIconUrl(iconUrl);
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithTooltip(string tooltip) {
-		_tooltip = tooltip;
+	public BlazorApplicationBlockBuilder WithTooltip(string tooltip) {
+		SetTooltip(tooltip);
 		return this;
 	}
 
-	public ApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null) where TScreen : IComponent, IApplicationScreen =>
+	public BlazorApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null) where TScreen : IComponent, IBlazorApplicationScreen =>
 		WithDefaultScreen(typeof(TScreen), title);
 
-	public ApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null) {
-		ApplicationBlockSnapshot.ValidateScreenType(screenType);
-		_defaultScreen = screenType;
-		_defaultScreenTitle = title;
+	public BlazorApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null) {
+		SetDefaultScreen(screenType, title);
 		return this;
 	}
 
-	public ApplicationBlockBuilder AddMenu(Action<MenuBuilder> configure) {
+	public BlazorApplicationBlockBuilder AddMenu(Action<BlazorApplicationMenuBuilder> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
-		var builder = new MenuBuilder();
+		var builder = new BlazorApplicationMenuBuilder();
 		configure(builder);
 		return AddMenu(builder.Build());
 	}
 
-	public ApplicationBlockBuilder AddMenu(IApplicationMenu menu) {
-		Guard.ArgumentNotNull(menu, nameof(menu));
-		_menus.Add(menu);
+	public BlazorApplicationBlockBuilder AddMenu(IBlazorApplicationMenu menu) {
+		AddMenuDefinition(menu);
 		return this;
 	}
 
-	public ApplicationBlock Build() {
-		Guard.Ensure(!string.IsNullOrWhiteSpace(_name), "Block name is required.");
-		return ApplicationBlockSnapshot.Create(new ApplicationBlock {
-			Id = _id ?? _name, Title = _name, Position = _position, IconUrl = _iconUrl, Tooltip = _tooltip,
-			DefaultScreen = _defaultScreen, DefaultScreenTitle = _defaultScreenTitle, Menus = _menus
-		});
-	}
-}
+	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 
+	protected override BlazorApplicationBlock CreateBlock(IReadOnlyList<IBlazorApplicationMenu> menus) =>
+		BlazorApplicationBlockSnapshot.Create(new BlazorApplicationBlock {
+			Id = Id, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip,
+			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle, Menus = menus.ToArray()
+		});
+}

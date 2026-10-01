@@ -6,42 +6,35 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-/// <summary>Immutable structural snapshots of the registered application blocks.</summary>
-public class ApplicationBlockCatalog : ApplicationBlockCatalogBase {
-	private readonly Dictionary<string, IApplicationBlock> _blocks;
+/// <summary>Blazor platform facade over the portable snapshot catalog.</summary>
+public class BlazorApplicationBlockCatalog : BlazorApplicationBlockCatalogBase {
+	private readonly ApplicationBlockCatalog<IBlazorApplicationBlock> _catalog;
 
-	public ApplicationBlockCatalog(IEnumerable<IApplicationBlock> blocks) {
-		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		var snapshots = blocks.Select(ApplicationBlockSnapshot.Create).OrderBy(block => block.Position).Cast<IApplicationBlock>().ToArray();
-		Guard.Argument(snapshots.Select(block => block.Id).Distinct(StringComparer.Ordinal).Count() == snapshots.Length, nameof(blocks), "Block IDs must be unique.");
-		var policies = new Dictionary<Type, ScreenActivationMode>();
-		foreach (var block in snapshots) {
-			var screens = block.Menus.SelectMany(menu => menu.Items).OfType<ShowScreenMenuItem>().ToList();
-			var defaultScreen = ApplicationBlockSnapshot.GetDefaultScreen(block);
-			if (defaultScreen != null)
-				screens.Add(defaultScreen);
-			foreach (var screen in screens) {
-				Guard.Argument(!policies.TryGetValue(screen.ScreenType, out var registeredMode) || registeredMode == screen.ActivationMode,
-					nameof(blocks), $"Conflicting activation modes for {screen.ScreenType.Name}.");
-				policies[screen.ScreenType] = screen.ActivationMode;
-			}
-		}
-		Blocks = Array.AsReadOnly(snapshots);
-		_blocks = snapshots.ToDictionary(block => block.Id, StringComparer.Ordinal);
+	public BlazorApplicationBlockCatalog(IEnumerable<IBlazorApplicationBlock> blocks) {
+		_catalog = new ApplicationBlockCatalog<IBlazorApplicationBlock>(blocks, BlazorApplicationBlockSnapshot.Create,
+			block => BlazorApplicationBlockSnapshot.GetDefaultScreen(block), BlazorApplicationBlockSnapshot.ValidateScreenType);
 	}
 
-	public override IReadOnlyList<IApplicationBlock> Blocks { get; }
+	public override IBlazorApplicationBlock[] Blocks => _catalog.Blocks;
 
-	public override IApplicationBlock Get(string id) {
-		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
-		Guard.Argument(_blocks.TryGetValue(id, out var block), nameof(id), $"Unknown block '{id}'.");
-		return block;
-	}
+	public override IBlazorApplicationBlock Get(string id) => _catalog.Get(id);
 }
 
+/// <summary>Retains explicit implementations of the Blazor catalog members.</summary>
+public interface IBlazorApplicationBlockCatalog : IApplicationBlockCatalog<IBlazorApplicationBlock> {
+	new IBlazorApplicationBlock[] Blocks { get; }
+
+	new IBlazorApplicationBlock Get(string id);
+
+	IBlazorApplicationBlock[] IApplicationBlockCatalog<IBlazorApplicationBlock>.Blocks => Blocks;
+
+	IBlazorApplicationBlock IApplicationBlockCatalog<IBlazorApplicationBlock>.Get(string id) => Get(id);
+}
+
+public abstract class BlazorApplicationBlockCatalogBase : ApplicationBlockCatalogBase<IBlazorApplicationBlock>, IBlazorApplicationBlockCatalog {
+}

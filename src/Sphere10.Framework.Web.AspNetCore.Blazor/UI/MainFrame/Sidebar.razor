@@ -8,7 +8,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
 
 <nav class="sidebar" aria-label="Application navigation">
 	<div class="sidebar-content">
@@ -24,13 +23,13 @@
 
 	[Parameter] public string HomeUrl { get; set; } = "./";
 
-	[Parameter] public IReadOnlyList<IApplicationBlock> Blocks { get; set; } = Array.Empty<IApplicationBlock>();
+	[Parameter] public IBlazorApplicationBlock[] Blocks { get; set; } = Array.Empty<IBlazorApplicationBlock>();
 
-	[Parameter] public IApplicationBlock ActiveBlock { get; set; }
+	[Parameter] public IBlazorApplicationBlock ActiveBlock { get; set; }
 
-	[Parameter] public EventCallback<IApplicationBlock> OnSelectBlock { get; set; }
+	[Parameter] public EventCallback<IBlazorApplicationBlock> OnSelectBlock { get; set; }
 
-	[Parameter] public EventCallback<IApplicationMenuItem> OnSelectItem { get; set; }
+	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelectItem { get; set; }
 
 	[Parameter] public RenderFragment ChildContent { get; set; }
 }

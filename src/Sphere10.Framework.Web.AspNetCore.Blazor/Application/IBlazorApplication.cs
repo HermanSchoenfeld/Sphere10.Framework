@@ -7,20 +7,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IApplication : IDisposable {
+public interface IBlazorApplication : IDisposable {
 	event EventHandlerEx Initializing;
 	event EventHandlerEx Initialized;
 	event EventHandlerEx Finishing;
-	IReadOnlyList<IPlugin> LoadedPlugins { get; }
-	IApplicationBlock ActiveBlock { get; }
-	IPlugin ActivePlugin { get; }
-	IApplicationScreen ActiveScreen { get; }
+	IBlazorPlugin[] LoadedPlugins { get; }
+	IBlazorApplicationBlock ActiveBlock { get; }
+	IBlazorPlugin ActivePlugin { get; }
+	IBlazorApplicationScreen ActiveScreen { get; }
 
 	Task Initialize(IServiceCollection services);
 

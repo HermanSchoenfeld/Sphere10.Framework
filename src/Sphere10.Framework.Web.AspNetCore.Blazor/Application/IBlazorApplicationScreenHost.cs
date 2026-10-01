@@ -8,11 +8,10 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Owns one circuit's registered blocks, retained screen sessions and active selection.</summary>
 /// <remarks>
@@ -21,21 +20,21 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
 /// Cancellation is checked before committing a selection or removal; an activation callback failure after that
 /// commit is propagated without rolling back the selection. Components are created and disposed by the renderer.
 /// </remarks>
-public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
+public interface IBlazorApplicationScreenHost : IDisposable, IAsyncDisposable {
 	/// <summary>Signals registration, selection, attachment or screen-state changes on the caller's context.</summary>
 	event EventHandlerEx Changed;
 
-	IApplicationBlockCatalog Catalog { get; }
+	IBlazorApplicationBlockCatalog Catalog { get; }
 
 	/// <summary>Gets the catalog blocks currently registered in this circuit, ordered by position.</summary>
-	IReadOnlyList<IApplicationBlock> Blocks { get; }
+	IBlazorApplicationBlock[] Blocks { get; }
 
 	/// <summary>Gets the active block, including blocks that have actions but no screen.</summary>
-	IApplicationBlock ActiveBlock { get; }
+	IBlazorApplicationBlock ActiveBlock { get; }
 
-	ApplicationScreenSession ActiveScreen { get; }
+	BlazorApplicationScreenSession ActiveScreen { get; }
 
-	IReadOnlyList<ApplicationScreenSession> OpenScreens { get; }
+	BlazorApplicationScreenSession[] OpenScreens { get; }
 
 	/// <summary>Indicates whether any attached screen, including hidden screens, reports unsaved changes.</summary>
 	bool HasUnsavedChanges { get; }
@@ -44,13 +43,13 @@ public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
 	/// Selects the block's default screen. Returns null on a guard veto or when an action-only block is selected;
 	/// inspect ActiveBlock to distinguish those outcomes. A newly returned session attaches its component when rendered.
 	/// </summary>
-	Task<ApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default);
+	Task<BlazorApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Opens a screen menu item, or selects the retained session for its single-instance type. Returns null on a guard veto.
 	/// A retained single-instance session keeps its original block, menu item, title and parameters.
 	/// </summary>
-	Task<ApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default);
+	Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default);
 
 	/// <summary>Selects an open session after checking the current screen's guard.</summary>
 	Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);
@@ -74,10 +73,10 @@ public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
 	Task RegisterBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
 	/// <summary>Attaches a renderer-created component and activates it only if its session is currently selected.</summary>
-	Task AttachScreenAsync(Guid sessionId, IApplicationScreen screen, CancellationToken cancellationToken = default);
+	Task AttachScreenAsync(Guid sessionId, IBlazorApplicationScreen screen, CancellationToken cancellationToken = default);
 
 	/// <summary>Detaches a disposing component without closing its session. Safe after the session or host has closed.</summary>
-	void DetachScreen(Guid sessionId, IApplicationScreen screen);
+	void DetachScreen(Guid sessionId, IBlazorApplicationScreen screen);
 
 	/// <summary>Notifies observers after an attached screen changes state, such as its unsaved-changes flag.</summary>
 	void NotifyScreenChanged(Guid sessionId);

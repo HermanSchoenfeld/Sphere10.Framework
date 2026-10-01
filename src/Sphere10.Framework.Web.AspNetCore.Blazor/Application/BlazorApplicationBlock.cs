@@ -7,28 +7,54 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class ApplicationBlock : IApplicationBlock {
+/// <summary>Immutable Blazor facade over shared application-block metadata.</summary>
+public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	public const string DefaultIconUrl = "";
 
-	public string Id { get; init; }
+	private readonly ApplicationBlock _definition = new();
 
-	public int Position { get; init; }
+	public string Id {
+		get => _definition.Id;
+		init => _definition.Id = value;
+	}
 
-	public string Title { get; init; }
+	public int Position {
+		get => _definition.Position;
+		init => _definition.Position = value;
+	}
 
-	public string Name => Title;
+	public string Title {
+		get => _definition.Name;
+		init => _definition.Name = value;
+	}
+
+	public string Name => _definition.Name;
 
 	public string IconUrl { get; init; }
 
 	public string Tooltip { get; init; }
 
-	public IReadOnlyList<IApplicationMenu> Menus { get; init; } = Array.Empty<IApplicationMenu>();
+	public IBlazorApplicationMenu[] Menus {
+		get => _definition.Menus.Cast<IBlazorApplicationMenu>().ToArray();
+		init {
+			Guard.ArgumentNotNull(value, nameof(value));
+			foreach (var menu in value)
+				_definition.AddMenu(menu);
+		}
+	}
 
-	public Type DefaultScreen { get; init; }
+	public Type DefaultScreen {
+		get => _definition.DefaultScreen;
+		init => _definition.DefaultScreen = value;
+	}
 
-	public string DefaultScreenTitle { get; init; }
+	public string DefaultScreenTitle {
+		get => _definition.DefaultScreenTitle;
+		init => _definition.DefaultScreenTitle = value;
+	}
 }

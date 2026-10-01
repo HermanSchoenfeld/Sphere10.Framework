@@ -7,18 +7,22 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IApplicationBlock {
-	string Id => Title;
-	int Position { get; }
+public interface IBlazorApplicationBlock : IApplicationBlock {
 	string Title { get; }
-	string Name => Title;
+
+	string IApplicationBlock.Name => Title;
+
 	string IconUrl { get; }
+
 	string Tooltip { get; }
-	IReadOnlyList<IApplicationMenu> Menus { get; }
-	Type DefaultScreen => null;
-	string DefaultScreenTitle => null;
+
+	new IBlazorApplicationMenu[] Menus { get; }
+
+	Type IApplicationBlock.DefaultScreen => null;
+
+	IApplicationMenu[] IApplicationBlock.Menus => Menus;
 }

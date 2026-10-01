@@ -9,15 +9,15 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IPlugin {
+public interface IBlazorPlugin {
 	event EventHandlerEx Loaded;
 	event EventHandlerEx Unloaded;
 
 	string Name { get; }
 
-	IApplicationBlock[] Blocks { get; }
+	IBlazorApplicationBlock[] Blocks { get; }
 
 	IServiceProvider IoCContainer { get; }
 

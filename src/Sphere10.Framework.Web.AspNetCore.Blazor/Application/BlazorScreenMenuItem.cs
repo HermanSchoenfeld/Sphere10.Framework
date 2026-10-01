@@ -9,20 +9,18 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.AspNetCore.Components;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class ShowScreenMenuItem : ApplicationMenuItem {
+public class BlazorScreenMenuItem : BlazorApplicationMenuItem, IScreenMenuItem {
 	private Type _screenType;
 	private IReadOnlyDictionary<string, object> _parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
 
 	public Type ScreenType {
 		get => _screenType;
 		init {
-			Guard.ArgumentNotNull(value, nameof(value));
-			Guard.Argument(typeof(IComponent).IsAssignableFrom(value) && typeof(IApplicationScreen).IsAssignableFrom(value)
-				&& !value.IsAbstract && !value.ContainsGenericParameters, nameof(value), "A concrete Blazor application screen is required.");
+			Tools.UI.ValidateScreenType(value, typeof(IBlazorApplicationScreen));
 			_screenType = value;
 		}
 	}
@@ -37,6 +35,10 @@ public class ShowScreenMenuItem : ApplicationMenuItem {
 		}
 	}
 
-	public static ShowScreenMenuItem For<TScreen>(string icon, string title) where TScreen : IApplicationScreen
+	ScreenActivationMode? IScreenMenuItem.ActivationMode => ActivationMode;
+
+	string IScreenMenuItem.ScreenTitle => Title;
+
+	public static BlazorScreenMenuItem For<TScreen>(string icon, string title) where TScreen : IBlazorApplicationScreen
 		=> new() { Id = typeof(TScreen).Name, Icon = icon, Title = title, ScreenType = typeof(TScreen) };
 }

@@ -7,27 +7,26 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class ApplicationScreenHostBase : Disposable, IApplicationScreenHost {
+public abstract class BlazorApplicationScreenHostBase : Disposable, IBlazorApplicationScreenHost {
 	public event EventHandlerEx Changed;
 
-	public abstract IApplicationBlockCatalog Catalog { get; }
+	public abstract IBlazorApplicationBlockCatalog Catalog { get; }
 
-	public abstract IReadOnlyList<IApplicationBlock> Blocks { get; }
-	public abstract IApplicationBlock ActiveBlock { get; }
+	public abstract IBlazorApplicationBlock[] Blocks { get; }
+	public abstract IBlazorApplicationBlock ActiveBlock { get; }
 
-	public abstract ApplicationScreenSession ActiveScreen { get; }
-	public abstract IReadOnlyList<ApplicationScreenSession> OpenScreens { get; }
+	public abstract BlazorApplicationScreenSession ActiveScreen { get; }
+	public abstract BlazorApplicationScreenSession[] OpenScreens { get; }
 
 	public abstract bool HasUnsavedChanges { get; }
-	public abstract Task<ApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default);
+	public abstract Task<BlazorApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
-	public abstract Task<ApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default);
+	public abstract Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default);
 	public abstract Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
 	public abstract Task<bool> CloseScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);
@@ -39,8 +38,8 @@ public abstract class ApplicationScreenHostBase : Disposable, IApplicationScreen
 	public abstract Task<bool> UnregisterBlockAsync(string blockId, CancellationToken cancellationToken = default);
 	public abstract Task RegisterBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
-	public abstract Task AttachScreenAsync(Guid sessionId, IApplicationScreen screen, CancellationToken cancellationToken = default);
-	public abstract void DetachScreen(Guid sessionId, IApplicationScreen screen);
+	public abstract Task AttachScreenAsync(Guid sessionId, IBlazorApplicationScreen screen, CancellationToken cancellationToken = default);
+	public abstract void DetachScreen(Guid sessionId, IBlazorApplicationScreen screen);
 
 	public abstract void NotifyScreenChanged(Guid sessionId);
 

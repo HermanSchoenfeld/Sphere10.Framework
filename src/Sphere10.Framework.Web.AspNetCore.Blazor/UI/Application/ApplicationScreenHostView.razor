@@ -8,9 +8,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
 @implements IDisposable
-@inject IApplicationScreenHost ScreenHost
+@inject IBlazorApplicationScreenHost ScreenHost
 
 @foreach (var session in ScreenHost.OpenScreens) {
 	<section @key="session.Id" id="@($"screen-{session.Id:N}")" hidden="@(ScreenHost.ActiveScreen != session)" aria-label="@session.Title" class="sphere10-screen">

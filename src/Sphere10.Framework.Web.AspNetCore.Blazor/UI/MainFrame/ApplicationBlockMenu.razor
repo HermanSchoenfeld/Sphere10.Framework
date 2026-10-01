@@ -8,23 +8,42 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
 
-<nav aria-label="Application blocks" class="application-blocks">
+<nav aria-label="Application blocks" class="@(Compact ? "application-blocks application-blocks-compact" : "application-blocks")">
 	@foreach (var block in Blocks.OrderBy(block => block.Position)) {
-		<button @key="block.Id" type="button" title="@block.Tooltip" aria-current="@(ActiveBlock?.Id == block.Id ? "page" : null)" @onclick="() => OnSelect.InvokeAsync(block)">
-			@if (!string.IsNullOrWhiteSpace(block.IconUrl)) {
-				<img src="@block.IconUrl" width="24" height="24" alt="" />
-			}
-			@block.Title
-		</button>
+		@if (Href != null) {
+			<a @key="block.Id" href="@Href(block)" title="@GetTooltip(block)" aria-current="@(ActiveBlock?.Id == block.Id ? "page" : null)">
+				@BlockContent(block)
+			</a>
+		} else {
+			<button @key="block.Id" type="button" title="@GetTooltip(block)" aria-current="@(ActiveBlock?.Id == block.Id ? "page" : null)" @onclick="() => OnSelect.InvokeAsync(block)">
+				@BlockContent(block)
+			</button>
+		}
 	}
 </nav>
 
 @code {
-	[Parameter] public IReadOnlyList<IApplicationBlock> Blocks { get; set; } = Array.Empty<IApplicationBlock>();
+	[Parameter] public IBlazorApplicationBlock[] Blocks { get; set; } = Array.Empty<IBlazorApplicationBlock>();
 
-	[Parameter] public IApplicationBlock ActiveBlock { get; set; }
+	[Parameter] public IBlazorApplicationBlock ActiveBlock { get; set; }
 
-	[Parameter] public EventCallback<IApplicationBlock> OnSelect { get; set; }
+	[Parameter] public EventCallback<IBlazorApplicationBlock> OnSelect { get; set; }
+
+	/// <summary>Shows a compact icon dock while retaining accessible block names.</summary>
+	[Parameter] public bool Compact { get; set; }
+
+	/// <summary>When supplied, renders ordinary navigation links instead of OnSelect command buttons.</summary>
+	[Parameter] public Func<IBlazorApplicationBlock, string> Href { get; set; }
+
+	private RenderFragment BlockContent(IBlazorApplicationBlock block) => @<text>
+		@if (!string.IsNullOrWhiteSpace(block.IconUrl)) {
+			<img src="@block.IconUrl" width="24" height="24" alt="" />
+		} else if (Compact) {
+			<span class="application-block-fallback" aria-hidden="true">@(string.IsNullOrEmpty(block.Title) ? "□" : block.Title[..1])</span>
+		}
+		<span class="application-block-label">@block.Title</span>
+	</text>;
+
+	private static string GetTooltip(IBlazorApplicationBlock block) => string.IsNullOrWhiteSpace(block.Tooltip) ? block.Title : block.Tooltip;
 }

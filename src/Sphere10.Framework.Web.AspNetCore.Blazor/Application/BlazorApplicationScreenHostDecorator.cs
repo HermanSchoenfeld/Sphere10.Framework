@@ -7,13 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationScreenHost where TConcrete : IApplicationScreenHost {
+public abstract class BlazorApplicationScreenHostDecorator<TConcrete> : IBlazorApplicationScreenHost where TConcrete : IBlazorApplicationScreenHost {
 	public event EventHandlerEx Changed {
 		add => InternalHost.Changed += value;
 		remove => InternalHost.Changed -= value;
@@ -21,24 +20,24 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 
 	protected readonly TConcrete InternalHost;
 
-	protected ApplicationScreenHostDecorator(TConcrete host) {
+	protected BlazorApplicationScreenHostDecorator(TConcrete host) {
 		Guard.ArgumentNotNull(host, nameof(host));
 		InternalHost = host;
 	}
 
-	public virtual IApplicationBlockCatalog Catalog => InternalHost.Catalog;
+	public virtual IBlazorApplicationBlockCatalog Catalog => InternalHost.Catalog;
 
-	public virtual IReadOnlyList<IApplicationBlock> Blocks => InternalHost.Blocks;
-	public virtual IApplicationBlock ActiveBlock => InternalHost.ActiveBlock;
+	public virtual IBlazorApplicationBlock[] Blocks => InternalHost.Blocks;
+	public virtual IBlazorApplicationBlock ActiveBlock => InternalHost.ActiveBlock;
 
-	public virtual ApplicationScreenSession ActiveScreen => InternalHost.ActiveScreen;
-	public virtual IReadOnlyList<ApplicationScreenSession> OpenScreens => InternalHost.OpenScreens;
+	public virtual BlazorApplicationScreenSession ActiveScreen => InternalHost.ActiveScreen;
+	public virtual BlazorApplicationScreenSession[] OpenScreens => InternalHost.OpenScreens;
 
 	public virtual bool HasUnsavedChanges => InternalHost.HasUnsavedChanges;
 
-	public virtual Task<ApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default) => InternalHost.ActivateBlockAsync(blockId, cancellationToken);
+	public virtual Task<BlazorApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default) => InternalHost.ActivateBlockAsync(blockId, cancellationToken);
 
-	public virtual Task<ApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default) => InternalHost.ActivateScreenAsync(blockId, screenMenuItemId, cancellationToken);
+	public virtual Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default) => InternalHost.ActivateScreenAsync(blockId, screenMenuItemId, cancellationToken);
 
 	public virtual Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default) => InternalHost.ShowScreenAsync(sessionId, cancellationToken);
 
@@ -54,9 +53,9 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 
 	public virtual Task RegisterBlockAsync(string blockId, CancellationToken cancellationToken = default) => InternalHost.RegisterBlockAsync(blockId, cancellationToken);
 
-	public virtual Task AttachScreenAsync(Guid sessionId, IApplicationScreen screen, CancellationToken cancellationToken = default) => InternalHost.AttachScreenAsync(sessionId, screen, cancellationToken);
+	public virtual Task AttachScreenAsync(Guid sessionId, IBlazorApplicationScreen screen, CancellationToken cancellationToken = default) => InternalHost.AttachScreenAsync(sessionId, screen, cancellationToken);
 
-	public virtual void DetachScreen(Guid sessionId, IApplicationScreen screen) => InternalHost.DetachScreen(sessionId, screen);
+	public virtual void DetachScreen(Guid sessionId, IBlazorApplicationScreen screen) => InternalHost.DetachScreen(sessionId, screen);
 
 	public virtual void NotifyScreenChanged(Guid sessionId) => InternalHost.NotifyScreenChanged(sessionId);
 
@@ -65,8 +64,8 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 	public virtual ValueTask DisposeAsync() => InternalHost.DisposeAsync();
 }
 
-public abstract class ApplicationScreenHostDecorator : ApplicationScreenHostDecorator<IApplicationScreenHost> {
-	protected ApplicationScreenHostDecorator(IApplicationScreenHost host)
+public abstract class BlazorApplicationScreenHostDecorator : BlazorApplicationScreenHostDecorator<IBlazorApplicationScreenHost> {
+	protected BlazorApplicationScreenHostDecorator(IBlazorApplicationScreenHost host)
 		: base(host) {
 	}
 }

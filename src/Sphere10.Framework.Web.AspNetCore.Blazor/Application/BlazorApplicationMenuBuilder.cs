@@ -8,67 +8,62 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class MenuBuilder {
-	private readonly List<IApplicationMenuItem> _items = new();
-	private string _id;
-	private string _text;
-	private string _icon;
-
-	public MenuBuilder WithId(string id) {
-		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
-		_id = id;
+public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<IBlazorApplicationMenuItem, BlazorApplicationMenu> {
+	public BlazorApplicationMenuBuilder WithId(string id) {
+		SetId(id);
 		return this;
 	}
 
-	public MenuBuilder WithText(string text) {
+	public BlazorApplicationMenuBuilder WithText(string text) {
 		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
-		_text = text;
+		SetText(text);
 		return this;
 	}
 
-	public MenuBuilder WithIcon(string icon) {
-		_icon = icon;
+	public BlazorApplicationMenuBuilder WithIcon(string icon) {
+		SetIcon(icon);
 		return this;
 	}
 
-	public MenuBuilder AddItem(IApplicationMenuItem item) {
-		Guard.ArgumentNotNull(item, nameof(item));
-		_items.Add(item);
+	public BlazorApplicationMenuBuilder AddItem(IBlazorApplicationMenuItem item) {
+		AddItemDefinition(item);
 		return this;
 	}
 
-	public MenuBuilder AddScreenItem<TScreen>(string id, string text, ScreenActivationMode activationMode = ScreenActivationMode.SingleInstance,
+	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string id, string text, ScreenActivationMode activationMode = ScreenActivationMode.SingleInstance,
 		IReadOnlyDictionary<string, object> parameters = null
-	) where TScreen : IComponent, IApplicationScreen => AddScreenItem(id, text, typeof(TScreen), activationMode, parameters);
+	) where TScreen : IComponent, IBlazorApplicationScreen => AddScreenItem(id, text, typeof(TScreen), activationMode, parameters);
 
-	public MenuBuilder AddScreenItem<TScreen>(string text) where TScreen : IComponent, IApplicationScreen =>
+	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string text) where TScreen : IComponent, IBlazorApplicationScreen =>
 		AddScreenItem<TScreen>(typeof(TScreen).Name, text);
 
-	public MenuBuilder AddScreenItem(string id, string text, Type screenType, ScreenActivationMode activationMode = ScreenActivationMode.SingleInstance,
+	public BlazorApplicationMenuBuilder AddScreenItem(string id, string text, Type screenType, ScreenActivationMode activationMode = ScreenActivationMode.SingleInstance,
 		IReadOnlyDictionary<string, object> parameters = null
 	) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
-		return AddItem(new ShowScreenMenuItem {
+		return AddItem(new BlazorScreenMenuItem {
 			Id = id, Title = text, ScreenType = screenType, ActivationMode = activationMode,
 			Parameters = parameters ?? new Dictionary<string, object>()
 		});
 	}
 
-	public MenuBuilder AddActionItem(string id, string text, Func<IServiceProvider, CancellationToken, Task> action) {
+	public BlazorApplicationMenuBuilder AddActionItem(string id, string text, Func<IServiceProvider, CancellationToken, Task> action) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 		Guard.ArgumentNotNull(action, nameof(action));
-		return AddItem(new ActionMenuItem { Id = id, Title = text, AsyncAction = action });
+		return AddItem(new BlazorActionMenuItem { Id = id, Title = text, AsyncAction = action });
 	}
 
-	public MenuBuilder AddActionItem(string id, string text, Action action) {
+	public BlazorApplicationMenuBuilder AddActionItem(string id, string text, Action action) {
 		Guard.ArgumentNotNull(action, nameof(action));
 		return AddActionItem(id, text, (_, cancellationToken) => {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -77,16 +72,13 @@ public class MenuBuilder {
 		});
 	}
 
-	public MenuBuilder ConfigureItem(Action<MenuItemBuilder> configure) {
+	public BlazorApplicationMenuBuilder ConfigureItem(Action<BlazorApplicationMenuItemBuilder> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
-		var builder = new MenuItemBuilder();
+		var builder = new BlazorApplicationMenuItemBuilder();
 		configure(builder);
 		return AddItem(builder.Build());
 	}
 
-	public ApplicationMenu Build() {
-		Guard.Ensure(!string.IsNullOrWhiteSpace(_text), "Menu text is required.");
-		return ApplicationBlockSnapshot.CreateMenu(new ApplicationMenu { Id = _id ?? _text, Text = _text, Icon = _icon, Items = _items });
-	}
+	protected override BlazorApplicationMenu CreateMenu(IReadOnlyList<IBlazorApplicationMenuItem> items) =>
+		BlazorApplicationBlockSnapshot.CreateMenu(new BlazorApplicationMenu { Id = Id, Text = Text, Icon = Icon, Items = items.ToArray() });
 }
-

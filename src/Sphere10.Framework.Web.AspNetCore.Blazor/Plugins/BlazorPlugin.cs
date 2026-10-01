@@ -6,40 +6,63 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class Plugin : IPlugin {
+/// <summary>A startup plugin definition whose blocks feed the existing application catalog.</summary>
+public class BlazorPlugin : IBlazorPlugin {
 	public event EventHandlerEx Loaded;
 	public event EventHandlerEx Unloaded;
 
-	public Plugin(string name, IEnumerable<IApplicationBlock> blocks) {
+	private readonly Action<IServiceCollection> _configureServices;
+	private IBlazorApplicationBlock[] _blocks = Array.Empty<IBlazorApplicationBlock>();
+	private string _name;
+
+	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks)
+		: this(name, blocks, null) {
+	}
+
+	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks, Action<IServiceCollection> configureServices) {
+		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		Name = name;
 		Blocks = blocks.ToArray();
+		_configureServices = configureServices;
 	}
 
-	public string Name { get; init; }
-
-	public IApplicationBlock[] Blocks { get; init; }
-
-	public IServiceProvider IoCContainer { get; private set; }
-
-	public virtual void Load() {
-		NotifyLoaded();
+	public string Name {
+		get => _name;
+		init {
+			Guard.Argument(!string.IsNullOrWhiteSpace(value), nameof(value), "A plugin name is required.");
+			_name = value;
+		}
 	}
 
+	/// <summary>Returns an array copy over immutable block snapshots for compatibility with the original plugin contract.</summary>
+	public IBlazorApplicationBlock[] Blocks {
+		get => _blocks.ToArray();
+		init {
+			Guard.ArgumentNotNull(value, nameof(value));
+			_blocks = new BlazorApplicationBlockCatalog(value).Blocks;
+		}
+	}
+
+	/// <summary>Retained for compatibility. Plugins register into the host and never create a separate service provider.</summary>
+	public IServiceProvider IoCContainer => null;
+
+	public virtual void Load() => NotifyLoaded();
+
+	/// <summary>Applies startup service registrations before notifying subscribers. Resolve scoped services in actions at execution time.</summary>
 	public void Load(IServiceCollection serviceCollection) {
-		//IoCContainer = secureComponentRegistry;
+		Guard.ArgumentNotNull(serviceCollection, nameof(serviceCollection));
+		_configureServices?.Invoke(serviceCollection);
 		NotifyLoaded();
 	}
 
-	public virtual void Unload() {
-		NotifyUnloaded();
-	}
+	public virtual void Unload() => NotifyUnloaded();
 
 	protected virtual void OnLoaded() {
 	}
@@ -56,5 +79,4 @@ public class Plugin : IPlugin {
 		OnUnloaded();
 		Unloaded?.Invoke();
 	}
-
 }

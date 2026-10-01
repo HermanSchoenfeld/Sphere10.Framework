@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -31,7 +31,7 @@ public class ApplicationRenderingTests {
 	public async Task SwitchingScreensRetainsInstancesAndClosingDisposesExactlyOnce() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IApplicationScreenHost>();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var state = provider.GetRequiredService<ProbeState>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var first = await host.ActivateScreenAsync("test", "single");
@@ -59,7 +59,7 @@ public class ApplicationRenderingTests {
 	public async Task ScreenChangesNotifyWorkspaceAndGuardRejectsNavigation() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IApplicationScreenHost>();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var original = await host.ActivateScreenAsync("test", "single");
 			await renderer.RenderComponentAsync<ApplicationScreenHostView>();
@@ -71,7 +71,7 @@ public class ApplicationRenderingTests {
 			Assert.That(await host.ActivateScreenAsync("test", "multiple"), Is.Null);
 			Assert.That(await host.CanNavigateAsync(), Is.False);
 			Assert.That(host.ActiveScreen, Is.SameAs(original));
-			Assert.That(host.OpenScreens, Has.Count.EqualTo(1));
+			Assert.That(host.OpenScreens, Has.Length.EqualTo(1));
 		});
 	}
 
@@ -79,7 +79,7 @@ public class ApplicationRenderingTests {
 	public async Task ShellResolvesBookmarksAndHistoryWithoutDuplicatingExistingSessions() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IApplicationScreenHost>();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationShell shell = null;
 			var rendered = await renderer.RenderComponentAsync<ShellHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -94,10 +94,10 @@ public class ApplicationRenderingTests {
 			Assert.That(host.ActiveScreen, Is.SameAs(first));
 			await shell.SetParametersAsync(Request("multiple", second.Id));
 			Assert.That(host.ActiveScreen, Is.SameAs(second));
-			Assert.That(host.OpenScreens, Has.Count.EqualTo(2));
+			Assert.That(host.OpenScreens, Has.Length.EqualTo(2));
 			await shell.SetParametersAsync(Request("missing"));
 			Assert.That(rendered.ToHtmlString(), Does.Contain("requested screen was not found"));
-			Assert.That(host.OpenScreens, Has.Count.EqualTo(2));
+			Assert.That(host.OpenScreens, Has.Length.EqualTo(2));
 		});
 	}
 
@@ -107,7 +107,7 @@ public class ApplicationRenderingTests {
 		services.AddApplicationBlock(block => block.WithId("default").WithName("Default only").WithDefaultScreen<DefaultOnlyScreen>());
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IApplicationScreenHost>();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var session = await host.ActivateBlockAsync("default");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -115,7 +115,7 @@ public class ApplicationRenderingTests {
 				[nameof(ApplicationShell.ScreenId)] = session.MenuItem.Id
 			}));
 			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("not found"));
-			Assert.That(host.OpenScreens, Has.Count.EqualTo(1));
+			Assert.That(host.OpenScreens, Has.Length.EqualTo(1));
 		});
 	}
 
@@ -123,7 +123,7 @@ public class ApplicationRenderingTests {
 	public async Task NewRouteCancelsAnOlderRequestWaitingForAnAsyncGuard() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IApplicationScreenHost>();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationShell shell = null;
 			await renderer.RenderComponentAsync<ShellHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -140,7 +140,7 @@ public class ApplicationRenderingTests {
 			releaseGuard.SetResult(true);
 			await Task.WhenAll(superseded, latest);
 			Assert.That(host.ActiveScreen, Is.SameAs(original));
-			Assert.That(host.OpenScreens, Has.Count.EqualTo(1), "A superseded browser request must not create a hidden session.");
+			Assert.That(host.OpenScreens, Has.Length.EqualTo(1), "A superseded browser request must not create a hidden session.");
 		});
 	}
 	private static ParameterView Request(string screenId, Guid? instanceId = null) => ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -166,7 +166,7 @@ public class ApplicationRenderingTests {
 		public List<ProbeScreen> Created { get; } = new();
 	}
 
-	public class ProbeScreen : ApplicationScreen {
+	public class ProbeScreen : BlazorApplicationScreen {
 		private bool _dirty;
 
 		[Inject] public ProbeState State { get; set; }

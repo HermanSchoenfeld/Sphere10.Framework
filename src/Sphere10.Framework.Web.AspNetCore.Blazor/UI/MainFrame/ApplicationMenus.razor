@@ -8,7 +8,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
 
 @if (Block != null) {
 	<nav aria-label="@($"{Block.Title} menus")" class="application-menus">
@@ -31,12 +30,12 @@
 }
 
 @code {
-	[Parameter] public IApplicationBlock Block { get; set; }
+	[Parameter] public IBlazorApplicationBlock Block { get; set; }
 
-	[Parameter] public EventCallback<IApplicationMenuItem> OnSelect { get; set; }
+	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelect { get; set; }
 
-	private static void NotifyHover(IApplicationMenuItem item) {
-		if (item is ApplicationMenuItem menuItem)
+	private static void NotifyHover(IBlazorApplicationMenuItem item) {
+		if (item is BlazorApplicationMenuItem menuItem)
 			menuItem.NotifyHover();
 	}
 }

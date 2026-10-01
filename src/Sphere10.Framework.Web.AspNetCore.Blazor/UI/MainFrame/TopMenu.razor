@@ -8,12 +8,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
 
 <ApplicationMenus Block="Block" OnSelect="OnSelect" />
 
 @code {
-	[Parameter] public IApplicationBlock Block { get; set; }
+	[Parameter] public IBlazorApplicationBlock Block { get; set; }
 
-	[Parameter] public EventCallback<IApplicationMenuItem> OnSelect { get; set; }
+	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelect { get; set; }
 }

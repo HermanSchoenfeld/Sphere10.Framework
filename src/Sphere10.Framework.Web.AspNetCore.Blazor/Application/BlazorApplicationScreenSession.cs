@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public sealed class ApplicationScreenSession {
-	internal ApplicationScreenSession(IApplicationBlock block, ShowScreenMenuItem menuItem) {
+public sealed class BlazorApplicationScreenSession {
+	internal BlazorApplicationScreenSession(IBlazorApplicationBlock block, BlazorScreenMenuItem menuItem) {
 		Id = Guid.NewGuid();
 		Block = block;
 		MenuItem = menuItem;
@@ -22,9 +22,9 @@ public sealed class ApplicationScreenSession {
 
 	public Guid Id { get; }
 
-	public IApplicationBlock Block { get; }
+	public IBlazorApplicationBlock Block { get; }
 
-	public ShowScreenMenuItem MenuItem { get; }
+	public BlazorScreenMenuItem MenuItem { get; }
 
 	public Type ScreenType => MenuItem.ScreenType;
 
@@ -32,5 +32,5 @@ public sealed class ApplicationScreenSession {
 
 	public IDictionary<string, object> Parameters { get; }
 
-	public IApplicationScreen Screen { get; internal set; }
+	public IBlazorApplicationScreen Screen { get; internal set; }
 }

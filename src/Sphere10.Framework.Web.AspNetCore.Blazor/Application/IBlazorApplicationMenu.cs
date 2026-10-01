@@ -6,13 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
+using Sphere10.Framework.Application.UI;
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Logic;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IApplicationMenu {
-	string Id => Text;
+public interface IBlazorApplicationMenu : IApplicationMenu {
 	string Icon { get; }
-	string Text { get; }
-	IEnumerable<IApplicationMenuItem> Items { get; }
+
+	new IBlazorApplicationMenuItem[] Items { get; }
+
+	IApplicationMenuItem[] IApplicationMenu.Items => Items;
 }
