@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <ProjectReference Include="..\..\src\Sphere10.Framework.Web.AspNetCore.Blazor\Sphere10.Framework.Web.AspNetCore.Blazor.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Loader\Program.cs;ModernLoader\**\*.cs" />
+    <Content Remove="Loader\App.razor;ModernLoader\**\*.razor;Loader\wwwroot\**;WidgetGallery\wwwroot\**;ModernLoader\wwwroot\**" />
+  </ItemGroup>
+</Project>

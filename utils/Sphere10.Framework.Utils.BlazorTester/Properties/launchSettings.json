@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Sphere10.Framework.Utils.BlazorTester": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "application",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5187",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

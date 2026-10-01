@@ -1,0 +1,34 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
+@inherits ApplicationScreen
+@inject WorkspaceStatus Status
+
+<h1>ApplicationBlock workspace</h1>
+<p>Open screens from the menus, switch between blocks, and use the browser's Back and Forward buttons.</p>
+<p>This single-instance screen keeps its counter when you switch to another screen.</p>
+<button type="button" class="btn btn-primary" @onclick="() => _count++">Increment</button>
+<p role="status">Counter: @_count</p>
+<p>Scoped async action executions: @Status.ActionCount</p>
+<p>The editor blocks navigation while it contains unsaved changes. New scratchpads open independent instances.</p>
+
+@code {
+	private int _count;
+
+	protected override void OnInitialized() => Status.Changed += OnStatusChanged;
+
+	protected override ValueTask DisposeAsyncCore() {
+		Status.Changed -= OnStatusChanged;
+		return ValueTask.CompletedTask;
+	}
+
+	private void OnStatusChanged() => _ = InvokeAsync(StateHasChanged);
+}

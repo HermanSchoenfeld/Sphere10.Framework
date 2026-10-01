@@ -1,0 +1,22 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic
+@inherits ApplicationScreen
+
+<h1>Scratchpad</h1>
+<p>Each selection of “New scratchpad” opens an independent screen. Scratchpad text is temporary.</p>
+<label for="@($"scratch-{Session.Id:N}")">Notes</label>
+<textarea id="@($"scratch-{Session.Id:N}")" class="form-control" @bind="_notes" @bind:event="oninput"></textarea>
+<p class="mt-3">Instance: @Session.Id</p>
+
+@code {
+	private string _notes = string.Empty;
+}

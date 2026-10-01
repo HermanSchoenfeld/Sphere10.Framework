@@ -1,0 +1,31 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@page "/application"
+@layout WorkspaceLayout
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application
+
+<PageTitle>Sphere10 application workspace</PageTitle>
+<ApplicationShell Title="Sphere10 application workspace" NavigationPath="application" BlockId="@BlockId" ScreenId="@ScreenId" InstanceId="InstanceId">
+	<Header>
+		<strong>Sphere10 application workspace</strong>
+		<a href="/" class="ml-4 text-white">Gallery home</a>
+		<a href="/modern" class="ml-3 text-white">Components</a>
+	</Header>
+	<Footer>ApplicationBlock demo · Changes stay in this browser session.</Footer>
+</ApplicationShell>
+
+@code {
+	[SupplyParameterFromQuery(Name = "block")] public string BlockId { get; set; }
+
+	[SupplyParameterFromQuery(Name = "screen")] public string ScreenId { get; set; }
+
+	[SupplyParameterFromQuery(Name = "instance")] public Guid? InstanceId { get; set; }
+}
