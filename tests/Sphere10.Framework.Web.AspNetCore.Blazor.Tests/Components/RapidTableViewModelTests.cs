@@ -9,11 +9,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Components.Tables;
-using NUnit.Framework.Legacy;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 
-namespace Sphere10.Framework.DApp.Presentation.Tests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class RapidTableViewModelTests {
 #pragma warning disable 1998
 	private async IAsyncEnumerable<bool> DataSource()
@@ -33,7 +35,7 @@ public class RapidTableViewModelTests {
 		await vm.InitAsync();
 		await Task.Delay(10);
 
-		ClassicAssert.AreEqual(10, vm.Items.Count);
+		Assert.That(vm.Items.Count, Is.EqualTo(10));
 	}
 
 	[Test]
@@ -46,7 +48,7 @@ public class RapidTableViewModelTests {
 		await vm.InitAsync();
 		await Task.Delay(10);
 
-		ClassicAssert.AreEqual(2, vm.Items.Count);
+		Assert.That(vm.Items.Count, Is.EqualTo(2));
 	}
 }
 

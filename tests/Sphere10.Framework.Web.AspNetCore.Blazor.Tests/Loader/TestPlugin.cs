@@ -8,14 +8,14 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.Framework.DApp.Presentation.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 
 public class TestPlugin : Plugin {
 	public TestPlugin() {
 		Apps = new[] {
-			new Sphere10.Framework.DApp.Presentation.Plugins.App("/",
+			new Sphere10.Framework.Web.AspNetCore.Blazor.Plugins.App("/",
 				"Home",
 				"abc",
 				new[] {
@@ -30,7 +30,7 @@ public class TestPlugin : Plugin {
 								})
 						})
 				}),
-			new Sphere10.Framework.DApp.Presentation.Plugins.App("/app1",
+			new Sphere10.Framework.Web.AspNetCore.Blazor.Plugins.App("/app1",
 				"app1",
 				"abc",
 				new[] {

@@ -10,19 +10,21 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
-using Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginManagerTests;
-using NUnit.Framework.Legacy;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.PluginManagerTests;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.NavigationTests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.NavigationTests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class DefaultPluginManagerTests {
 	[Test]
 	public void PluginManagerLoadCorrectPlugins() {
 		IPluginLocator locator = new TestPluginLocator();
 		IPluginManager manager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
 
-		ClassicAssert.AreEqual(1, manager.Plugins.Count());
+		Assert.That(manager.Plugins.Count(), Is.EqualTo(1));
 	}
 
 	[Test]
@@ -33,7 +35,8 @@ public class DefaultPluginManagerTests {
 		var collection = new ServiceCollection();
 		manager.ConfigureServices(collection);
 
-		ClassicAssert.AreEqual(1, collection.Count);
+		using var provider = collection.BuildServiceProvider();
+		Assert.That(provider.GetRequiredService<TestViewModel>(), Is.Not.Null);
 	}
 }
 

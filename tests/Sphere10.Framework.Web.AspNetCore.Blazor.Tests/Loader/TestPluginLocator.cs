@@ -8,10 +8,10 @@
 
 using System;
 using System.Collections.Generic;
-using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 // ReSharper disable once CheckNamespace
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginManagerTests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.PluginManagerTests;
 
 internal class TestPluginLocator : IPluginLocator {
 	public IEnumerable<Type> LocatePlugins() {

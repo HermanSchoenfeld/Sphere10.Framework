@@ -8,13 +8,15 @@
 
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
-using Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginManagerTests;
-using Sphere10.Framework.DApp.Presentation.Loader.ViewModels;
-using NUnit.Framework.Legacy;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.PluginManagerTests;
+using Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.NavigationTests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.NavigationTests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class AppMenuTests {
 	[Test]
 	public void AppMenuInitializedWithApps() {
@@ -27,9 +29,9 @@ public class AppMenuTests {
 
 		navigationManager.NavigateTo("/");
 
-		ClassicAssert.AreSame(appManager.Apps, appsMenuViewModel.Apps);
-		ClassicAssert.AreSame(appManager.SelectedApp, appsMenuViewModel.SelectedApp);
-		ClassicAssert.AreSame(appManager.SelectedApp?.AppBlocks, blockMenuViewModel.AppBlocks);
+		Assert.That(appsMenuViewModel.Apps, Is.SameAs(appManager.Apps));
+		Assert.That(appsMenuViewModel.SelectedApp, Is.SameAs(appManager.SelectedApp));
+		Assert.That(blockMenuViewModel.AppBlocks, Is.SameAs(appManager.SelectedApp?.AppBlocks));
 	}
 }
 

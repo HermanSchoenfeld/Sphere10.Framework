@@ -12,12 +12,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Components.Tables;
-using Sphere10.Framework.DApp.Presentation.Models;
-using NUnit.Framework.Legacy;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Models;
 
-namespace Sphere10.Framework.DApp.Presentation.Tests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class VirtualPagedTableViewModelTests {
 
 	internal class TestDataService<T> {
@@ -29,7 +31,7 @@ public class VirtualPagedTableViewModelTests {
 
 		public int TotalItems => Data.Count;
 		internal Task<ItemsResponse<T>> GetAsync(ItemRequest request) {
-			return Task.FromResult(new ItemsResponse<T>(Data.Skip(request.Index + 1).Take(request.Count), Data.Count));
+			return Task.FromResult(new ItemsResponse<T>(Data.Skip(request.Index).Take(request.Count), Data.Count));
 		}
 	}
 
@@ -44,9 +46,9 @@ public class VirtualPagedTableViewModelTests {
 
 		await vm.InitAsync();
 
-		ClassicAssert.AreEqual(vm.PageSize, vm.Page.Count());
-		ClassicAssert.AreEqual(service.TotalItems, vm.TotalItems);
-		ClassicAssert.AreEqual((int)Math.Ceiling((double)service.TotalItems / vm.PageSize), vm.TotalPages);
+		Assert.That(vm.Page.Count(), Is.EqualTo(vm.PageSize));
+		Assert.That(vm.TotalItems, Is.EqualTo(service.TotalItems));
+		Assert.That(vm.TotalPages, Is.EqualTo((int)Math.Ceiling((double)service.TotalItems / vm.PageSize)));
 	}
 
 	[Test]
@@ -60,8 +62,8 @@ public class VirtualPagedTableViewModelTests {
 
 		await vm.InitAsync();
 
-		ClassicAssert.AreEqual(4, vm.TotalPages);
-		ClassicAssert.AreEqual(10, vm.TotalItems);
+		Assert.That(vm.TotalPages, Is.EqualTo(4));
+		Assert.That(vm.TotalItems, Is.EqualTo(10));
 
 		await vm.NextPageAsync();
 		await vm.NextPageAsync();
@@ -70,7 +72,7 @@ public class VirtualPagedTableViewModelTests {
 		await vm.PrevPageAsync();
 		await vm.PrevPageAsync();
 
-		ClassicAssert.AreEqual(1, vm.CurrentPage);
+		Assert.That(vm.CurrentPage, Is.EqualTo(1));
 	}
 
 	[Test]
@@ -84,16 +86,16 @@ public class VirtualPagedTableViewModelTests {
 
 		await vm.InitAsync();
 
-		ClassicAssert.AreEqual(10, vm.TotalPages);
-		ClassicAssert.AreEqual(1, vm.CurrentPage);
+		Assert.That(vm.TotalPages, Is.EqualTo(10));
+		Assert.That(vm.CurrentPage, Is.EqualTo(1));
 
 		await vm.NextPageAsync();
 
-		ClassicAssert.AreEqual(2, vm.CurrentPage);
+		Assert.That(vm.CurrentPage, Is.EqualTo(2));
 
 		await vm.SetPageSizeAsync(3);
 
-		ClassicAssert.AreEqual(1, vm.CurrentPage);
+		Assert.That(vm.CurrentPage, Is.EqualTo(1));
 	}
 }
 

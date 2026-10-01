@@ -8,7 +8,7 @@
 
 using Microsoft.AspNetCore.Components;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 
 public class TestNavigationManager : NavigationManager {
 	public TestNavigationManager() {

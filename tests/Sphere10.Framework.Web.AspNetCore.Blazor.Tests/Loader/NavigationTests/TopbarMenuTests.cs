@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.NavigationTests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.NavigationTests;
 
 public class TopbarMenuTests {
 

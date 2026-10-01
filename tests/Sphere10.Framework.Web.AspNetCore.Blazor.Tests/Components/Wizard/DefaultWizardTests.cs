@@ -10,20 +10,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Components.Wizard;
-using NUnit.Framework.Legacy;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 
-namespace Sphere10.Framework.DApp.Presentation.Tests.Wizard;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Wizard;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class DefaultWizardTests {
 	[Test]
 	public void Initialized() {
 		IWizard wizard =
 			new DefaultWizard<bool>("test", new List<Type> { typeof(object) }, true, null, null);
 
-		ClassicAssert.NotNull(wizard.CurrentStep);
-		ClassicAssert.IsFalse(wizard.HasNext);
-		ClassicAssert.IsFalse(wizard.HasPrevious);
+		Assert.That(wizard.CurrentStep, Is.Not.Null);
+		Assert.That(wizard.HasNext, Is.False);
+		Assert.That(wizard.HasPrevious, Is.False);
 	}
 
 	[Test]
@@ -35,20 +37,20 @@ public class DefaultWizardTests {
 				null,
 				null);
 
-		ClassicAssert.IsTrue(wizard.HasNext);
-		ClassicAssert.IsFalse(wizard.HasPrevious);
+		Assert.That(wizard.HasNext, Is.True);
+		Assert.That(wizard.HasPrevious, Is.False);
 
 		wizard.Next();
 
-		ClassicAssert.IsTrue(wizard.HasNext);
-		ClassicAssert.IsTrue(wizard.HasPrevious);
-		ClassicAssert.NotNull(wizard.CurrentStep);
+		Assert.That(wizard.HasNext, Is.True);
+		Assert.That(wizard.HasPrevious, Is.True);
+		Assert.That(wizard.CurrentStep, Is.Not.Null);
 
 		wizard.Next();
 
-		ClassicAssert.IsFalse(wizard.HasNext);
-		ClassicAssert.IsTrue(wizard.HasPrevious);
-		ClassicAssert.NotNull(wizard.CurrentStep);
+		Assert.That(wizard.HasNext, Is.False);
+		Assert.That(wizard.HasPrevious, Is.True);
+		Assert.That(wizard.CurrentStep, Is.Not.Null);
 	}
 
 	[Test]
@@ -57,17 +59,17 @@ public class DefaultWizardTests {
 			new DefaultWizard<object>("Test", new List<Type> { typeof(int) }, new object(), null, null);
 
 
-		ClassicAssert.AreEqual(typeof(int), wizard.CurrentStep);
+		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(int)));
 		wizard.Next();
 
-		ClassicAssert.IsFalse(wizard.HasNext);
+		Assert.That(wizard.HasNext, Is.False);
 		wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(double) });
-		ClassicAssert.IsTrue(wizard.HasNext);
+		Assert.That(wizard.HasNext, Is.True);
 
 		bool result = wizard.Next();
-		ClassicAssert.IsTrue(result);
-		ClassicAssert.AreEqual(typeof(double), wizard.CurrentStep);
-		ClassicAssert.IsFalse(wizard.HasNext);
+		Assert.That(result, Is.True);
+		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(double)));
+		Assert.That(wizard.HasNext, Is.False);
 	}
 
 	[Test]
@@ -75,20 +77,20 @@ public class DefaultWizardTests {
 		IWizard wizard =
 			new DefaultWizard<object>("Test", new List<Type> { typeof(int) }, new object(), null, null);
 
-		ClassicAssert.AreEqual(typeof(int), wizard.CurrentStep);
-		ClassicAssert.IsFalse(wizard.HasNext);
+		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(int)));
+		Assert.That(wizard.HasNext, Is.False);
 
 		wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(double) });
 		wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(double) });
-		ClassicAssert.IsTrue(wizard.HasNext);
+		Assert.That(wizard.HasNext, Is.True);
 
 		bool result = wizard.Next();
 		bool secondResult = wizard.Next();
 
-		ClassicAssert.IsTrue(result);
-		ClassicAssert.IsFalse(secondResult);
-		ClassicAssert.AreEqual(typeof(double), wizard.CurrentStep);
-		ClassicAssert.IsFalse(wizard.HasNext);
+		Assert.That(result, Is.True);
+		Assert.That(secondResult, Is.False);
+		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(double)));
+		Assert.That(wizard.HasNext, Is.False);
 	}
 
 	[Test]
@@ -103,9 +105,9 @@ public class DefaultWizardTests {
 		wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] { typeof(bool) });
 
 		bool result = wizard.Next();
-		ClassicAssert.IsTrue(result);
-		ClassicAssert.AreEqual(typeof(bool), wizard.CurrentStep);
-		ClassicAssert.IsFalse(wizard.HasNext);
+		Assert.That(result, Is.True);
+		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(bool)));
+		Assert.That(wizard.HasNext, Is.False);
 	}
 
 	[Test]
@@ -119,8 +121,8 @@ public class DefaultWizardTests {
 
 		wizard.UpdateSteps(StepUpdateType.RemoveNext, new[] { typeof(decimal), typeof(double) });
 
-		ClassicAssert.IsFalse(wizard.HasNext);
-		ClassicAssert.AreEqual(typeof(int), wizard.CurrentStep);
+		Assert.That(wizard.HasNext, Is.False);
+		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(int)));
 	}
 
 	[Test]
@@ -134,8 +136,8 @@ public class DefaultWizardTests {
 
 		wizard.UpdateSteps(StepUpdateType.ReplaceAll, new[] { typeof(decimal), typeof(double) });
 
-		ClassicAssert.AreEqual(typeof(decimal), wizard.CurrentStep);
-		ClassicAssert.IsTrue(wizard.HasNext);
+		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(decimal)));
+		Assert.That(wizard.HasNext, Is.True);
 	}
 
 	[Test]
@@ -148,7 +150,7 @@ public class DefaultWizardTests {
 				null);
 
 		bool result = await wizard.FinishAsync();
-		ClassicAssert.IsFalse(result);
+		Assert.That(result, Is.False);
 	}
 
 	[Test]
@@ -161,7 +163,7 @@ public class DefaultWizardTests {
 				null);
 
 		bool result = await wizard.FinishAsync();
-		ClassicAssert.IsTrue(result);
+		Assert.That(result, Is.True);
 	}
 
 	[Test]
@@ -174,7 +176,7 @@ public class DefaultWizardTests {
 				x => Task.FromResult<Result<bool>>(x));
 
 		bool result = await wizard.CancelAsync();
-		ClassicAssert.IsFalse(result);
+		Assert.That(result, Is.False);
 	}
 
 	[Test]
@@ -187,7 +189,7 @@ public class DefaultWizardTests {
 				x => Task.FromResult<Result<bool>>(x));
 
 		bool result = await wizard.CancelAsync();
-		ClassicAssert.IsTrue(result);
+		Assert.That(result, Is.True);
 	}
 }
 

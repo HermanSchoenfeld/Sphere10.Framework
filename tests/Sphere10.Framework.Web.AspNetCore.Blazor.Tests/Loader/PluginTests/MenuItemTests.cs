@@ -9,12 +9,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Plugins;
-using NUnit.Framework.Legacy;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Assert = NUnit.Framework.Assert;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginTests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.PluginTests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class MenuItemTests {
 	[Test]
 	public void MergeMenuItemsDuplicateRetainsOrig() {
@@ -42,11 +44,11 @@ public class MenuItemTests {
 
 		List<MenuItem> merged = menu1.Merge(menu2).ToList();
 
-		ClassicAssert.AreEqual(2, merged.Count);
-		ClassicAssert.AreEqual(menu1[0].Heading, merged[0].Heading);
-		ClassicAssert.AreEqual(menu1[0].Route, merged[0].Route);
-		ClassicAssert.AreEqual(2, merged[0].Children.Count);
-		ClassicAssert.AreEqual(1, merged[1].Children.Count);
+		Assert.That(merged.Count, Is.EqualTo(2));
+		Assert.That(merged[0].Heading, Is.EqualTo(menu1[0].Heading));
+		Assert.That(merged[0].Route, Is.EqualTo(menu1[0].Route));
+		Assert.That(merged[0].Children.Count, Is.EqualTo(2));
+		Assert.That(merged[1].Children.Count, Is.EqualTo(1));
 	}
 
 	[Test]
@@ -61,9 +63,9 @@ public class MenuItemTests {
 
 		var copy = menu1.Copy().ToList();
 
-		ClassicAssert.AreNotSame(copy, menu1);
-		ClassicAssert.IsTrue(menu1[0].Heading == copy[0].Heading);
-		ClassicAssert.IsTrue(menu1[0].Children[0].Heading == copy[0].Children[0].Heading);
+		Assert.That(menu1, Is.Not.SameAs(copy));
+		Assert.That(menu1[0].Heading == copy[0].Heading, Is.True);
+		Assert.That(menu1[0].Children[0].Heading == copy[0].Children[0].Heading, Is.True);
 	}
 }
 

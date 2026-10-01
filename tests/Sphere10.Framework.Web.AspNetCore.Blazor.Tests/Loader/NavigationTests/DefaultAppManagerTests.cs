@@ -9,13 +9,14 @@
 using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
-using Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginManagerTests;
-using Sphere10.Framework.DApp.Presentation.Plugins;
-using NUnit.Framework.Legacy;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.PluginManagerTests;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.NavigationTests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.NavigationTests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class DefaultAppManagerTests {
 	[Test]
 	public void AppManagerLoadsPluginApps() {
@@ -25,7 +26,7 @@ public class DefaultAppManagerTests {
 		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
 		IAppManager appManager = new DefaultAppManager(pluginManager, new TestNavigationManager());
 
-		ClassicAssert.AreEqual(expected.Apps.Count(), appManager.Apps.Count());
+		Assert.That(appManager.Apps.Count(), Is.EqualTo(expected.Apps.Count()));
 	}
 
 	[Test]
@@ -36,9 +37,9 @@ public class DefaultAppManagerTests {
 		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
 		IAppManager appManager = new DefaultAppManager(pluginManager, new TestNavigationManager());
 
-		ClassicAssert.NotNull(appManager.SelectedApp);
+		Assert.That(appManager.SelectedApp, Is.Not.Null);
 
-		ClassicAssert.AreEqual(expected.Apps.First().Name, appManager.SelectedApp.Name);
+		Assert.That(appManager.SelectedApp.Name, Is.EqualTo(expected.Apps.First().Name));
 	}
 
 	[Test]
@@ -51,7 +52,7 @@ public class DefaultAppManagerTests {
 
 		nav.NavigateTo(nav.Uri + "unknown");
 
-		ClassicAssert.Null(appManager.SelectedApp);
+		Assert.That(appManager.SelectedApp, Is.Null);
 	}
 
 	[Test]
@@ -66,8 +67,8 @@ public class DefaultAppManagerTests {
 
 		nav.NavigateTo(app.Route);
 
-		ClassicAssert.NotNull(appManager.SelectedApp);
-		ClassicAssert.AreEqual(app.Name, appManager.SelectedApp.Name);
+		Assert.That(appManager.SelectedApp, Is.Not.Null);
+		Assert.That(appManager.SelectedApp.Name, Is.EqualTo(app.Name));
 	}
 
 	[Test]
@@ -83,10 +84,10 @@ public class DefaultAppManagerTests {
 
 		nav.NavigateTo(page.Route);
 
-		ClassicAssert.NotNull(appManager.SelectedApp);
-		ClassicAssert.NotNull(appManager.SelectedPage);
-		ClassicAssert.AreEqual(app.Name, appManager.SelectedApp.Name);
-		ClassicAssert.AreEqual(page.Name, appManager.SelectedPage.Name);
+		Assert.That(appManager.SelectedApp, Is.Not.Null);
+		Assert.That(appManager.SelectedPage, Is.Not.Null);
+		Assert.That(appManager.SelectedApp.Name, Is.EqualTo(app.Name));
+		Assert.That(appManager.SelectedPage.Name, Is.EqualTo(page.Name));
 	}
 }
 

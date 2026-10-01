@@ -7,10 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
-using Sphere10.Framework.DApp.Presentation.Loader.Plugins;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
-namespace Sphere10.Framework.DApp.Presentation.Loader.Tests.PluginTests;
+namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader.PluginTests;
 
+[TestFixture]
+[Parallelizable(ParallelScope.Children)]
+[FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class RoutingPathExtensionTests {
 	[TestCase("/myapp/testing?test=1", ExpectedResult = "/myapp")]
 	[TestCase("/", ExpectedResult = "/")]
