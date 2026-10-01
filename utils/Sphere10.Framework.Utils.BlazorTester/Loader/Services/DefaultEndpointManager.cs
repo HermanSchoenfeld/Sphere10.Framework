@@ -27,7 +27,7 @@ public class DefaultEndpointManager : IEndpointManager {
 
 	public Uri Endpoint { get; private set; }
 
-	public IEnumerable<Uri> Endpoints => _endpoints;
+	public Uri[] Endpoints => _endpoints.ToArray();
 
 	public Task<Result<bool>> ValidateEndpointAsync(Uri uri) => Task.FromResult<Result<bool>>(uri is { IsAbsoluteUri: true } && (uri.Scheme == "https" || uri.Scheme == "http"));
 

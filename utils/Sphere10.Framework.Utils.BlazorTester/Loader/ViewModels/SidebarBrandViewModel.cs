@@ -15,29 +15,32 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 namespace Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
 
 public class SidebarBrandViewModel : ComponentViewModelBase, IDisposable {
-	private IEndpointManager EndpointManager { get; }
-
-	public Uri Endpoint => EndpointManager.Endpoint;
-
-	public IEnumerable<Uri> Endpoints => EndpointManager.Endpoints;
+	private readonly IEndpointManager _endpointManager;
+	private bool _disposed;
 
 	public SidebarBrandViewModel(IEndpointManager endpointManager) {
 		Guard.ArgumentNotNull(endpointManager, nameof(endpointManager));
-		EndpointManager = endpointManager;
-		EndpointManager.EndpointChanged += EndpointManagerOnEvent;
-		EndpointManager.EndpointAdded += EndpointManagerOnEvent;
+		_endpointManager = endpointManager;
+		_endpointManager.EndpointChanged += EndpointManagerOnEvent;
+		_endpointManager.EndpointAdded += EndpointManagerOnEvent;
 	}
 
-	private void EndpointManagerOnEvent(object sender, EventArgs e) {
-		StateHasChangedDelegate?.Invoke();
-	}
+	public Uri Endpoint => _endpointManager.Endpoint;
 
-	public async Task OnSelectEndpointAsync(Uri server) => await EndpointManager.SetCurrentEndpointAsync(server);
+	public Uri[] Endpoints => _endpointManager.Endpoints;
+
+	public Task OnSelectEndpointAsync(Uri server) => _endpointManager.SetCurrentEndpointAsync(server);
 
 	public void Dispose() {
-		EndpointManager.EndpointChanged -= EndpointManagerOnEvent;
-		EndpointManager.EndpointAdded -= EndpointManagerOnEvent;
+		if (_disposed)
+			return;
+		_disposed = true;
+		_endpointManager.EndpointChanged -= EndpointManagerOnEvent;
+		_endpointManager.EndpointAdded -= EndpointManagerOnEvent;
+	}
+
+	private void EndpointManagerOnEvent(object sender, EventArgs args) {
+		if (!_disposed)
+			StateHasChangedDelegate?.Invoke();
 	}
 }
-
-

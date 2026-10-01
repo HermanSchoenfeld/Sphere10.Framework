@@ -22,7 +22,7 @@ public class ServersViewModel : ComponentViewModelBase, IDisposable {
 	/// <summary>
 	/// Gets the available servers
 	/// </summary>
-	public IEnumerable<Uri> Servers => EndpointManager.Endpoints;
+	public Uri[] Servers => EndpointManager.Endpoints;
 
 	/// <summary>
 	/// Getse the server config service.
