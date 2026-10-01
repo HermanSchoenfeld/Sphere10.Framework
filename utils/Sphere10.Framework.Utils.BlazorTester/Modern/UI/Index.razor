@@ -1,0 +1,126 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@page "/modern"
+@layout Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame.MainLayout
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Modal
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Logic.Wizard
+@using System.Threading
+@using System.Runtime.CompilerServices
+@inject ViewService ViewService
+@implements IDisposable
+
+<link rel="stylesheet" href="modern/css/light.css" />
+<h1>Modern components</h1>
+<p>Local sample data powers the restored grid, dialogs and wallet wizard.</p>
+<p><a href="/widget-gallery" data-enhance-nav="false">Original widget gallery</a></p>
+<div class="mb-3">
+	<button class="btn btn-primary" @onclick="ConfirmAsync">Confirm dialog</button>
+	<button class="btn btn-info" @onclick="InformationAsync">Information dialog</button>
+	<button class="btn btn-warning" @onclick="CustomAsync">Custom dialog</button>
+	<button class="btn btn-secondary" @onclick="WizardAsync">New Wallet</button>
+</div>
+<p role="status">@_result</p>
+<h2>Editable grid</h2>
+<BlazorGrid TItem="TestClass" Id="TestGrid" PageSize="10" DataSource="_dataSource"
+	GridType="BlazorGrid<TestClass>.GridTypes.ActionColumn | BlazorGrid<TestClass>.GridTypes.NewItem"
+	Actions="_actions" ColumnDefinitions="_columns" />
+<h2>Tables</h2>
+<div class="row">
+	<div class="col-md-4">
+		<h3>Paged table</h3>
+		<PagedTable TItem="int" Items="_numbers" PageSize="5" OnRowSelect="ShowNumberAsync" Class="table table-striped">
+			<HeaderTemplate><tr><th>Number</th></tr></HeaderTemplate>
+			<ItemTemplate Context="number"><tr><td>@number</td></tr></ItemTemplate>
+		</PagedTable>
+	</div>
+	<div class="col-md-4">
+		<h3>Virtual paged table</h3>
+		<VirtualPagedTable TItem="int" ItemsProvider="ProvideNumbersAsync" PageSize="5" OnRowSelect="ShowNumberAsync" Class="table table-striped">
+			<HeaderTemplate><tr><th>Number</th></tr></HeaderTemplate>
+			<ItemTemplate Context="number"><tr><td>@number</td></tr></ItemTemplate>
+		</VirtualPagedTable>
+	</div>
+	<div class="col-md-4">
+		<h3>Rapid table</h3>
+		<RapidTable TItem="int" Source="_stream" ItemLimit="5" OnRowSelect="ShowNumberAsync" Class="table table-striped">
+			<HeaderTemplate><tr><th>Number</th></tr></HeaderTemplate>
+			<ItemTemplate Context="number"><tr><td>@number</td></tr></ItemTemplate>
+		</RapidTable>
+	</div>
+</div>
+
+@code {
+	private readonly TestClassDataSource _dataSource = new();
+	private readonly List<GridAction<TestClass>> _actions = new();
+	private readonly List<object> _columns = new();
+	private readonly List<int> _numbers = Enumerable.Range(1, 99).ToList();
+	private readonly CancellationTokenSource _cancellation = new();
+	private IAsyncEnumerable<int> _stream;
+	private string _result;
+
+	protected override void OnInitialized() {
+		_actions.Add(new GridAction<TestClass>("Delete", DeleteItem, "❌", item => item.Name != "Polkadot"));
+		_columns.Add(new DataEnd<TestClass, TestClass2>("Details", item => new TestClass2(((TestClass)item).Name, ((TestClass)item).Age, false)));
+		_columns.Add(new DataEnd<TestClass, TestClass3>("Hash", item => new TestClass3(((TestClass)item).Name)));
+		_stream = StreamNumbersAsync(_cancellation.Token);
+	}
+
+	private TestClass DeleteItem(TestClass item) {
+		_dataSource.Delete(item);
+		return item;
+	}
+
+	private async Task ConfirmAsync() {
+		_result = await ViewService.ConfirmDialogAsync("Confirm", "Continue with the demonstration?", "Continue") ? "Confirmed" : "Cancelled";
+	}
+
+	private Task InformationAsync() => ViewService.DialogAsync("Information", "Both generations of the Sphere10 Blazor components are restored.");
+
+	private Task CustomAsync() {
+		RenderFragment body = builder => {
+			builder.OpenElement(0, "p");
+			builder.AddContent(1, "This dialog hosts an arbitrary render fragment.");
+			builder.CloseElement();
+		};
+		return ViewService.DialogAsync(body, "Custom content");
+	}
+
+	private async Task WizardAsync() {
+		var wizard = new DefaultWizardBuilder<NewWalletModel>()
+			.NewWizard("New Wallet")
+			.AddStep<WalletNameStep>()
+			.AddStep<WalletTypeStep>()
+			.WithModel(new NewWalletModel())
+			.OnFinished(model => {
+				_result = $"Demo wallet '{model.Name}' completed ({model.Type}). No wallet is stored.";
+				return Task.FromResult<Result<bool>>(true);
+			})
+			.Build();
+		await ViewService.WizardDialogAsync(wizard);
+	}
+
+	private Task ShowNumberAsync(int number) => ViewService.DialogAsync("Number", number.ToString());
+
+	private Task<ItemsResponse<int>> ProvideNumbersAsync(ItemRequest request) => Task.FromResult(new ItemsResponse<int>(_numbers.Skip(request.Index).Take(request.Count), _numbers.Count));
+
+	private async IAsyncEnumerable<int> StreamNumbersAsync([EnumeratorCancellation] CancellationToken cancellationToken) {
+		var number = 0;
+		while (!cancellationToken.IsCancellationRequested) {
+			await Task.Delay(1000, cancellationToken);
+			yield return ++number;
+		}
+	}
+
+	public void Dispose() {
+		_cancellation.Cancel();
+		_cancellation.Dispose();
+	}
+}
