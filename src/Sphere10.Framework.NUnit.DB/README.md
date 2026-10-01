@@ -17,6 +17,10 @@ Database-specific test infrastructure for unit testing data access components ac
 - **Data seeding utilities** for test setup
 - **Database assertion helpers**
 
+## NuGet usage
+
+Install `Sphere10.Framework.NUnit.DB` in a .NET 10 test project. Its framework and NUnit dependencies restore automatically. Test discovery still requires the NUnit test adapter and Microsoft.NET.Test.Sdk in the consuming test project.
+
 ## Dependencies
 
 - **Sphere10.Framework.NUnit**: Core NUnit utilities

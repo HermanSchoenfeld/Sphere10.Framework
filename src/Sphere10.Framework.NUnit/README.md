@@ -17,6 +17,10 @@ Core testing utilities including assertion extensions, test fixtures, and helper
 - **TestItem**: Test data structures
 - **Base classes and fixtures** for common test patterns
 
+## NuGet usage
+
+Install `Sphere10.Framework.NUnit` in a .NET 10 test project. Its framework and NUnit dependencies restore automatically. Test discovery still requires the NUnit test adapter and Microsoft.NET.Test.Sdk in the consuming test project.
+
 ## Dependencies
 
 - **NUnit**: NUnit testing framework
