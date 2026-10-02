@@ -1,0 +1,71 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+@using Sphere10.Framework.Application.UI
+
+<div @ref="_root" class="sphere10-identity @(_open ? "sphere10-identity-open" : null)" @onkeydown:stopPropagation>
+	@if (_open) {
+		<button type="button" class="sphere10-identity-dismiss" aria-label="Dismiss identity menu" tabindex="-1" @onclick="() => CloseMenu()"></button>
+	}
+	<button @ref="_trigger" type="button" class="sphere10-identity-trigger" aria-label="@EffectiveDisplayName" title="@EffectiveDisplayName"
+		aria-haspopup="menu" aria-controls="@_menuId" aria-expanded="@(_open ? "true" : "false")" disabled="@_executing"
+		@onclick="ToggleMenu" @onkeydown="OnTriggerKeyDown">
+		<span class="sphere10-identity-avatar" aria-hidden="true">
+			@if (AvatarTemplate != null) {
+				@AvatarTemplate(EffectiveUser)
+			} else if (!string.IsNullOrWhiteSpace(AvatarUrl)) {
+				<img src="@AvatarUrl" alt="" />
+			} else {
+				@* Font Awesome Free 5.15.1 user glyph, reused from the bundled icon set. Icons: CC BY 4.0 (https://fontawesome.com/license/free). *@
+				<svg class="sphere10-identity-silhouette" viewBox="0 0 448 512" aria-hidden="true" focusable="false">
+					<path fill="currentColor" transform="translate(0 448) scale(1 -1)"
+						d="M224 192c-70.7002 0 -128 57.2998 -128 128s57.2998 128 128 128s128 -57.2998 128 -128s-57.2998 -128 -128 -128zM313.6 160c74.2002 0 134.4 -60.2002 134.4 -134.4v-41.5996c0 -26.5 -21.5 -48 -48 -48h-352c-26.5 0 -48 21.5 -48 48v41.5996c0 74.2002 60.2002 134.4 134.4 134.4h16.6992c22.3008 -10.2002 46.9004 -16 72.9004 -16s50.7002 5.7998 72.9004 16h16.6992z" />
+				</svg>
+			}
+		</span>
+	</button>
+	@if (_open) {
+		<div class="sphere10-identity-popup" @onkeydown="OnMenuKeyDown">
+			@if (MenuHeader != null) {
+				<div class="sphere10-identity-menu-header">@MenuHeader(EffectiveUser)</div>
+			} else {
+				<div class="sphere10-identity-menu-header">
+					@if (IdentityTemplate != null) {
+						@IdentityTemplate(EffectiveUser)
+					} else {
+						<strong>@EffectiveDisplayName</strong>
+						@if (!string.IsNullOrWhiteSpace(EffectiveSecondaryText)) {
+							<small>@EffectiveSecondaryText</small>
+						}
+					}
+				</div>
+			}
+			<div id="@_menuId" role="menu" aria-label="@EffectiveDisplayName" class="sphere10-identity-menu">
+				@foreach (var item in _items) {
+					@if (item is IApplicationMenuSeparator) {
+						<hr role="separator" />
+					} else {
+						<button @key="item.Id" @ref="_itemButtons[item.Id]" type="button" role="menuitem" disabled="@_executing"
+							@onclick="() => SelectItemAsync(item)" @onmouseenter="() => OnItemHover(item)" @onfocus="() => FocusedItem(item)">
+							@if (!string.IsNullOrWhiteSpace(item.Icon)) {
+								<span class="@item.Icon" aria-hidden="true"></span>
+							}
+							@item.Title
+						</button>
+					}
+				}
+			</div>
+			@if (MenuFooter != null) {
+				<div class="sphere10-identity-menu-footer">@MenuFooter(EffectiveUser)</div>
+			}
+		</div>
+	}
+</div>

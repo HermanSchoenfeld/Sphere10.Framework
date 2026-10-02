@@ -1,0 +1,22 @@
+.sphere10-identity { position: relative; flex: 0 0 32px; width: 32px; height: 32px; color: var(--sphere10-text, #202b3d); }
+.sphere10-identity-trigger { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 32px; min-width: 32px; max-width: 32px; height: 32px; min-height: 32px; max-height: 32px; padding: 0; border: 1px solid var(--sphere10-border, #dce2eb); border-radius: 50%; background: var(--sphere10-surface, white); color: inherit; font: inherit; cursor: pointer; }
+.sphere10-identity-trigger:hover:not(:disabled), .sphere10-identity-trigger[aria-expanded="true"] { background: var(--sphere10-hover, #e9eef6); }
+.sphere10-identity-trigger:disabled { opacity: .65; cursor: wait; }
+.sphere10-identity-avatar { display: flex; justify-content: center; align-items: center; flex: 0 0 auto; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: var(--sphere10-accent, #2456a6); color: var(--sphere10-accent-contrast, white); }
+.sphere10-identity-avatar ::deep img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sphere10-identity-avatar ::deep svg { display: block; width: 18px; height: 20px; }
+.sphere10-identity-dismiss { position: fixed; inset: 0; z-index: 50; padding: 0; border: 0; background: transparent; cursor: default; }
+.sphere10-identity-open > .sphere10-identity-trigger { position: relative; z-index: 52; }
+.sphere10-identity-popup { position: absolute; inset-inline-end: 0; top: calc(100% + .25rem); z-index: 52; min-width: min(13rem, calc(100vw - 1rem)); width: max-content; max-width: min(22rem, calc(100vw - 1rem)); max-height: min(28rem, calc(100dvh - 8rem)); overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--sphere10-border, #dce2eb); border-radius: .6rem; background: var(--sphere10-surface, white); box-shadow: var(--sphere10-shadow, 0 .3rem 1rem #0002); }
+.sphere10-identity-menu { padding: .3rem; }
+.sphere10-identity-menu button { display: flex; align-items: center; gap: .55rem; width: 100%; padding: .5rem .65rem; border: 0; border-radius: .35rem; background: transparent; color: inherit; font: inherit; font-size: .85rem; text-align: start; cursor: pointer; }
+.sphere10-identity-menu button:hover:not(:disabled) { background: var(--sphere10-hover, #e9eef6); }
+.sphere10-identity-menu button:disabled { opacity: .65; cursor: wait; }
+.sphere10-identity-menu hr { margin: .3rem .45rem; border: 0; border-top: 1px solid var(--sphere10-border, #dce2eb); }
+.sphere10-identity-menu-header, .sphere10-identity-menu-footer { padding: .65rem .8rem; overflow-wrap: anywhere; }
+.sphere10-identity-menu-header { border-bottom: 1px solid var(--sphere10-border, #dce2eb); }
+.sphere10-identity-menu-footer { border-top: 1px solid var(--sphere10-border, #dce2eb); }
+.sphere10-identity-trigger:focus-visible, .sphere10-identity-menu button:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: 2px; }
+
+.sphere10-identity-menu-header strong, .sphere10-identity-menu-header small { display: block; }
+.sphere10-identity-menu-header small { margin-top: .15rem; color: var(--sphere10-muted, #58687b); font-size: .8rem; }

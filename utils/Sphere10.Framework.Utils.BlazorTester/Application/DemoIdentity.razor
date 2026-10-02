@@ -1,0 +1,58 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using System.Security.Claims
+@using Microsoft.Extensions.DependencyInjection
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+@inject IBlazorApplicationScreenHost ScreenHost
+
+<IdentityControl User="_user" SecondaryText="Local demo account" Items="@(_user.Identity.IsAuthenticated ? _signedInItems : _guestItems)" OnSelect="ExecuteAsync" />
+
+@code {
+	private ClaimsPrincipal _user = CreateDemoUser();
+	private IBlazorApplicationMenuItem[] _signedInItems = Array.Empty<IBlazorApplicationMenuItem>();
+	private IBlazorApplicationMenuItem[] _guestItems = Array.Empty<IBlazorApplicationMenuItem>();
+
+	protected override void OnInitialized() {
+		_signedInItems = new IBlazorApplicationMenuItem[] {
+			new BlazorApplicationMenuItemBuilder().WithId("profile").WithText("Profile").WithIcon("fas fa-user")
+				.WithAction((provider, token) => {
+					token.ThrowIfCancellationRequested();
+					return provider.GetRequiredService<ViewService>().DialogAsync("Demo profile",
+						$"User: {_user.Identity.Name}. Email: {_user.FindFirst(ClaimTypes.Email)?.Value}. Role: {_user.FindFirst(ClaimTypes.Role)?.Value}. This local demo account demonstrates identity controls; it does not authenticate with a server.");
+				}).Build(),
+			new BlazorMenuSeparator(),
+			new BlazorApplicationMenuItemBuilder().WithId("sign-out").WithText("Sign out of demo").WithIcon("fas fa-sign-out-alt")
+				.WithAction((_, token) => {
+					token.ThrowIfCancellationRequested();
+					_user = new ClaimsPrincipal(new ClaimsIdentity());
+					return Task.CompletedTask;
+				}).Build()
+		};
+		_guestItems = new IBlazorApplicationMenuItem[] {
+			new BlazorApplicationMenuItemBuilder().WithId("use-demo-account").WithText("Use demo account").WithIcon("fas fa-sign-in-alt")
+				.WithAction((_, token) => {
+					token.ThrowIfCancellationRequested();
+					_user = CreateDemoUser();
+					return Task.CompletedTask;
+				}).Build()
+		};
+	}
+
+	private Task ExecuteAsync(IBlazorApplicationMenuItem item) => ScreenHost.ExecuteMenuItemAsync(item);
+
+	private static ClaimsPrincipal CreateDemoUser() => new(new ClaimsIdentity(new[] {
+		new Claim(ClaimTypes.Name, "Demo user"),
+		new Claim(ClaimTypes.Email, "demo@sphere10.local"),
+		new Claim(ClaimTypes.Role, "Tester")
+	}, "Local demo"));
+}
