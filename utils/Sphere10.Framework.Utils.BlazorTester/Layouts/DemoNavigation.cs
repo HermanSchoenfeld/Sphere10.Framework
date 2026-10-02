@@ -10,47 +10,47 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Models;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Layouts;
 
+/// <summary>Compatibility routes and search over the same registered screens used by the application menus.</summary>
 public static class DemoNavigation {
-	private static readonly Group[] _groups = {
-		new Group("Overview", new[] {
-			new Link("Overview", "/", "fas fa-home")
-		}),
-		new Group("Components", new[] {
-			new Link("CRUD grid", "/components/grid", "fas fa-table"),
-			new Link("Tables", "/components/tables", "fas fa-list-alt"),
-			new Link("Dialogs", "/components/dialogs", "fas fa-comment-alt"),
-			new Link("Wizards", "/components/wizards", "fas fa-magic")
-		}),
-		new Group("Workspace", new[] {
-			new Link("Application workspace", "/application", "fas fa-desktop")
-		}),
-		new Group("Legacy examples", new[] {
-			new Link("Plugin gallery", "/widget-gallery", "fas fa-archive"),
-			new Link("Original dialogs", "/widget-gallery/modals", "fas fa-comment"),
-			new Link("Original tables", "/widget-gallery/tables", "fas fa-list"),
-			new Link("Original wizard", "/widget-gallery/wizards", "fas fa-magic"),
-			new Link("Endpoint sample", "/servers", "fas fa-server"),
-			new Link("Original dashboard", "/legacy/dashboard", "fas fa-chart-bar")
-		})
+	private static readonly Alias[] _aliases = {
+		new("/", "workspace", "overview"),
+		new("/components/grid", "components", "gallery"),
+		new("/components/tables", "components", "tables"),
+		new("/components/dialogs", "components", "dialogs"),
+		new("/components/wizards", "components", "wizards"),
+		new("/modern", "components", "gallery"),
+		new("/widget-gallery", "legacy", "gallery"),
+		new("/widget-gallery/modals", "legacy", "dialogs"),
+		new("/widget-gallery/tables", "legacy", "tables"),
+		new("/widget-gallery/wizards", "legacy", "wizards"),
+		new("/servers", "legacy", "servers"),
+		new("/legacy/dashboard", "legacy", "dashboard")
 	};
 
-	public static Group[] Groups => _groups.Select(group => new Group(group.Title, Tools.Array.Clone(group.Links))).ToArray();
+	public static Alias[] Aliases => Tools.Array.Clone(_aliases);
 
-	public static Task<IEnumerable<SearchResult>> SearchAsync(string term) {
+	public static Alias ResolveAlias(string path) {
+		Guard.ArgumentNotNull(path, nameof(path));
+		var normalized = "/" + path.Trim('/');
+		return _aliases.FirstOrDefault(alias => string.Equals(alias.Route, normalized, StringComparison.OrdinalIgnoreCase));
+	}
+
+	public static Task<IEnumerable<SearchResult>> SearchAsync(IBlazorApplicationScreenHost host, string term) {
+		Guard.ArgumentNotNull(host, nameof(host));
 		var query = term?.Trim();
 		IEnumerable<SearchResult> results = string.IsNullOrEmpty(query)
 			? Array.Empty<SearchResult>()
-			: Groups.SelectMany(group => group.Links.Where(link => link.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
-				|| group.Title.Contains(query, StringComparison.OrdinalIgnoreCase)))
-				.Select(link => new SearchResult(link.Title, new Uri(link.Href, UriKind.Relative))).ToArray();
+			: host.Blocks.SelectMany(block => block.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
+				.Where(item => item.Title.Contains(query, StringComparison.OrdinalIgnoreCase) || block.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+				.Select(item => new SearchResult(item.Title, new Uri($"application?block={Uri.EscapeDataString(block.Id)}&screen={Uri.EscapeDataString(item.Id)}", UriKind.Relative))))
+				.ToArray();
 		return Task.FromResult(results);
 	}
 
-	public sealed record Group(string Title, Link[] Links);
-
-	public sealed record Link(string Title, string Href, string Icon);
+	public sealed record Alias(string Route, string BlockId, string ScreenId);
 }

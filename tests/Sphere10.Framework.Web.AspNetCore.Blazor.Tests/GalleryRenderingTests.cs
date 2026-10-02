@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Layouts;
 using Sphere10.Framework.Utils.BlazorTester.Loader.Pages;
@@ -36,68 +37,89 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class GalleryRenderingTests {
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Pages.OverviewPage), "/", "Sphere10 Blazor demos")]
-	[TestCase(typeof(Servers), "/servers", "Endpoint sample")]
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.WidgetGallery.WidgetGallery), "/widget-gallery", "Legacy plugin gallery")]
-	[TestCase(typeof(Modals), "/widget-gallery/modals", "Info Modal")]
-	[TestCase(typeof(Tables), "/widget-gallery/tables", "Virtual paged table")]
-	[TestCase(typeof(Wizards), "/widget-gallery/wizards", "New Widget")]
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Modern.UI.Index), "/modern", "Editable grid")]
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Modern.UI.Index), "/components/grid", "Editable grid")]
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Pages.TablesPage), "/components/tables", "Virtual paged table")]
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Pages.DialogsPage), "/components/dialogs", "Awaited dialogs")]
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Pages.WizardsPage), "/components/wizards", "Branching wallet wizard")]
-	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace), "/application", "Application workspace")]
-	[TestCase(typeof(Home), "/legacy/dashboard", "Legacy dashboard")]
-	[TestCase(typeof(NotFound), "/not-found", "Page Not Found")]
-	public async Task GalleryRouteRendersWithItsLayout(Type componentType, string route, string expectedText) {
-		var services = new ServiceCollection();
-		services.AddLogging();
+	[TestCase("/", "workspace", "overview", "ApplicationBlock workspace")]
+	[TestCase("/application", "workspace", "overview", "ApplicationBlock workspace")]
+	[TestCase("/components/grid", "components", "gallery", "Editable grid")]
+	[TestCase("/modern", "components", "gallery", "Editable grid")]
+	[TestCase("/components/tables", "components", "tables", "Virtual paged table")]
+	[TestCase("/components/dialogs", "components", "dialogs", "Awaited dialogs")]
+	[TestCase("/components/wizards", "components", "wizards", "Branching wallet wizard")]
+	[TestCase("/widget-gallery", "legacy", "gallery", "Legacy plugin gallery")]
+	[TestCase("/widget-gallery/modals", "legacy", "dialogs", "Info Modal")]
+	[TestCase("/widget-gallery/tables", "legacy", "tables", "Virtual paged table")]
+	[TestCase("/widget-gallery/wizards", "legacy", "wizards", "New Widget")]
+	[TestCase("/servers", "legacy", "servers", "Endpoint sample")]
+	[TestCase("/legacy/dashboard", "legacy", "dashboard", "Legacy dashboard")]
+	public async Task EveryDemoAliasRendersItsRegisteredScreenInOneApplicationShell(string route, string blockId, string screenId, string expectedText) {
+		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost" + route));
 		services.AddSingleton<IJSRuntime, TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var html = await renderer.Dispatcher.InvokeAsync(async () => {
 			var parameters = ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(RouteView.RouteData)] = new RouteData(componentType, new Dictionary<string, object>()),
+				[nameof(RouteView.RouteData)] = new RouteData(typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace), new Dictionary<string, object>()),
 				[nameof(RouteView.DefaultLayout)] = typeof(DemoLayout)
 			});
 			var rendered = await renderer.RenderComponentAsync<RouteView>(parameters);
 			return rendered.ToHtmlString();
 		});
+		Assert.That(host.ActiveBlock.Id, Is.EqualTo(blockId));
+		Assert.That(host.ActiveScreen.MenuItem.Id, Is.EqualTo(screenId));
+		Assert.That(host.ActiveScreen.Screen, Is.Not.Null, "Alias content must be an attached application screen.");
 		Assert.That(html, Does.Contain(expectedText));
-		Assert.That(Regex.Matches(html, "data-testid=\"demo-shell\"").Count, Is.EqualTo(1), "Every route has one common demo shell.");
-		Assert.That(Regex.Matches(html, "id=\"legacy-modal\"").Count, Is.EqualTo(1), "The shared shell owns the original modal host.");
-		Assert.That(Regex.Matches(html, "id=\"modern-modal\"").Count, Is.EqualTo(1), "The shared shell owns the modern modal host.");
-		Assert.That(Regex.Matches(html, "<label[^>]*class=\"sphere10-theme-selector(?: |\")").Count, Is.EqualTo(1), "Only the common header owns the theme selector.");
-		Assert.That(html, Does.Contain("data-sphere10-theme=\"classic-blue\""));
-		Assert.That(html, Does.Contain("aria-label=\"Demo navigation\""));
-		Assert.That(html, Does.Contain("aria-label=\"Endpoint\""));
-		Assert.That(html, Does.Contain("Classic blue"));
-		Assert.That(html, Does.Contain("Application blocks"));
-		Assert.That(html, Does.Not.Contain("modern/css/light.css"));
-		Assert.That(html, Does.Not.Contain("modern/css/dark.css"));
+		Assert.That(Regex.Matches(html, "class=\"sphere10-application(?: |\")").Count, Is.EqualTo(1), "Every demo has one application shell.");
+		Assert.That(Regex.Matches(html, "aria-label=\"Application navigation\"").Count, Is.EqualTo(1));
+		Assert.That(Regex.Matches(html, "aria-label=\"Application blocks\"").Count, Is.EqualTo(1));
+		Assert.That(Regex.Matches(html, "aria-label=\"Application commands\"").Count, Is.EqualTo(1));
+		Assert.That(Regex.Matches(html, "aria-label=\"Application toolbar\"").Count, Is.EqualTo(1));
+		Assert.That(Regex.Matches(html, "id=\"legacy-modal\"").Count, Is.EqualTo(1));
+		Assert.That(Regex.Matches(html, "id=\"modern-modal\"").Count, Is.EqualTo(1));
+		Assert.That(Regex.Matches(html, "<label[^>]*class=\"sphere10-theme-selector(?: |\")").Count, Is.EqualTo(1));
+		Assert.That(html, Does.Contain("data-sphere10-theme=\"classic-blue\"").And.Contain("aria-label=\"Endpoint\""));
+		Assert.That(html, Does.Contain("sphere10-tool-content").And.Contain("aria-label=\"Demo user\""));
+		Assert.That(html, Does.Not.Contain("class=\"demo-sidebar\"").And.Not.Contain("aria-label=\"Demo navigation\""));
+		Assert.That(html, Does.Not.Contain("modern/css/light.css").And.Not.Contain("modern/css/dark.css"));
 		Assert.That(html, Does.Not.Contain("// Copyright"), "Source notices must remain Razor comments.");
 	}
 
 	[Test]
-	public void DemoNavigationMapsEveryLinkToOneActiveRouteAndMeaningfulIcon() {
+	public void DemoAliasesBelongToOneRoutableWorkspaceAndResolveRegisteredScreens() {
 		var routes = typeof(Program).Assembly.GetTypes()
 			.SelectMany(type => type.GetCustomAttributes(typeof(RouteAttribute), false).Cast<RouteAttribute>().Select(route => (route.Template, Type: type)))
 			.ToLookup(route => route.Template, route => route.Type);
-		var links = DemoNavigation.Groups.SelectMany(group => group.Links).ToArray();
-		Assert.That(DemoNavigation.Groups.Select(group => group.Title), Is.EqualTo(new[] { "Overview", "Components", "Workspace", "Legacy examples" }));
-		Assert.That(links.Select(link => link.Href), Is.Unique);
-		foreach (var link in links) {
-			Assert.That(routes[link.Href].Count(), Is.EqualTo(1), link.Href);
-			Assert.That(link.Icon, Does.StartWith("fas fa-"), link.Title);
+		var services = new ServiceCollection().AddLogging();
+		Program.ConfigureServices(services);
+		using var provider = services.BuildServiceProvider();
+		var catalog = provider.GetRequiredService<IBlazorApplicationBlockCatalog>();
+		Assert.That(DemoNavigation.Aliases.Select(alias => alias.Route), Is.Unique);
+		foreach (var alias in DemoNavigation.Aliases) {
+			Assert.That(routes[alias.Route].ToArray(), Is.EqualTo(new[] { typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace) }), alias.Route);
+			var screen = catalog.Get(alias.BlockId).Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>().Single(item => item.Id == alias.ScreenId);
+			Assert.That(screen.Icon, Does.StartWith("fas fa-"), alias.Route);
 		}
-		Assert.That(routes["/modern"].Single(), Is.EqualTo(routes["/components/grid"].Single()), "The original URL remains a grid alias.");
-		Assert.That(links.Single(link => link.Href == "/components/grid").Icon, Is.EqualTo("fas fa-table"));
-		Assert.That(links.Single(link => link.Href == "/components/tables").Icon, Is.EqualTo("fas fa-list-alt"));
-		Assert.That(links.Single(link => link.Href == "/components/dialogs").Icon, Is.EqualTo("fas fa-comment-alt"));
-		Assert.That(links.Single(link => link.Href == "/components/wizards").Icon, Is.EqualTo("fas fa-magic"));
+		Assert.That(routes["/modern"].Single(), Is.EqualTo(routes["/components/grid"].Single()));
+	}
+
+	[Test]
+	public async Task NotFoundUsesProvidersWithoutCreatingAnotherApplicationShell() {
+		var services = new ServiceCollection().AddLogging();
+		Program.ConfigureServices(services);
+		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/not-found"));
+		services.AddSingleton<IJSRuntime, TestJsRuntime>();
+		await using var provider = services.BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var html = await renderer.Dispatcher.InvokeAsync(async () => {
+			var rendered = await renderer.RenderComponentAsync<RouteView>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(RouteView.RouteData)] = new RouteData(typeof(NotFound), new Dictionary<string, object>()),
+				[nameof(RouteView.DefaultLayout)] = typeof(DemoLayout)
+			}));
+			return rendered.ToHtmlString();
+		});
+		Assert.That(html, Does.Contain("Page Not Found"));
+		Assert.That(html, Does.Not.Contain("class=\"sphere10-application\""));
 	}
 
 	[Test]
@@ -115,10 +137,15 @@ public class GalleryRenderingTests {
 		Assert.That(workspace["editor"].Icon, Is.EqualTo("fas fa-edit"));
 		Assert.That(workspace["scratchpad"].Icon, Is.EqualTo("fas fa-sticky-note"));
 		Assert.That(workspace["action"].Icon, Is.EqualTo("fas fa-play"));
+		Assert.That(((BlazorScreenMenuItem)workspace["editor"]).ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
+		Assert.That(((BlazorScreenMenuItem)workspace["scratchpad"]).ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		var components = catalog.Get("components").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
 		Assert.That(components.Keys, Is.EquivalentTo(new[] { "gallery", "tables", "dialogs", "wizards" }));
 		Assert.That(components["gallery"], Is.TypeOf<BlazorScreenMenuItem>());
 		Assert.That(((BlazorScreenMenuItem)components["gallery"]).ScreenType, Is.EqualTo(typeof(Sphere10.Framework.Utils.BlazorTester.Application.ComponentScreen)));
+		var legacy = catalog.Get("legacy").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
+		Assert.That(legacy.Keys, Is.EquivalentTo(new[] { "gallery", "dialogs", "tables", "wizards", "servers", "dashboard" }));
+		Assert.That(legacy.Values, Is.All.InstanceOf<BlazorScreenMenuItem>());
 		Assert.That(catalog.Blocks.SelectMany(block => block.Menus).SelectMany(menu => menu.Items).Select(item => item.Icon), Is.All.Not.Null.And.Not.Empty);
 	}
 

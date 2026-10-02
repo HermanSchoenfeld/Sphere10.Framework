@@ -8,15 +8,57 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using System.Threading
+@using Sphere10.Framework.Application.UI
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @inherits BlazorApplicationScreen
 
-<h1>Scratchpad</h1>
-<p>Each selection of “New scratchpad” opens an independent screen. Scratchpad text is temporary.</p>
-<label for="@($"scratch-{Session.Id:N}")">Notes</label>
-<textarea id="@($"scratch-{Session.Id:N}")" class="form-control" @bind="_notes" @bind:event="oninput"></textarea>
-<p class="mt-3">Instance: @Session.Id</p>
+<h1>Multi-instance screen</h1>
+<p>Choose New screen instance under Screen hosting, or New scratchpad in File or the toolbar, to open another independent instance.</p>
+<p>Compare instance IDs, notes and counters between tabs. Rename each tab to make the instances easy to distinguish.</p>
+<p data-screen-instance>Instance: @(Session?.Id)</p>
+<p data-screen-activation-mode>Activation mode: @(Session?.MenuItem.ActivationMode ?? ScreenActivationMode.MultiInstance)</p>
+<label for="@($"caption-{Session?.Id:N}")">Tab title</label>
+<input id="@($"caption-{Session?.Id:N}")" class="form-control mb-3" @bind="_title" @bind:event="oninput" @bind:after="NotifyScreenChanged" />
+<div class="form-check mb-3">
+	<input id="@($"prevent-switch-{Session?.Id:N}")" class="form-check-input" type="checkbox" @bind="_preventTabSwitching" @bind:after="NotifyScreenChanged" />
+	<label class="form-check-label" for="@($"prevent-switch-{Session?.Id:N}")">Prevent tab switching</label>
+</div>
+<p role="status" data-screen-switch-status>@(_preventTabSwitching ? "Tab switching is prevented. Clear the checkbox to switch or close this screen." : "Tab switching is allowed.")</p>
+<p>Browsing another block's menu stays available. The checkbox prevents switching or closing this instance, independently of its notes.</p>
+<button type="button" class="btn btn-outline-primary mb-2" @onclick="IncrementCounter">Increment instance counter</button>
+<p role="status" data-screen-counter>Instance counter: @_count</p>
+<label for="@($"scratch-{Session?.Id:N}")">Notes</label>
+<textarea id="@($"scratch-{Session?.Id:N}")" class="form-control" @bind="_notes" @bind:event="oninput"></textarea>
+<p class="mt-3">These temporary notes remain with this instance until its tab closes. They do not set the editor's unsaved-change guard.</p>
 
 @code {
+	private BlazorApplicationMenuItem _counterCommand;
+	private string _title = "New scratchpad";
 	private string _notes = string.Empty;
+	private int _count;
+	private bool _preventTabSwitching;
+
+	public override string Title => string.IsNullOrWhiteSpace(_title) ? "Scratchpad" : _title;
+
+	public override IBlazorApplicationMenu[] Menus => new[] {
+		new BlazorApplicationMenuBuilder().WithId("file").WithText("File").AddItem(CounterCommand).Build()
+	};
+
+	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { CounterCommand };
+
+	private BlazorApplicationMenuItem CounterCommand => _counterCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("instance-counter").WithText("Increment instance counter").WithIcon("fas fa-plus-circle").WithAction((_, token) => {
+			token.ThrowIfCancellationRequested();
+			IncrementCounter();
+			StateHasChanged();
+			return Task.CompletedTask;
+		}).Build();
+
+	protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(!_preventTabSwitching);
+	}
+
+	private void IncrementCounter() => _count++;
 }

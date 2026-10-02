@@ -9,24 +9,82 @@
 *@
 
 @using System.Threading
+@using Sphere10.Framework.Application.UI
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @inherits BlazorApplicationScreen
 
-<h1>Guarded editor</h1>
-<p>Save or discard your draft before switching screens, closing this screen, or leaving the workspace.</p>
+<h1>Single-instance screen</h1>
+<p>Open this screen again from Screen hosting to return to this same instance. Its note, counter and tab title stay with it.</p>
+<p>The File menu and toolbar merge this screen's Save/Discard and counter commands with the application and block commands.</p>
+<p data-screen-instance>Instance: @(Session?.Id)</p>
+<p data-screen-activation-mode>Activation mode: @(Session?.MenuItem.ActivationMode ?? ScreenActivationMode.SingleInstance)</p>
+<label for="editor-caption">Tab title</label>
+<input id="editor-caption" class="form-control mb-3" @bind="_title" @bind:event="oninput" @bind:after="NotifyScreenChanged" />
+<div class="form-check mb-3">
+	<input id="editor-prevent-switch" class="form-check-input" type="checkbox" @bind="_preventTabSwitching" @bind:after="NotifyScreenChanged" />
+	<label class="form-check-label" for="editor-prevent-switch">Prevent tab switching</label>
+</div>
+<p role="status" data-screen-switch-status>@(_preventTabSwitching ? "Tab switching is prevented. Clear the checkbox to switch or close this screen." : "Tab switching is allowed.")</p>
+<p>You can browse another block's menu while switching is prevented; selecting another screen still checks this guard.</p>
+<button type="button" class="btn btn-outline-primary mb-2" @onclick="IncrementCounter">Increment instance counter</button>
+<p role="status" data-screen-counter>Instance counter: @_count</p>
 <label for="draft">Session note</label>
 <textarea id="draft" class="form-control mb-3" @bind="_draft" @bind:event="oninput" @bind:after="DraftChanged"></textarea>
 <button type="button" class="btn btn-primary" @onclick="Save">Save in session</button>
 <button type="button" class="btn btn-secondary" @onclick="Discard">Discard changes</button>
 <p role="status">@(HasUnsavedChanges ? "Unsaved changes — navigation is blocked." : "No unsaved changes.")</p>
+<p>Save or discard the note and clear Prevent tab switching before switching or closing this screen. Saving does not clear the checkbox.</p>
 
 @code {
+	private BlazorApplicationMenuItem _saveCommand;
+	private BlazorApplicationMenuItem _discardCommand;
+	private BlazorApplicationMenuItem _counterCommand;
+	private string _title = "Single-instance screen";
 	private string _draft = string.Empty;
 	private string _saved = string.Empty;
+	private int _count;
+	private bool _preventTabSwitching;
+
+	public override string Title => string.IsNullOrWhiteSpace(_title) ? "Single-instance screen" : _title;
+
+	public override IBlazorApplicationMenu[] Menus => new[] {
+		new BlazorApplicationMenuBuilder().WithId("file").WithText("File").AddItem(SaveCommand).AddItem(DiscardCommand).AddItem(CounterCommand).Build()
+	};
+
+	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { SaveCommand, DiscardCommand, CounterCommand };
 
 	public override bool HasUnsavedChanges => _draft != _saved;
 
-	protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) => Task.FromResult(!HasUnsavedChanges);
+	private BlazorApplicationMenuItem SaveCommand => _saveCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("save").WithText("Save in session").WithIcon("fas fa-save").WithAction((_, token) => {
+			token.ThrowIfCancellationRequested();
+			Save();
+			StateHasChanged();
+			return Task.CompletedTask;
+		}).Build();
+
+	private BlazorApplicationMenuItem DiscardCommand => _discardCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("discard").WithText("Discard changes").WithIcon("fas fa-undo").WithAction((_, token) => {
+			token.ThrowIfCancellationRequested();
+			Discard();
+			StateHasChanged();
+			return Task.CompletedTask;
+		}).Build();
+
+	private BlazorApplicationMenuItem CounterCommand => _counterCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("instance-counter").WithText("Increment instance counter").WithIcon("fas fa-plus-circle").WithAction((_, token) => {
+			token.ThrowIfCancellationRequested();
+			IncrementCounter();
+			StateHasChanged();
+			return Task.CompletedTask;
+		}).Build();
+
+	protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(!_preventTabSwitching && !HasUnsavedChanges);
+	}
+
+	private void IncrementCounter() => _count++;
 
 	private void DraftChanged() => NotifyScreenChanged();
 

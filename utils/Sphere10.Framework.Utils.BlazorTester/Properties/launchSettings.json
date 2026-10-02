@@ -10,6 +10,39 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Empty singleton": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "application",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5187",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Demo__EmptyScreenLifetime": "SingleInstance"
+      }
+    },
+    "Empty instance": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "application",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5187",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Demo__EmptyScreenLifetime": "MultiInstance"
+      }
+    },
+    "Permanent singleton": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "application",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5187",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Demo__PermanentScreen": "true"
+      }
     }
   }
 }

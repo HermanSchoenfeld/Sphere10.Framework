@@ -12,7 +12,7 @@
 @inherits ComponentWithViewModel<SidebarBrandViewModel>
 
 <div class="sidebar-brand" data-testid="endpoint-selector">
-	<a class="sidebar-brand-home" href="/" title="Sphere10 Blazor demos">
+	<a class="sidebar-brand-home" href="application?block=workspace&amp;screen=overview" title="Sphere10 Blazor demos">
 		<img src="img/brand-icon.svg" alt="" />
 		<span>Sphere10 <small>Blazor demos</small></span>
 	</a>
@@ -24,7 +24,7 @@
 			}
 		</select>
 	</label>
-	<a class="sidebar-endpoint-manage" href="/servers"><i class="fas fa-server" aria-hidden="true"></i> Manage endpoints</a>
+	<a class="sidebar-endpoint-manage" href="application?block=legacy&amp;screen=servers"><i class="fas fa-server" aria-hidden="true"></i> Manage endpoints</a>
 </div>
 
 @code {

@@ -98,7 +98,7 @@ public class EndpointSelectorTests {
 		var initialHtml = await renderer.Dispatcher.InvokeAsync(rendered.ToHtmlString);
 
 		Assert.That(initialHtml, Does.Contain("aria-label=\"Endpoint\""));
-		Assert.That(initialHtml, Does.Contain("href=\"/servers\""));
+		Assert.That(initialHtml, Does.Contain("href=\"application?block=legacy&amp;screen=servers\""));
 		Assert.That(initialHtml, Does.Contain("Manage endpoints"));
 		Assert.That(initialHtml, Does.Contain("src=\"img/brand-icon.svg\""));
 		Assert.That(initialHtml, Does.Not.Contain("data-toggle"));

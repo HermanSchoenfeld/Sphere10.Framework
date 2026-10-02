@@ -10,6 +10,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Utils.BlazorTester.Application;
+using Sphere10.Framework.Utils.BlazorTester.Application.Legacy;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Services;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Validators;
@@ -44,6 +45,21 @@ public static class WidgetGalleryPlugin {
 					.ConfigureItem(item => item.WithId("gallery").WithText("CRUD grid").WithIcon("fas fa-table").WithScreen<ComponentScreen>())
 					.ConfigureItem(item => item.WithId("tables").WithText("Tables").WithIcon("fas fa-list-alt").WithScreen<TablesScreen>())
 					.ConfigureItem(item => item.WithId("dialogs").WithText("Dialogs").WithIcon("fas fa-comment-alt").WithScreen<DialogsScreen>())
-					.ConfigureItem(item => item.WithId("wizards").WithText("Wizards").WithIcon("fas fa-magic").WithScreen<WizardsScreen>())));
+					.ConfigureItem(item => item.WithId("wizards").WithText("Wizards").WithIcon("fas fa-magic").WithScreen<WizardsScreen>())))
+			.AddBlock(block => block
+				.WithId("legacy")
+				.WithName("Legacy examples")
+				.WithIconUrl("img/logo.svg")
+				.WithTooltip("Original gallery and loader examples")
+				.WithPosition(2)
+				.WithDefaultScreen<LegacyGalleryScreen>()
+				.AddMenu(menu => menu.WithId("examples").WithText("Examples").WithIcon("fas fa-history")
+					.ConfigureItem(item => item.WithId("gallery").WithText("Plugin gallery").WithIcon("fas fa-th-large").WithScreen<LegacyGalleryScreen>())
+					.ConfigureItem(item => item.WithId("dialogs").WithText("Legacy dialogs").WithIcon("fas fa-comment").WithScreen<LegacyDialogsScreen>())
+					.ConfigureItem(item => item.WithId("tables").WithText("Legacy tables").WithIcon("fas fa-list").WithScreen<LegacyTablesScreen>())
+					.ConfigureItem(item => item.WithId("wizards").WithText("Legacy wizard").WithIcon("fas fa-magic").WithScreen<LegacyWizardsScreen>()))
+				.AddMenu(menu => menu.WithId("loader").WithText("Loader").WithIcon("fas fa-server")
+					.ConfigureItem(item => item.WithId("servers").WithText("Endpoint sample").WithIcon("fas fa-server").WithScreen<EndpointScreen>())
+					.ConfigureItem(item => item.WithId("dashboard").WithText("Legacy dashboard").WithIcon("fas fa-tachometer-alt").WithScreen<LegacyDashboardScreen>())));
 	}
 }

@@ -14,14 +14,16 @@
 	<h2>Branching wallet wizard</h2>
 	<p>Choose a wallet name and type, follow its steps, and review the result. This example does not create or persist a wallet.</p>
 	<div class="form-check mb-3">
-		<input id="wallet-allow-cancellation" type="checkbox" class="form-check-input" @bind="_allowCancellation" />
-		<label for="wallet-allow-cancellation" class="form-check-label">Allow cancellation</label>
+		<input id="@_allowCancellationId" type="checkbox" class="form-check-input" @bind="_allowCancellation" />
+		<label for="@_allowCancellationId" class="form-check-label">Allow cancellation</label>
 	</div>
 	<button type="button" class="btn btn-primary" @onclick="WizardAsync"><i class="fas fa-magic" aria-hidden="true"></i> New Wallet</button>
 	<p role="status">@_result</p>
 </section>
 
 @code {
+	private readonly string _allowCancellationId = $"wallet-allow-cancellation-{Guid.NewGuid():N}";
+
 	private string _result;
 	private bool _allowCancellation = true;
 

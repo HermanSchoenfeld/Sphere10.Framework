@@ -9,16 +9,34 @@
 *@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Utils.BlazorTester.Pages
 @inherits BlazorApplicationScreen
 @inject WorkspaceStatus Status
 
 <h1>ApplicationBlock workspace</h1>
-<p>Open screens from the menus, switch between blocks, and use the browser's Back and Forward buttons.</p>
-<p>This single-instance screen keeps its counter when you switch to another screen.</p>
+<p>Select an application block on the left, then open one of its screens. Component gallery contains the current controls;
+	Legacy examples preserves the original gallery, loader dashboard and endpoint sample.</p>
+<p>File provides new scratchpads and guarded close commands. View switches between tabbed and single-screen layouts.
+	The editor contributes Save/Discard to File and the toolbar; switching screens restores the other commands.</p>
+<p>Try Screen hosting on the left: Single-instance screen reuses the same editor; New screen instance creates an independent scratchpad each time.
+	Both show their instance ID and activation mode, support tab renaming, and have a per-instance counter in the screen, File menu and toolbar.</p>
+<p>Check Prevent tab switching to veto screen activation independently of unsaved notes. You can still browse block menus; clear the checkbox before selecting another screen.</p>
+<p>This overview is also a single-instance screen and keeps its counter when you switch to another screen.</p>
 <button type="button" class="btn btn-primary" @onclick="() => _count++">Increment</button>
 <p role="status">Counter: @_count</p>
 <p>Scoped async action executions: @Status.ActionCount</p>
-<p>The editor blocks navigation while it contains unsaved changes. New scratchpads open independent instances.</p>
+<p>Scratchpads keep independent notes. Drag tabs to reorder, use arrow keys to select, and press Delete or the middle mouse button to close.
+	Right-click a tab for batch close commands. Browser Back and Forward restore retained screen instances.</p>
+<p>In Single screen mode, singleton state remains available while leaving a multi-instance scratchpad releases it.</p>
+
+<p>Use File → Close all screens to see the tabless empty-workspace screen. The launch profiles Empty singleton and Empty instance
+	demonstrate whether its note is retained. The Permanent singleton profile adds an automatically opened screen with no close button;
+	it remains open across layout changes and therefore prevents an empty workspace.</p>
+
+<details class="mt-3">
+	<summary>Browse the demos</summary>
+	<OverviewPage />
+</details>
 
 @code {
 	private int _count;

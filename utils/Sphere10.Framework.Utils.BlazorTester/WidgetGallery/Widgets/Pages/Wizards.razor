@@ -8,14 +8,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@page "/widget-gallery/wizards"
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Services
 @inherits ComponentWithViewModel<WizardsViewModel>
 
 <h1>Legacy widget wizard</h1><p>Original wizard steps and widget validation.</p>
 <div class="form-check mb-3">
-	<input id="widget-allow-cancellation" type="checkbox" class="form-check-input" @bind="ViewModel.AllowCancellation" />
-	<label for="widget-allow-cancellation" class="form-check-label">Allow cancellation</label>
+	<input id="@_allowCancellationId" type="checkbox" class="form-check-input" @bind="ViewModel.AllowCancellation" />
+	<label for="@_allowCancellationId" class="form-check-label">Allow cancellation</label>
 </div>
 <button type="button" @onclick="ShowWizardAsync" class="btn btn-primary">New Widget</button>
 
@@ -39,6 +38,8 @@
 </table>
 
 @code {
+	private readonly string _allowCancellationId = $"widget-allow-cancellation-{Guid.NewGuid():N}";
+
 	[Inject]
 	// ReSharper disable once UnusedAutoPropertyAccessor.Local
 	private IModalService ModalService { get; set; }

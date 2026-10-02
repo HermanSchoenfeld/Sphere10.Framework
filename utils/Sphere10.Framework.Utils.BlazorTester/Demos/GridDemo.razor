@@ -15,7 +15,7 @@
 <p>Search names, details or notes; click a sortable header and select a row to edit or delete it.
 	Changes remain in the editor until Save. Try a blank name or age 151 to see validation, then correct the value or Cancel.</p>
 <p>Polkadot records are protected from deletion. The Active checkbox, Color list, date field, custom Note editor and Related record picker demonstrate typed editing.</p>
-<BlazorGrid TItem="TestClass" Id="TestGrid" PageSize="10" DataSource="_dataSource"
+<BlazorGrid TItem="TestClass" PageSize="10" DataSource="_dataSource"
 	Columns="_columns" Actions="_actions" SelectedItemChanged="SelectItem" />
 <p role="status" data-testid="grid-selection">
 	@(_selectedItem == null ? "No record selected." : $"Selected: {_selectedItem.Name} (ID {_selectedItem.Id}).")

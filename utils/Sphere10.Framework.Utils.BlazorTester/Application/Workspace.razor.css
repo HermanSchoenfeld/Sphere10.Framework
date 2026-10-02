@@ -1,0 +1,13 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+Distributed under the MIT software license, see LICENSE or https://opensource.org/license/mit.
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+
+.demo-application-tools { display: flex; align-items: center; justify-content: flex-end; gap: .65rem; min-width: 0; flex-wrap: wrap; }
+.demo-search { width: clamp(9rem, 18vw, 17rem); min-width: 0; }
+@media (max-width: 700px) {
+	.demo-application-tools { flex-wrap: wrap; gap: .5rem; }
+	.demo-search { width: min(12rem, 42vw); }
+}

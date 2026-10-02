@@ -8,22 +8,90 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@page "/"
 @page "/application"
-@layout WorkspaceLayout
+@page "/components/grid"
+@page "/components/tables"
+@page "/components/dialogs"
+@page "/components/wizards"
+@page "/modern"
+@page "/widget-gallery"
+@page "/widget-gallery/modals"
+@page "/widget-gallery/tables"
+@page "/widget-gallery/wizards"
+@page "/servers"
+@page "/legacy/dashboard"
+@layout Sphere10.Framework.Utils.BlazorTester.Layouts.DemoLayout
+@using Sphere10.Framework.Utils.BlazorTester.Layouts
+@using Sphere10.Framework.Utils.BlazorTester.Loader.Components
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Models
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject IBlazorApplicationScreenHost ScreenHost
+@inject BlazorApplicationOptions ApplicationOptions
 
-<PageTitle>Sphere10 application workspace</PageTitle>
-<ApplicationShell Title="Sphere10 application workspace" NavigationPath="application" BlockId="@BlockId" ScreenId="@ScreenId" InstanceId="InstanceId">
-	<Header>
-		<span><i class="fas fa-desktop" aria-hidden="true"></i> Application workspace</span>
-	</Header>
-	<Footer>ApplicationBlock demo · Changes stay in this browser session.</Footer>
+<PageTitle>@ApplicationOptions.Title</PageTitle>
+<ApplicationShell Title="@ApplicationOptions.Title" NavigationPath="application" BlockId="@_blockId" ScreenId="@_screenId" InstanceId="_instanceId">
+	<ToolBarContent>
+		<div class="demo-application-tools">
+			<div class="demo-search"><Sphere10.Framework.Web.AspNetCore.Blazor.Components.SearchInput SearchProvider="SearchAsync" /></div>
+			<ThemeSelector />
+			<DemoIdentity />
+		</div>
+	</ToolBarContent>
+	<SidebarHeader><SidebarBrand /></SidebarHeader>
+	<Footer>Sphere10 Framework · Local sample data · Changes stay in this browser session.</Footer>
 </ApplicationShell>
 
 @code {
+	private IDisposable _navigationSubscription;
+	private bool _disposed;
+	private string _blockId;
+	private string _screenId;
+	private Guid? _instanceId;
+
 	[SupplyParameterFromQuery(Name = "block")] public string BlockId { get; set; }
 
 	[SupplyParameterFromQuery(Name = "screen")] public string ScreenId { get; set; }
 
 	[SupplyParameterFromQuery(Name = "instance")] public Guid? InstanceId { get; set; }
+
+	public void Dispose() {
+		_disposed = true;
+		_navigationSubscription?.Dispose();
+	}
+
+	protected override void OnInitialized() {
+		Navigation.LocationChanged += OnLocationChanged;
+		_navigationSubscription = Tools.Scope.ExecuteOnDispose(() => Navigation.LocationChanged -= OnLocationChanged);
+	}
+
+	protected override void OnParametersSet() => UpdateRouteRequest();
+
+	private void UpdateRouteRequest() {
+		// Compatibility routes select a registered screen; the shell owns activation, guards and canonical history.
+		var path = "/" + Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0];
+		var alias = DemoNavigation.ResolveAlias(path);
+		_blockId = alias?.BlockId ?? BlockId;
+		_screenId = alias?.ScreenId ?? ScreenId;
+		_instanceId = alias == null ? InstanceId : null;
+	}
+
+	private void OnLocationChanged(object sender, LocationChangedEventArgs args) {
+		// Alias paths share this page type and can change without changing any supplied query parameter.
+		var path = "/" + Navigation.ToBaseRelativePath(args.Location).Split('?', '#')[0];
+		if (_disposed || DemoNavigation.ResolveAlias(path) == null)
+			return;
+		_ = InvokeAsync(() => {
+			if (_disposed || !string.Equals(Navigation.Uri, args.Location, StringComparison.Ordinal))
+				return;
+			UpdateRouteRequest();
+			StateHasChanged();
+		});
+	}
+
+	private Task<IEnumerable<SearchResult>> SearchAsync(string term) => DemoNavigation.SearchAsync(ScreenHost, term);
 }

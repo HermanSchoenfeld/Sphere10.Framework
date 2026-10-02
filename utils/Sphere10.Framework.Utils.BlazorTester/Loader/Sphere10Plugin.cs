@@ -35,10 +35,16 @@ public static class Sphere10Plugin {
 				.WithIconUrl("img/heading-solid.svg")
 				.WithTooltip("Workspace")
 				.WithDefaultScreen<OverviewScreen>()
-				.AddMenu(menu => menu.WithId("work").WithText("Work").WithIcon("fas fa-desktop")
-					.ConfigureItem(item => item.WithId("overview").WithText("Overview").WithIcon("fas fa-home").WithScreen<OverviewScreen>())
-					.ConfigureItem(item => item.WithId("editor").WithText("Guarded editor").WithIcon("fas fa-edit").WithScreen<EditorScreen>())
-					.ConfigureItem(item => item.WithId("scratchpad").WithText("New scratchpad").WithIcon("fas fa-sticky-note").WithScreen<ScratchpadScreen>().AsMultiInstance())
+				.AddToolBarSeparator()
+				.AddToolBarItem(item => item.WithId("block-action").WithText("Workspace action").WithIcon("fas fa-desktop").WithAction((provider, token) => {
+					token.ThrowIfCancellationRequested();
+					provider.GetRequiredService<WorkspaceStatus>().Increment();
+					return Task.CompletedTask;
+				}))
+				.AddMenu(menu => menu.WithId("work").WithText("Screen hosting").WithIcon("fas fa-desktop")
+					.ConfigureItem(item => item.WithId("overview").WithText("Overview").WithIcon("fas fa-home").WithScreen<OverviewScreen>().AsSingleInstance())
+					.ConfigureItem(item => item.WithId("editor").WithText("Single-instance screen").WithIcon("fas fa-edit").WithScreen<EditorScreen>().AsSingleInstance())
+					.ConfigureItem(item => item.WithId("scratchpad").WithText("New screen instance").WithIcon("fas fa-sticky-note").WithScreen<ScratchpadScreen>().AsMultiInstance())
 					.ConfigureItem(item => item.WithId("action").WithText("Run scoped async action").WithIcon("fas fa-play").WithAction(async (provider, cancellationToken) => {
 						await Task.Delay(250, cancellationToken);
 						provider.GetRequiredService<WorkspaceStatus>().Increment();

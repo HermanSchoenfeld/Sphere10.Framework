@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
@@ -29,20 +30,36 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class DemoPluginRegistrationTests {
 	[Test]
-	public void StartupValidatesAndRegistersBothModernPluginsWithoutLegacyNavigationServices() {
+	public void StartupValidatesAndRegistersModernPluginsWithoutLegacyNavigationServices() {
 		using var provider = CreateProvider();
 		var plugins = provider.GetServices<IBlazorPlugin>().ToArray();
 		var catalog = provider.GetRequiredService<IBlazorApplicationBlockCatalog>();
 		var registeredBlocks = provider.GetServices<IBlazorApplicationBlock>().ToArray();
 
-		Assert.That(plugins.Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery" }));
+		Assert.That(plugins.Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery", "Screen policies" }));
 		Assert.That(plugins.Single(plugin => plugin.Name == "Sphere10.Framework").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace" }));
-		Assert.That(plugins.Single(plugin => plugin.Name == "Widget Gallery").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "components" }));
-		Assert.That(registeredBlocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "components" }));
-		Assert.That(catalog.Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "components" }));
+		Assert.That(plugins.Single(plugin => plugin.Name == "Widget Gallery").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "components", "legacy" }));
+		Assert.That(registeredBlocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "components", "legacy", "empty-workspace" }));
+		Assert.That(catalog.Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "components", "legacy", "empty-workspace" }));
 		Assert.That(provider.GetService<IBlazorRoutedPluginLocator>(), Is.Null);
 		Assert.That(provider.GetService<IBlazorRoutedPluginManager>(), Is.Null);
 		Assert.That(provider.GetService<IBlazorRoutedApplicationManager>(), Is.Null);
+	}
+
+	[TestCase("components", "gallery")]
+	[TestCase("legacy", "gallery")]
+	public async Task GalleryMenusCreateNewInstancesWhileSingletonDemonstrationsRemainExplicit(string blockId, string screenId) {
+		using var provider = CreateProvider();
+		using var scope = provider.CreateScope();
+		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var first = await host.ActivateScreenAsync(blockId, screenId);
+		var second = await host.ActivateScreenAsync(blockId, screenId);
+		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
+		Assert.That(first.MenuItem.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+
+		var editor = await host.ActivateScreenAsync("workspace", "editor");
+		Assert.That(await host.ActivateScreenAsync("workspace", "editor"), Is.SameAs(editor));
+		Assert.That(editor.MenuItem.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 	}
 
 	[Test]
