@@ -14,6 +14,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -23,6 +24,13 @@ namespace Sphere10.Framework.Windows.Forms;
 // TODO: Add plugin stuff to menus
 
 public partial class BlockMainForm : MainForm, IBlockManager {
+	/// <summary>Signals block registration or active application selection changes on the UI thread.</summary>
+	public event EventHandlerEx ApplicationChanged;
+
+	private IWinFormsApplicationBlock _activeBlock;
+	private IWinFormsApplicationMenu[] _applicationMenus = Array.Empty<IWinFormsApplicationMenu>();
+	private IWinFormsApplicationMenuItem[] _applicationToolBarItems = Array.Empty<IWinFormsApplicationMenuItem>();
+	private readonly List<ToolStripMenuItem> _applicationMenuHeaders = new();
 	private readonly SidebarToggleButton _navigationPaneToggleButton;
 	private readonly (Color BackColor, Color ForeColor) _defaultDockPreviewColors;
 	private TaskPane? _navigationThemePane;
@@ -32,6 +40,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	private int _maximumNavigationPaneWidth = 480;
 	private int _navigationPaneDpi = 96;
 	private bool _updatingNavigationPaneWidth;
+	private bool _registeringBlocks;
+	private readonly List<IWinFormsApplicationBlock> _screenStartupBlocks = new();
 
 	#region Form activation/destruction
 
@@ -116,7 +126,16 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	public IDictionary<IWinFormsApplicationBlock, TaskPane> PluginBindings { get; set; }
 
-	public IWinFormsApplicationBlock ActiveBlock { get; set; }
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public IWinFormsApplicationBlock ActiveBlock {
+		get => _activeBlock;
+		set {
+			if (ReferenceEquals(_activeBlock, value))
+				return;
+			_activeBlock = value;
+			OnApplicationChanged();
+		}
+	}
 
 	public IWinFormsApplicationBlock[] Blocks { get; set; }
 
@@ -138,7 +157,13 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	#region Block management
 
 	public virtual void RegisterBlock(IWinFormsApplicationBlock plugin) {
+		if (_registeringBlocks)
+			RegisterBlockCore(plugin);
+		else
+			RegisterBlocks(_screenStartupBlocks.Append(plugin), false);
+	}
 
+	private void RegisterBlockCore(IWinFormsApplicationBlock plugin) {
 		#region Pre-conditions
 
 		Debug.Assert(plugin != null);
@@ -174,31 +199,50 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		if (plugin.ShowInMenuStrip) {
 			RegisterBlockInMenu(plugin);
 		}
+		RebuildApplicationMenus();
 		RebuildToolBar();
 
-// TODO: Execute these on form load rather than now?
-		foreach (IWinFormsApplicationMenu menu in plugin.Menus) {
-			foreach (IWinFormsApplicationMenuItem menuItem in menu.Items) {
-				if (menuItem.ExecuteOnLoad) {
-					ExecuteMenuItem(menuItem);
+		OnApplicationChanged();
+	}
+
+	/// <summary>Preserves startup declaration order independently of the navigation's Position ordering.</summary>
+	internal bool RegisterBlocks(IEnumerable<IWinFormsApplicationBlock> blocks, bool invokeOverrides = true) {
+		var ordered = blocks.Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		var definitions = ordered.Where(block => !IsBlockRegistered(block)).ToArray();
+		var accepted = ScreenHost.InitializeScreens(ordered, () => {
+			using (Tools.Scope.ExecuteOnDispose(() => _registeringBlocks = false)) {
+				_registeringBlocks = true;
+				foreach (var block in definitions.OrderBy(block => block.Position)) {
+					if (invokeOverrides)
+						RegisterBlock(block);
+					else
+						RegisterBlockCore(block);
 				}
 			}
+			var hasDefault = Tools.UI.GetDefaultScreen(Tools.UI.GetScreenDefinitions(ordered)) != null;
+			foreach (var item in definitions.SelectMany(block => block.Menus).SelectMany(menu => menu.Items)) {
+				if (item.ExecuteOnLoad && (item is not IWinFormsScreenMenuItem || !hasDefault))
+					ExecuteMenuItem(item);
+			}
+		});
+		if (accepted) {
+			_screenStartupBlocks.Clear();
+			_screenStartupBlocks.AddRange(ordered);
 		}
-
-		if (ActiveScreen == null && plugin.DefaultScreen != null)
-			ScreenHost.ActivateScreen(plugin, plugin.DefaultScreen, plugin.DefaultScreenTitle);
+		return accepted;
 	}
 
 	public virtual void UnregisterBlock(IWinFormsApplicationBlock Block) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
 		Guard.Argument(PluginBindings.ContainsKey(Block), nameof(Block), "Block is not registered");
-		if (!ScreenHost.CloseScreens(ScreenHost.Screens.Where(Screen => ReferenceEquals(Screen.ApplicationBlock, Block))))
+		if (!ScreenHost.UnregisterScreenTypes(Block))
 			return;
-		foreach (var Binding in MenuItemBindings.Where(Pair => ReferenceEquals(Pair.Value.Parent.Parent, Block)).ToArray()) {
+		_screenStartupBlocks.Remove(Block);
+		foreach (var Binding in MenuItemBindings.Where(Pair => ReferenceEquals(Pair.Value.Parent?.Parent, Block)).ToArray()) {
 			MenuItemBindings.Remove(Binding.Key);
 			Binding.Key.Dispose();
 		}
-		foreach (var Binding in ToolStripBindings.Where(Pair => ReferenceEquals(Pair.Value.Parent.Parent, Block)).ToArray()) {
+		foreach (var Binding in ToolStripBindings.Where(Pair => ReferenceEquals(Pair.Value.Parent?.Parent, Block)).ToArray()) {
 			ToolStripBindings.Remove(Binding.Key);
 			Binding.Key.Dispose();
 		}
@@ -214,8 +258,10 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		UpdateNavigationTheme();
 		if (ReferenceEquals(ActiveBlock, Block))
 			ActiveBlock = ActiveScreen?.ApplicationBlock ?? Plugins.FirstOrDefault();
+		RebuildApplicationMenus();
 		Block.Dispose();
 		RebuildToolBar();
+		OnApplicationChanged();
 	}
 	public virtual bool IsBlockRegistered(IWinFormsApplicationBlock plugin) {
 
@@ -391,6 +437,49 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Menu & Toolbar management
 
+	internal void SetApplicationCommands(IWinFormsApplicationMenu[] menus, IWinFormsApplicationMenuItem[] toolBarItems) {
+		var items = menus.SelectMany(menu => menu.Items).Concat(toolBarItems).ToArray();
+		Guard.Argument(items.All(item => item is IWinFormsLinkMenuItem), nameof(menus), "Application menus and toolbars require native link, action, or screen commands.");
+		Guard.Argument(items.OfType<IWinFormsScreenMenuItem>().All(item => item.Parent?.Parent != null), nameof(menus), "Application screen commands must belong to a block menu.");
+		_applicationMenus = Tools.Array.Clone(menus);
+		_applicationToolBarItems = Tools.Array.Clone(toolBarItems);
+		RebuildApplicationMenus();
+		RebuildToolBar();
+	}
+
+	private void RebuildApplicationMenus() {
+		foreach (var header in _applicationMenuHeaders) {
+			foreach (var item in header.DropDownItems.Cast<ToolStripItem>().ToArray())
+				ToolStripBindings.Remove(item);
+			header.Dispose();
+		}
+		_applicationMenuHeaders.Clear();
+		foreach (var menu in _applicationMenus) {
+			var header = new ToolStripMenuItem(menu.Text);
+			foreach (var item in menu.Items.Cast<IWinFormsLinkMenuItem>()) {
+				var button = new ToolStripMenuItem(item.Text, item.Image16x16, ToolStripItemActivate) {
+					Enabled = IsApplicationCommandAvailable(item)
+				};
+				header.DropDownItems.Add(button);
+				ToolStripBindings.Add(button, item);
+			}
+			_applicationMenuHeaders.Add(header);
+			InsertMenuItemBeforeHelpMenu(header);
+		}
+	}
+
+	private bool IsApplicationCommandAvailable(IWinFormsLinkMenuItem item) =>
+		item is not IWinFormsScreenMenuItem screen || screen.Parent?.Parent != null && IsBlockRegistered(screen.Parent.Parent);
+
+	private void AddToolBarItem(IWinFormsLinkMenuItem item, bool enabled = true) {
+		var button = new ToolStripButton(string.Empty, item.Image16x16 ?? Resources.DefaultToolStripImage, ToolStripItemActivate) {
+			ToolTipText = item.Text,
+			Enabled = enabled
+		};
+		ToolStrip.Items.Add(button);
+		ToolStripBindings.Add(button, item);
+	}
+
 	private void RegisterBlockInMenu(IWinFormsApplicationBlock block) {
 		ToolStripMenuItem blockHeader = new ToolStripMenuItem(
 			block.Name
@@ -457,6 +546,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		#region Add standard buttons
 
 		ToolStrip.Items.Add(_navigationPaneToggleButton);
+		foreach (var item in _applicationToolBarItems.Cast<IWinFormsLinkMenuItem>())
+			AddToolBarItem(item, IsApplicationCommandAvailable(item));
 
 		#endregion
 
@@ -472,17 +563,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 						if (item is IWinFormsLinkMenuItem) {
 							IWinFormsLinkMenuItem linkItem = item as IWinFormsLinkMenuItem;
 							if (linkItem.ShowOnToolStrip) {
-								ToolStripButton button = new ToolStripButton(
-									string.Empty,
-									item.Image16x16 != null ? item.Image16x16 : Sphere10.Framework.Windows.Forms.Resources.DefaultToolStripImage,
-									ToolStripItemActivate
-								);
-								button.ToolTipText = linkItem.Text;
-								ToolStrip.Items.Add(button);
-								ToolStripBindings.Add(
-									button,
-									item
-								);
+								AddToolBarItem(linkItem);
 							}
 						}
 					}
@@ -538,6 +619,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		UpdateNavigationPane(Screen);
 		RebuildToolBar();
 		base.OnActiveScreenChanged(Screen);
+		OnApplicationChanged();
 	}
 
 	protected override bool ProcessCmdKey(ref Message Message, Keys KeyData) {
@@ -665,6 +747,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	private void NavigationPaneToggle_Click(object? Sender, EventArgs Args) => NavigationPaneCollapsed = !NavigationPaneCollapsed;
 
 	#endregion
+
+	protected virtual void OnApplicationChanged() => ApplicationChanged?.Invoke();
 
 	#region Misc
 

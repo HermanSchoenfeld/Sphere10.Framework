@@ -1,3 +1,4 @@
+using Sphere10.Framework.Application.UI;
 using System;
 using Sphere10.Framework;
 using Sphere10.Framework.Windows.Forms;

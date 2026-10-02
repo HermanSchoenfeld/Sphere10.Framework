@@ -472,6 +472,7 @@ public class ApplicationScreenHostTests {
 
 	public class ProbeScreen : WinFormsApplicationScreen {
 		public ProbeScreen() {
+			ActivationMode = ScreenActivationMode.SingleInstance;
 			ToolBar = new ToolStrip();
 			Button = new ToolStripButton("Count", null, (_, _) => Value++);
 			ToolBar.Items.Add(Button);

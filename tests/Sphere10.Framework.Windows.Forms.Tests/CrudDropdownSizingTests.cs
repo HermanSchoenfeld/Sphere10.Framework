@@ -17,7 +17,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Windows.Forms.Crud;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
-using WinFormsApplication = System.Windows.Forms.Application;
+using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -243,7 +243,7 @@ public class CrudDropdownSizingTests {
 		var Inspected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var InspectTimer = new System.Windows.Forms.Timer { Interval = 25 };
 		InspectTimer.Tick += async (_, _) => {
-			var Picker = WinFormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
+			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
 			if (Picker == null)
 				return;
 			InspectTimer.Stop();
@@ -410,9 +410,9 @@ public class CrudDropdownSizingTests {
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		Watchdog.Tick += (_, _) => {
 			Failure = new AssertionException("The dropdown sizing test timed out.");
-			foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
-			WinFormsApplication.ExitThread();
+			FormsApplication.ExitThread();
 		};
 		Owner.Shown += async (_, _) => {
 			using var CloseOwner = Tools.Scope.ExecuteOnDispose(Owner.Close);
@@ -424,7 +424,7 @@ public class CrudDropdownSizingTests {
 			}
 		};
 		Watchdog.Start();
-		WinFormsApplication.Run(Owner);
+		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
 		Assert.That(Completed, Is.True, "The message loop must complete the test body.");
 	}

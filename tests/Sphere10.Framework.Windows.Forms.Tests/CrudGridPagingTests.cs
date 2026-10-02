@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
-using WinFormsApplication = System.Windows.Forms.Application;
+using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -181,7 +181,7 @@ public class CrudGridPagingTests {
 			}
 		};
 		Watchdog.Start();
-		WinFormsApplication.Run(Owner);
+		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
 	}
 

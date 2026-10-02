@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Sphere10.Framework.Application.UI;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
@@ -62,6 +63,10 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 		_tabMenu = new ContextMenuStrip();
 		_tabMenu.Items.Add("Undock", null, (_, _) => RequestUndock(_contextTab));
 		_tabMenu.Items.Add("Close", null, (_, _) => RequestClose(_contextTab));
+		_tabMenu.Opening += (_, _) => {
+			foreach (ToolStripItem item in _tabMenu.Items)
+				item.Enabled = CanCloseOrUndock(_contextTab);
+		};
 	}
 
 	internal bool Reordering { get; private set; }
@@ -186,10 +191,12 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 			using var Border = new Pen(DockPreviewBackColor, BorderWidth);
 			Args.Graphics.DrawRectangle(Border, Rectangle.Inflate(Bounds, -BorderWidth / 2, -BorderWidth / 2));
 		}
-		var GlyphBounds = Rectangle.Inflate(CloseBounds, -ScaleMetric(LogicalGlyphInset), -ScaleMetric(LogicalGlyphInset));
-		using var Pen = new Pen(SystemColors.ControlText, Math.Max(1, _metricsDpi / (float)LogicalDpi));
-		Args.Graphics.DrawLine(Pen, GlyphBounds.Left, GlyphBounds.Top, GlyphBounds.Right, GlyphBounds.Bottom);
-		Args.Graphics.DrawLine(Pen, GlyphBounds.Right, GlyphBounds.Top, GlyphBounds.Left, GlyphBounds.Bottom);
+		if (CanCloseOrUndock(Page)) {
+			var GlyphBounds = Rectangle.Inflate(CloseBounds, -ScaleMetric(LogicalGlyphInset), -ScaleMetric(LogicalGlyphInset));
+			using var Pen = new Pen(SystemColors.ControlText, Math.Max(1, _metricsDpi / (float)LogicalDpi));
+			Args.Graphics.DrawLine(Pen, GlyphBounds.Left, GlyphBounds.Top, GlyphBounds.Right, GlyphBounds.Bottom);
+			Args.Graphics.DrawLine(Pen, GlyphBounds.Right, GlyphBounds.Top, GlyphBounds.Left, GlyphBounds.Bottom);
+		}
 		base.OnDrawItem(Args);
 	}
 
@@ -240,7 +247,7 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 		_pressedTab = GetTabAt(Args.Location);
 		_pressLocation = Args.Location;
 		_originalIndex = _pressedTab == null ? -1 : TabPages.IndexOf(_pressedTab);
-		if (_pressedTab != null && (Args.Button == MouseButtons.Middle || Args.Button == MouseButtons.Left && GetCloseBounds(TabPages.IndexOf(_pressedTab)).Contains(Args.Location))) {
+		if (_pressedTab != null && CanCloseOrUndock(_pressedTab) && (Args.Button == MouseButtons.Middle || Args.Button == MouseButtons.Left && GetCloseBounds(TabPages.IndexOf(_pressedTab)).Contains(Args.Location))) {
 			RequestClose(_pressedTab);
 			_pressedTab = null;
 			return;
@@ -509,13 +516,15 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 		Invalidate();
 	}
 
+	private static bool CanCloseOrUndock(TabPage Page) => Page?.Tag is not WinFormsApplicationScreen screen || screen.ActivationMode != ScreenActivationMode.PermanentSingleton;
+
 	private void RequestClose(TabPage? Page) {
-		if (Page?.Tag is WinFormsApplicationScreen Screen)
+		if (CanCloseOrUndock(Page) && Page?.Tag is WinFormsApplicationScreen Screen)
 			ScreenCloseRequested?.Invoke(Screen);
 	}
 
 	private void RequestUndock(TabPage? Page) {
-		if (Page?.Tag is WinFormsApplicationScreen Screen)
+		if (CanCloseOrUndock(Page) && Page?.Tag is WinFormsApplicationScreen Screen)
 			ScreenUndockRequested?.Invoke(Screen);
 	}
 

@@ -79,17 +79,19 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<IWinF
 		return this;
 	}
 
-	public WinFormsApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null) {
-		SetDefaultScreen(screenType, title);
+	public WinFormsApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) {
+		SetDefaultScreen(screenType, title, activationMode, screenKind);
 		if (_block != null) {
 			_block.DefaultScreen = screenType;
 			_block.DefaultScreenTitle = title;
+			_block.DefaultScreenActivationMode = activationMode;
+			_block.DefaultScreenKind = screenKind;
 		}
 		return this;
 	}
 
-	public WinFormsApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null) where TScreen : WinFormsApplicationScreen {
-		return WithDefaultScreen(typeof(TScreen), title);
+	public WinFormsApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) where TScreen : WinFormsApplicationScreen {
+		return WithDefaultScreen(typeof(TScreen), title, activationMode, screenKind);
 	}
 
 	public WinFormsApplicationBlockBuilder AddMenu(Action<WinFormsApplicationMenuBuilder> menuBuild) {
@@ -121,7 +123,9 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<IWinF
 			Id = Id,
 			Position = Position,
 			DefaultScreen = DefaultScreen,
-			DefaultScreenTitle = DefaultScreenTitle
+			DefaultScreenTitle = DefaultScreenTitle,
+			DefaultScreenActivationMode = DefaultScreenActivationMode,
+			DefaultScreenKind = DefaultScreenKind
 		};
 		foreach (var menu in menus)
 			_block.AddMenu(menu);

@@ -33,7 +33,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	private int _showCount;
 	private bool _destroyed;
-	private ScreenActivationMode _activationMode;
+	private ScreenActivationMode _activationMode = ScreenActivationMode.MultiInstance;
 	private readonly List<ToolStripItem> _menuStripItems;
 
 	public WinFormsApplicationScreen()
@@ -58,8 +58,8 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	[Browsable(true), Category("Layout"), Description("How this screen will be displayed to the user")]
 	public ScreenDisplayMode DisplayMode { get; set; }
 
-	/// <summary>The type's constructor default or explicit builder declaration. Every instance of a hosted type uses the same mode.</summary>
-	[Browsable(true), Category("Behavior"), DefaultValue(ScreenActivationMode.SingleInstance), Description("The instance policy declared by this screen type")]
+	/// <summary>Defaults to MultiInstance unless the constructor or builder declares another policy. Every hosted instance of a type uses the same mode.</summary>
+	[Browsable(true), Category("Behavior"), DefaultValue(ScreenActivationMode.MultiInstance), Description("The instance policy declared by this screen type")]
 	public ScreenActivationMode ActivationMode {
 		get => _activationMode;
 		protected set {
@@ -76,6 +76,10 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	}
 
 	[Browsable(false)] public IWinFormsApplicationBlock ApplicationBlock { get; set; }
+
+	/// <summary>The registered presentation role. Empty screens occupy the workspace without a tab.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public ScreenKind ScreenKind { get; internal set; }
 
 	internal IWinFormsApplicationScreenHost? ScreenHost { get; set; }
 

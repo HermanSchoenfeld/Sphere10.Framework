@@ -19,7 +19,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 using NUnit.Framework;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
-using WinFormsApplication = System.Windows.Forms.Application;
+using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -175,7 +175,7 @@ public class CrudReferencePickerTests {
 		var Handled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var SelectTimer = new System.Windows.Forms.Timer { Interval = 25 };
 		SelectTimer.Tick += async (_, _) => {
-			var Picker = WinFormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
+			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
 			if (Picker == null)
 				return;
 			SelectTimer.Stop();
@@ -224,7 +224,7 @@ public class CrudReferencePickerTests {
 		var PopupCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var SelectTimer = new System.Windows.Forms.Timer { Interval = 25 };
 		SelectTimer.Tick += async (_, _) => {
-			var Picker = WinFormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
+			var Picker = FormsApplication.OpenForms.Cast<Form>().SelectMany(Descendants).OfType<CrudReferencePicker>().FirstOrDefault();
 			if (Picker == null)
 				return;
 			SelectTimer.Stop();
@@ -325,10 +325,10 @@ public class CrudReferencePickerTests {
 		using var Owner = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000), ClientSize = new Size(1000, 600) };
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		Watchdog.Tick += (_, _) => {
-			Failure = new AssertionException("The CRUD reference picker test timed out. Forms: " + string.Join(", ", WinFormsApplication.OpenForms.Cast<Form>().Select(Form => $"{Form.GetType().Name} ({Form.Text}): {string.Join(", ", Descendants(Form).Select(Control => Control.GetType().Name))}")));
-			foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+			Failure = new AssertionException("The CRUD reference picker test timed out. Forms: " + string.Join(", ", FormsApplication.OpenForms.Cast<Form>().Select(Form => $"{Form.GetType().Name} ({Form.Text}): {string.Join(", ", Descendants(Form).Select(Control => Control.GetType().Name))}")));
+			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
-			WinFormsApplication.ExitThread();
+			FormsApplication.ExitThread();
 		};
 		Owner.Shown += async (_, _) => {
 			using var CloseOwner = Tools.Scope.ExecuteOnDispose(Owner.Close);
@@ -340,7 +340,7 @@ public class CrudReferencePickerTests {
 			}
 		};
 		Watchdog.Start();
-		WinFormsApplication.Run(Owner);
+		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
 		Assert.That(Completed, Is.True, "The message loop must execute and complete the test body.");
 	}

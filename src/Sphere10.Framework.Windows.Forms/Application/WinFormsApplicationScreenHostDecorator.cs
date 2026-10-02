@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 
@@ -41,6 +42,10 @@ public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : IWinFo
 	public virtual WinFormsApplicationScreen[] OpenScreens => InternalHost.OpenScreens;
 
 	public virtual void RegisterScreenTypes(IWinFormsApplicationBlock Block) => InternalHost.RegisterScreenTypes(Block);
+
+	public virtual bool InitializeScreens(IEnumerable<IWinFormsApplicationBlock> blocks) => InternalHost.InitializeScreens(blocks);
+
+	public virtual bool UnregisterScreenTypes(IWinFormsApplicationBlock block) => InternalHost.UnregisterScreenTypes(block);
 
 	public virtual WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null)
 		=> InternalHost.ActivateScreen(Block, ScreenType, Title);

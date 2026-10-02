@@ -64,6 +64,22 @@ public class WinFormsApplicationMenuItemBuilder {
 			return this;
 		}
 
+		/// <summary>Opens one anchored instance during application startup.</summary>
+		public WinFormsScreenMenuItemBuilder AsPermanentSingleton() {
+			SetActivationMode(ScreenActivationMode.PermanentSingleton);
+			return this;
+		}
+
+		public WinFormsScreenMenuItemBuilder WithScreenKind(ScreenKind screenKind) {
+			SetScreenKind(screenKind);
+			return this;
+		}
+
+		public WinFormsScreenMenuItemBuilder AsDefault(bool isDefault = true) {
+			SetIsDefault(isDefault);
+			return this;
+		}
+
 		public WinFormsScreenMenuItemBuilder WithTitle(string Title) {
 			Guard.ArgumentNotNullOrEmpty(Title, nameof(Title));
 			SetScreenTitle(Title);
@@ -97,7 +113,9 @@ public class WinFormsApplicationMenuItemBuilder {
 			return new WinFormsScreenMenuItem(Text, ScreenType, _image16x16, _showOnExplorerBar, _showOnToolBar, _isStartScreen) {
 				Id = Id,
 				ActivationMode = ActivationMode,
-				ScreenTitle = ScreenTitle
+				ScreenTitle = ScreenTitle,
+				ScreenKind = ScreenKind,
+				IsDefault = IsDefault
 			};
 		}
 	}

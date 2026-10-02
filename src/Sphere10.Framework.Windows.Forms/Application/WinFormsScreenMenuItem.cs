@@ -42,6 +42,10 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItem, IWinFormsScreenMenuI
 
 	public virtual string ScreenTitle { get; set; }
 
+	public virtual ScreenKind ScreenKind { get; set; }
+
+	public virtual bool IsDefault { get; set; }
+
 	public override void Dispose() {
 		base.Dispose();
 	}

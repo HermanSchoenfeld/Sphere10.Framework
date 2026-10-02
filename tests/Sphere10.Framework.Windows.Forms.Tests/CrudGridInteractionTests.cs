@@ -18,7 +18,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 using GridTextBox = Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors.TextBox;
-using WinFormsApplication = System.Windows.Forms.Application;
+using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -429,9 +429,9 @@ public class CrudGridInteractionTests {
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		Watchdog.Tick += (_, _) => {
 			Failure = new AssertionException("The CrudGrid interaction test timed out.");
-			foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
-			WinFormsApplication.ExitThread();
+			FormsApplication.ExitThread();
 		};
 		Owner.Shown += async (_, _) => {
 			using var CloseOwner = Tools.Scope.ExecuteOnDispose(Owner.Close);
@@ -443,7 +443,7 @@ public class CrudGridInteractionTests {
 			}
 		};
 		Watchdog.Start();
-		WinFormsApplication.Run(Owner);
+		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
 		Assert.That(Completed, Is.True, "The message loop must run the complete test body before exiting.");
 	}

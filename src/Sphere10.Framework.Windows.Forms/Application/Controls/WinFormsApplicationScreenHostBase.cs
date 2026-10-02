@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,6 +30,10 @@ public abstract class WinFormsApplicationScreenHostBase : UserControlEx, IWinFor
 	public abstract WinFormsApplicationScreen[] OpenScreens { get; }
 
 	public abstract void RegisterScreenTypes(IWinFormsApplicationBlock Block);
+
+	public abstract bool InitializeScreens(IEnumerable<IWinFormsApplicationBlock> blocks);
+
+	public abstract bool UnregisterScreenTypes(IWinFormsApplicationBlock block);
 
 	public abstract WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null);
 

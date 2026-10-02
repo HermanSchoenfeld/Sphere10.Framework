@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 
@@ -21,6 +22,10 @@ public interface IWinFormsApplicationScreenHost {
 	WinFormsApplicationScreen[] OpenScreens { get; }
 	/// <summary>Registers a block's explicit screen type policies before activating any screen. Conflicting declarations are rejected atomically.</summary>
 	void RegisterScreenTypes(IWinFormsApplicationBlock Block);
+	/// <summary>Opens permanent screens and chooses the ordered default when no screen is active.</summary>
+	bool InitializeScreens(IEnumerable<IWinFormsApplicationBlock> blocks);
+	/// <summary>Removes a block's definitions and owned instances, including permanent screens, if every screen permits closing.</summary>
+	bool UnregisterScreenTypes(IWinFormsApplicationBlock block);
 	/// <summary>Creates a screen or selects its existing single instance, including when registered through another block.</summary>
 	WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null);
 	/// <summary>Shows a supplied instance using its registered type policy. Rejects duplicate single-instance screens and conflicting constructor defaults.</summary>

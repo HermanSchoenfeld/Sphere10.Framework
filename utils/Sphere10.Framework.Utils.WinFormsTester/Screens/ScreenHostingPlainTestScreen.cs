@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 public class ScreenHostingPlainTestScreen : WinFormsApplicationScreen {
 	public ScreenHostingPlainTestScreen() {
 		Title = "Plain screen";
-		ActivationMode = ScreenActivationMode.SingleInstance;
+		ActivationMode = ScreenActivationMode.MultiInstance;
 		var Layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2 };
 		Layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 		Layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));

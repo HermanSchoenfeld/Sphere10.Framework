@@ -18,7 +18,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
-using WinFormsApplication = System.Windows.Forms.Application;
+using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -61,7 +61,7 @@ public class MainFormExitTests {
 		Form.RequestClose(FileExit);
 		using var FirstConfirmation = await WaitForConfirmation();
 		Form.RequestClose(FileExit);
-		Assert.That(WinFormsApplication.OpenForms.OfType<DialogEx>().Count(), Is.EqualTo(1), "Repeated close requests must share one pending confirmation.");
+		Assert.That(FormsApplication.OpenForms.OfType<DialogEx>().Count(), Is.EqualTo(1), "Repeated close requests must share one pending confirmation.");
 		Answer(FirstConfirmation, false);
 		await WaitUntil(() => !Form.ApplicationExiting);
 		Assert.That(Form.IsDisposed, Is.False);
@@ -162,9 +162,9 @@ public class MainFormExitTests {
 		using var RequestExit = new System.Windows.Forms.Timer { Interval = 25 };
 		Watchdog.Tick += (_, _) => {
 			Failure = new AssertionException($"The main application loop did not exit. Visible: {MainForm?.Visible}; Disposed: {MainForm?.IsDisposed}; Windows: {DescribeOpenForms()}");
-			foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
-			WinFormsApplication.ExitThread();
+			FormsApplication.ExitThread();
 		};
 		Watchdog.Start();
 		RequestExit.Tick += async (_, _) => {
@@ -270,13 +270,13 @@ public class MainFormExitTests {
 		=> ((Button)Confirmation.Controls.Find(Yes ? "button2" : "button1", true).Single()).PerformClick();
 
 	private static async Task<DialogEx> WaitForConfirmation() {
-		await WaitUntil(() => WinFormsApplication.OpenForms.OfType<DialogEx>().Any(Dialog => Dialog.Visible));
-		Assert.That(WinFormsApplication.OpenForms.OfType<DialogEx>().Count(Dialog => Dialog.Visible), Is.EqualTo(1), DescribeOpenForms());
-		return WinFormsApplication.OpenForms.OfType<DialogEx>().Single(Dialog => Dialog.Visible);
+		await WaitUntil(() => FormsApplication.OpenForms.OfType<DialogEx>().Any(Dialog => Dialog.Visible));
+		Assert.That(FormsApplication.OpenForms.OfType<DialogEx>().Count(Dialog => Dialog.Visible), Is.EqualTo(1), DescribeOpenForms());
+		return FormsApplication.OpenForms.OfType<DialogEx>().Single(Dialog => Dialog.Visible);
 	}
 
 	private static string DescribeOpenForms()
-		=> string.Join(Environment.NewLine, WinFormsApplication.OpenForms.Cast<Form>().Select(Form => $"{Form.GetType().Name}: {Form.Text}; {(Form as ExceptionDialog)?.Exception}"));
+		=> string.Join(Environment.NewLine, FormsApplication.OpenForms.Cast<Form>().Select(Form => $"{Form.GetType().Name}: {Form.Text}; {(Form as ExceptionDialog)?.Exception}"));
 
 	private static async Task WaitUntil(Func<bool> Condition) {
 		for (var Attempt = 0; Attempt < 500; Attempt++) {
@@ -306,13 +306,13 @@ public class MainFormExitTests {
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		Watchdog.Tick += (_, _) => {
 			Failure = new AssertionException("The exit test timed out.");
-			foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
-			WinFormsApplication.ExitThread();
+			FormsApplication.ExitThread();
 		};
 		Owner.Shown += async (_, _) => {
 			using var CloseOwner = Tools.Scope.ExecuteOnDispose(() => {
-				foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+				foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 					Dialog.Dispose();
 			});
 			try {
@@ -324,7 +324,7 @@ public class MainFormExitTests {
 			}
 		};
 		Watchdog.Start();
-		WinFormsApplication.Run(Owner);
+		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
 		Assert.That(Completed, Is.True, "The message loop must run the asynchronous exit test to completion.");
 	}
