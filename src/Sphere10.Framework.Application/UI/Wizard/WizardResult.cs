@@ -13,4 +13,3 @@ public enum WizardResult {
 	Error,
 	Cancelled,
 }
-
