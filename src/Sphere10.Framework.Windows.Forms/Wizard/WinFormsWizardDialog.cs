@@ -14,23 +14,24 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class WizardDialog<T> : FormEx {
+public partial class WinFormsWizardDialog<T> : FormEx {
+	private bool _requestingClose;
 
-	public WizardDialog() {
+	public WinFormsWizardDialog() {
 		this.StartPosition = FormStartPosition.CenterParent;
 		InitializeComponent();
 		Closing = false;
 	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWizard<T> WizardManager { get; set; }
+	public IWinFormsWizard<T> WizardManager { get; set; }
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	internal new bool Closing { get; private set; }
 
 	public Size DialogSizeOverhead => new Size(Width - _contentPanel.Width, Height - _contentPanel.Height);
 
-	public async Task SetContent(WizardScreen<T> screen) {
+	public async Task SetContent(WinFormsWizardScreen<T> screen) {
 		if (_contentPanel.Controls.Count > 0) {
 			_contentPanel.RemoveAllControls();
 		}
@@ -49,12 +50,25 @@ public partial class WizardDialog<T> : FormEx {
 
 	protected override async void OnFormClosing(FormClosingEventArgs e) {
 		base.OnFormClosing(e);
-		if (!Closing) {
-			var closeValidation = WizardManager.CancelRequested();
-			e.Cancel = closeValidation.IsFailure;
-			if (e.Cancel) {
-				await DialogEx.ShowAsync(this, SystemIconType.Error, closeValidation.ErrorMessages.ToParagraphCase(true), "Error");
+		if (Closing || e.Cancel)
+			return;
+		e.Cancel = true;
+		if (_requestingClose)
+			return;
+		_requestingClose = true;
+		using var closeRequest = Tools.Scope.ExecuteOnDispose(() => _requestingClose = false);
+		try {
+			var result = await WizardManager.CancelAsync();
+			if (result.IsSuccess && result.Value) {
+				// Let the canceled FormClosing event unwind before initiating the accepted close.
+				await Task.Yield();
+				if (!IsDisposed)
+					CloseDialog();
 			}
+			else if (result.IsFailure)
+				await DialogEx.ShowAsync(this, SystemIconType.Error, result.ErrorMessages.ToParagraphCase(true), "Error");
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 

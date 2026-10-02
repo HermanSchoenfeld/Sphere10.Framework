@@ -10,6 +10,6 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class DefaultWizardScreen : WizardScreen<IDictionary<string, object>> {
+public class DefaultWinFormsWizardScreen : WinFormsWizardScreen<IDictionary<string, object>> {
 }
 

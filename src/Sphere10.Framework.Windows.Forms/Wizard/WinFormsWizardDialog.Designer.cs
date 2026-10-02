@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Sphere10.Framework.Windows.Forms {
-    partial class WizardDialog<T> {
+    partial class WinFormsWizardDialog<T> {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -92,7 +92,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.loadingCircle1.Text = "_loadingCircle";
 			this.loadingCircle1.Visible = false;
 			// 
-			// WizardDialog
+			// WinFormsWizardDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -103,10 +103,10 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.Controls.Add(this._nextButton);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
 			this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this.Name = "WizardDialog";
+			this.Name = "WinFormsWizardDialog";
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
-			this.Text = "WizardDialog";
+			this.Text = "WinFormsWizardDialog";
 			this.ResumeLayout(false);
 
         }

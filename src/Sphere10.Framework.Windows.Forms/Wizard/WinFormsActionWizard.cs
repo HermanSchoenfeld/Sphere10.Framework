@@ -8,27 +8,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ActionWizard<T> : WizardBase<T> {
+public class WinFormsActionWizard<T> : WinFormsWizardBase<T> {
 	private readonly Func<T, Task<Result>> _finishFunc;
 	private readonly Func<T, Result> _cancelFunc;
-	private readonly IEnumerable<WizardScreen<T>> _screens;
+	private readonly WinFormsWizardScreen<T>[] _screens;
 
-	public ActionWizard(string title, T propertyBag, IEnumerable<WizardScreen<T>> screens, Func<T, Task<Result>> finishFunc, Func<T, Result> cancelFunc = null)
+	public WinFormsActionWizard(string title, T propertyBag, IEnumerable<WinFormsWizardScreen<T>> screens, Func<T, Task<Result>> finishFunc, Func<T, Result> cancelFunc = null)
 		: base(title, propertyBag) {
 		_finishFunc = finishFunc;
 		_cancelFunc = cancelFunc ?? ((x) => Result.Default);
-		_screens = screens;
+		Guard.ArgumentNotNull(screens, nameof(screens));
+		Guard.ArgumentNotNull(finishFunc, nameof(finishFunc));
+		_screens = screens.ToArray();
 	}
 
 	public override Result CancelRequested() {
 		return _cancelFunc(Model);
 	}
 
-	protected override IEnumerable<WizardScreen<T>> ConstructScreens() {
+	protected override IEnumerable<WinFormsWizardScreen<T>> ConstructScreens() {
 		return _screens;
 	}
 

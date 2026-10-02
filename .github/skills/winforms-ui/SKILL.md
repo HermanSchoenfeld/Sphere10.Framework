@@ -1,6 +1,6 @@
 ---
 name: winforms-ui
-description: WinForms screens, wizards, and application blocks. Trigger when creating WinFormsApplicationScreen, WizardBuilder wizards, WinFormsApplicationBlockBuilder navigation, or CrudGrid screens.
+description: WinForms screens, wizards, and application blocks. Trigger when creating WinFormsApplicationScreen, WinFormsWizardBuilder wizards, WinFormsApplicationBlockBuilder navigation, or CrudGrid screens.
 ---
 
 # WinForms UI Skill
@@ -19,10 +19,10 @@ description: WinForms screens, wizards, and application blocks. Trigger when cre
 - Use the [crud-grid](../crud-grid/SKILL.md) skill for `CrudGrid` binding, editing, reference pickers, paging, and dropdown layout; use [data-source](../data-source/SKILL.md) when implementing its `IDataSource<T>`.
 
 ## Wizards
-Use `WizardBuilder<T>` (`src/Sphere10.Framework.Windows.Forms/Wizard/WizardBuilder.cs`):
+Use `WinFormsWizardBuilder<T>` (`src/Sphere10.Framework.Windows.Forms/Wizard/WinFormsWizardBuilder.cs`):
 ```csharp
 var wizard =
-	new WizardBuilder<MyModel>()
+	new WinFormsWizardBuilder<MyModel>()
 		.WithTitle("Setup")
 		.WithModel(model)
 		.AddScreen(new StepOneScreen())

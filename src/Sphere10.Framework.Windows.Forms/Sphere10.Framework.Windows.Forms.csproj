@@ -311,12 +311,12 @@
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 		</Compile>
-		<Compile Update="Wizard\DefaultWizardScreen.cs" />
-		<Compile Update="Wizard\WizardDialog.cs" />
-		<Compile Update="Wizard\WizardDialog.Designer.cs">
-			<DependentUpon>WizardDialog.cs</DependentUpon>
+		<Compile Update="Wizard\DefaultWinFormsWizardScreen.cs" />
+		<Compile Update="Wizard\WinFormsWizardDialog.cs" />
+		<Compile Update="Wizard\WinFormsWizardDialog.Designer.cs">
+			<DependentUpon>WinFormsWizardDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Wizard\WizardScreen.cs" />
+		<Compile Update="Wizard\WinFormsWizardScreen.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -498,8 +498,8 @@
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<CustomToolNamespace>Sphere10.Framework.Windows.Forms</CustomToolNamespace>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Wizard\WizardDialog.resx">
-			<DependentUpon>WizardDialog.cs</DependentUpon>
+		<EmbeddedResource Update="Wizard\WinFormsWizardDialog.resx">
+			<DependentUpon>WinFormsWizardDialog.cs</DependentUpon>
 		</EmbeddedResource>
 	</ItemGroup>
 

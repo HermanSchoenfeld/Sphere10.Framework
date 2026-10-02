@@ -9,33 +9,21 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IWizard<T> {
-	string Title { get; set; }
-	T Model { get; }
-	bool HasNext { get; }
-	bool HasPrevious { get; }
+public interface IWinFormsWizard<TModel> : IWizard<TModel, WinFormsWizardScreen<TModel>> {
+	new string Title { get; set; }
 	bool HideNext { get; set; }
 	bool HidePrevious { get; set; }
 	string NextText { get; set; }
-
 	Task<WizardResult> Start(Form parent);
-
 	Task Next();
-
 	Task Previous();
-
 	Result CancelRequested();
-
-	Task InjectScreen(WizardScreen<T> screen);
-
-	void RemoveScreen(WizardScreen<T> screen);
-
+	Task InjectScreen(WinFormsWizardScreen<TModel> screen);
+	void RemoveScreen(WinFormsWizardScreen<TModel> screen);
 	void RemoveSubsequentScreensOfType(Type type);
-
-	void RemoveSubsequentScreensOfType<U>();
-
+	void RemoveSubsequentScreensOfType<TScreen>();
 }
-

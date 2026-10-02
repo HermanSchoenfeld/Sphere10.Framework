@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WizardScreen<T> : UserControlEx, IWizardScreen<T> {
-	public IWizard<T> Wizard { get; internal set; }
+public class WinFormsWizardScreen<T> : UserControlEx, IWinFormsWizardScreen<T> {
+	public IWinFormsWizard<T> Wizard { get; internal set; }
 
 	public T Model => Wizard.Model;
 

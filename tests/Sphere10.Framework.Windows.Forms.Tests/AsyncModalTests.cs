@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -14,7 +15,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Windows;
-using WinFormsApplication = System.Windows.Forms.Application;
+using FormsApplication = System.Windows.Forms.Application;
+
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -122,14 +125,14 @@ public class AsyncModalTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void WizardUsesNativeModalForCancellationAndCompletion(bool Finish) => RunWithMessageLoop(async Owner => {
-		using var Wizard = new WizardBuilder<object>()
+		using var Wizard = new WinFormsWizardBuilder<object>()
 			.WithTitle("Native wizard")
 			.WithModel(new object())
-			.AddScreen(new WizardScreen<object>())
+			.AddScreen(new WinFormsWizardScreen<object>())
 			.OnFinished(_ => Task.FromResult(Result.Default))
 			.Build();
 		var Pending = Wizard.Start(Owner);
-		using var Dialog = await WaitForDialog<WizardDialog<object>>();
+		using var Dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
 		Assert.That(Pending.IsCompleted, Is.False);
 		Assert.That(Dialog.Owner, Is.SameAs(Owner));
 		Assert.That(Dialog.Modal, Is.True);
@@ -141,6 +144,83 @@ public class AsyncModalTests {
 		Assert.That(await Pending, Is.EqualTo(Finish ? WizardResult.Success : WizardResult.Cancelled));
 		Assert.That(IsWindowEnabled(Owner), Is.True);
 		Assert.That(Dialog.IsDisposed, Is.True);
+	});
+
+	[Test]
+	public void SharedWizardNavigationAwaitsValidationAndKeepsNativePresentationInSync() => RunWithMessageLoop(async Owner => {
+		var Validation = new TaskCompletionSource<Result>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var First = new WizardScreenProbe { Validation = () => Validation.Task };
+		var Second = new WizardScreenProbe();
+		var Finishes = 0;
+		using var Wizard = new WinFormsWizardBuilder<object>().WithTitle("Shared navigation").WithModel(new object())
+			.AddScreen(First).AddScreen(Second).OnFinished(_ => { Finishes++; return Task.FromResult(Result.Success); }).Build();
+		IWizard<object, WinFormsWizardScreen<object>> Shared = Wizard;
+		var Pending = Wizard.Start(Owner);
+		using var Dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
+		var Navigation = Shared.MoveNextAsync();
+		Assert.That(Navigation.IsCompleted, Is.False);
+		Assert.That(First.Visible, Is.True);
+		Assert.That((await Shared.FinishAsync()).Value, Is.False);
+		Assert.That((await Shared.CancelAsync()).Value, Is.False);
+		Assert.That((await Shared.MovePreviousAsync()).Value, Is.False);
+		Assert.That(async () => await Shared.UpdateStepsAsync(WizardStepUpdateType.ReplaceAll, new[] { Second }), Throws.InvalidOperationException);
+		Assert.That(Finishes, Is.Zero);
+		Validation.SetResult(Result.Success);
+		Assert.That((await Navigation).Value, Is.True);
+		Assert.That(Shared.CurrentStep, Is.SameAs(Second));
+		Assert.That(First.Parent, Is.Null);
+		Assert.That(Second.Visible, Is.True);
+		Assert.That(Second.Presentations, Is.EqualTo(1));
+		Assert.That((await Shared.MovePreviousAsync()).Value, Is.True);
+		Assert.That(Shared.CurrentStep, Is.SameAs(First));
+		Assert.That(First.Visible, Is.True);
+		Assert.That(Second.Parent, Is.Null);
+		((Form)Dialog).Close();
+		Assert.That(await Pending, Is.EqualTo(WizardResult.Cancelled));
+	});
+
+	[Test]
+	public void SharedWizardMutationInitializesAndPresentsReplacementScreens() => RunWithMessageLoop(async Owner => {
+		var First = new WizardScreenProbe();
+		var Replacement = new WizardScreenProbe();
+		var Last = new WizardScreenProbe();
+		using var Wizard = new WinFormsWizardBuilder<object>().WithTitle("Shared replacement").WithModel(new object())
+			.AddScreen(First).OnFinished(_ => Task.FromResult(Result.Success)).Build();
+		IWizard<object, WinFormsWizardScreen<object>> Shared = Wizard;
+		var Pending = Wizard.Start(Owner);
+		using var Dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
+		await Shared.UpdateStepsAsync(WizardStepUpdateType.ReplaceAll, new[] { Replacement, Last });
+		Assert.That(First.Parent, Is.Null);
+		Assert.That(Replacement.Visible, Is.True);
+		Assert.That(Replacement.Initializations, Is.EqualTo(1));
+		Assert.That(Replacement.Presentations, Is.EqualTo(1));
+		await Shared.RemoveStepAsync(Replacement);
+		Assert.That(Replacement.Parent, Is.Null);
+		Assert.That(Last.Visible, Is.True);
+		Assert.That(Last.Initializations, Is.EqualTo(1));
+		Assert.That(Last.Presentations, Is.EqualTo(1));
+		Assert.That((await Shared.FinishAsync()).Value, Is.True);
+		Assert.That(await Pending, Is.EqualTo(WizardResult.Success));
+		Assert.That(First.IsDisposed && Replacement.IsDisposed && Last.IsDisposed, Is.True);
+	});
+
+	[Test]
+	public void SharedWizardValidationFailureDoesNotMoveOrComplete() => RunWithMessageLoop(async Owner => {
+		var First = new WizardScreenProbe { Validation = () => Task.FromResult(Result.Error("Check the input.")) };
+		var Finishes = 0;
+		using var Wizard = new WinFormsWizardBuilder<object>().WithTitle("Shared validation").WithModel(new object())
+			.AddScreen(First).AddScreen(new WizardScreenProbe()).OnFinished(_ => { Finishes++; return Task.FromResult(Result.Success); }).Build();
+		IWizard<object, WinFormsWizardScreen<object>> Shared = Wizard;
+		var Pending = Wizard.Start(Owner);
+		using var Dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
+		Assert.That((await Shared.MoveNextAsync()).IsFailure, Is.True);
+		Assert.That((await Shared.FinishAsync()).IsFailure, Is.True);
+		Assert.That(Shared.CurrentStep, Is.SameAs(First));
+		Assert.That(First.Visible, Is.True);
+		Assert.That(Finishes, Is.Zero);
+		Assert.That(Shared.IsBusy, Is.False);
+		((Form)Dialog).Close();
+		Assert.That(await Pending, Is.EqualTo(WizardResult.Cancelled));
 	});
 
 	[TestCase(DialogResult.OK, true)]
@@ -231,7 +311,7 @@ public class AsyncModalTests {
 
 	private static async Task<T> WaitForDialog<T>() where T : Form {
 		for (var Attempt = 0; Attempt < 500; Attempt++) {
-			var Dialog = WinFormsApplication.OpenForms.Cast<Form>().OfType<T>().FirstOrDefault(Form => Form.Visible);
+			var Dialog = FormsApplication.OpenForms.Cast<Form>().OfType<T>().FirstOrDefault(Form => Form.Visible);
 			if (Dialog != null)
 				return Dialog;
 			await Task.Delay(10);
@@ -249,9 +329,9 @@ public class AsyncModalTests {
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		Watchdog.Tick += (_, _) => {
 			Failure = new AssertionException("The modal test timed out.");
-			foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
-			WinFormsApplication.ExitThread();
+			FormsApplication.ExitThread();
 		};
 		Owner.Shown += async (_, _) => {
 			using var CloseOwner = Tools.Scope.ExecuteOnDispose(Owner.Close);
@@ -262,8 +342,27 @@ public class AsyncModalTests {
 			}
 		};
 		Watchdog.Start();
-		WinFormsApplication.Run(Owner);
+		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
+	}
+
+	private class WizardScreenProbe : WinFormsWizardScreen<object> {
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		public Func<Task<Result>> Validation { get; set; } = () => Task.FromResult(Result.Success);
+		public int Initializations { get; private set; }
+		public int Presentations { get; private set; }
+
+		public override Task Initialize() {
+			Initializations++;
+			return Task.CompletedTask;
+		}
+
+		public override Task OnPresent() {
+			Presentations++;
+			return Task.CompletedTask;
+		}
+
+		public override Task<Result> Validate() => Validation();
 	}
 
 	public class ProbeDialog : Form, IApplicationDialog { }

@@ -7,51 +7,65 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WizardBuilder<T> {
-	private string _title;
-	private T _model;
-	private readonly List<WizardScreen<T>> _screens = new();
-	private Func<T, Task<Result>> _finishFunc;
-	private Func<T, Result> _cancelFunc;
-
-	public WizardBuilder<T> WithTitle(string title) {
-		Guard.ArgumentNotNull(title, nameof(title));
-		_title = title;
+public class WinFormsWizardBuilder<T> : WizardBuilderBase<T, WinFormsWizardScreen<T>, WinFormsActionWizard<T>> {
+	public WinFormsWizardBuilder<T> WithTitle(string title) {
+		SetTitle(title);
 		return this;
 	}
 
-	public WizardBuilder<T> WithModel(T model) {
-		_model = model;
+	public WinFormsWizardBuilder<T> WithModel(T model) {
+		SetModel(model);
 		return this;
 	}
 
-	public WizardBuilder<T> AddScreen(WizardScreen<T> screen) {
-		Guard.ArgumentNotNull(screen, nameof(screen));
-		_screens.Add(screen);
+	public WinFormsWizardBuilder<T> WithCancellation(bool isCancellable) {
+		SetCancellation(isCancellable);
 		return this;
 	}
 
-	public WizardBuilder<T> OnFinished(Func<T, Task<Result>> finishFunc) {
+	public WinFormsWizardBuilder<T> AddScreen(WinFormsWizardScreen<T> screen) {
+		AddStepDefinition(screen);
+		return this;
+	}
+
+	public WinFormsWizardBuilder<T> OnFinished(Func<T, Task<Result>> finishFunc) {
 		Guard.ArgumentNotNull(finishFunc, nameof(finishFunc));
-		_finishFunc = finishFunc;
+		SetFinishCallback(async model => {
+			var result = await finishFunc(model);
+			var outcome = new Result<bool>(result.IsSuccess);
+			outcome.Merge(result);
+			return outcome;
+		});
 		return this;
 	}
 
-	public WizardBuilder<T> OnCancelled(Func<T, Result> cancelFunc) {
+	public WinFormsWizardBuilder<T> OnCancelled(Func<T, Result> cancelFunc) {
 		Guard.ArgumentNotNull(cancelFunc, nameof(cancelFunc));
-		_cancelFunc = cancelFunc;
+		SetCancelCallback(model => {
+			var result = cancelFunc(model);
+			var outcome = new Result<bool>(result.IsSuccess);
+			outcome.Merge(result);
+			return Task.FromResult(outcome);
+		});
 		return this;
 	}
 
-	public ActionWizard<T> Build() {
-		Guard.Ensure(!string.IsNullOrEmpty(_title), "Wizard title is required");
-		Guard.Ensure(_screens.Count > 0, "At least one screen is required");
-		Guard.Ensure(_finishFunc != null, "Finish function is required");
-		return new ActionWizard<T>(_title, _model, _screens, _finishFunc, _cancelFunc);
+	public override WinFormsActionWizard<T> Build() {
+		Guard.Ensure(FinishCallback != null, "Finish function is required.");
+		return base.Build();
+	}
+
+	protected override WinFormsActionWizard<T> CreateWizard(WinFormsWizardScreen<T>[] steps) {
+		var finish = FinishCallback;
+		var cancel = CancelCallback;
+		return new WinFormsActionWizard<T>(Title, Model, steps,
+			async model => await finish(model), cancel == null ? null : model => cancel(model).ResultSafe()) {
+			IsCancellable = IsCancellable
+		};
 	}
 }

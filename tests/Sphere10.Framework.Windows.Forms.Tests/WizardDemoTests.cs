@@ -14,7 +14,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Utils.WinFormsTester.Wizard;
-using WinFormsApplication = System.Windows.Forms.Application;
+using FormsApplication = System.Windows.Forms.Application;
+
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -56,7 +58,7 @@ public class WizardDemoTests {
 		var NoBackScreen = new CantGoBackScreen();
 		var SummaryScreen = new ConfirmScreen();
 		DemoWizardModel? FinishedModel = null;
-		using var Wizard = new WizardBuilder<DemoWizardModel>()
+		using var Wizard = new WinFormsWizardBuilder<DemoWizardModel>()
 			.WithTitle("Demo wizard regression")
 			.WithModel(Model)
 			.AddScreen(NameScreen)
@@ -69,7 +71,7 @@ public class WizardDemoTests {
 			})
 			.Build();
 		var Pending = Wizard.Start(Owner);
-		var Dialog = await WaitForDialog<WizardDialog<DemoWizardModel>>();
+		var Dialog = await WaitForDialog<WinFormsWizardDialog<DemoWizardModel>>();
 		Assert.That(NameScreen.Visible, Is.True);
 		await RejectNext(Wizard, Dialog, "Enter your name.");
 		Assert.That(NameScreen.Visible, Is.True);
@@ -116,7 +118,7 @@ public class WizardDemoTests {
 		var NameScreen = new EnterNameScreen();
 		var AgeScreen = new EnterAgeScreen();
 		var SummaryScreen = new ConfirmScreen();
-		using var Wizard = new WizardBuilder<DemoWizardModel>()
+		using var Wizard = new WinFormsWizardBuilder<DemoWizardModel>()
 			.WithTitle("Demo wizard back navigation")
 			.WithModel(Model)
 			.AddScreen(NameScreen)
@@ -125,7 +127,7 @@ public class WizardDemoTests {
 			.OnFinished(Value => Task.FromResult(Result.Success))
 			.Build();
 		var Pending = Wizard.Start(Owner);
-		await WaitForDialog<WizardDialog<DemoWizardModel>>();
+		await WaitForDialog<WinFormsWizardDialog<DemoWizardModel>>();
 		Assert.That(FindControl<TextBox>(NameScreen, "textBox1").Text, Is.EqualTo("Original"));
 		FindControl<CheckBox>(NameScreen, "checkBox1").Checked = true;
 		await Wizard.Next();
@@ -152,14 +154,14 @@ public class WizardDemoTests {
 		var Model = new DemoWizardModel { Name = "Initialization", Age = 30 };
 		var FirstScreen = new InitializeProbeScreen();
 		var InjectedScreen = new InitializeProbeScreen();
-		using var Wizard = new WizardBuilder<DemoWizardModel>()
+		using var Wizard = new WinFormsWizardBuilder<DemoWizardModel>()
 			.WithTitle("Wizard initialization")
 			.WithModel(Model)
 			.AddScreen(FirstScreen)
 			.OnFinished(Value => Task.FromResult(Result.Success))
 			.Build();
 		var Pending = Wizard.Start(Owner);
-		await WaitForDialog<WizardDialog<DemoWizardModel>>();
+		await WaitForDialog<WinFormsWizardDialog<DemoWizardModel>>();
 		Assert.That(FirstScreen.InitializedModel, Is.SameAs(Model));
 		await Wizard.InjectScreen(InjectedScreen);
 		Assert.That(InjectedScreen.InitializedModel, Is.SameAs(Model));
@@ -169,7 +171,7 @@ public class WizardDemoTests {
 		Assert.That(await Pending, Is.EqualTo(WizardResult.Success));
 	});
 
-	private static async Task RejectNext(ActionWizard<DemoWizardModel> Wizard, Form Owner, string ExpectedMessage) {
+	private static async Task RejectNext(WinFormsActionWizard<DemoWizardModel> Wizard, Form Owner, string ExpectedMessage) {
 		var Pending = Wizard.Next();
 		var Error = await WaitForDialog<DialogEx>();
 		Assert.That(Error.Owner, Is.SameAs(Owner));
@@ -183,7 +185,7 @@ public class WizardDemoTests {
 
 	private static async Task<T> WaitForDialog<T>() where T : Form {
 		for (var Attempt = 0; Attempt < 500; Attempt++) {
-			var Dialog = WinFormsApplication.OpenForms.Cast<Form>().OfType<T>().FirstOrDefault(Form => Form.Visible);
+			var Dialog = FormsApplication.OpenForms.Cast<Form>().OfType<T>().FirstOrDefault(Form => Form.Visible);
 			if (Dialog != null)
 				return Dialog;
 			await Task.Delay(10);
@@ -202,9 +204,9 @@ public class WizardDemoTests {
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		Watchdog.Tick += (_, _) => {
 			Failure = new AssertionException("The wizard test timed out.");
-			foreach (var Dialog in WinFormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
+			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
-			WinFormsApplication.ExitThread();
+			FormsApplication.ExitThread();
 		};
 		Owner.Shown += async (_, _) => {
 			using var CloseOwner = Tools.Scope.ExecuteOnDispose(Owner.Close);
@@ -216,12 +218,12 @@ public class WizardDemoTests {
 			}
 		};
 		Watchdog.Start();
-		WinFormsApplication.Run(Owner);
+		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
 		Assert.That(Completed, Is.True, "The message loop must execute and complete the test body.");
 	}
 
-	private sealed class InitializeProbeScreen : WizardScreen<DemoWizardModel> {
+	private sealed class InitializeProbeScreen : WinFormsWizardScreen<DemoWizardModel> {
 		public DemoWizardModel? InitializedModel { get; private set; }
 
 		public override async Task Initialize() {

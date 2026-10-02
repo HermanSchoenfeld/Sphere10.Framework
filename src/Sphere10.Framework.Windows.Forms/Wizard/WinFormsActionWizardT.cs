@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ActionWizard : ActionWizard<IDictionary<string, object>> {
-	public ActionWizard(string title, IDictionary<string, object> propertyBag, IEnumerable<WizardScreen<IDictionary<string, object>>> forms, Func<IDictionary<string, object>, Task<Result>> finishFunc,
+public class WinFormsActionWizard : WinFormsActionWizard<IDictionary<string, object>> {
+	public WinFormsActionWizard(string title, IDictionary<string, object> propertyBag, IEnumerable<WinFormsWizardScreen<IDictionary<string, object>>> forms, Func<IDictionary<string, object>, Task<Result>> finishFunc,
 	                    Func<IDictionary<string, object>, Result> cancelFunc = null)
 		: base(title, propertyBag, forms, finishFunc, cancelFunc) {
 	}

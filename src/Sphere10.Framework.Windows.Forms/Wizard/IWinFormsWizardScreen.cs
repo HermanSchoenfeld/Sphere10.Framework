@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IWizardScreen<T> {
-	IWizard<T> Wizard { get; }
+public interface IWinFormsWizardScreen<T> {
+	IWinFormsWizard<T> Wizard { get; }
 
 	Task Initialize();
 

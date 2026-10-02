@@ -98,7 +98,7 @@ The codebase favors **fluent builder classes** for configuring complex objects. 
 - **`SerializerBuilder`** — builds `IItemSerializer<T>` by specifying member serializers: `SerializerBuilder.For<T>().Serialize(x => x.Prop, serializer).Build()`. Also supports `.SerializeMembersAutomatically()` for convention-based assembly.
 - **`ProtocolBuilder`** — builds communication `Protocol` objects with handshake, request/response, and command handlers per mode.
 - **`WinFormsApplicationBlockBuilder`** — builds `WinFormsApplicationBlock` with screens and menus: `.WithName().WithDefaultScreen<T>().AddMenu(mb => ...).Build()`.
-- **`WizardBuilder<T>`** — builds multi-step wizard dialogs: `.WithTitle().WithModel().AddScreen().OnFinished().Build()`.
+- **`WinFormsWizardBuilder<T>`** — builds multi-step wizard dialogs: `.WithTitle().WithModel().AddScreen().OnFinished().Build()`.
 
 When creating new complex configuration APIs, follow this pattern: create a `FooBuilder` class with chainable methods and a terminal `.Build()`.
 

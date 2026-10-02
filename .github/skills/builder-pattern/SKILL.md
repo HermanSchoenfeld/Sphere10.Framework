@@ -9,7 +9,7 @@ The codebase favors fluent builders for configuring complex objects. Follow the 
 `SerializerBuilder` (`src/Sphere10.Framework/Serialization/Builder/SerializerBuilder.cs`),
 `ProtocolBuilder` (`src/Sphere10.Framework/Protocol/Builder/ProtocolBuilder.cs`),
 `WinFormsApplicationBlockBuilder` (`src/Sphere10.Framework.Windows.Forms/Application/Builder/WinFormsApplicationBlockBuilder.cs`),
-`WizardBuilder<T>` (`src/Sphere10.Framework.Windows.Forms/Wizard/WizardBuilder.cs`),
+`WinFormsWizardBuilder<T>` (`src/Sphere10.Framework.Windows.Forms/Wizard/WinFormsWizardBuilder.cs`),
 `JobBuilder` (`src/Sphere10.Framework/Scheduler/JobBuilder.cs`).
 
 ## Recipe
@@ -21,10 +21,10 @@ The codebase favors fluent builders for configuring complex objects. Follow the 
 3. Validate each argument immediately with `Guard.ArgumentNotNull` etc.
 4. Terminal `.Build()` validates the accumulated state with `Guard.Ensure(...)` and constructs the product:
    ```csharp
-   public ActionWizard<T> Build() {
+   public WinFormsActionWizard<T> Build() {
 	   Guard.Ensure(!string.IsNullOrEmpty(_title), "Wizard title is required");
 	   Guard.Ensure(_screens.Count > 0, "At least one screen is required");
-	   return new ActionWizard<T>(_title, _model, _screens, _finishFunc, _cancelFunc);
+	   return new WinFormsActionWizard<T>(_title, _model, _screens, _finishFunc, _cancelFunc);
    }
    ```
 5. For class hierarchies, use a non-generic abstract base plus a generic derived builder that re-exposes methods with `new` and covariant casts (see `SerializerBuilder` / `SerializerBuilder<TItem>`).
