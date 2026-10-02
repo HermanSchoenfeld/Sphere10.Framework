@@ -7,11 +7,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@inject BlazorApplicationOptions ApplicationOptions
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
 
 <ThemeProvider>
-	<ApplicationShell Title="Package application" NavigationPath="/">
-		<Header><strong>Package application</strong><ThemeSelector /></Header>
+	<ApplicationShell Title="@ApplicationOptions.Title" NavigationPath="/">
+		<ToolBarContent><ThemeSelector /></ToolBarContent>
 	</ApplicationShell>
 </ThemeProvider>

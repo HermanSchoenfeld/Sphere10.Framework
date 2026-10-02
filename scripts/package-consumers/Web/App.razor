@@ -9,18 +9,21 @@
 *@
 @page "/"
 @using PackageConsumer.Web
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@inject BlazorApplicationOptions ApplicationOptions
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
-	<title>Sphere10 package consumer</title>
-	<link rel="icon" href="data:," />
+	<title>@ApplicationOptions.Title</title>
+	@if (ApplicationOptions.FaviconUrl != null) {
+		<link rel="icon" href="@Assets[ApplicationOptions.FaviconUrl]" type="@ApplicationOptions.FaviconContentType" />
+	}
 	<link rel="stylesheet" href="PackageConsumer.Web.styles.css" />
 	<link rel="stylesheet" href="_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes.css" />
 </head>
 <body>
-	<h1>Sphere10 package consumer</h1>
 	<PackageWorkspace @rendermode="InteractiveServer" />
 	<script src="_framework/blazor.web.js"></script>
 </body>

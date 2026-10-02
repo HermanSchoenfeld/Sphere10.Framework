@@ -6,9 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 
 namespace PackageConsumer.Desktop;
 
 public sealed class PackageUsage : WinFormsApplicationScreen {
+	public static IWinFormsApplicationPlugin CreatePlugin() => new WinFormsApplicationPluginBuilder()
+		.WithName("Desktop plugin")
+		.AddBlock(block => block.WithName("Desktop block").WithDefaultScreen<PackageUsage>(activationMode: ScreenActivationMode.PermanentSingleton))
+		.Build();
 }
