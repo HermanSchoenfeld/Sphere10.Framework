@@ -11,11 +11,11 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 
-public abstract class WizardStepViewModelBase<TModel> : ComponentViewModelBase {
+public abstract class BlazorWizardStepViewModelBase<TModel> : ComponentViewModelBase {
 	/// <summary>
 	/// Gets or sets the wizard instance
 	/// </summary>
-	public IWizard<TModel> Wizard { get; set; }
+	public IBlazorWizard<TModel> Wizard { get; set; }
 
 	/// <summary>
 	/// Gets the model.

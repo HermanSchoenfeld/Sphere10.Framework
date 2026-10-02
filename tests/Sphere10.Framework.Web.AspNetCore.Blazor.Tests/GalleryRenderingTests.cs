@@ -139,8 +139,8 @@ public class GalleryRenderingTests {
 		Assert.That(first.ServiceProvider.GetRequiredService<PagedTableViewModel<int>>(), Is.Not.Null);
 		Assert.That(first.ServiceProvider.GetRequiredService<RapidTableViewModel<int>>(), Is.Not.Null);
 		Assert.That(first.ServiceProvider.GetRequiredService<VirtualPagedTableViewModel<int>>(), Is.Not.Null);
-		Assert.That(first.ServiceProvider.GetRequiredService<IWizardBuilder<object>>(), Is.Not.Null);
-		Assert.That(first.ServiceProvider.GetRequiredService<ModernWizard.IWizardBuilder<object>>(), Is.Not.Null);
+		Assert.That(first.ServiceProvider.GetRequiredService<IBlazorWizardBuilder<object>>(), Is.Not.Null);
+		Assert.That(first.ServiceProvider.GetRequiredService<ModernWizard.IBlazorWizardBuilder<object>>(), Is.Not.Null);
 		Assert.That(first.ServiceProvider.GetRequiredService<IModalService>(), Is.Not.SameAs(second.ServiceProvider.GetRequiredService<IModalService>()));
 		Assert.That(first.ServiceProvider.GetRequiredService<Modal.ModalService>(), Is.Not.SameAs(second.ServiceProvider.GetRequiredService<Modal.ModalService>()));
 		Assert.That(first.ServiceProvider.GetRequiredService<Modal.ViewService>(), Is.Not.SameAs(second.ServiceProvider.GetRequiredService<Modal.ViewService>()));

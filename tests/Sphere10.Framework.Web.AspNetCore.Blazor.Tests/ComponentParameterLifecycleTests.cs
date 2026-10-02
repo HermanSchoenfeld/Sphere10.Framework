@@ -301,8 +301,8 @@ public class ComponentParameterLifecycleTests {
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var finishes = 0;
-			var firstWizard = new DefaultWizard<string>("First", new List<Type> { typeof(WizardProbeStep) }, "first model", null, null);
-			var secondWizard = new DefaultWizard<string>("Second", new List<Type> { typeof(WizardProbeStep) }, "second model", _ => {
+			var firstWizard = new BlazorWizard<string>("First", new List<Type> { typeof(WizardProbeStep) }, "first model", null, null);
+			var secondWizard = new BlazorWizard<string>("Second", new List<Type> { typeof(WizardProbeStep) }, "second model", _ => {
 				finishes++;
 				return Task.FromResult(new Result<bool>(true));
 			}, null);
@@ -388,29 +388,29 @@ public class ComponentParameterLifecycleTests {
 	}
 
 	public class WizardContainer : ComponentBase {
-		[Parameter] public IWizard Wizard { get; set; }
+		[Parameter] public IBlazorWizard Wizard { get; set; }
 
-		public WizardHost Host { get; private set; }
+		public BlazorWizardHost Host { get; private set; }
 
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
-			builder.OpenComponent<CascadingValue<IWizard>>(0);
-			builder.AddAttribute(1, nameof(CascadingValue<IWizard>.Value), Wizard);
-			builder.AddAttribute(2, nameof(CascadingValue<IWizard>.ChildContent), (RenderFragment)(content => {
-				content.OpenComponent<WizardHost>(0);
-				content.AddComponentReferenceCapture(1, component => Host = (WizardHost)component);
+			builder.OpenComponent<CascadingValue<IBlazorWizard>>(0);
+			builder.AddAttribute(1, nameof(CascadingValue<IBlazorWizard>.Value), Wizard);
+			builder.AddAttribute(2, nameof(CascadingValue<IBlazorWizard>.ChildContent), (RenderFragment)(content => {
+				content.OpenComponent<BlazorWizardHost>(0);
+				content.AddComponentReferenceCapture(1, component => Host = (BlazorWizardHost)component);
 				content.CloseComponent();
 			}));
 			builder.CloseComponent();
 		}
 	}
 
-	public class WizardProbeStep : WizardStep<string, WizardProbeViewModel> {
+	public class WizardProbeStep : BlazorWizardStep<string, WizardProbeViewModel> {
 		public override string Title => "Final step";
 
 		protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, ViewModel.Model);
 	}
 
-	public class WizardProbeViewModel : WizardStepViewModelBase<string> {
+	public class WizardProbeViewModel : BlazorWizardStepViewModelBase<string> {
 		public bool IsValid { get; set; }
 
 		public override Task<Result> OnNextAsync() => Task.FromResult(IsValid ? Result.Success : Result.Error("Complete the final step."));

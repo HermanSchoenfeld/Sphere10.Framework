@@ -19,11 +19,13 @@ using NUnit.Framework;
 using Legacy = Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 using Modern = Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 using ModernUI = Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
-using LegacyModal = Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal.WizardModal;
+using LegacyModal = Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal.BlazorWizardModal;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Components;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Validators;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.ViewModels;
+
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -39,7 +41,7 @@ public class WizardCancellationTests {
 			return Task.FromResult<Result<bool>>(true);
 		};
 		if (modern) {
-			var builder = new Modern.DefaultWizardBuilder<ProbeModel>();
+			var builder = new Modern.BlazorWizardBuilder<ProbeModel>();
 			var blocked = builder.NewWizard("Blocked").WithModel(new ProbeModel()).AddStep<ModernStep>().WithCancellation(false).OnCancelled(cancel).Build();
 			Assert.That(blocked.IsCancellable, Is.False);
 			Assert.That((bool)await blocked.CancelAsync(), Is.False);
@@ -47,7 +49,7 @@ public class WizardCancellationTests {
 			Assert.That(allowed.IsCancellable, Is.True);
 			Assert.That((bool)await allowed.CancelAsync(), Is.True);
 		} else {
-			var builder = new Services.DefaultWizardBuilder<ProbeModel>();
+			var builder = new Services.BlazorWizardBuilder<ProbeModel>();
 			var blocked = builder.NewWizard("Blocked").WithModel(new ProbeModel()).AddStep<LegacyStep>().WithCancellation(false).OnCancelled(cancel).Build();
 			Assert.That(blocked.IsCancellable, Is.False);
 			Assert.That((bool)await blocked.CancelAsync(), Is.False);
@@ -75,7 +77,7 @@ public class WizardCancellationTests {
 		var capture = provider.GetRequiredService<CapturingActivator>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.WizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
+			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.BlazorWizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
 			var html = rendered.ToHtmlString();
 			var allowed = cancellable && stepCancellable;
 			Assert.That(html.Contains("aria-label=\"Close\""), Is.EqualTo(allowed));
@@ -83,8 +85,8 @@ public class WizardCancellationTests {
 				.Select(match => match.Groups["label"].Value.Trim()).ToArray();
 			Assert.That(actions, Is.EqualTo(allowed ? new[] { "Back", "Cancel", "Next" } : new[] { "Back", "Next" }));
 			Assert.That(Regex.IsMatch(html, "<button(?=[^>]*disabled)[^>]*>Back</button>"), Is.True);
-			var pending = modern ? (Task)capture.Get<ModernUI.WizardModal>().ShowAsync() : capture.Get<LegacyModal>().ShowAsync();
-			var closed = modern ? await capture.Get<ModernUI.WizardModal>().RequestCloseAsync() : await capture.Get<LegacyModal>().OnCloseAsync();
+			var pending = modern ? (Task)capture.Get<ModernUI.BlazorWizardModal>().ShowAsync() : capture.Get<LegacyModal>().ShowAsync();
+			var closed = modern ? await capture.Get<ModernUI.BlazorWizardModal>().RequestCloseAsync() : await capture.Get<LegacyModal>().OnCloseAsync();
 			Assert.That(closed, Is.EqualTo(allowed));
 			Assert.That(pending.IsCompleted, Is.EqualTo(allowed));
 			Assert.That(callbackCount, Is.EqualTo(allowed ? 1 : 0));
@@ -105,14 +107,14 @@ public class WizardCancellationTests {
 		var capture = provider.GetRequiredService<CapturingActivator>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.WizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
-			var pending = modern ? (Task)capture.Get<ModernUI.WizardModal>().ShowAsync() : capture.Get<LegacyModal>().ShowAsync();
+			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.BlazorWizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
+			var pending = modern ? (Task)capture.Get<ModernUI.BlazorWizardModal>().ShowAsync() : capture.Get<LegacyModal>().ShowAsync();
 			if (modern)
-				await capture.Get<ModernUI.WizardHost>().CancelAsync();
+				await capture.Get<ModernUI.BlazorWizardHost>().CancelAsync();
 			else
-				await capture.Get<Legacy.WizardHost>().ViewModel.CancelAsync();
+				await capture.Get<Legacy.BlazorWizardHost>().ViewModel.CancelAsync();
 			Assert.That(pending.IsCompleted, Is.False, "A successful Result<bool> with Value=false must not cancel.");
-			var closed = modern ? await capture.Get<ModernUI.WizardModal>().RequestCloseAsync() : await capture.Get<LegacyModal>().OnCloseAsync();
+			var closed = modern ? await capture.Get<ModernUI.BlazorWizardModal>().RequestCloseAsync() : await capture.Get<LegacyModal>().OnCloseAsync();
 			Assert.That(closed, Is.False);
 			Assert.That(rendered.ToHtmlString().Contains("Save the draft first."), Is.EqualTo(includeError));
 		});
@@ -126,14 +128,14 @@ public class WizardCancellationTests {
 		var capture = provider.GetRequiredService<CapturingActivator>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.WizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
+			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.BlazorWizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
 			if (modern) {
-				await capture.Get<ModernUI.WizardHost>().NextAsync();
+				await capture.Get<ModernUI.BlazorWizardHost>().NextAsync();
 				Assert.That(rendered.ToHtmlString(), Does.Contain(">Finish</button>"));
-				await capture.Get<ModernUI.WizardHost>().CancelAsync();
-				Assert.That((await capture.Get<ModernUI.WizardModal>().ShowAsync()).ResultType, Is.EqualTo(Modal.ModalResultType.Cancel));
+				await capture.Get<ModernUI.BlazorWizardHost>().CancelAsync();
+				Assert.That((await capture.Get<ModernUI.BlazorWizardModal>().ShowAsync()).ResultType, Is.EqualTo(Modal.ModalResultType.Cancel));
 			} else {
-				var host = capture.Get<Legacy.WizardHost>();
+				var host = capture.Get<Legacy.BlazorWizardHost>();
 				await host.ViewModel.NextAsync();
 				host.ViewModel.StateHasChangedDelegate();
 				Assert.That(rendered.ToHtmlString(), Does.Contain(">Finish</button>"));
@@ -158,32 +160,63 @@ public class WizardCancellationTests {
 		var capture = provider.GetRequiredService<CapturingActivator>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.WizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
-			var pending = modern ? capture.Get<ModernUI.WizardHost>().CancelAsync() : capture.Get<Legacy.WizardHost>().ViewModel.CancelAsync();
+			var rendered = await renderer.RenderComponentAsync(modern ? typeof(ModernUI.BlazorWizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
+			var pending = modern ? capture.Get<ModernUI.BlazorWizardHost>().CancelAsync() : capture.Get<Legacy.BlazorWizardHost>().ViewModel.CancelAsync();
 			if (modern) {
-				var host = capture.Get<ModernUI.WizardHost>();
+				var host = capture.Get<ModernUI.BlazorWizardHost>();
 				await host.CancelAsync();
-				Assert.That(await capture.Get<ModernUI.WizardModal>().RequestCloseAsync(), Is.False);
+				Assert.That(await capture.Get<ModernUI.BlazorWizardModal>().RequestCloseAsync(), Is.False);
 				await host.NextAsync();
 				await host.PreviousAsync();
-				Assert.That(((Modern.IWizard)wizard).CurrentStep, Is.EqualTo(typeof(ModernStep)));
-				((Modern.DefaultWizard<ProbeModel>)wizard).IsCancellable = !revokePermission;
+				Assert.That(((Modern.IBlazorWizard)wizard).CurrentStep, Is.EqualTo(typeof(ModernStep)));
+				((Modern.BlazorWizard<ProbeModel>)wizard).IsCancellable = !revokePermission;
 			} else {
-				var host = capture.Get<Legacy.WizardHost>().ViewModel;
+				var host = capture.Get<Legacy.BlazorWizardHost>().ViewModel;
 				await host.CancelAsync();
 				Assert.That(await capture.Get<LegacyModal>().OnCloseAsync(), Is.False);
 				await host.NextAsync();
 				await host.PreviousAsync();
-				Assert.That(((Legacy.IWizard)wizard).CurrentStep, Is.EqualTo(typeof(LegacyStep)));
-				((Legacy.DefaultWizard<ProbeModel>)wizard).IsCancellable = !revokePermission;
+				Assert.That(((Legacy.IBlazorWizard)wizard).CurrentStep, Is.EqualTo(typeof(LegacyStep)));
+				((Legacy.BlazorWizard<ProbeModel>)wizard).IsCancellable = !revokePermission;
 			}
 			Assert.That(callbackCount, Is.EqualTo(1));
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "<button(?=[^>]*disabled)[^>]*>").Count, Is.EqualTo(3));
 			completion.SetResult(true);
 			await pending;
-			var interaction = modern ? (Task)capture.Get<ModernUI.WizardModal>().ShowAsync() : capture.Get<LegacyModal>().ShowAsync();
+			var interaction = modern ? (Task)capture.Get<ModernUI.BlazorWizardModal>().ShowAsync() : capture.Get<LegacyModal>().ShowAsync();
 			Assert.That(interaction.IsCompleted, Is.EqualTo(!revokePermission));
-			Assert.That(modern ? capture.Get<ModernUI.WizardHost>().IsBusy : capture.Get<Legacy.WizardHost>().ViewModel.IsBusy, Is.False);
+			Assert.That(modern ? capture.Get<ModernUI.BlazorWizardHost>().IsBusy : capture.Get<Legacy.BlazorWizardHost>().ViewModel.IsBusy, Is.False);
+		});
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task LateStepCancellationVetoKeepsSharedWizardActiveAndRetryable(bool modern) {
+		var completion = new TaskCompletionSource<Result<bool>>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var callbackCount = 0;
+		var model = new ProbeModel();
+		var wizard = CreateWizard(modern, true, model, _ => { callbackCount++; return completion.Task; });
+		IWizard<Type> shared = (IWizard<Type>)wizard;
+		await using var provider = CreateServices();
+		var capture = provider.GetRequiredService<CapturingActivator>();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			await renderer.RenderComponentAsync(modern ? typeof(ModernUI.BlazorWizardModal) : typeof(LegacyModal), ModalParameters(wizard, modern));
+			var pending = modern ? capture.Get<ModernUI.BlazorWizardHost>().RequestCancelAsync() : capture.Get<Legacy.BlazorWizardHost>().ViewModel.RequestCancelAsync();
+			model.StepCancellable = false;
+			if (modern)
+				capture.Get<ModernStep>().RefreshCancellationPolicy();
+			completion.SetResult(true);
+			Assert.That(await pending, Is.False);
+			Assert.That(shared.State, Is.EqualTo(WizardState.Active));
+			Assert.That(shared.IsBusy, Is.False);
+			model.StepCancellable = true;
+			if (modern)
+				capture.Get<ModernStep>().RefreshCancellationPolicy();
+			var retry = modern ? await capture.Get<ModernUI.BlazorWizardHost>().RequestCancelAsync() : await capture.Get<Legacy.BlazorWizardHost>().ViewModel.RequestCancelAsync();
+			Assert.That(retry, Is.True);
+			Assert.That(callbackCount, Is.EqualTo(2));
+			Assert.That(shared.State, Is.EqualTo(WizardState.Cancelled));
 		});
 	}
 
@@ -195,12 +228,12 @@ public class WizardCancellationTests {
 		var wizard = CreateWizard(modern, true, new ProbeModel(), _ => Task.FromResult(result));
 		if (modern) {
 #pragma warning disable BL0005
-			var modal = new ModernUI.WizardModal { Wizard = (Modern.IWizard)wizard };
+			var modal = new ModernUI.BlazorWizardModal { Wizard = (Modern.IBlazorWizard)wizard };
 #pragma warning restore BL0005
 			Assert.That(await modal.RequestCloseAsync(), Is.False);
 			Assert.That(modal.ShowAsync().IsCompleted, Is.False);
 		} else {
-			var viewModel = new Components.Modal.WizardModalViewModel { Wizard = (Legacy.IWizard)wizard };
+			var viewModel = new Components.Modal.BlazorWizardModalViewModel { Wizard = (Legacy.IBlazorWizard)wizard };
 			Assert.That(await viewModel.RequestCloseAsync(), Is.False);
 			Assert.That(viewModel.ShowAsync().IsCompleted, Is.False);
 		}
@@ -210,7 +243,7 @@ public class WizardCancellationTests {
 	public async Task ModernNextCompletesOnceWhenValidationRemovesTheRemainingBranch() {
 		var model = new ProbeModel { RemoveFollowingSteps = true };
 		var finishCount = 0;
-		var wizard = new Modern.DefaultWizard<ProbeModel>("Branch", new List<Type> { typeof(ModernStep), typeof(ModernFinalStep) }, model, onFinish: _ => {
+		var wizard = new Modern.BlazorWizard<ProbeModel>("Branch", new List<Type> { typeof(ModernStep), typeof(ModernFinalStep) }, model, onFinish: _ => {
 			finishCount++;
 			return Task.FromResult<Result<bool>>(true);
 		});
@@ -218,21 +251,21 @@ public class WizardCancellationTests {
 		var capture = provider.GetRequiredService<CapturingActivator>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			await renderer.RenderComponentAsync<ModernUI.WizardModal>(ModalParameters(wizard, true));
-			var host = capture.Get<ModernUI.WizardHost>();
+			await renderer.RenderComponentAsync<ModernUI.BlazorWizardModal>(ModalParameters(wizard, true));
+			var host = capture.Get<ModernUI.BlazorWizardHost>();
 			await host.NextAsync();
 			await host.FinishAsync();
 			Assert.That(host.ErrorMessages, Is.Empty);
 			Assert.That(finishCount, Is.EqualTo(1));
 			Assert.That(model.ValidationCount, Is.EqualTo(1), "Finishing after a branch change must not validate the same step twice.");
-			Assert.That((await capture.Get<ModernUI.WizardModal>().ShowAsync()).ResultType, Is.EqualTo(Modal.ModalResultType.Ok));
+			Assert.That((await capture.Get<ModernUI.BlazorWizardModal>().ShowAsync()).ResultType, Is.EqualTo(Modal.ModalResultType.Ok));
 		});
 	}
 
 	[Test]
 	public async Task WidgetDimensionsBranchCanBeRemovedAndReaddedAfterBack() {
 		var model = new NewWidgetModel { Name = "Widget", Description = "Example", Price = 1, AreDimensionsKnown = true };
-		var wizard = new Legacy.DefaultWizard<NewWidgetModel>("Widget", new List<Type> { typeof(NewWidgetWizardStep), typeof(NewWidgetSummaryStep) }, model, null, null);
+		var wizard = new Legacy.BlazorWizard<NewWidgetModel>("Widget", new List<Type> { typeof(NewWidgetWizardStep), typeof(NewWidgetSummaryStep) }, model, null, null);
 		var step = new NewWidgetWizardStepViewModel(new NewWidgetModelValidator()) { Wizard = wizard };
 		await step.OnNextAsync();
 		wizard.Next();
@@ -257,8 +290,8 @@ public class WizardCancellationTests {
 	}
 
 	private static object CreateWizard(bool modern, bool cancellable, ProbeModel model, Func<ProbeModel, Task<Result<bool>>> cancel) => modern
-		? new Modern.DefaultWizard<ProbeModel>("Probe", new List<Type> { typeof(ModernStep), typeof(ModernFinalStep) }, model, onCancel: cancel) { IsCancellable = cancellable }
-		: new Legacy.DefaultWizard<ProbeModel>("Probe", new List<Type> { typeof(LegacyStep), typeof(LegacyFinalStep) }, model, null, cancel) { IsCancellable = cancellable };
+		? new Modern.BlazorWizard<ProbeModel>("Probe", new List<Type> { typeof(ModernStep), typeof(ModernFinalStep) }, model, onCancel: cancel) { IsCancellable = cancellable }
+		: new Legacy.BlazorWizard<ProbeModel>("Probe", new List<Type> { typeof(LegacyStep), typeof(LegacyFinalStep) }, model, null, cancel) { IsCancellable = cancellable };
 
 	private static ParameterView ModalParameters(object wizard, bool modern) {
 		var parameters = new Dictionary<string, object> { ["Wizard"] = wizard };
@@ -283,7 +316,7 @@ public class WizardCancellationTests {
 		public int ValidationCount { get; set; }
 	}
 
-	public class LegacyStep : Legacy.WizardStep<ProbeModel, ProbeViewModel> {
+	public class LegacyStep : Legacy.BlazorWizardStep<ProbeModel, ProbeViewModel> {
 		public override string Title => "Details";
 
 		public override bool IsCancellable => ViewModel.Model.StepCancellable;
@@ -291,23 +324,25 @@ public class WizardCancellationTests {
 
 	public class LegacyFinalStep : LegacyStep { }
 
-	public class ProbeViewModel : Legacy.WizardStepViewModelBase<ProbeModel> {
+	public class ProbeViewModel : Legacy.BlazorWizardStepViewModelBase<ProbeModel> {
 		public override Task<Result> OnNextAsync() => Task.FromResult(Result.Success);
 
 		public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
 	}
 
-	public class ModernStep : ModernUI.WizardStep<ProbeModel> {
+	public class ModernStep : ModernUI.BlazorWizardStep<ProbeModel> {
 		public override string Title => "Details";
 
 		public override Task<Result> OnNextAsync() {
 			Model.ValidationCount++;
 			if (Model.RemoveFollowingSteps)
-				Wizard.UpdateSteps(Modern.StepUpdateType.ReplaceAllNext, Array.Empty<Type>());
+				Wizard.UpdateSteps(WizardStepUpdateType.ReplaceAllNext, Array.Empty<Type>());
 			return Task.FromResult(Result.Success);
 		}
 
-		protected override void OnParametersSet() => IsCancellable = Model.StepCancellable;
+		public void RefreshCancellationPolicy() => IsCancellable = Model.StepCancellable;
+
+		protected override void OnParametersSet() => RefreshCancellationPolicy();
 	}
 
 	public class ModernFinalStep : ModernStep { }

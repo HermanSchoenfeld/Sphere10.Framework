@@ -26,7 +26,7 @@
 	private bool _allowCancellation = true;
 
 	private async Task WizardAsync() {
-		var wizard = new DefaultWizardBuilder<NewWalletModel>()
+		var wizard = new BlazorWizardBuilder<NewWalletModel>()
 			.NewWizard("New Wallet")
 			.WithCancellation(_allowCancellation)
 			.AddStep<WalletNameStep>()

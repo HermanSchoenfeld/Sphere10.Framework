@@ -12,7 +12,7 @@ using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 
 namespace Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.ViewModels;
 
-public class WidgetDimensionsStepViewModel : WizardStepViewModelBase<NewWidgetModel> {
+public class WidgetDimensionsStepViewModel : BlazorWizardStepViewModelBase<NewWidgetModel> {
 	public override Task<Result> OnNextAsync() {
 		return Task.FromResult(Result.Success);
 	}

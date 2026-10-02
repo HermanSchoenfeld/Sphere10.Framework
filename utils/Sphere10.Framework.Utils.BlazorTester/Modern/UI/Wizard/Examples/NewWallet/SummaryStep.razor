@@ -8,7 +8,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@inherits WizardStep<NewWalletModel>
+@inherits BlazorWizardStep<NewWalletModel>
 
 <div>
 	<h5 class="h6 card-title">Summary</h5>
@@ -18,5 +18,5 @@
 @code {
 	public override string Title { get; } = "Summary";
 
-	public override string NextButtonText { get; } = "Create";
+	public override string FinishButtonText { get; } = "Create";
 }

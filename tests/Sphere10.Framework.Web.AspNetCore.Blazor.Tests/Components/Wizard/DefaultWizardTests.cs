@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 
+using Sphere10.Framework.Application.UI;
+
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Wizard;
 
 [TestFixture]
@@ -20,8 +22,8 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Wizard;
 public class DefaultWizardTests {
 	[Test]
 	public void Initialized() {
-		IWizard wizard =
-			new DefaultWizard<bool>("test", new List<Type> { typeof(object) }, true, null, null);
+		IBlazorWizard wizard =
+			new BlazorWizard<bool>("test", new List<Type> { typeof(object) }, true, null, null);
 
 		Assert.That(wizard.CurrentStep, Is.Not.Null);
 		Assert.That(wizard.HasNext, Is.False);
@@ -30,8 +32,8 @@ public class DefaultWizardTests {
 
 	[Test]
 	public void NextAsync() {
-		IWizard wizard =
-			new DefaultWizard<bool>("test",
+		IBlazorWizard wizard =
+			new BlazorWizard<bool>("test",
 				new List<Type> { typeof(object), typeof(object), typeof(object) },
 				true,
 				null,
@@ -55,15 +57,15 @@ public class DefaultWizardTests {
 
 	[Test]
 	public void InjectStep() {
-		IWizard wizard =
-			new DefaultWizard<object>("Test", new List<Type> { typeof(int) }, new object(), null, null);
+		IBlazorWizard wizard =
+			new BlazorWizard<object>("Test", new List<Type> { typeof(int) }, new object(), null, null);
 
 
 		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(int)));
 		wizard.Next();
 
 		Assert.That(wizard.HasNext, Is.False);
-		wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(double) });
+		wizard.UpdateSteps(WizardStepUpdateType.Inject, new[] { typeof(double) });
 		Assert.That(wizard.HasNext, Is.True);
 
 		bool result = wizard.Next();
@@ -74,14 +76,14 @@ public class DefaultWizardTests {
 
 	[Test]
 	public void InjectStepTwiceDedupe() {
-		IWizard wizard =
-			new DefaultWizard<object>("Test", new List<Type> { typeof(int) }, new object(), null, null);
+		IBlazorWizard wizard =
+			new BlazorWizard<object>("Test", new List<Type> { typeof(int) }, new object(), null, null);
 
 		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(int)));
 		Assert.That(wizard.HasNext, Is.False);
 
-		wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(double) });
-		wizard.UpdateSteps(StepUpdateType.Inject, new[] { typeof(double) });
+		wizard.UpdateSteps(WizardStepUpdateType.Inject, new[] { typeof(double) });
+		wizard.UpdateSteps(WizardStepUpdateType.Inject, new[] { typeof(double) });
 		Assert.That(wizard.HasNext, Is.True);
 
 		bool result = wizard.Next();
@@ -95,14 +97,14 @@ public class DefaultWizardTests {
 
 	[Test]
 	public void ReplaceAllNextSteps() {
-		IWizard wizard =
-			new DefaultWizard<object>("Test",
+		IBlazorWizard wizard =
+			new BlazorWizard<object>("Test",
 				new List<Type> { typeof(int), typeof(decimal), typeof(double) },
 				new object(),
 				null,
 				null);
 
-		wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] { typeof(bool) });
+		wizard.UpdateSteps(WizardStepUpdateType.ReplaceAllNext, new[] { typeof(bool) });
 
 		bool result = wizard.Next();
 		Assert.That(result, Is.True);
@@ -112,14 +114,14 @@ public class DefaultWizardTests {
 
 	[Test]
 	public void RemoveNext() {
-		IWizard wizard =
-			new DefaultWizard<object>("Test",
+		IBlazorWizard wizard =
+			new BlazorWizard<object>("Test",
 				new List<Type> { typeof(int), typeof(decimal), typeof(double) },
 				new object(),
 				null,
 				null);
 
-		wizard.UpdateSteps(StepUpdateType.RemoveNext, new[] { typeof(decimal), typeof(double) });
+		wizard.UpdateSteps(WizardStepUpdateType.RemoveNext, new[] { typeof(decimal), typeof(double) });
 
 		Assert.That(wizard.HasNext, Is.False);
 		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(int)));
@@ -127,14 +129,14 @@ public class DefaultWizardTests {
 
 	[Test]
 	public void ReplaceAll() {
-		IWizard wizard =
-			new DefaultWizard<object>("Test",
+		IBlazorWizard wizard =
+			new BlazorWizard<object>("Test",
 				new List<Type> { typeof(int) },
 				new object(),
 				null,
 				null);
 
-		wizard.UpdateSteps(StepUpdateType.ReplaceAll, new[] { typeof(decimal), typeof(double) });
+		wizard.UpdateSteps(WizardStepUpdateType.ReplaceAll, new[] { typeof(decimal), typeof(double) });
 
 		Assert.That(wizard.CurrentStep, Is.EqualTo(typeof(decimal)));
 		Assert.That(wizard.HasNext, Is.True);
@@ -142,8 +144,8 @@ public class DefaultWizardTests {
 
 	[Test]
 	public async Task FinishAsyncFalse() {
-		IWizard wizard =
-			new DefaultWizard<bool>("Test",
+		IBlazorWizard wizard =
+			new BlazorWizard<bool>("Test",
 				new List<Type> { typeof(int) },
 				false,
 				x => Task.FromResult<Result<bool>>(x),
@@ -155,8 +157,8 @@ public class DefaultWizardTests {
 
 	[Test]
 	public async Task FinishAsyncTrue() {
-		IWizard wizard =
-			new DefaultWizard<bool>("Test",
+		IBlazorWizard wizard =
+			new BlazorWizard<bool>("Test",
 				new List<Type> { typeof(int) },
 				true,
 				x => Task.FromResult<Result<bool>>(x),
@@ -168,8 +170,8 @@ public class DefaultWizardTests {
 
 	[Test]
 	public async Task CancelAsyncFalse() {
-		IWizard wizard =
-			new DefaultWizard<bool>("Test",
+		IBlazorWizard wizard =
+			new BlazorWizard<bool>("Test",
 				new List<Type> { typeof(int) },
 				false,
 				null,
@@ -181,8 +183,8 @@ public class DefaultWizardTests {
 
 	[Test]
 	public async Task CancelAsyncTrue() {
-		IWizard wizard =
-			new DefaultWizard<bool>("Test",
+		IBlazorWizard wizard =
+			new BlazorWizard<bool>("Test",
 				new List<Type> { typeof(int) },
 				true,
 				null,

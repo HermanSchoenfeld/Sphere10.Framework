@@ -7,77 +7,64 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
-/// <summary>Configures a wizard and its completion and cancellation callbacks.</summary>
-public class DefaultWizardBuilder<TModel> : IWizardBuilder<TModel> {
-	private WizardBuilderParameters<TModel> _parameters;
+/// <summary>Configures an independent wizard using the common builder state and validation.</summary>
+public class BlazorWizardBuilder<TModel> : WizardBuilderBase<TModel, Type, IBlazorWizard<TModel>>, IBlazorWizardBuilder<TModel> {
+	private bool _started;
 
-	public IWizardBuilder<TModel> NewWizard(string title) {
-		Guard.ArgumentNotNull(title, nameof(title));
-		_parameters = new WizardBuilderParameters<TModel> { Title = title };
+	public IBlazorWizardBuilder<TModel> NewWizard(string title) {
+		Reset(title);
+		_started = true;
 		return this;
 	}
 
-	public IWizardBuilder<TModel> WithModel(TModel instance) {
+	public IBlazorWizardBuilder<TModel> WithModel(TModel instance) {
 		Guard.ArgumentNotNull(instance, nameof(instance));
 		EnsureStarted();
-		_parameters.Model = instance;
+		SetModel(instance);
 		return this;
 	}
 
-	public IWizardBuilder<TModel> WithCancellation(bool isCancellable) {
+	public IBlazorWizardBuilder<TModel> WithCancellation(bool isCancellable) {
 		EnsureStarted();
-		_parameters.IsCancellable = isCancellable;
+		SetCancellation(isCancellable);
 		return this;
 	}
 
-	public IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase {
+	public IBlazorWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : BlazorWizardStepBase {
 		EnsureStarted();
-		_parameters.Steps.Add(typeof(TWizardStep));
+		AddStepDefinition(typeof(TWizardStep));
 		return this;
 	}
 
-	public IWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished) {
-		Guard.ArgumentNotNull(onFinished, nameof(onFinished));
+	public IBlazorWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished) {
 		EnsureStarted();
-		_parameters.OnFinishedFunc = onFinished;
+		SetFinishCallback(onFinished);
 		return this;
 	}
 
-	public IWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled) {
-		Guard.ArgumentNotNull(onCancelled, nameof(onCancelled));
+	public IBlazorWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled) {
 		EnsureStarted();
-		_parameters.OnCancelledFunc = onCancelled;
+		SetCancelCallback(onCancelled);
 		return this;
 	}
 
-	public IWizard<TModel> Build() {
+	public override IBlazorWizard<TModel> Build() {
 		EnsureStarted();
-		Guard.Ensure(_parameters.Model is not null, "Model has not been set. Use WithModel(instance).");
-		Guard.Ensure(_parameters.Steps.Count > 0, "At least one wizard step is required.");
-		return new DefaultWizard<TModel>(_parameters.Title, new List<Type>(_parameters.Steps), _parameters.Model, _parameters.OnFinishedFunc, _parameters.OnCancelledFunc) {
-			IsCancellable = _parameters.IsCancellable
-		};
+		Guard.Ensure(Model is not null, "Model has not been set. Use WithModel(instance).");
+		return base.Build();
 	}
 
-	private void EnsureStarted() => Guard.Ensure(_parameters != null, "Start the wizard with NewWizard(title).");
-}
+	protected override IBlazorWizard<TModel> CreateWizard(Type[] steps) =>
+		new BlazorWizard<TModel>(Title, steps, Model, FinishCallback, CancelCallback) { IsCancellable = IsCancellable };
 
-internal class WizardBuilderParameters<TModel> {
-	internal string Title { get; set; }
+	protected override void ValidateStep(Type step) =>
+		Guard.Argument(!step.IsAbstract && !step.ContainsGenericParameters, nameof(step), "A concrete wizard step component is required.");
 
-	internal TModel Model { get; set; }
-
-	internal bool IsCancellable { get; set; } = true;
-
-	internal Func<TModel, Task<Result<bool>>> OnFinishedFunc { get; set; }
-
-	internal Func<TModel, Task<Result<bool>>> OnCancelledFunc { get; set; }
-
-	internal List<Type> Steps { get; } = new();
+	private void EnsureStarted() => Guard.Ensure(_started, "Start the wizard with NewWizard(title).");
 }

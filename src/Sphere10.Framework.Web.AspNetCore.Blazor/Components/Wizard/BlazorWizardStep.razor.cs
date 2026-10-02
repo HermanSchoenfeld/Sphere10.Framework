@@ -17,8 +17,8 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 /// </summary>
 /// <typeparam name="TModel"> model type</typeparam>
 /// <typeparam name="TViewModel"> view model type</typeparam>
-public abstract partial class WizardStep<TModel, TViewModel>
-	where TViewModel : WizardStepViewModelBase<TModel> {
+public abstract partial class BlazorWizardStep<TModel, TViewModel>
+	where TViewModel : BlazorWizardStepViewModelBase<TModel> {
 	/// <summary>
 	/// Gets or sets the step view model
 	/// </summary>
@@ -30,7 +30,7 @@ public abstract partial class WizardStep<TModel, TViewModel>
 	/// Gets or sets the wizard instance
 	/// </summary>
 	[Parameter]
-	public IWizard Wizard { get; set; }
+	public IBlazorWizard Wizard { get; set; }
 
 	/// <inheritdoc />
 	public override Task<Result> OnNextAsync() => ViewModel.OnNextAsync();
@@ -41,7 +41,7 @@ public abstract partial class WizardStep<TModel, TViewModel>
 	/// <inheritdoc />
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Wizard, nameof(Wizard));
-		ViewModel.Wizard = Guard.ArgumentCast<IWizard<TModel>>(Wizard, nameof(Wizard));
+		ViewModel.Wizard = Guard.ArgumentCast<IBlazorWizard<TModel>>(Wizard, nameof(Wizard));
 		base.OnParametersSet();
 	}
 }
@@ -50,7 +50,7 @@ public abstract partial class WizardStep<TModel, TViewModel>
 /// <summary>
 /// Non generic wizard step component base.
 /// </summary>
-public abstract class WizardStepBase : ComponentBase {
+public abstract class BlazorWizardStepBase : ComponentBase {
 	/// <summary>
 	/// Gets or sets the title of the wizard step.
 	/// </summary>

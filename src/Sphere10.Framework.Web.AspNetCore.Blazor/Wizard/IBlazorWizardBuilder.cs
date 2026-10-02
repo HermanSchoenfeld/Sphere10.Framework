@@ -15,18 +15,18 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 /// <summary>
 /// Wizard builder
 /// </summary>
-public interface IWizardBuilder<TModel> {
-	IWizardBuilder<TModel> NewWizard(string title);
+public interface IBlazorWizardBuilder<TModel> {
+	IBlazorWizardBuilder<TModel> NewWizard(string title);
 
-	IWizardBuilder<TModel> WithModel(TModel instance);
+	IBlazorWizardBuilder<TModel> WithModel(TModel instance);
 
-	IWizardBuilder<TModel> WithCancellation(bool isCancellable);
+	IBlazorWizardBuilder<TModel> WithCancellation(bool isCancellable);
 
-	IWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : WizardStepBase;
+	IBlazorWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : BlazorWizardStepBase;
 
-	IWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished);
+	IBlazorWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished);
 
-	IWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled);
+	IBlazorWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled);
 
-	IWizard<TModel> Build();
+	IBlazorWizard<TModel> Build();
 }

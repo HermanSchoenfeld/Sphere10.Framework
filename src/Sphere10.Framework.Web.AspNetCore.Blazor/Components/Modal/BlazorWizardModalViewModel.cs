@@ -15,16 +15,16 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal;
 /// <summary>
 /// Wizard modal view model
 /// </summary>
-public class WizardModalViewModel : ModalViewModel {
+public class BlazorWizardModalViewModel : ModalViewModel {
 	/// <summary>
 	/// Gets or sets the wizard being hosted in the modal.
 	/// </summary>
-	public IWizard Wizard { get; set; }
+	public IBlazorWizard Wizard { get; set; }
 
 	/// <summary>
 	/// Gets or sets the wizard host component instance.
 	/// </summary>
-	public WizardHost WizardHost;
+	public BlazorWizardHost WizardHost;
 
 	public bool CanCancel => Wizard?.IsCancellable == true && (WizardHost?.ViewModel.CanCancel ?? true);
 
@@ -36,7 +36,8 @@ public class WizardModalViewModel : ModalViewModel {
 			return false;
 		if (WizardHost != null)
 			return await WizardHost.ViewModel.RequestCancelAsync() && await base.RequestCloseAsync();
-		var result = await Wizard.CancelAsync();
+		var wizard = Wizard;
+		var result = await wizard.CancelAsync(() => ReferenceEquals(Wizard, wizard) && CanCancel);
 		return CanCancel && result.IsSuccess && result.Value && await base.RequestCloseAsync();
 	}
 }

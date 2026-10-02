@@ -15,12 +15,12 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal;
 /// <summary>
 /// Wizard modal - show a wizard component inside a modal dialog.
 /// </summary>
-public partial class WizardModal {
+public partial class BlazorWizardModal {
 	/// <summary>
 	/// Gets or sets the wizard render fragment
 	/// </summary>
 	[Parameter]
-	public IWizard Wizard { get; set; }
+	public IBlazorWizard Wizard { get; set; }
 
 	/// <summary>
 	/// Gets or sets the css style for the next button

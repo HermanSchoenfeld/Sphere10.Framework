@@ -23,7 +23,7 @@ public class WizardsViewModel : ComponentViewModelBase {
 	/// <summary>
 	/// Gets the wizard builder.
 	/// </summary>
-	private IWizardBuilder<NewWidgetModel> Builder { get; }
+	private IBlazorWizardBuilder<NewWidgetModel> Builder { get; }
 
 	/// <summary>
 	/// Gets list of widgets 
@@ -36,7 +36,7 @@ public class WizardsViewModel : ComponentViewModelBase {
 	/// Wizards view model
 	/// </summary>
 	/// <param name="builder"></param>
-	public WizardsViewModel(IWizardBuilder<NewWidgetModel> builder) {
+	public WizardsViewModel(IBlazorWizardBuilder<NewWidgetModel> builder) {
 		Builder = builder;
 	}
 
@@ -44,8 +44,8 @@ public class WizardsViewModel : ComponentViewModelBase {
 	/// Creates a new instance of the wizard model.
 	/// </summary>
 	/// <returns> new wizard model insteance</returns>
-	public IWizard NewWidetWizard() {
-		IWizard wizard = Builder.NewWizard("New Widget")
+	public IBlazorWizard NewWidetWizard() {
+		IBlazorWizard wizard = Builder.NewWizard("New Widget")
 			.WithModel(new NewWidgetModel())
 			.AddStep<NewWidgetWizardStep>()
 			.AddStep<NewWidgetSummaryStep>()

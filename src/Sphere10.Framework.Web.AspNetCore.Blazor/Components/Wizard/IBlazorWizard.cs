@@ -8,39 +8,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 
-/// <summary>
-/// Wizard!
-/// </summary>
-public interface IWizard<TModel> : IWizard {
-	TModel Model { get; }
+public interface IBlazorWizard<TModel> : IBlazorWizard, IWizard<TModel, Type> {
 }
 
-
-public interface IWizard {
-	/// <summary>Whether cancellation is offered. The cancellation callback remains authoritative.</summary>
-	bool IsCancellable => true;
-
-	string Title { get; }
-
-	Type CurrentStep { get; }
-
-	bool HasNext { get; }
-
-	bool HasPrevious { get; }
-
-	void UpdateSteps(StepUpdateType updateType, IEnumerable<Type> steps);
-
+/// <summary>A Type-based shared wizard rendered by this Blazor component generation.</summary>
+public interface IBlazorWizard : IWizard<Type> {
 	Result<bool> Next();
-
 	Result<bool> Previous();
-
-	Task<Result<bool>> FinishAsync();
-
-	Task<Result<bool>> CancelAsync();
+	void UpdateSteps(WizardStepUpdateType updateType, IEnumerable<Type> steps);
+	void RemoveStep(Type step);
 }
-
-

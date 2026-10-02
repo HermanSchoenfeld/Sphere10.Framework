@@ -33,12 +33,12 @@ public class ViewService {
 	/// <param name="wizard"> wizard</param>
 	/// <param name="options"></param>
 	/// <returns> modal result.</returns>
-	public async Task<ModalResult> WizardDialogAsync(IWizard wizard, ModalOptions options = null) {
+	public async Task<ModalResult> WizardDialogAsync(IBlazorWizard wizard, ModalOptions options = null) {
 		Dictionary<string, object> parameters = new Dictionary<string, object> {
-			{ nameof(WizardHost.Wizard), wizard }
+			{ nameof(BlazorWizardHost.Wizard), wizard }
 		};
 
-		return await _modalService.ShowAsync<WizardModal>(ParameterView.FromDictionary(parameters), options);
+		return await _modalService.ShowAsync<BlazorWizardModal>(ParameterView.FromDictionary(parameters), options);
 	}
 
 	/// <summary>

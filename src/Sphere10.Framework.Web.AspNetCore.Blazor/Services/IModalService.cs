@@ -36,7 +36,7 @@ public interface IModalService {
 	/// <param name="wizard"> wizard</param>
 	/// <param name="parameters"></param>
 	/// <returns> modal result.</returns>
-	Task<ModalResult> ShowWizardAsync(IWizard wizard, Dictionary<string, object>? parameters = null);
+	Task<ModalResult> ShowWizardAsync(IBlazorWizard wizard, Dictionary<string, object>? parameters = null);
 }
 
 

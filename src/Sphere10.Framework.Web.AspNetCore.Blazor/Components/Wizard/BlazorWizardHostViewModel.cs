@@ -14,11 +14,12 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 
-public class WizardHostViewModel : ComponentViewModelBase {
-	private WizardStepBase _currentStepInstance;
+public class BlazorWizardHostViewModel : ComponentViewModelBase {
+	private BlazorWizardStepBase _currentStepInstance;
 	private bool _finishing;
 	private bool _cancelling;
 	private bool _finished;
+	private bool _cancelled;
 
 	/// <summary>
 	/// Gets a list of error messages zzs
@@ -28,7 +29,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 	/// <summary>
 	/// Gets or sets the wizard model
 	/// </summary>
-	public IWizard Wizard { get; set; }
+	public IBlazorWizard Wizard { get; set; }
 
 	public bool IsBusy => _finishing || _cancelling;
 
@@ -54,7 +55,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 	/// <summary>
 	/// Gets or sets the component ref instance of the current step.
 	/// </summary>
-	public WizardStepBase CurrentStepInstance {
+	public BlazorWizardStepBase CurrentStepInstance {
 		get => _currentStepInstance;
 		private set {
 			_currentStepInstance = value;
@@ -79,20 +80,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 	/// </summary>
 	/// <returns></returns>
 	/// <exception cref="InvalidOperationException"> thrown if there is no next step</exception>
-	public async Task NextAsync() {
-		if (IsBusy)
-			return;
-		Result result = await _currentStepInstance.OnNextAsync();
-		ErrorMessages = Array.Empty<string>();
-
-		if (result.IsSuccess) {
-			if (Wizard.Next()) {
-				CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
-			}
-		} else {
-			ErrorMessages = result.ErrorMessages.ToArray();
-		}
-	}
+	public Task NextAsync() => AdvanceAsync();
 
 	/// <summary>
 	/// Move to previous step in wizard
@@ -118,8 +106,10 @@ public class WizardHostViewModel : ComponentViewModelBase {
 	/// Finish the wizard workflow. 
 	/// </summary>
 	/// <returns></returns>
-	public async Task FinishAsync() {
-		if (IsBusy || _finished)
+	public Task FinishAsync() => AdvanceAsync();
+
+	private async Task AdvanceAsync() {
+		if (IsBusy || _finished || _cancelled)
 			return;
 		Guard.Ensure(CurrentStepInstance != null, "The current wizard step has not rendered.");
 		_finishing = true;
@@ -129,18 +119,26 @@ public class WizardHostViewModel : ComponentViewModelBase {
 		});
 		ErrorMessages = Array.Empty<string>();
 		StateHasChangedDelegate?.Invoke();
-		var validation = await CurrentStepInstance.OnNextAsync();
+		var wizard = Wizard;
+		var step = CurrentStepInstance;
+		var validation = await step.OnNextAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return;
 		if (!validation.IsSuccess) {
 			ErrorMessages = validation.ErrorMessages.ToArray();
 			return;
 		}
-		if (Wizard.HasNext) {
-			Wizard.Next();
-			CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
-			StateHasChangedDelegate?.Invoke();
+		if (wizard.HasNext) {
+			var navigation = wizard.Next();
+			if (navigation.IsSuccess && navigation.Value)
+				CurrentStep = CreateStepBaseFragment(wizard.CurrentStep);
+			else
+				ErrorMessages = navigation.ErrorMessages.ToArray();
 			return;
 		}
-		var result = await Wizard.FinishAsync();
+		var result = await wizard.FinishAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return;
 		if (result.IsSuccess && result.Value) {
 			_finished = true;
 			await OnFinished.InvokeAsync();
@@ -159,7 +157,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 	}
 
 	public async Task<bool> RequestCancelAsync() {
-		if (IsBusy || !CanCancel)
+		if (IsBusy || _cancelled || _finished || !CanCancel)
 			return false;
 		_cancelling = true;
 		using var scope = Tools.Scope.ExecuteOnDispose(() => {
@@ -169,19 +167,21 @@ public class WizardHostViewModel : ComponentViewModelBase {
 		ErrorMessages = Array.Empty<string>();
 		StateHasChangedDelegate?.Invoke();
 		var wizard = Wizard;
-		var result = await wizard.CancelAsync();
+		var result = await wizard.CancelAsync(() => ReferenceEquals(Wizard, wizard) && CanCancel);
 		if (!ReferenceEquals(Wizard, wizard))
 			return false;
 		ErrorMessages = result.ErrorMessages.ToArray();
-		return CanCancel && result.IsSuccess && result.Value;
+		_cancelled = CanCancel && result.IsSuccess && result.Value;
+		return _cancelled;
 	}
 
-	public void SetWizard(IWizard wizard) {
+	public void SetWizard(IBlazorWizard wizard) {
 		Guard.ArgumentNotNull(wizard, nameof(wizard));
 		if (ReferenceEquals(Wizard, wizard))
 			return;
 		Wizard = wizard;
 		_finished = false;
+		_cancelled = false;
 		CurrentStepInstance = null;
 		ErrorMessages = Array.Empty<string>();
 		if (IsInitialized)
@@ -206,7 +206,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 			builder.OpenComponent(0, componentType);
 			builder.SetKey(Wizard);
 			builder.AddAttribute(1, nameof(Wizard), Wizard);
-			builder.AddComponentReferenceCapture(2, o => CurrentStepInstance = (WizardStepBase)o);
+			builder.AddComponentReferenceCapture(2, o => CurrentStepInstance = (BlazorWizardStepBase)o);
 			builder.CloseComponent();
 		};
 	}

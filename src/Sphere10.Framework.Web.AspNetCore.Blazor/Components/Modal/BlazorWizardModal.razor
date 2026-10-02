@@ -8,7 +8,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@inherits ModalComponent<WizardModalViewModel>
+@inherits ModalComponent<BlazorWizardModalViewModel>
 
 <ModalTemplate OnCloseFunc="ViewModel.RequestCloseAsync" ShowCloseButton="ViewModel.CanCancel" Width="@Width" Height="@Height">
 	<HeaderTemplate>
@@ -24,7 +24,7 @@
 								<CascadingValue Name="@nameof(CancelButtonClass)" Value="CancelButtonClass">
 									<CascadingValue Name="@nameof(FinishButtonClass)" Value="FinishButtonClass">
 
-										<WizardHost @ref="@ViewModel.WizardHost"/>
+										<BlazorWizardHost @ref="@ViewModel.WizardHost"/>
 
 									</CascadingValue>
 								</CascadingValue>

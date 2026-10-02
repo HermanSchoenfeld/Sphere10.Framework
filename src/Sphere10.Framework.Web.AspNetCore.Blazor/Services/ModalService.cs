@@ -49,20 +49,20 @@ public class ModalService : IModalService {
 	/// </summary>
 	/// <param name="wizard"> wizard</param>
 	/// <returns> modal result.</returns>
-	public async Task<ModalResult> ShowWizardAsync(IWizard wizard, Dictionary<string, object>? parameters = null) {
+	public async Task<ModalResult> ShowWizardAsync(IBlazorWizard wizard, Dictionary<string, object>? parameters = null) {
 		if (ModalInstance is null) {
 			throw new InvalidOperationException("Modal service is not initialized, no modal component");
 		}
 
 		if (parameters is null) {
 			parameters = new Dictionary<string, object>() {
-				{ nameof(WizardModal.Wizard), wizard }
+				{ nameof(BlazorWizardModal.Wizard), wizard }
 			};
 		} else {
-			parameters.Add(nameof(WizardModal.Wizard), wizard);
+			parameters.Add(nameof(BlazorWizardModal.Wizard), wizard);
 		}
 
-		return await ModalInstance.ShowAsync<WizardModal>(ParameterView.FromDictionary(parameters));
+		return await ModalInstance.ShowAsync<BlazorWizardModal>(ParameterView.FromDictionary(parameters));
 	}
 }
 

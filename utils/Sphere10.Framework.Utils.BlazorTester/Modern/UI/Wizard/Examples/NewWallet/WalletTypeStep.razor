@@ -1,3 +1,4 @@
+@using Sphere10.Framework.Application.UI
 @*
 // Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
 // Author: Hamish Rose
@@ -9,7 +10,7 @@
 *@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard
-@inherits WizardStep<NewWalletModel>
+@inherits BlazorWizardStep<NewWalletModel>
 
 <EditForm Model="Model">
 	<fieldset>
@@ -33,13 +34,13 @@
 
 	public override Task<Result> OnNextAsync() {
 		if (Model.Type is WalletType.Standard) {
-			Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
+			Wizard.UpdateSteps(WizardStepUpdateType.ReplaceAllNext, new[] {
 				typeof(PasswordStep),
 				typeof(SummaryStep)
 			});
 		}
 		if (Model.Type is WalletType.Restore) {
-			Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, new[] {
+			Wizard.UpdateSteps(WizardStepUpdateType.ReplaceAllNext, new[] {
 				typeof(RestoreStep),
 				typeof(SummaryStep)
 			});

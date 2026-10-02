@@ -15,9 +15,11 @@ using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Extensions;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Components;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 
+using Sphere10.Framework.Application.UI;
+
 namespace Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.ViewModels;
 
-public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetModel> {
+public class NewWidgetWizardStepViewModel : BlazorWizardStepViewModelBase<NewWidgetModel> {
 	private IValidator<NewWidgetModel> Validator { get; }
 
 	public NewWidgetWizardStepViewModel(IValidator<NewWidgetModel> validator) {
@@ -30,7 +32,7 @@ public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetMod
 		ValidationResult result = await Validator.ValidateAsync(Model);
 
 		if (result.IsValid)
-			Wizard.UpdateSteps(StepUpdateType.ReplaceAllNext, Model.AreDimensionsKnown
+			Wizard.UpdateSteps(WizardStepUpdateType.ReplaceAllNext, Model.AreDimensionsKnown
 				? new[] { typeof(WidgetDimensionsStep), typeof(NewWidgetSummaryStep) }
 				: new[] { typeof(NewWidgetSummaryStep) });
 

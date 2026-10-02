@@ -33,7 +33,7 @@ public class Program {
 	private static void ConfigureServices(IServiceCollection serviceCollection) {
 		serviceCollection.AddViewModelsFromAssembly(typeof(Program).Assembly);
 
-		serviceCollection.AddTransient(typeof(IWizardBuilder<>), typeof(DefaultWizardBuilder<>));
+		serviceCollection.AddTransient(typeof(IBlazorWizardBuilder<>), typeof(BlazorWizardBuilder<>));
 		serviceCollection.AddSingleton<IGenericEventAggregator, BasicGenericEventAggregator>();
 		serviceCollection.AddSingleton<IModalService, ModalService>();
 		serviceCollection.AddSingleton<INodeService, MockNodeService>();

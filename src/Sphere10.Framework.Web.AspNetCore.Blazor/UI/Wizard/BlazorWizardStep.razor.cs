@@ -16,12 +16,12 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 /// Wizard step component base. 
 /// </summary>
 /// <typeparam name="TModel"> model type</typeparam>
-public abstract partial class WizardStep<TModel> {
+public abstract partial class BlazorWizardStep<TModel> {
 	/// <summary>
 	/// Gets or sets the wizard instance
 	/// </summary>
 	[Parameter]
-	public IWizard<TModel> Wizard { get; set; }
+	public IBlazorWizard<TModel> Wizard { get; set; }
 
 	/// <summary>
 	/// Gets the model.
@@ -33,7 +33,7 @@ public abstract partial class WizardStep<TModel> {
 /// <summary>
 /// Non generic wizard step component base.
 /// </summary>
-public abstract class WizardStepBase : ComponentBase {
+public abstract class BlazorWizardStepBase : ComponentBase {
 	/// <summary>
 	/// Gets or sets the title of the wizard step.
 	/// </summary>

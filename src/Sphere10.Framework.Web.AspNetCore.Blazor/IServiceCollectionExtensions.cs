@@ -29,8 +29,8 @@ public static class IServiceCollectionExtensions {
 		services.AddViewModelsFromAssembly(typeof(IServiceCollectionExtensions).Assembly);
 		services.TryAddScoped<IGenericEventAggregator, BasicGenericEventAggregator>();
 		services.TryAddScoped<IModalService, ModalService>();
-		services.TryAddTransient(typeof(IWizardBuilder<>), typeof(DefaultWizardBuilder<>));
-		services.TryAddTransient(typeof(Wizard.IWizardBuilder<>), typeof(Wizard.DefaultWizardBuilder<>));
+		services.TryAddTransient(typeof(IBlazorWizardBuilder<>), typeof(BlazorWizardBuilder<>));
+		services.TryAddTransient(typeof(Wizard.IBlazorWizardBuilder<>), typeof(Wizard.BlazorWizardBuilder<>));
 		services.TryAddScoped<Modal.ModalService>();
 		services.TryAddScoped<Modal.ViewService>();
 		services.TryAddSingleton<IBlazorApplicationBlockCatalog, BlazorApplicationBlockCatalog>();

@@ -11,7 +11,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 /// <summary>
 /// Wizard options
 /// </summary>
-public class WizardOptions {
+public class BlazorWizardOptions {
 	/// <summary>
 	/// Gets or sets the css style for the next button
 	/// </summary>

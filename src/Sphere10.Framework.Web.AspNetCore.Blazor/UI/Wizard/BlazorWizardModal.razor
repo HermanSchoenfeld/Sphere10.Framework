@@ -20,7 +20,7 @@
 			<CascadingValue Name="@nameof(OnFinished)" Value="@OnFinished">
 				<CascadingValue Name="@nameof(OnCancelled)" Value="@OnCancelled">
 					<CascadingValue Name="@nameof(OnStepChange)" Value="@OnStepChange">
-						<WizardHost @ref="@_wizardHost" />
+						<BlazorWizardHost @ref="@_wizardHost" />
 					</CascadingValue>
 				</CascadingValue>
 			</CascadingValue>
@@ -29,10 +29,10 @@
 </ModalTemplate>
 
 @code {
-	private WizardHost _wizardHost;
+	private BlazorWizardHost _wizardHost;
 
 	[Parameter]
-	public IWizard Wizard { get; set; }
+	public IBlazorWizard Wizard { get; set; }
 
 	public bool CanCancel => Wizard?.IsCancellable == true && (_wizardHost?.CanCancel ?? true);
 
@@ -47,7 +47,8 @@
 			return false;
 		if (_wizardHost != null)
 			return await _wizardHost.RequestCancelAsync() && await base.RequestCloseAsync();
-		var result = await Wizard.CancelAsync();
+		var wizard = Wizard;
+		var result = await wizard.CancelAsync(() => ReferenceEquals(Wizard, wizard) && CanCancel);
 		return CanCancel && result.IsSuccess && result.Value && await base.RequestCloseAsync();
 	}
 

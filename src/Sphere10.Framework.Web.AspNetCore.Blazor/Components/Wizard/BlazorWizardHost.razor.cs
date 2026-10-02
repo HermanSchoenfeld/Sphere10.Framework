@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 /// Wizard component.
 /// </summary>
 // HS: almost all of this should be merged into WizardViewModel<TModel>
-public partial class WizardHost {
+public partial class BlazorWizardHost {
 	/// <summary>
 	/// Call back, invoked when wizard is finished. cascaded from a parent component is used to signal
 	/// the completion of the wizard.
@@ -40,7 +40,7 @@ public partial class WizardHost {
 	/// Gets or sets the wizard model instance.
 	/// </summary>
 	[CascadingParameter]
-	public IWizard Wizard { get; set; }
+	public IBlazorWizard Wizard { get; set; }
 
 	/// <summary>
 	/// Gets or sets the css style for the next button

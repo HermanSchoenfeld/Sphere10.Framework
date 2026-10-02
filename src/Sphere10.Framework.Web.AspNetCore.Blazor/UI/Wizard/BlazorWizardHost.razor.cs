@@ -15,12 +15,13 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
 /// <summary>Renders wizard steps and applies their validation and cancellation policies.</summary>
-public partial class WizardHost {
-	private IWizard _renderedWizard;
-	private WizardStepBase _currentStepInstance;
+public partial class BlazorWizardHost {
+	private IBlazorWizard _renderedWizard;
+	private BlazorWizardStepBase _currentStepInstance;
 	private bool _finishing;
 	private bool _cancelling;
 	private bool _finished;
+	private bool _cancelled;
 
 	[CascadingParameter(Name = "OnFinished")]
 	public EventCallback OnFinished { get; set; }
@@ -32,7 +33,7 @@ public partial class WizardHost {
 	public EventCallback OnStepChange { get; set; }
 
 	[CascadingParameter]
-	public IWizard Wizard { get; set; }
+	public IBlazorWizard Wizard { get; set; }
 
 	public string[] ErrorMessages { get; private set; } = Array.Empty<string>();
 
@@ -42,7 +43,7 @@ public partial class WizardHost {
 
 	public bool CanCancel => Wizard?.IsCancellable == true && (CurrentStepInstance?.IsCancellable ?? true);
 
-	private WizardStepBase CurrentStepInstance {
+	private BlazorWizardStepBase CurrentStepInstance {
 		get => _currentStepInstance;
 		set {
 			_currentStepInstance = value;
@@ -77,7 +78,7 @@ public partial class WizardHost {
 	}
 
 	public async Task<bool> RequestCancelAsync() {
-		if (IsBusy || !CanCancel)
+		if (IsBusy || _cancelled || _finished || !CanCancel)
 			return false;
 		_cancelling = true;
 		using var scope = Tools.Scope.ExecuteOnDispose(() => {
@@ -87,11 +88,12 @@ public partial class WizardHost {
 		ErrorMessages = Array.Empty<string>();
 		StateHasChanged();
 		var wizard = Wizard;
-		var result = await wizard.CancelAsync();
+		var result = await wizard.CancelAsync(() => ReferenceEquals(Wizard, wizard) && CanCancel);
 		if (!ReferenceEquals(Wizard, wizard))
 			return false;
 		ErrorMessages = result.ErrorMessages.ToArray();
-		return CanCancel && result.IsSuccess && result.Value;
+		_cancelled = CanCancel && result.IsSuccess && result.Value;
+		return _cancelled;
 	}
 
 	protected override void OnParametersSet() {
@@ -101,13 +103,14 @@ public partial class WizardHost {
 		_renderedWizard = Wizard;
 		_currentStepInstance = null;
 		_finished = false;
+		_cancelled = false;
 		ErrorMessages = Array.Empty<string>();
 		Title = Wizard.Title;
 		CurrentStep = CreateStepFragment(Wizard.CurrentStep);
 	}
 
 	private async Task AdvanceAsync() {
-		if (IsBusy || _finished)
+		if (IsBusy || _finished || _cancelled)
 			return;
 		Guard.Ensure(CurrentStepInstance != null, "The current wizard step has not rendered.");
 		_finishing = true;
@@ -117,7 +120,11 @@ public partial class WizardHost {
 		});
 		ErrorMessages = Array.Empty<string>();
 		StateHasChanged();
-		var validation = await CurrentStepInstance.OnNextAsync();
+		var wizard = Wizard;
+		var step = CurrentStepInstance;
+		var validation = await step.OnNextAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return;
 		if (!validation.IsSuccess) {
 			ErrorMessages = validation.ErrorMessages.ToArray();
 			StateHasChanged();
@@ -132,7 +139,9 @@ public partial class WizardHost {
 			StateHasChanged();
 			return;
 		}
-		var result = await Wizard.FinishAsync();
+		var result = await wizard.FinishAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return;
 		if (result.IsSuccess && result.Value) {
 			_finished = true;
 			await OnFinished.InvokeAsync();
@@ -147,7 +156,7 @@ public partial class WizardHost {
 		builder.OpenComponent(0, componentType);
 		builder.SetKey(Wizard);
 		builder.AddAttribute(1, nameof(Wizard), Wizard);
-		builder.AddComponentReferenceCapture(2, component => CurrentStepInstance = (WizardStepBase)component);
+		builder.AddComponentReferenceCapture(2, component => CurrentStepInstance = (BlazorWizardStepBase)component);
 		builder.CloseComponent();
 	};
 }
