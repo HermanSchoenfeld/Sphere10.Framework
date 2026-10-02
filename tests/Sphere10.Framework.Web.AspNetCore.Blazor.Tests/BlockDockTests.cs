@@ -8,7 +8,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Utils.BlazorTester.Layouts;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
 
@@ -46,51 +48,51 @@ public class BlockDockTests {
 	}
 
 	[Test]
-	public async Task DockRendersOrderedIconLinksAndEscapesBlockIdsWithinTheApplicationBasePath() {
+	public async Task CompactBlockMenuSupportsOrderedIconLinksAndFallbackLabels() {
 		var services = CreateServices();
 		services.AddApplicationBlock(block => block.WithId("with & spaces").WithName("Special block").WithPosition(2));
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var navigation = provider.GetRequiredService<NavigationManager>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync<DemoBlockDock>();
+			var rendered = await renderer.RenderComponentAsync<ApplicationBlockMenu>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(ApplicationBlockMenu.Blocks)] = provider.GetRequiredService<IBlazorApplicationScreenHost>().Blocks,
+				[nameof(ApplicationBlockMenu.Compact)] = true,
+				[nameof(ApplicationBlockMenu.Href)] = (Func<IBlazorApplicationBlock, string>)(block =>
+					navigation.ToAbsoluteUri($"application?block={Uri.EscapeDataString(block.Id)}").AbsoluteUri)
+			}));
 			var html = WebUtility.HtmlDecode(rendered.ToHtmlString());
 			Assert.That(html, Does.Contain("application-blocks-compact").And.Not.Contain("<button"));
 			Assert.That(html, Does.Contain("href=\"https://localhost/demo/application?block=first\""));
 			Assert.That(html, Does.Contain("href=\"https://localhost/demo/application?block=with%20%26%20spaces\""));
 			var firstIcon = Regex.Match(html, "<img[^>]+src=\"img/first\\.svg\"[^>]*>").Value;
-			Assert.That(firstIcon, Does.Match("(?:^|\\s)alt(?:\\s*=\\s*(?:\"\"|''))?(?=\\s|/?>)"), "The decorative icon must retain an empty alt attribute.");
+			Assert.That(firstIcon, Does.Match("(?:^|\\s)alt(?:\\s*=\\s*(?:\"\"|''))?(?=\\s|/?>)"), "Decorative icons retain empty alt attributes.");
 			Assert.That(html, Does.Contain("application-block-fallback").And.Contain("Special block"));
 			Assert.That(html.IndexOf("First block", StringComparison.Ordinal), Is.LessThan(html.IndexOf("Second block", StringComparison.Ordinal)));
 		});
 	}
 
 	[Test]
-	public async Task DockTracksTheScopedHostAndHidesSelectionOutsideTheWorkspace() {
+	public async Task FrameworkShellDockTracksCanonicalHostSelectionAndRegistration() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var navigation = provider.GetRequiredService<NavigationManager>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			await host.ActivateBlockAsync("first");
-			navigation.NavigateTo("components/grid");
-			var rendered = await renderer.RenderComponentAsync<DemoBlockDock>();
-			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("aria-current"));
-
-			navigation.NavigateTo("application?block=first");
-			Assert.That(CurrentLink(rendered.ToHtmlString()), Does.Contain("First block"));
+			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
+			Assert.That(CurrentButton(DockMarkup(rendered.ToHtmlString())), Does.Contain("First block"));
 			await host.ActivateBlockAsync("second");
-			Assert.That(CurrentLink(rendered.ToHtmlString()), Does.Contain("Second block"));
+			Assert.That(CurrentButton(DockMarkup(rendered.ToHtmlString())), Does.Contain("Second block"));
 			await host.UnregisterBlockAsync("first");
-			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("block=first"));
+			Assert.That(DockMarkup(rendered.ToHtmlString()), Does.Not.Contain("First block"));
 			await host.RegisterBlockAsync("first");
-			Assert.That(rendered.ToHtmlString(), Does.Contain("block=first"));
-			navigation.NavigateTo("widget-gallery");
-			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("aria-current"));
+			Assert.That(DockMarkup(rendered.ToHtmlString()), Does.Contain("First block"));
+			Assert.That(Regex.Matches(rendered.ToHtmlString(), "aria-label=\"Application blocks\""), Has.Count.EqualTo(1),
+				"The framework shell supplies the only block dock.");
 		});
 	}
 
 	[Test]
-	public async Task DockLinkRunsThroughTheExistingShellGuardBeforeChangingTheActiveBlock() {
+	public async Task FrameworkDockBrowsesWithoutLeavingTheScreenAndScreenSelectionStillChecksItsGuard() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -102,45 +104,62 @@ public class BlockDockTests {
 			}));
 			var original = host.ActiveScreen;
 			var screen = (GuardedScreen)original.Screen;
+			var route = ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(ApplicationShell.BlockId)] = original.Block.Id,
+				[nameof(ApplicationShell.ScreenId)] = original.MenuItem.Id,
+				[nameof(ApplicationShell.InstanceId)] = original.Id
+			});
+			await shell.SetParametersAsync(route);
+			var originalUri = navigation.Uri;
 			screen.IsDirty = true;
-			var dock = DockMarkup(rendered.ToHtmlString());
-			var destination = WebUtility.HtmlDecode(Regex.Match(dock, "href=\"([^\"]+block=second)\"").Groups[1].Value);
-			Assert.That(destination, Is.EqualTo("https://localhost/demo/application?block=second"));
+			var select = typeof(ApplicationShell).GetMethod("SelectBlockAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+			await (Task)select.Invoke(shell, new object[] { host.Blocks.Single(block => block.Id == "second") });
+			await shell.SetParametersAsync(route);
+			Assert.That(screen.GuardCalls, Is.Zero);
+			Assert.That(host.ActiveScreen, Is.SameAs(original));
+			Assert.That(original.Screen, Is.SameAs(screen));
+			Assert.That(navigation.Uri, Is.EqualTo(originalUri));
+			Assert.That(CurrentButton(DockMarkup(rendered.ToHtmlString())), Does.Contain("Second block"));
+			Assert.That(host.OpenScreens, Has.Length.EqualTo(1));
+			var sidebarMenus = Regex.Match(rendered.ToHtmlString(), "<nav[^>]*aria-label=\"Second block menus\".*?</nav>", RegexOptions.Singleline).Value;
+			Assert.That(sidebarMenus, Does.Contain("Second screen").And.Not.Contain("aria-current=\"page\""),
+				"Identical item IDs in different blocks must not mark an unrelated screen selected.");
 
-			// Follow the dock's ordinary link, then supply its query as the routable workspace page does.
-			navigation.NavigateTo(destination);
-			await shell.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(ApplicationShell.BlockId)] = "second",
-				[nameof(ApplicationShell.ScreenId)] = null,
-				[nameof(ApplicationShell.InstanceId)] = null
-			}));
-
+			var execute = typeof(ApplicationShell).GetMethod("ExecuteMenuItemAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+			var item = host.ActiveBlock.Menus.Single().Items.Single();
+			await (Task)execute.Invoke(shell, new object[] { item });
 			Assert.That(screen.GuardCalls, Is.EqualTo(1));
 			Assert.That(host.ActiveScreen, Is.SameAs(original));
-			Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
-			Assert.That(CurrentLink(DockMarkup(rendered.ToHtmlString())), Does.Contain("First block"));
-			Assert.That(host.OpenScreens, Has.Length.EqualTo(1));
+			Assert.That(host.ActiveBlock.Id, Is.EqualTo("second"));
+			screen.IsDirty = false;
+			await (Task)execute.Invoke(shell, new object[] { item });
+			Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("second"));
+			Assert.That(host.OpenScreens, Has.Length.EqualTo(2));
 		});
 	}
 
 	[Test]
-	public async Task DisposingTheDockReleasesItsHostSubscription() {
+	public async Task DisposingTheShellReleasesViewSubscriptionsWithoutDisposingScopedRuntime() {
 		var services = CreateServices();
 		services.AddScoped<IBlazorApplicationScreenHost>(provider => new TrackingHost(new BlazorApplicationScreenHost(provider.GetRequiredService<IBlazorApplicationBlockCatalog>(), provider)));
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = (TrackingHost)provider.GetRequiredService<IBlazorApplicationScreenHost>();
-		await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<DemoBlockDock>());
-		Assert.That(host.SubscriberCount, Is.EqualTo(1));
+		var application = provider.GetRequiredService<IBlazorApplication>();
+		var changed = typeof(ApplicationBase).GetField(nameof(ApplicationBase.Changed), BindingFlags.Instance | BindingFlags.NonPublic);
+		await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<ApplicationShell>());
+		Assert.That(host.SubscriberCount, Is.EqualTo(2), "The scoped aggregate and screen view each observe the host.");
+		Assert.That(((Delegate)changed.GetValue(application)).GetInvocationList(), Has.Length.EqualTo(1));
 		await renderer.DisposeAsync();
-		Assert.That(host.SubscriberCount, Is.Zero);
-		await host.ActivateBlockAsync("first");
-		Assert.That(() => provider.GetRequiredService<NavigationManager>().NavigateTo("components/grid"), Throws.Nothing);
+		Assert.That(host.SubscriberCount, Is.EqualTo(1), "The surviving circuit aggregate remains subscribed.");
+		Assert.That(changed.GetValue(application), Is.Null, "The disposed shell releases its aggregate subscription.");
+		await host.ActivateBlockAsync("second");
+		Assert.That(application.ActiveBlock.Id, Is.EqualTo("second"));
 	}
 
-	private static string CurrentLink(string html) => Regex.Match(html, "<a[^>]*aria-current=\"page\"[^>]*>.*?</a>", RegexOptions.Singleline).Value;
+	private static string CurrentButton(string html) => Regex.Match(html, "<button[^>]*aria-current=\"page\"[^>]*>.*?</button>", RegexOptions.Singleline).Value;
 
-	private static string DockMarkup(string html) => Regex.Match(html, "<div class=\"demo-block-dock\"[^>]*>.*?</div>", RegexOptions.Singleline).Value;
+	private static string DockMarkup(string html) => Regex.Match(html, "<div class=\"sphere10-block-dock\"[^>]*>.*?</div>", RegexOptions.Singleline).Value;
 
 	private static IServiceCollection CreateServices() {
 		var services = new ServiceCollection();
@@ -149,8 +168,8 @@ public class BlockDockTests {
 		services.AddSingleton<NavigationManager>(new DockNavigationManager());
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
 		services.AddApplicationBlock(block => block.WithId("second").WithName("Second block").WithPosition(1)
-			.WithIconUrl("img/second.svg").WithDefaultScreen<OtherScreen>());
-		services.AddApplicationBlock(block => block.WithId("first").WithName("First block").WithIconUrl("img/first.svg").WithDefaultScreen<GuardedScreen>());
+			.WithIconUrl("img/second.svg").WithDefaultScreen<OtherScreen>().AddMenu(menu => menu.WithText("Screens").AddScreenItem<OtherScreen>("screen", "Second screen")));
+		services.AddApplicationBlock(block => block.WithId("first").WithName("First block").WithIconUrl("img/first.svg").WithDefaultScreen<GuardedScreen>().AddMenu(menu => menu.WithText("Screens").AddScreenItem<GuardedScreen>("screen", "First screen")));
 		return services;
 	}
 
@@ -158,11 +177,9 @@ public class BlockDockTests {
 		[Parameter] public Action<ApplicationShell> Capture { get; set; }
 
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
-			builder.OpenComponent<DemoBlockDock>(0);
-			builder.CloseComponent();
-			builder.OpenComponent<ApplicationShell>(1);
-			builder.AddAttribute(2, nameof(ApplicationShell.BlockId), "first");
-			builder.AddComponentReferenceCapture(3, component => Capture((ApplicationShell)component));
+			builder.OpenComponent<ApplicationShell>(0);
+			builder.AddAttribute(1, nameof(ApplicationShell.BlockId), "first");
+			builder.AddComponentReferenceCapture(2, component => Capture((ApplicationShell)component));
 			builder.CloseComponent();
 		}
 	}

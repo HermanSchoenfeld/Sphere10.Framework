@@ -1,0 +1,143 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+<nav class="sphere10-tabs" aria-label="Open screens">
+	<div role="tablist" aria-label="Application screens" class="sphere10-tab-list">
+		@foreach (var session in Sessions) {
+			<div @key="session.Id" role="presentation" class="sphere10-tab @(session == ActiveSession ? "active" : null)"
+				draggable="@(!_closing ? "true" : "false")" @ondragstart="() => _dragged = session.Id" @ondragend="() => _dragged = null"
+				@ondragover:preventDefault="true" @ondrop="() => DropAsync(session.Id)"
+				@oncontextmenu="() => _context = session.Id" @oncontextmenu:preventDefault="true">
+				<button @ref="_buttons[session.Id]" id="@($"tab-{session.Id:N}")" type="button" role="tab" title="@session.Title" aria-label="@session.Title"
+					aria-selected="@(session == ActiveSession ? "true" : "false")" aria-controls="@($"screen-{session.Id:N}")"
+					tabindex="@(session == ActiveSession || ActiveSession == null && session == Sessions.FirstOrDefault() ? 0 : -1)"
+					disabled="@_closing" @onclick="() => SelectAsync(session.Id)" @onkeydown="args => KeyDownAsync(session.Id, args)"
+					@onmouseup="args => AuxiliaryClickAsync(session.Id, args)" @onmouseup:preventDefault="true">
+					<span>@session.Title</span>
+					@if (session.Screen?.HasUnsavedChanges == true) {
+						<span class="sphere10-tab-dirty" aria-hidden="true" title="Unsaved changes">●</span>
+					}
+				</button>
+				@if (!session.IsPermanent) {
+					<button type="button" disabled="@_closing" class="sphere10-tab-close" aria-label="@($"Close {session.Title}")" title="Close screen"
+						@onclick="() => CloseAsync(new[] { session.Id })">×</button>
+				}
+			</div>
+		}
+	</div>
+	@if (_context.HasValue && Sessions.Any(session => session.Id == _context.Value)) {
+		<div class="sphere10-tab-context" role="group" aria-label="Tab commands" @onkeydown="DismissContext">
+			<button type="button" disabled="@(_closing || Sessions.Any(session => session.Id == _context.Value && session.IsPermanent))" @onclick="() => CloseAsync(new[] { _context.Value })">Close</button>
+			<button type="button" disabled="@_closing" @onclick="() => CloseAsync(Sessions.Where(session => session.Id != _context.Value).Select(session => session.Id).ToArray())">Close other screens</button>
+			<button type="button" disabled="@_closing" @onclick="() => CloseAsync(Sessions.Select(session => session.Id).ToArray())">Close all screens</button>
+			<button type="button" @onclick="() => _context = null">Dismiss tab commands</button>
+		</div>
+	}
+</nav>
+
+@code {
+	private readonly Dictionary<Guid, ElementReference> _buttons = new();
+	private Guid? _dragged;
+	private Guid? _context;
+	private bool _focusSelection;
+	private bool _closing;
+
+	[Parameter] public BlazorApplicationScreenSession[] Sessions { get; set; } = Array.Empty<BlazorApplicationScreenSession>();
+
+	[Parameter] public BlazorApplicationScreenSession ActiveSession { get; set; }
+
+	[Parameter] public EventCallback<Guid> OnSelect { get; set; }
+
+	[Parameter] public EventCallback<Guid[]> OnClose { get; set; }
+
+	[Parameter] public EventCallback<(Guid SessionId, int Index)> OnReorder { get; set; }
+
+	protected override void OnParametersSet() {
+		Guard.ArgumentNotNull(Sessions, nameof(Sessions));
+		foreach (var id in _buttons.Keys.Where(id => Sessions.All(session => session.Id != id)).ToArray())
+			_buttons.Remove(id);
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		if (!_focusSelection)
+			return;
+		_focusSelection = false;
+		if (ActiveSession != null && _buttons.TryGetValue(ActiveSession.Id, out var button))
+			await button.FocusAsync();
+	}
+
+	private async Task SelectAsync(Guid id) {
+		if (_closing)
+			return;
+		await OnSelect.InvokeAsync(id);
+		_focusSelection = true;
+	}
+
+	private async Task CloseAsync(Guid[] ids) {
+		if (_closing)
+			return;
+		_closing = true;
+		using var completion = Tools.Scope.ExecuteOnDispose(() => _closing = false);
+		_context = null;
+		var closable = ids.Where(id => Sessions.Any(session => session.Id == id && !session.IsPermanent)).ToArray();
+		if (closable.Length > 0)
+			await OnClose.InvokeAsync(closable);
+		_focusSelection = true;
+	}
+
+	private Task AuxiliaryClickAsync(Guid id, MouseEventArgs args) => args.Button == 1 ? CloseAsync(new[] { id }) : Task.CompletedTask;
+
+	private async Task DropAsync(Guid target) {
+		if (_closing)
+			return;
+		var dragged = _dragged;
+		_dragged = null;
+		if (dragged.HasValue && Sessions.Any(session => session.Id == dragged.Value))
+			await OnReorder.InvokeAsync((dragged.Value, Array.FindIndex(Sessions, session => session.Id == target)));
+	}
+
+	private async Task KeyDownAsync(Guid id, KeyboardEventArgs args) {
+		if (_closing)
+			return;
+		var index = Array.FindIndex(Sessions, session => session.Id == id);
+		if (args.Key == "Escape") {
+			_context = null;
+			_dragged = null;
+			return;
+		}
+		if (args.Key == "ContextMenu" || args.ShiftKey && args.Key == "F10") {
+			_context = id;
+			return;
+		}
+		if (args.Key == "Delete") {
+			await CloseAsync(new[] { id });
+			return;
+		}
+		var target = args.Key switch {
+			"ArrowLeft" => (index + Sessions.Length - 1) % Sessions.Length,
+			"ArrowRight" => (index + 1) % Sessions.Length,
+			"Home" => 0,
+			"End" => Sessions.Length - 1,
+			_ => index
+		};
+		if (target == index)
+			return;
+		if (args.CtrlKey && args.ShiftKey)
+			await OnReorder.InvokeAsync((id, target));
+		else {
+			await OnSelect.InvokeAsync(Sessions[target].Id);
+			_focusSelection = true;
+		}
+	}
+
+	private void DismissContext(KeyboardEventArgs args) {
+		if (args.Key == "Escape")
+			_context = null;
+	}
+}

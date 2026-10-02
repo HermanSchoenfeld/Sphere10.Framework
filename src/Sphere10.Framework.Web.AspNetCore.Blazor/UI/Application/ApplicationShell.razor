@@ -9,43 +9,72 @@
 *@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame
+@using Sphere10.Framework.Application.UI
 
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigationAsync" ConfirmExternalNavigation="ScreenHost.HasUnsavedChanges" />
-<div class="sphere10-application">
-	<header class="sphere10-header">
-		@if (Header != null) {
-			@Header
-		} else {
-			<strong>@Title</strong>
-		}
+<div class="sphere10-application @(_navigationOpen ? "sphere10-navigation-open" : null)" @onkeydown="OnShellKeyDown">
+	<a class="sphere10-skip-link" href="@($"#{_navigationId}-content")">Skip to content</a>
+	<header class="sphere10-chrome">
+		<div class="sphere10-header">
+			<button @ref="_navigationToggle" type="button" class="sphere10-navigation-toggle" aria-controls="@_navigationId"
+				aria-expanded="@(_navigationOpen ? "true" : "false")" @onclick="ToggleNavigation">
+				<span aria-hidden="true">☰</span> Menu
+			</button>
+			<strong class="sphere10-application-title">@Title</strong>
+			<div class="sphere10-header-tools">@Header</div>
+			@if (ShowScreenModeSelector) {
+				<label class="sphere10-screen-mode">Screen layout
+					<select @key="_screenModeSelectionVersion" value="@ScreenHost.ScreenMode" @onchange="ChangeScreenModeAsync">
+						<option value="@ScreenMode.MultiView">Tabs</option>
+						<option value="@ScreenMode.SingleView">Single screen</option>
+					</select>
+				</label>
+			}
+		</div>
+		<div class="sphere10-command-chrome">
+			<ApplicationCommandBar Menus="MergedMenus" ToolBarItems="MergedToolBarItems" ToolBarContent="ToolBarContent" OnSelect="ExecuteCommandAsync" />
+		</div>
 	</header>
-	<aside class="sphere10-sidebar" aria-label="Application navigation">
-		<ApplicationBlockMenu Blocks="ScreenHost.Blocks" ActiveBlock="ScreenHost.ActiveBlock" OnSelect="ActivateBlockAsync" />
-		<ApplicationMenus Block="ScreenHost.ActiveBlock" OnSelect="ExecuteMenuItemAsync" />
-		@Sidebar
-	</aside>
-	<main class="sphere10-content">
-		@if (_routeError != null) {
-			<p role="alert">@_routeError</p>
+	<div class="sphere10-workspace">
+		@if (_navigationOpen) {
+			<button type="button" class="sphere10-navigation-backdrop" aria-label="Close application navigation" @onclick="CloseNavigation"></button>
 		}
-		@if (ScreenHost.OpenScreens.Length > 0) {
-			<nav class="sphere10-screens" aria-label="Open screens">
-				@foreach (var session in ScreenHost.OpenScreens) {
-					<div @key="session.Id" class="sphere10-screen-tab">
-						<button type="button" aria-current="@(ScreenHost.ActiveScreen == session ? "page" : null)" aria-controls="@($"screen-{session.Id:N}")"
-							@onclick="() => ShowScreenAsync(session.Id)">@session.Title</button>
-						<button type="button" aria-label="@($"Close {session.Title}")" @onclick="() => CloseScreenAsync(session.Id)">×</button>
-					</div>
+		<aside id="@_navigationId" class="sphere10-sidebar" aria-label="Application navigation">
+			@if (SidebarHeader != null) {
+				<div class="sphere10-sidebar-header">@SidebarHeader</div>
+			}
+			<div class="sphere10-sidebar-menus">
+				<ApplicationMenus Block="ScreenHost.ActiveBlock" ActiveItemId="@(ScreenHost.ActiveScreen?.Block.Id == ScreenHost.ActiveBlock?.Id ? ScreenHost.ActiveScreen?.MenuItem.Id : null)"
+					NavigationPalette="true" OnSelect="ExecuteMenuItemAsync" />
+				@Sidebar
+			</div>
+			<div class="sphere10-block-dock">
+				<ApplicationBlockMenu Compact="true" Blocks="ScreenHost.Blocks" ActiveBlock="ScreenHost.ActiveBlock" OnSelect="SelectBlockAsync" />
+			</div>
+		</aside>
+		<main id="@($"{_navigationId}-content")" class="sphere10-content" tabindex="-1">
+			@if (ScreenHost.ScreenMode == ScreenMode.MultiView && ScreenHost.OpenScreens.Length > 0) {
+				<div class="sphere10-tab-strip">
+					<ApplicationScreenTabs Sessions="ScreenHost.OpenScreens" ActiveSession="ScreenHost.ActiveScreen"
+						OnSelect="ShowScreenAsync" OnClose="CloseScreensAsync" OnReorder="ReorderScreenAsync" />
+				</div>
+			}
+			<div class="sphere10-screen-body">
+				@if (_routeError != null) {
+					<p role="alert">@_routeError</p>
 				}
-			</nav>
-			<ApplicationScreenHostView />
-		} else if (EmptyContent != null) {
-			@EmptyContent
-		} else {
-			<p>Select an application block to open a screen.</p>
-		}
-	</main>
+				<ApplicationScreenHostView />
+				@if (ScreenHost.ActiveScreen == null) {
+					if (EmptyContent != null) {
+						@EmptyContent
+					} else {
+						<p>Select an application block to open a screen.</p>
+					}
+				}
+			</div>
+		</main>
+	</div>
 	@if (Footer != null) {
-		<footer class="sphere10-footer">@Footer</footer>
+		<footer class="sphere10-footer" aria-label="Application status">@Footer</footer>
 	}
 </div>

@@ -8,11 +8,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Application.UI
 @implements IDisposable
 @inject IBlazorApplicationScreenHost ScreenHost
 
-@foreach (var session in ScreenHost.OpenScreens) {
-	<section @key="session.Id" id="@($"screen-{session.Id:N}")" hidden="@(ScreenHost.ActiveScreen != session)" aria-label="@session.Title" class="sphere10-screen">
+@foreach (var session in ScreenHost.Screens) {
+	var hasTab = ScreenHost.ScreenMode == ScreenMode.MultiView && ScreenHost.OpenScreens.Contains(session);
+	<section @key="session.Id" id="@($"screen-{session.Id:N}")" hidden="@(ScreenHost.ActiveScreen != session)" aria-label="@session.Title" role="@(hasTab ? "tabpanel" : null)" aria-labelledby="@(hasTab ? $"tab-{session.Id:N}" : null)" class="sphere10-screen">
 		<CascadingValue Value="session" IsFixed="true">
 			<DynamicComponent Type="session.ScreenType" Parameters="session.Parameters" />
 		</CascadingValue>

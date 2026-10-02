@@ -9,19 +9,33 @@
 *@
 
 
+@using Sphere10.Framework.Application.UI
+
 @if (Block != null) {
-	<nav aria-label="@($"{Block.Title} menus")" class="application-menus">
+	<nav aria-label="@($"{Block.Title} menus")" class="application-menus @(NavigationPalette ? "application-menus-navigation" : null)">
 		@foreach (var menu in Block.Menus) {
 			<section>
-				<h2>@menu.Text</h2>
+				<h2>
+					@if (!string.IsNullOrWhiteSpace(menu.Icon)) {
+						<span class="@menu.Icon" aria-hidden="true"></span>
+					}
+					@menu.Text
+				</h2>
 				<ul>
 					@foreach (var item in menu.Items) {
-						<li><button type="button" @onclick="() => OnSelect.InvokeAsync(item)" @onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
-							@if (!string.IsNullOrWhiteSpace(item.Icon)) {
-								<span class="@item.Icon" aria-hidden="true"></span>
-							}
-							@item.Title
-						</button></li>
+						@if (item is IApplicationMenuSeparator) {
+							<li role="separator"><hr /></li>
+						} else {
+							<li>
+								<button type="button" aria-current="@(ActiveItemId == item.Id ? "page" : null)" @onclick="() => OnSelect.InvokeAsync(item)"
+									@onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
+									@if (!string.IsNullOrWhiteSpace(item.Icon)) {
+										<span class="@item.Icon" aria-hidden="true"></span>
+									}
+									@item.Title
+								</button>
+							</li>
+						}
 					}
 				</ul>
 			</section>
@@ -31,6 +45,10 @@
 
 @code {
 	[Parameter] public IBlazorApplicationBlock Block { get; set; }
+
+	[Parameter] public string ActiveItemId { get; set; }
+
+	[Parameter] public bool NavigationPalette { get; set; }
 
 	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelect { get; set; }
 

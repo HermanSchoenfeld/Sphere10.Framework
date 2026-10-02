@@ -1,4 +1,12 @@
-.application-menus h2 { font-size: 1rem; font-weight: 600; margin: 1rem 0 .5rem; }
-.application-menus ul { padding: 0; list-style: none; }
-.application-menus button { width: 100%; padding: .5rem; border: 0; border-radius: .25rem; background: transparent; color: var(--sphere10-accent, #2456a6); cursor: pointer; text-align: left; }
-.application-menus button:hover, .application-menus button:focus-visible { background: var(--sphere10-hover, #edf2fa); }
+.application-menus { --menu-text: var(--sphere10-text, #202b3d); --menu-icon: var(--sphere10-muted, #58687b); --menu-hover: var(--sphere10-hover, #edf2fa); --menu-selected: var(--sphere10-selected, #deeffd); --menu-active-text: var(--sphere10-text, #202b3d); --menu-border: var(--sphere10-border, #dce2eb); color: var(--menu-text); }
+.application-menus-navigation { --menu-text: var(--sphere10-navigation-text, #202b3d); --menu-icon: var(--sphere10-navigation-icon, #58687b); --menu-hover: var(--sphere10-navigation-hover, #edf2fa); --menu-selected: var(--sphere10-navigation-selected, #deeffd); --menu-active-text: var(--sphere10-navigation-active-text, #202b3d); --menu-border: var(--sphere10-navigation-border, #dce2eb); }
+.application-menus section { margin-block: .4rem 1rem; }
+.application-menus h2 { display: flex; align-items: center; gap: .4rem; color: var(--menu-text); font-size: .85rem; font-weight: 600; padding: .5rem; margin: 0 0 .3rem; border-bottom: 1px solid var(--menu-border); }
+.application-menus h2 span, .application-menus button > span[aria-hidden="true"] { color: var(--menu-icon); }
+.application-menus ul { padding: 0; margin: 0; list-style: none; }
+.application-menus button { display: flex; align-items: center; gap: .45rem; width: 100%; padding: .45rem .5rem; border: 0; border-radius: .2rem; background: transparent; color: var(--menu-text); cursor: pointer; text-align: left; font-size: .85rem; line-height: 1.4; }
+.application-menus button > span[aria-hidden="true"] { flex: 0 0 1rem; text-align: center; }
+.application-menus button:hover { background: var(--menu-hover); }
+.application-menus button[aria-current="page"] { background: var(--menu-selected); color: var(--menu-active-text); }
+.application-menus button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; background: var(--menu-hover); }
+.application-menus hr { margin: .4rem .5rem; border-color: var(--menu-border); }

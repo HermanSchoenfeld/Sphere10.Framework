@@ -1,11 +1,48 @@
-.sphere10-application { display: grid; grid-template-columns: 16rem minmax(0, 1fr); grid-template-rows: auto 1fr auto; min-height: 100vh; color: var(--sphere10-text, #202b3d); background: var(--sphere10-background, #f4f6fa); }
-.sphere10-header { grid-column: 1 / -1; padding: 1rem 1.5rem; background: var(--sphere10-header-background, #14253c); color: var(--sphere10-header-text, white); }
-.sphere10-sidebar { padding: 1rem; border-right: 1px solid var(--sphere10-border, #dce2eb); background: var(--sphere10-surface, white); }
-.sphere10-content { min-width: 0; padding: 1.5rem; }
-.sphere10-screens { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
-.sphere10-screen-tab { display: flex; border: 1px solid var(--sphere10-border-strong, #c7d1df); border-radius: .3rem; overflow: hidden; }
-.sphere10-screen-tab button { border: 0; padding: .5rem .75rem; background: var(--sphere10-surface, white); color: inherit; cursor: pointer; }
-.sphere10-screen-tab button[aria-current="page"] { background: var(--sphere10-accent, #2456a6); color: var(--sphere10-accent-contrast, white); }
-.sphere10-screen-tab button:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: -3px; }
-.sphere10-footer { grid-column: 1 / -1; padding: .75rem 1.5rem; border-top: 1px solid var(--sphere10-border, #dce2eb); }
-@media (max-width: 700px) { .sphere10-application { grid-template-columns: 1fr; } .sphere10-sidebar { border-right: 0; border-bottom: 1px solid var(--sphere10-border, #dce2eb); } }
+.sphere10-application {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+	color: var(--sphere10-text, #202b3d);
+	background: var(--sphere10-background, #f4f6fa);
+	font-family: var(--sphere10-font-family, system-ui, sans-serif);
+}
+.sphere10-chrome { flex: 0 0 auto; min-width: 0; position: relative; z-index: 30; border-bottom: 1px solid var(--sphere10-border, #dce2eb); }
+.sphere10-header { display: flex; align-items: center; gap: .6rem; min-height: 1.8rem; padding: .15rem .65rem; background: var(--sphere10-header-background, #14253c); color: var(--sphere10-header-text, white); }
+.sphere10-application-title { flex: 0 1 auto; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sphere10-header-tools { display: flex; justify-content: flex-end; align-items: center; gap: .75rem; flex: 1 1 auto; min-width: 0; }
+.sphere10-screen-mode { display: flex; align-items: center; flex: 0 0 auto; gap: .4rem; margin: 0; font-size: .8rem; white-space: nowrap; }
+.sphere10-screen-mode select { padding: .2rem .35rem; font: inherit; color: var(--sphere10-text, #202b3d); background: var(--sphere10-surface, white); border: 1px solid var(--sphere10-border, #dce2eb); border-radius: .2rem; }
+.sphere10-workspace { display: grid; grid-template-columns: 16rem minmax(0, 1fr); flex: 1 1 auto; min-width: 0; min-height: 0; position: relative; }
+.sphere10-sidebar { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-right: 1px solid var(--sphere10-navigation-border, #dce2eb); background: var(--sphere10-navigation-background, white); color: var(--sphere10-navigation-text, #202b3d); }
+.sphere10-sidebar-header { flex: 0 0 auto; padding: .8rem; border-bottom: 1px solid var(--sphere10-navigation-border, #dce2eb); }
+.sphere10-sidebar-menus { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: .4rem .65rem; }
+.sphere10-block-dock { flex: 0 0 auto; padding: .65rem; border-top: 1px solid var(--sphere10-navigation-border, #dce2eb); }
+.sphere10-block-dock ::deep .application-blocks-compact { gap: .4rem; }
+.sphere10-block-dock ::deep .application-blocks-compact button { padding: .4rem; }
+.sphere10-content { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--sphere10-surface, white); }
+.sphere10-tab-strip { flex: 0 0 auto; min-width: 0; padding: .2rem .4rem 0; background: var(--sphere10-background, #f4f6fa); }
+.sphere10-tab-strip ::deep .sphere10-tabs { margin: 0; }
+.sphere10-screen-body { flex: 1 1 auto; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1rem; }
+.sphere10-screen-body ::deep .sphere10-screen { min-width: 0; }
+.sphere10-footer { flex: 0 0 auto; display: flex; align-items: center; gap: .75rem; min-height: 1.7rem; padding: .2rem .65rem; border-top: 1px solid var(--sphere10-border, #dce2eb); background: var(--sphere10-surface-raised, #edf2f7); color: var(--sphere10-muted, #58687b); font-size: .75rem; }
+.sphere10-navigation-toggle { display: none; align-items: center; gap: .35rem; border: 1px solid currentColor; border-radius: .25rem; padding: .3rem .5rem; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.sphere10-navigation-toggle:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: 2px; }
+.sphere10-navigation-backdrop { display: none; }
+@media (max-width: 760px) {
+	.sphere10-header { flex-wrap: wrap; gap: .4rem; padding: .25rem .5rem; }
+	.sphere10-navigation-toggle { display: inline-flex; }
+	.sphere10-application-title { flex: 1 1 auto; font-size: .85rem; }
+	.sphere10-header-tools { flex: 1 1 auto; flex-wrap: wrap; }
+	.sphere10-workspace { grid-template-columns: minmax(0, 1fr); }
+	.sphere10-sidebar { display: none; position: absolute; inset: 0 auto 0 0; width: min(19rem, calc(100% - 2.5rem)); z-index: 20; box-shadow: var(--sphere10-shadow, 0 .25rem .75rem #17324d20); }
+	.sphere10-navigation-open .sphere10-sidebar { display: flex; }
+	.sphere10-navigation-backdrop { display: block; position: absolute; inset: 0; z-index: 19; border: 0; background: #0006; }
+	.sphere10-screen-body { padding: .75rem; }
+}.sphere10-skip-link { position: absolute; top: .5rem; left: .5rem; z-index: 40; padding: .5rem .75rem; transform: translateY(-200%); background: var(--sphere10-surface, white); color: var(--sphere10-text, #202b3d); border: 2px solid var(--sphere10-focus, #2456a6); border-radius: .25rem; }
+.sphere10-skip-link:focus { transform: translateY(0); }
