@@ -6,12 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
+namespace Sphere10.Framework.Application.UI;
 
 /// <summary>
 /// Operations for updating wizard steps
 /// </summary>
-public enum StepUpdateType {
+public enum WizardStepUpdateType {
 	/// <summary>
 	/// Inject the step after the current step, before the next step.
 	/// </summary>
@@ -32,5 +32,3 @@ public enum StepUpdateType {
 	/// </summary>
 	RemoveNext
 }
-
-

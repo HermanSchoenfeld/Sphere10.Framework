@@ -8,9 +8,10 @@
 
 namespace Sphere10.Framework.Application.UI;
 
-public enum WizardResult {
-	Success,
-	Error,
-	Cancelled,
+public enum WizardState {
+	Active,
+	Finishing,
+	Cancelling,
+	Finished,
+	Cancelled
 }
-

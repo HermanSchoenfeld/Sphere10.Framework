@@ -33,6 +33,7 @@
     <PackageVersion Include="SharpDX" Version="4.2.0" />
     <PackageVersion Include="SharpDX.DirectSound" Version="4.2.0" />
     <PackageVersion Include="SourceGear.sqlite3" Version="3.53.4" />
+    <PackageVersion Include="Stateless" Version="5.20.1" />
     <PackageVersion Include="System.CodeDom" Version="10.0.11" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.11" />
     <PackageVersion Include="System.Data.SqlClient" Version="4.9.1" />
