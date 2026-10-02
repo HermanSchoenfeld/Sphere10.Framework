@@ -30,6 +30,10 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> where TMenu : I
 
 	protected string DefaultScreenTitle { get; private set; }
 
+	protected ScreenActivationMode? DefaultScreenActivationMode { get; private set; }
+
+	protected ScreenKind DefaultScreenKind { get; private set; }
+
 	public virtual TBlock Build() {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Block name is required.");
 		return CreateBlock(Array.AsReadOnly(_menus.ToArray()));
@@ -51,10 +55,13 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> where TMenu : I
 
 	protected void SetTooltip(string tooltip) => Tooltip = tooltip;
 
-	protected void SetDefaultScreen(Type screenType, string title = null) {
+	protected void SetDefaultScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) {
 		ValidateScreenType(screenType);
+		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
 		DefaultScreen = screenType;
 		DefaultScreenTitle = title;
+		DefaultScreenActivationMode = activationMode;
+		DefaultScreenKind = screenKind;
 	}
 
 	protected void AddMenuDefinition(TMenu menu) {

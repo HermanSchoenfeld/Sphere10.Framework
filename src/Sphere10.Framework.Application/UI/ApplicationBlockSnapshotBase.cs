@@ -16,7 +16,7 @@ public abstract class ApplicationBlockSnapshotBase<TBlock, TMenu, TItem> : IAppl
 	where TBlock : class, IApplicationBlock
 	where TMenu : class, IApplicationMenu
 	where TItem : class, IApplicationMenuItem {
-	public const string DefaultScreenItemId = "__default";
+	public const string DefaultScreenItemId = ApplicationScreenDefinition.DefaultMenuItemId;
 
 	public TBlock Create(TBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
@@ -25,8 +25,10 @@ public abstract class ApplicationBlockSnapshotBase<TBlock, TMenu, TItem> : IAppl
 		Guard.ArgumentNotNullOrEmpty(id, nameof(block), "Block ID is required.");
 		var sourceMenus = block.Menus;
 		Guard.ArgumentNotNull(sourceMenus, nameof(block));
-		if (block.DefaultScreen != null)
+		if (block.DefaultScreen != null) {
 			ValidateScreenTypeCore(block.DefaultScreen);
+			Tools.UI.ValidateScreenPolicy(block.DefaultScreenActivationMode, block.DefaultScreenKind);
+		}
 		var menus = sourceMenus.Cast<TMenu>().Select(CreateMenu).ToArray();
 		Guard.Argument(menus.Select(menu => menu.Id).Distinct(StringComparer.Ordinal).Count() == menus.Length, nameof(block), "Menu IDs must be unique within a block.");
 		var items = menus.SelectMany(menu => menu.Items).ToArray();
@@ -52,8 +54,7 @@ public abstract class ApplicationBlockSnapshotBase<TBlock, TMenu, TItem> : IAppl
 		Guard.ArgumentNotNullOrEmpty(id, nameof(item), "Menu item ID is required.");
 		if (item is IScreenMenuItem screen) {
 			ValidateScreenTypeCore(screen.ScreenType);
-			if (screen.ActivationMode.HasValue)
-				Tools.UI.ValidateActivationMode(screen.ActivationMode.Value);
+			Tools.UI.ValidateScreenPolicy(screen.ActivationMode, screen.ScreenKind);
 		}
 		return CreateItemSnapshot(item, id);
 	}
@@ -62,18 +63,19 @@ public abstract class ApplicationBlockSnapshotBase<TBlock, TMenu, TItem> : IAppl
 		Guard.ArgumentNotNull(block, nameof(block));
 		var sourceMenus = block.Menus;
 		Guard.ArgumentNotNull(sourceMenus, nameof(block));
-		if (block.DefaultScreen != null)
+		if (block.DefaultScreen != null) {
 			ValidateScreenTypeCore(block.DefaultScreen);
+			Tools.UI.ValidateScreenPolicy(block.DefaultScreenActivationMode, block.DefaultScreenKind);
+		}
 		var screens = sourceMenus.SelectMany(menu => menu.Items).OfType<IScreenMenuItem>();
 		var result = block.DefaultScreen == null
-			? (TItem)screens.FirstOrDefault()
+			? (TItem)(screens.FirstOrDefault(screen => screen.IsDefault) ?? screens.FirstOrDefault(screen => screen.ScreenKind == ScreenKind.Normal) ?? screens.FirstOrDefault())
 			: CreateDefaultScreen(block, (TItem)screens.FirstOrDefault(screen => screen.ScreenType == block.DefaultScreen));
 		if (result != null) {
 			Guard.Argument(result is IScreenMenuItem, nameof(block), "The default screen factory must return a screen menu item.");
 			var screen = (IScreenMenuItem)result;
 			ValidateScreenTypeCore(screen.ScreenType);
-			if (screen.ActivationMode.HasValue)
-				Tools.UI.ValidateActivationMode(screen.ActivationMode.Value);
+			Tools.UI.ValidateScreenPolicy(screen.ActivationMode, screen.ScreenKind);
 		}
 		return result;
 	}

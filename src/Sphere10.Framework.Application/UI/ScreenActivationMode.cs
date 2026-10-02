@@ -10,5 +10,8 @@ namespace Sphere10.Framework.Application.UI;
 
 public enum ScreenActivationMode {
 	SingleInstance = 0,
-	MultiInstance = 1
+	MultiInstance = 1,
+
+	/// <summary>One automatically opened instance whose tab cannot be closed during its block lifetime.</summary>
+	PermanentSingleton = 2
 }

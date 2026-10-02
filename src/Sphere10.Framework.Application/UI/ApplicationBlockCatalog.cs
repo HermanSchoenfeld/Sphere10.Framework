@@ -25,6 +25,7 @@ public class ApplicationBlockCatalog<TBlock> : ApplicationBlockCatalogBase<TBloc
 		var snapshots = blocks.Select(snapshot).OrderBy(block => block.Position).ToArray();
 		Guard.Argument(snapshots.Select(block => block.Id).Distinct(StringComparer.Ordinal).Count() == snapshots.Length, nameof(blocks), "Block IDs must be unique.");
 
+		_ = Tools.UI.GetScreenDefinitions(snapshots);
 		var declarations = new List<KeyValuePair<Type, ScreenActivationMode>>();
 		foreach (var block in snapshots) {
 			if (block.DefaultScreen != null) {
@@ -38,6 +39,7 @@ public class ApplicationBlockCatalog<TBlock> : ApplicationBlockCatalogBase<TBloc
 			foreach (var screen in screens) {
 				Tools.UI.ValidateScreenType(screen.ScreenType);
 				validateScreenType?.Invoke(screen.ScreenType);
+				Tools.UI.ValidateScreenPolicy(screen.ActivationMode, screen.ScreenKind);
 				if (screen.ActivationMode.HasValue)
 					declarations.Add(new KeyValuePair<Type, ScreenActivationMode>(screen.ScreenType, screen.ActivationMode.Value));
 			}

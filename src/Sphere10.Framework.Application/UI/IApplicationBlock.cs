@@ -11,16 +11,22 @@ using System;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>UI-independent application block metadata. Platform adapters retain ownership of presentation resources.</summary>
-public interface IApplicationBlock {
+public interface IApplicationBlock : IApplicationCommandProvider {
 	string Id => Name;
 
 	string Name { get; }
 
 	int Position { get; }
 
-	IApplicationMenu[] Menus { get; }
+	new IApplicationMenu[] Menus { get; }
+
+	IApplicationMenu[] IApplicationCommandProvider.Menus => Menus;
 
 	Type DefaultScreen { get; }
 
 	string DefaultScreenTitle => null;
+
+	ScreenActivationMode? DefaultScreenActivationMode => null;
+
+	ScreenKind DefaultScreenKind => ScreenKind.Normal;
 }

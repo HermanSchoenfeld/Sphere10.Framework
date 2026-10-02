@@ -5,10 +5,8 @@
 // LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
-
 namespace Sphere10.Framework.Application.UI;
 
-public enum ScreenMode {
-	SingleView,
-	MultiView
+/// <summary>A non-executable visual boundary between command groups.</summary>
+public interface IApplicationMenuSeparator : IApplicationMenuItem {
 }

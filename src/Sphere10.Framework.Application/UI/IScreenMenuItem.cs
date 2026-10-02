@@ -17,4 +17,10 @@ public interface IScreenMenuItem : IApplicationMenuItem {
 	ScreenActivationMode? ActivationMode { get; }
 
 	string ScreenTitle => null;
+
+	/// <summary>Empty screens are tabless placeholders and never coexist visibly with an open normal screen.</summary>
+	ScreenKind ScreenKind => ScreenKind.Normal;
+
+	/// <summary>Marks a startup candidate; the first candidate in plugin, block and menu order wins.</summary>
+	bool IsDefault => false;
 }

@@ -29,6 +29,10 @@ public class ApplicationBlock : IApplicationBlock {
 
 	public virtual string DefaultScreenTitle { get; set; }
 
+	public virtual ScreenActivationMode? DefaultScreenActivationMode { get; set; }
+
+	public virtual ScreenKind DefaultScreenKind { get; set; }
+
 	/// <summary>Returns a membership snapshot; mutate the block through AddMenu and RemoveMenu.</summary>
 	public virtual IApplicationMenu[] Menus => _menus.ToArray();
 

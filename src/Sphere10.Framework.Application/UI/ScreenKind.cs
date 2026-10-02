@@ -8,7 +8,8 @@
 
 namespace Sphere10.Framework.Application.UI;
 
-public enum ScreenMode {
-	SingleView,
-	MultiView
+/// <summary>Separates ordinary screens from content displayed only while the workspace has no open screens.</summary>
+public enum ScreenKind {
+	Normal = 0,
+	Empty = 1
 }

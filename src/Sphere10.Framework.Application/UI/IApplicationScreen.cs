@@ -13,7 +13,7 @@ namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Shared help metadata and asynchronous lifecycle contract for application screens.</summary>
 /// <remarks>UI adapters own rendering, thread affinity, attachment and disposal.</remarks>
-public interface IApplicationScreen : IHelpableObject {
+public interface IApplicationScreen : IHelpableObject, IApplicationCommandProvider {
 	bool HasUnsavedChanges => false;
 
 	/// <summary>Allows or vetoes hiding, closing, or navigating away; may be called for a hidden screen.</summary>

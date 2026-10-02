@@ -5,10 +5,13 @@
 // LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
+using System;
 
 namespace Sphere10.Framework.Application.UI;
 
-public enum ScreenMode {
-	SingleView,
-	MultiView
+/// <summary>Commands contributed by an application, block or active screen.</summary>
+public interface IApplicationCommandProvider {
+	IApplicationMenu[] Menus => Array.Empty<IApplicationMenu>();
+
+	IApplicationMenuItem[] ToolBarItems => Array.Empty<IApplicationMenuItem>();
 }

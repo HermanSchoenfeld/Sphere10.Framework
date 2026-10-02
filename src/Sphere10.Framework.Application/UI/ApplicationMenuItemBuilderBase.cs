@@ -28,6 +28,10 @@ public abstract class ApplicationMenuItemBuilderBase {
 
 	protected ScreenActivationMode? ActivationMode { get; private set; }
 
+	protected ScreenKind ScreenKind { get; private set; }
+
+	protected bool IsDefault { get; private set; }
+
 	protected IReadOnlyDictionary<string, object> Parameters { get; private set; } = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
 
 	protected Action Action { get; private set; }
@@ -57,6 +61,13 @@ public abstract class ApplicationMenuItemBuilderBase {
 		ActivationMode = activationMode;
 	}
 
+	protected void SetScreenKind(ScreenKind screenKind) {
+		Tools.UI.ValidateScreenKind(screenKind);
+		ScreenKind = screenKind;
+	}
+
+	protected void SetIsDefault(bool isDefault) => IsDefault = isDefault;
+
 	protected void SetParameters(IReadOnlyDictionary<string, object> parameters) {
 		Guard.ArgumentNotNull(parameters, nameof(parameters));
 		Parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(parameters));
@@ -79,6 +90,8 @@ public abstract class ApplicationMenuItemBuilderBase {
 	protected void ValidateItem() {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Text), "Menu item text is required.");
 		Guard.Ensure(ScreenType != null || Action != null || AsyncAction != null, "A screen or action is required.");
+		Guard.Ensure(ScreenType != null || !IsDefault && ScreenKind == ScreenKind.Normal, "Only screen items can declare screen behavior.");
+		Tools.UI.ValidateScreenPolicy(ActivationMode, ScreenKind);
 	}
 
 	protected virtual void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType);

@@ -106,7 +106,7 @@ public class ScreenActivationPolicyTests {
 	}
 
 	[TestCase(-1)]
-	[TestCase(2)]
+	[TestCase(3)]
 	[TestCase(int.MaxValue)]
 	public void InvalidActivationModesAreRejectedWithoutRegisteringPolicy(int mode) {
 		var registry = new ScreenActivationPolicyRegistry();
