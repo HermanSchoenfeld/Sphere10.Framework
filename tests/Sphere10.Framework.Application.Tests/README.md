@@ -2,7 +2,7 @@
 
 .NET 10 NUnit tests for the UI-independent application foundation in `Sphere10.Framework.Application.UI`. The project references only [Sphere10.Framework.Application](../../src/Sphere10.Framework.Application/README.md); it runs without a browser, ASP.NET Core host or Windows desktop runtime.
 
-The suite protects the contracts shared by the Blazor and WinForms application frameworks: blocks, menus, metadata snapshots, builders, activation policies, actions and screen lifecycle defaults. Small neutral classes stand in for the screen contracts and product factories supplied by a UI adapter.
+The suite protects the contracts shared by the Blazor and WinForms application frameworks: plugins, blocks, menus, metadata snapshots, builders, activation policies, actions and screen lifecycle defaults. Small neutral classes stand in for the screen contracts and product factories supplied by a UI adapter.
 
 ## Run the tests
 
@@ -37,8 +37,13 @@ Quote combined filter expressions so the shell does not interpret `|`. Use `--no
 
 | Fixture | What it protects |
 | --- | --- |
+| [UI/ApplicationPluginTests.cs](UI/ApplicationPluginTests.cs) | Startup callback/event ordering, plugin ownership validation, defensive arrays, typed initializer storage, independent builders and runtime plugin projection. |
+| [ApplicationAggregateTests.cs](ApplicationAggregateTests.cs) | Shared running-application contract, defensive command membership, notifications and decorator forwarding. |
+| [UI/ApplicationCommandMergeTests.cs](UI/ApplicationCommandMergeTests.cs) | Scoped command replacement, menu extension, stable ordering, Help placement and separator normalization. |
+| [UI/WizardTests.cs](UI/WizardTests.cs) | Navigation and branch updates, owned step arrays, cancellation, retry, concurrent terminal requests, completion-once and decorator forwarding. |
 | [UI/ApplicationMetadataTests.cs](UI/ApplicationMetadataTests.cs) | Non-generic block storage through `IApplicationMenu`, defensive menu/item/catalog arrays, snapshots and indexes, stable IDs, ordering, copied event subscriptions, policy conflicts and default-screen selection/validation. |
 | [UI/ApplicationBuilderTests.cs](UI/ApplicationBuilderTests.cs) | Independent products from shared builder factories, menu/item definition isolation, copied parameters, synchronous/asynchronous action replacement, screen/action exclusivity and incomplete-definition rejection. |
+| [UI/ApplicationScreenDefinitionTests.cs](UI/ApplicationScreenDefinitionTests.cs) | Plugin/block startup order, default and empty selection, permanent lifetime classification, live block snapshots and invalid policy combinations. |
 | [UI/ScreenActivationPolicyTests.cs](UI/ScreenActivationPolicyTests.cs) | Atomic declaration batches, explicit/inferred policy rules, platform validation, locked instance policies and invalid type/mode rejection. |
 | [UI/ApplicationActionTests.cs](UI/ApplicationActionTests.cs) | Resolving services from the executing scope, awaited callback completion, cancellation and observable failures. |
 | [UI/ApplicationScreenContractTests.cs](UI/ApplicationScreenContractTests.cs) | Default help metadata, navigation permission and cancellation-aware lifecycle methods without UI infrastructure. |

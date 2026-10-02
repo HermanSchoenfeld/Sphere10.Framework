@@ -126,7 +126,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | Project | Purpose | NuGet |
 |---------|---------|-------|
 | [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework) |
-| [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, command-line interface, and presentation framework | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
+| [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, shared application/plugin/block hierarchy and wizard orchestration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
 | [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
 | [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation | |
 | [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Runtime environment detection, diagnostics, and platform utilities | |
@@ -167,7 +167,7 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | [**Sphere10.Framework.Web**](src/Sphere10.Framework.Web/README.md) | HTML, sitemap, and presentation models independent of ASP.NET Core | |
 | [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | Shared ASP.NET Core HTTP, middleware, logging, and lifecycle integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
 | [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC controllers, forms, filters, routing, and action results | |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Interactive Blazor workspace and CRUD grid with typed columns, validation, reference editors, dialogs and wizards | |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Tabbed Blazor applications, extensible identity controls, and CRUD grids with typed columns, validation, reference editors, dialogs and wizards | |
 | [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) |
 | [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | |
 | [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | |
@@ -176,6 +176,8 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 | [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Xamarin.macOS integration for native macOS apps | |
 
 For web development, start with the [Blazor host and complete CRUD grid example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start), the [custom editor and reference-picker example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions), or the [MVC quick start](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md). Run the [Blazor tester](utils/Sphere10.Framework.Utils.BlazorTester/README.md) to exercise the grid and ApplicationBlock workspace.
+
+WinForms and Blazor share `IApplication` → `IApplicationPlugin` → `IApplicationBlock` in `Sphere10.Framework.Application.UI`. Their typed plugin builders reuse the shared registration and lifecycle model. The Blazor tester demonstrates the full application shell, merged menus/toolbars, single- and multi-instance tabs, permanent singleton screens, tabless empty-workspace screens, theme switching and a reusable claims-based identity control. See the [shared plugin guide](src/Sphere10.Framework.Application/README.md#application-plugins) and [Blazor component guide](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for configuration and extension examples.
 
 ## :test_tube: Test Projects
 

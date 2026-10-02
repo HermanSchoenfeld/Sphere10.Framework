@@ -325,6 +325,35 @@ The builder pattern supports:
 - **Fluent API**: Chain methods for clean, readable code
 - **Type-safe**: Compile-time checking with generics
 
+### Grouping blocks into application plugins
+
+The shared hierarchy is `IApplication` → `IApplicationPlugin` → `IApplicationBlock`. Native extensions use `IWinFormsApplication`, `IWinFormsApplicationPlugin` and `IWinFormsApplicationBlock`. A plugin groups related blocks and their startup service registrations; it is not another service provider or screen host.
+
+In your existing module's `RegisterComponents(IServiceCollection serviceCollection)` method, group blocks with the native plugin builder:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Windows.Forms;
+
+serviceCollection.AddWinFormsApplicationPlugin(plugin => plugin
+	.WithName("Administration")
+	.ConfigureServices(services => services.AddSingleton<AdministrationService>())
+	.AddBlock(block => block
+		.WithId("administration")
+		.WithName("Administration")
+		.WithDefaultScreen<DashboardScreen>()
+		.AddMenu(menu => menu.WithText("Management")
+			.AddScreenItem<SettingsScreen>("Settings"))));
+```
+
+`AdministrationService`, `DashboardScreen` and `SettingsScreen` are application types; screens derive from `WinFormsApplicationScreen`. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `AddBlock` also accepts an existing `IWinFormsApplicationBlock`.
+
+Registration invokes `Load(IServiceCollection)` once, then supplies the plugin's blocks to the existing `AddApplicationBlock` startup path. The same plugin instance is available through native and shared DI contracts. `WinFormsApplication.Initialize()` registers each native block once, retaining position ordering, default screens and `ExecuteOnLoad` behavior. Resolving or disposing an application adapter does not load, unload or dispose shared plugin definitions. Plugin membership arrays are copied, while block objects, menu parent links, images and disposal ownership remain with the existing native code.
+
+Existing `AddApplicationBlock` calls and the `WinFormsApplication(form, blocks)` constructor remain supported. Their ungrouped blocks appear under an implicit **Application** plugin; if that name already exists, the shared naming policy chooses **Application 2**, **Application 3**, and so on. The implicit plugin retains its identity and follows blocks registered before or after adapter construction and removed through the block manager. No application startup migration is required. Explicit plugin names and block IDs must be unique, and a block cannot belong to two plugins.
+
+`IWinFormsApplication.Plugins` exposes these groups and `ActivePlugin` identifies the owner of the selected navigation block. `Blocks` remains the flattened live native view. The shared `IApplication` resolves to the same application object and projects the same plugins and blocks.
+
 ### Remembering the main window
 
 Enable automatic per-user window settings at application startup:
@@ -351,7 +380,13 @@ The portable contracts and implementation state live in `Sphere10.Framework.Appl
 
 `IWinFormsApplicationScreen` extends the shared `IApplicationScreen` contract with synchronous native hooks. `WinFormsApplicationScreen` maps those hooks to its existing display and cancelable hide events on the calling UI thread. Shared `CanDeactivateAsync` invokes the native hide guard; `OnDeactivatedAsync` does not emit the hide notification again. Cancellation is checked before invoking a native hook. The WinForms host remains synchronous and continues to manage controls, tabs, docking and screen disposal.
 
-Both UI hosts use the common `ScreenActivationPolicyRegistry`. The native `ScreenActivationMode` API remains available and is mapped explicitly to the shared policy enum; an unspecified menu policy still leaves the choice to the screen constructor. Help metadata remains available through the shared screen contract.
+Both UI hosts use the common `ScreenActivationPolicyRegistry`. The native adapter uses the shared `ScreenActivationMode` enum directly; an unspecified menu policy still leaves the choice to the screen constructor. Help metadata remains available through the shared screen contract.
+
+### Running application and shared wizards
+
+`IWinFormsApplication : Sphere10.Framework.Application.UI.IApplication` exposes the running `BlockMainForm` through plugins, registered blocks, active plugin/block/screen, retained unsaved state and change notifications. For `BlockMainForm` and its subclasses, `AddMainForm` registers the native and shared interfaces to the same adapter; framework startup initializes its configured blocks. The adapter borrows the form and screen host rather than creating a second owner. `SetMenus` and `SetToolBarItems` accept native command definitions and update the actual application menu and toolbar using the form's existing bindings and execution path.
+
+`WinFormsWizardBuilder<TModel>`, `WinFormsActionWizard<TModel>`, `IWinFormsWizard<TModel>`, `WinFormsWizardScreen<TModel>` and `WinFormsWizardDialog<TModel>` replace the unprefixed native wizard names. Navigation, step membership, callbacks and completion policy use the shared `Application.UI` wizard workflow; native adapters retain control initialization, validation, presentation, sizing and disposal. Dynamically removed screens remain owned by their wizard and are disposed with it. `WizardResult`, `WizardStepUpdateType` and `ScreenMode` now come directly from the shared UI namespace.
 
 ### Multiple screens and detachable tabs
 
@@ -386,7 +421,7 @@ public class EditorScreen : WinFormsApplicationScreen {
 }
 ```
 
-Screen builders declare the type's instance policy with `.AsSingleInstance()` or `.AsMultiInstance()`. `SingleInstance` (the default) allows one instance of that type per host across all blocks and menu entries, including detached windows. `MultiInstance` allows a new independent instance on each menu activation. The host validates all explicit declarations for a block before opening its screens; an unspecified menu entry inherits any declaration for the same type. Conflicting declarations or changes to a resolved type policy are rejected, even after its last instance closes. Without a builder declaration, the screen's constructor supplies `ActivationMode` through its protected setter. The property cannot change while hosted. The former `KeepAlive` and `AlwaysCreate` names are now `SingleInstance` and `MultiInstance`, respectively.
+Screen builders declare the type's instance policy with `.AsSingleInstance()` or `.AsMultiInstance()`. `SingleInstance` allows one instance of that type per host across all blocks and menu entries, including detached windows. `MultiInstance` (the default) allows a new independent instance on each menu activation. Declare `.AsSingleInstance()` explicitly for settings or other screens that must be reused. The host validates all explicit declarations for a block before opening its screens; an unspecified menu entry inherits any declaration for the same type. Conflicting declarations or changes to a resolved type policy are rejected, even after its last instance closes. Without a builder declaration, the screen's constructor supplies `ActivationMode` through its protected setter. The property cannot change while hosted. The former `KeepAlive` and `AlwaysCreate` names are now `SingleInstance` and `MultiInstance`, respectively.
 
 `WinFormsApplicationScreen.Title` uses the control's `Text` property. Menu navigation supplies the menu text as the initial title unless a specific builder title is provided. Screens can subsequently change `Title`; the tab and detached window update immediately. A block's default screen opens during registration if there is no active screen after its `ExecuteOnLoad` items have run.
 
@@ -407,13 +442,41 @@ The left navigation pane starts at 320 logical pixels wide and scales with the f
 
 `Menus`, `Items`, `IBlockManager.RegisteredBlocks`, `Screens` and `OpenScreens` expose arrays. The built-in models, block manager and screen host return snapshots: replacing entries in a returned array does not change their owned collections. Use menu mutation methods, block registration methods and screen-host operations to change those collections. The referenced menus and screens retain their existing identity and disposal ownership.
 
-SingleView retains hidden single-instance screens and disposes multi-instance screens when navigating away, preserving the previous behavior. Explicit close always destroys the instance; opening it again constructs a fresh screen. Switching from MultiView to SingleView closes other open screens and retains the selected tab. Use `ScreenHost.TrySetScreenMode` to handle cancellation without an exception; assigning `ScreenMode` throws if a screen vetoes the change.
+SingleView retains hidden single-instance screens and disposes multi-instance screens when navigating away, preserving the previous behavior. Explicit close destroys an ordinary instance; opening it again constructs a fresh screen. Switching from MultiView to SingleView closes other ordinary open screens and retains the selected screen. Permanent singletons remain owned and return to the tab strip when MultiView is restored. Use `ScreenHost.TrySetScreenMode` to handle cancellation without an exception; assigning `ScreenMode` throws if a screen vetoes the change.
+
+`ScreenActivationMode.PermanentSingleton` adds an anchored lifetime. Declare it with `.AsPermanentSingleton()` on a screen item, or pass `activationMode: ScreenActivationMode.PermanentSingleton` to `WithDefaultScreen`. These registered permanent screens are created once at startup, remain in `OpenScreens` across both view modes, and reject close and undock requests. Ordinary navigation away remains allowed. Declare the policy in registration when it must open automatically; a constructor-only default is learned when that type is first activated.
+
+`ScreenKind.Empty` marks a tabless fallback shown only when no regular screen remains open (detached windows and permanent screens also count as open). It is excluded from `OpenScreens`, while `Screens` includes a cached Empty singleton. Navigating away retains a singleton's controls and disposes a multi-instance placeholder; returning either reuses or recreates it. Empty and PermanentSingleton cannot be combined.
+
+```csharp
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Windows.Forms;
+
+var block = new WinFormsApplicationBlockBuilder()
+	.WithName("Workspace")
+	.AddMenu(menu => menu.WithText("Screens")
+		.ConfigureItem(item => item.AsScreenItem().WithText("Start")
+			.WithScreen<StartScreen>().AsSingleInstance().AsDefault())
+		.ConfigureItem(item => item.AsScreenItem().WithText("Pinned notes")
+			.WithScreen<NotesScreen>().AsPermanentSingleton()))
+	.Build();
+
+var emptyBlock = new WinFormsApplicationBlockBuilder()
+	.WithName("Empty workspace")
+	.WithDefaultScreen<EmptyScreen>("Nothing open",
+		activationMode: ScreenActivationMode.SingleInstance, screenKind: ScreenKind.Empty)
+	.Build();
+```
+
+The screen types in this example derive from `WinFormsApplicationScreen`. Startup selects the first `.AsDefault()` or block `WithDefaultScreen` in plugin, block, then menu declaration order. A permanent screen prevents an Empty default from taking selection. Block `Position` continues to order the displayed navigation independently. If no explicit default exists, existing `IsStartScreen` / `ExecuteOnLoad` screen registrations keep their behavior; startup actions still execute.
+
+`BlockMainForm.RegisterBlock` initializes new permanent screens without replacing an ordinary active screen. If an active Empty screen refuses the transition, the new block remains unregistered and undisposed so the caller can retry after clearing the guard. For a standalone host, `InitializeScreens(blocks)` returns whether initialization was accepted. `UnregisterScreenTypes(block)` removes its definitions and owned screens after all close guards agree. The form's existing `UnregisterBlock` uses that path, allowing administrative removal of permanent screens and disposal of hidden Empty instances. `CanCloseScreens(Screens)` remains the application-exit guard: permanent lifetime does not prevent shutdown.
 
 The existing `OnHide(ref bool CancelHide)` and `ScreenHidden` event can cancel navigation, close, undock, redock, block removal, and changes to SingleView. Batch close and mode changes check all affected screens before removing any. `ScreenDisplayedFirstTime` runs once per instance; `ScreenDisplayed` runs on each subsequent selection or hosting transition. Closing or disposing the host also disposes hidden and detached instances, with `ScreenDestroyed` raised once per instance.
 
 The reusable host follows `IWinFormsApplicationScreenHost` → `WinFormsApplicationScreenHostBase` → `WinFormsApplicationScreenHost`, with `WinFormsApplicationScreenHostDecorator` for extensions. `WinFormsApplicationScreenTabControl` supplies the tab interactions and `WinFormsApplicationScreenForm` hosts detached screens.
 
-The **WinForms Tester** starts in MultiView and uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales its existing screen and dialog layouts. Its **Screen hosting** menu uses `.AsSingleInstance()` for **Settings** and `.AsMultiInstance()` for **New design**, and offers both screen modes. These demos have independent notes, a counter, **Rename tab** actions, a lifecycle log, and a checkbox to exercise cancellation. **Plain screen (no bars)** exercises a screen with no menus or toolbar. See the [Tester instructions](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md). [SystemExpert](../../utils/SystemExpert/README.md) also uses MultiView, with a single instance of each monitoring tool.
+The **WinForms Tester** registers its blocks through `AddWinFormsApplicationPlugin` and starts in MultiView and uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales its existing screen and dialog layouts. Its `WinFormsDemoPlugin.Configure` method groups the running demonstrations into Workspace, Notes, Controls, Data and collections, Integration, and Utilities using the fluent plugin/block builders. **Workspace > Screen hosting** explicitly declares **Settings** as single-instance; **New design** and ordinary component screens use the multi-instance default. Both screen modes are available, and the hidden Empty screen belongs to Workspace. These demos have independent notes, a counter, **Rename tab** actions, a lifecycle log, and a checkbox to exercise cancellation. **Plain screen (no bars)** exercises a screen with no menus or toolbar. See the [Tester instructions](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md). [SystemExpert](../../utils/SystemExpert/README.md) also uses MultiView; monitoring tools use the framework's default multi-instance policy unless they explicitly declare another lifetime.
 
 `Directory.Build.props` sets `ForceDesignerDPIUnaware=true` for the Visual Studio WinForms designer across the repository. This designer setting is separate from runtime DPI awareness. The library leaves runtime DPI policy to the application; Tester explicitly selects `HighDpiMode.DpiUnaware` before creating controls to preserve Windows bitmap scaling.
 

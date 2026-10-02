@@ -18,11 +18,15 @@ dotnet add package Sphere10.Framework.Application
 
 | Shared responsibility | Types |
 |---|---|
+| Plugin definitions and lifecycle | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginDecorator`, `ApplicationPluginBuilder` |
+| Running application and commands | `IApplication`, `ApplicationBase`, `ApplicationDecorator`, `IApplicationCommandProvider` |
+| Menu and toolbar merging | `Tools.UI.MergeMenus`, `Tools.UI.MergeMenuItems`, `IApplicationMenuSeparator` |
+| Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
 | Block, menu and item contracts | `IApplicationBlock`, `IApplicationMenu`, `IApplicationMenuItem`, `IScreenMenuItem` |
 | Mutable metadata and notification handlers | `ApplicationBlock`, `ApplicationMenu<TItem>`, `ApplicationMenuItem` |
 | Builder state and validation | `ApplicationBlockBuilderBase<TMenu, TBlock>`, `ApplicationMenuBuilderBase<TItem, TMenu>`, `ApplicationMenuItemBuilderBase` |
 | Snapshot traversal, stable IDs and ordering | `ApplicationBlockSnapshotBase<TBlock, TMenu, TItem>`, `ApplicationBlockCatalog<TBlock>` |
-| Activation policy and lifecycle | `ScreenActivationPolicyRegistry`, `ScreenActivationMode`, `IApplicationScreen` |
+| Activation policy and lifecycle | `ScreenActivationPolicyRegistry`, `ScreenActivationMode`, `ScreenKind`, `ApplicationScreenDefinition`, `IApplicationScreen` |
 | Awaitable menu actions | `ApplicationAction` |
 
 Platform-specific extensions use explicit names: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`, implemented by `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Their menus, builders and screen hosts follow the same convention. Import the shared UI namespace normally alongside the platform namespace; the APIs do not require namespace aliases. Both platforms use the shared `ScreenActivationMode` directly.
@@ -50,31 +54,128 @@ The [WinForms adapter](../Sphere10.Framework.Windows.Forms/README.md) retains co
 
 The [Application test suite](../../tests/Sphere10.Framework.Application.Tests/README.md) exercises the shared behavior using ordinary .NET classes and checks the framework assembly dependency graph. [NuGet validation](../../scripts/package-consumers/README.md) also builds a consumer referencing only the Application package and rejects UI dependencies in its resolved packages and framework references.
 
+## Application plugins
+
+The shared hierarchy is `IApplication` → `Plugins` → `IApplicationPlugin` → `Blocks`. A plugin is a named startup definition, while the running application projects its platform host's current navigation and screen selection. `ActivePlugin` resolves ownership by `ActiveBlock.Id`, allowing platform catalogs to create block snapshots without replacing the original plugin object. Browsing another block changes this navigation selection without requiring a screen switch.
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
+
+var plugin = new ApplicationPluginBuilder()
+	.WithName("Administration")
+	.AddBlock(new ApplicationBlock { Id = "users", Name = "Users" })
+	.ConfigureServices(services => services.AddSingleton<AdministrationSettings>())
+	.Build();
+
+var services = new ServiceCollection();
+plugin.Load(services); // Startup owner calls this before building its service provider.
+// The same startup owner calls plugin.Unload() during its shutdown sequence.
+
+public class AdministrationSettings {
+	public string Title { get; set; } = "Administration";
+}
+```
+
+`ApplicationPluginBase.Load(IServiceCollection)` applies service configuration, invokes `OnLoaded`, then raises `Loaded`. `Unload` invokes `OnUnloaded`, then raises `Unloaded`. Registration failures propagate without announcing a successful load. The parameterless `Load()` is a notification-only compatibility entry point. These methods do not construct a service provider or enforce a once-only load policy: the startup owner controls calls, and runtime application adapters never load or unload plugins merely because a form or circuit opens or closes. Resolve scoped services when commands execute, rather than capturing them in startup definitions.
+
+`ApplicationPlugin` supports constructor configuration and init-only `Name`/`Blocks`; its arrays copy membership and retain block identity. Platform adapters can snapshot their own block metadata before forwarding it to shared storage. `ApplicationPluginBuilderBase<TBlock, TPlugin>` shares name validation, accumulated blocks, service callback composition and independent build inputs with typed platform builders. Empty applications and service-only plugins with no blocks are valid.
+
+`Tools.UI.ValidatePlugins` validates plugin names and block ownership with ordinal comparison: names must be nonblank and unique, and each nonblank block ID belongs to exactly one plugin. It returns an owned membership array preserving the supplied plugin instances. `ValidatePluginBlocks` provides the corresponding single-plugin block validation. `GetImplicitPluginName` returns the first free name from `Application`, `Application 2`, and so on, allowing adapters to wrap legacy standalone block registrations without creating a second plugin pipeline. Platform interfaces extend `IApplicationPlugin` with typed block arrays; existing plugins remain the same startup definitions when accessed through shared or platform contracts.
+
+## Running application and command scopes
+
+`IApplication` represents the running UI rather than service-container startup. It exposes `Plugins`, `ActivePlugin`, `Blocks`, `ActiveBlock`, `ActiveScreen`, `HasUnsavedChanges` and a `Changed` event. `IBlazorApplication` and `IWinFormsApplication` specialize that contract and project their existing screen hosts. Resolving the shared interface returns the same platform application instance; disposing that adapter releases subscriptions without taking ownership of the host, screens or plugin registrations.
+
+`ApplicationBase` shares command storage, notifications, default plugin-to-block flattening and active-plugin lookup by the selected block ID. Platform adapters may override `Blocks` with their live registration projection. `IApplicationCommandProvider` supplies array-valued `Menus` and `ToolBarItems`. `Tools.UI.MergeMenus` and `MergeMenuItems` combine contributions from broader to narrower scopes: application, the active screen's owning block, then active screen. With no active screen, the selected navigation block supplies block commands. Matching IDs retain their original position and take the narrower command; matching menus combine their items. Separators are normalized and the `help` menu remains last. Merging creates membership snapshots and preserves command identity, so callbacks continue to execute on the original definitions.
+
+`ScreenMode.SingleView` and `ScreenMode.MultiView` live in this shared namespace alongside `ScreenActivationMode`. Platform hosts retain responsibility for rendering, instance ownership and navigation guards.
+
+## Default, permanent and empty screens
+
+Ordinary Blazor and WinForms screens default to `ScreenActivationMode.MultiInstance`: each activation creates a new screen. Choose `SingleInstance` explicitly for a retained screen, such as Settings; permanent and empty-screen test scenarios keep their declared lifetimes. Enum numeric values are unchanged.
+
+Both UI adapters use the same screen metadata and selection rules. Mark a screen menu item with `IsDefault`, or use a block's `DefaultScreen` (the platform builders expose `AsDefault()` and `WithDefaultScreen<TScreen>(...)`). Startup chooses the first marked screen in plugin registration order, then each plugin's block order, then menu declaration order. `Position` remains a navigation display setting and does not override plugin ownership order. Explicit navigation to a screen takes precedence over startup selection.
+
+| Configuration | Behavior |
+|---|---|
+| `ScreenActivationMode.MultiInstance` (default) | Each activation opens an independent screen instance. |
+| `ScreenActivationMode.SingleInstance` | Reopening selects the retained instance. Ordinary tabs can be closed. |
+| `ScreenActivationMode.PermanentSingleton` | Automatically opens one instance, remains open for the block's lifetime and cannot be closed through tab commands. Other screens can still be selected. |
+| `ScreenKind.Empty` + `SingleInstance` | A tabless placeholder appears only when no normal screen is open; its instance is retained while hidden. |
+| `ScreenKind.Empty` + `MultiInstance` | The placeholder is destroyed when a normal screen opens and recreated when the workspace becomes empty again. |
+
+`Empty` describes the screen's role, separately from its activation mode. It never has a tab and cannot be combined with `PermanentSingleton`. A permanently open normal screen therefore keeps an empty placeholder hidden. Administrative block removal ends its screens' lifetime, including permanent screens, after applicable navigation guards permit removal; normal application shutdown also disposes them. A permanent screen does not make application shutdown impossible.
+
+`Tools.UI.OrderApplicationBlocks` resolves plugin membership against live block registrations. `GetScreenDefinitions` produces immutable `ApplicationScreenDefinition` metadata from block defaults and menu entries, validating lifetime and role consistency for each screen type. `GetDefaultScreen` and `GetEmptyScreen` select from those definitions, so both platforms share the ordering algorithm. The first explicitly marked empty candidate is preferred; otherwise the first empty candidate is used. A default block screen inherits a matching menu entry's lifetime when no override is specified. Conflicting explicit policies fail before registration.
+
+For example, a UI-independent placeholder declaration is:
+
+```csharp
+var block = new ApplicationBlock {
+	Id = "welcome",
+	Name = "Welcome",
+	DefaultScreen = typeof(WelcomeScreen),
+	DefaultScreenActivationMode = ScreenActivationMode.SingleInstance,
+	DefaultScreenKind = ScreenKind.Empty
+};
+```
+
+`WelcomeScreen` supplies the platform screen implementation. See the [Blazor guide](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) and [WinForms guide](../Sphere10.Framework.Windows.Forms/README.md) for executable builder configuration and demo profiles. Rendering, retained component/control ownership and UI-thread dispatch stay in those adapters.
+
+## Shared wizard workflow
+
+`Wizard<TModel, TStep>` owns ordered steps, the current position, dynamic branch updates, cancellation policy and completion. A step can be a component `Type`, a native screen, or an ordinary domain object. The shared assembly has no knowledge of Razor components or Windows controls. Hosts validate and present the current step before asking the workflow to navigate or finish.
+
+```csharp
+using System.Threading.Tasks;
+using Sphere10.Framework;
+using Sphere10.Framework.Application.UI;
+
+var wizard = new Wizard<string, string>(
+	"Review request", "draft", new[] { "Details", "Review" },
+	finish: model => Task.FromResult<Result<bool>>(true));
+
+await wizard.MoveNextAsync();
+var result = await wizard.FinishAsync();
+// wizard.State == WizardState.Finished; another FinishAsync does not repeat the callback.
+```
+
+`MoveNextAsync` and `MovePreviousAsync` provide awaited navigation. `UpdateStepsAsync` and `RemoveStepAsync` let platform adapters update their displayed controls before returning. `WizardStepUpdateType` supports injecting steps, replacing the remaining branch, replacing all steps and removing subsequent steps. The workflow returns defensive `Steps` arrays while retaining step and model identities. Finish and Cancel share a [Stateless](https://www.nuget.org/packages/Stateless/5.20.1) lifecycle: concurrent terminal operations are rejected while busy; a declined or failed callback leaves a retryable workflow; successful completion runs once. Callbacks must not recursively finish or cancel the same wizard.
+
+`WizardBuilderBase<TModel, TStep, TWizard>` centralizes configuration, callbacks and build validation. Platform builders supply their step validation and factories. Use `WinFormsWizardBuilder<TModel>` for native dialogs, or `BlazorWizardBuilder<TModel>` from the chosen Blazor wizard generation. Their adapters keep rendering, screen initialization and component validation in the UI libraries while consuming the same workflow. `WizardDecorator` forwards the common contract for behavior extensions.
+
 ## Awaitable UI services
 
 `IUserInterfaceServices.ShowNagScreen`, `ShowSendCommentDialog`, `ShowSubmitBugReportDialog`, `ShowRequestFeatureDialog`, and `ShowAboutBox` return `Task`. Await them to preserve sequencing and observe errors. `IProductLicenseEnforcer.EnforceLicense(bool)` also returns `Task`, and completes after any licensing dialog closes. Implementations with no UI work return `Task.CompletedTask`.
 
 ## ⚡ Quick Start
 
-Here's a complete Windows Forms application using the framework (from [AutoMouse](https://github.com/HermanSchoenfeld/AutoMouse)):
+This minimal Windows Forms host uses the current startup builder. Reference `Sphere10.Framework.Windows.Forms` from a Windows desktop project with `<UseWindowsForms>true</UseWindowsForms>`; the shared Application package itself remains UI-independent. See [AutoMouse](https://github.com/HermanSchoenfeld/AutoMouse) for a complete application.
 
 ```csharp
+using System;
+using System.Windows.Forms;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows.Forms;
+using FormsApplication = System.Windows.Forms.Application;
 
 static class Program {
-    static void Main(params string[] args) {
-        // Single instance enforcement
-        using (new SingleApplicationInstanceScope()) {
-            Application.EnableVisualStyles();
-            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
-            Application.SetCompatibleTextRenderingDefault(false);
-            
-            // Start the framework and run the application
-            Sphere10Framework.Instance.StartWinFormsApplication<MainForm>();
-        }
-    }
+	[STAThread]
+	static void Main(string[] args) {
+		using var singleInstance = new SingleApplicationInstanceScope();
+		FormsApplication.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+		FormsApplication.EnableVisualStyles();
+		FormsApplication.SetCompatibleTextRenderingDefault(false);
+
+		Sphere10Framework.Instance
+			.BuildWinFormsApplication()
+			.UseMainForm<BlockMainForm>()
+			.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
+			.UseModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()
+			.StartWinFormsApplication();
+	}
 }
 ```
 
