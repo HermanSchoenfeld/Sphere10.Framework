@@ -45,15 +45,18 @@ public class BlazorGridBrowserTests {
 		var errors = new List<string>();
 		page.PageError += (_, error) => errors.Add(error);
 		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
-		var table = page.Locator("#TestGrid");
+		var table = page.Locator(".sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table");
 		var grid = table.Locator("xpath=../..");
 		// A width written by the grid module confirms interactive startup beyond the SSR markup.
-		await page.WaitForFunctionAsync("() => !!document.querySelector('#TestGrid')?.style.width");
+		await page.WaitForFunctionAsync("() => !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table')?.style.width");
 		await page.WaitForFunctionAsync("""
-			() => document.querySelectorAll('#TestGrid > tbody > tr').length === 10
-				&& document.querySelector('#TestGrid').closest('.sphere10-grid').getAttribute('aria-busy') === 'false'
+			() => document.querySelectorAll('.sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table > tbody > tr').length === 10
+				&& document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table').closest('.sphere10-grid').getAttribute('aria-busy') === 'false'
 			""");
 		Assert.That(await table.Locator(":scope > tbody > tr").CountAsync(), Is.EqualTo(10));
+		await page.WaitForFunctionAsync("() => location.pathname === '/application' && new URLSearchParams(location.search).get('block') === 'components' && new URLSearchParams(location.search).get('screen') === 'gallery'");
+		Assert.That(await page.Locator(".sphere10-application").CountAsync(), Is.EqualTo(1), "The grid alias must open inside the single application shell.");
+		Assert.That(await table.EvaluateAsync<bool>("element => !!element.closest('.sphere10-screen[role=tabpanel]:not([hidden])')"), Is.True);
 		await page.EvaluateAsync("zoom => document.documentElement.style.zoom = String(zoom)", zoom);
 		var initial = await SampleLayoutAsync(grid);
 		Assert.That(initial.MaximumGeometryRange, Is.LessThanOrEqualTo(0.25), initial.Description("Initial grid"));
