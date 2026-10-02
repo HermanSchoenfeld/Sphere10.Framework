@@ -20,11 +20,13 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 	private const int LogicalContentPadding = 16;
 	private const int LogicalInstructionsSpacing = 12;
 	private const int LogicalStatusSpacing = 10;
-	private const int LogicalInstructionsMaximumWidth = 850;
+	private const int LogicalInstructionsMaximumWidth = 900;
+	private const int LogicalInstructionHeadingWidth = 130;
+	private const int LogicalInstructionRowSpacing = 8;
 	private static int _nextInstance;
 	private readonly int _instance;
 	private readonly TableLayoutPanel _layout;
-	private readonly Label _instructions;
+	private readonly TableLayoutPanel _instructions;
 	private readonly CheckBox _cancelHide;
 	private readonly Label _status;
 	private readonly TextBox _events;
@@ -44,7 +46,7 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 		CountMenu.ShortcutKeys = Keys.Control | Keys.Shift | Keys.K;
 		var FileMenu = new ToolStripMenuItem("&File");
 		FileMenu.DropDownItems.Add(new ToolStripMenuItem("Rename tab...", null, async (_, _) => await RenameTab()));
-		FileMenu.DropDownItems.Add(new ToolStripMenuItem("Close screen", null, (_, _) => CloseScreen()) { ShortcutKeys = Keys.Control | Keys.W });
+		FileMenu.DropDownItems.Add(new ToolStripMenuItem("Close screen", null, (_, _) => CloseScreen()) { ShortcutKeys = Keys.Control | Keys.W, Enabled = Mode != ScreenActivationMode.PermanentSingleton });
 		RegisterMenuItem(FileMenu);
 		var ActionsMenu = new ToolStripMenuItem("&Actions");
 		ActionsMenu.DropDownItems.Add(CountMenu);
@@ -59,17 +61,20 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 60));
 		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
-		_instructions = new Label {
-			AutoSize = true,
-			Text = "Settings is a single-instance screen type: clicking Settings always returns to the same instance. " +
-				"Design is a multi-instance screen type: each click on New design opens an independent tab. " +
-				"Type notes, then switch tabs and use each screen's menu and toolbar counter. Use Rename tab to try short and long titles. " +
-				"Toggle the blue navigation pane with the sidebar icon in the main toolbar. Drag tabs to preview their new order. " +
-				"Right-click a tab to undock, or drag it outside the tab area and release. " +
-				"The detached tool window carries its File and Actions menus and original toolbar. Use its Re-dock caption icon, " +
-				"or bring its title bar close to the main tabs and release when the docking hint appears. " +
-				"Use SingleView closes other open screens; Use MultiView restores tabs."
-		};
+		_instructions = new TableLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 2, RowCount = 0 };
+		_instructions.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, LogicalInstructionHeadingWidth));
+		_instructions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		var headingFont = new Font(Font, FontStyle.Bold);
+		_instructions.Disposed += (_, _) => headingFont.Dispose();
+		AddInstruction("Screen instances", "Ordinary screens open a new instance each time. Settings reuses its existing instance.", headingFont);
+		AddInstruction("Try it", "Edit notes, switch tabs and compare each screen's menu and toolbar counter. Use Rename tab to try short and long titles.", headingFont);
+		AddInstruction("Tabs and docking", "Drag tabs to reorder. Right-click a tab to undock, or drag it outside the tab bar.\n" +
+			"To re-dock, use the window's caption icon or drag its title bar back to the tabs. Its menus and toolbar stay with the screen.", headingFont);
+		AddInstruction("View modes", "Use the sidebar toolbar button to toggle navigation. SingleView closes other ordinary screens; MultiView restores tabs. " +
+			"Permanent screens remain retained.", headingFont);
+		AddInstruction("Permanent screen", "Permanent notes opens at startup and cannot be closed or undocked. Use Remove notes block to remove it through the guarded block manager.", headingFont);
+		AddInstruction("Empty workspace", "When no ordinary or permanent screens are open, a workspace appears without a tab. " +
+			"Its notes and instance number show whether it is retained or recreated.", headingFont);
 		_layout.Controls.Add(_instructions);
 		_status = new Label { AutoSize = true };
 		_layout.Controls.Add(_status);
@@ -127,16 +132,32 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 			MainWindow.ScreenHost.CloseScreen(this);
 	}
 
+	private void AddInstruction(string heading, string description, Font headingFont) {
+		var row = _instructions.RowCount++;
+		_instructions.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_instructions.Controls.Add(new Label { AutoSize = true, Text = heading, Font = headingFont, UseMnemonic = false }, 0, row);
+		_instructions.Controls.Add(new Label { AutoSize = true, Text = description, UseMnemonic = false }, 1, row);
+	}
+
 	private void UpdateLayoutMetrics() {
 		// Reapply logical measurements after native scaling to avoid cumulative rounding when docking across monitors.
 		_layout.Padding = new Padding(LogicalToDeviceUnits(LogicalContentPadding));
 		_instructions.Margin = new Padding(0, 0, 0, LogicalToDeviceUnits(LogicalInstructionsSpacing));
 		_status.Margin = new Padding(0, 0, 0, LogicalToDeviceUnits(LogicalStatusSpacing));
 		var AvailableWidth = Math.Max(1, _layout.ClientSize.Width - _layout.Padding.Horizontal);
-		_instructions.MaximumSize = new Size(Math.Min(LogicalToDeviceUnits(LogicalInstructionsMaximumWidth), AvailableWidth), 0);
+		var instructionWidth = Math.Min(LogicalToDeviceUnits(LogicalInstructionsMaximumWidth), AvailableWidth);
+		var headingWidth = LogicalToDeviceUnits(LogicalInstructionHeadingWidth);
+		var spacing = LogicalToDeviceUnits(LogicalInstructionRowSpacing);
+		_instructions.MaximumSize = new Size(instructionWidth, 0);
+		_instructions.ColumnStyles[0].Width = headingWidth;
+		foreach (Control instruction in _instructions.Controls) {
+			var isHeading = _instructions.GetColumn(instruction) == 0;
+			instruction.Margin = new Padding(0, 0, isHeading ? spacing : 0, spacing);
+			instruction.MaximumSize = new Size(Math.Max(1, (isHeading ? headingWidth : instructionWidth - headingWidth) - instruction.Margin.Horizontal), 0);
+		}
 		_status.MaximumSize = new Size(AvailableWidth, 0);
 		_cancelHide.MaximumSize = new Size(Math.Max(1, AvailableWidth - _cancelHide.Margin.Horizontal), 0);
 	}
 
-	private void UpdateStatus() => _status.Text = $"Instance {_instance} | Activation: {ActivationMode} | Views: {_views} | Counter: {_clicks}";
+	private void UpdateStatus() => _status.Text = $"Instance {_instance} | Activation: {ActivationMode} | Kind: {ScreenKind} | Views: {_views} | Counter: {_clicks}";
 }
