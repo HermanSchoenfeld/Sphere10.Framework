@@ -31,8 +31,11 @@ public static class Program {
 
 	public static void ConfigureServices(IServiceCollection services) {
 		services.AddScoped<IThemeService>(_ => new ThemeService(ThemeMode.ClassicBlue));
-		services.AddSphere10Blazor()
-			.AddSphere10BlazorPlugin(Sphere10Plugin.Configure)
-			.AddSphere10BlazorPlugin(WidgetGalleryPlugin.Configure);
+		services.BuildBlazorApplication()
+			.WithTitle("Sphere10 Blazor demos")
+			.WithFavicon("img/logo.svg", "image/svg+xml")
+			.AddPlugin(Sphere10Plugin.Configure)
+			.AddPlugin(WidgetGalleryPlugin.Configure)
+			.Build();
 	}
 }

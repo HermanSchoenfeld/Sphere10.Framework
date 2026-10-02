@@ -8,14 +8,19 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@inject BlazorApplicationOptions ApplicationOptions
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<base href="/" />
-	<title>Sphere10 Blazor Tester</title>
-	<link rel="icon" href="@Assets["favicon.ico"]" />
+	<title>@ApplicationOptions.Title</title>
+	@if (ApplicationOptions.FaviconUrl != null) {
+		<link rel="icon" href="@Assets[ApplicationOptions.FaviconUrl]" type="@ApplicationOptions.FaviconContentType" />
+	}
 	<link rel="stylesheet" href="@Assets["modern/css/icons.css"]" />
 	<link rel="stylesheet" href="@Assets["vendor/bootstrap/bootstrap.min.css"]" />
 	<link rel="stylesheet" href="@Assets["_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes.css"]" />

@@ -21,12 +21,16 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public static class IServiceCollectionExtensions {
+	/// <summary>Starts fluent host branding, application and plugin configuration on this service collection.</summary>
+	public static BlazorApplicationBuilder BuildBlazorApplication(this IServiceCollection services) => new(services);
+
 	/// <summary>
 	/// Registers component view models and session-scoped services for both restored component generations.
 	/// </summary>
 	public static IServiceCollection AddSphere10Blazor(this IServiceCollection services) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		services.AddViewModelsFromAssembly(typeof(IServiceCollectionExtensions).Assembly);
+		services.TryAddSingleton(new BlazorApplicationOptions());
 		services.TryAddScoped<IGenericEventAggregator, BasicGenericEventAggregator>();
 		services.TryAddScoped<IModalService, ModalService>();
 		services.TryAddTransient(typeof(IBlazorWizardBuilder<>), typeof(BlazorWizardBuilder<>));
