@@ -2,314 +2,172 @@
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Utils.WinFormsTester.Wizard;
-using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Utils.WinFormsTester.Screens;
-using Sphere10.Framework.Application;
+using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Utils.WinFormsTester.Screens;
+using Sphere10.Framework.Utils.WinFormsTester.Wizard;
+using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public class TestBlock : WinFormsApplicationBlock {
-	
-	public static WinFormsApplicationBlock Build() {
-		return new WinFormsApplicationBlockBuilder()
-			.WithName("Block 1")
-			.WithImage32x32(Resources.TestBlock32x32)
-			.WithImage8x8(Resources.TestBlock8x8)
-			.WithDefaultScreen<ScreenHostingSettingsTestScreen>(title: "Settings")
-			.AddMenu(Menu => Menu
-				.WithText("Screen hosting")
-				.WithImage32x32(Resources.Tests32x32)
-				.ConfigureItem(Item => Item.AsScreenItem()
-					.WithText("Settings")
-					.WithScreen<ScreenHostingSettingsTestScreen>()
-					.AsSingleInstance()
-					.WithImage(Resources.Settings16x16)
-					.IsStartScreen()
-					.WithTitle("Settings"))
-				.ConfigureItem(Item => Item.AsScreenItem()
-					.WithText("New design")
-					.WithScreen<ScreenHostingDesignTestScreen>()
-					.AsMultiInstance()
-					.WithImage(Resources.Generic16x16)
-					.WithTitle("Design"))
-				.ConfigureItem(Item => Item.AsScreenItem()
-					.WithText("Plain screen (no bars)")
-					.WithScreen<ScreenHostingPlainTestScreen>()
-					.AsSingleInstance()
-					.WithImage(Resources.Generic16x16)
-					.WithTitle("Plain screen"))
-				.AddActionItem("Use SingleView", () => SetScreenMode(ScreenMode.SingleView), Resources.Generic16x16)
-				.AddActionItem("Use MultiView", () => SetScreenMode(ScreenMode.MultiView), Resources.Generic16x16)
-			)
-			.AddMenu(mb => mb
-				.WithText("Wizard")
-				.WithImage32x32(Resources.Wizard32x32)
-				.AddActionItem("Wizard Demo",
-					async () => {
-						var wiz = new WizardBuilder<DemoWizardModel>()
-							.WithTitle("Demo Wizard")
-							.WithModel(DemoWizardModel.Default)
-							.AddScreen(new EnterNameScreen())
-							.AddScreen(new EnterAgeScreen())
-							.AddScreen(new CantGoBackScreen())
-							.AddScreen(new ConfirmScreen())
-							.OnFinished(async (model) => {
-								await DialogEx.ShowAsync(BlockMainForm.ActiveForm,
-									SystemIconType.Information,
-									"Result",
-									$"Name: {model.Name}, Age: {model.Age}",
-									"OK");
-								return Result.Success;
-							})
-							.OnCancelled((model) => Result.Success)
-							.Build();
-						await wiz.Start(BlockMainForm.ActiveForm);
-					},
-					Resources.Wizard16x16)
-			)
-			.AddMenu(mb => mb
-				.WithText("Tests")
-				.WithImage32x32(Resources.Tests32x32)
-				.AddScreenItem<ObjectSpaceScreen>("ObjectSpace", Resources.ObjectSpace16x16)
-				.AddScreenItem<EmailTestScreen>("Emailer", Resources.Email16x16)
-				.AddScreenItem<TransactionalCollectionScreen>("TransactionalList Test", Resources.Database16x16)
-				.AddScreenItem<CommunicationsTestScreen>("WebSockets Test", Resources.Network16x16)
-				.AddScreenItem<MerkleTreeTestScreen>("Merkle Tree", Resources.Tree16x16)
-				.AddScreenItem<WAMSTestScreen>("WAMS-8 Tests", Resources.Test16x16)
-				.AddScreenItem<ExpandoTesterScreen>("Expando Launcher", Resources.Generic16x16)
-				.AddScreenItem<ApplicationServicesTestScreen>("ApplicationServicesTester", Resources.Settings16x16)
-				.AddScreenItem<ParagraphBuilderScreen>("ParagraphBuilderForm", Resources.Generic16x16)
-			)
-			.AddMenu(mb => mb
-				.WithText("Tests 2")
-				.WithImage32x32(Resources.Tests232x32)
-				.AddActionItem("Visual Inheritance Fixer", async () =>  {
-					var form = new VisualInheritanceFixerSubForm();
-					await form.ShowDialogAsync(BlockMainForm.ActiveForm);
-				},Resources.Generic16x16)
-				.AddScreenItem<HooksScreen>("Hooks", Resources.Generic16x16)
-				.AddScreenItem<TestSoundsScreen>("Test Sounds", Resources.Generic16x16)
-				.AddScreenItem<DecayGaugeScreen>("Decay Gauge", Resources.Generic16x16)
-				.AddScreenItem<TabControlTestScreen>("TabControl", Resources.Generic16x16)
-				.AddScreenItem<TestArtificialKeysScreen>("ArtificialKeys", Resources.Generic16x16)
-				.AddScreenItem<EnumComboScreen>("EnumCombo", Resources.Generic16x16)
-				.AddScreenItem<CompressionTestScreen>("Compression", Resources.Generic16x16)
-				.AddScreenItem<AppointmentBookScreen>("AppointmentBook", Resources.Generic16x16)
-				.AddScreenItem<FlagsCheckedBoxListScreen>("FlagsCheckedBoxList", Resources.Generic16x16)
-				.ConfigureItem(Item => Item.AsScreenItem()
-					.WithText("CRUD Grid")
-					.WithScreen<CrudTestScreen>()
-					.AsMultiInstance()
-					.WithImage(Resources.Database16x16)
-					.WithTitle("CRUD Grid"))
-				.AddScreenItem<LoadingCircleTestScreen>("LoadingCircle", Resources.Generic16x16)
-				.AddScreenItem<PlaceHolderTestScreen>("PlaceHolder", Resources.Generic16x16)
-				.AddScreenItem<PadLockTestScreen>("PadLock", Resources.Generic16x16)
-				.AddScreenItem<PasswordDialogTestScreen>("PasswordDialog", Resources.Generic16x16)
-				.AddScreenItem<ValidationIndicatorTestScreen>("ValidationIndicator", Resources.Generic16x16)
-				.AddScreenItem<RegionToolTestScreen>("RegionTool", Resources.Generic16x16)
-				.AddScreenItem<CustomComboBoxScreen>("CustomComboBox", Resources.Generic16x16)
-				.AddScreenItem("Misc", typeof(MiscTestScreen), null, false, false, false)
-				.AddScreenItem<ConnectionPanelTestScreen>("ConnectionPanel", Resources.Database16x16)
-				.AddScreenItem<DraggableControlsTestScreen>("DraggableControls", Resources.Generic16x16)
-				.AddScreenItem<EncryptedCompressionTestScreen>("EncryptedCompression", Resources.Generic16x16)
-				.AddScreenItem<CBACSVConverterScreen>("CBACSVConverter", Resources.Generic16x16)
-				.AddScreenItem<SettingsTest>("Settings", Resources.Settings16x16)
-				.AddScreenItem<ImageResizeScreen>("ImageResize", Resources.Generic16x16)
-				.AddScreenItem<ScheduleTestScreen>("Schedule", Resources.Generic16x16)
-				.AddScreenItem<ObservableCollectionsTestScreen>("ObservableCollections", Resources.Generic16x16)
-				.AddScreenItem<PathSelectorTestScreen>("PathSelector", Resources.Generic16x16)
-				.AddScreenItem<ConnectionBarTestScreen>("ConnectionBar", Resources.Database16x16)
-				.AddScreenItem<TextAreaTestsScreen>("TextAreaTests", Resources.Generic16x16)
-				.AddScreenItem<BloomFilterAnalysisScreen>("BloomFilterAnalysisScreen", Resources.Generic16x16)
-				.AddScreenItem<UrlIDTestScreen>("UrlID", Resources.Generic16x16)
-			)
-			.AddMenu(mb => mb
-				.WithText("Menu 2")
-				.WithImage32x32(Resources.Menu32x32)
-				.AddScreenItem<ScreenA>("Option 1", Resources.Generic16x16)
-				.AddScreenItem<ScreenB>("Option 2", Resources.Generic16x16)
-				.AddScreenItem<ScreenC>("Option 3", Resources.Generic16x16)
-			)
-			.Build();
+/// <summary>Registers the running tester's workspace and component demonstrations through the framework's plugin builder.</summary>
+public static class WinFormsDemoPlugin {
+	public static void Configure(WinFormsApplicationPluginBuilder plugin, bool freshEmptyWorkspace = false) {
+		Guard.ArgumentNotNull(plugin, nameof(plugin));
+		var emptyScreen = freshEmptyWorkspace ? typeof(ScreenHostingEmptyMultiTestScreen) : typeof(ScreenHostingEmptyTestScreen);
+		var emptyLifetime = freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance;
+
+		// Native definitions own their images; copies keep block removal from disposing resources used by another block or demo run.
+		plugin.WithName("WinForms demonstrations")
+			.AddBlock(block => block.WithId("workspace").WithName("Workspace")
+				.WithImage32x32((Image)Resources.TestBlock32x32.Clone())
+				.WithImage8x8((Image)Resources.TestBlock8x8.Clone())
+				.WithDefaultScreen(freshEmptyWorkspace ? emptyScreen : typeof(ScreenHostingSettingsTestScreen),
+					freshEmptyWorkspace ? "Empty workspace" : "Settings", emptyLifetime,
+					freshEmptyWorkspace ? ScreenKind.Empty : ScreenKind.Normal)
+				.AddMenu(menu => menu.WithText("Screen hosting").WithImage32x32((Image)Resources.Tests32x32.Clone())
+					.ConfigureItem(item => item.AsScreenItem().WithText("Settings").WithScreen<ScreenHostingSettingsTestScreen>()
+						.AsSingleInstance().WithImage((Image)Resources.Settings16x16.Clone()).WithTitle("Settings"))
+					.AddScreenItem<ScreenHostingDesignTestScreen>("New design", (Image)Resources.Generic16x16.Clone(), title: "Design")
+					.AddScreenItem<ScreenHostingPlainTestScreen>("Plain screen (no bars)", (Image)Resources.Generic16x16.Clone(), title: "Plain screen")
+					.AddActionItem("Use SingleView", () => SetScreenMode(ScreenMode.SingleView), (Image)Resources.Generic16x16.Clone())
+					.AddActionItem("Use MultiView", () => SetScreenMode(ScreenMode.MultiView), (Image)Resources.Generic16x16.Clone())
+					.AddActionItem("Close ordinary screens", CloseOrdinaryScreens, (Image)Resources.Generic16x16.Clone())
+					.ConfigureItem(item => {
+						var screen = item.AsScreenItem().WithText("Empty workspace").WithScreen(emptyScreen)
+							.WithScreenKind(ScreenKind.Empty).ShowOnExplorerBar(false).ShowOnToolBar(false);
+						if (freshEmptyWorkspace)
+							screen.AsMultiInstance();
+						else
+							screen.AsSingleInstance();
+					}))
+				.AddMenu(menu => menu.WithText("Navigation samples").WithImage32x32((Image)Resources.Menu32x32.Clone())
+					.AddScreenItem<ScreenA>("Calendar and toolbar", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ScreenB>("Expandable panels", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ScreenC>("Task pane grids", (Image)Resources.Generic16x16.Clone()))
+				.AddMenu(menu => menu.WithText("Wizard").WithImage32x32((Image)Resources.Wizard32x32.Clone())
+					.AddActionItem("Demo Wizard", async () => await ShowDemoWizardAsync(), (Image)Resources.Wizard16x16.Clone())));
+
+		// The notes feature demonstrates permanent screens and guarded removal of a real application block.
+		if (!freshEmptyWorkspace)
+			plugin.AddBlock(block => block.WithId("notes").WithName("Notes").WithImage32x32((Image)Resources.Menu32x32.Clone())
+				.AddMenu(menu => menu.WithText("Notes").WithImage32x32((Image)Resources.Menu32x32.Clone())
+					.ConfigureItem(item => item.AsScreenItem().WithText("Permanent notes").WithScreen<ScreenHostingPermanentTestScreen>()
+						.AsPermanentSingleton().WithImage((Image)Resources.Generic16x16.Clone()))
+					.AddActionItem("Remove notes block", RemoveNotesBlock, (Image)Resources.Generic16x16.Clone())));
+
+		plugin.AddBlock(block => block.WithId("controls").WithName("Controls").WithImage32x32((Image)Resources.Tests32x32.Clone())
+				.AddMenu(menu => menu.WithText("Input").WithImage32x32((Image)Resources.Tests32x32.Clone())
+					.AddScreenItem<EnumComboScreen>("Enum choices", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<FlagsCheckedBoxListScreen>("Flag choices", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<CustomComboBoxScreen>("Custom dropdown", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<PathSelectorTestScreen>("Path selector", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<TextAreaTestsScreen>("Text area", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<PasswordDialogTestScreen>("Password dialog", (Image)Resources.Generic16x16.Clone()))
+				.AddMenu(menu => menu.WithText("Layout").WithImage32x32((Image)Resources.Menu32x32.Clone())
+					.AddScreenItem<TabControlTestScreen>("Tab control", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ExpandoTesterScreen>("Expandable panels", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<PlaceHolderTestScreen>("Placeholder", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<DraggableControlsTestScreen>("Draggable controls", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<RegionToolTestScreen>("Control regions", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<AppointmentBookScreen>("Appointment book", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<MiscTestScreen>("Miscellaneous controls", (Image)Resources.Generic16x16.Clone()))
+				.AddMenu(menu => menu.WithText("Feedback").WithImage32x32((Image)Resources.Tests232x32.Clone())
+					.AddScreenItem<DecayGaugeScreen>("Decay gauge", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<LoadingCircleTestScreen>("Loading indicator", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<PadLockTestScreen>("Padlock", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ValidationIndicatorTestScreen>("Validation indicator", (Image)Resources.Generic16x16.Clone())))
+			.AddBlock(block => block.WithId("data").WithName("Data and collections").WithImage32x32((Image)Resources.Tests232x32.Clone())
+				.AddMenu(menu => menu.WithText("Data editing").WithImage32x32((Image)Resources.Tests32x32.Clone())
+					.AddScreenItem<CrudTestScreen>("CRUD Grid", (Image)Resources.Database16x16.Clone(), title: "CRUD Grid")
+					.AddScreenItem<ObjectSpaceScreen>("ObjectSpace", (Image)Resources.ObjectSpace16x16.Clone()))
+				.AddMenu(menu => menu.WithText("Collections").WithImage32x32((Image)Resources.Tests232x32.Clone())
+					.AddScreenItem<TransactionalCollectionScreen>("Transactional collections", (Image)Resources.Database16x16.Clone())
+					.AddScreenItem<ObservableCollectionsTestScreen>("Observable collections", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<MerkleTreeTestScreen>("Merkle tree", (Image)Resources.Tree16x16.Clone())
+					.AddScreenItem<BloomFilterAnalysisScreen>("Bloom filter analysis", (Image)Resources.Generic16x16.Clone())))
+			.AddBlock(block => block.WithId("integration").WithName("Integration").WithImage32x32((Image)Resources.TestBlock32x32.Clone())
+				.AddMenu(menu => menu.WithText("Connections").WithImage32x32((Image)Resources.Menu32x32.Clone())
+					.AddScreenItem<EmailTestScreen>("Email", (Image)Resources.Email16x16.Clone())
+					.AddScreenItem<CommunicationsTestScreen>("WebSockets", (Image)Resources.Network16x16.Clone())
+					.AddScreenItem<ConnectionPanelTestScreen>("Database connection panel", (Image)Resources.Database16x16.Clone())
+					.AddScreenItem<ConnectionBarTestScreen>("Database connection bar", (Image)Resources.Database16x16.Clone()))
+				.AddMenu(menu => menu.WithText("Windows integration").WithImage32x32((Image)Resources.Tests32x32.Clone())
+					.AddScreenItem<HooksScreen>("Input hooks", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<TestArtificialKeysScreen>("Simulated input", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<TestSoundsScreen>("Sounds", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ApplicationServicesTestScreen>("Application services", (Image)Resources.Settings16x16.Clone())))
+			.AddBlock(block => block.WithId("utilities").WithName("Utilities").WithImage32x32((Image)Resources.Menu32x32.Clone())
+				.AddMenu(menu => menu.WithText("Data transformations").WithImage32x32((Image)Resources.Tests232x32.Clone())
+					.AddScreenItem<CompressionTestScreen>("Compression", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<EncryptedCompressionTestScreen>("Encrypted compression", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<WAMSTestScreen>("WAMS-8 signatures", (Image)Resources.Test16x16.Clone())
+					.AddScreenItem<CBACSVConverterScreen>("CBA CSV converter", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ImageResizeScreen>("Image resizing", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<UrlIDTestScreen>("URL identifiers", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ParagraphBuilderScreen>("Paragraph builder", (Image)Resources.Generic16x16.Clone()))
+				.AddMenu(menu => menu.WithText("Application utilities").WithImage32x32((Image)Resources.Tests32x32.Clone())
+					.AddScreenItem<SettingsTest>("User settings", (Image)Resources.Settings16x16.Clone())
+					.AddScreenItem<ScheduleTestScreen>("Scheduling", (Image)Resources.Generic16x16.Clone())
+					.AddActionItem("Visual inheritance fixer", async () => await ShowVisualInheritanceFixerAsync(), (Image)Resources.Generic16x16.Clone())));
 	}
 
-	private static void SetScreenMode(ScreenMode Mode) {
-		var Form = (BlockMainForm)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IMainForm>();
-		Form.Status = Form.ScreenHost.TrySetScreenMode(Mode)
-			? $"Screen mode: {Mode}"
+	private static BlockMainForm GetMainForm() => (BlockMainForm)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IMainForm>();
+
+	private static void SetScreenMode(ScreenMode mode) {
+		var form = GetMainForm();
+		form.Status = form.ScreenHost.TrySetScreenMode(mode)
+			? $"Screen mode: {mode}"
 			: "A screen blocked the mode change. Clear its cancellation checkbox and try again.";
 	}
 
-	public TestBlock()
-		: base(
-			"Block 1",
-			null,
-			null,
-			null,
-			new WinFormsApplicationMenu[] {
-				new WinFormsApplicationMenu(
-					"Wizard",
-					null,
-					new IWinFormsApplicationMenuItem[] {
-						new WinFormsActionMenuItem("Wizard Demo",
-							async () => {
-								var wiz = new WizardBuilder<DemoWizardModel>()
-									.WithTitle("Demo Wizard")
-									.WithModel(DemoWizardModel.Default)
-									.AddScreen(new EnterNameScreen())
-									.AddScreen(new EnterAgeScreen())
-									.AddScreen(new CantGoBackScreen())
-									.AddScreen(new ConfirmScreen())
-									.OnFinished(async (model) => {
-										await DialogEx.ShowAsync(BlockMainForm.ActiveForm,
-											SystemIconType.Information,
-											"Result",
-											$"Name: {model.Name}, Age: {model.Age}",
-											"OK");
-										return Result.Success;
-									})
-									.OnCancelled((model) => Result.Success)
-									.Build();
-								await wiz.Start(BlockMainForm.ActiveForm);
-
-							})
-					}
-				),
-
-				new WinFormsApplicationMenu(
-					"Tests",
-					null,
-					new IWinFormsApplicationMenuItem[] {
-						new WinFormsScreenMenuItem("ObjectSpace", typeof(ObjectSpaceScreen), null),
-						new WinFormsScreenMenuItem("Emailer", typeof(EmailTestScreen), null),
-						new WinFormsScreenMenuItem("TransactionalList Test", typeof(TransactionalCollectionScreen), null),
-						new WinFormsScreenMenuItem("WebSockets Test", typeof(CommunicationsTestScreen), null),
-						new WinFormsScreenMenuItem("Merkle Tree", typeof(MerkleTreeTestScreen), null),
-						new WinFormsScreenMenuItem("WAMS-8 Tests", typeof(WAMSTestScreen), null),
-						new WinFormsScreenMenuItem("Expando Launcher", typeof(ExpandoTesterScreen), null),
-						new WinFormsScreenMenuItem("ApplicationServicesTester", typeof(ApplicationServicesTestScreen), null),
-						new WinFormsScreenMenuItem("ParagraphBuilderForm", typeof(ParagraphBuilderScreen), null),
-
-					}
-				),
-				new WinFormsApplicationMenu(
-					"Tests 2",
-					null,
-					new IWinFormsApplicationMenuItem[] {
-						new WinFormsScreenMenuItem("VisualInheritanceFixerSub", typeof(VisualInheritanceFixerSubForm), null),
-						new WinFormsScreenMenuItem("Hooks", typeof(HooksScreen), null),
-						new WinFormsScreenMenuItem("Test Sounds", typeof(TestSoundsScreen), null),
-						new WinFormsScreenMenuItem("Decay Gauge", typeof(DecayGaugeScreen), null),
-						new WinFormsScreenMenuItem("TabControl", typeof(TabControlTestScreen), null),
-						new WinFormsScreenMenuItem("ArtificialKeys", typeof(TestArtificialKeysScreen), null),
-						new WinFormsScreenMenuItem("EnumCombo", typeof(EnumComboScreen), null),
-						new WinFormsScreenMenuItem("Compression", typeof(CompressionTestScreen), null),
-						new WinFormsScreenMenuItem("AppointmentBook", typeof(AppointmentBookScreen), null),
-						new WinFormsScreenMenuItem("FlagsCheckedBoxList", typeof(FlagsCheckedBoxListScreen), null),
-						new WinFormsScreenMenuItem("CRUD Grid", typeof(CrudTestScreen), null) { ActivationMode = ScreenActivationMode.MultiInstance, ScreenTitle = "CRUD Grid" },
-						new WinFormsScreenMenuItem("LoadingCircle", typeof(LoadingCircleTestScreen), null),
-						new WinFormsScreenMenuItem("PlaceHolder", typeof(PlaceHolderTestScreen), null),
-						new WinFormsScreenMenuItem("PadLock", typeof(PadLockTestScreen), null),
-						new WinFormsScreenMenuItem("PasswordDialog", typeof(PasswordDialogTestScreen), null),
-						new WinFormsScreenMenuItem("ValidationIndicator", typeof(ValidationIndicatorTestScreen), null),
-						new WinFormsScreenMenuItem("RegionTool", typeof(RegionToolTestScreen), null),
-						new WinFormsScreenMenuItem("CustomComboBox", typeof(CustomComboBoxScreen), null),
-						new WinFormsScreenMenuItem("Misc", typeof(MiscTestScreen), null, false, false, true),
-						new WinFormsScreenMenuItem("ConnectionPanel", typeof(ConnectionPanelTestScreen), null),
-						new WinFormsScreenMenuItem("DraggableControls", typeof(DraggableControlsTestScreen), null),
-						new WinFormsScreenMenuItem("EncryptedCompression", typeof(EncryptedCompressionTestScreen), null),
-						new WinFormsScreenMenuItem("CBACSVConverter", typeof(CBACSVConverterScreen), null),
-						new WinFormsScreenMenuItem("Settings", typeof(SettingsTest), null),
-						new WinFormsScreenMenuItem("ImageResize", typeof(ImageResizeScreen), null),
-						new WinFormsScreenMenuItem("Schedule", typeof(ScheduleTestScreen), null),
-						new WinFormsScreenMenuItem("ObservableCollections", typeof(ObservableCollectionsTestScreen), null),
-						new WinFormsScreenMenuItem("PathSelector", typeof(PathSelectorTestScreen), null),
-						new WinFormsScreenMenuItem("ConnectionBar", typeof(ConnectionBarTestScreen), null),
-						new WinFormsScreenMenuItem("TextAreaTests", typeof(TextAreaTestsScreen), null),
-						new WinFormsScreenMenuItem("BloomFilterAnalysisScreen", typeof(BloomFilterAnalysisScreen), null),
-						new WinFormsScreenMenuItem("UrlID", typeof(UrlIDTestScreen), null),
-					}
-				),
-
-				new WinFormsApplicationMenu(
-					"Menu 2",
-					null,
-					new WinFormsScreenMenuItem[] {
-						new WinFormsScreenMenuItem("Option 1", typeof(ScreenA), null),
-						new WinFormsScreenMenuItem("Option 2", typeof(ScreenB), null),
-						new WinFormsScreenMenuItem("Option 2", typeof(ScreenC), null),
-					}
-				)
-			}
-		) {
-		DefaultScreen = typeof(ObjectSpaceScreen);
+	private static void RemoveNotesBlock() {
+		var form = GetMainForm();
+		var block = form.RegisteredBlocks.FirstOrDefault(block => block.Id == "notes");
+		if (block == null)
+			return;
+		form.UnregisterBlock(block);
+		form.Status = form.IsBlockRegistered(block)
+			? "The notes screen blocked removal. Clear its cancellation checkbox and try again."
+			: "Notes block removed. Close the remaining ordinary screens to reveal the empty workspace.";
 	}
 
-}
+	private static void CloseOrdinaryScreens() {
+		var form = GetMainForm();
+		var closing = form.ScreenHost.OpenScreens.Where(screen => screen.ActivationMode != ScreenActivationMode.PermanentSingleton).ToArray();
+		var closed = form.ScreenHost.CloseScreens(closing);
+		form.Status = !closed ? "A screen blocked closing. Clear its cancellation checkbox and try again."
+			: form.ScreenHost.OpenScreens.Length > 0 ? "Permanent notes remain. Remove the Notes block before the empty workspace can appear."
+			: "The empty workspace has no tab. Open a screen and close it again to check its instance lifetime.";
+	}
 
-
-public class TestBlock2 : WinFormsApplicationBlock {
-	
-	public static WinFormsApplicationBlock Build() {
-		return new WinFormsApplicationBlockBuilder()
-			.WithName("Block 2")
-			.WithImage32x32(Resources.TestBlock32x32)
-			.WithImage8x8(Resources.TestBlock8x8)
-			.AddMenu(mb => mb
-				.WithText("Menu 1")
-				.WithImage32x32(Resources.Menu32x32)
-				.AddScreenItem<ScreenA>("Opt 1", Resources.Generic16x16)
-				.AddScreenItem<ScreenA>("Opt 2", Resources.Generic16x16)
-			)
-			.AddMenu(mb => mb
-				.WithText("Menu 2")
-				.WithImage32x32(Resources.Menu32x32)
-				.AddScreenItem<ScreenA>("Opt 1", Resources.Generic16x16)
-				.AddScreenItem<ScreenA>("Opt 2", Resources.Generic16x16)
-				.AddScreenItem<ScreenA>("Opt 3", Resources.Generic16x16)
-				.AddScreenItem<ScreenA>("Opt 4", Resources.Generic16x16)
-			)
+	private static async Task ShowDemoWizardAsync() {
+		using var wizard = new WinFormsWizardBuilder<DemoWizardModel>()
+			.WithTitle("Demo Wizard")
+			.WithModel(DemoWizardModel.Default)
+			.AddScreen(new EnterNameScreen())
+			.AddScreen(new EnterAgeScreen())
+			.AddScreen(new CantGoBackScreen())
+			.AddScreen(new ConfirmScreen())
+			.OnFinished(async model => {
+				await DialogEx.ShowAsync(GetMainForm(), SystemIconType.Information, "Result", $"Name: {model.Name}, Age: {model.Age}", "OK");
+				return Result.Success;
+			})
+			.OnCancelled(_ => Result.Success)
 			.Build();
+		await wizard.Start(GetMainForm());
 	}
 
-	public TestBlock2()
-		: base(
-			"Block 2",
-			null,
-			null,
-			null,
-			new WinFormsApplicationMenu[] {
-				new WinFormsApplicationMenu(
-					"Menu 1",
-					null,
-					new WinFormsScreenMenuItem[] {
-						new WinFormsScreenMenuItem("Opt 1", typeof(ScreenA), null),
-						new WinFormsScreenMenuItem("Opt 2", typeof(ScreenA), null),
-					}
-				),
-
-				new WinFormsApplicationMenu(
-					"Menu 2",
-					null,
-					new WinFormsScreenMenuItem[] {
-						new WinFormsScreenMenuItem("Opt 1", typeof(ScreenA), null),
-						new WinFormsScreenMenuItem("Opt 2", typeof(ScreenA), null),
-						new WinFormsScreenMenuItem("Opt 3", typeof(ScreenA), null),
-						new WinFormsScreenMenuItem("Opt 4", typeof(ScreenA), null),
-					}
-				)
-			}
-		) {
+	private static async Task ShowVisualInheritanceFixerAsync() {
+		using var form = new VisualInheritanceFixerSubForm();
+		await form.ShowDialogAsync(GetMainForm());
 	}
-
 }
-
-
