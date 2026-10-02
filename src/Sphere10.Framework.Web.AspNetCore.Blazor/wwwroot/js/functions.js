@@ -1,9 +1,10 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Distributed under the MIT software license. See LICENSE.
 
-window.dispatchContentLoadedEvent = () => document.dispatchEvent(new Event("sphere10:contentloaded"));
+// PascalCase interop entry points shared with the Blazor components.
+window.DispatchContentLoadedEvent = () => document.dispatchEvent(new Event("sphere10:contentloaded"));
 
-window.showModal = () => {
+window.ShowModal = () => {
 	const modal = document.getElementById("modal");
 	if (!modal)
 		return;
@@ -14,7 +15,7 @@ window.showModal = () => {
 	document.body.classList.add("modal-open");
 };
 
-window.hideModal = () => {
+window.HideModal = () => {
 	const modal = document.getElementById("modal");
 	if (!modal)
 		return;
@@ -26,13 +27,13 @@ window.hideModal = () => {
 };
 
 // Optional compatibility hook for applications that supply the DataTables plugin.
-window.initDataTableById = (id, options) => {
+window.InitDataTableById = (id, options) => {
 	if (!window.jQuery?.fn?.DataTable)
-		throw new Error("initDataTableById requires the optional DataTables plugin.");
+		throw new Error("InitDataTableById requires the optional DataTables plugin.");
 	return window.jQuery(document.getElementById(id)).DataTable(options);
 };
 
-window.clipboardCopy = { copyText: text => navigator.clipboard.writeText(text) };
+window.ClipboardCopy = { CopyText: text => navigator.clipboard.writeText(text) };
 
 document.addEventListener("input", event => {
 	if (!event.target.matches(".search-input"))

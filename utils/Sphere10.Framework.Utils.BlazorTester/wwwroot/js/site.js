@@ -6,8 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+// PascalCase interop entry points shared with the Blazor components.
 let previousModalFocus;
-window.showModal = () => {
+window.ShowModal = () => {
 	const modal = document.getElementById("modal");
 	if (!modal) return;
 	previousModalFocus = document.activeElement;
@@ -24,7 +25,7 @@ window.showModal = () => {
 	}
 	modal.querySelector("button, input, textarea, select")?.focus();
 };
-window.hideModal = () => {
+window.HideModal = () => {
 	const modal = document.getElementById("modal");
 	if (modal) {
 		modal.style.display = "none";
@@ -36,11 +37,12 @@ window.hideModal = () => {
 	document.body.classList.remove("modal-open");
 	previousModalFocus?.focus();
 };
-window.addDropdownHover = () => {};
-window.initializeToolTips = () => {};
-window.initializeSearchDropdowns = () => {};
-window.dispatchContentLoadedEvent = () => {};
-window.clipboardCopy = { copyText: text => navigator.clipboard.writeText(text) };
+// Legacy initialization hooks remain callable; delegated handlers below also support newly rendered content.
+window.AddDropdownHover = () => {};
+window.InitializeToolTips = () => {};
+window.InitializeSearchDropdowns = () => {};
+window.DispatchContentLoadedEvent = () => {};
+window.ClipboardCopy = { CopyText: text => navigator.clipboard.writeText(text) };
 document.addEventListener("click", event => {
 	const toggle = event.target.closest('[data-toggle="dropdown"], [data-toggle="collapse"]');
 	if (!toggle) return;

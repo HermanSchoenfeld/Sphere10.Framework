@@ -137,10 +137,10 @@ public partial class BlazorGridReferencePicker<TItem> : IAsyncDisposable where T
 				_initializationTask ??= InitializeJavascriptAsync();
 				await _initializationTask;
 				if (!_disposed && _open && _module != null)
-					await _module.InvokeVoidAsync("show", _panel, _trigger, _reference, _generation);
+					await _module.InvokeVoidAsync("Show", _panel, _trigger, _reference, _generation);
 			} else if (_restoreFocus && _module != null) {
 				_restoreFocus = false;
-				await _module.InvokeVoidAsync("focus", _trigger);
+				await _module.InvokeVoidAsync("Focus", _trigger);
 			}
 		} catch (OperationCanceledException) when (_disposed) {
 			// A pending render can observe cancellation after disposal has started.

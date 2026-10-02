@@ -159,7 +159,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 			throw;
 		}
 		if (_behavior != null && !_disposed)
-			await _behavior.InvokeVoidAsync("update", AutoPageSize && Can(DataSourceCapabilities.CanPage) && !NavigationDisabled);
+			await _behavior.InvokeVoidAsync("Update", AutoPageSize && Can(DataSourceCapabilities.CanPage) && !NavigationDisabled);
 	}
 
 	[JSInvokable]
@@ -235,7 +235,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		if (_disposed || _module == null)
 			return;
 		_reference = DotNetObjectReference.Create(this);
-		_behavior = await _module.InvokeAsync<IJSObjectReference>("initialize", _element, _reference);
+		_behavior = await _module.InvokeAsync<IJSObjectReference>("Initialize", _element, _reference);
 	}
 
 	private bool Can(DataSourceCapabilities capability) => (Controller.Capabilities & capability) == capability;

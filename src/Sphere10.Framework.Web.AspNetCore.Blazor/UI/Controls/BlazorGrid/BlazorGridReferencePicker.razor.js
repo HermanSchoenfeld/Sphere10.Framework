@@ -9,27 +9,28 @@
 const popups = new WeakMap();
 const activePopups = new WeakMap();
 
-export function focus(trigger) {
+export function Focus(trigger) {
 	if (trigger?.isConnected && !trigger.disabled)
 		trigger.focus({ preventScroll: true });
 }
 
-export function show(panel, trigger, receiver, generation) {
+// Each opening owns its listeners and generation so stale dismissals cannot close a newer picker.
+export function Show(panel, trigger, receiver, generation) {
 	if (!panel?.isConnected || !trigger?.isConnected)
 		return;
 	const existing = popups.get(panel);
 	if (existing?.generation === generation)
 		return;
-	existing?.cleanup(false);
+	existing?.Cleanup(false);
 	let disposed = false;
 	let frame = 0;
 	const gap = 4;
 	const margin = 8;
-	const setStyle = (property, value) => {
+	const SetStyle = (property, value) => {
 		if (panel.style[property] !== value)
 			panel.style[property] = value;
 	};
-	const position = () => {
+	const Position = () => {
 		frame = 0;
 		if (disposed || !panel.isConnected)
 			return;
@@ -37,87 +38,87 @@ export function show(panel, trigger, receiver, generation) {
 		// Viewport rectangles include inherited CSS zoom; positioned lengths use the panel's unzoomed CSS units.
 		const cssWidth = parseFloat(getComputedStyle(panel).width);
 		const scale = cssWidth > 0 ? panel.getBoundingClientRect().width / cssWidth : 1;
-		setStyle("maxWidth", Math.max(0, (window.innerWidth - margin * 2) / scale) + "px");
+		SetStyle("maxWidth", Math.max(0, (window.innerWidth - margin * 2) / scale) + "px");
 		const below = Math.max(0, window.innerHeight - anchor.bottom - gap - margin);
 		const above = Math.max(0, anchor.top - gap - margin);
 		const desiredHeight = (panel.scrollHeight + panel.offsetHeight - panel.clientHeight) * scale;
 		const placeBelow = below >= desiredHeight || below >= above;
-		setStyle("maxHeight", Math.max(0, Math.min(window.innerHeight - margin * 2, placeBelow ? below : above) / scale) + "px");
+		SetStyle("maxHeight", Math.max(0, Math.min(window.innerHeight - margin * 2, placeBelow ? below : above) / scale) + "px");
 		const bounds = panel.getBoundingClientRect();
 		const left = Math.max(margin, Math.min(anchor.left, window.innerWidth - bounds.width - margin));
 		const top = placeBelow ? anchor.bottom + gap : anchor.top - bounds.height - gap;
-		setStyle("left", left / scale + "px");
-		setStyle("top", Math.max(margin, Math.min(top, window.innerHeight - bounds.height - margin)) / scale + "px");
+		SetStyle("left", left / scale + "px");
+		SetStyle("top", Math.max(margin, Math.min(top, window.innerHeight - bounds.height - margin)) / scale + "px");
 	};
-	const schedule = () => {
+	const Schedule = () => {
 		if (!frame && !disposed)
-			frame = requestAnimationFrame(position);
+			frame = requestAnimationFrame(Position);
 	};
-	const cleanup = restoreFocus => {
+	const Cleanup = restoreFocus => {
 		if (disposed)
 			return;
 		disposed = true;
 		cancelAnimationFrame(frame);
-		window.removeEventListener("resize", schedule);
-		document.removeEventListener("scroll", schedule, true);
-		document.removeEventListener("pointerdown", outside, true);
-		panel.removeEventListener("keydown", keyDown);
-		panel.removeEventListener("toggle", toggled);
+		window.removeEventListener("resize", Schedule);
+		document.removeEventListener("scroll", Schedule, true);
+		document.removeEventListener("pointerdown", OnOutsidePointerDown, true);
+		panel.removeEventListener("keydown", OnKeyDown);
+		panel.removeEventListener("toggle", OnToggle);
 		resizeObserver.disconnect();
 		removalObserver.disconnect();
 		popups.delete(panel);
 		if (activePopups.get(trigger) === state)
 			activePopups.delete(trigger);
 		if (restoreFocus)
-			focus(trigger);
+			Focus(trigger);
 	};
-	const dismiss = () => {
+	const Dismiss = () => {
 		if (disposed)
 			return;
-		cleanup(false);
+		Cleanup(false);
 		if (panel.matches(":popover-open"))
 			panel.hidePopover();
 		receiver.invokeMethodAsync("DismissAsync", generation).then(() => {
 			if (!activePopups.has(trigger))
-				focus(trigger);
+				Focus(trigger);
 		}).catch(() => {});
 	};
-	const outside = event => {
+	const OnOutsidePointerDown = event => {
 		if (!panel.contains(event.target) && !trigger.contains(event.target))
-			dismiss();
+			Dismiss();
 	};
-	const keyDown = event => {
+	const OnKeyDown = event => {
 		if (event.key === "Escape") {
 			event.preventDefault();
 			event.stopPropagation();
-			dismiss();
+			Dismiss();
 		}
 	};
-	const toggled = event => {
+	const OnToggle = event => {
 		if (event.newState === "closed") {
 			if (panel.isConnected)
-				dismiss();
+				Dismiss();
 			else
-				cleanup(false);
+				Cleanup(false);
 		}
 	};
-	const resizeObserver = new ResizeObserver(schedule);
+	const resizeObserver = new ResizeObserver(Schedule);
 	const removalObserver = new MutationObserver(() => {
 		if (!panel.isConnected || !trigger.isConnected)
-			cleanup(false);
+			Cleanup(false);
 	});
-	const state = { cleanup, generation };
+	const state = { Cleanup, generation };
 	popups.set(panel, state);
 	activePopups.set(trigger, state);
-	panel.addEventListener("toggle", toggled);
-	panel.addEventListener("keydown", keyDown);
-	document.addEventListener("pointerdown", outside, true);
-	document.addEventListener("scroll", schedule, true);
-	window.addEventListener("resize", schedule);
+	panel.addEventListener("toggle", OnToggle);
+	panel.addEventListener("keydown", OnKeyDown);
+	document.addEventListener("pointerdown", OnOutsidePointerDown, true);
+	document.addEventListener("scroll", Schedule, true);
+	window.addEventListener("resize", Schedule);
 	resizeObserver.observe(panel);
 	removalObserver.observe(document.body, { childList: true, subtree: true });
 	if (!panel.matches(":popover-open"))
 		panel.showPopover();
-	position();
+	Position();
 	(panel.querySelector("input:not(:disabled), button:not(:disabled), [tabindex='0']") ?? panel).focus({ preventScroll: true });
 }

@@ -6,7 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-export function initialize(element, receiver) {
+// One behavior instance owns column geometry and observers for the lifetime of this rendered grid.
+export function Initialize(element, receiver) {
 	const viewport = element.querySelector(".sphere10-grid-viewport");
 	const table = element.querySelector("table");
 	let autoPageSize = false;
@@ -19,11 +20,11 @@ export function initialize(element, receiver) {
 	let drag = null;
 	const resizedWidths = new WeakMap();
 
-	const setStyle = (target, property, value) => {
+	const SetStyle = (target, property, value) => {
 		if (target.style[property] !== value)
 			target.style[property] = value;
 	};
-	const layoutColumns = () => {
+	const LayoutColumns = () => {
 		layoutPending = false;
 		if (viewportWidth <= 0)
 			return;
@@ -45,16 +46,16 @@ export function initialize(element, receiver) {
 		const extraWidth = stretchCount ? (tableWidth - minimumWidth) / stretchCount : 0;
 		// Table-column percentage calculations are not interoperable; allocate spare pixels explicitly.
 		for (let index = 0; index < columns.length; index++)
-			setStyle(columns[index], "width", (widths[index] + (stretches[index] ? extraWidth : 0)) + "px");
-		setStyle(table, "minWidth", minimumWidth + "px");
-		setStyle(table, "width", tableWidth + "px");
+			SetStyle(columns[index], "width", (widths[index] + (stretches[index] ? extraWidth : 0)) + "px");
+		SetStyle(table, "minWidth", minimumWidth + "px");
+		SetStyle(table, "width", tableWidth + "px");
 	};
-	const measure = () => {
+	const Measure = () => {
 		frame = 0;
 		if (disposed || !element.isConnected)
 			return;
 		if (layoutPending)
-			layoutColumns();
+			LayoutColumns();
 		if (!autoPageSize || element.getAttribute("aria-busy") === "true" || element.querySelector(".sphere10-grid-edit-bar"))
 			return;
 
@@ -73,18 +74,18 @@ export function initialize(element, receiver) {
 			receiver.invokeMethodAsync("SetViewportPageSizeAsync", pageSize).catch(() => {});
 		}
 	};
-	const schedule = () => {
+	const Schedule = () => {
 		if (!frame && !disposed)
-			frame = requestAnimationFrame(measure);
+			frame = requestAnimationFrame(Measure);
 	};
-	const stopDrag = event => {
+	const StopDrag = event => {
 		if (event && drag && event.pointerId !== drag.pointerId)
 			return;
 		if (drag?.grip.hasPointerCapture(drag.pointerId))
 			drag.grip.releasePointerCapture(drag.pointerId);
 		drag = null;
 	};
-	const pointerDown = event => {
+	const OnPointerDown = event => {
 		const grip = event.target.closest(".sphere10-grid-resizer");
 		if (!grip || event.button !== 0 || grip.closest("table") !== table)
 			return;
@@ -97,7 +98,7 @@ export function initialize(element, receiver) {
 		drag = { grip, columns, widths, scale, index: header.cellIndex, pointerId: event.pointerId, startX: event.clientX };
 		grip.setPointerCapture(event.pointerId);
 	};
-	const pointerMove = event => {
+	const OnPointerMove = event => {
 		if (!drag || event.pointerId !== drag.pointerId)
 			return;
 		const width = Math.max(40, drag.widths[drag.index] + (event.clientX - drag.startX) / drag.scale);
@@ -111,20 +112,20 @@ export function initialize(element, receiver) {
 		}
 		layoutPending = true;
 		maximumRowHeight = 0;
-		schedule();
+		Schedule();
 	};
-	const dispose = () => {
+	const Dispose = () => {
 		if (disposed)
 			return;
 		disposed = true;
-		stopDrag();
+		StopDrag();
 		cancelAnimationFrame(frame);
 		resizeObserver.disconnect();
 		removalObserver.disconnect();
-		element.removeEventListener("pointerdown", pointerDown);
-		element.removeEventListener("pointermove", pointerMove);
-		element.removeEventListener("pointerup", stopDrag);
-		element.removeEventListener("pointercancel", stopDrag);
+		element.removeEventListener("pointerdown", OnPointerDown);
+		element.removeEventListener("pointermove", OnPointerMove);
+		element.removeEventListener("pointerup", StopDrag);
+		element.removeEventListener("pointercancel", StopDrag);
 	};
 	const resizeObserver = new ResizeObserver(entries => {
 		let measurementPending = false;
@@ -138,28 +139,29 @@ export function initialize(element, receiver) {
 			measurementPending ||= layoutPending || autoPageSize;
 		}
 		if (measurementPending)
-			schedule();
+			Schedule();
 	});
 	resizeObserver.observe(viewport);
 	resizeObserver.observe(table);
 	const removalObserver = new MutationObserver(() => {
 		if (!element.isConnected)
-			dispose();
+			Dispose();
 	});
 	removalObserver.observe(document.body, { childList: true, subtree: true });
-	element.addEventListener("pointerdown", pointerDown);
-	element.addEventListener("pointermove", pointerMove);
-	element.addEventListener("pointerup", stopDrag);
-	element.addEventListener("pointercancel", stopDrag);
+	element.addEventListener("pointerdown", OnPointerDown);
+	element.addEventListener("pointermove", OnPointerMove);
+	element.addEventListener("pointerup", StopDrag);
+	element.addEventListener("pointercancel", StopDrag);
 
+	// Blazor calls Update after rendering; geometry changes are coalesced into the next animation frame.
 	return {
-		update(enabled) {
+		Update(enabled) {
 			if (enabled && !autoPageSize)
 				lastPageSize = 0;
 			autoPageSize = enabled;
 			// Rendering may replace column definitions or restore their declarative inline widths.
 			layoutPending = true;
-			schedule();
+			Schedule();
 		}
 	};
 }

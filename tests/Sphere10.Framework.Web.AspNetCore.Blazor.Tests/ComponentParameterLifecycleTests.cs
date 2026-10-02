@@ -216,10 +216,10 @@ public class ComponentParameterLifecycleTests {
 
 	[TestCase("render")]
 	[TestCase("import")]
-	[TestCase("show")]
+	[TestCase("Show")]
 	public async Task HostDisposalDuringModalStartupReturnsCancellationWithoutAnException(string stage) {
 		var runtime = new ModalJsRuntime { DelayImport = stage == "import" };
-		runtime.Module.DelayShow = stage == "show";
+		runtime.Module.DelayShow = stage == "Show";
 		await using var provider = CreateServices(runtime);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -231,12 +231,12 @@ public class ComponentParameterLifecycleTests {
 			var interaction = modal.ShowAsync();
 			if (stage == "import")
 				await runtime.ImportStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			else if (stage == "show")
+			else if (stage == "Show")
 				await runtime.Module.Shown.Task.WaitAsync(TimeSpan.FromSeconds(5));
 			await modal.DisposeAsync();
 			Assert.That(await interaction.WaitAsync(TimeSpan.FromSeconds(5)), Is.EqualTo("cancelled"));
 			Assert.That(interaction.IsCompletedSuccessfully, Is.True);
-			Assert.That(runtime.Module.Disposed, Is.EqualTo(stage == "show"));
+			Assert.That(runtime.Module.Disposed, Is.EqualTo(stage == "Show"));
 		});
 	}
 
@@ -253,7 +253,7 @@ public class ComponentParameterLifecycleTests {
 			await runtime.Module.Shown.Task.WaitAsync(TimeSpan.FromSeconds(5));
 			modal.Result.TrySetCanceled();
 			await Assert.ThatAsync(async () => await interaction, Throws.InstanceOf<OperationCanceledException>());
-			Assert.That(runtime.Module.Calls, Is.EqualTo(new[] { "show", "hide" }));
+			Assert.That(runtime.Module.Calls, Is.EqualTo(new[] { "Show", "Hide" }));
 		});
 	}
 
@@ -272,7 +272,7 @@ public class ComponentParameterLifecycleTests {
 				await interaction;
 			modal.Result.SetResult("accepted");
 			Assert.That(await interaction, Is.EqualTo("accepted"));
-			Assert.That(runtime.Module.Calls, Is.EqualTo(new[] { "show", "hide" }));
+			Assert.That(runtime.Module.Calls, Is.EqualTo(new[] { "Show", "Hide" }));
 		});
 	}
 
@@ -291,7 +291,7 @@ public class ComponentParameterLifecycleTests {
 				await interaction;
 			Assert.That(await modal.CurrentContent.CloseModal(), Is.True);
 			Assert.That(await interaction, Is.EqualTo("closed"));
-			Assert.That(runtime.Module.Calls, Is.EqualTo(new[] { "show", "hide" }));
+			Assert.That(runtime.Module.Calls, Is.EqualTo(new[] { "Show", "Hide" }));
 		});
 	}
 
@@ -497,7 +497,7 @@ public class ComponentParameterLifecycleTests {
 		public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
 			Assert.That(args.Single(), Is.TypeOf<ElementReference>());
 			Calls.Add(identifier);
-			if (identifier == "show") {
+			if (identifier == "Show") {
 				Shown.TrySetResult(true);
 				if (DelayShow)
 					await ShowCompletion.Task.WaitAsync(cancellationToken);

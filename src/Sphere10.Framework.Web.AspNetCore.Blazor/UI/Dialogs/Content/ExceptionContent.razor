@@ -19,6 +19,6 @@
     [Parameter]
     public Exception Exception { get; set; }
 
-    private Task CopyToClipboardAsync() => JsRuntime.InvokeVoidAsync("clipboardCopy.copyText", Exception.ToDiagnosticString()).AsTask();
+    private Task CopyToClipboardAsync() => JsRuntime.InvokeVoidAsync("ClipboardCopy.CopyText", Exception.ToDiagnosticString()).AsTask();
 
 }

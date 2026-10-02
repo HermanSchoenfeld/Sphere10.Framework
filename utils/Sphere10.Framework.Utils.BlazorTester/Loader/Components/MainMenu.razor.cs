@@ -18,7 +18,7 @@ public partial class MainMenu {
 
 	protected override Task OnAfterRenderAsync(bool firstRender) {
 		if (firstRender) {
-			JsRuntime.InvokeVoidAsync("addDropdownHover");
+			JsRuntime.InvokeVoidAsync("AddDropdownHover");
 		}
 
 		return base.OnAfterRenderAsync(firstRender);

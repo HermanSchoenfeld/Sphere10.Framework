@@ -72,7 +72,7 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 		await using var visibilityCleanup = Tools.Scope.ExecuteOnDisposeAsync(async () => {
 			try {
 				if (module != null && !_disposed)
-					await module.InvokeVoidAsync("hide", ModalElement);
+					await module.InvokeVoidAsync("Hide", ModalElement);
 			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
 				// Teardown can interrupt an in-flight hide request.
 			} catch (JSDisconnectedException) {
@@ -107,7 +107,7 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 			await WaitUntilRenderedAsync(component).WaitAsync(cancellationToken);
 			_moduleTask ??= JsRuntime.InvokeAsync<IJSObjectReference>("import", cancellationToken, "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/js/modal.js").AsTask();
 			module = await _moduleTask.WaitAsync(cancellationToken);
-			await module.InvokeVoidAsync("show", cancellationToken, ModalElement);
+			await module.InvokeVoidAsync("Show", cancellationToken, ModalElement);
 			return await GetResultAsync(component).WaitAsync(cancellationToken);
 		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
 			// Host removal is ordinary dismissal, not a failed Blazor event callback.

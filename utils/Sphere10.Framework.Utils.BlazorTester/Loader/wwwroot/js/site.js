@@ -1,15 +1,16 @@
-window.showModal = () => {
+// PascalCase interop entry points shared with the Blazor components.
+window.ShowModal = () => {
     $("#modal").modal({
         backdrop: "static",
         keyboard: false
     });
 }
 
-window.hideModal = () => {
+window.HideModal = () => {
     $("#modal").modal('hide')
 }
 
-window.addDropdownHover = () => {
+window.AddDropdownHover = () => {
     $('.hover-dropdown').hover(function () {
             $('.hover-dropdown > .dropdown-menu').addClass('show');
         },
@@ -19,11 +20,11 @@ window.addDropdownHover = () => {
         });
 }
 
-window.initializeToolTips = () => {
+window.InitializeToolTips = () => {
     $('[data-toggle="tooltip"]').tooltip()
 }
 
-window.initializeSearchDropdowns = () => {
+window.InitializeSearchDropdowns = () => {
     var input = $('.search-input');
     
     input.keyup(() => {

@@ -517,7 +517,7 @@ public class BlazorGridRenderingTests {
 		public bool Disposed { get; private set; }
 
 		public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
-			Assert.That(identifier, Is.EqualTo("initialize"));
+			Assert.That(identifier, Is.EqualTo("Initialize"));
 			Assert.That(args[0], Is.TypeOf<ElementReference>());
 			Callbacks.Add((DotNetObjectReference<BlazorGrid<Row>>)args[1]);
 			return (TValue)await Initialize();
@@ -539,7 +539,7 @@ public class BlazorGridRenderingTests {
 		public bool Disposed { get; private set; }
 
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
-			Assert.That(identifier, Is.EqualTo("update"));
+			Assert.That(identifier, Is.EqualTo("Update"));
 			Assert.That(args.Single(), Is.TypeOf<bool>());
 			Assert.That(Disposed, Is.False, "A disposed grid behavior must not receive updates.");
 			Updates++;

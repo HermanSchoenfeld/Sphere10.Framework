@@ -218,12 +218,12 @@ public class BlazorGridReferencePickerTests {
 		public bool Disposed { get; private set; }
 
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
-			if (identifier == "show") {
+			if (identifier == "Show") {
 				Shown++;
 				Generation = (long)args[3];
 				Callback = (DotNetObjectReference<BlazorGridReferencePicker<Person>>)args[2];
 			} else {
-				Assert.That(identifier, Is.EqualTo("focus"));
+				Assert.That(identifier, Is.EqualTo("Focus"));
 				FocusReturns++;
 			}
 			return ValueTask.FromResult(default(TValue));
