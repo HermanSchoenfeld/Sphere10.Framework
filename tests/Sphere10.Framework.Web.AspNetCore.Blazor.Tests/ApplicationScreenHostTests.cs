@@ -21,6 +21,69 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationScreenHostTests {
+	[TestCase(ScreenMode.SingleView)]
+	[TestCase(ScreenMode.MultiView)]
+	public async Task SelectingNavigationKeepsTheActiveScreenAndDoesNotRunItsGuardOrLifecycle(ScreenMode mode) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		await host.TrySetScreenModeAsync(mode);
+		var session = await host.ActivateScreenAsync("first", "single");
+		var guards = 0;
+		var component = new ProbeScreen { Guard = _ => { guards++; return Task.FromResult(false); } };
+		await host.AttachScreenAsync(session.Id, component);
+		var notifications = 0;
+		host.Changed += () => notifications++;
+
+		await host.SelectBlockAsync("second");
+		await host.SelectBlockAsync("second");
+		Assert.That(host.ActiveBlock.Id, Is.EqualTo("second"));
+		Assert.That(host.ActiveScreen, Is.SameAs(session));
+		Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("first"));
+		Assert.That(session.Screen, Is.SameAs(component));
+		Assert.That(host.Screens.Single(), Is.SameAs(session));
+		Assert.That(host.OpenScreens.Single(), Is.SameAs(session));
+		Assert.That(guards, Is.Zero);
+		Assert.That(component.Activations, Is.EqualTo(1));
+		Assert.That(component.Deactivations, Is.Zero);
+		Assert.That(component.Disposals, Is.Zero);
+		Assert.That(notifications, Is.EqualTo(1), "Selecting the same navigation block is idempotent.");
+
+		Assert.That(await host.ShowScreenAsync(session.Id), Is.True);
+		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"), "Selecting an already active tab restores its navigation block.");
+		Assert.That(guards, Is.Zero);
+		Assert.That(component.Activations, Is.EqualTo(1));
+	}
+
+	[Test]
+	public async Task NavigationSelectionDoesNotActivateDefaultsAndRejectsInvalidOrCancelledRequests() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		await host.SelectBlockAsync("first");
+		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(host.Screens, Is.Empty);
+		Assert.That(async () => await host.SelectBlockAsync("missing"), Throws.ArgumentException);
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		Assert.That(async () => await host.SelectBlockAsync("second", cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
+		Assert.That(await host.ActivateBlockAsync("first"), Is.Not.Null, "Explicit block activation retains default-screen behavior.");
+	}
+
+	[Test]
+	public async Task ClosingLastScreenKeepsTheBrowsedBlockAndUnregisteringItSelectsAnAvailableBlock() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		var session = await host.ActivateScreenAsync("first", "single");
+		await host.SelectBlockAsync("second");
+		Assert.That(await host.CloseScreenAsync(session.Id), Is.True);
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(host.ActiveBlock.Id, Is.EqualTo("second"));
+		Assert.That(await host.UnregisterBlockAsync("second"), Is.True);
+		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
+		Assert.That(host.Screens, Is.Empty);
+	}
+
 	[Test]
 	public async Task ReturnedArraysCannotRemoveRegisteredBlocksOrOpenSessions() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -306,9 +369,9 @@ public class ApplicationScreenHostTests {
 
 	private static BlazorApplicationBlockCatalog CreateCatalog() => new(new[] {
 		new BlazorApplicationBlockBuilder().WithId("first").WithName("First").AddMenu(menu => menu.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("single", "Single").AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)).Build(),
+			.AddScreenItem<ProbeScreen>("single", "Single", ScreenActivationMode.SingleInstance).AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)).Build(),
 		new BlazorApplicationBlockBuilder().WithId("second").WithName("Second").AddMenu(menu => menu.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("shared", "Shared")).Build()
+			.AddScreenItem<ProbeScreen>("shared", "Shared", ScreenActivationMode.SingleInstance)).Build()
 	});
 
 	public class ProbeScreen : ComponentBase, IBlazorApplicationScreen, IDisposable {

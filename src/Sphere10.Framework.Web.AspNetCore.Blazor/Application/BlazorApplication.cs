@@ -9,85 +9,83 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class BlazorApplication : Disposable, IBlazorApplication {
-	public event EventHandlerEx Initializing;
+/// <summary>Projects a circuit's live host and startup plugin definitions without loading or owning those plugins again.</summary>
+public class BlazorApplication : ApplicationBase, IBlazorApplication {
+	private readonly IBlazorPlugin[] _plugins;
+	private readonly IBlazorPlugin _implicitPlugin;
 
-	public event EventHandlerEx Initialized;
-
-	public event EventHandlerEx Finishing;
-
-	private readonly List<IBlazorPlugin> _plugins = new();
-
-	public IBlazorPlugin[] LoadedPlugins => _plugins.ToArray();
-
-	public IBlazorApplicationBlock ActiveBlock => ScreenHost?.ActiveBlock;
-
-	public IBlazorPlugin ActivePlugin => _plugins.FirstOrDefault(plugin => plugin.Blocks.Any(block => block.Id == ActiveBlock?.Id));
-
-	public IBlazorApplicationScreen ActiveScreen => ScreenHost?.ActiveScreen?.Screen;
-
-	/// <summary>The circuit-local runtime attached to this legacy startup/configuration object.</summary>
-	public IBlazorApplicationScreenHost ScreenHost { get; private set; }
-
-	public void AttachScreenHost(IBlazorApplicationScreenHost screenHost) {
+	public BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<IBlazorPlugin> plugins) {
 		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
-		Guard.Ensure(ScreenHost == null || ReferenceEquals(ScreenHost, screenHost), "The application is already attached to another screen host.");
+		Guard.ArgumentNotNull(plugins, nameof(plugins));
+		_plugins = Tools.UI.ValidatePlugins(plugins).Cast<IBlazorPlugin>().ToArray();
 		ScreenHost = screenHost;
+		_implicitPlugin = new StandalonePlugin(Tools.UI.GetImplicitPluginName(_plugins), GetStandaloneBlocks);
+		ScreenHost.Changed += OnChanged;
 	}
 
-	public Task Initialize(IServiceCollection services) {
-		Guard.ArgumentNotNull(services, nameof(services));
-		Guard.Ensure(_plugins.Count == 0, "The application has already been initialized.");
-		OnInitializing();
-		Initializing?.Invoke();
+	public IBlazorApplicationScreenHost ScreenHost { get; }
 
-		foreach (var pluginType in GetPlugins()) {
-			var plugin = pluginType.ActivateWithCompatibleArgs() as IBlazorPlugin;
-			Guard.Ensure(plugin != null, $"'{pluginType.Name}' was not an {nameof(IBlazorPlugin)}");
-			plugin.Load(services);
-			_plugins.Add(plugin);
-		}
+	/// <summary>Registered definitions plus the circuit's implicit plugin while standalone blocks exist.</summary>
+	public override IBlazorPlugin[] Plugins => _implicitPlugin.Blocks.Length == 0 ? Tools.Array.Clone(_plugins) : _plugins.Append(_implicitPlugin).ToArray();
 
-		Configure(services);
-		OnInitialized();
-		Initialized?.Invoke();
-		return Task.CompletedTask;
+	/// <summary>Compatibility alias for Plugins. Reading it never loads plugin services again.</summary>
+	public IBlazorPlugin[] LoadedPlugins => Plugins;
+
+	public override IBlazorPlugin ActivePlugin => (IBlazorPlugin)base.ActivePlugin;
+
+	public override IBlazorApplicationBlock[] Blocks => ScreenHost.Blocks;
+
+	public override IBlazorApplicationBlock ActiveBlock => ScreenHost.ActiveBlock;
+
+	public override IBlazorApplicationScreen ActiveScreen => ScreenHost.ActiveScreen?.Screen;
+
+	public override bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
+
+	public override IBlazorApplicationMenu[] Menus => base.Menus.Cast<IBlazorApplicationMenu>().ToArray();
+
+	public override IBlazorApplicationMenuItem[] ToolBarItems => base.ToolBarItems.Cast<IBlazorApplicationMenuItem>().ToArray();
+
+	public override void SetMenus(IEnumerable<IApplicationMenu> menus) {
+		Guard.ArgumentNotNull(menus, nameof(menus));
+		var definitions = menus.ToArray();
+		Guard.Argument(definitions.All(menu => menu is IBlazorApplicationMenu), nameof(menus), "Blazor menu definitions are required.");
+		base.SetMenus(definitions.Cast<IBlazorApplicationMenu>().Select(BlazorApplicationBlockSnapshot.CreateMenu));
 	}
 
-	public Task Finish() {
-		OnFinishing();
-		Finishing?.Invoke();
-		return Task.CompletedTask;
-	}
-
-	protected abstract IEnumerable<Type> GetPlugins();
-
-	protected virtual void Configure(IServiceCollection services) {
-	}
-
-	protected virtual void OnInitializing() {
-	}
-
-	protected virtual void OnInitialized() {
-	}
-
-	protected virtual void OnFinishing() {
+	public override void SetToolBarItems(IEnumerable<IApplicationMenuItem> items) {
+		Guard.ArgumentNotNull(items, nameof(items));
+		var definitions = items.ToArray();
+		Guard.Argument(definitions.All(item => item is IBlazorApplicationMenuItem), nameof(items), "Blazor menu item definitions are required.");
+		base.SetToolBarItems(definitions.Cast<IBlazorApplicationMenuItem>().Select(BlazorApplicationBlockSnapshot.CreateItem));
 	}
 
 	protected override void FreeManagedResources() {
-		foreach (var plugin in _plugins)
-			plugin.Unload();
-		_plugins.Clear();
+		ScreenHost.Changed -= OnChanged;
+		base.FreeManagedResources();
 	}
 
-	protected override ValueTask FreeManagedResourcesAsync() {
-		FreeManagedResources();
-		return ValueTask.CompletedTask;
+	private IBlazorApplicationBlock[] GetStandaloneBlocks() {
+		var ownedIds = _plugins.SelectMany(plugin => plugin.Blocks).Select(block => block.Id).ToHashSet(StringComparer.Ordinal);
+		return ScreenHost.Blocks.Where(block => !ownedIds.Contains(block.Id)).ToArray();
+	}
+
+	/// <summary>Groups the host's otherwise unowned blocks without loading services or owning their lifecycle.</summary>
+	private sealed class StandalonePlugin : ApplicationPlugin, IBlazorPlugin {
+		private readonly Func<IBlazorApplicationBlock[]> _getBlocks;
+
+		public StandalonePlugin(string name, Func<IBlazorApplicationBlock[]> getBlocks)
+			: base(name, Array.Empty<IApplicationBlock>()) {
+			_getBlocks = getBlocks;
+		}
+
+		public new IBlazorApplicationBlock[] Blocks => _getBlocks();
+
+		public IServiceProvider IoCContainer => null;
+
+		IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
 	}
 }
-

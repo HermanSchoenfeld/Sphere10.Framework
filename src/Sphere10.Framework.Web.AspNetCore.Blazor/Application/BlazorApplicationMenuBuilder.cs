@@ -38,20 +38,20 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<IBlazorAp
 		return this;
 	}
 
-	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string id, string text, ScreenActivationMode activationMode = ScreenActivationMode.SingleInstance,
-		IReadOnlyDictionary<string, object> parameters = null
-	) where TScreen : IComponent, IBlazorApplicationScreen => AddScreenItem(id, text, typeof(TScreen), activationMode, parameters);
+	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string id, string text, ScreenActivationMode activationMode = ScreenActivationMode.MultiInstance,
+		IReadOnlyDictionary<string, object> parameters = null, ScreenKind screenKind = ScreenKind.Normal, bool isDefault = false
+	) where TScreen : IComponent, IBlazorApplicationScreen => AddScreenItem(id, text, typeof(TScreen), activationMode, parameters, screenKind, isDefault);
 
 	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string text) where TScreen : IComponent, IBlazorApplicationScreen =>
 		AddScreenItem<TScreen>(typeof(TScreen).Name, text);
 
-	public BlazorApplicationMenuBuilder AddScreenItem(string id, string text, Type screenType, ScreenActivationMode activationMode = ScreenActivationMode.SingleInstance,
-		IReadOnlyDictionary<string, object> parameters = null
+	public BlazorApplicationMenuBuilder AddScreenItem(string id, string text, Type screenType, ScreenActivationMode activationMode = ScreenActivationMode.MultiInstance,
+		IReadOnlyDictionary<string, object> parameters = null, ScreenKind screenKind = ScreenKind.Normal, bool isDefault = false
 	) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 		return AddItem(new BlazorScreenMenuItem {
-			Id = id, Title = text, ScreenType = screenType, ActivationMode = activationMode,
+			Id = id, Title = text, ScreenType = screenType, ActivationMode = activationMode, ScreenKind = screenKind, IsDefault = isDefault,
 			Parameters = parameters ?? new Dictionary<string, object>()
 		});
 	}

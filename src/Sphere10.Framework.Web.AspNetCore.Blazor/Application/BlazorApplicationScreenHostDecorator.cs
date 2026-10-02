@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
+using Sphere10.Framework.Application.UI;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,9 +33,20 @@ public abstract class BlazorApplicationScreenHostDecorator<TConcrete> : IBlazorA
 	public virtual IBlazorApplicationBlock ActiveBlock => InternalHost.ActiveBlock;
 
 	public virtual BlazorApplicationScreenSession ActiveScreen => InternalHost.ActiveScreen;
+	public virtual BlazorApplicationScreenSession[] Screens => InternalHost.Screens;
 	public virtual BlazorApplicationScreenSession[] OpenScreens => InternalHost.OpenScreens;
+	public virtual ScreenMode ScreenMode => InternalHost.ScreenMode;
+
+	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) => InternalHost.InitializeAsync(cancellationToken);
+
+	public virtual Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default) => InternalHost.TrySetScreenModeAsync(mode, cancellationToken);
+	public virtual Task MoveScreenAsync(Guid sessionId, int index, CancellationToken cancellationToken = default) => InternalHost.MoveScreenAsync(sessionId, index, cancellationToken);
+	public virtual Task<bool> CloseScreensAsync(IEnumerable<Guid> sessionIds, CancellationToken cancellationToken = default) => InternalHost.CloseScreensAsync(sessionIds, cancellationToken);
+	public virtual Task<bool> ExecuteMenuItemAsync(IBlazorApplicationMenuItem item, CancellationToken cancellationToken = default) => InternalHost.ExecuteMenuItemAsync(item, cancellationToken);
 
 	public virtual bool HasUnsavedChanges => InternalHost.HasUnsavedChanges;
+
+	public virtual Task SelectBlockAsync(string blockId, CancellationToken cancellationToken = default) => InternalHost.SelectBlockAsync(blockId, cancellationToken);
 
 	public virtual Task<BlazorApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default) => InternalHost.ActivateBlockAsync(blockId, cancellationToken);
 

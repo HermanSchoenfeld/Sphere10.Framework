@@ -53,6 +53,21 @@ public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase {
 		return this;
 	}
 
+	public BlazorApplicationMenuItemBuilder AsPermanentSingleton() {
+		SetActivationMode(ScreenActivationMode.PermanentSingleton);
+		return this;
+	}
+
+	public BlazorApplicationMenuItemBuilder WithScreenKind(ScreenKind kind) {
+		SetScreenKind(kind);
+		return this;
+	}
+
+	public BlazorApplicationMenuItemBuilder AsDefault(bool isDefault = true) {
+		SetIsDefault(isDefault);
+		return this;
+	}
+
 	public BlazorApplicationMenuItemBuilder WithParameters(IReadOnlyDictionary<string, object> parameters) {
 		SetParameters(parameters);
 		return this;
@@ -68,7 +83,7 @@ public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase {
 		if (ScreenType != null)
 			return new BlazorScreenMenuItem {
 				Id = Id, Title = Text, Icon = _icon, ScreenType = ScreenType,
-				ActivationMode = ActivationMode ?? ScreenActivationMode.SingleInstance, Parameters = Parameters
+				ActivationMode = ActivationMode ?? ScreenActivationMode.MultiInstance, ScreenKind = ScreenKind, IsDefault = IsDefault, Parameters = Parameters
 			};
 		return new BlazorActionMenuItem { Id = Id, Title = Text, Icon = _icon, AsyncAction = AsyncAction };
 	}

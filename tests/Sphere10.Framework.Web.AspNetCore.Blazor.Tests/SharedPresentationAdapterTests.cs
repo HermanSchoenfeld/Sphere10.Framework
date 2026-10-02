@@ -42,7 +42,7 @@ public class SharedPresentationAdapterTests {
 		Assert.That(screen.Id, Is.EqualTo("overview"));
 		Assert.That(typeof(BlazorRoutedApplicationBlock).IsAssignableTo(typeof(IApplicationBlock)), Is.False);
 		Assert.That(screen.ScreenType, Is.EqualTo(typeof(ExtensionScreen)));
-		Assert.That(screen.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
+		Assert.That(screen.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 	}
 
 	[Test]

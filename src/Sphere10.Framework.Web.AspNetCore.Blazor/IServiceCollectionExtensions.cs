@@ -36,7 +36,28 @@ public static class IServiceCollectionExtensions {
 		services.TryAddSingleton<IBlazorApplicationBlockCatalog, BlazorApplicationBlockCatalog>();
 		services.TryAddSingleton<IApplicationBlockCatalog<IApplicationBlock>>(provider => provider.GetRequiredService<IBlazorApplicationBlockCatalog>());
 		services.TryAddScoped<IBlazorApplicationScreenHost, BlazorApplicationScreenHost>();
+		services.TryAddScoped<IBlazorApplication, BlazorApplication>();
+		services.TryAddScoped<IApplication>(provider => provider.GetRequiredService<IBlazorApplication>());
 		services.TryAddScoped<IThemeService, ThemeService>();
+		return services;
+	}
+
+	/// <summary>Configures application-level commands once per circuit, using the same aggregate exposed through IApplication.</summary>
+	public static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<BlazorApplication> configure) {
+		Guard.ArgumentNotNull(services, nameof(services));
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		services.AddSphere10Blazor();
+		services.Replace(ServiceDescriptor.Scoped<IBlazorApplication>(provider => {
+			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(), provider.GetServices<IBlazorPlugin>());
+			try {
+				configure(application);
+				return application;
+			} catch {
+				// Failed construction must not leave a subscription on the circuit's host.
+				application.Dispose();
+				throw;
+			}
+		}));
 		return services;
 	}
 
@@ -73,6 +94,7 @@ public static class IServiceCollectionExtensions {
 		foreach (var block in blocks)
 			services.AddApplicationBlock(block);
 		services.AddSingleton(plugin);
+		services.AddSingleton<IApplicationPlugin>(plugin);
 		return services;
 	}
 
@@ -105,10 +127,9 @@ public static class IServiceCollectionExtensions {
 	}
 
 	private static IReadOnlyList<IBlazorApplicationBlock> GetValidatedPluginBlocks(IServiceCollection services, IBlazorPlugin plugin) {
-		Guard.Argument(!string.IsNullOrWhiteSpace(plugin.Name), nameof(plugin), "A plugin name is required.");
-		Guard.Argument(!services.Any(descriptor => descriptor.ServiceType == typeof(IBlazorPlugin)
-			&& descriptor.ImplementationInstance is IBlazorPlugin registered && registered.Name == plugin.Name), nameof(plugin),
-			$"Plugin '{plugin.Name}' is already registered.");
+		var registeredPlugins = services.Where(descriptor => descriptor.ServiceType == typeof(IBlazorPlugin))
+			.Select(descriptor => descriptor.ImplementationInstance).OfType<IBlazorPlugin>();
+		Tools.UI.ValidatePlugins(registeredPlugins.Append(plugin));
 		var blocks = new BlazorApplicationBlockCatalog(plugin.Blocks).Blocks;
 		var existingBlocks = services.Where(descriptor => descriptor.ServiceType == typeof(IBlazorApplicationBlock))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<IBlazorApplicationBlock>();

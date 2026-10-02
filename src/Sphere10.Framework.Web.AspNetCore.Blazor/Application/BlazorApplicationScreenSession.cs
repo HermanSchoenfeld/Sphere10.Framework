@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
@@ -28,7 +29,11 @@ public sealed class BlazorApplicationScreenSession {
 
 	public Type ScreenType => MenuItem.ScreenType;
 
-	public string Title => MenuItem.Title;
+	public bool IsPermanent => MenuItem.ActivationMode == ScreenActivationMode.PermanentSingleton;
+
+	public ScreenKind ScreenKind => MenuItem.ScreenKind;
+
+	public string Title => Screen?.Title ?? MenuItem.Title;
 
 	public IDictionary<string, object> Parameters { get; }
 

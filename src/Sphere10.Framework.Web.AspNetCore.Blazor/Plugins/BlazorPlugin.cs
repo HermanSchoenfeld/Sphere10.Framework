@@ -10,73 +10,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-/// <summary>A startup plugin definition whose blocks feed the existing application catalog.</summary>
-public class BlazorPlugin : IBlazorPlugin {
-	public event EventHandlerEx Loaded;
-	public event EventHandlerEx Unloaded;
-
-	private readonly Action<IServiceCollection> _configureServices;
-	private IBlazorApplicationBlock[] _blocks = Array.Empty<IBlazorApplicationBlock>();
-	private string _name;
-
+/// <summary>A startup plugin definition using shared storage and lifecycle with immutable Blazor block snapshots.</summary>
+public class BlazorPlugin : ApplicationPlugin, IBlazorPlugin {
 	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks)
 		: this(name, blocks, null) {
 	}
 
-	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks, Action<IServiceCollection> configureServices) {
-		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		Name = name;
-		Blocks = blocks.ToArray();
-		_configureServices = configureServices;
-	}
-
-	public string Name {
-		get => _name;
-		init {
-			Guard.Argument(!string.IsNullOrWhiteSpace(value), nameof(value), "A plugin name is required.");
-			_name = value;
-		}
+	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks, Action<IServiceCollection> configureServices)
+		: base(name, SnapshotBlocks(blocks), configureServices) {
 	}
 
 	/// <summary>Returns an array copy over immutable block snapshots for compatibility with the original plugin contract.</summary>
-	public IBlazorApplicationBlock[] Blocks {
-		get => _blocks.ToArray();
-		init {
-			Guard.ArgumentNotNull(value, nameof(value));
-			_blocks = new BlazorApplicationBlockCatalog(value).Blocks;
-		}
+	public new IBlazorApplicationBlock[] Blocks {
+		get => base.Blocks.Cast<IBlazorApplicationBlock>().ToArray();
+		init => base.Blocks = SnapshotBlocks(value);
 	}
 
 	/// <summary>Retained for compatibility. Plugins register into the host and never create a separate service provider.</summary>
 	public IServiceProvider IoCContainer => null;
 
-	public virtual void Load() => NotifyLoaded();
+	IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
 
-	/// <summary>Applies startup service registrations before notifying subscribers. Resolve scoped services in actions at execution time.</summary>
-	public void Load(IServiceCollection serviceCollection) {
-		Guard.ArgumentNotNull(serviceCollection, nameof(serviceCollection));
-		_configureServices?.Invoke(serviceCollection);
-		NotifyLoaded();
-	}
-
-	public virtual void Unload() => NotifyUnloaded();
-
-	protected virtual void OnLoaded() {
-	}
-
-	protected virtual void OnUnloaded() {
-	}
-
-	internal void NotifyLoaded() {
-		OnLoaded();
-		Loaded?.Invoke();
-	}
-
-	internal void NotifyUnloaded() {
-		OnUnloaded();
-		Unloaded?.Invoke();
+	private static IBlazorApplicationBlock[] SnapshotBlocks(IEnumerable<IBlazorApplicationBlock> blocks) {
+		Guard.ArgumentNotNull(blocks, nameof(blocks));
+		var definitions = blocks.ToArray();
+		var catalog = new BlazorApplicationBlockCatalog(definitions);
+		return definitions.Select(block => catalog.Get(block.Id ?? block.Title)).ToArray();
 	}
 }

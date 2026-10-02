@@ -15,6 +15,8 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<IBlazorApplicationMenu, BlazorApplicationBlock> {
+	private readonly List<IBlazorApplicationMenuItem> _toolBarItems = new();
+
 	public BlazorApplicationBlockBuilder WithId(string id) {
 		SetId(id);
 		return this;
@@ -43,11 +45,11 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<IBlazor
 		return this;
 	}
 
-	public BlazorApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null) where TScreen : IComponent, IBlazorApplicationScreen =>
-		WithDefaultScreen(typeof(TScreen), title);
+	public BlazorApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) where TScreen : IComponent, IBlazorApplicationScreen =>
+		WithDefaultScreen(typeof(TScreen), title, activationMode, screenKind);
 
-	public BlazorApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null) {
-		SetDefaultScreen(screenType, title);
+	public BlazorApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) {
+		SetDefaultScreen(screenType, title, activationMode, screenKind);
 		return this;
 	}
 
@@ -63,11 +65,27 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<IBlazor
 		return this;
 	}
 
+	public BlazorApplicationBlockBuilder AddToolBarItem(IBlazorApplicationMenuItem item) {
+		Guard.ArgumentNotNull(item, nameof(item));
+		_toolBarItems.Add(item);
+		return this;
+	}
+
+	public BlazorApplicationBlockBuilder AddToolBarItem(Action<BlazorApplicationMenuItemBuilder> configure) {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var builder = new BlazorApplicationMenuItemBuilder();
+		configure(builder);
+		return AddToolBarItem(builder.Build());
+	}
+
+	public BlazorApplicationBlockBuilder AddToolBarSeparator() => AddToolBarItem(new BlazorMenuSeparator());
+
 	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 
 	protected override BlazorApplicationBlock CreateBlock(IReadOnlyList<IBlazorApplicationMenu> menus) =>
 		BlazorApplicationBlockSnapshot.Create(new BlazorApplicationBlock {
 			Id = Id, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip,
-			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle, Menus = menus.ToArray()
+			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle,
+			DefaultScreenActivationMode = DefaultScreenActivationMode, DefaultScreenKind = DefaultScreenKind, Menus = menus.ToArray(), ToolBarItems = _toolBarItems.ToArray()
 		});
 }

@@ -17,6 +17,7 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	public const string DefaultIconUrl = "";
 
 	private readonly ApplicationBlock _definition = new();
+	private IBlazorApplicationMenuItem[] _toolBarItems = Array.Empty<IBlazorApplicationMenuItem>();
 
 	public string Id {
 		get => _definition.Id;
@@ -48,9 +49,27 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 		}
 	}
 
+	public IBlazorApplicationMenuItem[] ToolBarItems {
+		get => _toolBarItems.ToArray();
+		init {
+			Guard.ArgumentNotNull(value, nameof(value));
+			_toolBarItems = value.ToArray();
+		}
+	}
+
 	public Type DefaultScreen {
 		get => _definition.DefaultScreen;
 		init => _definition.DefaultScreen = value;
+	}
+
+	public ScreenActivationMode? DefaultScreenActivationMode {
+		get => _definition.DefaultScreenActivationMode;
+		init => _definition.DefaultScreenActivationMode = value;
+	}
+
+	public ScreenKind DefaultScreenKind {
+		get => _definition.DefaultScreenKind;
+		init => _definition.DefaultScreenKind = value;
 	}
 
 	public string DefaultScreenTitle {

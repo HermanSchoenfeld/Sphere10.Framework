@@ -34,6 +34,8 @@ public class PluginBuilderTests {
 		Assert.That(block.DefaultScreen, Is.EqualTo(typeof(TestScreen)));
 		Assert.That(block.Menus.Single().Items.Single().Id, Is.EqualTo("overview"));
 		Assert.That(plugin.IoCContainer, Is.Null);
+		Assert.That(plugin, Is.InstanceOf<ApplicationPlugin>());
+		Assert.That(((IApplicationPlugin)plugin).Blocks.Single(), Is.SameAs(block));
 	}
 
 	[Test]
@@ -67,6 +69,7 @@ public class PluginBuilderTests {
 		parameters["Message"] = "Changed";
 		blocks[0] = null;
 		plugin.Blocks[0] = null;
+		((IApplicationPlugin)plugin).Blocks[0] = null;
 
 		var screen = (BlazorScreenMenuItem)plugin.Blocks.Single().Menus.Single().Items.Single();
 		Assert.That(screen.Parameters["Message"], Is.EqualTo("Original"));
@@ -107,7 +110,7 @@ public class PluginBuilderTests {
 	[Test]
 	public void ConflictingScreenPoliciesAreRejectedAcrossPluginBlocks() {
 		var builder = new BlazorPluginBuilder().WithName("Workspace")
-			.AddBlock(block => block.WithId("single").WithName("Single").WithDefaultScreen<TestScreen>())
+			.AddBlock(block => block.WithId("single").WithName("Single").WithDefaultScreen<TestScreen>(activationMode: ScreenActivationMode.SingleInstance))
 			.AddBlock(block => block.WithId("multiple").WithName("Multiple")
 				.AddMenu(menu => menu.WithText("Screens").AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)));
 		Assert.That(() => builder.Build(), Throws.InstanceOf<ArgumentException>());
@@ -128,6 +131,7 @@ public class PluginBuilderTests {
 		Assert.That(result, Is.SameAs(services));
 		Assert.That(loaded, Is.EqualTo(1));
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
+		Assert.That(provider.GetServices<IApplicationPlugin>().Single(), Is.SameAs(plugin));
 		Assert.That(provider.GetRequiredService<IBlazorApplicationBlockCatalog>().Blocks, Is.Empty);
 	}
 
@@ -173,6 +177,7 @@ public class PluginBuilderTests {
 		Assert.That(host.Catalog.Blocks.Single().Id, Is.EqualTo("late"));
 		Assert.That(session.ScreenType, Is.EqualTo(typeof(TestScreen)));
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
+		Assert.That(provider.GetServices<IApplicationPlugin>().Single(), Is.SameAs(plugin));
 	}
 
 	[Test]
@@ -197,7 +202,7 @@ public class PluginBuilderTests {
 	public void RegistrationValidatesPoliciesAcrossPlugins() {
 		var services = new ServiceCollection();
 		services.AddSphere10BlazorPlugin(plugin => plugin.WithName("First")
-			.AddBlock(block => block.WithId("first").WithName("First").WithDefaultScreen<TestScreen>()));
+			.AddBlock(block => block.WithId("first").WithName("First").WithDefaultScreen<TestScreen>(activationMode: ScreenActivationMode.SingleInstance)));
 		Assert.That(() => services.AddSphere10BlazorPlugin(plugin => plugin.WithName("Second")
 			.AddBlock(block => block.WithId("second").WithName("Second")
 				.AddMenu(menu => menu.WithText("Screens").AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)))),
@@ -252,6 +257,53 @@ public class PluginBuilderTests {
 		Assert.That(plugin.Blocks.Single().Name, Is.EqualTo("Work"));
 		Assert.That(loaded, Is.EqualTo(1));
 		Assert.That(unloaded, Is.EqualTo(1));
+	}
+
+	[Test]
+	public void ExplicitLegacyPluginMembersDispatchThroughTheSharedContract() {
+		IBlazorPlugin platform = new ExplicitPlugin();
+		IApplicationPlugin shared = platform;
+		var loaded = 0;
+		var unloaded = 0;
+		shared.Loaded += () => loaded++;
+		shared.Unloaded += () => unloaded++;
+		var services = new ServiceCollection();
+		shared.Load(services);
+		shared.Unload();
+		Assert.That(shared.Name, Is.EqualTo(platform.Name));
+		Assert.That(shared.Blocks.Single(), Is.SameAs(platform.Blocks.Single()));
+		Assert.That(services.Single().ServiceType, Is.EqualTo(typeof(ScopedCounter)));
+		Assert.That(loaded, Is.EqualTo(1));
+		Assert.That(unloaded, Is.EqualTo(1));
+	}
+
+	private sealed class ExplicitPlugin : IBlazorPlugin {
+		private event EventHandlerEx _loaded;
+		private event EventHandlerEx _unloaded;
+		private readonly IBlazorApplicationBlock _block = new BlazorApplicationBlockBuilder().WithName("Explicit").Build();
+
+		event EventHandlerEx IBlazorPlugin.Loaded {
+			add => _loaded += value;
+			remove => _loaded -= value;
+		}
+
+		event EventHandlerEx IBlazorPlugin.Unloaded {
+			add => _unloaded += value;
+			remove => _unloaded -= value;
+		}
+
+		string IBlazorPlugin.Name => "Explicit";
+
+		IBlazorApplicationBlock[] IBlazorPlugin.Blocks => new[] { _block };
+
+		IServiceProvider IBlazorPlugin.IoCContainer => null;
+
+		void IBlazorPlugin.Load(IServiceCollection services) {
+			services.AddScoped<ScopedCounter>();
+			_loaded?.Invoke();
+		}
+
+		void IBlazorPlugin.Unload() => _unloaded?.Invoke();
 	}
 
 	private sealed class LateBlockPlugin : IBlazorPlugin {

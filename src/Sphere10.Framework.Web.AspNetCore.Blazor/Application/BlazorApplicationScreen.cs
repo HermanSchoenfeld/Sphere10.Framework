@@ -26,6 +26,13 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 	[Inject]
 	public IBlazorApplicationScreenHost ScreenHost { get; set; }
 
+	/// <summary>Override for a dynamic tab title and call NotifyScreenChanged after changing it.</summary>
+	public virtual string Title => null;
+
+	public virtual IBlazorApplicationMenu[] Menus => Array.Empty<IBlazorApplicationMenu>();
+
+	public virtual IBlazorApplicationMenuItem[] ToolBarItems => Array.Empty<IBlazorApplicationMenuItem>();
+
 	public virtual bool HasUnsavedChanges => false;
 
 	public virtual HelpType Type => HelpType.None;

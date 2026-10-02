@@ -129,7 +129,7 @@ public class ApplicationBlockTests {
 
 	[Test]
 	public void ConflictingActivationPoliciesAcrossBlocksAreRejected() {
-		var single = new BlazorApplicationBlockBuilder().WithId("single").WithName("Single").WithDefaultScreen<TestScreen>().Build();
+		var single = new BlazorApplicationBlockBuilder().WithId("single").WithName("Single").WithDefaultScreen<TestScreen>(activationMode: ScreenActivationMode.SingleInstance).Build();
 		var multiple = new BlazorApplicationBlockBuilder().WithId("multiple").WithName("Multiple")
 			.AddMenu(menu => menu.WithText("Menu").AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)).Build();
 		Assert.That(() => new BlazorApplicationBlockCatalog(new[] { single, multiple }), Throws.InstanceOf<ArgumentException>());
@@ -147,13 +147,54 @@ public class ApplicationBlockTests {
 	public async Task DefaultScreenTitleAndStableIdAreRetained() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var block = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block").WithDefaultScreen<TestScreen>("Dashboard")
-			.AddMenu(menu => menu.WithText("Menu").AddScreenItem<TestScreen>("screen", "Open dashboard")).Build();
+			.AddMenu(menu => menu.WithText("Menu").AddScreenItem<TestScreen>("screen", "Open dashboard", ScreenActivationMode.SingleInstance)).Build();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var session = await host.ActivateBlockAsync("block");
 
 		Assert.That(session.Title, Is.EqualTo("Dashboard"));
 		Assert.That(session.MenuItem.Id, Is.EqualTo("screen"));
 		Assert.That(await host.ActivateScreenAsync("block", session.MenuItem.Id), Is.SameAs(session));
+	}
+
+	[TestCase("model")]
+	[TestCase("factory")]
+	[TestCase("generic-builder")]
+	[TestCase("type-builder")]
+	[TestCase("item-builder")]
+	[TestCase("default-only")]
+	public async Task OmittedLifetimeCreatesIndependentSessionsThroughEveryRegistrationPath(string registration) {
+		var builder = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block");
+		if (registration == "default-only")
+			builder.WithDefaultScreen<TestScreen>();
+		else
+			builder.AddMenu(menu => {
+				menu.WithText("Screens");
+				switch (registration) {
+					case "model":
+						menu.AddItem(new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) });
+						break;
+					case "factory":
+						menu.AddItem(BlazorScreenMenuItem.For<TestScreen>("screen", "Screen"));
+						break;
+					case "generic-builder":
+						menu.AddScreenItem<TestScreen>("screen", "Screen");
+						break;
+					case "type-builder":
+						menu.AddScreenItem("screen", "Screen", typeof(TestScreen));
+						break;
+					case "item-builder":
+						menu.ConfigureItem(item => item.WithId("screen").WithText("Screen").WithScreen<TestScreen>());
+						break;
+				}
+			});
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { builder.Build() }), provider);
+		var first = await host.ActivateBlockAsync("block");
+		var second = await host.ActivateBlockAsync("block");
+
+		Assert.That(first.MenuItem.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
+		Assert.That(host.OpenScreens, Has.Length.EqualTo(2));
 	}
 
 	[Test]

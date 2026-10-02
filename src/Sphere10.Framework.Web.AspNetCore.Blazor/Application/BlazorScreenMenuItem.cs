@@ -25,7 +25,11 @@ public class BlazorScreenMenuItem : BlazorApplicationMenuItem, IScreenMenuItem {
 		}
 	}
 
-	public ScreenActivationMode ActivationMode { get; init; }
+	public ScreenActivationMode ActivationMode { get; init; } = ScreenActivationMode.MultiInstance;
+
+	public ScreenKind ScreenKind { get; init; }
+
+	public bool IsDefault { get; init; }
 
 	public IReadOnlyDictionary<string, object> Parameters {
 		get => _parameters;

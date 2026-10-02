@@ -8,6 +8,8 @@
 
 
 using System;
+using System.Collections.Generic;
+using Sphere10.Framework.Application.UI;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,19 +31,43 @@ public interface IBlazorApplicationScreenHost : IDisposable, IAsyncDisposable {
 	/// <summary>Gets the catalog blocks currently registered in this circuit, ordered by position.</summary>
 	IBlazorApplicationBlock[] Blocks { get; }
 
-	/// <summary>Gets the active block, including blocks that have actions but no screen.</summary>
+	/// <summary>Gets the block selected for navigation. It can differ from ActiveScreen.Block while browsing another block.</summary>
 	IBlazorApplicationBlock ActiveBlock { get; }
 
 	BlazorApplicationScreenSession ActiveScreen { get; }
 
+	/// <summary>All retained sessions, including singleton components hidden in single-view mode.</summary>
+	BlazorApplicationScreenSession[] Screens { get; }
+
+	/// <summary>Normal sessions in tab order. Empty screens are excluded; permanent sessions remain members in single-view mode.</summary>
 	BlazorApplicationScreenSession[] OpenScreens { get; }
+
+	ScreenMode ScreenMode { get; }
+
+	/// <summary>Opens permanent sessions and selects the first configured default once, unless a screen is already selected.</summary>
+	Task InitializeAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>Single view closes other ordinary tabs after preflighting every guard; the active and permanent components are retained.</summary>
+	Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default);
+
+	/// <summary>Changes tab order without changing selection or running activation callbacks.</summary>
+	Task MoveScreenAsync(Guid sessionId, int index, CancellationToken cancellationToken = default);
+
+	/// <summary>Preflights every specified screen before removing any. A batch containing a permanent screen is rejected.</summary>
+	Task<bool> CloseScreensAsync(IEnumerable<Guid> sessionIds, CancellationToken cancellationToken = default);
+
+	/// <summary>Executes an action or a screen command already registered in a block's menus.</summary>
+	Task<bool> ExecuteMenuItemAsync(IBlazorApplicationMenuItem item, CancellationToken cancellationToken = default);
 
 	/// <summary>Indicates whether any attached screen, including hidden screens, reports unsaved changes.</summary>
 	bool HasUnsavedChanges { get; }
 
+	/// <summary>Selects a registered block's navigation without changing screens, checking leave guards or invoking screen lifecycle callbacks.</summary>
+	Task SelectBlockAsync(string blockId, CancellationToken cancellationToken = default);
+
 	/// <summary>
-	/// Selects the block's default screen. Returns null on a guard veto or when an action-only block is selected;
-	/// inspect ActiveBlock to distinguish those outcomes. A newly returned session attaches its component when rendered.
+	/// Activates the block's default screen. Returns null on a guard veto or when an action-only block clears the active screen.
+	/// A veto preserves the existing navigation and screen selection. A new session attaches its component when rendered.
 	/// </summary>
 	Task<BlazorApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
@@ -54,7 +80,7 @@ public interface IBlazorApplicationScreenHost : IDisposable, IAsyncDisposable {
 	/// <summary>Selects an open session after checking the current screen's guard.</summary>
 	Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
-	/// <summary>Checks the session's guard and removes it. The renderer then disposes its component.</summary>
+	/// <summary>Rejects permanent sessions; otherwise checks the guard and removes the session. The renderer disposes its component.</summary>
 	Task<bool> CloseScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
 	/// <summary>Checks one session's guard without removing or deactivating it.</summary>
@@ -69,7 +95,7 @@ public interface IBlazorApplicationScreenHost : IDisposable, IAsyncDisposable {
 	/// <summary>Preflights every screen belonging to the block before removing any sessions or the block registration.</summary>
 	Task<bool> UnregisterBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
-	/// <summary>Restores a block from the catalog after it was unregistered from this circuit.</summary>
+	/// <summary>Restores a block from the catalog and opens its permanent sessions, preserving any selected normal screen.</summary>
 	Task RegisterBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
 	/// <summary>Attaches a renderer-created component and activates it only if its session is currently selected.</summary>

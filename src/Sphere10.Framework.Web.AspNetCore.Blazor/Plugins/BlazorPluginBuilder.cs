@@ -7,20 +7,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-/// <summary>Configures a plugin using the shared-backed application block and menu builders.</summary>
-public class BlazorPluginBuilder {
-	private readonly List<IBlazorApplicationBlock> _blocks = new();
-	private string _name;
-	private Action<IServiceCollection> _configureServices;
-
+/// <summary>Specializes shared plugin builder state with Blazor block and menu configuration.</summary>
+public class BlazorPluginBuilder : ApplicationPluginBuilderBase<IBlazorApplicationBlock, BlazorPlugin> {
 	public BlazorPluginBuilder WithName(string name) {
-		Guard.Argument(!string.IsNullOrWhiteSpace(name), nameof(name), "A plugin name is required.");
-		_name = name;
+		SetName(name);
 		return this;
 	}
 
@@ -32,21 +27,16 @@ public class BlazorPluginBuilder {
 	}
 
 	public BlazorPluginBuilder AddBlock(IBlazorApplicationBlock block) {
-		Guard.ArgumentNotNull(block, nameof(block));
-		_blocks.Add(block);
+		AddBlockDefinition(block);
 		return this;
 	}
 
 	/// <summary>Composes startup service registrations. These callbacks must not capture scoped service instances.</summary>
 	public BlazorPluginBuilder ConfigureServices(Action<IServiceCollection> configure) {
-		Guard.ArgumentNotNull(configure, nameof(configure));
-		_configureServices += configure;
+		AddServiceConfiguration(configure);
 		return this;
 	}
 
-	/// <summary>Creates an independent definition and validates block identities, screen types and activation policies.</summary>
-	public BlazorPlugin Build() {
-		Guard.Ensure(!string.IsNullOrWhiteSpace(_name), "A plugin name is required.");
-		return new BlazorPlugin(_name, _blocks, _configureServices);
-	}
+	protected override BlazorPlugin CreatePlugin(IBlazorApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
+		=> new(Name, blocks, configureServices);
 }

@@ -22,6 +22,10 @@ public interface IBlazorApplicationBlock : IApplicationBlock {
 
 	new IBlazorApplicationMenu[] Menus { get; }
 
+	new IBlazorApplicationMenuItem[] ToolBarItems => Array.Empty<IBlazorApplicationMenuItem>();
+
+	IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems => ToolBarItems;
+
 	Type IApplicationBlock.DefaultScreen => null;
 
 	IApplicationMenu[] IApplicationBlock.Menus => Menus;
