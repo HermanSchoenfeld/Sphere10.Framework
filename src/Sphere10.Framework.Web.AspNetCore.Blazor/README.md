@@ -928,3 +928,7 @@ For isolated package-consumer verification, run [validate-packages.ps1](../../va
 ## License
 
 Distributed under the MIT License; see [LICENSE](../../LICENSE).
+
+### Conditional wizard screens
+
+The modern wizard host observes the shared wizard's Changed event, so a step can insert a temporary screen with UpdateSteps and navigate to it through Next. Both Next and Back invoke the current step's validation callback. If that callback explicitly navigates the wizard (for example an Import step applying its preview and returning to the route screen with Previous), the host renders that destination without advancing a second time. Pending Back validation blocks competing navigation and cancellation; failed validation preserves the current screen.

@@ -15,13 +15,17 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
 /// <summary>Renders wizard steps and applies their validation and cancellation policies.</summary>
-public partial class BlazorWizardHost {
+public partial class BlazorWizardHost : IDisposable {
 	private IBlazorWizard _renderedWizard;
 	private BlazorWizardStepBase _currentStepInstance;
 	private bool _finishing;
 	private bool _cancelling;
 	private bool _finished;
 	private bool _cancelled;
+	private bool _navigating;
+	private bool _disposed;
+	private Type _renderedStepType;
+	private int _renderedStepIndex = -1;
 
 	[CascadingParameter(Name = "OnFinished")]
 	public EventCallback OnFinished { get; set; }
@@ -39,7 +43,7 @@ public partial class BlazorWizardHost {
 
 	public string Title { get; set; }
 
-	public bool IsBusy => _finishing || _cancelling;
+	public bool IsBusy => _finishing || _cancelling || _navigating;
 
 	public bool CanCancel => Wizard?.IsCancellable == true && (CurrentStepInstance?.IsCancellable ?? true);
 
@@ -57,17 +61,36 @@ public partial class BlazorWizardHost {
 
 	public Task NextAsync() => AdvanceAsync();
 
-	public Task PreviousAsync() {
-		if (IsBusy)
-			return Task.CompletedTask;
-		var result = Wizard.Previous();
+	public async Task PreviousAsync() {
+		if (IsBusy || _finished || _cancelled || !Wizard.HasPrevious)
+			return;
+		Guard.Ensure(CurrentStepInstance != null, "The current wizard step has not rendered.");
+		_navigating = true;
+		using var scope = Tools.Scope.ExecuteOnDispose(() => {
+			_navigating = false;
+			StateHasChanged();
+		});
 		ErrorMessages = Array.Empty<string>();
+		StateHasChanged();
+		var wizard = Wizard;
+		var stepType = wizard.CurrentStep;
+		var stepIndex = wizard.CurrentStepIndex;
+		var validation = await CurrentStepInstance.OnPreviousAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return;
+		if (wizard.CurrentStep != stepType || wizard.CurrentStepIndex != stepIndex) {
+			SynchronizeCurrentStep();
+			return;
+		}
+		if (!validation.IsSuccess) {
+			ErrorMessages = validation.ErrorMessages.ToArray();
+			return;
+		}
+		var result = wizard.Previous();
 		if (result)
-			CurrentStep = CreateStepFragment(Wizard.CurrentStep);
+			SynchronizeCurrentStep();
 		else
 			ErrorMessages = result.ErrorMessages.ToArray();
-		StateHasChanged();
-		return Task.CompletedTask;
 	}
 
 	public Task FinishAsync() => AdvanceAsync();
@@ -100,13 +123,18 @@ public partial class BlazorWizardHost {
 		Guard.Ensure(Wizard != null, "Wizard parameter is required.");
 		if (ReferenceEquals(_renderedWizard, Wizard))
 			return;
+		if (_renderedWizard != null)
+			_renderedWizard.Changed -= WizardChanged;
 		_renderedWizard = Wizard;
+		_renderedWizard.Changed += WizardChanged;
+		_renderedStepType = null;
+		_renderedStepIndex = -1;
 		_currentStepInstance = null;
 		_finished = false;
 		_cancelled = false;
 		ErrorMessages = Array.Empty<string>();
 		Title = Wizard.Title;
-		CurrentStep = CreateStepFragment(Wizard.CurrentStep);
+		SynchronizeCurrentStep();
 	}
 
 	private async Task AdvanceAsync() {
@@ -122,9 +150,16 @@ public partial class BlazorWizardHost {
 		StateHasChanged();
 		var wizard = Wizard;
 		var step = CurrentStepInstance;
+		var stepType = wizard.CurrentStep;
+		var stepIndex = wizard.CurrentStepIndex;
 		var validation = await step.OnNextAsync();
 		if (!ReferenceEquals(Wizard, wizard))
 			return;
+		if (wizard.CurrentStep != stepType || wizard.CurrentStepIndex != stepIndex) {
+			SynchronizeCurrentStep();
+			StateHasChanged();
+			return;
+		}
 		if (!validation.IsSuccess) {
 			ErrorMessages = validation.ErrorMessages.ToArray();
 			StateHasChanged();
@@ -133,7 +168,7 @@ public partial class BlazorWizardHost {
 		if (Wizard.HasNext) {
 			var navigation = Wizard.Next();
 			if (navigation)
-				CurrentStep = CreateStepFragment(Wizard.CurrentStep);
+				SynchronizeCurrentStep();
 			else
 				ErrorMessages = navigation.ErrorMessages.ToArray();
 			StateHasChanged();
@@ -152,9 +187,34 @@ public partial class BlazorWizardHost {
 	}
 
 
+	public void Dispose() {
+		_disposed = true;
+		if (_renderedWizard != null)
+			_renderedWizard.Changed -= WizardChanged;
+	}
+
+	private void WizardChanged() {
+		if (_disposed)
+			return;
+		_ = InvokeAsync(() => {
+			if (_disposed)
+				return;
+			SynchronizeCurrentStep();
+			StateHasChanged();
+		});
+	}
+
+	private void SynchronizeCurrentStep() {
+		if (_renderedStepType == Wizard.CurrentStep && _renderedStepIndex == Wizard.CurrentStepIndex)
+			return;
+		_renderedStepType = Wizard.CurrentStep;
+		_renderedStepIndex = Wizard.CurrentStepIndex;
+		CurrentStep = CreateStepFragment(_renderedStepType);
+	}
+
 	private RenderFragment CreateStepFragment(Type componentType) => builder => {
 		builder.OpenComponent(0, componentType);
-		builder.SetKey(Wizard);
+		builder.SetKey((Wizard, _renderedStepIndex));
 		builder.AddAttribute(1, nameof(Wizard), Wizard);
 		builder.AddComponentReferenceCapture(2, component => CurrentStepInstance = (BlazorWizardStepBase)component);
 		builder.CloseComponent();
