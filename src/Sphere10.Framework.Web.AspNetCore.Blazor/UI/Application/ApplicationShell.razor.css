@@ -27,7 +27,6 @@
 .sphere10-block-dock ::deep .application-blocks-compact button { padding: .4rem; }
 .sphere10-content { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--sphere10-surface, white); }
 .sphere10-tab-strip { flex: 0 0 auto; min-width: 0; padding: .2rem .4rem 0; background: var(--sphere10-background, #f4f6fa); }
-.sphere10-tab-strip ::deep .sphere10-tabs { margin: 0; }
 .sphere10-screen-body { flex: 1 1 auto; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1rem; }
 .sphere10-screen-body ::deep .sphere10-screen { min-width: 0; }
 .sphere10-footer { flex: 0 0 auto; display: flex; align-items: center; gap: .75rem; min-height: 1.7rem; padding: .2rem .65rem; border-top: 1px solid var(--sphere10-border, #dce2eb); background: var(--sphere10-surface-raised, #edf2f7); color: var(--sphere10-muted, #58687b); font-size: .75rem; }
