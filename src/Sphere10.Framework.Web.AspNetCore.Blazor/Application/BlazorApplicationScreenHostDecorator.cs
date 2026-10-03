@@ -52,6 +52,9 @@ public abstract class BlazorApplicationScreenHostDecorator<TConcrete> : IBlazorA
 
 	public virtual Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default) => InternalHost.ActivateScreenAsync(blockId, screenMenuItemId, cancellationToken);
 
+	public virtual Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, BlazorApplicationScreenActivation activation,
+		CancellationToken cancellationToken = default) => InternalHost.ActivateScreenAsync(blockId, screenMenuItemId, activation, cancellationToken);
+
 	public virtual Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default) => InternalHost.ShowScreenAsync(sessionId, cancellationToken);
 
 	public virtual Task<bool> CloseScreenAsync(Guid sessionId, CancellationToken cancellationToken = default) => InternalHost.CloseScreenAsync(sessionId, cancellationToken);

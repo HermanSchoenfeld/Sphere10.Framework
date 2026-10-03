@@ -77,6 +77,13 @@ public interface IBlazorApplicationScreenHost : IDisposable, IAsyncDisposable {
 	/// </summary>
 	Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default);
 
+	/// <summary>
+	/// Opens a registered screen with copied runtime parameters. A nonnull instance key reuses the same multi-instance
+	/// registration in this circuit. Singleton policies still reuse by type. Existing sessions retain their original parameters.
+	/// </summary>
+	Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, BlazorApplicationScreenActivation activation,
+		CancellationToken cancellationToken = default);
+
 	/// <summary>Selects an open session after checking the current screen's guard.</summary>
 	Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);
 

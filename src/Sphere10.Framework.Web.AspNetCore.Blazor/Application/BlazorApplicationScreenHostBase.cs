@@ -40,6 +40,9 @@ public abstract class BlazorApplicationScreenHostBase : Disposable, IBlazorAppli
 	public abstract Task<BlazorApplicationScreenSession> ActivateBlockAsync(string blockId, CancellationToken cancellationToken = default);
 
 	public abstract Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default);
+	public abstract Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, BlazorApplicationScreenActivation activation,
+		CancellationToken cancellationToken = default);
+
 	public abstract Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
 	public abstract Task<bool> CloseScreenAsync(Guid sessionId, CancellationToken cancellationToken = default);

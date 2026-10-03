@@ -632,6 +632,20 @@ var workspaceName = catalog.Get("work").Name;
 
 Block definitions are application-wide snapshots. Open sessions, active selections, event aggregation and modal services are scoped to the user circuit. Action delegates receive that circuit's `IServiceProvider`: do not capture a scoped service in a singleton registration. Registration-time menu event handlers are retained by the snapshots and must also avoid capturing per-user state. Parameter dictionaries are copied, but their values are shallow copies; use immutable parameter values and inject mutable per-user services into the component.
 
+For runtime entity editors, register the component with `AsMultiInstance()` and activate it with immutable entity IDs and an optional reuse key:
+
+```csharp
+var activation = new BlazorApplicationScreenActivation(
+	new Dictionary<string, object> { [nameof(ProjectScreen.ProjectId)] = projectId },
+	instanceKey: projectId.ToString("N")
+);
+var session = await screenHost.ActivateScreenAsync("projects", "project", activation, cancellationToken);
+```
+
+`BlazorApplicationScreenActivation` copies the parameter dictionary immediately; new sessions merge those overrides with the registered defaults using Blazor's case-insensitive parameter names. Values are shallow copies, so pass immutable identifiers rather than mutable draft objects. A nonnull key reuses a multi-instance session for the same block ID, registered screen menu ID and component type in the current circuit. Reuse selects the existing session without replacing its original parameters or draft. Keys use ordinal, case-sensitive equality. Null keys retain ordinary multi-instance behavior. `SingleInstance` and `PermanentSingleton` still reuse by component type regardless of the supplied key; runtime activation cannot replace the registered screen type or policy.
+
+Key lookup, creation, switching and removal all run through the existing serialized transition path and navigation guards. Closing a session, unregistering its block or releasing it in single-view mode also releases its key. The session exposes its effective `InstanceKey` (null for singleton sessions), while its random `Id` remains the renderer/tab identity. Use stable entity IDs in application deep links and resolve them again after refresh; circuit session IDs and retained drafts are not durable storage. Components remain owned and disposed by the renderer.
+
 Host the shell in an interactive routable page, for example **Components/Pages/Workspace.razor**:
 
 ```razor
@@ -651,6 +665,8 @@ Host the shell in an interactive routable page, for example **Components/Pages/W
 	[SupplyParameterFromQuery(Name = "instance")] public Guid? InstanceId { get; set; }
 }
 ```
+
+For stable entity URLs, optionally supply `NavigationUriFactory="GetScreenUri"`, where `GetScreenUri(BlazorApplicationScreenSession session)` returns a path such as `project/{projectId:D}` using the session's immutable parameters, or `application` for ordinary/null sessions. The callback is evaluated against the active session inside location synchronization, avoiding a parent-render race when tabs change. Direct programmatic host activation also schedules URL synchronization after rendering, while in-flight route requests and shell interactions retain ownership of their own navigation. Its path must remain within the application base and contain no query or fragment. When supplied, the shell uses that path directly and omits its default ephemeral block/screen/instance query. The containing routable page owns resolving that stable URL to a keyed activation on entry or refresh. Generated selection URLs do not repeat the host's already-accepted leave guards; other internal navigation still checks unsaved screens.
 
 `NavigationPath` is relative to the host's base URI. `ApplicationShell` supplies the application layout itself: menus and toolbar span the top, active-block navigation fills the left sidebar, compact block icons sit at its bottom, and tabs sit directly above the scrolling screen area. Place it inside a theme/modal provider layout without a second navigation shell. `Header` supplies branding beside the compact application title; `ToolBarContent` places search, theme or identity controls beside the command buttons in the toolbar below the file menus. The toolbar renders when that fragment is supplied even if there are no command items. `ApplicationCommandBar` exposes the same `ToolBarContent` slot for independent layouts. `SidebarHeader` supplies branding or an endpoint selector, `Sidebar` adds content below the block menus, and `Footer` supplies the status bar. `EmptyContent` is a fallback fragment when no screen is selected; a registered `ScreenKind.Empty` screen supplies a real component with its own lifetime instead. Narrow screens expose the navigation through the Menu button. For an existing layout, compose `ApplicationBlockMenu`, `ApplicationMenus` and `ApplicationScreenHostView` directly with `IBlazorApplicationScreenHost`. A menu selection awaits its action and exposes failures to the containing Blazor error boundary.
 

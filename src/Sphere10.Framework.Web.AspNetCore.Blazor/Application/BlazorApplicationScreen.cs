@@ -8,6 +8,7 @@
 
 using Sphere10.Framework.Application.UI;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -78,7 +79,9 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 	protected virtual ValueTask DisposeAsyncCore() => ValueTask.CompletedTask;
 
 	protected void NotifyScreenChanged() {
-		if (!_disposed && _attachedSessionId.HasValue)
+		// Closing removes the session before the renderer disposes this component.
+		if (!_disposed && _attachedSessionId.HasValue
+			&& ScreenHost.Screens.Any(session => session.Id == _attachedSessionId.Value && ReferenceEquals(session.Screen, this)))
 			ScreenHost.NotifyScreenChanged(_attachedSessionId.Value);
 	}
 

@@ -14,14 +14,22 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public sealed class BlazorApplicationScreenSession {
-	internal BlazorApplicationScreenSession(IBlazorApplicationBlock block, BlazorScreenMenuItem menuItem) {
+	internal BlazorApplicationScreenSession(IBlazorApplicationBlock block, BlazorScreenMenuItem menuItem, BlazorApplicationScreenActivation activation = null) {
 		Id = Guid.NewGuid();
 		Block = block;
 		MenuItem = menuItem;
-		Parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(menuItem.Parameters));
+		InstanceKey = menuItem.ActivationMode == ScreenActivationMode.MultiInstance ? activation?.InstanceKey : null;
+		var parameters = new Dictionary<string, object>(menuItem.Parameters, StringComparer.OrdinalIgnoreCase);
+		if (activation != null)
+			foreach (var parameter in activation.Parameters)
+				parameters[parameter.Key] = parameter.Value;
+		Parameters = new ReadOnlyDictionary<string, object>(parameters);
 	}
 
 	public Guid Id { get; }
+
+	/// <summary>Gets the effective reuse key for this multi-instance registration, or null for unkeyed and singleton sessions.</summary>
+	public string InstanceKey { get; }
 
 	public IBlazorApplicationBlock Block { get; }
 

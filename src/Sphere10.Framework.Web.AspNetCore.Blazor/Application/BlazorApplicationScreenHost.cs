@@ -22,6 +22,7 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 	private readonly Dictionary<string, IBlazorApplicationBlock> _blocks;
 	private readonly Dictionary<Guid, BlazorApplicationScreenSession> _screens = new();
 	private readonly Dictionary<Type, Guid> _singleInstances = new();
+	private readonly Dictionary<(string BlockId, string MenuItemId, Type ScreenType, string InstanceKey), Guid> _keyedInstances = new();
 	private readonly List<Guid> _tabOrder = new();
 	private ScreenMode _screenMode = ScreenMode.MultiView;
 	private readonly SemaphoreSlim _transitions = new(1, 1);
@@ -180,11 +181,15 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 		}, cancellationToken);
 
 	public override Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default) =>
+		ActivateScreenAsync(blockId, screenMenuItemId, null, cancellationToken);
+
+	public override Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, BlazorApplicationScreenActivation activation,
+		CancellationToken cancellationToken = default) =>
 		RunTransitionAsync(async token => {
 			var block = GetRegisteredBlock(blockId);
 			var item = GetMenuItem(block, screenMenuItemId);
 			Guard.Argument(item is BlazorScreenMenuItem, nameof(screenMenuItemId), "The menu item does not open a screen.");
-			return await ActivateCoreAsync(block, (BlazorScreenMenuItem)item, token);
+			return await ActivateCoreAsync(block, (BlazorScreenMenuItem)item, token, activation);
 		}, cancellationToken);
 
 	public override Task<bool> ShowScreenAsync(Guid sessionId, CancellationToken cancellationToken = default) =>
@@ -297,6 +302,7 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 		_screens.Clear();
 		_tabOrder.Clear();
 		_singleInstances.Clear();
+		_keyedInstances.Clear();
 		_blocks.Clear();
 		_lifetime.Dispose();
 		// Pending transitions may still release the semaphore after their cancellation is observed.
@@ -307,11 +313,16 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 		return ValueTask.CompletedTask;
 	}
 
-	private async Task<BlazorApplicationScreenSession> ActivateCoreAsync(IBlazorApplicationBlock block, BlazorScreenMenuItem item, CancellationToken token) {
+	private async Task<BlazorApplicationScreenSession> ActivateCoreAsync(IBlazorApplicationBlock block, BlazorScreenMenuItem item, CancellationToken token,
+		BlazorApplicationScreenActivation activation = null) {
 		item = ResolveScreenItem(block, item);
 		if (item.ScreenKind == ScreenKind.Empty && _tabOrder.Count > 0)
 			return null;
-		if (Tools.UI.IsSingleton(item.ActivationMode) && _singleInstances.TryGetValue(item.ScreenType, out var existingId)) {
+		Guid existingId;
+		var reuse = Tools.UI.IsSingleton(item.ActivationMode)
+			? _singleInstances.TryGetValue(item.ScreenType, out existingId)
+			: _keyedInstances.TryGetValue((block.Id, item.Id, item.ScreenType, activation?.InstanceKey), out existingId);
+		if (reuse) {
 			var existing = GetSession(existingId);
 			if (!await ShowCoreAsync(existing, token))
 				return null;
@@ -324,7 +335,7 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 		token.ThrowIfCancellationRequested();
 
 		HideInSingleView(_activeScreen);
-		var session = CreateSession(block, item);
+		var session = CreateSession(block, item, activation);
 		_activeScreen = session;
 		_activeBlock = block;
 		OnChanged();
@@ -370,10 +381,8 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 			await NotifyDeactivatedAsync(_activeScreen, token);
 		token.ThrowIfCancellationRequested();
 		foreach (var session in closing) {
-			_screens.Remove(session.Id);
+			RemoveSession(session);
 			_tabOrder.Remove(session.Id);
-			if (_singleInstances.TryGetValue(session.ScreenType, out var singleId) && singleId == session.Id)
-				_singleInstances.Remove(session.ScreenType);
 			// Removing its descriptor causes the renderer to dispose the keyed component.
 		}
 		if (activeClosing) {
@@ -399,7 +408,15 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 			return;
 		_tabOrder.Remove(session.Id);
 		if (session.MenuItem.ActivationMode == ScreenActivationMode.MultiInstance)
-			_screens.Remove(session.Id);
+			RemoveSession(session);
+	}
+
+	private void RemoveSession(BlazorApplicationScreenSession session) {
+		_screens.Remove(session.Id);
+		if (_singleInstances.TryGetValue(session.ScreenType, out var singleId) && singleId == session.Id)
+			_singleInstances.Remove(session.ScreenType);
+		if (session.InstanceKey != null)
+			_keyedInstances.Remove((session.Block.Id, session.MenuItem.Id, session.ScreenType, session.InstanceKey));
 	}
 
 	private ApplicationScreenDefinition[] GetDefinitions() => Tools.UI.GetScreenDefinitions(
@@ -427,13 +444,15 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 		return resolved;
 	}
 
-	private BlazorApplicationScreenSession CreateSession(IBlazorApplicationBlock block, BlazorScreenMenuItem item) {
-		var session = new BlazorApplicationScreenSession(block, item);
+	private BlazorApplicationScreenSession CreateSession(IBlazorApplicationBlock block, BlazorScreenMenuItem item, BlazorApplicationScreenActivation activation = null) {
+		var session = new BlazorApplicationScreenSession(block, item, activation);
 		_screens.Add(session.Id, session);
 		if (item.ScreenKind == ScreenKind.Normal)
 			_tabOrder.Add(session.Id);
 		if (Tools.UI.IsSingleton(item.ActivationMode))
 			_singleInstances.Add(item.ScreenType, session.Id);
+		else if (session.InstanceKey != null)
+			_keyedInstances.Add((block.Id, item.Id, item.ScreenType, session.InstanceKey), session.Id);
 		return session;
 	}
 

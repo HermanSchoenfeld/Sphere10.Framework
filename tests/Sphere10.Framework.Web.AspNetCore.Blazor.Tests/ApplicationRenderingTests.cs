@@ -58,6 +58,41 @@ public class ApplicationRenderingTests {
 	}
 
 	[Test]
+	public async Task KeyedProjectScreensRetainIndependentParametersDraftsAndRendererOwnedLifetimes() {
+		await using var provider = CreateServices().BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var firstId = Guid.NewGuid();
+			var secondId = Guid.NewGuid();
+			var first = await host.ActivateScreenAsync("test", "multiple",
+				new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = firstId }, "first"));
+			var rendered = await renderer.RenderComponentAsync<ApplicationScreenHostView>();
+			var firstComponent = (OtherScreen)first.Screen;
+			await firstComponent.IncrementAsync();
+			var second = await host.ActivateScreenAsync("test", "multiple",
+				new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = secondId }, "second"));
+			await rendered.QuiescenceTask;
+			var secondComponent = provider.GetRequiredService<ProbeState>().Created.OfType<OtherScreen>().Single(screen => screen.ProjectId == secondId);
+			await secondComponent.Initialized.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.That(second.Screen, Is.SameAs(secondComponent));
+			Assert.That(firstComponent.ProjectId, Is.EqualTo(firstId));
+			Assert.That(secondComponent.ProjectId, Is.EqualTo(secondId));
+			Assert.That(secondComponent.Count, Is.Zero);
+			var reused = await host.ActivateScreenAsync("test", "multiple",
+				new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = Guid.NewGuid() }, "first"));
+			Assert.That(reused, Is.SameAs(first));
+			Assert.That(reused.Screen, Is.SameAs(firstComponent));
+			Assert.That(firstComponent.Count, Is.EqualTo(1));
+			Assert.That(firstComponent.ProjectId, Is.EqualTo(firstId));
+			Assert.That(firstComponent.DisposalCount, Is.Zero);
+			Assert.That(await host.CloseScreenAsync(first.Id), Is.True);
+			Assert.That(firstComponent.DisposalCount, Is.EqualTo(1));
+			Assert.That(secondComponent.DisposalCount, Is.Zero);
+		});
+	}
+
+	[Test]
 	public async Task ScreenChangesNotifyWorkspaceAndGuardRejectsNavigation() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -297,6 +332,14 @@ public class ApplicationRenderingTests {
 	}
 
 	public class OtherScreen : ProbeScreen {
+		[Parameter] public Guid ProjectId { get; set; }
+
+		public TaskCompletionSource Initialized { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		protected override async Task OnInitializedAsync() {
+			await base.OnInitializedAsync();
+			Initialized.TrySetResult();
+		}
 	}
 
 	public class ShellHarness : ComponentBase {

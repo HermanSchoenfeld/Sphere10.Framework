@@ -28,7 +28,10 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	private int _navigationVersion;
 	private int _screenModeSelectionVersion;
 	private string _routeError;
+	private string _synchronizedLocation;
 	private bool _synchronizeLocation;
+	private bool _replaceSynchronizedLocation = true;
+	private int _navigationOperations;
 	private bool _disposed;
 	private readonly string _navigationId = "sphere10-navigation-" + Guid.NewGuid().ToString("N");
 	private ElementReference _navigationToggle;
@@ -46,6 +49,10 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	[Parameter] public string Title { get; set; } = "Application";
 
 	[Parameter] public string NavigationPath { get; set; } = "application";
+
+	/// <summary>Optionally maps the currently selected session (or null) to a path within the application base, without query or fragment.</summary>
+	/// <remarks>Evaluated when synchronizing selection; custom paths omit the default block, screen and instance query parameters.</remarks>
+	[Parameter] public Func<BlazorApplicationScreenSession, string> NavigationUriFactory { get; set; }
 
 	[Parameter] public string BlockId { get; set; }
 
@@ -73,13 +80,12 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	}
 
 	protected override async Task OnParametersSetAsync() {
-		Guard.ArgumentNotNullOrEmpty(NavigationPath, nameof(NavigationPath));
-		var shellUri = Navigation.ToAbsoluteUri(NavigationPath);
-		Guard.Argument(new Uri(Navigation.BaseUri).IsBaseOf(shellUri) && string.IsNullOrEmpty(shellUri.Query) && string.IsNullOrEmpty(shellUri.Fragment),
-			nameof(NavigationPath), "The shell path must be within the application's base URI and have no query or fragment.");
+		ResolveNavigationPath(NavigationPath, nameof(NavigationPath));
 		var request = (BlockId, ScreenId, InstanceId);
 		if (_lastRequest == request)
 			return;
+		_navigationOperations++;
+		using var operation = Tools.Scope.ExecuteOnDispose(() => _navigationOperations--);
 		CancelRouteRequest();
 		_lastRequest = request;
 		_routeError = null;
@@ -134,7 +140,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
 		if (_synchronizeLocation) {
 			_synchronizeLocation = false;
-			SynchronizeLocation(true);
+			SynchronizeLocation(_replaceSynchronizedLocation);
 		}
 		if (_focusNavigationToggle && !_disposed) {
 			_focusNavigationToggle = false;
@@ -213,6 +219,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	private async Task RunInteractionAsync(Func<CancellationToken, Task<bool>> action, bool replace) {
 		if (_disposed)
 			return;
+		_navigationOperations++;
+		using var operation = Tools.Scope.ExecuteOnDispose(() => _navigationOperations--);
 		CancelRouteRequest();
 		var version = _navigationVersion;
 		var token = _lifetimeCancellation.Token;
@@ -230,34 +238,64 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		if (_disposed)
 			return;
 		var session = ScreenHost.ActiveScreen;
-		var target = Navigation.ToAbsoluteUri(NavigationPath).AbsoluteUri;
-		if (session != null)
-			target += $"?block={Uri.EscapeDataString(session.Block.Id)}&screen={Uri.EscapeDataString(session.MenuItem.Id)}&instance={session.Id:D}";
-		else if (ScreenHost.ActiveBlock != null)
-			target += $"?block={Uri.EscapeDataString(ScreenHost.ActiveBlock.Id)}";
+		var target = NavigationUriFactory == null
+			? ResolveNavigationPath(NavigationPath, nameof(NavigationPath)).AbsoluteUri
+			: ResolveNavigationPath(NavigationUriFactory(session), nameof(NavigationUriFactory)).AbsoluteUri;
+		if (NavigationUriFactory == null) {
+			if (session != null)
+				target += $"?block={Uri.EscapeDataString(session.Block.Id)}&screen={Uri.EscapeDataString(session.MenuItem.Id)}&instance={session.Id:D}";
+			else if (ScreenHost.ActiveBlock != null)
+				target += $"?block={Uri.EscapeDataString(ScreenHost.ActiveBlock.Id)}";
+		}
 		_lastRequest = (session?.Block.Id ?? ScreenHost.ActiveBlock?.Id, session?.MenuItem.Id, session?.Id);
-		if (!string.Equals(Navigation.Uri, target, StringComparison.Ordinal))
+		if (!string.Equals(Navigation.Uri, target, StringComparison.Ordinal)) {
+			// This location reflects a transition already accepted by the host; do not run its leave guards twice.
+			_synchronizedLocation = target;
 			Navigation.NavigateTo(target, new NavigationOptions { ReplaceHistoryEntry = replace });
+		}
 	}
 
 	private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context) {
 		var destination = Navigation.ToAbsoluteUri(context.TargetLocation);
-		var shell = Navigation.ToAbsoluteUri(NavigationPath);
-		if (string.Equals(destination.GetLeftPart(UriPartial.Path), shell.GetLeftPart(UriPartial.Path), StringComparison.OrdinalIgnoreCase))
-			return;
+		if (NavigationUriFactory != null) {
+			if (string.Equals(destination.AbsoluteUri, _synchronizedLocation, StringComparison.Ordinal))
+				return;
+		} else {
+			var shell = Navigation.ToAbsoluteUri(NavigationPath);
+			if (string.Equals(destination.GetLeftPart(UriPartial.Path), shell.GetLeftPart(UriPartial.Path), StringComparison.OrdinalIgnoreCase))
+				return;
+		}
 		if (!await ScreenHost.CanNavigateAsync(context.CancellationToken))
 			context.PreventNavigation();
+	}
+
+	private Uri ResolveNavigationPath(string path, string parameterName) {
+		Guard.ArgumentNotNullOrEmpty(path, parameterName);
+		var target = Navigation.ToAbsoluteUri(path);
+		Guard.Argument(new Uri(Navigation.BaseUri).IsBaseOf(target) && string.IsNullOrEmpty(target.Query) && string.IsNullOrEmpty(target.Fragment),
+			parameterName, "The shell path must be within the application's base URI and have no query or fragment.");
+		return target;
 	}
 
 	private void CancelRouteRequest() {
 		_navigationVersion++;
 		_synchronizeLocation = false;
+		_replaceSynchronizedLocation = true;
 		_routeCancellation?.Cancel();
 		_routeCancellation?.Dispose();
 		_routeCancellation = null;
 	}
 	private void OnHostChanged() {
 		if (!_disposed)
-			_ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+			_ = InvokeAsync(() => {
+				if (_disposed)
+					return;
+				// Programmatic activation also needs an entity URL. Route requests and shell interactions own their own synchronization.
+				if (NavigationUriFactory != null && _navigationOperations == 0 && _routeError == null) {
+					_synchronizeLocation = true;
+					_replaceSynchronizedLocation = false;
+				}
+				StateHasChanged();
+			});
 	}
 }
