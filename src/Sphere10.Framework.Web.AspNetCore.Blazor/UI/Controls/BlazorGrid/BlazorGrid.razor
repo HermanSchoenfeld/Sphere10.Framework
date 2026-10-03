@@ -48,9 +48,9 @@
 	@if (Controller.IsEditing) {
 		<div class="sphere10-grid-edit-bar" role="group" aria-label="Edit item">
 			<strong>@(Controller.IsNewItem ? "New item" : "Editing selected item")</strong>
-			<button type="button" @onclick="SaveAsync" disabled="@(IsBusy || _editErrors.Count > 0)">Save</button>
+			<button type="button" @onclick="SaveAsync" disabled="@(IsBusy || _editErrors.Count > 0)">@SaveButtonText</button>
 			<button type="button" @onclick="CancelEdit" disabled="@IsBusy">Cancel</button>
-			<span>Changes are saved only when you choose Save.</span>
+			<span>@EditNotice</span>
 		</div>
 	}
 	<div class="sphere10-grid-viewport" style="@(AutoPageSize ? $"height: {Height}px" : null)">

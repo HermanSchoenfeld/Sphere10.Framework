@@ -27,6 +27,33 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BlazorGridRenderingTests {
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task EditActionTextCanDescribeDraftApplicationWithoutChangingDefaultBehavior(bool customizeText) {
+		var row = new Row { Name = "Original" };
+		var source = new ProbeSource<Row>(row);
+		var parameters = GridParameters(source);
+		var buttonText = customizeText ? "Apply row" : "Save";
+		var notice = customizeText ? "Apply this row to the draft. Save the project to persist it." : "Changes are saved only when you choose Save.";
+		if (customizeText) {
+			parameters[nameof(BlazorGrid<Row>.SaveButtonText)] = buttonText;
+			parameters[nameof(BlazorGrid<Row>.EditNotice)] = notice;
+		}
+		await RenderAsync<BlazorGrid<Row>>(parameters, (grid, _, rendered) => {
+			Assert.That(rendered.ToHtmlString(), Does.Not.Contain(notice));
+			grid.BeginEdit(row);
+			Assert.That(rendered.ToHtmlString(), Does.Contain($">{buttonText}</button>").And.Contain(notice));
+			if (customizeText)
+				Assert.That(rendered.ToHtmlString(), Does.Not.Contain(">Save</button>").And.Not.Contain("Changes are saved only when you choose Save."));
+			Assert.That(source.Updated, Is.Zero, "Changing editor wording does not persist a row.");
+			grid.CancelEdit();
+			Assert.That(rendered.ToHtmlString(), Does.Not.Contain(notice));
+			Assert.That(row.Name, Is.EqualTo("Original"));
+			return Task.CompletedTask;
+		});
+	}
+
+
 	[TestCase(true)]
 	[TestCase(false)]
 	public async Task CommandsRespectBothSourceCapabilitiesAndAllowedMask(bool restrictSource) {

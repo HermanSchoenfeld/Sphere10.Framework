@@ -47,6 +47,10 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	[Parameter] public string EmptyText { get; set; } = "No items found.";
 
+	[Parameter] public string SaveButtonText { get; set; } = "Save";
+
+	[Parameter] public string EditNotice { get; set; } = "Changes are saved only when you choose Save.";
+
 	[Parameter] public int PageSize { get; set; } = 10;
 
 	[Parameter] public IDataSource<TItem> DataSource { get; set; }
