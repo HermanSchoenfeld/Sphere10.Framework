@@ -25,6 +25,15 @@ internal static class BlazorApplicationBlockSnapshot {
 
 	internal static IBlazorApplicationMenuItem CreateItem(IBlazorApplicationMenuItem item) => Snapshot.CreateItem(item);
 
+	internal static IEnumerable<IBlazorApplicationMenuItem> EnumerateItems(IEnumerable<IBlazorApplicationMenuItem> items) {
+		foreach (var item in items) {
+			yield return item;
+			if (item is BlazorApplicationMenuGroup group)
+				foreach (var child in EnumerateItems(group.Items))
+					yield return child;
+		}
+	}
+
 	internal static void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 
 	internal static BlazorScreenMenuItem GetDefaultScreen(IBlazorApplicationBlock block) => (BlazorScreenMenuItem)Snapshot.GetDefaultScreen(block);
@@ -34,6 +43,9 @@ internal static class BlazorApplicationBlockSnapshot {
 
 		protected override IBlazorApplicationBlock CreateBlockSnapshot(IBlazorApplicationBlock block, string id, IBlazorApplicationMenu[] menus) {
 			Guard.ArgumentNotNull(block.ToolBarItems, nameof(block));
+			var registeredItems = EnumerateItems(menus.SelectMany(menu => menu.Items)).ToArray();
+			Guard.Argument(registeredItems.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count() == registeredItems.Length, nameof(block),
+				"Menu item IDs, including grouped actions, must be unique within a block.");
 			var toolbar = block.ToolBarItems.Select(CreateItem).ToArray();
 			foreach (var screen in toolbar.OfType<BlazorScreenMenuItem>())
 				Guard.Argument(menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
@@ -50,11 +62,22 @@ internal static class BlazorApplicationBlockSnapshot {
 			new BlazorApplicationMenu { Id = id, Text = menu.Text, Icon = menu.Icon, Items = items };
 
 		protected override IBlazorApplicationMenuItem CreateItemSnapshot(IBlazorApplicationMenuItem item, string id) {
-			if (item is BlazorMenuSeparator)
-				return new BlazorMenuSeparator { Id = id };
+			if (item is BlazorMenuSeparator separator)
+				return new BlazorMenuSeparator { Id = id, IsVisible = separator.IsVisible, CanExecute = separator.CanExecute };
+			if (item is BlazorApplicationMenuGroup group) {
+				var items = group.Items.Select(CreateItem).ToArray();
+				Guard.Argument(items.Length > 0 && items.All(child => child is not BlazorScreenMenuItem), nameof(item),
+					"Action groups require children; screen registrations must remain top-level block menu items.");
+				Guard.Argument(items.Select(child => child.Id).Distinct(StringComparer.Ordinal).Count() == items.Length, nameof(item), "Action group child IDs must be unique.");
+				var groupSnapshot = new BlazorApplicationMenuGroup {
+					Id = id, Title = group.Title, Icon = group.Icon, IsVisible = group.IsVisible, CanExecute = group.CanExecute, Items = items
+				};
+				groupSnapshot.CopySubscriptionsFrom(group);
+				return groupSnapshot;
+			}
 			if (item is BlazorScreenMenuItem screen) {
 				var snapshot = new BlazorScreenMenuItem {
-					Id = id, Title = screen.Title, Icon = screen.Icon, ScreenType = screen.ScreenType,
+					Id = id, Title = screen.Title, Icon = screen.Icon, IsVisible = screen.IsVisible, CanExecute = screen.CanExecute, ScreenType = screen.ScreenType,
 					ActivationMode = screen.ActivationMode, ScreenKind = screen.ScreenKind, IsDefault = screen.IsDefault, Parameters = screen.Parameters
 				};
 				snapshot.CopySubscriptionsFrom(screen);
@@ -63,7 +86,7 @@ internal static class BlazorApplicationBlockSnapshot {
 			Guard.Argument(item is BlazorActionMenuItem, nameof(item), "A screen or action menu item is required.");
 			var action = (BlazorActionMenuItem)item;
 			Guard.Argument(action.Action != null || action.AsyncAction != null, nameof(item), "An action callback is required.");
-			var actionSnapshot = new BlazorActionMenuItem { Id = id, Title = action.Title, Icon = action.Icon, Action = action.Action, AsyncAction = action.AsyncAction };
+			var actionSnapshot = new BlazorActionMenuItem { Id = id, Title = action.Title, Icon = action.Icon, IsVisible = action.IsVisible, CanExecute = action.CanExecute, Action = action.Action, AsyncAction = action.AsyncAction };
 			actionSnapshot.CopySubscriptionsFrom(action);
 			return actionSnapshot;
 		}
@@ -72,7 +95,7 @@ internal static class BlazorApplicationBlockSnapshot {
 			var screen = (BlazorScreenMenuItem)matchingScreen;
 			var defaultScreen = new BlazorScreenMenuItem {
 				Id = screen?.Id ?? DefaultScreenItemId, Title = block.DefaultScreenTitle ?? screen?.Title ?? block.DefaultScreen.Name,
-				Icon = screen?.Icon, ScreenType = block.DefaultScreen,
+				Icon = screen?.Icon, IsVisible = screen?.IsVisible ?? true, CanExecute = screen?.CanExecute, ScreenType = block.DefaultScreen,
 				ActivationMode = block.DefaultScreenActivationMode ?? screen?.ActivationMode ?? ScreenActivationMode.MultiInstance,
 				ScreenKind = block.DefaultScreenKind == ScreenKind.Normal ? screen?.ScreenKind ?? ScreenKind.Normal : block.DefaultScreenKind, IsDefault = true,
 				Parameters = screen?.Parameters ?? new Dictionary<string, object>()

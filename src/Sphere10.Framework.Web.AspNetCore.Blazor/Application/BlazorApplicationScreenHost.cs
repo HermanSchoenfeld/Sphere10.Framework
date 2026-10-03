@@ -128,6 +128,8 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 	public override async Task<bool> ExecuteMenuItemAsync(IBlazorApplicationMenuItem item, CancellationToken cancellationToken = default) {
 		EnsureUsable();
 		Guard.ArgumentNotNull(item, nameof(item));
+		if (!item.IsEnabled)
+			return false;
 		if (item is BlazorScreenMenuItem screen) {
 			var candidates = Blocks.Where(candidate => candidate.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
 				.Any(command => command.Id == screen.Id && command.ScreenType == screen.ScreenType && command.ActivationMode == screen.ActivationMode)).ToArray();
@@ -208,6 +210,8 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 		EnsureUsable();
 		var block = GetRegisteredBlock(blockId);
 		var item = GetMenuItem(block, menuItemId);
+		if (!item.IsEnabled)
+			return false;
 		if (item is BlazorScreenMenuItem)
 			return await ActivateScreenAsync(blockId, menuItemId, cancellationToken) != null;
 		Guard.Ensure(item is BlazorActionMenuItem, "The menu item is not executable.");
@@ -437,7 +441,7 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 		if (item.ActivationMode == mode && item.ScreenKind == definition.ScreenKind && item.IsDefault == definition.IsDefault)
 			return item;
 		var resolved = new BlazorScreenMenuItem {
-			Id = item.Id, Title = item.Title, Icon = item.Icon, ScreenType = item.ScreenType, ActivationMode = mode,
+			Id = item.Id, Title = item.Title, Icon = item.Icon, IsVisible = item.IsVisible, CanExecute = item.CanExecute, ScreenType = item.ScreenType, ActivationMode = mode,
 			ScreenKind = definition.ScreenKind, IsDefault = definition.IsDefault, Parameters = item.Parameters
 		};
 		resolved.CopySubscriptionsFrom(item);
@@ -500,7 +504,7 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 
 	private static IBlazorApplicationMenuItem GetMenuItem(IBlazorApplicationBlock block, string menuItemId) {
 		Guard.ArgumentNotNullOrEmpty(menuItemId, nameof(menuItemId));
-		var item = block.Menus.SelectMany(menu => menu.Items).FirstOrDefault(item => item.Id == menuItemId);
+		var item = BlazorApplicationBlockSnapshot.EnumerateItems(block.Menus.SelectMany(menu => menu.Items)).FirstOrDefault(item => item.Id == menuItemId);
 		var defaultScreen = block.DefaultScreen == null ? null : BlazorApplicationBlockSnapshot.GetDefaultScreen(block);
 		if (defaultScreen?.Id == menuItemId)
 			item = defaultScreen;

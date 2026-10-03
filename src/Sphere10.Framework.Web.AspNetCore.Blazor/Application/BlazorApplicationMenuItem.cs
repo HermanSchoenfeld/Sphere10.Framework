@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -29,6 +30,13 @@ public abstract class BlazorApplicationMenuItem : IBlazorApplicationMenuItem {
 	}
 
 	public string Icon { get; init; }
+
+	public bool IsVisible { get; init; } = true;
+
+	/// <summary>Use circuit-owned predicates for dynamic commands; shared registrations must not capture user state.</summary>
+	public Func<bool> CanExecute { get; init; }
+
+	public bool IsEnabled => CanExecute?.Invoke() ?? true;
 
 	public string Title {
 		get => _definition.Title;

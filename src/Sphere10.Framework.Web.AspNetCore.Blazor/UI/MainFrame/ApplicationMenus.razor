@@ -13,31 +13,13 @@
 
 @if (Block != null) {
 	<nav aria-label="@($"{Block.Title} menus")" class="application-menus @(NavigationPalette ? "application-menus-navigation" : null)">
-		@foreach (var menu in Block.Menus) {
+		@foreach (var menu in Block.Menus.Where(menu => menu.Items.Any(item => item.IsVisible))) {
 			<section>
 				<h2>
-					@if (!string.IsNullOrWhiteSpace(menu.Icon)) {
-						<span class="@menu.Icon" aria-hidden="true"></span>
-					}
+					@if (!string.IsNullOrWhiteSpace(menu.Icon)) { <span class="@menu.Icon" aria-hidden="true"></span> }
 					@menu.Text
 				</h2>
-				<ul>
-					@foreach (var item in menu.Items) {
-						@if (item is IApplicationMenuSeparator) {
-							<li role="separator"><hr /></li>
-						} else {
-							<li>
-								<button type="button" aria-current="@(ActiveItemId == item.Id ? "page" : null)" @onclick="() => OnSelect.InvokeAsync(item)"
-									@onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
-									@if (!string.IsNullOrWhiteSpace(item.Icon)) {
-										<span class="@item.Icon" aria-hidden="true"></span>
-									}
-									@item.Title
-								</button>
-							</li>
-						}
-					}
-				</ul>
+				@MenuItems(menu.Items)
 			</section>
 		}
 	</nav>
@@ -51,6 +33,24 @@
 	[Parameter] public bool NavigationPalette { get; set; }
 
 	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelect { get; set; }
+
+	private RenderFragment MenuItems(IBlazorApplicationMenuItem[] items, bool ancestorEnabled = true) => @<ul>
+		@foreach (var item in items.Where(item => item.IsVisible)) {
+			@if (item is IApplicationMenuSeparator) {
+				<li role="separator"><hr /></li>
+			} else if (item is BlazorApplicationMenuGroup group) {
+				<li><span>@group.Title</span>@MenuItems(group.Items, ancestorEnabled && group.IsEnabled)</li>
+			} else {
+				<li>
+					<button type="button" aria-current="@(ActiveItemId == item.Id ? "page" : null)" disabled="@(!ancestorEnabled || !item.IsEnabled)"
+						@onclick="() => OnSelect.InvokeAsync(item)" @onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
+						@if (!string.IsNullOrWhiteSpace(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
+						@item.Title
+					</button>
+				</li>
+			}
+		}
+	</ul>;
 
 	private static void NotifyHover(IBlazorApplicationMenuItem item) {
 		if (item is BlazorApplicationMenuItem menuItem)

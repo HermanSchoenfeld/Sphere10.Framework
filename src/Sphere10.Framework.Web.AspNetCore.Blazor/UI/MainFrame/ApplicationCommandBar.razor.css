@@ -24,3 +24,6 @@
 	.sphere10-tool-commands { flex-basis: 100%; }
 	.sphere10-tool-content { flex: 1 1 100%; }
 }
+
+.sphere10-command-group-label { display: block; padding: .3rem .55rem; font-size: .8rem; font-weight: 600; color: var(--sphere10-text-muted, #526274); }
+.sphere10-command-group + .sphere10-command-group { border-top: 1px solid var(--sphere10-border, #dce2eb); }

@@ -19,4 +19,10 @@ public interface IBlazorApplicationMenuItem : IApplicationMenuItem {
 
 	string Icon { get; }
 
+	/// <summary>Presentation only: hidden commands remain available for programmatic activation.</summary>
+	bool IsVisible => true;
+
+	/// <summary>Whether this command can currently execute.</summary>
+	bool IsEnabled => true;
+
 }

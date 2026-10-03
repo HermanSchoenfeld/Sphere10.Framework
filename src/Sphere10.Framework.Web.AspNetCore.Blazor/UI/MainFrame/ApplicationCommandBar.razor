@@ -13,43 +13,43 @@
 	@if (_openMenu != null) {
 		<button class="sphere10-menu-dismiss" type="button" aria-label="Dismiss application menu" tabindex="-1" @onclick="CloseMenu"></button>
 	}
-	@if (Menus.Length > 0) {
+	@if (Menus.Any(menu => menu.Items.Any(item => item.IsVisible))) {
 		<nav class="sphere10-menu-strip" aria-label="Application commands">
-			@foreach (var menu in Menus) {
-				<div @key="menu.Id" class="sphere10-top-menu">
-					<button @ref="_menuButtons[menu.Id]" type="button" class="sphere10-menu-button" aria-expanded="@(_openMenu == menu.Id ? "true" : "false")"
-						@onclick="() => ToggleMenu(menu.Id)">@menu.Text</button>
-					@if (_openMenu == menu.Id) {
-					<div class="sphere10-command-menu" role="group" aria-label="@menu.Text">
-						@foreach (var item in menu.Items) {
-							@if (item is IApplicationMenuSeparator) {
-								<hr />
-							} else {
-								<button type="button" disabled="@_executing" @onclick="() => ExecuteAsync(item)" @onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
-									@if (!string.IsNullOrEmpty(item.Icon)) {
-										<span class="@item.Icon" aria-hidden="true"></span>
-									}
-									@item.Title
-								</button>
-							}
-						}
-					</div>
+			@foreach (var menu in Menus.Where(menu => menu.Items.Any(item => item.IsVisible))) {
+				var key = "menu:" + menu.Id;
+				<div @key="key" class="sphere10-top-menu">
+					<button @ref="_menuButtons[key]" type="button" class="sphere10-menu-button" aria-haspopup="true"
+						aria-expanded="@(_openMenu == key ? "true" : "false")" disabled="@_executing" @onclick="() => ToggleMenu(key)">@menu.Text</button>
+					@if (_openMenu == key) {
+						<div class="sphere10-command-menu" role="group" aria-label="@menu.Text">@MenuItems(menu.Items)</div>
 					}
 				</div>
 			}
 		</nav>
 	}
-	@if (ToolBarItems.Length > 0 || ToolBarContent != null) {
+	@if (ToolBarItems.Any(item => item.IsVisible) || ToolBarContent != null) {
 		<div class="sphere10-tool-strip" role="toolbar" aria-label="Application toolbar">
 			<div class="sphere10-tool-commands">
-				@foreach (var item in ToolBarItems) {
+				@foreach (var item in ToolBarItems.Where(item => item.IsVisible)) {
 					@if (item is IApplicationMenuSeparator) {
 						<span role="separator" aria-orientation="vertical"></span>
-					} else {
-						<button type="button" title="@item.Title" disabled="@_executing" @onclick="() => ExecuteAsync(item)" @onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
-							@if (!string.IsNullOrEmpty(item.Icon)) {
-								<span class="@item.Icon" aria-hidden="true"></span>
+					} else if (item is BlazorApplicationMenuGroup group) {
+						var key = "toolbar:" + group.Id;
+						<div @key="key" class="sphere10-top-menu">
+							<button @ref="_menuButtons[key]" type="button" title="@item.Title" aria-haspopup="true"
+								aria-expanded="@(_openMenu == key ? "true" : "false")" disabled="@(_executing || !item.IsEnabled)"
+								@onclick="() => ToggleMenu(key)" @onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
+								@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
+								@item.Title <span class="sphere10-dropdown-arrow" aria-hidden="true">▾</span>
+							</button>
+							@if (_openMenu == key) {
+								<div class="sphere10-command-menu" role="group" aria-label="@group.Title">@MenuItems(group.Items, group.IsEnabled)</div>
 							}
+						</div>
+					} else {
+						<button type="button" title="@item.Title" disabled="@(_executing || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
+							@onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
+							@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
 							@item.Title
 						</button>
 					}
@@ -79,9 +79,11 @@
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Menus, nameof(Menus));
 		Guard.ArgumentNotNull(ToolBarItems, nameof(ToolBarItems));
-		foreach (var id in _menuButtons.Keys.Where(id => Menus.All(menu => menu.Id != id)).ToArray())
+		var keys = Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => "menu:" + menu.Id)
+			.Concat(ToolBarItems.OfType<BlazorApplicationMenuGroup>().Where(group => group.IsVisible && group.IsEnabled).Select(group => "toolbar:" + group.Id)).ToHashSet();
+		foreach (var id in _menuButtons.Keys.Where(id => !keys.Contains(id)).ToArray())
 			_menuButtons.Remove(id);
-		if (_openMenu != null && Menus.All(menu => menu.Id != _openMenu))
+		if (_openMenu != null && !keys.Contains(_openMenu))
 			_openMenu = null;
 	}
 
@@ -91,6 +93,25 @@
 		if (focus != null && _menuButtons.TryGetValue(focus, out var button))
 			await button.FocusAsync();
 	}
+
+	private RenderFragment MenuItems(IBlazorApplicationMenuItem[] items, bool ancestorEnabled = true) => @<text>
+		@foreach (var item in items.Where(item => item.IsVisible)) {
+			@if (item is IApplicationMenuSeparator) {
+				<hr />
+			} else if (item is BlazorApplicationMenuGroup group) {
+				<div class="sphere10-command-group" role="group" aria-label="@group.Title">
+					<span class="sphere10-command-group-label">@group.Title</span>
+					@MenuItems(group.Items, ancestorEnabled && group.IsEnabled)
+				</div>
+			} else {
+				<button type="button" disabled="@(_executing || !ancestorEnabled || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
+					@onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
+					@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
+					@item.Title
+				</button>
+			}
+		}
+	</text>;
 
 	private void ToggleMenu(string id) => _openMenu = _openMenu == id ? null : id;
 
@@ -110,7 +131,7 @@
 	}
 
 	private async Task ExecuteAsync(IBlazorApplicationMenuItem item) {
-		if (_executing)
+		if (_executing || !item.IsEnabled)
 			return;
 		_executing = true;
 		CloseMenu();

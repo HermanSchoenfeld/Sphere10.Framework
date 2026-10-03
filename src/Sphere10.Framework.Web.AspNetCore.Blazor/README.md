@@ -763,6 +763,14 @@ Tabs retain each renderer-created component and its state. `ApplicationScreenTab
 
 The host defaults to `ScreenMode.MultiView`. Set `ApplicationShell.ShowScreenModeSelector` to show a compact Tabs/Single screen selector in the header, or call `TrySetScreenModeAsync` from application commands. The tester uses its View menu for these commands. Entering `SingleView` checks every ordinary tab that would close before removing any; permanent sessions are retained. During subsequent navigation, hidden single-instance screens remain mounted and multi-instance screens are released. `Screens` includes retained hidden sessions; `OpenScreens` contains normal tab membership in presentation order, including permanent sessions while the single-view layout hides the tab strip. Empty screens are excluded. `MoveScreenAsync` changes only that order. `CloseScreensAsync` preflights the whole batch and preserves every session if a guard rejects it. Components remain owned by the renderer, including disposal after accepted closure. Docking is not part of the Blazor host.
 
+## Command presentation and availability
+
+BlazorApplicationMenuItemBuilder.WithVisibility(false) hides a command from the sidebar, top menus and toolbar while retaining its registered identity. A hidden multi-instance screen can still be opened through ActivateScreenAsync with runtime parameters and an instance key, or through a deep link. Visibility is presentation metadata, not authorization.
+
+EnabledWhen(Func<bool>) evaluates current command availability in both the rendered controls and the host's ExecuteMenuItemAsync overloads. Return the screen's dirty state to make Save available only while changes exist, and call NotifyScreenChanged after that state changes. Predicates on screen-owned commands may refer to that screen; shared registrations must not capture a circuit or user. Explicit programmatic screen activation remains independent of command availability.
+
+WithChildren(routeCommand, segmentCommand, summaryCommand) creates a BlazorApplicationMenuGroup. Return the group from a screen's ToolBarItems to show one Export dropdown containing its action commands. The native command bar retains command execution coalescing, disabled child controls, outside-click dismissal, Escape and focus restoration. Groups in top menus appear as labelled action sections. Register screens as top-level block menu items rather than inside action groups; keep child command IDs unique.
+
 ## Default, permanent and empty screens
 
 `ScreenActivationMode` and `ScreenKind` come from `Sphere10.Framework.Application.UI`. Lifetime and presentation role are independent.

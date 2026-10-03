@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -17,6 +18,9 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase {
 	private string _icon;
+	private bool _isVisible = true;
+	private Func<bool> _canExecute;
+	private IBlazorApplicationMenuItem[] _children;
 
 	public BlazorApplicationMenuItemBuilder WithId(string id) {
 		SetId(id);
@@ -78,14 +82,42 @@ public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase {
 		return this;
 	}
 
+	/// <summary>Changes presentation without unregistering the command or its screen.</summary>
+	public BlazorApplicationMenuItemBuilder WithVisibility(bool isVisible) {
+		_isVisible = isVisible;
+		return this;
+	}
+
+	public BlazorApplicationMenuItemBuilder EnabledWhen(Func<bool> canExecute) {
+		Guard.ArgumentNotNull(canExecute, nameof(canExecute));
+		_canExecute = canExecute;
+		return this;
+	}
+
+	/// <summary>Creates an action group. Screen registrations remain top-level block menu items.</summary>
+	public BlazorApplicationMenuItemBuilder WithChildren(params IBlazorApplicationMenuItem[] children) {
+		Guard.ArgumentNotNull(children, nameof(children));
+		Guard.Argument(children.Length > 0 && children.All(child => child != null), nameof(children), "An action group requires children.");
+		_children = children.ToArray();
+		return this;
+	}
+
 	public BlazorApplicationMenuItem Build() {
+		if (_children != null) {
+			Guard.Ensure(!string.IsNullOrWhiteSpace(Text), "Menu item text is required.");
+			Guard.Ensure(ScreenType == null && Action == null && AsyncAction == null && !IsDefault && ActivationMode == null && ScreenKind == ScreenKind.Normal,
+				"An action group cannot also declare an action or screen behavior.");
+			return (BlazorApplicationMenuGroup)BlazorApplicationBlockSnapshot.CreateItem(new BlazorApplicationMenuGroup {
+				Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, Items = _children
+			});
+		}
 		ValidateItem();
 		if (ScreenType != null)
 			return new BlazorScreenMenuItem {
-				Id = Id, Title = Text, Icon = _icon, ScreenType = ScreenType,
+				Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, ScreenType = ScreenType,
 				ActivationMode = ActivationMode ?? ScreenActivationMode.MultiInstance, ScreenKind = ScreenKind, IsDefault = IsDefault, Parameters = Parameters
 			};
-		return new BlazorActionMenuItem { Id = Id, Title = Text, Icon = _icon, AsyncAction = AsyncAction };
+		return new BlazorActionMenuItem { Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, AsyncAction = AsyncAction };
 	}
 
 	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
