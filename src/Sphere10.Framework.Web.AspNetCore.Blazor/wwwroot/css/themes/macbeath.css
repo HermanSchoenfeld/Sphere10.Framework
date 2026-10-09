@@ -1,0 +1,79 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+@import url("../themes.css");
+
+/* MacBeath in the MacAdmin 5.3 bundle: red accents on square white panels and raised controls. See docs/theming-template-sources.md for the source audit. */
+.sphere10-theme[data-sphere10-theme="macbeath"] {
+	--sphere10-font-family: Arial, Helvetica, sans-serif;
+	--sphere10-heading-font-family: "Open Sans", Arial, sans-serif;
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 600;
+	--sphere10-letter-spacing: normal;
+	--sphere10-background: #f6f6f6;
+	--sphere10-surface: #ffffff;
+	--sphere10-surface-raised: #f1f1f1;
+	--sphere10-text: #555555;
+	--sphere10-muted: #666666;
+	--sphere10-border: #dddddd;
+	--sphere10-border-strong: #b9b9b9;
+	--sphere10-accent: #ff5d5e;
+	--sphere10-accent-contrast: #18202c;
+	--sphere10-hover: #fff0f0;
+	--sphere10-selected: #ffe1e1;
+	--sphere10-editing: #edf6e7;
+	--sphere10-danger: #d9534f;
+	--sphere10-success: #5cb85c;
+	--sphere10-warning-background: #fff6e2;
+	--sphere10-focus: var(--sphere10-accent);
+	--sphere10-shadow: 0 2px 4px #00000012;
+	--sphere10-header-background: var(--sphere10-surface);
+	--sphere10-header-text: var(--sphere10-text);
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: var(--sphere10-surface);
+	--sphere10-navigation-text: var(--sphere10-text);
+	--sphere10-navigation-active-text: #a92027;
+	--sphere10-navigation-icon: #c6363c;
+	--sphere10-navigation-muted: var(--sphere10-muted);
+	--sphere10-navigation-hover: var(--sphere10-hover);
+	--sphere10-navigation-selected: #ffe1e1;
+	--sphere10-navigation-border: var(--sphere10-border);
+	--sphere10-control-radius: 3px;
+	--sphere10-panel-radius: 0;
+	--sphere10-control-shadow: inset 0 1px 1px #00000013;
+	--sphere10-control-font-weight: 600;
+	--sphere10-grid-cell-padding: .45rem .65rem;
+	--sphere10-toolbar-background: var(--sphere10-surface);
+	--sphere10-menu-background: var(--sphere10-surface);
+	--sphere10-tab-radius: 0;
+	--sphere10-secondary: #777777;
+	--sphere10-info: #5bc0de;
+	--sphere10-warning: #f0ad4e;
+	--sphere10-light: #f5f5f5;
+	--sphere10-dark: #333333;
+	--sphere10-control-padding-y: .375rem;
+	--sphere10-control-padding-x: .75rem;
+	--sphere10-control-border-width: 1px;
+	--sphere10-card-header-background: #f5f5f5;
+	--sphere10-card-shadow: 0 1px 1px #0000000d;
+	--sphere10-table-striped-background: #f9f9f9;
+	--sphere10-table-hover-background: #f5f5f5;
+	--sphere10-button-shadow: 0 2px 0 #00000015;
+	--sphere10-secondary-contrast: #000000;
+	--sphere10-success-contrast: #18202c;
+	--sphere10-info-contrast: #18202c;
+	--sphere10-warning-contrast: #18202c;
+	--sphere10-danger-contrast: #000000;
+	--sphere10-light-contrast: #18202c;
+	--sphere10-dark-contrast: #ffffff;
+	--sphere10-accent-text: #c6363c;
+	--sphere10-success-text: #246b42;
+	--sphere10-danger-text: #a51c30;
+	color-scheme: light;
+}

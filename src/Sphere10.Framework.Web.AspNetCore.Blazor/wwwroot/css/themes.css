@@ -7,9 +7,20 @@ LICENSE or visit https://opensource.org/license/mit.
 
 This notice must not be removed when duplicating this file or its contents, in whole or in part.
 */
-/* Tokens are inherited within a provider; loading this sheet does not theme the host document. */
-.sphere10-theme,
-[data-sphere10-theme="light"] {
+@import url("theme-bootstrap.css");
+
+/* Shared defaults only. Template families live in css/themes/<name>.css. */
+.sphere10-theme {
+	--sphere10-heading-font-family: var(--sphere10-font-family);
+	--sphere10-letter-spacing: normal;
+	--sphere10-control-radius: .25rem;
+	--sphere10-panel-radius: .4rem;
+	--sphere10-tab-radius: .35rem;
+	--sphere10-control-shadow: none;
+	--sphere10-control-font-weight: 400;
+	--sphere10-grid-cell-padding: .5rem .6rem;
+	--sphere10-toolbar-background: var(--sphere10-surface);
+	--sphere10-menu-background: var(--sphere10-surface);
 	--sphere10-font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 	--sphere10-heading-text: var(--sphere10-text);
 	--sphere10-heading-weight: 500;
@@ -41,118 +52,65 @@ This notice must not be removed when duplicating this file or its contents, in w
 	--sphere10-navigation-hover: var(--sphere10-hover);
 	--sphere10-navigation-selected: var(--sphere10-selected);
 	--sphere10-navigation-border: var(--sphere10-border);
+	/* Semantic roles and component treatments. Template files override these independently. */
+	--sphere10-secondary: #58687b;
+	--sphere10-secondary-contrast: #ffffff;
+	--sphere10-success-contrast: #ffffff;
+	--sphere10-info: #16718a;
+	--sphere10-info-contrast: #ffffff;
+	--sphere10-warning: #a96500;
+	--sphere10-warning-contrast: #ffffff;
+	--sphere10-danger-contrast: #ffffff;
+	--sphere10-light: #f4f6fa;
+	--sphere10-light-contrast: #202b3d;
+	--sphere10-dark: #202b3d;
+	--sphere10-dark-contrast: #ffffff;
+	--sphere10-input-radius: var(--sphere10-control-radius);
+	--sphere10-button-font-weight: var(--sphere10-control-font-weight);
+	--sphere10-control-padding-y: .375rem;
+	--sphere10-control-padding-x: .75rem;
+	--sphere10-control-border-width: 1px;
+	--sphere10-button-padding-y: var(--sphere10-control-padding-y);
+	--sphere10-button-padding-x: var(--sphere10-control-padding-x);
+	--sphere10-button-shadow: var(--sphere10-control-shadow);
+	--sphere10-button-text-transform: none;
+	--sphere10-button-letter-spacing: normal;
+	--sphere10-card-border-width: 1px;
+	--sphere10-card-header-background: var(--sphere10-surface-raised);
+	--sphere10-card-shadow: none;
+	--sphere10-table-striped-background: var(--sphere10-surface-raised);
+	--sphere10-table-hover-background: var(--sphere10-hover);
+	--sphere10-focus-ring: 0 0 0 .2rem color-mix(in srgb, var(--sphere10-focus) 25%, transparent);
+	--sphere10-accent-text: color-mix(in srgb, var(--sphere10-accent) 20%, var(--sphere10-text));
+	--sphere10-secondary-text: color-mix(in srgb, var(--sphere10-secondary) 20%, var(--sphere10-text));
+	--sphere10-success-text: color-mix(in srgb, var(--sphere10-success) 20%, var(--sphere10-text));
+	--sphere10-info-text: color-mix(in srgb, var(--sphere10-info) 20%, var(--sphere10-text));
+	--sphere10-warning-text: color-mix(in srgb, var(--sphere10-warning) 20%, var(--sphere10-text));
+	--sphere10-danger-text: color-mix(in srgb, var(--sphere10-danger) 20%, var(--sphere10-text));
+	--sphere10-light-text: color-mix(in srgb, var(--sphere10-light) 20%, var(--sphere10-text));
+	--sphere10-dark-text: color-mix(in srgb, var(--sphere10-dark) 20%, var(--sphere10-text));
 	color-scheme: light;
-}
-
-[data-sphere10-theme="dark"] {
-	--sphere10-font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-	--sphere10-heading-text: var(--sphere10-text);
-	--sphere10-heading-weight: 500;
-	--sphere10-background: #131a26;
-	--sphere10-surface: #1b2433;
-	--sphere10-surface-raised: #243248;
-	--sphere10-text: #e9eef7;
-	--sphere10-muted: #aebcd0;
-	--sphere10-border: #354359;
-	--sphere10-border-strong: #5b6c85;
-	--sphere10-accent: #8cbeff;
-	--sphere10-accent-contrast: #091a2f;
-	--sphere10-hover: #263650;
-	--sphere10-selected: #243e5e;
-	--sphere10-editing: #1c4037;
-	--sphere10-danger: #ff9caa;
-	--sphere10-success: #8ad5aa;
-	--sphere10-warning-background: #463719;
-	--sphere10-focus: #8cbeff;
-	--sphere10-shadow: 0 .25rem .75rem #00000050;
-	--sphere10-header-background: #243248;
-	--sphere10-header-text: #e9eef7;
-	--sphere10-header-shadow: var(--sphere10-shadow);
-	--sphere10-navigation-background: var(--sphere10-surface);
-	--sphere10-navigation-text: var(--sphere10-text);
-	--sphere10-navigation-active-text: var(--sphere10-text);
-	--sphere10-navigation-icon: var(--sphere10-muted);
-	--sphere10-navigation-muted: var(--sphere10-muted);
-	--sphere10-navigation-hover: var(--sphere10-hover);
-	--sphere10-navigation-selected: var(--sphere10-selected);
-	--sphere10-navigation-border: var(--sphere10-border);
-	color-scheme: dark;
-}
-
-/* Both blue skins share their palette; Classic blue restores the original Loader typography and topbar. */
-[data-sphere10-theme="blue"],
-[data-sphere10-theme="classic-blue"] {
-	--sphere10-font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-	--sphere10-heading-text: var(--sphere10-text);
-	--sphere10-heading-weight: 500;
-	--sphere10-background: #f8f9fc;
-	--sphere10-surface: #ffffff;
-	--sphere10-surface-raised: #f3f5fc;
-	--sphere10-text: #3a3b45;
-	--sphere10-muted: #6b6d7d;
-	--sphere10-border: #e3e6f0;
-	--sphere10-border-strong: #b5bdd5;
-	--sphere10-accent: #4e73df;
-	--sphere10-accent-contrast: #ffffff;
-	--sphere10-hover: #eaecf4;
-	--sphere10-selected: #e3eafd;
-	--sphere10-editing: #e3f6ed;
-	--sphere10-danger: #b92c23;
-	--sphere10-success: #137d5c;
-	--sphere10-warning-background: #fff4d9;
-	--sphere10-focus: #224abe;
-	--sphere10-shadow: 0 .15rem 1.75rem #3a3b4526;
-	--sphere10-header-background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
-	--sphere10-header-text: #ffffff;
-	--sphere10-header-shadow: var(--sphere10-shadow);
-	--sphere10-navigation-background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
-	--sphere10-navigation-text: #ffffff;
-	--sphere10-navigation-active-text: #ffffff;
-	--sphere10-navigation-icon: #ffffff;
-	--sphere10-navigation-muted: #ffffffcc;
-	--sphere10-navigation-hover: #ffffff1f;
-	--sphere10-navigation-selected: #ffffff2e;
-	--sphere10-navigation-border: #ffffff26;
-	color-scheme: light;
-}
-
-[data-sphere10-theme="classic-blue"] {
-	--sphere10-font-family: Roboto, Helvetica, Arial, sans-serif;
-	--sphere10-heading-text: #5a5c69;
-	--sphere10-heading-weight: 400;
-	--sphere10-header-background: #ffffff;
-	--sphere10-header-text: #858796;
-	--sphere10-navigation-icon: #ffffff80;
-	--sphere10-navigation-text: #ffffffcc;
 }
 
 .sphere10-theme {
-	/* Bootstrap is optional. These variables keep Bootstrap controls aligned when a host includes it. */
-	--bs-body-font-family: var(--sphere10-font-family);
-	--bs-heading-color: var(--sphere10-heading-text);
-	--bs-body-bg: var(--sphere10-background);
-	--bs-body-color: var(--sphere10-text);
-	--bs-secondary-color: var(--sphere10-muted);
-	--bs-secondary-bg: var(--sphere10-surface-raised);
-	--bs-tertiary-bg: var(--sphere10-surface-raised);
-	--bs-border-color: var(--sphere10-border);
-	--bs-link-color: var(--sphere10-accent);
-	--bs-link-hover-color: var(--sphere10-accent);
-	--bs-emphasis-color: var(--sphere10-text);
 	font-family: var(--sphere10-font-family);
+	letter-spacing: var(--sphere10-letter-spacing);
 	color: var(--sphere10-text);
 	background: var(--sphere10-background);
 }
 
+/* Native controls still work without Bootstrap. Component classes refine their own states. */
 .sphere10-theme :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]), select, textarea) {
 	color: var(--sphere10-text);
 	background-color: var(--sphere10-surface);
 	border-color: var(--sphere10-border-strong);
 }
-
-.sphere10-theme :where(h1, h2, h3, h4, h5, h6) { color: var(--sphere10-heading-text); font-weight: var(--sphere10-heading-weight); }
+.sphere10-theme :where(input, select, textarea) { border-radius: var(--sphere10-input-radius); }
+.sphere10-theme :where(input:disabled, select:disabled, textarea:disabled) { color: var(--sphere10-muted); background-color: var(--sphere10-surface-raised); }
 .sphere10-theme :where(input, textarea)::placeholder { color: var(--sphere10-muted); opacity: 1; }
-.sphere10-theme :where(a:not(.btn)) { color: var(--sphere10-accent); }
-.sphere10-theme :where(.text-muted) { color: var(--sphere10-muted) !important; }
-.sphere10-theme :where(.text-danger, .validation-message) { color: var(--sphere10-danger) !important; }
-.sphere10-theme :where(.text-success) { color: var(--sphere10-success) !important; }
+.sphere10-theme :where(input[type="checkbox"], input[type="radio"], input[type="range"]) { accent-color: var(--sphere10-accent); }
+.sphere10-theme :where(h1, h2, h3, h4, h5, h6) { color: var(--sphere10-heading-text); font-weight: var(--sphere10-heading-weight); font-family: var(--sphere10-heading-font-family); }
+.sphere10-theme :where(a:not([class])) { color: var(--sphere10-accent-text); }
+.sphere10-theme .validation-message { color: var(--sphere10-danger-text); }
+.sphere10-theme .invalid:not([type="checkbox"]) { border-color: var(--sphere10-danger); }
+.sphere10-theme .valid.modified:not([type="checkbox"]) { border-color: var(--sphere10-success); }

@@ -14,9 +14,8 @@
 <label class="sphere10-theme-selector @Class">
 	<span>Theme</span>
 	<select aria-label="Theme" @onchange="ChangeTheme">
-		<option value="classic-blue" selected="@(ThemeService.CurrentTheme == ThemeMode.ClassicBlue)">Classic blue</option>
-		<option value="blue" selected="@(ThemeService.CurrentTheme == ThemeMode.Blue)">Blue</option>
-		<option value="light" selected="@(ThemeService.CurrentTheme == ThemeMode.Light)">Light</option>
-		<option value="dark" selected="@(ThemeService.CurrentTheme == ThemeMode.Dark)">Dark</option>
+		@foreach (var theme in ThemeCatalog.All) {
+			<option value="@theme.Id" selected="@(ThemeService.CurrentTheme == theme.Mode)">@theme.Name</option>
+		}
 	</select>
 </label>

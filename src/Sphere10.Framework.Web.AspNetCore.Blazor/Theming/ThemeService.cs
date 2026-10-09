@@ -16,21 +16,16 @@ public class ThemeService : ThemeServiceBase {
 	}
 
 	public ThemeService(ThemeMode initialTheme) {
-		Guard.Argument(
-			initialTheme is ThemeMode.Light or ThemeMode.Dark or ThemeMode.Blue or ThemeMode.ClassicBlue,
-			nameof(initialTheme),
-			"The theme must be Light, Dark, Blue or ClassicBlue."
-		);
-		_currentTheme = initialTheme;
+		_currentTheme = ThemeCatalog.Get(initialTheme).Mode;
 	}
 
 	public override ThemeMode CurrentTheme => _currentTheme;
 
 	public override void SetTheme(ThemeMode theme) {
-		Guard.Argument(theme is ThemeMode.Light or ThemeMode.Dark or ThemeMode.Blue or ThemeMode.ClassicBlue, nameof(theme), "The theme must be Light, Dark, Blue or ClassicBlue.");
-		if (_currentTheme == theme)
+		var definition = ThemeCatalog.Get(theme);
+		if (_currentTheme == definition.Mode)
 			return;
-		_currentTheme = theme;
+		_currentTheme = definition.Mode;
 		OnChanged();
 	}
 }

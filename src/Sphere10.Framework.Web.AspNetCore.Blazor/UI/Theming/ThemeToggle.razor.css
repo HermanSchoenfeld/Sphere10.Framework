@@ -12,7 +12,7 @@ This notice must not be removed when duplicating this file or its contents, in w
 	align-items: center;
 	gap: .5rem;
 	border: 1px solid var(--sphere10-border-strong, #adb9c8);
-	border-radius: .4rem;
+	border-radius: var(--sphere10-control-radius, .4rem);
 	padding: .45rem .75rem;
 	font: inherit;
 	color: var(--sphere10-text, #202b3d);

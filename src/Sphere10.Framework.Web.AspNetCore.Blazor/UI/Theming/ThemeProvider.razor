@@ -10,6 +10,7 @@
 @namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
 @inherits ThemedComponentBase
 
+<link rel="stylesheet" href="@Assets[CurrentTheme.StylesheetPath]" data-sphere10-theme-stylesheet="@ThemeName" />
 <div class="sphere10-theme @Class" style="@Style" data-sphere10-theme="@ThemeName" data-bs-theme="@BootstrapThemeName">
 	@ChildContent
 </div>

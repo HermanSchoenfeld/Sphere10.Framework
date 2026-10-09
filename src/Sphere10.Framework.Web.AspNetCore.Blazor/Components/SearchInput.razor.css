@@ -22,24 +22,27 @@ This notice must not be removed when duplicating this file or its contents, in w
 .sphere10-search-field input {
 	width: 100%;
 	min-width: 0;
-	padding: .65rem .85rem;
-	border: 1px solid var(--sphere10-border, #e3e6f0);
+	padding: var(--sphere10-control-padding-y, .65rem) var(--sphere10-control-padding-x, .85rem);
+	border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-border, #e3e6f0);
 	border-right: 0;
-	border-radius: .35rem 0 0 .35rem;
+	border-radius: var(--sphere10-input-radius, var(--sphere10-control-radius, .35rem)) 0 0 var(--sphere10-input-radius, var(--sphere10-control-radius, .35rem));
 	color: var(--sphere10-text, #3a3b45);
 	background: var(--sphere10-background, #f8f9fc);
 	font: inherit;
 	font-size: .85rem;
+	font-weight: var(--sphere10-control-font-weight, 400);
+	box-shadow: var(--sphere10-control-shadow, none);
 }
 
 .sphere10-search-field button {
 	display: grid;
 	place-items: center;
-	padding: .65rem .85rem;
-	border: 1px solid var(--sphere10-accent, #4e73df);
-	border-radius: 0 .35rem .35rem 0;
+	padding: var(--sphere10-button-padding-y, var(--sphere10-control-padding-y, .65rem)) var(--sphere10-button-padding-x, var(--sphere10-control-padding-x, .85rem));
+	border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-accent, #4e73df);
+	border-radius: 0 var(--sphere10-control-radius, .35rem) var(--sphere10-control-radius, .35rem) 0;
 	color: var(--sphere10-accent-contrast, #fff);
 	background: var(--sphere10-accent, #4e73df);
+	box-shadow: var(--sphere10-button-shadow, var(--sphere10-control-shadow, none));
 	cursor: pointer;
 }
 
@@ -58,8 +61,8 @@ This notice must not be removed when duplicating this file or its contents, in w
 	max-height: min(24rem, 60vh);
 	overflow-y: auto;
 	padding: .35rem 0;
-	border: 1px solid var(--sphere10-border, #e3e6f0);
-	border-radius: .35rem;
+	border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-border, #e3e6f0);
+	border-radius: var(--sphere10-panel-radius, .35rem);
 	color: var(--sphere10-text, #3a3b45);
 	background: var(--sphere10-surface, #fff);
 	box-shadow: var(--sphere10-shadow, 0 .15rem 1.75rem #3a3b4526);

@@ -15,9 +15,9 @@ This notice must not be removed when duplicating this file or its contents, in w
 	height: 2.25rem;
 	flex: 0 0 auto;
 	padding: .3rem;
-	border-radius: .35rem;
+	border-radius: var(--sphere10-control-radius, .35rem);
 	background: var(--sphere10-accent, #2456a6);
-	background: color-mix(in srgb, var(--sphere10-accent, #2456a6) 65%, #000);
+	background: color-mix(in srgb, var(--sphere10-accent, #2456a6) 65%, var(--sphere10-dark, #000));
 }
 .sidebar-brand-home span { min-width: 0; }
 .sidebar-brand-home small { display: block; font-size: .75rem; font-weight: 400; }
@@ -30,9 +30,10 @@ This notice must not be removed when duplicating this file or its contents, in w
 	overflow: hidden;
 	text-overflow: ellipsis;
 	font: inherit;
-	padding: .4rem .25rem;
-	border: 1px solid var(--sphere10-navigation-border);
-	border-radius: .25rem;
+	padding: var(--sphere10-control-padding-y, .4rem) var(--sphere10-control-padding-x, .25rem);
+	border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-navigation-border);
+	border-radius: var(--sphere10-input-radius, var(--sphere10-control-radius, .25rem));
+	box-shadow: var(--sphere10-control-shadow, none);
 	color: var(--sphere10-text);
 	background: var(--sphere10-surface);
 }

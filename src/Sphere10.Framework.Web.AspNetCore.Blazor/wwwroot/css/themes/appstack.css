@@ -1,0 +1,149 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+@import url("../themes.css");
+
+/* AppStack 3.0.0 beta 1 Bootstrap 5: Poppins typography, slate navigation and compact raised cards. See docs/theming-template-sources.md for the source audit. */
+.sphere10-theme[data-sphere10-theme="appstack"] {
+	--sphere10-font-family: Poppins, "Segoe UI", Arial, sans-serif;
+	--sphere10-heading-font-family: var(--sphere10-font-family);
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 600;
+	--sphere10-letter-spacing: normal;
+	--sphere10-background: #f7f9fc;
+	--sphere10-surface: #ffffff;
+	--sphere10-surface-raised: #f4f7f9;
+	--sphere10-text: #495057;
+	--sphere10-muted: #626b74;
+	--sphere10-border: #dee6ed;
+	--sphere10-border-strong: #adb5bd;
+	--sphere10-accent: #3f80ea;
+	--sphere10-accent-contrast: #000000;
+	--sphere10-hover: #ecf2fc;
+	--sphere10-selected: #dfeafe;
+	--sphere10-editing: #edf6e7;
+	--sphere10-danger: #d9534f;
+	--sphere10-success: #4bbf73;
+	--sphere10-warning-background: #fff6e2;
+	--sphere10-focus: #3f80ea;
+	--sphere10-shadow: 0 0 .875rem #0000000d;
+	--sphere10-header-background: var(--sphere10-surface);
+	--sphere10-header-text: var(--sphere10-text);
+	--sphere10-header-shadow: 0 0 2rem #0000001a;
+	--sphere10-navigation-background: #293042;
+	--sphere10-navigation-text: #d1d8e2;
+	--sphere10-navigation-active-text: #ffffff;
+	--sphere10-navigation-icon: #aebbcf;
+	--sphere10-navigation-muted: #aebbcf;
+	--sphere10-navigation-hover: #ffffff0c;
+	--sphere10-navigation-selected: #2868c8;
+	--sphere10-navigation-border: #414a60;
+	--sphere10-control-radius: .2rem;
+	--sphere10-panel-radius: .25rem;
+	--sphere10-control-shadow: none;
+	--sphere10-control-font-weight: 400;
+	--sphere10-grid-cell-padding: .55rem .75rem;
+	--sphere10-toolbar-background: var(--sphere10-surface);
+	--sphere10-menu-background: var(--sphere10-surface);
+	--sphere10-tab-radius: .2rem;
+	--sphere10-secondary: #495057;
+	--sphere10-info: #1f9bcf;
+	--sphere10-warning: #e5a54b;
+	--sphere10-light: #eff2f6;
+	--sphere10-dark: #293042;
+	--sphere10-control-padding-y: .25rem;
+	--sphere10-control-padding-x: .7rem;
+	--sphere10-control-border-width: 1px;
+	--sphere10-card-header-background: #ffffff;
+	--sphere10-card-shadow: 0 0 .875rem #2930420d;
+	--sphere10-table-striped-background: #f4f7f9;
+	--sphere10-table-hover-background: #f4f7f9;
+	--sphere10-button-shadow: none;
+	--sphere10-card-border-width: 0;
+	--sphere10-secondary-contrast: #ffffff;
+	--sphere10-success-contrast: #18202c;
+	--sphere10-info-contrast: #18202c;
+	--sphere10-warning-contrast: #18202c;
+	--sphere10-danger-contrast: #000000;
+	--sphere10-light-contrast: #18202c;
+	--sphere10-dark-contrast: #ffffff;
+	--sphere10-accent-text: #2868c8;
+	--sphere10-success-text: #246b42;
+	--sphere10-danger-text: #a51c30;
+	color-scheme: light;
+}
+
+.sphere10-theme[data-sphere10-theme="appstack-dark"] {
+	--sphere10-font-family: Poppins, "Segoe UI", Arial, sans-serif;
+	--sphere10-heading-font-family: var(--sphere10-font-family);
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 600;
+	--sphere10-letter-spacing: normal;
+	--sphere10-background: #202634;
+	--sphere10-surface: #293042;
+	--sphere10-surface-raised: #3e4555;
+	--sphere10-text: #e9ebef;
+	--sphere10-muted: #bfc4ce;
+	--sphere10-border: #545a68;
+	--sphere10-border-strong: #777f8f;
+	--sphere10-accent: #3f80ea;
+	--sphere10-accent-contrast: #000000;
+	--sphere10-hover: #354461;
+	--sphere10-selected: #324a72;
+	--sphere10-editing: #284e41;
+	--sphere10-danger: #d9534f;
+	--sphere10-success: #4bbf73;
+	--sphere10-warning-background: #4e3d25;
+	--sphere10-focus: #3f80ea;
+	--sphere10-shadow: 0 0 .875rem #00000026;
+	--sphere10-header-background: var(--sphere10-surface);
+	--sphere10-header-text: var(--sphere10-text);
+	--sphere10-header-shadow: 0 0 2rem #00000022;
+	--sphere10-navigation-background: #293042;
+	--sphere10-navigation-text: #d1d8e2;
+	--sphere10-navigation-active-text: #ffffff;
+	--sphere10-navigation-icon: #aebbcf;
+	--sphere10-navigation-muted: #aebbcf;
+	--sphere10-navigation-hover: #ffffff0c;
+	--sphere10-navigation-selected: #2868c8;
+	--sphere10-navigation-border: #414a60;
+	--sphere10-control-radius: .2rem;
+	--sphere10-panel-radius: .25rem;
+	--sphere10-control-shadow: none;
+	--sphere10-control-font-weight: 400;
+	--sphere10-grid-cell-padding: .55rem .75rem;
+	--sphere10-toolbar-background: var(--sphere10-surface);
+	--sphere10-menu-background: var(--sphere10-surface);
+	--sphere10-tab-radius: .2rem;
+	--sphere10-secondary: #7f838e;
+	--sphere10-info: #1f9bcf;
+	--sphere10-warning: #cc8b37;
+	--sphere10-light: #343a4b;
+	--sphere10-dark: #eaeaec;
+	--sphere10-control-padding-y: .25rem;
+	--sphere10-control-padding-x: .7rem;
+	--sphere10-control-border-width: 1px;
+	--sphere10-card-header-background: #293042;
+	--sphere10-card-shadow: 0 0 .875rem #2930420d;
+	--sphere10-table-striped-background: #343a4b;
+	--sphere10-table-hover-background: #3e4555;
+	--sphere10-button-shadow: none;
+	--sphere10-card-border-width: 0;
+	--sphere10-secondary-contrast: #000000;
+	--sphere10-success-contrast: #18202c;
+	--sphere10-info-contrast: #18202c;
+	--sphere10-warning-contrast: #18202c;
+	--sphere10-danger-contrast: #000000;
+	--sphere10-light-contrast: #ffffff;
+	--sphere10-dark-contrast: #18202c;
+	--sphere10-accent-text: #8ab7ff;
+	--sphere10-success-text: #82d5a0;
+	--sphere10-danger-text: #ff9caa;
+	color-scheme: dark;
+}

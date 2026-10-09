@@ -1,4 +1,4 @@
-﻿.bg-colour-alternate { background-color: #050e2b; }
+﻿.bg-colour-alternate { background: var(--sphere10-navigation-background); color: var(--sphere10-navigation-text); }
 
 .bottom-sidebar {
     position: absolute;

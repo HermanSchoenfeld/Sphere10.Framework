@@ -1,4 +1,4 @@
 ﻿.main-menu a {
-    color: #6e707e;
+    color: var(--sphere10-text);
     font-size: 0.85rem;
 }

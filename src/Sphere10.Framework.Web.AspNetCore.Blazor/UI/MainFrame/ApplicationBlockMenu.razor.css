@@ -13,11 +13,13 @@ This notice must not be removed when duplicating this file or its contents, in w
 	display: flex;
 	align-items: center;
 	gap: .5rem;
-	padding: .75rem;
-	border: 1px solid var(--sphere10-border-strong, #c7d1df);
-	border-radius: .3rem;
+	padding: var(--sphere10-control-padding-y, .75rem) var(--sphere10-control-padding-x, .75rem);
+	border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-border-strong, #c7d1df);
+	border-radius: var(--sphere10-control-radius, .3rem);
 	background: var(--sphere10-surface, white);
 	color: var(--sphere10-text, #202b3d);
+	font-weight: var(--sphere10-control-font-weight, 400);
+	box-shadow: var(--sphere10-control-shadow, none);
 	text-align: left;
 	text-decoration: none;
 	cursor: pointer;
@@ -34,11 +36,11 @@ This notice must not be removed when duplicating this file or its contents, in w
 	flex: 0 0 auto;
 	object-fit: contain;
 	padding: .15rem;
-	border-radius: .2rem;
+	border-radius: var(--sphere10-control-radius, .2rem);
 	background: var(--sphere10-block-icon-background, #fff);
 }
 .application-blocks-compact { flex-direction: row; flex-wrap: wrap; gap: .75rem; margin: 0; }
-.application-blocks-compact button, .application-blocks-compact a { justify-content: center; padding: .65rem; }
+.application-blocks-compact button, .application-blocks-compact a { justify-content: center; padding: var(--sphere10-control-padding-y, .65rem) var(--sphere10-control-padding-x, .65rem); }
 .application-blocks-compact img, .application-block-fallback { width: 2rem; height: 2rem; }
 .application-block-fallback { display: grid; place-items: center; font-size: 1.4rem; font-weight: 700; }
 .application-blocks-compact .application-block-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

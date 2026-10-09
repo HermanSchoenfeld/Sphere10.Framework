@@ -16,7 +16,7 @@ public partial class ThemeToggle {
 	[Parameter]
 	public string Class { get; set; }
 
-	private string Pressed => ThemeService.CurrentTheme == ThemeMode.Dark ? "true" : "false";
+	private string Pressed => CurrentTheme.IsDark ? "true" : "false";
 
 	private void ToggleTheme() => ThemeService.Toggle();
 }

@@ -1,0 +1,67 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+@import url("../themes.css");
+
+.sphere10-theme[data-sphere10-theme="dark"] {
+	--sphere10-font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 500;
+	--sphere10-background: #131a26;
+	--sphere10-surface: #1b2433;
+	--sphere10-surface-raised: #243248;
+	--sphere10-text: #e9eef7;
+	--sphere10-muted: #aebcd0;
+	--sphere10-border: #354359;
+	--sphere10-border-strong: #5b6c85;
+	--sphere10-accent: #8cbeff;
+	--sphere10-accent-contrast: #091a2f;
+	--sphere10-hover: #263650;
+	--sphere10-selected: #243e5e;
+	--sphere10-editing: #1c4037;
+	--sphere10-danger: #ff9caa;
+	--sphere10-success: #8ad5aa;
+	--sphere10-warning-background: #463719;
+	--sphere10-focus: #8cbeff;
+	--sphere10-shadow: 0 .25rem .75rem #00000050;
+	--sphere10-header-background: #243248;
+	--sphere10-header-text: #e9eef7;
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: var(--sphere10-surface);
+	--sphere10-navigation-text: var(--sphere10-text);
+	--sphere10-navigation-active-text: var(--sphere10-text);
+	--sphere10-navigation-icon: var(--sphere10-muted);
+	--sphere10-navigation-muted: var(--sphere10-muted);
+	--sphere10-navigation-hover: var(--sphere10-hover);
+	--sphere10-navigation-selected: var(--sphere10-selected);
+	--sphere10-navigation-border: var(--sphere10-border);
+	--sphere10-secondary: #aebcd0;
+	--sphere10-info: #8bd3e4;
+	--sphere10-warning: #f0cc7b;
+	--sphere10-light: #e9eef7;
+	--sphere10-dark: #131a26;
+	--sphere10-control-padding-y: .375rem;
+	--sphere10-control-padding-x: .75rem;
+	--sphere10-control-border-width: 1px;
+	--sphere10-card-header-background: var(--sphere10-surface-raised);
+	--sphere10-card-shadow: none;
+	--sphere10-table-striped-background: var(--sphere10-surface-raised);
+	--sphere10-table-hover-background: var(--sphere10-hover);
+	--sphere10-secondary-contrast: #18202c;
+	--sphere10-success-contrast: #18202c;
+	--sphere10-info-contrast: #18202c;
+	--sphere10-warning-contrast: #18202c;
+	--sphere10-danger-contrast: #18202c;
+	--sphere10-light-contrast: #18202c;
+	--sphere10-dark-contrast: #ffffff;
+	--sphere10-accent-text: #8cbeff;
+	--sphere10-success-text: #8ad5aa;
+	--sphere10-danger-text: #ff9caa;
+	color-scheme: dark;
+}

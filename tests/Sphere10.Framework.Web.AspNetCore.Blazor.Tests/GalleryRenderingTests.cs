@@ -44,6 +44,7 @@ public class GalleryRenderingTests {
 	[TestCase("/components/tables", "components", "tables", "Virtual paged table")]
 	[TestCase("/components/dialogs", "components", "dialogs", "Awaited dialogs")]
 	[TestCase("/components/wizards", "components", "wizards", "Branching wallet wizard")]
+	[TestCase("/components/themes", "components", "themes", "Theme component gallery")]
 	[TestCase("/widget-gallery", "legacy", "gallery", "Legacy plugin gallery")]
 	[TestCase("/widget-gallery/modals", "legacy", "dialogs", "Info Modal")]
 	[TestCase("/widget-gallery/tables", "legacy", "tables", "Virtual paged table")]
@@ -140,7 +141,7 @@ public class GalleryRenderingTests {
 		Assert.That(((BlazorScreenMenuItem)workspace["editor"]).ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(((BlazorScreenMenuItem)workspace["scratchpad"]).ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		var components = catalog.Get("components").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
-		Assert.That(components.Keys, Is.EquivalentTo(new[] { "gallery", "tables", "dialogs", "wizards" }));
+		Assert.That(components.Keys, Is.EquivalentTo(new[] { "gallery", "tables", "dialogs", "wizards", "themes" }));
 		Assert.That(components["gallery"], Is.TypeOf<BlazorScreenMenuItem>());
 		Assert.That(((BlazorScreenMenuItem)components["gallery"]).ScreenType, Is.EqualTo(typeof(Sphere10.Framework.Utils.BlazorTester.Application.ComponentScreen)));
 		var legacy = catalog.Get("legacy").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
@@ -153,6 +154,7 @@ public class GalleryRenderingTests {
 	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.TablesDemo))]
 	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.DialogsDemo))]
 	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.WizardsDemo))]
+	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.ThemeDemo))]
 	public void ReusableDemosDoNotOwnRoutesOrLayouts(Type demoType) {
 		Assert.That(demoType.GetCustomAttributes(typeof(RouteAttribute), true), Is.Empty);
 		Assert.That(demoType.GetCustomAttributes(typeof(LayoutAttribute), true), Is.Empty);

@@ -17,4 +17,4 @@ This notice must not be removed when duplicating this file or its contents, in w
 	border-top: 1px solid var(--sphere10-border);
 }
 .wizard-primary-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-left: auto; }
-.validation-errors { color: var(--sphere10-danger); margin: 0 0 1rem; padding-left: 1.25rem; }
+.validation-errors { color: var(--sphere10-danger-text, var(--sphere10-danger)); margin: 0 0 1rem; padding-left: 1.25rem; }

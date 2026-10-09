@@ -1,0 +1,480 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+/* Optional Bootstrap 5 integration: scoped to the provider, with no layout or JavaScript dependency.
+   Component variables are assigned on components so nested providers resolve their own palette. */
+.sphere10-theme {
+	--bs-font-sans-serif: var(--sphere10-font-family);
+	--bs-body-font-family: var(--sphere10-font-family);
+	--bs-body-bg: var(--sphere10-background);
+	--bs-body-color: var(--sphere10-text);
+	--bs-heading-color: var(--sphere10-heading-text);
+	--bs-emphasis-color: var(--sphere10-text);
+	--bs-secondary-color: var(--sphere10-muted);
+	--bs-tertiary-color: var(--sphere10-muted);
+	--bs-secondary-bg: var(--sphere10-surface-raised);
+	--bs-tertiary-bg: var(--sphere10-surface-raised);
+	--bs-border-color: var(--sphere10-border);
+	--bs-border-color-translucent: var(--sphere10-border);
+	--bs-border-width: var(--sphere10-control-border-width);
+	--bs-border-radius: var(--sphere10-control-radius);
+	--bs-border-radius-sm: var(--sphere10-control-radius);
+	--bs-border-radius-lg: var(--sphere10-panel-radius);
+	--bs-box-shadow: var(--sphere10-shadow);
+	--bs-box-shadow-sm: var(--sphere10-control-shadow);
+	--bs-box-shadow-lg: var(--sphere10-shadow);
+	--bs-link-color: var(--sphere10-accent-text);
+	--bs-link-hover-color: color-mix(in srgb, var(--sphere10-accent) 85%, var(--sphere10-text));
+	--bs-focus-ring-color: color-mix(in srgb, var(--sphere10-focus) 25%, transparent);
+	--bs-form-valid-color: var(--sphere10-success-text);
+	--bs-form-valid-border-color: var(--sphere10-success);
+	--bs-form-invalid-color: var(--sphere10-danger-text);
+	--bs-form-invalid-border-color: var(--sphere10-danger);
+	--bs-primary: var(--sphere10-accent);
+	--bs-primary-text-emphasis: color-mix(in srgb, var(--sphere10-accent) 20%, var(--sphere10-text));
+	--bs-primary-bg-subtle: color-mix(in srgb, var(--sphere10-accent) 12%, var(--sphere10-surface));
+	--bs-primary-border-subtle: color-mix(in srgb, var(--sphere10-accent) 35%, var(--sphere10-border));
+	--bs-secondary: var(--sphere10-secondary);
+	--bs-secondary-text-emphasis: color-mix(in srgb, var(--sphere10-secondary) 20%, var(--sphere10-text));
+	--bs-secondary-bg-subtle: color-mix(in srgb, var(--sphere10-secondary) 12%, var(--sphere10-surface));
+	--bs-secondary-border-subtle: color-mix(in srgb, var(--sphere10-secondary) 35%, var(--sphere10-border));
+	--bs-success: var(--sphere10-success);
+	--bs-success-text-emphasis: color-mix(in srgb, var(--sphere10-success) 20%, var(--sphere10-text));
+	--bs-success-bg-subtle: color-mix(in srgb, var(--sphere10-success) 12%, var(--sphere10-surface));
+	--bs-success-border-subtle: color-mix(in srgb, var(--sphere10-success) 35%, var(--sphere10-border));
+	--bs-info: var(--sphere10-info);
+	--bs-info-text-emphasis: color-mix(in srgb, var(--sphere10-info) 20%, var(--sphere10-text));
+	--bs-info-bg-subtle: color-mix(in srgb, var(--sphere10-info) 12%, var(--sphere10-surface));
+	--bs-info-border-subtle: color-mix(in srgb, var(--sphere10-info) 35%, var(--sphere10-border));
+	--bs-warning: var(--sphere10-warning);
+	--bs-warning-text-emphasis: color-mix(in srgb, var(--sphere10-warning) 20%, var(--sphere10-text));
+	--bs-warning-bg-subtle: color-mix(in srgb, var(--sphere10-warning) 12%, var(--sphere10-surface));
+	--bs-warning-border-subtle: color-mix(in srgb, var(--sphere10-warning) 35%, var(--sphere10-border));
+	--bs-danger: var(--sphere10-danger);
+	--bs-danger-text-emphasis: color-mix(in srgb, var(--sphere10-danger) 20%, var(--sphere10-text));
+	--bs-danger-bg-subtle: color-mix(in srgb, var(--sphere10-danger) 12%, var(--sphere10-surface));
+	--bs-danger-border-subtle: color-mix(in srgb, var(--sphere10-danger) 35%, var(--sphere10-border));
+	--bs-light: var(--sphere10-light);
+	--bs-light-text-emphasis: color-mix(in srgb, var(--sphere10-light) 20%, var(--sphere10-text));
+	--bs-light-bg-subtle: color-mix(in srgb, var(--sphere10-light) 12%, var(--sphere10-surface));
+	--bs-light-border-subtle: color-mix(in srgb, var(--sphere10-light) 35%, var(--sphere10-border));
+	--bs-dark: var(--sphere10-dark);
+	--bs-dark-text-emphasis: color-mix(in srgb, var(--sphere10-dark) 20%, var(--sphere10-text));
+	--bs-dark-bg-subtle: color-mix(in srgb, var(--sphere10-dark) 12%, var(--sphere10-surface));
+	--bs-dark-border-subtle: color-mix(in srgb, var(--sphere10-dark) 35%, var(--sphere10-border));
+}
+
+/* Component roles never affect independent text/background/border utilities. */
+.sphere10-theme :is(.btn-primary, .btn-outline-primary, .alert-primary, .table-primary, .list-group-item-primary) {
+	--sphere10-role: var(--sphere10-accent);
+	--sphere10-role-text: var(--sphere10-accent-text);
+	--sphere10-role-contrast: var(--sphere10-accent-contrast);
+}
+.sphere10-theme :is(.btn-secondary, .btn-outline-secondary, .alert-secondary, .table-secondary, .list-group-item-secondary) {
+	--sphere10-role: var(--sphere10-secondary);
+	--sphere10-role-text: var(--sphere10-secondary-text);
+	--sphere10-role-contrast: var(--sphere10-secondary-contrast);
+}
+.sphere10-theme :is(.btn-success, .btn-outline-success, .alert-success, .table-success, .list-group-item-success) {
+	--sphere10-role: var(--sphere10-success);
+	--sphere10-role-text: var(--sphere10-success-text);
+	--sphere10-role-contrast: var(--sphere10-success-contrast);
+}
+.sphere10-theme :is(.btn-info, .btn-outline-info, .alert-info, .table-info, .list-group-item-info) {
+	--sphere10-role: var(--sphere10-info);
+	--sphere10-role-text: var(--sphere10-info-text);
+	--sphere10-role-contrast: var(--sphere10-info-contrast);
+}
+.sphere10-theme :is(.btn-warning, .btn-outline-warning, .alert-warning, .table-warning, .list-group-item-warning) {
+	--sphere10-role: var(--sphere10-warning);
+	--sphere10-role-text: var(--sphere10-warning-text);
+	--sphere10-role-contrast: var(--sphere10-warning-contrast);
+}
+.sphere10-theme :is(.btn-danger, .btn-outline-danger, .alert-danger, .table-danger, .list-group-item-danger) {
+	--sphere10-role: var(--sphere10-danger);
+	--sphere10-role-text: var(--sphere10-danger-text);
+	--sphere10-role-contrast: var(--sphere10-danger-contrast);
+}
+.sphere10-theme :is(.btn-light, .btn-outline-light, .alert-light, .table-light, .list-group-item-light) {
+	--sphere10-role: var(--sphere10-light);
+	--sphere10-role-text: var(--sphere10-light-text);
+	--sphere10-role-contrast: var(--sphere10-light-contrast);
+}
+.sphere10-theme :is(.btn-dark, .btn-outline-dark, .alert-dark, .table-dark, .list-group-item-dark) {
+	--sphere10-role: var(--sphere10-dark);
+	--sphere10-role-text: var(--sphere10-dark-text);
+	--sphere10-role-contrast: var(--sphere10-dark-contrast);
+}
+
+/* Buttons retain Bootstrap sizing/group layout and use template-specific visual treatment. */
+.sphere10-theme .btn {
+	--bs-btn-font-family: var(--sphere10-font-family);
+	--bs-btn-font-weight: var(--sphere10-button-font-weight);
+	--bs-btn-padding-y: var(--sphere10-button-padding-y);
+	--bs-btn-padding-x: var(--sphere10-button-padding-x);
+	--bs-btn-border-width: var(--sphere10-control-border-width);
+	--bs-btn-border-radius: var(--sphere10-control-radius);
+	--bs-btn-focus-box-shadow: var(--sphere10-focus-ring);
+	box-shadow: var(--sphere10-button-shadow);
+	text-transform: var(--sphere10-button-text-transform);
+	letter-spacing: var(--sphere10-button-letter-spacing);
+}
+.sphere10-theme :is(.btn-sm, .btn-group-sm > .btn) { --bs-btn-padding-y: calc(var(--sphere10-button-padding-y) * .65); --bs-btn-padding-x: calc(var(--sphere10-button-padding-x) * .65); }
+.sphere10-theme :is(.btn-lg, .btn-group-lg > .btn) { --bs-btn-padding-y: calc(var(--sphere10-button-padding-y) * 1.3); --bs-btn-padding-x: calc(var(--sphere10-button-padding-x) * 1.3); }
+.sphere10-theme :is(.btn-primary, .btn-secondary, .btn-success, .btn-info, .btn-warning, .btn-danger, .btn-light, .btn-dark) {
+	--bs-btn-color: var(--sphere10-role-contrast);
+	--bs-btn-bg: var(--sphere10-role);
+	--bs-btn-border-color: var(--sphere10-role);
+	--bs-btn-hover-color: var(--sphere10-role-contrast);
+	--bs-btn-hover-bg: color-mix(in srgb, var(--sphere10-role) 85%, var(--sphere10-text));
+	--bs-btn-hover-border-color: var(--bs-btn-hover-bg);
+	--bs-btn-active-color: var(--sphere10-role-contrast);
+	--bs-btn-active-bg: var(--bs-btn-hover-bg);
+	--bs-btn-active-border-color: var(--bs-btn-hover-bg);
+	--bs-btn-disabled-color: var(--sphere10-role-contrast);
+	--bs-btn-disabled-bg: var(--sphere10-role);
+	--bs-btn-disabled-border-color: var(--sphere10-role);
+}
+.sphere10-theme :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-success, .btn-outline-info, .btn-outline-warning, .btn-outline-danger, .btn-outline-light, .btn-outline-dark) {
+	--bs-btn-color: var(--sphere10-role-text);
+	--bs-btn-bg: transparent;
+	--bs-btn-border-color: var(--sphere10-role);
+	--bs-btn-hover-color: var(--sphere10-role-contrast);
+	--bs-btn-hover-bg: var(--sphere10-role);
+	--bs-btn-hover-border-color: var(--sphere10-role);
+	--bs-btn-active-color: var(--sphere10-role-contrast);
+	--bs-btn-active-bg: var(--sphere10-role);
+	--bs-btn-active-border-color: var(--sphere10-role);
+	--bs-btn-disabled-color: var(--sphere10-role-text);
+	--bs-btn-disabled-bg: transparent;
+	--bs-btn-disabled-border-color: var(--sphere10-role);
+}
+.sphere10-theme .btn-link { --bs-btn-color: var(--sphere10-accent); --bs-btn-hover-color: var(--bs-link-hover-color); --bs-btn-active-color: var(--bs-link-hover-color); --bs-btn-disabled-color: var(--sphere10-muted); box-shadow: none; }
+.sphere10-theme .btn:focus-visible, .sphere10-theme .btn-check:focus-visible + .btn { box-shadow: var(--sphere10-focus-ring); }
+
+/* Bootstrap utilities are important declarations. Each property has its own palette
+   so combinations such as bg-primary text-danger border-warning stay independent. */
+.sphere10-theme .text-primary { color: color-mix(in srgb, var(--sphere10-accent-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-primary { background-color: color-mix(in srgb, var(--sphere10-accent) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-primary { border-color: color-mix(in srgb, var(--sphere10-accent) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-primary { color: var(--sphere10-accent-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-accent) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-primary { color: color-mix(in srgb, var(--sphere10-accent-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-accent-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-primary:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-accent-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-secondary { color: color-mix(in srgb, var(--sphere10-secondary-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-secondary { background-color: color-mix(in srgb, var(--sphere10-secondary) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-secondary { border-color: color-mix(in srgb, var(--sphere10-secondary) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-secondary { color: var(--sphere10-secondary-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-secondary) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-secondary { color: color-mix(in srgb, var(--sphere10-secondary-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-secondary-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-secondary:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-secondary-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-success { color: color-mix(in srgb, var(--sphere10-success-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-success { background-color: color-mix(in srgb, var(--sphere10-success) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-success { border-color: color-mix(in srgb, var(--sphere10-success) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-success { color: var(--sphere10-success-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-success) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-success { color: color-mix(in srgb, var(--sphere10-success-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-success-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-success:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-success-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-info { color: color-mix(in srgb, var(--sphere10-info-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-info { background-color: color-mix(in srgb, var(--sphere10-info) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-info { border-color: color-mix(in srgb, var(--sphere10-info) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-info { color: var(--sphere10-info-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-info) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-info { color: color-mix(in srgb, var(--sphere10-info-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-info-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-info:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-info-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-warning { color: color-mix(in srgb, var(--sphere10-warning-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-warning { background-color: color-mix(in srgb, var(--sphere10-warning) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-warning { border-color: color-mix(in srgb, var(--sphere10-warning) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-warning { color: var(--sphere10-warning-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-warning) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-warning { color: color-mix(in srgb, var(--sphere10-warning-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-warning-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-warning:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-warning-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-danger { color: color-mix(in srgb, var(--sphere10-danger-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-danger { background-color: color-mix(in srgb, var(--sphere10-danger) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-danger { border-color: color-mix(in srgb, var(--sphere10-danger) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-danger { color: var(--sphere10-danger-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-danger) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-danger { color: color-mix(in srgb, var(--sphere10-danger-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-danger-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-danger:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-danger-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-light { color: color-mix(in srgb, var(--sphere10-light-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-light { background-color: color-mix(in srgb, var(--sphere10-light) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-light { border-color: color-mix(in srgb, var(--sphere10-light) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-light { color: var(--sphere10-light-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-light) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-light { color: color-mix(in srgb, var(--sphere10-light-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-light-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-light:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-light-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-dark { color: color-mix(in srgb, var(--sphere10-dark-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme .bg-dark { background-color: color-mix(in srgb, var(--sphere10-dark) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .border-dark { border-color: color-mix(in srgb, var(--sphere10-dark) calc(100% * var(--bs-border-opacity, 1)), transparent) !important; }
+.sphere10-theme .text-bg-dark { color: var(--sphere10-dark-contrast) !important; background-color: color-mix(in srgb, var(--sphere10-dark) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-dark { color: color-mix(in srgb, var(--sphere10-dark-text) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; text-decoration-color: color-mix(in srgb, var(--sphere10-dark-text) calc(100% * var(--bs-link-underline-opacity, 1)), transparent) !important; }
+.sphere10-theme .link-dark:is(:hover, :focus) { color: color-mix(in srgb, color-mix(in srgb, var(--sphere10-dark-text) 85%, var(--sphere10-text)) calc(100% * var(--bs-link-opacity, 1)), transparent) !important; }
+.sphere10-theme :is(.text-body, .text-body-emphasis) { color: color-mix(in srgb, var(--sphere10-text) calc(100% * var(--bs-text-opacity, 1)), transparent) !important; }
+.sphere10-theme :is(.text-muted, .text-body-secondary, .text-body-tertiary, .text-black-50) { color: var(--sphere10-muted) !important; }
+.sphere10-theme .bg-body { background-color: color-mix(in srgb, var(--sphere10-background) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme :is(.bg-body-secondary, .bg-body-tertiary) { background-color: color-mix(in srgb, var(--sphere10-surface-raised) calc(100% * var(--bs-bg-opacity, 1)), transparent) !important; }
+.sphere10-theme :where(.border) { border-color: var(--sphere10-border) !important; }
+.sphere10-theme .link-body-emphasis { color: var(--sphere10-text) !important; text-decoration-color: currentColor !important; }
+
+/* Forms: normal, read-only, disabled, focus and validation remain visibly distinct. */
+.sphere10-theme :is(.form-control, .form-select) {
+	padding-top: var(--sphere10-control-padding-y);
+	padding-bottom: var(--sphere10-control-padding-y);
+	padding-left: var(--sphere10-control-padding-x);
+	color: var(--sphere10-text);
+	background-color: var(--sphere10-surface);
+	border-color: var(--sphere10-border-strong);
+	box-shadow: var(--sphere10-control-shadow);
+	border-radius: var(--sphere10-input-radius);
+}
+.sphere10-theme .form-control { padding-right: var(--sphere10-control-padding-x); }
+.sphere10-theme :is(.form-control-sm, .form-select-sm) { padding-top: calc(var(--sphere10-control-padding-y) * .65); padding-bottom: calc(var(--sphere10-control-padding-y) * .65); }
+.sphere10-theme :is(.form-control-lg, .form-select-lg) { padding-top: calc(var(--sphere10-control-padding-y) * 1.3); padding-bottom: calc(var(--sphere10-control-padding-y) * 1.3); }
+.sphere10-theme :is(.form-control, .form-select):is(:disabled, [readonly]) { color: var(--sphere10-muted); background-color: var(--sphere10-surface-raised); }
+.sphere10-theme :is(.form-control, .form-select, .form-check-input):focus { border-color: var(--sphere10-focus); box-shadow: var(--sphere10-focus-ring); }
+.sphere10-theme .form-control::file-selector-button { color: var(--sphere10-text); background-color: var(--sphere10-surface-raised); }
+.sphere10-theme .form-control:hover:not(:disabled):not([readonly])::file-selector-button { background-color: var(--sphere10-hover); }
+.sphere10-theme :is(.form-text, .form-label, .form-check-label) { color: inherit; }
+.sphere10-theme .form-text { color: var(--sphere10-muted); }
+.sphere10-theme .input-group-text { color: var(--sphere10-text); background: var(--sphere10-surface-raised); border-color: var(--sphere10-border-strong); }
+.sphere10-theme .form-check-input { border-color: var(--sphere10-border-strong); background-color: var(--sphere10-surface); }
+.sphere10-theme .form-check-input:checked, .sphere10-theme .form-check-input[type="checkbox"]:indeterminate { background-color: var(--sphere10-accent); border-color: var(--sphere10-accent); }
+.sphere10-theme .form-range::-webkit-slider-runnable-track { background-color: var(--sphere10-surface-raised); }
+.sphere10-theme .form-range::-moz-range-track { background-color: var(--sphere10-surface-raised); }
+.sphere10-theme .form-range::-webkit-slider-thumb { background-color: var(--sphere10-accent); }
+.sphere10-theme .form-range::-moz-range-thumb { background-color: var(--sphere10-accent); }
+.sphere10-theme .form-range:focus::-webkit-slider-thumb { box-shadow: var(--sphere10-focus-ring); }
+.sphere10-theme .form-range:focus::-moz-range-thumb { box-shadow: var(--sphere10-focus-ring); }
+.sphere10-theme .form-range:disabled::-webkit-slider-thumb { background-color: var(--sphere10-muted); }
+.sphere10-theme .form-range:disabled::-moz-range-thumb { background-color: var(--sphere10-muted); }
+.sphere10-theme .form-floating > label::after { background-color: var(--sphere10-surface) !important; }
+.sphere10-theme .form-floating > :is(:disabled, [readonly]) ~ label::after { background-color: var(--sphere10-surface-raised) !important; }
+.sphere10-theme .form-floating > .form-control { padding: 1.625rem var(--sphere10-control-padding-x) .625rem; }
+.sphere10-theme .form-floating > .form-control:placeholder-shown:not(:focus) { padding-top: 1rem; padding-bottom: 1rem; }
+.sphere10-theme .form-floating > .form-select { padding-top: 1.625rem; padding-bottom: .625rem; }
+.sphere10-theme :is(.is-valid, .was-validated :valid):is(.form-control, .form-select, .form-check-input) { border-color: var(--sphere10-success); }
+.sphere10-theme :is(.is-invalid, .was-validated :invalid):is(.form-control, .form-select, .form-check-input) { border-color: var(--sphere10-danger); }
+.sphere10-theme :is(.is-valid, .was-validated :valid):focus { box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--sphere10-success) 25%, transparent); }
+.sphere10-theme :is(.is-invalid, .was-validated :invalid):focus { box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--sphere10-danger) 25%, transparent); }
+.sphere10-theme .valid-feedback { color: var(--sphere10-success-text); }
+.sphere10-theme .invalid-feedback { color: var(--sphere10-danger-text); }
+
+.sphere10-theme .valid-tooltip { color: var(--sphere10-success-contrast); background-color: var(--sphere10-success); }
+.sphere10-theme .invalid-tooltip { color: var(--sphere10-danger-contrast); background-color: var(--sphere10-danger); }
+
+/* Cards, feedback and collections use surface tokens instead of Bootstrap's fixed white. */
+.sphere10-theme .card {
+	--bs-card-color: var(--sphere10-text);
+	--bs-card-bg: var(--sphere10-surface);
+	--bs-card-border-color: var(--sphere10-border);
+	--bs-card-border-width: var(--sphere10-card-border-width);
+	--bs-card-border-radius: var(--sphere10-panel-radius);
+	--bs-card-inner-border-radius: max(0px, calc(var(--sphere10-panel-radius) - var(--sphere10-card-border-width)));
+	--bs-card-title-color: var(--sphere10-heading-text);
+	--bs-card-subtitle-color: var(--sphere10-muted);
+	--bs-card-cap-bg: var(--sphere10-card-header-background);
+	--bs-card-cap-color: var(--sphere10-text);
+	box-shadow: var(--sphere10-card-shadow);
+}
+.sphere10-theme :is(.card-header, .card-footer) { background: var(--bs-card-cap-bg, var(--sphere10-card-header-background)); }
+.sphere10-theme .alert {
+	--bs-alert-color: color-mix(in srgb, var(--sphere10-role, var(--sphere10-accent)) 20%, var(--sphere10-text));
+	--bs-alert-bg: color-mix(in srgb, var(--sphere10-role, var(--sphere10-accent)) 12%, var(--sphere10-surface));
+	--bs-alert-border-color: color-mix(in srgb, var(--sphere10-role, var(--sphere10-accent)) 35%, var(--sphere10-border));
+	--bs-alert-border-radius: var(--sphere10-panel-radius);
+	--bs-alert-link-color: inherit;
+}
+.sphere10-theme .alert-heading { color: inherit; }
+.sphere10-theme .table {
+	--bs-table-bg: var(--sphere10-surface);
+	--bs-table-color: var(--sphere10-text);
+	--bs-table-border-color: var(--sphere10-border);
+	--bs-table-striped-bg: var(--sphere10-table-striped-background);
+	--bs-table-striped-color: var(--sphere10-text);
+	--bs-table-hover-bg: var(--sphere10-table-hover-background);
+	--bs-table-hover-color: var(--sphere10-text);
+	--bs-table-active-bg: var(--sphere10-selected);
+	--bs-table-active-color: var(--sphere10-text);
+}
+.sphere10-theme .table > :not(caption) > * > * { padding: var(--sphere10-grid-cell-padding); }
+.sphere10-theme .table-sm > :not(caption) > * > * { padding: .25rem; }
+.sphere10-theme :is(.table-primary, .table-secondary, .table-success, .table-info, .table-warning, .table-danger, .table-light, .table-dark) {
+	--bs-table-bg: color-mix(in srgb, var(--sphere10-role) 12%, var(--sphere10-surface));
+	--bs-table-color: var(--sphere10-text);
+	--bs-table-border-color: color-mix(in srgb, var(--sphere10-role) 35%, var(--sphere10-border));
+	--bs-table-striped-bg: color-mix(in srgb, var(--sphere10-role) 20%, var(--sphere10-surface));
+	--bs-table-striped-color: var(--sphere10-text);
+	--bs-table-hover-bg: color-mix(in srgb, var(--sphere10-role) 25%, var(--sphere10-surface));
+	--bs-table-hover-color: var(--sphere10-text);
+	--bs-table-active-bg: var(--bs-table-hover-bg);
+	--bs-table-active-color: var(--sphere10-text);
+}
+.sphere10-theme .list-group {
+	--bs-list-group-color: var(--sphere10-text);
+	--bs-list-group-bg: var(--sphere10-surface);
+	--bs-list-group-border-color: var(--sphere10-border);
+	--bs-list-group-border-radius: var(--sphere10-panel-radius);
+	--bs-list-group-action-color: var(--sphere10-text);
+	--bs-list-group-action-hover-color: var(--sphere10-text);
+	--bs-list-group-action-hover-bg: var(--sphere10-hover);
+	--bs-list-group-action-active-color: var(--sphere10-text);
+	--bs-list-group-action-active-bg: var(--sphere10-selected);
+	--bs-list-group-disabled-color: var(--sphere10-muted);
+	--bs-list-group-disabled-bg: var(--sphere10-surface-raised);
+	--bs-list-group-active-color: var(--sphere10-accent-contrast);
+	--bs-list-group-active-bg: var(--sphere10-accent);
+	--bs-list-group-active-border-color: var(--sphere10-accent);
+}
+.sphere10-theme :is(.list-group-item-primary, .list-group-item-secondary, .list-group-item-success, .list-group-item-info, .list-group-item-warning, .list-group-item-danger, .list-group-item-light, .list-group-item-dark) {
+	--bs-list-group-color: var(--sphere10-text);
+	--bs-list-group-bg: color-mix(in srgb, var(--sphere10-role) 12%, var(--sphere10-surface));
+	--bs-list-group-border-color: color-mix(in srgb, var(--sphere10-role) 35%, var(--sphere10-border));
+	--bs-list-group-action-hover-bg: color-mix(in srgb, var(--sphere10-role) 20%, var(--sphere10-surface));
+	--bs-list-group-active-color: var(--sphere10-role-contrast);
+	--bs-list-group-active-bg: var(--sphere10-role);
+	--bs-list-group-active-border-color: var(--sphere10-role);
+}
+.sphere10-theme .progress, .sphere10-theme .progress-stacked { --bs-progress-bg: var(--sphere10-surface-raised); --bs-progress-bar-bg: var(--sphere10-accent); --bs-progress-bar-color: var(--sphere10-accent-contrast); --bs-progress-border-radius: var(--sphere10-control-radius); }
+
+/* Navigation and menus. Interaction remains the host's/Blazor component's responsibility. */
+.sphere10-theme .nav { --bs-nav-link-color: var(--sphere10-accent-text); --bs-nav-link-hover-color: var(--bs-link-hover-color); --bs-nav-link-disabled-color: var(--sphere10-muted); }
+.sphere10-theme .nav-tabs { --bs-nav-tabs-link-active-bg: var(--sphere10-surface); --bs-nav-tabs-link-active-color: var(--sphere10-text); --bs-nav-tabs-link-active-border-color: var(--sphere10-border) var(--sphere10-border) var(--sphere10-surface); }
+.sphere10-theme .nav-pills { --bs-nav-pills-link-active-color: var(--sphere10-accent-contrast); --bs-nav-pills-link-active-bg: var(--sphere10-accent); }
+.sphere10-theme .pagination {
+	--bs-pagination-color: var(--sphere10-accent-text);
+	--bs-pagination-bg: var(--sphere10-surface);
+	--bs-pagination-hover-color: var(--sphere10-accent);
+	--bs-pagination-hover-bg: var(--sphere10-hover);
+	--bs-pagination-focus-color: var(--sphere10-accent);
+	--bs-pagination-focus-bg: var(--sphere10-hover);
+	--bs-pagination-focus-box-shadow: var(--sphere10-focus-ring);
+	--bs-pagination-active-color: var(--sphere10-accent-contrast);
+	--bs-pagination-active-bg: var(--sphere10-accent);
+	--bs-pagination-active-border-color: var(--sphere10-accent);
+	--bs-pagination-disabled-color: var(--sphere10-muted);
+	--bs-pagination-disabled-bg: var(--sphere10-surface-raised);
+}
+.sphere10-theme .dropdown-menu {
+	--bs-dropdown-color: var(--sphere10-text);
+	--bs-dropdown-bg: var(--sphere10-surface);
+	--bs-dropdown-border-color: var(--sphere10-border);
+	--bs-dropdown-link-color: var(--sphere10-text);
+	--bs-dropdown-link-hover-color: var(--sphere10-text);
+	--bs-dropdown-link-hover-bg: var(--sphere10-hover);
+	--bs-dropdown-link-active-color: var(--sphere10-accent-contrast);
+	--bs-dropdown-link-active-bg: var(--sphere10-accent);
+	--bs-dropdown-link-disabled-color: var(--sphere10-muted);
+	--bs-dropdown-header-color: var(--sphere10-muted);
+	box-shadow: var(--sphere10-shadow);
+}
+.sphere10-theme .accordion {
+	--bs-accordion-color: var(--sphere10-text);
+	--bs-accordion-bg: var(--sphere10-surface);
+	--bs-accordion-btn-color: var(--sphere10-text);
+	--bs-accordion-btn-bg: var(--sphere10-surface);
+	--bs-accordion-active-color: var(--sphere10-text);
+	--bs-accordion-active-bg: var(--sphere10-selected);
+	--bs-accordion-btn-focus-box-shadow: var(--sphere10-focus-ring);
+}
+.sphere10-theme .accordion-button::after { background-image: none; width: .65rem; height: .65rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-right: .25rem; }
+.sphere10-theme .accordion-button:not(.collapsed)::after { transform: rotate(225deg); }
+.sphere10-theme .breadcrumb { --bs-breadcrumb-divider-color: var(--sphere10-muted); --bs-breadcrumb-item-active-color: var(--sphere10-muted); }
+.sphere10-theme .navbar { --bs-navbar-color: var(--sphere10-text); --bs-navbar-hover-color: var(--sphere10-accent); --bs-navbar-disabled-color: var(--sphere10-muted); --bs-navbar-active-color: var(--sphere10-accent); --bs-navbar-brand-color: var(--sphere10-heading-text); --bs-navbar-brand-hover-color: var(--sphere10-accent); --bs-navbar-toggler-border-color: var(--sphere10-border); }
+
+/* Overlay content must remain inside its provider, including host-rendered portals. */
+.sphere10-theme .modal { --bs-modal-color: var(--sphere10-text); --bs-modal-bg: var(--sphere10-surface); --bs-modal-footer-bg: var(--sphere10-card-header-background); }
+.sphere10-theme :is(.offcanvas, .offcanvas-sm, .offcanvas-md, .offcanvas-lg, .offcanvas-xl, .offcanvas-xxl) { --bs-offcanvas-color: var(--sphere10-text); --bs-offcanvas-bg: var(--sphere10-surface); --bs-offcanvas-border-color: var(--sphere10-border); }
+.sphere10-theme .toast { --bs-toast-color: var(--sphere10-text); --bs-toast-bg: var(--sphere10-surface); --bs-toast-header-color: var(--sphere10-text); --bs-toast-header-bg: var(--sphere10-card-header-background); --bs-toast-border-color: var(--sphere10-border); }
+.sphere10-theme .popover { --bs-popover-bg: var(--sphere10-surface); --bs-popover-header-bg: var(--sphere10-card-header-background); --bs-popover-header-color: var(--sphere10-heading-text); --bs-popover-body-color: var(--sphere10-text); --bs-popover-border-color: var(--sphere10-border); }
+.sphere10-theme .tooltip { --bs-tooltip-color: var(--sphere10-surface); --bs-tooltip-bg: var(--sphere10-text); }
+.sphere10-theme .btn-close { background: none; color: var(--sphere10-text); filter: none; }
+.sphere10-theme .btn-close::before { content: "\00d7"; display: block; font-size: 1.5rem; line-height: 1rem; }
+.sphere10-theme .btn-close:focus { box-shadow: var(--sphere10-focus-ring); }
+
+/* Filled cards and contextual progress labels preserve the fill's contrasting foreground. */
+.sphere10-theme .card .card-title { color: var(--bs-card-title-color); }
+.sphere10-theme .card .card-subtitle { color: var(--bs-card-subtitle-color); }
+.sphere10-theme .card.text-bg-primary {
+	--bs-card-bg: var(--sphere10-accent);
+	--bs-card-color: var(--sphere10-accent-contrast);
+	--bs-card-title-color: var(--sphere10-accent-contrast);
+	--bs-card-subtitle-color: var(--sphere10-accent-contrast);
+	--bs-card-cap-bg: var(--sphere10-accent);
+	--bs-card-cap-color: var(--sphere10-accent-contrast);
+	--bs-card-border-color: var(--sphere10-accent);
+}
+.sphere10-theme .progress-bar.bg-primary { --bs-progress-bar-color: var(--sphere10-accent-contrast); }
+.sphere10-theme .card.text-bg-secondary {
+	--bs-card-bg: var(--sphere10-secondary);
+	--bs-card-color: var(--sphere10-secondary-contrast);
+	--bs-card-title-color: var(--sphere10-secondary-contrast);
+	--bs-card-subtitle-color: var(--sphere10-secondary-contrast);
+	--bs-card-cap-bg: var(--sphere10-secondary);
+	--bs-card-cap-color: var(--sphere10-secondary-contrast);
+	--bs-card-border-color: var(--sphere10-secondary);
+}
+.sphere10-theme .progress-bar.bg-secondary { --bs-progress-bar-color: var(--sphere10-secondary-contrast); }
+.sphere10-theme .card.text-bg-success {
+	--bs-card-bg: var(--sphere10-success);
+	--bs-card-color: var(--sphere10-success-contrast);
+	--bs-card-title-color: var(--sphere10-success-contrast);
+	--bs-card-subtitle-color: var(--sphere10-success-contrast);
+	--bs-card-cap-bg: var(--sphere10-success);
+	--bs-card-cap-color: var(--sphere10-success-contrast);
+	--bs-card-border-color: var(--sphere10-success);
+}
+.sphere10-theme .progress-bar.bg-success { --bs-progress-bar-color: var(--sphere10-success-contrast); }
+.sphere10-theme .card.text-bg-info {
+	--bs-card-bg: var(--sphere10-info);
+	--bs-card-color: var(--sphere10-info-contrast);
+	--bs-card-title-color: var(--sphere10-info-contrast);
+	--bs-card-subtitle-color: var(--sphere10-info-contrast);
+	--bs-card-cap-bg: var(--sphere10-info);
+	--bs-card-cap-color: var(--sphere10-info-contrast);
+	--bs-card-border-color: var(--sphere10-info);
+}
+.sphere10-theme .progress-bar.bg-info { --bs-progress-bar-color: var(--sphere10-info-contrast); }
+.sphere10-theme .card.text-bg-warning {
+	--bs-card-bg: var(--sphere10-warning);
+	--bs-card-color: var(--sphere10-warning-contrast);
+	--bs-card-title-color: var(--sphere10-warning-contrast);
+	--bs-card-subtitle-color: var(--sphere10-warning-contrast);
+	--bs-card-cap-bg: var(--sphere10-warning);
+	--bs-card-cap-color: var(--sphere10-warning-contrast);
+	--bs-card-border-color: var(--sphere10-warning);
+}
+.sphere10-theme .progress-bar.bg-warning { --bs-progress-bar-color: var(--sphere10-warning-contrast); }
+.sphere10-theme .card.text-bg-danger {
+	--bs-card-bg: var(--sphere10-danger);
+	--bs-card-color: var(--sphere10-danger-contrast);
+	--bs-card-title-color: var(--sphere10-danger-contrast);
+	--bs-card-subtitle-color: var(--sphere10-danger-contrast);
+	--bs-card-cap-bg: var(--sphere10-danger);
+	--bs-card-cap-color: var(--sphere10-danger-contrast);
+	--bs-card-border-color: var(--sphere10-danger);
+}
+.sphere10-theme .progress-bar.bg-danger { --bs-progress-bar-color: var(--sphere10-danger-contrast); }
+.sphere10-theme .card.text-bg-light {
+	--bs-card-bg: var(--sphere10-light);
+	--bs-card-color: var(--sphere10-light-contrast);
+	--bs-card-title-color: var(--sphere10-light-contrast);
+	--bs-card-subtitle-color: var(--sphere10-light-contrast);
+	--bs-card-cap-bg: var(--sphere10-light);
+	--bs-card-cap-color: var(--sphere10-light-contrast);
+	--bs-card-border-color: var(--sphere10-light);
+}
+.sphere10-theme .progress-bar.bg-light { --bs-progress-bar-color: var(--sphere10-light-contrast); }
+.sphere10-theme .card.text-bg-dark {
+	--bs-card-bg: var(--sphere10-dark);
+	--bs-card-color: var(--sphere10-dark-contrast);
+	--bs-card-title-color: var(--sphere10-dark-contrast);
+	--bs-card-subtitle-color: var(--sphere10-dark-contrast);
+	--bs-card-cap-bg: var(--sphere10-dark);
+	--bs-card-cap-color: var(--sphere10-dark-contrast);
+	--bs-card-border-color: var(--sphere10-dark);
+}
+.sphere10-theme .progress-bar.bg-dark { --bs-progress-bar-color: var(--sphere10-dark-contrast); }
+
+/* Header treatments can be gradients. Bootstrap's background-color consumers need the shorthand. */
+.sphere10-theme .modal-footer { background: var(--bs-modal-footer-bg); }
+.sphere10-theme .toast-header { background: var(--bs-toast-header-bg); }
+.sphere10-theme .popover-header { background: var(--bs-popover-header-bg); }

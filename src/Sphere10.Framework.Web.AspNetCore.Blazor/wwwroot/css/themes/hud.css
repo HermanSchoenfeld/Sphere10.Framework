@@ -1,0 +1,147 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+@import url("../themes.css");
+
+/* HUD ASP 2.0: technical typography, fine outlines and teal accents; source textures are omitted. See docs/theming-template-sources.md for the source audit. */
+.sphere10-theme[data-sphere10-theme="hud"] {
+	--sphere10-font-family: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+	--sphere10-heading-font-family: var(--sphere10-font-family);
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 600;
+	--sphere10-letter-spacing: .047rem;
+	--sphere10-background: #1d2835;
+	--sphere10-surface: #243342;
+	--sphere10-surface-raised: #304454;
+	--sphere10-text: #e6edf2;
+	--sphere10-muted: #b6c4ce;
+	--sphere10-border: #56626c;
+	--sphere10-border-strong: #85929c;
+	--sphere10-accent: #3cd2a5;
+	--sphere10-accent-contrast: #18202c;
+	--sphere10-hover: #2b464c;
+	--sphere10-selected: #245650;
+	--sphere10-editing: #234b39;
+	--sphere10-danger: #ff6060;
+	--sphere10-success: #3cd2a5;
+	--sphere10-warning-background: #433b22;
+	--sphere10-focus: var(--sphere10-accent);
+	--sphere10-shadow: 0 .5rem 1rem #00000022;
+	--sphere10-header-background: #1d2835;
+	--sphere10-header-text: #ffffff;
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: linear-gradient(180deg, #263a46, #111724);
+	--sphere10-navigation-text: #d7e4ec;
+	--sphere10-navigation-active-text: #3cd2a5;
+	--sphere10-navigation-icon: #3cd2a5;
+	--sphere10-navigation-muted: #a1b8c6;
+	--sphere10-navigation-hover: #ffffff10;
+	--sphere10-navigation-selected: #3cd2a51a;
+	--sphere10-navigation-border: #53616b;
+	--sphere10-control-radius: 4px;
+	--sphere10-panel-radius: 2px;
+	--sphere10-control-shadow: inset 0 1px 2px #ffffff13;
+	--sphere10-control-font-weight: 500;
+	--sphere10-grid-cell-padding: .5rem .7rem;
+	--sphere10-toolbar-background: #20303c;
+	--sphere10-menu-background: #1d2835;
+	--sphere10-tab-radius: 0;
+	--sphere10-secondary: #798e98;
+	--sphere10-info: #30beff;
+	--sphere10-warning: #ff9f0c;
+	--sphere10-light: #c0cacf;
+	--sphere10-dark: #35434a;
+	--sphere10-control-padding-y: .375rem;
+	--sphere10-control-padding-x: .75rem;
+	--sphere10-control-border-width: 1px;
+	--sphere10-card-header-background: #ffffff08;
+	--sphere10-card-shadow: none;
+	--sphere10-table-striped-background: #ffffff1a;
+	--sphere10-table-hover-background: #ffffff13;
+	--sphere10-button-shadow: inset 0 1px 0 #ffffff26, 0 1px 1px #00000013;
+	--sphere10-secondary-contrast: #18202c;
+	--sphere10-success-contrast: #18202c;
+	--sphere10-info-contrast: #18202c;
+	--sphere10-warning-contrast: #18202c;
+	--sphere10-danger-contrast: #18202c;
+	--sphere10-light-contrast: #18202c;
+	--sphere10-dark-contrast: #ffffff;
+	--sphere10-accent-text: #3cd2a5;
+	--sphere10-success-text: #3cd2a5;
+	--sphere10-danger-text: #ff9292;
+	color-scheme: dark;
+}
+
+.sphere10-theme[data-sphere10-theme="hud-light"] {
+	--sphere10-font-family: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+	--sphere10-heading-font-family: var(--sphere10-font-family);
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 600;
+	--sphere10-letter-spacing: .047rem;
+	--sphere10-background: #edf2f3;
+	--sphere10-surface: #ffffff;
+	--sphere10-surface-raised: #e5edef;
+	--sphere10-text: #26333b;
+	--sphere10-muted: #4e636e;
+	--sphere10-border: #c3cfd3;
+	--sphere10-border-strong: #83979f;
+	--sphere10-accent: #249d79;
+	--sphere10-accent-contrast: #18202c;
+	--sphere10-hover: #e8f5f0;
+	--sphere10-selected: #d0eae0;
+	--sphere10-editing: #edf6e7;
+	--sphere10-danger: #e00000;
+	--sphere10-success: #249d79;
+	--sphere10-warning-background: #fff6e2;
+	--sphere10-focus: var(--sphere10-accent);
+	--sphere10-shadow: 0 .5rem 1rem #00000013;
+	--sphere10-header-background: var(--sphere10-surface);
+	--sphere10-header-text: var(--sphere10-text);
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: linear-gradient(180deg, #f5fafa, #dce7e9);
+	--sphere10-navigation-text: var(--sphere10-text);
+	--sphere10-navigation-active-text: #125d46;
+	--sphere10-navigation-icon: #167456;
+	--sphere10-navigation-muted: var(--sphere10-muted);
+	--sphere10-navigation-hover: var(--sphere10-hover);
+	--sphere10-navigation-selected: var(--sphere10-selected);
+	--sphere10-navigation-border: var(--sphere10-border);
+	--sphere10-control-radius: 4px;
+	--sphere10-panel-radius: 2px;
+	--sphere10-control-shadow: inset 0 1px 2px #00000013;
+	--sphere10-control-font-weight: 500;
+	--sphere10-grid-cell-padding: .5rem .7rem;
+	--sphere10-toolbar-background: #edf3f4;
+	--sphere10-menu-background: var(--sphere10-surface);
+	--sphere10-tab-radius: 0;
+	--sphere10-secondary: #798e98;
+	--sphere10-info: #009be3;
+	--sphere10-warning: #ff9f0c;
+	--sphere10-light: #c0cacf;
+	--sphere10-dark: #35434a;
+	--sphere10-control-padding-y: .375rem;
+	--sphere10-control-padding-x: .75rem;
+	--sphere10-control-border-width: 1px;
+	--sphere10-card-header-background: #00000008;
+	--sphere10-card-shadow: none;
+	--sphere10-table-striped-background: #0000001a;
+	--sphere10-table-hover-background: #00000013;
+	--sphere10-button-shadow: inset 0 1px 0 #ffffff26, 0 1px 1px #00000013;
+	--sphere10-secondary-contrast: #18202c;
+	--sphere10-success-contrast: #18202c;
+	--sphere10-info-contrast: #18202c;
+	--sphere10-warning-contrast: #18202c;
+	--sphere10-danger-contrast: #ffffff;
+	--sphere10-light-contrast: #18202c;
+	--sphere10-dark-contrast: #ffffff;
+	--sphere10-accent-text: #167456;
+	--sphere10-success-text: #167456;
+	--sphere10-danger-text: #a51c30;
+	color-scheme: light;
+}

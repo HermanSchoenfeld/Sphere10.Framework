@@ -4,7 +4,7 @@
 .application-menus h2 { display: flex; align-items: center; gap: .4rem; color: var(--menu-text); font-size: .85rem; font-weight: 600; padding: .5rem; margin: 0 0 .3rem; border-bottom: 1px solid var(--menu-border); }
 .application-menus h2 span, .application-menus button > span[aria-hidden="true"] { color: var(--menu-icon); }
 .application-menus ul { padding: 0; margin: 0; list-style: none; }
-.application-menus button { display: flex; align-items: center; gap: .45rem; width: 100%; padding: .45rem .5rem; border: 0; border-radius: .2rem; background: transparent; color: var(--menu-text); cursor: pointer; text-align: left; font-size: .85rem; line-height: 1.4; }
+.application-menus button { display: flex; align-items: center; gap: .45rem; width: 100%; padding: var(--sphere10-control-padding-y, .45rem) var(--sphere10-control-padding-x, .5rem); border: 0; border-radius: var(--sphere10-control-radius, .2rem); background: transparent; color: var(--menu-text); cursor: pointer; text-align: left; font-size: .85rem; font-weight: var(--sphere10-control-font-weight, 400); line-height: 1.4; }
 .application-menus button > span[aria-hidden="true"] { flex: 0 0 1rem; text-align: center; }
 .application-menus button:hover { background: var(--menu-hover); }
 .application-menus button[aria-current="page"] { background: var(--menu-selected); color: var(--menu-active-text); }

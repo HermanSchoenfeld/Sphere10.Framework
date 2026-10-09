@@ -15,7 +15,7 @@ public abstract class ThemeServiceBase : IThemeService {
 
 	public abstract void SetTheme(ThemeMode theme);
 
-	public virtual void Toggle() => SetTheme(CurrentTheme == ThemeMode.Dark ? ThemeMode.Light : ThemeMode.Dark);
+	public virtual void Toggle() => SetTheme(ThemeCatalog.Get(CurrentTheme).IsDark ? ThemeMode.Light : ThemeMode.Dark);
 
 	protected virtual void OnChanged() => Changed?.Invoke();
 }

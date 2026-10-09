@@ -10,7 +10,7 @@ Razor components for .NET 10 Blazor Web Apps using Interactive Server rendering.
 - **Custom presentation:** display/editor templates, existing-record reference pickers, async row commands, resizable columns and optional automatic page sizing.
 - **Application workspace:** blocks, menus, retained screens, multiple-instance sessions and navigation guards built on the shared [Application.UI](../Sphere10.Framework.Application/README.md#shared-ui-framework) layer.
 - **Additional components:** paged/streaming tables, dialogs, wizards and plugin integration.
-- **Theme switching:** scoped Classic blue/Blue/Light/Dark selection, a shared provider and accessible controls, with semantic CSS tokens independent of layout.
+- **Theme switching:** 20 scoped presets, including Classic blue and Blue plus styles adapted from owned templates, with one stylesheet per template and shared accessible controls.
 - **Host integration:** scoped services, renderer-owned component lifetimes and isolated CSS/JavaScript assets.
 
 Start with [hosting](#current-blazor-hosting-and-assets), then the [complete grid example](#crud-grid-quick-start). See [custom editors and references](#custom-editors-reference-pickers-and-actions) for a second runnable page, or [ApplicationBlock architecture](#applicationblock-architecture) for a navigation workspace.
@@ -114,24 +114,33 @@ Compatibility globals use `ShowModal`, `HideModal`, `DispatchContentLoadedEvent`
 
 ## Theme switching
 
-Theme state is separate from component markup, navigation and data operations. `AddSphere10Blazor()` registers a scoped `Theming.IThemeService` with Classic blue, Blue, Light and Dark modes. `ThemeMode.ClassicBlue` maps to `classic-blue`; `ThemeMode.Blue` maps to `blue`. Each Interactive Server circuit has its own selection; it survives in-app navigation. The library defaults to Light; the tester chooses Classic blue when a new circuit starts. Applications can replace the service or extend its decorator to integrate their own preferences.
+`AddSphere10Blazor()` registers the scoped `Theming.IThemeService`. Theme selection changes presentation while retaining screen instances, grid drafts, modal state and navigation. The library defaults to Light; the tester starts with Classic blue. `ThemeCatalog.All` exposes immutable definitions (mode, stable ID, display name, stylesheet path and dark/light classification) as an array. The service, provider and selector all use that catalogue.
 
-To choose Classic blue as a host's default, register the scoped service before `AddSphere10Blazor()` in `Program.cs`:
+The **Theme** selector offers 20 presets:
+
+| Family | Presets |
+| --- | --- |
+| Framework | Classic blue, Blue, Light, Dark |
+| Artificial Reason | Artificial Reason, Artificial Reason Green, Artificial Reason Orange, Artificial Reason Violet |
+| Boost | Boost |
+| HUD | HUD, HUD Light |
+| Landkit | Landkit |
+| MacAdmin bundle | MacAdmin, MacBeath, MacKart |
+| Raleway | Raleway, Raleway Purple, Raleway Green |
+| AppStack | AppStack, AppStack Dark |
+
+The [template source audit](../../docs/theming-template-sources.md) records the reviewed distributions, palette and style mappings, font fallbacks and duplicate versions. These are adaptations to the existing framework controls, not alternate copies of the application shell. Original template names identify their presets. Fonts use local fallbacks unless the application supplies the named fonts; no external font requests are made.
+
+Choose a default before registering the framework services:
 
 ```csharp
 using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 
-builder.Services.AddScoped<IThemeService>(_ => new ThemeService(ThemeMode.ClassicBlue));
+builder.Services.AddScoped<IThemeService>(_ => new ThemeService(ThemeMode.Hud));
 builder.Services.AddSphere10Blazor();
 ```
 
-Load the theme definitions once in the host's `App.razor`, after any base framework stylesheet and before application overrides:
-
-```razor
-<link rel="stylesheet" href="@Assets["_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes.css"]" />
-```
-
-Wrap your interactive layout content, including its modal hosts, in `ThemeProvider`. Place `ThemeSelector` in the layout header to expose all four skins. For example:
+Wrap interactive layout content, including modal hosts, in `ThemeProvider`. It includes **one stylesheet for the active template** automatically. The selector is driven by the same catalogue, so there is no separate list of options to maintain:
 
 ```razor
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
@@ -146,7 +155,18 @@ Wrap your interactive layout content, including its modal hosts, in `ThemeProvid
 </ThemeProvider>
 ```
 
-The layout's isolated CSS controls positioning, independently of the theme:
+Template files live in `wwwroot/css/themes/<template>.css`; color variants share their template's file. Each file imports `../themes.css`, which contains shared native-control defaults and imports `theme-bootstrap.css` for optional Bootstrap component integration. Hosts using `ThemeProvider` should remove their old explicit `css/themes.css` include. The old URL remains available for existing consumers. No aggregate stylesheet imports every template.
+
+For a static host that does not use `ThemeProvider`, include the chosen template once and apply its scope attribute:
+
+```html
+<link rel="stylesheet" href="_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes/hud.css" />
+<div class="sphere10-theme" data-sphere10-theme="hud" data-bs-theme="dark">...</div>
+```
+
+`ThemeProvider` changes the stylesheet and `data-sphere10-theme`/`data-bs-theme` attributes on a stable wrapper. It supports fingerprinted static assets through Blazor's `Assets` collection. `ThemeMode.ClassicBlue` retains the white header, pale content background, blue sidebar gradient and original font stack; `ThemeMode.Blue` retains the newer blue header and sidebar. `ThemeToggle` switches any dark preset to Light and any light preset to Dark. Call `IThemeService.SetTheme(...)` for a specific preset. Selection lasts for the service scope; persistence across reloads belongs to the host's preference service.
+
+Keep layout in component styles and consume semantic tokens for appearance:
 
 ```css
 .app-header {
@@ -161,11 +181,27 @@ The layout's isolated CSS controls positioning, independently of the theme:
 }
 ```
 
-The provider changes `data-sphere10-theme` and `data-bs-theme` on a stable wrapper. Classic blue restores the original Loader appearance: a white topbar, pale `#f8f9fc` content background, the `#4e73df` to `#224abe` sidebar gradient, and a `Roboto, Helvetica, Arial, sans-serif` font stack with regular-weight headings. It uses locally available fonts without requesting an external font and maps to Bootstrap's light mode. It does not recreate descendant components: a grid draft, open workspace screen or dialog remains intact when the palette changes. **Blue** keeps the newer blue gradient on both the header and sidebar, with the system font stack and normal heading weights. **Classic blue** uses the white header and original font stack described above. The selector offers Classic blue, Blue, Light and Dark; both blue modes share the same palette tokens and apply only their visual differences. The optional `ThemeToggle` remains a keyboard-operable Light/Dark toggle. A component can also inject `IThemeService` and call `SetTheme(ThemeMode.Dark)` or `Toggle()`.
+The theme contract separates semantic colors from component treatments:
 
-Semantic `--sphere10-*` variables define backgrounds, surfaces, text, borders, accents, selection, validation and focus colors. Layouts can consume `--sphere10-font-family`, `--sphere10-heading-text`, `--sphere10-heading-weight`, `--sphere10-header-background`, `--sphere10-header-text` and `--sphere10-header-shadow`; sidebar styles use the `--sphere10-navigation-*` background, text, active-text, muted, icon, hover, selected and border tokens. Grid/workspace CSS consumes these tokens while retaining layout rules in isolated stylesheets. Define palette overrides under the provider's theme attribute; keep layout measurements and CRUD logic out of those overrides. The stylesheet also maps its colors and typography into Bootstrap 5 variables for tables, forms and dialogs. Bootstrap is optional for the grid/workspace themselves and is supplied by the host for Bootstrap-based components.
+| Tokens | Purpose |
+| --- | --- |
+| `--sphere10-accent`, `secondary`, `success`, `info`, `warning`, `danger`, `light`, `dark` | Semantic fills. Each has a `-contrast` foreground for filled buttons/badges and a readable `-text` foreground for links/status text. |
+| `--sphere10-surface`, `surface-raised`, `background`, `text`, `muted`, `border`, `focus` | Shared surfaces, content, boundaries and focus states. |
+| `--sphere10-control-padding-x/y`, `control-border-width`, `control-radius`, `input-radius`, `control-shadow` | Input and control dimensions, shape and depth. |
+| `--sphere10-button-padding-x/y`, `button-font-weight`, `button-shadow`, `button-text-transform`, `button-letter-spacing` | Button treatment independent of form inputs; Boost's uppercase, raised actions use these. |
+| `--sphere10-panel-radius`, `card-border-width`, `card-header-background`, `card-shadow` | Panels/cards, including gradient headers. |
+| `--sphere10-table-striped-background`, `table-hover-background`, `grid-cell-padding` | Table and CRUD grid surfaces/density. |
+| `--sphere10-font-family`, `heading-font-family`, `heading-weight`, `letter-spacing`, `tab-radius`, `toolbar-background`, `menu-background` | Typography and application chrome. |
 
-The [tester](../../utils/Sphere10.Framework.Utils.BlazorTester/README.md) demonstrates one shared shell with the selector at the top right and Classic blue selected by default. It loads one Bootstrap base plus the library theme definitions. Do not add archived admin/light/dark stylesheets to individual pages: doing so introduces competing global rules.
+All abbreviated names in the table retain the `--sphere10-` prefix. Components consume these tokens; layout and behavior stay in their existing Blazor components. Template files contain values rather than copies of Bootstrap controls or application layouts.
+
+When the host includes Bootstrap 5, the shared integration styles solid/outline buttons, semantic text/background/border utilities, alerts/badges, cards, inputs and input groups, switches/ranges, validation, striped/contextual tables, dropdowns, tabs/pills, pagination, lists, accordions, progress and overlay surfaces. Hover, focus, active, read-only and disabled states share the same palette. Text, background and border utilities compose independently, including opacity utilities. Explicit literal utilities such as `bg-white` still mean white: use `bg-body`/`bg-body-secondary` for themed surfaces. Use `background`, rather than `background-color`, when consuming header tokens that can contain gradients.
+
+Keep modal, toast, tooltip and popover content beneath its `ThemeProvider`; elements portalled outside that scope cannot inherit its palette. The framework modal hosts in the tester already live inside that provider. This CSS does not install Bootstrap JavaScript.
+
+The tester's **Components → Themes** screen (`/components/themes`) demonstrates the complete control palette, nested providers, retained form state and framework dialogs. Change themes there to inspect each source template's component treatments, or use the CRUD grid to check inline editors and reference pickers.
+
+To add a built-in preset, add its `ThemeMode` and catalogue definition, then provide its scoped CSS in the appropriate family file. The selector and provider adopt the definition automatically. Use `.sphere10-theme[data-sphere10-theme="id"]` for preset declarations; common defaults remain on `.sphere10-theme`. Avoid global template resets or template JavaScript in application pages.
 
 ## Header search
 
@@ -783,9 +819,13 @@ Configuration runs once per scope. The callback configures that scope's applicat
 
 `ApplicationShell` merges `Menus` and `ToolBarItems` from the application, the active screen's owning block and the active screen. When no screen is selected, it uses the navigation block's contributions. Register existing block toolbar commands with `BlazorApplicationBlockBuilder.AddToolBarItem`, or build them with `ConfigureToolBarItem(item => ...)`; override the typed array properties on `BlazorApplicationScreen` for screen contributions. Stable IDs define matching: a screen can replace the application's Save command and extend its File menu. Switching tabs removes that screen's contributions and restores the newly active scope's commands. `BlazorMenuSeparator` supplies menu or toolbar boundaries; shared merge logic removes redundant separators and keeps Help last. Toolbar screen commands must match a registered block menu item; they use that registration's activation policy and parameters.
 
+Keep only commands shared by every workspace in application-level menus: they intentionally remain available when another block is activated. A block command belongs to its active screen's owning block; a screen command disappears when that screen is deactivated. Merely browsing another block's sidebar does not change the still-active screen's command context. Block menus also supply sidebar navigation; screens can share a command-provider service for presentation-only commands without registering those commands globally or duplicating sidebar actions. Matching uses IDs, not captions. A narrower action group replaces the matching group as one command while preserving its position and nested children; it does not concatenate unrelated child lists. Hidden items remain registered but are omitted from rendered menus and toolbars, and menus containing only hidden items are omitted.
+
 Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` and call `NotifyScreenChanged()` to update a tab's caption. Long titles are clipped with an ellipsis and retain a full tooltip; dirty screens display an indicator.
 
 The host defaults to `ScreenMode.MultiView`. Set `ApplicationShell.ShowScreenModeSelector` to show a compact Tabs/Single screen selector in the header, or call `TrySetScreenModeAsync` from application commands. The tester uses its View menu for these commands. Entering `SingleView` checks every ordinary tab that would close before removing any; permanent sessions are retained. During subsequent navigation, hidden single-instance screens remain mounted and multi-instance screens are released. `Screens` includes retained hidden sessions; `OpenScreens` contains normal tab membership in presentation order, including permanent sessions while the single-view layout hides the tab strip. Empty screens are excluded. `MoveScreenAsync` changes only that order. `CloseScreensAsync` preflights the whole batch and preserves every session if a guard rejects it. Components remain owned by the renderer, including disposal after accepted closure. Docking is not part of the Blazor host.
+
+Custom Sidebar content can capture its ApplicationShell with @ref and await shell.ExecuteCommandAsync(item). This follows the same guarded command path as the native command bar, closes the navigation drawer after success and synchronizes browser history. Do not bypass the shell by calling its screen host directly from custom navigation controls.
 
 ## Command presentation and availability
 
@@ -793,7 +833,7 @@ BlazorApplicationMenuItemBuilder.WithVisibility(false) hides a command from the 
 
 EnabledWhen(Func<bool>) evaluates current command availability in both the rendered controls and the host's ExecuteMenuItemAsync overloads. Return the screen's dirty state to make Save available only while changes exist, and call NotifyScreenChanged after that state changes. Predicates on screen-owned commands may refer to that screen; shared registrations must not capture a circuit or user. Explicit programmatic screen activation remains independent of command availability.
 
-WithChildren(routeCommand, segmentCommand, summaryCommand) creates a BlazorApplicationMenuGroup. Return the group from a screen's ToolBarItems to show one Export dropdown containing its action commands. The native command bar retains command execution coalescing, disabled child controls, outside-click dismissal, Escape and focus restoration. Groups in top menus appear as labelled action sections. Register screens as top-level block menu items rather than inside action groups; keep child command IDs unique.
+WithChildren(routeCommand, segmentCommand, summaryCommand) creates a BlazorApplicationMenuGroup. Return the group from a screen's ToolBarItems to show one Export dropdown containing its action commands. The native command bar retains command execution coalescing, disabled child controls, outside-click dismissal, Escape and focus restoration. Groups inside dropdowns are expandable nested lists with labelled buttons and aria-expanded state. Click or Enter/Space expands a group; ArrowRight enters its first enabled command. Escape or ArrowLeft closes the innermost group and restores its opener; another Escape closes the top menu. Tab follows the visible native buttons. Long lists scroll inside the dropdown, which fits small viewports. Supply a disabled descriptive child such as No active sites for an empty application group. Replacing the menu data prunes unavailable expanded groups. Register screens as top-level block menu items rather than inside action groups; keep child command IDs unique.
 
 ## Default, permanent and empty screens
 

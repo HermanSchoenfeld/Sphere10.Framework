@@ -12,7 +12,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming;
 
 /// <summary>
 /// Applies theme tokens to its descendants without replacing their component instances.
-/// Include the library's css/themes.css stylesheet and place this provider inside the interactive render boundary.
+/// Loads one template stylesheet, including shared theme rules. Place this provider inside the interactive render boundary.
 /// </summary>
 public partial class ThemeProvider {
 	[Parameter]

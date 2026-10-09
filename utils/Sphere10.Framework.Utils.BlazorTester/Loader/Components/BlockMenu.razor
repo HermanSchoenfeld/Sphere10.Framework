@@ -26,10 +26,10 @@
             <span>@block.Name</span>
         </a>
         <div id="collapse-@block.Name" class="@CollapseClass(block.Name)" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
+            <div class="bg-body py-2 collapse-inner rounded">
                 @foreach (IBlazorRoutedApplicationPage blockPage in block.AppBlockPages) {
                     <NavLink class="collapse-item" href="@blockPage.Route" ActiveClass="active" Match="NavLinkMatch.All">
-                        <i class="fas fa-sm fa-fw text-gray-400 mr-2 @blockPage.Icon"></i>
+                        <i class="fas fa-sm fa-fw text-muted mr-2 @blockPage.Icon"></i>
                         @blockPage.Name
                     </NavLink>
                 }

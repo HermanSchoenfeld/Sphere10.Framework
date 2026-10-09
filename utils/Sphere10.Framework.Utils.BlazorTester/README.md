@@ -95,9 +95,11 @@ Reusable components, modal services, wizard frameworks, theme support and grid l
 
 Escape or clicking outside dismisses the dropdown and returns focus to its trigger. The dropdown uses ordinary framework menu item builders and async command execution. Applications can bind the library control to their own authentication provider and use its rendering templates and selection hooks; see [the reusable control guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md).
 
-## Classic blue, Blue, Light and Dark themes
+## Template themes
 
-The **Theme** selector in the upper-right application toolbar switches between **Classic blue**, **Blue**, **Light** and **Dark**. Classic blue restores the original loader's blue sidebar gradient, pale content background, white topbar, heading styling and `Roboto, Helvetica, Arial, sans-serif` font stack. Fonts use the first available installed face; the demo makes no external font request. The original brand and block SVG icons are reused. **Blue** restores the newer styling: a blue gradient on both the header and sidebar, the system font stack and normal heading weights. Use `ThemeMode.ClassicBlue` / `classic-blue` for the original appearance or `ThemeMode.Blue` / `blue` for the newer one. Classic blue remains the tester's default.
+The **Theme** selector in the upper-right application toolbar exposes all 20 framework presets: Classic blue, Blue, Light, Dark, Artificial Reason (blue, green, orange and violet), Boost, HUD (dark and light), Landkit, MacAdmin, MacBeath, MacKart, Raleway (cyan, purple and green), and AppStack (light and dark). Classic blue remains the default and retains the original white topbar and blue sidebar. Blue retains the newer blue header/sidebar appearance.
+
+Each template supplies its own colors, typography preferences, corner treatments, shadows and chrome through shared framework tokens. [The source audit](../../docs/theming-template-sources.md) identifies the owned template distributions and font fallbacks. Fonts use locally available faces; the demo makes no external font request.
 
 All themes share one presentation structure and the same services. Changing theme updates semantic CSS tokens, without recreating the current screen, discarding grid drafts or changing endpoint/block state. The single `ThemeProvider` also surrounds both modal hosts. The scoped theme service retains the choice during navigation in the current circuit; a full refresh starts a new circuit with Classic blue. The tester does not store a browser preference.
 
@@ -110,7 +112,7 @@ The restored shell provides:
 
 The original dashboard, widget gallery, dialogs, tables and widget wizard remain accessible in **Legacy examples**. The identity menu now uses the framework control and real local demo actions; the old template's placeholder alerts remain omitted. The original standalone loader remains an inactive migration reference; its useful controls now run inside the current shell.
 
-`App.razor` loads the neutral Bootstrap base, the library's `themes.css`, and the host/component styles. Individual pages do not load separate light/dark stylesheets. To reuse this arrangement, see [the library theme guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md).
+`App.razor` loads the neutral Bootstrap base and host/component styles. `ThemeProvider` loads the selected template's single CSS file, which imports the common `themes.css` integration. Switching families replaces that link; color variants share their family file. Individual pages do not add theme bundles. To reuse this arrangement, see [the library theme guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md).
 
 Endpoint selection stores sample values for the current circuit and never contacts those endpoints. The wallet wizard demonstrates navigation and validation without creating or storing a wallet. Grid data belongs to its retained screen instance: browsing blocks, switching tabs or following compatibility links preserves it. Closing that screen or refreshing the browser creates a fresh sample.
 
@@ -289,3 +291,8 @@ The active host uses import maps and fingerprinted static assets. Grid styles co
 ## Retained migration scaffolding
 
 The original `Loader`, `ModernLoader` and `WidgetGallery` project files, WebAssembly entry points and original static-asset copies remain as inactive migration references pending approval to remove superseded files. They are excluded from the active tester and are not solution projects. Use the root tester project named in the commands above.
+## Theme component coverage
+
+Open **Components → Themes** or `/components/themes` to compare the full palette. The gallery exercises solid/outline buttons, badges, semantic utilities, alerts, cards, form states and validation, tables, menus, tabs, pagination, lists, accordions and progress. Its dialog button opens the framework modal host. Drafts, selections and counters remain intact when changing the toolbar's Theme selector; the nested provider receives the same scoped theme.
+
+The template styles now include source button/input padding, borders, shadows, casing and separate input corners, alongside full semantic palettes. For example, Boost uses raised uppercase buttons with unraised fields, Landkit uses bold actions, and Raleway keeps square inputs. Template families still have one CSS file each; the common `theme-bootstrap.css` integration supplies the shared component rules. Use semantic classes such as `bg-body` and `text-body-secondary` in demos instead of fixed template colors.

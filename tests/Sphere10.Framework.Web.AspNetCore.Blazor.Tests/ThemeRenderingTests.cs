@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -51,6 +52,48 @@ public class ThemeRenderingTests {
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Unsaved draft"));
 			Assert.That(state.Child, Is.SameAs(originalChild));
 			Assert.That(state.Created, Is.EqualTo(1));
+		});
+	}
+
+	[Test]
+	public async Task EveryPresetUpdatesItsStylesheetAndColorSchemeWithoutReplacingTheDraft([Values] ThemeMode mode) {
+		await using var provider = CreateServices().BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var theme = provider.GetRequiredService<IThemeService>();
+		var state = provider.GetRequiredService<ProbeState>();
+		var definition = ThemeCatalog.Get(mode);
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var rendered = await renderer.RenderComponentAsync<ThemeHarness>();
+			var originalChild = state.Child;
+			await originalChild.SetDraftAsync("Draft retained while switching presets");
+			theme.SetTheme(mode);
+			var markup = rendered.ToHtmlString();
+			Assert.That(markup, Does.Contain($"data-sphere10-theme=\"{definition.Id}\""));
+			Assert.That(markup, Does.Contain($"data-bs-theme=\"{(definition.IsDark ? "dark" : "light")}\""));
+			Assert.That(markup, Does.Contain($"data-sphere10-theme-stylesheet=\"{definition.Id}\""));
+			Assert.That(markup, Does.Contain($"href=\"{definition.StylesheetPath}\""));
+			Assert.That(Regex.Matches(markup, "data-sphere10-theme-stylesheet=").Count, Is.EqualTo(1), "A provider must include only its active preset stylesheet.");
+			Assert.That(markup, Does.Contain($"value=\"{definition.Id}\" selected"));
+			Assert.That(markup, Does.Contain($"aria-pressed=\"{definition.IsDark.ToString().ToLowerInvariant()}\""));
+			Assert.That(markup, Does.Contain("Draft retained while switching presets"));
+			Assert.That(state.Child, Is.SameAs(originalChild));
+			Assert.That(state.Created, Is.EqualTo(1));
+			Assert.That(state.Disposed, Is.Zero);
+		});
+	}
+
+	[Test]
+	public async Task SelectorOffersEveryCatalogThemeByItsPublishedName() {
+		await using var provider = CreateServices().BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var rendered = await renderer.RenderComponentAsync<ThemeSelector>();
+			var markup = rendered.ToHtmlString();
+			Assert.That(Regex.Matches(markup, "<option ").Count, Is.EqualTo(ThemeCatalog.All.Length));
+			foreach (var definition in ThemeCatalog.All) {
+				Assert.That(markup, Does.Contain($"value=\"{definition.Id}\""));
+				Assert.That(markup, Does.Contain($">{definition.Name}</option>"));
+			}
 		});
 	}
 

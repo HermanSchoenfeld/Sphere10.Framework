@@ -1,0 +1,23 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.theme-demo { min-width: 0; }
+.theme-demo-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; }
+.theme-demo-section { margin-top: 1.5rem; min-width: 0; }
+.theme-demo-section > h3 { margin-bottom: 1rem; }
+.theme-demo-role-list { display: grid; gap: .65rem; }
+.theme-demo-role-row { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; }
+.theme-demo-role-row > span:first-child { width: 5rem; }
+.theme-demo-role-progress { flex: 0 0 7rem; }
+.theme-demo-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.theme-demo .form-label { display: block; margin-bottom: .9rem; }
+.theme-demo .form-check { margin-bottom: .65rem; }
+.theme-demo-tab-content { padding: 1rem 0; }
+.theme-demo ::deep .theme-demo-nested { margin-top: 1rem; }
+@media (max-width: 850px) { .theme-demo-columns { grid-template-columns: minmax(0, 1fr); } }

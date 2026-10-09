@@ -19,6 +19,6 @@ public interface IThemeService {
 
 	void SetTheme(ThemeMode theme);
 
-	/// <summary>Switches Dark to Light, or any other skin to Dark. Use SetTheme to select a particular skin.</summary>
+	/// <summary>Switches a dark skin to Light, or any light skin to Dark. Use SetTheme to select a particular skin.</summary>
 	void Toggle();
 }

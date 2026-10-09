@@ -20,14 +20,11 @@ public abstract class ThemedComponentBase : ComponentBase, IDisposable {
 	[Inject]
 	protected IThemeService ThemeService { get; set; }
 
-	protected string ThemeName => ThemeService.CurrentTheme switch {
-		ThemeMode.Dark => "dark",
-		ThemeMode.Blue => "blue",
-		ThemeMode.ClassicBlue => "classic-blue",
-		_ => "light"
-	};
+	protected ThemeDefinition CurrentTheme => ThemeCatalog.Get(ThemeService.CurrentTheme);
 
-	protected string BootstrapThemeName => ThemeService.CurrentTheme == ThemeMode.Dark ? "dark" : "light";
+	protected string ThemeName => CurrentTheme.Id;
+
+	protected string BootstrapThemeName => CurrentTheme.IsDark ? "dark" : "light";
 
 	public virtual void Dispose() {
 		_disposed = true;

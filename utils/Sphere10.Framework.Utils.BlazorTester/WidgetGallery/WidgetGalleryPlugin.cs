@@ -70,6 +70,12 @@ public static class WidgetGalleryPlugin {
 						.WithIcon("fas fa-magic")
 						.WithScreen<WizardsScreen>()
 					)
+					.ConfigureItem(item => item
+						.WithId("themes")
+						.WithText("Themes")
+						.WithIcon("fas fa-palette")
+						.WithScreen<ThemeScreen>()
+					)
 				)
 			)
 			.ConfigureBlock(block => block

@@ -1,0 +1,84 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+@import url("../themes.css");
+
+/* Boost 1.4.0: Merriweather typography, rounded controls and raised surfaces. See docs/theming-template-sources.md for the source audit. */
+.sphere10-theme[data-sphere10-theme="boost"] {
+	--sphere10-font-family: "Merriweather Sans", "Segoe UI", sans-serif;
+	--sphere10-heading-font-family: Merriweather, Georgia, serif;
+	--sphere10-heading-text: var(--sphere10-text);
+	--sphere10-heading-weight: 700;
+	--sphere10-letter-spacing: normal;
+	--sphere10-background: #f8f9fa;
+	--sphere10-surface: #ffffff;
+	--sphere10-surface-raised: #eef1f4;
+	--sphere10-text: #343a40;
+	--sphere10-muted: #656e79;
+	--sphere10-border: #d9dee3;
+	--sphere10-border-strong: #adb5bd;
+	--sphere10-accent: #006aff;
+	--sphere10-accent-contrast: #ffffff;
+	--sphere10-hover: #edf4ff;
+	--sphere10-selected: #dfebff;
+	--sphere10-editing: #edf6e7;
+	--sphere10-danger: #e22c2f;
+	--sphere10-success: #0b8447;
+	--sphere10-warning-background: #fff6e2;
+	--sphere10-focus: var(--sphere10-accent);
+	--sphere10-shadow: 0 .5rem 1rem #00000026;
+	--sphere10-header-background: var(--sphere10-surface);
+	--sphere10-header-text: var(--sphere10-text);
+	--sphere10-header-shadow: var(--sphere10-shadow);
+	--sphere10-navigation-background: var(--sphere10-surface);
+	--sphere10-navigation-text: var(--sphere10-text);
+	--sphere10-navigation-active-text: var(--sphere10-text);
+	--sphere10-navigation-icon: var(--sphere10-muted);
+	--sphere10-navigation-muted: var(--sphere10-muted);
+	--sphere10-navigation-hover: var(--sphere10-hover);
+	--sphere10-navigation-selected: var(--sphere10-selected);
+	--sphere10-navigation-border: var(--sphere10-border);
+	--sphere10-control-radius: .375rem;
+	--sphere10-panel-radius: .5rem;
+	--sphere10-control-shadow: none;
+	--sphere10-control-font-weight: 400;
+	--sphere10-grid-cell-padding: .7rem .85rem;
+	--sphere10-toolbar-background: var(--sphere10-surface);
+	--sphere10-menu-background: var(--sphere10-surface);
+	--sphere10-tab-radius: .5rem;
+	--sphere10-secondary: #656e79;
+	--sphere10-info: #007faa;
+	--sphere10-warning: #ff8c00;
+	--sphere10-light: #f8f9fa;
+	--sphere10-dark: #343a40;
+	--sphere10-control-padding-y: .875rem;
+	--sphere10-control-padding-x: 1rem;
+	--sphere10-control-border-width: 2px;
+	--sphere10-card-header-background: transparent;
+	--sphere10-card-shadow: 0 .125rem .25rem #00000013;
+	--sphere10-table-striped-background: #f2f2f2;
+	--sphere10-table-hover-background: #ececec;
+	--sphere10-button-padding-y: .875rem;
+	--sphere10-button-padding-x: 1.5rem;
+	--sphere10-button-shadow: 0 7px 16px #00000033;
+	--sphere10-button-text-transform: uppercase;
+	--sphere10-button-letter-spacing: 1px;
+	--sphere10-card-border-width: 0;
+	--sphere10-secondary-contrast: #ffffff;
+	--sphere10-success-contrast: #ffffff;
+	--sphere10-info-contrast: #ffffff;
+	--sphere10-warning-contrast: #18202c;
+	--sphere10-danger-contrast: #ffffff;
+	--sphere10-light-contrast: #18202c;
+	--sphere10-dark-contrast: #ffffff;
+	--sphere10-accent-text: #006aff;
+	--sphere10-success-text: #0b8447;
+	--sphere10-danger-text: #c72124;
+	color-scheme: light;
+}

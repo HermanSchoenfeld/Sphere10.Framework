@@ -23,6 +23,7 @@ public static class DemoNavigation {
 		new("/components/tables", "components", "tables"),
 		new("/components/dialogs", "components", "dialogs"),
 		new("/components/wizards", "components", "wizards"),
+		new("/components/themes", "components", "themes"),
 		new("/modern", "components", "gallery"),
 		new("/widget-gallery", "legacy", "gallery"),
 		new("/widget-gallery/modals", "legacy", "dialogs"),

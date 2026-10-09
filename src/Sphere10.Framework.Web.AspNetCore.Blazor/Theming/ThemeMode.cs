@@ -12,5 +12,21 @@ public enum ThemeMode {
 	Light,
 	Dark,
 	Blue,
-	ClassicBlue
+	ClassicBlue,
+	ArtificialReason,
+	Boost,
+	Hud,
+	HudLight,
+	Landkit,
+	MacAdmin,
+	Raleway,
+	AppStack,
+	AppStackDark,
+	ArtificialReasonGreen,
+	ArtificialReasonOrange,
+	ArtificialReasonViolet,
+	MacBeath,
+	MacKart,
+	RalewayPurple,
+	RalewayGreen
 }

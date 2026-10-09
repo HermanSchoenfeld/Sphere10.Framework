@@ -17,13 +17,7 @@ public partial class ThemeSelector {
 	public string Class { get; set; }
 
 	private void ChangeTheme(ChangeEventArgs args) {
-		var theme = args.Value?.ToString() switch {
-			"classic-blue" => ThemeMode.ClassicBlue,
-			"blue" => ThemeMode.Blue,
-			"light" => ThemeMode.Light,
-			"dark" => ThemeMode.Dark,
-			_ => ThemeService.CurrentTheme
-		};
-		ThemeService.SetTheme(theme);
+		if (ThemeCatalog.TryGet(args.Value?.ToString(), out var theme))
+			ThemeService.SetTheme(theme.Mode);
 	}
 }

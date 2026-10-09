@@ -9,10 +9,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -144,6 +146,44 @@ public class DemoShellBrowserTests {
 		await _page.GetByRole(AriaRole.Heading, new() { Name = "Awaited dialogs", Exact = true }).WaitForAsync();
 		await _page.WaitForFunctionAsync("() => location.pathname === '/application' && new URLSearchParams(location.search).get('block') === 'components' && new URLSearchParams(location.search).get('screen') === 'dialogs'");
 		Assert.That(await theme.InputValueAsync(), Is.EqualTo("light"));
+	}
+
+	[Test]
+	public async Task EveryCatalogThemeLoadsThroughTheSelectorAndPreservesTheGridDraft([Values] ThemeMode mode, [Values(1500, 390)] int width) {
+		await _page.SetViewportSizeAsync(width, width == 390 ? 844 : 1000);
+		await OpenInteractiveGridAsync();
+		var selector = _page.GetByRole(AriaRole.Combobox, new() { Name = "Theme", Exact = true });
+		Assert.That(await selector.Locator("option").AllTextContentsAsync(), Is.EqualTo(ThemeCatalog.All.Select(theme => theme.Name).ToArray()));
+		var table = _page.Locator(".sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table");
+		var grid = table.Locator("xpath=../..");
+		var originalPanel = await table.EvaluateAsync<string>("element => element.closest('[role=tabpanel]').id");
+		await table.Locator(":scope > tbody > tr").First.ClickAsync();
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Edit", Exact = true }).ClickAsync();
+		var name = grid.GetByRole(AriaRole.Textbox, new() { Name = "Name", Exact = true });
+		await name.FillAsync("Unsaved draft preserved by the selected template");
+		await name.PressAsync("Tab");
+		var originalUrl = _page.Url;
+
+		var definition = ThemeCatalog.Get(mode);
+		await selector.SelectOptionAsync(definition.Id);
+		var expectedAccent = await WaitForThemeAsync(definition.Id);
+		var stylesheet = _page.Locator("link[data-sphere10-theme-stylesheet]");
+		Assert.That(await stylesheet.CountAsync(), Is.EqualTo(1), "Only the selected preset should be included by the provider.");
+		Assert.That(await stylesheet.GetAttributeAsync("data-sphere10-theme-stylesheet"), Is.EqualTo(definition.Id));
+		var stylesheetUrl = new Uri(new Uri(_page.Url), await stylesheet.GetAttributeAsync("href"));
+		Assert.That(await _page.EvaluateAsync<int>("async url => (await fetch(url)).status", stylesheetUrl.AbsoluteUri), Is.EqualTo(200));
+		Assert.That(await _page.Locator(".sphere10-theme").GetAttributeAsync("data-bs-theme"), Is.EqualTo(definition.IsDark ? "dark" : "light"));
+		Assert.That(await selector.Locator("option:checked").InnerTextAsync(), Is.EqualTo(definition.Name));
+		Assert.That(await name.InputValueAsync(), Is.EqualTo("Unsaved draft preserved by the selected template"));
+		Assert.That(await table.EvaluateAsync<string>("element => element.closest('[role=tabpanel]').id"), Is.EqualTo(originalPanel));
+		Assert.That(_page.Url, Is.EqualTo(originalUrl));
+		Assert.That(expectedAccent, Is.Not.Empty, "The active stylesheet must define the selected preset's accent rather than inheriting the common fallback.");
+		Assert.That(await _page.Locator(".sphere10-theme").EvaluateAsync<string>("element => getComputedStyle(element).getPropertyValue('--sphere10-accent').trim()"),
+			Is.EqualTo(expectedAccent), "The applied palette must match the selected template's own CSS rule.");
+		var documentSize = await _page.EvaluateAsync<double[]>("() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]");
+		Assert.That(documentSize[0], Is.LessThanOrEqualTo(documentSize[1] + 1), "A preset must preserve the responsive shell and contain the grid's horizontal scrolling.");
+		await AttachScreenshotAsync($"{definition.Id}-{width}-draft");
+		await grid.GetByRole(AriaRole.Group, new() { Name = "Edit item", Exact = true }).GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
 	}
 
 	[TestCase(1500, 1000)]
@@ -496,8 +536,27 @@ public class DemoShellBrowserTests {
 		}
 		""");
 
-	private Task WaitForThemeAsync(string theme) => _page.WaitForFunctionAsync(
-		"theme => document.querySelector('[data-sphere10-theme]')?.getAttribute('data-sphere10-theme') === theme", theme);
+	private async Task<string> WaitForThemeAsync(string theme) {
+		// A changed href can briefly retain the previous CSSStyleSheet, so wait for the selected rule and its computed palette.
+		await using var palette = await _page.WaitForFunctionAsync("""
+			theme => {
+				const provider = document.querySelector('[data-sphere10-theme]');
+				const link = document.querySelector('link[data-sphere10-theme-stylesheet]');
+				if (provider?.getAttribute('data-sphere10-theme') !== theme || link?.getAttribute('data-sphere10-theme-stylesheet') !== theme || !link.sheet || link.sheet.href !== link.href)
+					return false;
+				const rules = Array.from(link.sheet.cssRules);
+				const isLoaded = sheet => !!sheet && sheet.cssRules.length > 0
+					&& Array.from(sheet.cssRules).every(rule => rule.type !== CSSRule.IMPORT_RULE || isLoaded(rule.styleSheet));
+				if (!isLoaded(link.sheet))
+					return false;
+				const matchingRules = rules.filter(rule => rule.type === CSSRule.STYLE_RULE
+					&& rule.selectorText.includes('[data-sphere10-theme=') && provider.matches(rule.selectorText));
+				const expectedAccent = matchingRules.map(rule => rule.style.getPropertyValue('--sphere10-accent').trim()).filter(Boolean).pop();
+				return expectedAccent && getComputedStyle(provider).getPropertyValue('--sphere10-accent').trim() === expectedAccent ? expectedAccent : false;
+			}
+			""", theme);
+		return await palette.JsonValueAsync<string>();
+	}
 
 	private Task WaitForBlockAsync(string block) => _page.WaitForFunctionAsync(
 		"block => location.pathname === '/application' && new URLSearchParams(location.search).get('block') === block", block);

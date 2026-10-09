@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
@@ -83,11 +84,8 @@ public class ThemeTests {
 	[Test]
 	public void DecoratorRejectsMissingService() => Assert.That(() => new ForwardingThemeService(null), Throws.ArgumentNullException);
 
-	[TestCase(ThemeMode.Light)]
-	[TestCase(ThemeMode.Dark)]
-	[TestCase(ThemeMode.Blue)]
-	[TestCase(ThemeMode.ClassicBlue)]
-	public void ConstructorAcceptsEverySupportedInitialSkin(ThemeMode initialTheme) {
+	[Test]
+	public void ConstructorAcceptsEverySupportedInitialSkin([Values] ThemeMode initialTheme) {
 		var service = new ThemeService(initialTheme);
 		Assert.That(service.CurrentTheme, Is.EqualTo(initialTheme));
 	}
@@ -107,6 +105,54 @@ public class ThemeTests {
 		service.Toggle();
 		service.Toggle();
 		Assert.That(observed, Is.EqualTo(new[] { theme, ThemeMode.Dark, ThemeMode.Light }));
+	}
+
+	[Test]
+	public void CatalogIncludesEveryThemeWithUniqueIdsAndTemplateStylesheets() {
+		var themes = ThemeCatalog.All;
+		Assert.That(themes.Select(theme => theme.Mode), Is.EquivalentTo(Tools.Enums.GetValues<ThemeMode>()));
+		Assert.That(themes.Select(theme => theme.Id), Is.Unique);
+		Assert.That(themes.Select(theme => theme.Name), Is.Unique);
+		Assert.That(themes.All(theme => !string.IsNullOrWhiteSpace(theme.Name)), Is.True);
+		Assert.That(themes.All(theme => theme.StylesheetPath.StartsWith("_content/Sphere10.Framework.Web.AspNetCore.Blazor/css/themes/", StringComparison.Ordinal)), Is.True);
+		Assert.That(themes.All(theme => theme.StylesheetPath.EndsWith(".css", StringComparison.Ordinal)), Is.True);
+	}
+
+	[Test]
+	public void CatalogLookupsRoundTripEveryTheme([Values] ThemeMode mode) {
+		var definition = ThemeCatalog.Get(mode);
+		Assert.That(ThemeCatalog.TryGet(definition.Id, out var selected), Is.True);
+		Assert.That(selected, Is.SameAs(definition));
+		Assert.That(selected.Mode, Is.EqualTo(mode));
+	}
+
+	[TestCase(null)]
+	[TestCase("")]
+	[TestCase("unknown-theme")]
+	public void CatalogRejectsUnknownSelection(string id) {
+		Assert.That(ThemeCatalog.TryGet(id, out var definition), Is.False);
+		Assert.That(definition, Is.Null);
+	}
+
+	[Test]
+	public void CatalogMembershipCannotBeChangedByConsumers() {
+		var themes = ThemeCatalog.All;
+		var original = themes[0];
+		themes[0] = null;
+		Assert.That(ThemeCatalog.All[0], Is.SameAs(original));
+		Assert.That(ThemeCatalog.Get(original.Mode), Is.SameAs(original));
+	}
+
+	[Test]
+	public void EachThemeCanBeSelectedAndToggledAccordingToItsColorScheme([Values] ThemeMode mode) {
+		var service = new ThemeService(mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
+		var observed = new List<ThemeMode>();
+		service.Changed += () => observed.Add(service.CurrentTheme);
+		service.SetTheme(mode);
+		service.SetTheme(mode);
+		Assert.That(observed, Is.EqualTo(new[] { mode }), "Selecting an unchanged theme must not notify consumers again.");
+		service.Toggle();
+		Assert.That(service.CurrentTheme, Is.EqualTo(ThemeCatalog.Get(mode).IsDark ? ThemeMode.Light : ThemeMode.Dark));
 	}
 
 	[Test]

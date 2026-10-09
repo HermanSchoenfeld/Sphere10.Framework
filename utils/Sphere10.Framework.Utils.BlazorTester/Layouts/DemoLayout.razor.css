@@ -14,7 +14,7 @@ This notice must not be removed when duplicating this file or its contents, in w
 .demo-shell ::deep .demo-example { min-width: 0; }
 .demo-shell ::deep .demo-example h2 { font-size: 1.25rem; margin-bottom: 1rem; }
 .demo-shell ::deep .demo-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: 1rem; }
-.demo-shell ::deep .demo-card { display: block; padding: 1.25rem; border: 1px solid var(--sphere10-border); border-radius: .35rem; background: var(--sphere10-surface); color: var(--sphere10-text); text-decoration: none; }
+.demo-shell ::deep .demo-card { display: block; padding: 1.25rem; border: var(--sphere10-card-border-width, 1px) solid var(--sphere10-border); border-radius: var(--sphere10-panel-radius, .35rem); box-shadow: var(--sphere10-card-shadow, none); background: var(--sphere10-surface); color: var(--sphere10-text); text-decoration: none; }
 .demo-shell ::deep .demo-card:hover { border-color: var(--sphere10-accent); background: var(--sphere10-hover); }
 .demo-shell ::deep .demo-card > i { color: var(--sphere10-accent); font-size: 1.5rem; margin-bottom: .8rem; }
 .demo-shell ::deep .demo-card h2 { font-size: 1.15rem; }
