@@ -152,8 +152,13 @@ public class AsyncModalTests {
 		var First = new WizardScreenProbe { Validation = () => Validation.Task };
 		var Second = new WizardScreenProbe();
 		var Finishes = 0;
-		using var Wizard = new WinFormsWizardBuilder<object>().WithTitle("Shared navigation").WithModel(new object())
-			.AddScreen(First).AddScreen(Second).OnFinished(_ => { Finishes++; return Task.FromResult(Result.Success); }).Build();
+		using var Wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Shared navigation")
+			.WithModel(new object())
+			.AddScreen(First)
+			.AddScreen(Second)
+			.OnFinished(_ => { Finishes++; return Task.FromResult(Result.Success); })
+			.Build();
 		IWizard<object, WinFormsWizardScreen<object>> Shared = Wizard;
 		var Pending = Wizard.Start(Owner);
 		using var Dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
@@ -184,8 +189,12 @@ public class AsyncModalTests {
 		var First = new WizardScreenProbe();
 		var Replacement = new WizardScreenProbe();
 		var Last = new WizardScreenProbe();
-		using var Wizard = new WinFormsWizardBuilder<object>().WithTitle("Shared replacement").WithModel(new object())
-			.AddScreen(First).OnFinished(_ => Task.FromResult(Result.Success)).Build();
+		using var Wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Shared replacement")
+			.WithModel(new object())
+			.AddScreen(First)
+			.OnFinished(_ => Task.FromResult(Result.Success))
+			.Build();
 		IWizard<object, WinFormsWizardScreen<object>> Shared = Wizard;
 		var Pending = Wizard.Start(Owner);
 		using var Dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
@@ -208,8 +217,13 @@ public class AsyncModalTests {
 	public void SharedWizardValidationFailureDoesNotMoveOrComplete() => RunWithMessageLoop(async Owner => {
 		var First = new WizardScreenProbe { Validation = () => Task.FromResult(Result.Error("Check the input.")) };
 		var Finishes = 0;
-		using var Wizard = new WinFormsWizardBuilder<object>().WithTitle("Shared validation").WithModel(new object())
-			.AddScreen(First).AddScreen(new WizardScreenProbe()).OnFinished(_ => { Finishes++; return Task.FromResult(Result.Success); }).Build();
+		using var Wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Shared validation")
+			.WithModel(new object())
+			.AddScreen(First)
+			.AddScreen(new WizardScreenProbe())
+			.OnFinished(_ => { Finishes++; return Task.FromResult(Result.Success); })
+			.Build();
 		IWizard<object, WinFormsWizardScreen<object>> Shared = Wizard;
 		var Pending = Wizard.Start(Owner);
 		using var Dialog = await WaitForDialog<WinFormsWizardDialog<object>>();

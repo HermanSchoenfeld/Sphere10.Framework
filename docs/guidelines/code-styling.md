@@ -285,6 +285,43 @@ should be
 
 
 
+### Fluent configuration hierarchy
+
+Fluent builders describe an object graph. Format their configuration to show that graph, even when each call would fit within 170 characters. Apply this to application, plugin, block, menu, screen and wizard builders in framework code, consumers, tests and documentation.
+
+Use `ConfigurePlugin`, `ConfigureBlock`, `ConfigureMenu` and `ConfigureItem` for child-builder callbacks. As in `ProtocolBuilder`, each `ConfigureX` builds the child and registers it through `AddX`. `AddX` methods accept existing definitions or construct them directly from arguments and never invoke a child builder.
+
+- Start each configuration call on its own line. Indent the root chain one tab from its receiver; indent each child builder chain one additional tab beneath the call that owns it.
+- Keep sibling blocks, menus, items and wizard steps at the same depth. Do not flatten a child configuration onto its parent's line or align every nested chain to the root.
+- Keep every builder invocation as one continuous indented block. Do not insert blank lines between metadata, service registrations, blocks, menus, items, wizard steps or completion callbacks. Blank lines may separate independent statements or methods outside the invocation.
+- Close a multiline child-builder argument on its own line, aligned with the owning call. This makes each block or menu boundary visible instead of accumulating closing parentheses on its last item.
+- Keep short leaf arguments on one line. A simple isolated validation expression or single builder operation can remain compact; do not wrap unrelated code as part of a builder cleanup.
+- Keep a feature's configuration together in its builder region or configuration method. Extract a named configuration method only for a meaningful reusable feature, not merely to hide a few lines of the hierarchy.
+
+```csharp
+services
+	.BuildBlazorApplication()
+	.WithTitle("Operations")
+	.ConfigurePlugin(plugin => plugin
+		.WithName("Operations")
+		.ConfigureBlock(block => block
+			.WithId("inventory")
+			.WithName("Inventory")
+			.ConfigureMenu(menu => menu
+				.WithText("Stock")
+				.ConfigureItem(item => item
+					.WithText("Products")
+					.WithScreen<ProductsScreen>()
+					.AsMultiInstance()
+				)
+			)
+		)
+	)
+	.Build();
+```
+
+Wizard setup follows the same convention: title, model, options, ordered steps and finish/cancel callbacks form one continuous indented block without blank lines. Preserve the order of configuration calls when formatting existing code.
+
 ### Parenthesis Wrapping
 
 When wrapping a line after an open-parenthesis `(` ensure the close-parenthesis `)` is placed on new line at the indentation of the line which originated the `(` (i.e. as if it were begin/end braces `{` `}`). 
@@ -335,7 +372,7 @@ public enum SomeEnum {
 
 ### Code Comments & Vertical Spaces
 
-Developers should add code-comments inside their code so as to assist auditors on what the purpose of the code is. XMLDOC code comments need not be done during development but can be retrofitted later using tooling. Spaces between lines of code should **only** be used to group the "logical segments" of the code block. All code within a "logical segment" should have no spaces. Each logical segment should have a comment. 
+Developers should add code-comments inside their code so as to assist auditors on what the purpose of the code is. XMLDOC code comments need not be done during development but can be retrofitted later using tooling. Spaces between lines of code should **only** be used to group the "logical segments" of the code block. All code within a "logical segment" should have no spaces. Each logical segment should have a comment. A fluent builder invocation and its nested child builders form one continuous logical segment, with no blank separator lines.
 
 **Example:**
 

@@ -13,8 +13,17 @@ Apply these rules to every file you create or edit. Full rules live in [../../co
 - `var` over explicit types wherever possible.
 - Omit braces on single-statement `if`/`foreach`/etc.
 - No redundant `else` after `return`/`throw`.
-- Don't wrap lines unless > ~170 chars. If wrapping after `(`, put `)` on its own line at the originating indent.
+- Don't wrap ordinary lines unless > ~170 chars or the expression needs structural clarity. Fluent builder configuration is an explicit exception: use the hierarchy rules below even for shorter lines. If wrapping after `(`, put `)` on its own line at the originating indent.
 - Base/sibling constructor calls (`: base(...)`, `: this(...)`) on the next line, tab-indented.
+
+## Fluent configuration hierarchy
+
+- Apply the same visual structure to application, plugin, block, menu, screen and wizard builders in production code, demos, tests and README examples.
+- Put each configuration call on its own line. Root calls are one tab beneath the receiver; a child builder's calls are one further tab beneath its owning `ConfigurePlugin`, `ConfigureBlock`, `ConfigureMenu`, `ConfigureItem` or equivalent call. Siblings keep the same depth.
+- Keep the entire builder invocation continuous, with no blank lines between metadata, services, blocks, menus, items, steps or completion callbacks. Separate independent statements or methods normally.
+- Put the closing parenthesis of a multiline child-builder argument on its own line at the owning call's indentation. Avoid compressed runs of closing parentheses on the final child.
+- Keep leaf arguments and simple isolated validation expressions compact. Preserve configuration order and keep a feature's configuration together; do not fragment it into helper methods solely to reduce line count.
+- See [the coding guide's hierarchy example](../../../docs/guidelines/code-styling.md#fluent-configuration-hierarchy). This is intentional structure, not arbitrary line wrapping.
 
 ## Naming
 - PascalCase for types, methods, properties, and non-private fields.
@@ -50,7 +59,7 @@ Apply these rules to every file you create or edit. Full rules live in [../../co
 9. Inner types
 
 ## Comments
-- Comment logical segments inside method bodies; one blank line between segments and between members; no blank lines within a segment.
+- Comment logical segments inside method bodies; one blank line between segments and between members; no blank lines within a segment. A builder invocation and its nested child builders form one continuous segment.
 
 ## New files
 Every new source file starts with the license header:

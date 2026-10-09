@@ -27,7 +27,9 @@ public class ApplicationPresentationAdapterTests {
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
-			Sphere10Framework.Instance.Build().Start();
+			Sphere10Framework.Instance
+				.Build()
+				.Start();
 	}
 
 	[OneTimeTearDown]
@@ -178,7 +180,11 @@ public class ApplicationPresentationAdapterTests {
 	[TestCase(ScreenActivationMode.MultiInstance)]
 	public void BuilderRetainsNullableNativeActivationPolicy(ScreenActivationMode? activationMode) {
 		var builder = new WinFormsApplicationMenuItemBuilder();
-		var screenBuilder = builder.AsScreenItem().WithText("Document").WithScreen<ProbeScreen>().WithTitle(Title: "Editor");
+		var screenBuilder = builder
+			.AsScreenItem()
+			.WithText("Document")
+			.WithScreen<ProbeScreen>()
+			.WithTitle(Title: "Editor");
 		if (activationMode == ScreenActivationMode.SingleInstance)
 			screenBuilder.AsSingleInstance();
 		if (activationMode == ScreenActivationMode.MultiInstance)
@@ -194,7 +200,11 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void NativeBuildersRetainTheirProductAndApplyLaterFluentChanges() {
-		var builder = new WinFormsApplicationBlockBuilder().WithId("tools").WithName("Tools").WithPosition(5).WithDefaultScreen<ProbeScreen>("Start");
+		var builder = new WinFormsApplicationBlockBuilder()
+			.WithId("tools")
+			.WithName("Tools")
+			.WithPosition(5)
+			.WithDefaultScreen<ProbeScreen>("Start");
 		using var first = builder.Build();
 		builder.WithName("Updated tools");
 		Assert.That(first.Name, Is.EqualTo("Updated tools"), "Post-build setters must immediately update the existing native product");
@@ -204,7 +214,9 @@ public class ApplicationPresentationAdapterTests {
 		Assert.That(second.Position, Is.EqualTo(5));
 		Assert.That(second.DefaultScreen, Is.EqualTo(typeof(ProbeScreen)));
 		Assert.That(second.DefaultScreenTitle, Is.EqualTo("Start"));
-		var menuBuilder = new WinFormsApplicationMenuBuilder().WithId("edit").WithText("Edit");
+		var menuBuilder = new WinFormsApplicationMenuBuilder()
+			.WithId("edit")
+			.WithText("Edit");
 		using var firstMenu = menuBuilder.Build();
 		menuBuilder.WithText("Updated edit");
 		Assert.That(firstMenu.Text, Is.EqualTo("Updated edit"));
@@ -214,7 +226,8 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void RebuildingNativeProductsValidatesTheirCurrentMutableNames() {
-		var blockBuilder = new WinFormsApplicationBlockBuilder().WithName("Tools");
+		var blockBuilder = new WinFormsApplicationBlockBuilder()
+			.WithName("Tools");
 		using var block = blockBuilder.Build();
 		block.Name = string.Empty;
 		Assert.That(() => blockBuilder.Build(), Throws.InvalidOperationException);
@@ -224,7 +237,8 @@ public class ApplicationPresentationAdapterTests {
 		block.Name = "Restored tools";
 		Assert.That(blockBuilder.Build(), Is.SameAs(block), "A directly restored product name must take precedence over earlier builder state");
 
-		var menuBuilder = new WinFormsApplicationMenuBuilder().WithText("Edit");
+		var menuBuilder = new WinFormsApplicationMenuBuilder()
+			.WithText("Edit");
 		using var menu = menuBuilder.Build();
 		menu.Text = string.Empty;
 		Assert.That(() => menuBuilder.Build(), Throws.InvalidOperationException);
@@ -246,14 +260,18 @@ public class ApplicationPresentationAdapterTests {
 		var image = new Bitmap(1, 1);
 		var firstItem = new DisposableItem { Image16x16 = image };
 		var secondItem = new DisposableItem();
-		var menuBuilder = new WinFormsApplicationMenuBuilder().WithText("Screens").AddItem(firstItem);
+		var menuBuilder = new WinFormsApplicationMenuBuilder()
+			.WithText("Screens")
+			.AddItem(firstItem);
 		var menu = menuBuilder.Build();
 		menuBuilder.AddItem(secondItem);
 		Assert.That(menu.Items, Is.EqualTo(new[] { firstItem, secondItem }));
 		Assert.That(menuBuilder.Build(), Is.SameAs(menu));
 		Assert.That(firstItem.Parent, Is.SameAs(menu));
 		Assert.That(secondItem.Parent, Is.SameAs(menu));
-		var blockBuilder = new WinFormsApplicationBlockBuilder().WithName("Workspace").AddMenu(menu);
+		var blockBuilder = new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddMenu(menu);
 		var block = blockBuilder.Build();
 		var otherMenu = new DisposableMenu();
 		blockBuilder.AddMenu(otherMenu);

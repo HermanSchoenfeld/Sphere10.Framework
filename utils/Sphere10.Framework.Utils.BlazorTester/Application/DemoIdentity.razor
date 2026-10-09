@@ -24,27 +24,39 @@
 
 	protected override void OnInitialized() {
 		_signedInItems = new IBlazorApplicationMenuItem[] {
-			new BlazorApplicationMenuItemBuilder().WithId("profile").WithText("Profile").WithIcon("fas fa-user")
+			new BlazorApplicationMenuItemBuilder()
+				.WithId("profile")
+				.WithText("Profile")
+				.WithIcon("fas fa-user")
 				.WithAction((provider, token) => {
 					token.ThrowIfCancellationRequested();
 					return provider.GetRequiredService<ViewService>().DialogAsync("Demo profile",
 						$"User: {_user.Identity.Name}. Email: {_user.FindFirst(ClaimTypes.Email)?.Value}. Role: {_user.FindFirst(ClaimTypes.Role)?.Value}. This local demo account demonstrates identity controls; it does not authenticate with a server.");
-				}).Build(),
+				})
+				.Build(),
 			new BlazorMenuSeparator(),
-			new BlazorApplicationMenuItemBuilder().WithId("sign-out").WithText("Sign out of demo").WithIcon("fas fa-sign-out-alt")
+			new BlazorApplicationMenuItemBuilder()
+				.WithId("sign-out")
+				.WithText("Sign out of demo")
+				.WithIcon("fas fa-sign-out-alt")
 				.WithAction((_, token) => {
 					token.ThrowIfCancellationRequested();
 					_user = new ClaimsPrincipal(new ClaimsIdentity());
 					return Task.CompletedTask;
-				}).Build()
+				})
+				.Build()
 		};
 		_guestItems = new IBlazorApplicationMenuItem[] {
-			new BlazorApplicationMenuItemBuilder().WithId("use-demo-account").WithText("Use demo account").WithIcon("fas fa-sign-in-alt")
+			new BlazorApplicationMenuItemBuilder()
+				.WithId("use-demo-account")
+				.WithText("Use demo account")
+				.WithIcon("fas fa-sign-in-alt")
 				.WithAction((_, token) => {
 					token.ThrowIfCancellationRequested();
 					_user = CreateDemoUser();
 					return Task.CompletedTask;
-				}).Build()
+				})
+				.Build()
 		};
 	}
 

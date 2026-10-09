@@ -79,9 +79,16 @@ public class ApplicationPluginTests {
 		var calls = new List<string>();
 		var firstBlock = new ApplicationBlock { Name = "First" };
 		var secondBlock = new ApplicationBlock { Name = "Second" };
-		var builder = new ApplicationPluginBuilder().WithName("First plugin").AddBlock(firstBlock).ConfigureServices(_ => calls.Add("first"));
+		var builder = new ApplicationPluginBuilder()
+			.WithName("First plugin")
+			.AddBlock(firstBlock)
+			.ConfigureServices(_ => calls.Add("first"));
 		var first = builder.Build();
-		var second = builder.WithName("Second plugin").AddBlock(secondBlock).ConfigureServices(_ => calls.Add("second")).Build();
+		var second = builder
+			.WithName("Second plugin")
+			.AddBlock(secondBlock)
+			.ConfigureServices(_ => calls.Add("second"))
+			.Build();
 		Assert.That(calls, Is.Empty, "Building definitions does not perform startup work.");
 		first.Load(new ServiceCollection());
 		second.Load(new ServiceCollection());
@@ -125,7 +132,10 @@ public class ApplicationPluginTests {
 	[Test]
 	public void EmptyApplicationsAndServiceOnlyPluginsAreSupportedAndValidationCopiesMembership() {
 		Assert.That(Tools.UI.ValidatePlugins(Array.Empty<IApplicationPlugin>()), Is.Empty);
-		var plugin = new ApplicationPluginBuilder().WithName("Services").ConfigureServices(services => services.AddSingleton<Marker>()).Build();
+		var plugin = new ApplicationPluginBuilder()
+			.WithName("Services")
+			.ConfigureServices(services => services.AddSingleton<Marker>())
+			.Build();
 		var input = new IApplicationPlugin[] { plugin };
 		var validated = Tools.UI.ValidatePlugins(input);
 		input[0] = null;

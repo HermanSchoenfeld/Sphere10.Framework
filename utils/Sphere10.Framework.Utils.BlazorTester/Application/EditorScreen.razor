@@ -48,7 +48,13 @@
 	public override string Title => string.IsNullOrWhiteSpace(_title) ? "Single-instance screen" : _title;
 
 	public override IBlazorApplicationMenu[] Menus => new[] {
-		new BlazorApplicationMenuBuilder().WithId("file").WithText("File").AddItem(SaveCommand).AddItem(DiscardCommand).AddItem(CounterCommand).Build()
+		new BlazorApplicationMenuBuilder()
+			.WithId("file")
+			.WithText("File")
+			.AddItem(SaveCommand)
+			.AddItem(DiscardCommand)
+			.AddItem(CounterCommand)
+			.Build()
 	};
 
 	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { SaveCommand, DiscardCommand, CounterCommand };
@@ -56,28 +62,40 @@
 	public override bool HasUnsavedChanges => _draft != _saved;
 
 	private BlazorApplicationMenuItem SaveCommand => _saveCommand ??= new BlazorApplicationMenuItemBuilder()
-		.WithId("save").WithText("Save in session").WithIcon("fas fa-save").WithAction((_, token) => {
+		.WithId("save")
+		.WithText("Save in session")
+		.WithIcon("fas fa-save")
+		.WithAction((_, token) => {
 			token.ThrowIfCancellationRequested();
 			Save();
 			StateHasChanged();
 			return Task.CompletedTask;
-		}).Build();
+		})
+		.Build();
 
 	private BlazorApplicationMenuItem DiscardCommand => _discardCommand ??= new BlazorApplicationMenuItemBuilder()
-		.WithId("discard").WithText("Discard changes").WithIcon("fas fa-undo").WithAction((_, token) => {
+		.WithId("discard")
+		.WithText("Discard changes")
+		.WithIcon("fas fa-undo")
+		.WithAction((_, token) => {
 			token.ThrowIfCancellationRequested();
 			Discard();
 			StateHasChanged();
 			return Task.CompletedTask;
-		}).Build();
+		})
+		.Build();
 
 	private BlazorApplicationMenuItem CounterCommand => _counterCommand ??= new BlazorApplicationMenuItemBuilder()
-		.WithId("instance-counter").WithText("Increment instance counter").WithIcon("fas fa-plus-circle").WithAction((_, token) => {
+		.WithId("instance-counter")
+		.WithText("Increment instance counter")
+		.WithIcon("fas fa-plus-circle")
+		.WithAction((_, token) => {
 			token.ThrowIfCancellationRequested();
 			IncrementCounter();
 			StateHasChanged();
 			return Task.CompletedTask;
-		}).Build();
+		})
+		.Build();
 
 	protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();

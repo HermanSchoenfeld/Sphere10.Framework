@@ -45,7 +45,8 @@ public class WizardsViewModel : ComponentViewModelBase {
 	/// </summary>
 	/// <returns> new wizard model insteance</returns>
 	public IBlazorWizard NewWidetWizard() {
-		IBlazorWizard wizard = Builder.NewWizard("New Widget")
+		IBlazorWizard wizard = Builder
+			.NewWizard("New Widget")
 			.WithModel(new NewWidgetModel())
 			.AddStep<NewWidgetWizardStep>()
 			.AddStep<NewWidgetSummaryStep>()

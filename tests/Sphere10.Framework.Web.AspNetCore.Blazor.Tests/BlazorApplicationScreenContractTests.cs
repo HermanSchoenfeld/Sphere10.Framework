@@ -45,7 +45,11 @@ public class BlazorApplicationScreenContractTests {
 		screen.IsDirty = true;
 		screen.AllowDeactivation = false;
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder().WithId("workspace").WithName("Workspace").WithDefaultScreen(screen.GetType()).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("workspace")
+			.WithName("Workspace")
+			.WithDefaultScreen(screen.GetType())
+			.Build();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var session = await host.ActivateBlockAsync("workspace");
 		await host.AttachScreenAsync(session.Id, (IBlazorApplicationScreen)screen);

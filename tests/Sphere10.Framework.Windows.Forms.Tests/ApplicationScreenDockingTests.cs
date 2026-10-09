@@ -26,7 +26,9 @@ public class ApplicationScreenDockingTests {
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
-			Sphere10Framework.Instance.Build().Start();
+			Sphere10Framework.Instance
+				.Build()
+				.Start();
 	}
 
 	[OneTimeTearDown]

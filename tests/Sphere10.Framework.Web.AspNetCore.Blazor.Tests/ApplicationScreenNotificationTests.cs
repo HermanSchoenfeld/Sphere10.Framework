@@ -64,7 +64,11 @@ public class ApplicationScreenNotificationTests {
 	}
 
 	private static BlazorApplicationScreenHost CreateHost(ServiceProvider provider) {
-		var block = new BlazorApplicationBlockBuilder().WithId("workspace").WithName("Workspace").WithDefaultScreen<NotificationScreen>().Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("workspace")
+			.WithName("Workspace")
+			.WithDefaultScreen<NotificationScreen>()
+			.Build();
 		return new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 	}
 

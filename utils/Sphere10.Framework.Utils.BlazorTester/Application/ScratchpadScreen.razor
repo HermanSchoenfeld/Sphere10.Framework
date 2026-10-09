@@ -42,18 +42,26 @@
 	public override string Title => string.IsNullOrWhiteSpace(_title) ? "Scratchpad" : _title;
 
 	public override IBlazorApplicationMenu[] Menus => new[] {
-		new BlazorApplicationMenuBuilder().WithId("file").WithText("File").AddItem(CounterCommand).Build()
+		new BlazorApplicationMenuBuilder()
+			.WithId("file")
+			.WithText("File")
+			.AddItem(CounterCommand)
+			.Build()
 	};
 
 	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { CounterCommand };
 
 	private BlazorApplicationMenuItem CounterCommand => _counterCommand ??= new BlazorApplicationMenuItemBuilder()
-		.WithId("instance-counter").WithText("Increment instance counter").WithIcon("fas fa-plus-circle").WithAction((_, token) => {
+		.WithId("instance-counter")
+		.WithText("Increment instance counter")
+		.WithIcon("fas fa-plus-circle")
+		.WithAction((_, token) => {
 			token.ThrowIfCancellationRequested();
 			IncrementCounter();
 			StateHasChanged();
 			return Task.CompletedTask;
-		}).Build();
+		})
+		.Build();
 
 	protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();

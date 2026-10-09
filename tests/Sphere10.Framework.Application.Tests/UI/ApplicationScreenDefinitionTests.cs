@@ -174,7 +174,9 @@ public class ApplicationScreenDefinitionTests {
 
 	[Test]
 	public void SharedBuilderPreservesDefaultLifetimeAndKind() {
-		var block = new BlockBuilder().Default(typeof(FirstScreen), ScreenActivationMode.MultiInstance, ScreenKind.Empty).Build();
+		var block = new BlockBuilder()
+			.Default(typeof(FirstScreen), ScreenActivationMode.MultiInstance, ScreenKind.Empty)
+			.Build();
 
 		Assert.That(block.DefaultScreen, Is.EqualTo(typeof(FirstScreen)));
 		Assert.That(block.DefaultScreenActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));

@@ -20,7 +20,7 @@ Sphere10 Framework targets **.NET 10** (`net10.0` / `net10.0-windows`), with **.
 - Prefer `var` over explicit type declarations wherever possible.
 - Omit braces for **single-line scopes** (single-statement `if`, `foreach`, etc.).
 - Remove **redundant `else`** blocks after `return` or `throw`.
-- Do **not** wrap lines unless they exceed ~170 characters or wrapping significantly improves readability.
+- Do **not** wrap lines unless they exceed ~170 characters or wrapping significantly improves readability. Fluent builder invocations follow the configuration hierarchy below even when their lines are shorter.
 - When wrapping after `(`, place the closing `)` on its own line at the indentation of the originating line.
 
 ### Naming Conventions
@@ -59,7 +59,7 @@ Inside a class, order members as:
 
 ### Comments & Vertical Spacing
 - Use code comments to describe **logical segments** within method bodies.
-- Use a **single blank line** to separate logical segments; no blank lines within a segment.
+- Use a **single blank line** to separate logical segments; no blank lines within a segment. A fluent builder invocation is one continuous segment: keep its configuration and nested child builders together without blank separator lines.
 - One blank line between members in a class.
 
 ### Constructor Chaining
@@ -97,10 +97,10 @@ To add a new tool, create a `static class` in the `Tools` namespace anywhere in 
 The codebase favors **fluent builder classes** for configuring complex objects. Builders accumulate state via chainable `With*`/`Add*`/`Configure*` methods and finalize with `.Build()`. Key examples:
 - **`SerializerBuilder`** — builds `IItemSerializer<T>` by specifying member serializers: `SerializerBuilder.For<T>().Serialize(x => x.Prop, serializer).Build()`. Also supports `.SerializeMembersAutomatically()` for convention-based assembly.
 - **`ProtocolBuilder`** — builds communication `Protocol` objects with handshake, request/response, and command handlers per mode.
-- **`WinFormsApplicationBlockBuilder`** — builds `WinFormsApplicationBlock` with screens and menus: `.WithName().WithDefaultScreen<T>().AddMenu(mb => ...).Build()`.
+- **`WinFormsApplicationBlockBuilder`** — builds `WinFormsApplicationBlock` with screens and menus: `.WithName().WithDefaultScreen<T>().ConfigureMenu(mb => ...).Build()`.
 - **`WinFormsWizardBuilder<T>`** — builds multi-step wizard dialogs: `.WithTitle().WithModel().AddScreen().OnFinished().Build()`.
 
-When creating new complex configuration APIs, follow this pattern: create a `FooBuilder` class with chainable methods and a terminal `.Build()`.
+When creating new complex configuration APIs, follow this pattern: create a `FooBuilder` class with chainable methods and a terminal `.Build()`. Format each builder invocation as a continuous indented block with no blank lines: one configuration call per line, child calls one tab deeper than their owning call, and multiline closing parentheses aligned with that call. Follow `ProtocolBuilder` for composition: `ConfigureX(Action<XBuilder>)` creates and builds a child, then registers its result through `AddX`. `AddX` registers an existing definition or constructs one directly from arguments; it must never create or invoke a child builder.
 
 ### Serialization
 The serialization framework provides binary serializers for efficient stream-based I/O. Core types:
@@ -151,7 +151,7 @@ Logging uses a simple `ILogger` interface with `Debug`, `Info`, `Warning`, `Erro
 - Default options: `VerboseProfile` in debug builds, `StandardProfile` otherwise (set via `Tools.Runtime.IsDebugBuild`).
 
 ### WinForms UI Pattern
-- `WinFormsApplicationBlock` + `WinFormsApplicationBlockBuilder` for navigation registration (`.WithDefaultScreen<T>()`, `.AddMenu(mb => mb.AddScreenItem<T>())`).
+- `WinFormsApplicationBlock` + `WinFormsApplicationBlockBuilder` for navigation registration (`.WithDefaultScreen<T>()`, `.ConfigureMenu(mb => mb.AddScreenItem<T>())`).
 - `WinFormsApplicationScreen` base class for screens within a block.
 - `CrudGrid` for data-bound grid screens backed by `IDataSource<T>`.
 

@@ -46,7 +46,8 @@ using Sphere10.Framework.Web.AspNetCore.Blazor;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.BuildBlazorApplication()
+builder.Services
+	.BuildBlazorApplication()
 	.WithTitle("Grid example")
 	.Build();
 
@@ -72,14 +73,17 @@ Keep the generated `Components/App.razor` HTML document and router. Its asset se
 For example, place your SVG icon at `wwwroot/favicon.svg` and configure the application before `builder.Build()`:
 
 ```csharp
-builder.Services.BuildBlazorApplication()
+builder.Services
+	.BuildBlazorApplication()
 	.WithTitle("Grid example")
 	.WithFavicon("favicon.svg", "image/svg+xml")
-	.AddPlugin(plugin => plugin.WithName("Components"))
+	.ConfigurePlugin(plugin => plugin
+		.WithName("Components")
+	)
 	.Build();
 ```
 
-`WithFavicon` accepts a URL and an optional content type. Omit it to leave the icon unconfigured. `AddPlugin` accepts either a plugin definition or a `BlazorPluginBuilder` callback; `ConfigureApplication` composes callbacks that run once for each circuit's application. Branding is an immutable singleton `BlazorApplicationOptions`, so the document head can resolve it without creating a scoped screen host. `AddSphere10Blazor()` supplies default options and preserves previously configured branding.
+`WithFavicon` accepts a URL and an optional content type. Omit it to leave the icon unconfigured. `AddPlugin(plugin)` registers an existing plugin definition, while `ConfigurePlugin(plugin => ...)` configures and builds a nested `BlazorPluginBuilder`; `ConfigureApplication` composes callbacks that run once for each circuit's application. Branding is an immutable singleton `BlazorApplicationOptions`, so the document head can resolve it without creating a scoped screen host. `AddSphere10Blazor()` supplies default options and preserves previously configured branding.
 
 In `Components/App.razor`, add these directives and replace the template's title/favicon elements inside `<head>` with the configured values. `Assets` maps local icon paths to their fingerprinted static assets:
 
@@ -598,25 +602,33 @@ Add these imports at the top of `Program.cs`, then place the registration before
 using GridExample.Components.Screens;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 
-builder.Services.AddSphere10BlazorPlugin(plugin => plugin
-	.WithName("Workspace")
-	.AddBlock(block => block
-		.WithId("work")
+builder.Services
+	.AddSphere10BlazorPlugin(plugin => plugin
 		.WithName("Workspace")
-		.WithDefaultScreen<OverviewScreen>()
-		.AddMenu(menu => menu.WithId("main").WithText("Work").WithIcon("fas fa-desktop")
-			.ConfigureItem(item => item
-				.WithId("overview")
-				.WithText("Overview")
-				.WithIcon("fas fa-home")
-				.WithScreen<OverviewScreen>()))));
+		.ConfigureBlock(block => block
+			.WithId("work")
+			.WithName("Workspace")
+			.WithDefaultScreen<OverviewScreen>()
+			.ConfigureMenu(menu => menu
+				.WithId("main")
+				.WithText("Work")
+				.WithIcon("fas fa-desktop")
+				.ConfigureItem(item => item
+					.WithId("overview")
+					.WithText("Overview")
+					.WithIcon("fas fa-home")
+					.WithScreen<OverviewScreen>()
+				)
+			)
+		)
+	);
 ```
 
-`BlazorPluginBuilder` reuses shared `ApplicationPluginBuilderBase` state and composes `BlazorApplicationBlockBuilder`, `BlazorApplicationMenuBuilder` and `BlazorApplicationMenuItemBuilder`. Its product derives from the shared `ApplicationPlugin`, which owns name/block storage, startup service callbacks and Loaded/Unloaded notifications. Add more blocks with `AddBlock(...)`, and register plugin dependencies with `ConfigureServices(registry => ...)`. For example, a plugin can call `registry.AddScoped<WorkspaceStatus>()` for its own application-defined state service. Configuration runs during host startup; scoped services are created by the host for each circuit. Repeated configuration callbacks compose in registration order.
+`BlazorPluginBuilder` inherits `WithName`, `AddBlock(block)`, `ConfigureBlock(block => ...)` and `ConfigureServices` from the shared typed `ApplicationPluginBuilderBase`; it supplies the Blazor plugin factory and composes `BlazorApplicationBlockBuilder`, `BlazorApplicationMenuBuilder` and `BlazorApplicationMenuItemBuilder`. Its product derives from the shared `ApplicationPlugin`, which owns name/block storage, startup service callbacks and Loaded/Unloaded notifications. Configure more blocks with `ConfigureBlock(block => ...)` or register existing definitions with `AddBlock(block)`, and register plugin dependencies with `ConfigureServices(registry => ...)`. For example, a plugin can call `registry.AddScoped<WorkspaceStatus>()` for its own application-defined state service. Configuration runs during host startup; scoped services are created by the host for each circuit. Repeated configuration callbacks compose in registration order.
 
-For reusable definitions, call `new BlazorPluginBuilder().WithName(...).AddBlock(...).Build()` and pass the result to `AddSphere10BlazorPlugin(plugin)`. Existing blocks can be supplied to `AddBlock(block)`, including blocks created with `new BlazorApplicationBlockBuilder()...Build()`. `AddApplicationBlock(...)` remains available for standalone blocks; the running application groups those into an implicit plugin. The fluent registration calls `Build()` for you and exposes the same plugin object through both `IBlazorPlugin` and the shared `IApplicationPlugin`, alongside the existing block catalog. It does not create a child service provider.
+For reusable definitions, call `new BlazorPluginBuilder().WithName(...).ConfigureBlock(block => ...).Build()` and pass the result to `AddSphere10BlazorPlugin(plugin)`. Existing blocks can be supplied to `AddBlock(block)`, including blocks created with `new BlazorApplicationBlockBuilder()...Build()`. `AddApplicationBlock(...)` remains available for standalone blocks; the running application groups those into an implicit plugin. The fluent registration calls `Build()` for you and exposes the same plugin object through both `IBlazorPlugin` and the shared `IApplicationPlugin`, alongside the existing block catalog. It does not create a child service provider.
 
-For named plugin definitions, place the fluent configuration in `public static void Configure(BlazorPluginBuilder plugin)` and register it with `services.AddSphere10BlazorPlugin(MyPlugin.Configure)`. The running tester uses this pattern in [Sphere10Plugin](../../utils/Sphere10.Framework.Utils.BlazorTester/Loader/Sphere10Plugin.cs) and [WidgetGalleryPlugin](../../utils/Sphere10.Framework.Utils.BlazorTester/WidgetGallery/WidgetGalleryPlugin.cs); their dependencies and block/menu definitions live together, and `Program` supplies those definitions through the application builder's `AddPlugin` method.
+For named plugin definitions, place the fluent configuration in `public static void Configure(BlazorPluginBuilder plugin)` and register it with `services.AddSphere10BlazorPlugin(MyPlugin.Configure)`. The running tester uses this pattern in [Sphere10Plugin](../../utils/Sphere10.Framework.Utils.BlazorTester/Loader/Sphere10Plugin.cs) and [WidgetGalleryPlugin](../../utils/Sphere10.Framework.Utils.BlazorTester/WidgetGallery/WidgetGalleryPlugin.cs); their dependencies and block/menu definitions live together, and `Program` supplies those definitions through the application builder's `ConfigurePlugin` method.
 
 Plugin names must be nonblank and unique within a host. IDs must be unique within their scope; item IDs are unique across all menus in a block. Register a concrete Razor component implementing `IBlazorApplicationScreen`, normally by inheriting `BlazorApplicationScreen`. Conflicting activation policies or screen kinds for the same type are rejected when the catalog is constructed. A default screen need not also appear in a menu.
 
@@ -741,23 +753,33 @@ using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 
-services.BuildBlazorApplication().ConfigureApplication(application => {
-	var closeAll = new BlazorApplicationMenuItemBuilder()
-		.WithId("close-all").WithText("Close all screens").WithIcon("fas fa-times")
-		.WithAction(async (provider, token) => {
-			var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
-			await host.CloseScreensAsync(host.Screens.Where(screen => !screen.IsPermanent && screen.ScreenKind == ScreenKind.Normal).Select(screen => screen.Id), token);
-		}).Build();
-	application.SetMenus(new[] {
-		new BlazorApplicationMenuBuilder().WithId("work").WithText("Work").AddItem(closeAll).Build()
-	});
-	application.SetToolBarItems(new[] { closeAll });
-}).Build();
+services
+	.BuildBlazorApplication()
+	.ConfigureApplication(application => {
+		var closeAll = new BlazorApplicationMenuItemBuilder()
+			.WithId("close-all")
+			.WithText("Close all screens")
+			.WithIcon("fas fa-times")
+			.WithAction(async (provider, token) => {
+				var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+				await host.CloseScreensAsync(host.Screens.Where(screen => !screen.IsPermanent && screen.ScreenKind == ScreenKind.Normal).Select(screen => screen.Id), token);
+			})
+			.Build();
+		application.SetMenus(new[] {
+			new BlazorApplicationMenuBuilder()
+				.WithId("work")
+				.WithText("Work")
+				.AddItem(closeAll)
+				.Build()
+		});
+		application.SetToolBarItems(new[] { closeAll });
+	})
+	.Build();
 ```
 
-Configuration runs once per scope. The callback configures that scope's application; command callbacks resolve their services from the executing circuit. A later `AddSphere10BlazorApplication` call replaces the earlier application configuration. The builder delegates to that same API. Its `ConfigureApplication` calls compose before `Build()`. The tester uses the builder with [WorkspaceCommands.Configure](../../utils/Sphere10.Framework.Utils.BlazorTester/Application/WorkspaceCommands.cs) and its existing fluent plugin definitions.
+Configuration runs once per scope. The callback configures that scope's application; command callbacks resolve their services from the executing circuit. A later `AddSphere10BlazorApplication` call replaces the earlier application configuration. The builder delegates to that same API. Its inherited `ConfigureApplication` calls compose before `Build()`; the shared `ApplicationBuilderBase` also owns title/plugin composition and the terminal build guard. Blazor retains favicon settings and the actual DI registration. The tester uses the builder with [WorkspaceCommands.Configure](../../utils/Sphere10.Framework.Utils.BlazorTester/Application/WorkspaceCommands.cs) and its existing fluent plugin definitions.
 
-`ApplicationShell` merges `Menus` and `ToolBarItems` from the application, the active screen's owning block and the active screen. When no screen is selected, it uses the navigation block's contributions. Add block toolbar commands with `BlazorApplicationBlockBuilder.AddToolBarItem`; override the typed array properties on `BlazorApplicationScreen` for screen contributions. Stable IDs define matching: a screen can replace the application's Save command and extend its File menu. Switching tabs removes that screen's contributions and restores the newly active scope's commands. `BlazorMenuSeparator` supplies menu or toolbar boundaries; shared merge logic removes redundant separators and keeps Help last. Toolbar screen commands must match a registered block menu item; they use that registration's activation policy and parameters.
+`ApplicationShell` merges `Menus` and `ToolBarItems` from the application, the active screen's owning block and the active screen. When no screen is selected, it uses the navigation block's contributions. Register existing block toolbar commands with `BlazorApplicationBlockBuilder.AddToolBarItem`, or build them with `ConfigureToolBarItem(item => ...)`; override the typed array properties on `BlazorApplicationScreen` for screen contributions. Stable IDs define matching: a screen can replace the application's Save command and extend its File menu. Switching tabs removes that screen's contributions and restores the newly active scope's commands. `BlazorMenuSeparator` supplies menu or toolbar boundaries; shared merge logic removes redundant separators and keeps Help last. Toolbar screen commands must match a registered block menu item; they use that registration's activation policy and parameters.
 
 Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` and call `NotifyScreenChanged()` to update a tab's caption. Long titles are clipped with an ellipsis and retain a full tooltip; dirty screens display an indicator.
 
@@ -790,20 +812,42 @@ Screen registrations default to `MultiInstance`: each menu activation opens an i
 For a menu screen, configure the lifetime, kind and startup marker through the same item builder:
 
 ```csharp
-menu.ConfigureItem(item => item.WithId("home").WithText("Home")
-	.WithScreen<HomeScreen>().AsSingleInstance().AsDefault());
-menu.ConfigureItem(item => item.WithId("monitor").WithText("Monitor")
-	.WithScreen<MonitorScreen>().AsPermanentSingleton());
-menu.ConfigureItem(item => item.WithId("empty").WithText("Empty workspace")
-	.WithScreen<EmptyWorkspaceScreen>().WithScreenKind(ScreenKind.Empty).AsSingleInstance());
+menu
+	.ConfigureItem(item => item
+		.WithId("home")
+		.WithText("Home")
+		.WithScreen<HomeScreen>()
+		.AsSingleInstance()
+		.AsDefault()
+	);
+
+menu
+	.ConfigureItem(item => item
+		.WithId("monitor")
+		.WithText("Monitor")
+		.WithScreen<MonitorScreen>()
+		.AsPermanentSingleton()
+	);
+
+menu
+	.ConfigureItem(item => item
+		.WithId("empty")
+		.WithText("Empty workspace")
+		.WithScreen<EmptyWorkspaceScreen>()
+		.WithScreenKind(ScreenKind.Empty)
+		.AsSingleInstance()
+	);
 ```
 
 The component types in these fragments are your own classes deriving from `BlazorApplicationScreen`. A screen need not appear in explorer menus. For example, a dedicated block can provide only the empty-workspace default:
 
 ```csharp
-plugin.AddBlock(block => block.WithId("empty").WithName("Empty workspace")
-	.WithDefaultScreen<EmptyWorkspaceScreen>("Nothing open",
-		ScreenActivationMode.SingleInstance, ScreenKind.Empty));
+plugin
+	.ConfigureBlock(block => block
+		.WithId("empty")
+		.WithName("Empty workspace")
+		.WithDefaultScreen<EmptyWorkspaceScreen>("Nothing open", ScreenActivationMode.SingleInstance, ScreenKind.Empty)
+	);
 ```
 
 `WithDefaultScreen<TScreen>(title, activationMode, screenKind)` marks that block's default. When the same type already has a menu item in the block, its lifetime and kind are inherited unless explicitly supplied; conflicting settings are rejected. A default without a matching menu and without an explicit lifetime uses `MultiInstance`, just like an ordinary screen registration. `AsDefault()` marks a menu definition without needing `WithDefaultScreen`.
@@ -867,7 +911,7 @@ The `Modal.ViewService` API needs a rendered `UI.Dialogs.ModalHost` in the same 
 `Views.DialogAsync(title, message)` displays an information dialog. `Views.WizardDialogAsync(wizard)` displays a wizard built with `Wizard.BlazorWizardBuilder<TModel>`. See the reusable [wizard demo](../../utils/Sphere10.Framework.Utils.BlazorTester/Demos/WizardsDemo.razor) for steps and finish callbacks, and the [table demo](../../utils/Sphere10.Framework.Utils.BlazorTester/Demos/TablesDemo.razor) for paged, virtual-paged and streaming examples.
 
 
-Both wizard generations adapt `Application.UI.IWizard<TModel, Type>` and reuse the shared workflow and builder state. Component types, options, validation and modal rendering stay in Blazor. Types use the `Blazor` prefix, including `IBlazorWizard`, `IBlazorWizardBuilder`, `BlazorWizard`, `BlazorWizardBuilder`, `BlazorWizardHost` and step types; `WizardStepUpdateType` comes directly from `Sphere10.Framework.Application.UI`.
+Both wizard generations adapt `Application.UI.IWizard<TModel, Type>` and reuse the shared workflow and fluent wizard builder. Common title/model/cancellation, step composition, reset and callback methods live in `Sphere10.Framework.Application`; Blazor supplies component constraints and factories. Component types, options, validation and modal rendering stay in Blazor. Types use the `Blazor` prefix, including `IBlazorWizard`, `IBlazorWizardBuilder`, `BlazorWizard`, `BlazorWizardBuilder`, `BlazorWizardHost` and step types; `WizardStepUpdateType` comes directly from `Sphere10.Framework.Application.UI`.
 
 Wizards expose `IsCancellable` and builders support `WithCancellation(bool)`. The current step's cancellation flag also applies. The wizard host enables Cancel and the modal close affordance only when cancellation is permitted; `CancelAsync()` still performs any application-specific guard. Both demos include an **Allow cancellation** option before opening the wizard.
 

@@ -277,46 +277,64 @@ using Sphere10.Framework.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
 // Register an application block using the builder pattern
-serviceCollection.AddApplicationBlock(
-    new WinFormsApplicationBlockBuilder()
-        .WithName("My Block")
-        .WithDefaultScreen<MainScreen>()
-        .AddMenu(mb => mb
-            .WithText("File")
-            .AddActionItem("New", () => CreateNew())
-            .AddActionItem("Open", () => OpenFile())
-            .AddScreenItem<SettingsScreen>("Settings")
-        )
-        .AddMenu(mb => mb
-            .WithText("Tools")
-            .AddScreenItem<ToolA>("Tool A")
-            .AddScreenItem<ToolB>("Tool B")
-        )
-        .Build()
-);
+serviceCollection
+	.AddApplicationBlock(
+		new WinFormsApplicationBlockBuilder()
+			.WithName("My Block")
+			.WithDefaultScreen<MainScreen>()
+			.ConfigureMenu(mb => mb
+				.WithText("File")
+				.AddActionItem("New", () => CreateNew())
+				.AddActionItem("Open", () => OpenFile())
+				.AddScreenItem<SettingsScreen>("Settings")
+			)
+			.ConfigureMenu(mb => mb
+				.WithText("Tools")
+				.AddScreenItem<ToolA>("Tool A")
+				.AddScreenItem<ToolB>("Tool B")
+			)
+			.Build()
+	);
 
 // Or create a reusable builder method
 public class MyApplicationBlock {
     public static WinFormsApplicationBlock Build() {
         return new WinFormsApplicationBlockBuilder()
-            .WithName("My Application")
-            .WithDefaultScreen<DashboardScreen>()
-            .AddMenu(mb => mb
-                .WithText("Main Menu")
-                .AddScreenItem<Screen1>("Option 1")
-                .AddScreenItem<Screen2>("Option 2")
-                .AddActionItem("Custom Action", async () => {
+			.WithName("My Application")
+			.WithDefaultScreen<DashboardScreen>()
+			.ConfigureMenu(mb => mb
+				.WithText("Main Menu")
+				.AddScreenItem<Screen1>("Option 1")
+				.AddScreenItem<Screen2>("Option 2")
+				.AddActionItem("Custom Action", async () => {
                     // Custom action logic
                     await DoSomethingAsync();
                 })
-            )
-            .Build();
+			)
+			.Build();
     }
 }
 
 // Register in ModuleConfiguration
 serviceCollection.AddApplicationBlock(MyApplicationBlock.Build());
 ```
+
+Owner-aware actions receive the executing `IUserInterfaceServices`, including actions marked `executeOnLoad`. Cast `PrimaryUIController` to `Form` (or `IWin32Window`) to supply the modal parent:
+
+```csharp
+menu
+	.AddActionItem("Open dialog", async userInterface => {
+		using var dialog = new MyDialog();
+		await dialog.ShowDialogAsync((Form)userInterface.PrimaryUIController);
+	})
+	.ConfigureItem(item => item
+		.AsActionItem()
+		.WithText("Report status")
+		.WithAction(userInterface => userInterface.Status = "Ready")
+	);
+```
+
+The parameterless `Action` overload remains available. `AddItem(existingItem)` registers an existing item; `ConfigureItem(item => ...)` configures a child builder and adds its built item. `AddScreenItem` and `AddActionItem` construct their definitions directly without invoking a child builder.
 
 The builder pattern supports:
 - **Screen items**: Navigate to specific forms/screens
@@ -335,18 +353,23 @@ In your existing module's `RegisterComponents(IServiceCollection serviceCollecti
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Windows.Forms;
 
-serviceCollection.AddWinFormsApplicationPlugin(plugin => plugin
-	.WithName("Administration")
-	.ConfigureServices(services => services.AddSingleton<AdministrationService>())
-	.AddBlock(block => block
-		.WithId("administration")
+serviceCollection
+	.AddWinFormsApplicationPlugin(plugin => plugin
 		.WithName("Administration")
-		.WithDefaultScreen<DashboardScreen>()
-		.AddMenu(menu => menu.WithText("Management")
-			.AddScreenItem<SettingsScreen>("Settings"))));
+		.ConfigureServices(services => services.AddSingleton<AdministrationService>())
+		.ConfigureBlock(block => block
+			.WithId("administration")
+			.WithName("Administration")
+			.WithDefaultScreen<DashboardScreen>()
+			.ConfigureMenu(menu => menu
+				.WithText("Management")
+				.AddScreenItem<SettingsScreen>("Settings")
+			)
+		)
+	);
 ```
 
-`AdministrationService`, `DashboardScreen` and `SettingsScreen` are application types; screens derive from `WinFormsApplicationScreen`. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `AddBlock` also accepts an existing `IWinFormsApplicationBlock`.
+`AdministrationService`, `DashboardScreen` and `SettingsScreen` are application types; screens derive from `WinFormsApplicationScreen`. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `ConfigureBlock(block => ...)` builds a nested block; `AddBlock(block)` registers an existing `IWinFormsApplicationBlock`.
 
 Registration invokes `Load(IServiceCollection)` once, then supplies the plugin's blocks to the existing `AddApplicationBlock` startup path. The same plugin instance is available through native and shared DI contracts. `WinFormsApplication.Initialize()` registers each native block once, retaining position ordering, default screens and `ExecuteOnLoad` behavior. Resolving or disposing an application adapter does not load, unload or dispose shared plugin definitions. Plugin membership arrays are copied, while block objects, menu parent links, images and disposal ownership remain with the existing native code.
 
@@ -376,7 +399,7 @@ Other forms can keep `Tools.WinForms.AutoPersistWindowSettings(Form, SettingsID)
 
 ### Shared presentation contracts
 
-The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts; existing custom implementations receive default projections for IDs, metadata, typed collections and nullable activation policies. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` use the shared metadata/storage bases, while their native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders reuse shared configuration and validation, then create WinForms products on the first `Build()`. Subsequent builds return the same native product, and later fluent calls update it immediately, preserving one owner for menus, items and images.
+The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts; existing custom implementations receive default projections for IDs, metadata, typed collections and nullable activation policies. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` use the shared metadata/storage bases, while their native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit common metadata, screen policies and child-builder composition from the typed shared bases, then create WinForms products on the first `Build()`. Plugin `ConfigureBlock`, block `ConfigureMenu`, menu `ConfigureItem`, their corresponding `Add` methods for existing definitions and their common setters are implemented in `Sphere10.Framework.Application`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same native product, and later fluent calls update it immediately, preserving one owner for menus, items and images.
 
 `IWinFormsApplicationScreen` extends the shared `IApplicationScreen` contract with synchronous native hooks. `WinFormsApplicationScreen` maps those hooks to its existing display and cancelable hide events on the calling UI thread. Shared `CanDeactivateAsync` invokes the native hide guard; `OnDeactivatedAsync` does not emit the hide notification again. Cancellation is checked before invoking a native hook. The WinForms host remains synchronous and continues to manage controls, tabs, docking and screen disposal.
 
@@ -402,14 +425,18 @@ Sphere10Framework.Instance
 var Block = new WinFormsApplicationBlockBuilder()
 	.WithName("Workspace")
 	.WithDefaultScreen<DashboardScreen>(title: "Dashboard")
-	.AddMenu(Menu => Menu.WithText("Views")
+	.ConfigureMenu(Menu => Menu
+		.WithText("Views")
 		.AddScreenItem<DashboardScreen>("Dashboard")
 		.AddScreenItem<EditorScreen>("New editor", title: "Editor")
-		.ConfigureItem(Item => Item.AsScreenItem()
+		.ConfigureItem(Item => Item
+			.AsScreenItem()
 			.WithText("New report")
 			.WithScreen<ReportScreen>()
 			.AsMultiInstance()
-			.WithTitle("Report")))
+			.WithTitle("Report")
+		)
+	)
 	.Build();
 
 public class DashboardScreen : WinFormsApplicationScreen {
@@ -454,11 +481,22 @@ using Sphere10.Framework.Windows.Forms;
 
 var block = new WinFormsApplicationBlockBuilder()
 	.WithName("Workspace")
-	.AddMenu(menu => menu.WithText("Screens")
-		.ConfigureItem(item => item.AsScreenItem().WithText("Start")
-			.WithScreen<StartScreen>().AsSingleInstance().AsDefault())
-		.ConfigureItem(item => item.AsScreenItem().WithText("Pinned notes")
-			.WithScreen<NotesScreen>().AsPermanentSingleton()))
+	.ConfigureMenu(menu => menu
+		.WithText("Screens")
+		.ConfigureItem(item => item
+			.AsScreenItem()
+			.WithText("Start")
+			.WithScreen<StartScreen>()
+			.AsSingleInstance()
+			.AsDefault()
+		)
+		.ConfigureItem(item => item
+			.AsScreenItem()
+			.WithText("Pinned notes")
+			.WithScreen<NotesScreen>()
+			.AsPermanentSingleton()
+		)
+	)
 	.Build();
 
 var emptyBlock = new WinFormsApplicationBlockBuilder()

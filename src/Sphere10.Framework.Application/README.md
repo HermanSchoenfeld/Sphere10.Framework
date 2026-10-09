@@ -21,10 +21,10 @@ dotnet add package Sphere10.Framework.Application
 | Plugin definitions and lifecycle | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginDecorator`, `ApplicationPluginBuilder` |
 | Running application and commands | `IApplication`, `ApplicationBase`, `ApplicationDecorator`, `IApplicationCommandProvider` |
 | Menu and toolbar merging | `Tools.UI.MergeMenus`, `Tools.UI.MergeMenuItems`, `IApplicationMenuSeparator` |
-| Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
+| Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `IWizardBuilder`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
 | Block, menu and item contracts | `IApplicationBlock`, `IApplicationMenu`, `IApplicationMenuItem`, `IScreenMenuItem` |
 | Mutable metadata and notification handlers | `ApplicationBlock`, `ApplicationMenu<TItem>`, `ApplicationMenuItem` |
-| Builder state and validation | `ApplicationBlockBuilderBase<TMenu, TBlock>`, `ApplicationMenuBuilderBase<TItem, TMenu>`, `ApplicationMenuItemBuilderBase` |
+| Fluent builder composition and validation | `IApplicationUIBuilder<TProduct>`, `ApplicationBuilderBase`, `ApplicationPluginBuilderBase`, `ApplicationBlockBuilderBase`, `ApplicationMenuBuilderBase`, `ApplicationMenuItemBuilderBase` |
 | Snapshot traversal, stable IDs and ordering | `ApplicationBlockSnapshotBase<TBlock, TMenu, TItem>`, `ApplicationBlockCatalog<TBlock>` |
 | Activation policy and lifecycle | `ScreenActivationPolicyRegistry`, `ScreenActivationMode`, `ScreenKind`, `ApplicationScreenDefinition`, `IApplicationScreen` |
 | Awaitable menu actions | `ApplicationAction` |
@@ -48,7 +48,7 @@ block.AddMenu(menu);
 
 IDs default to their display names when omitted. The shared builder bases copy menu, item and parameter collections when building; Blazor uses this to isolate registration snapshots. WinForms builders retain and update the same mutable native product across builds to preserve desktop ownership semantics. Snapshot factories copy platform metadata while the shared engine validates names, screen types, duplicate IDs and the reserved `__default` item ID. The catalog snapshots registrations before ordering blocks by position and indexing their IDs. The `Menus`, `Items` and catalog `Blocks` properties expose arrays. Shared models and catalogs return a fresh membership snapshot on each read, so replacing or reordering slots in a returned array cannot alter stored membership or catalog lookup. Previously returned arrays do not track later add/remove calls; use the model methods to change its membership and read the property again. These array copies preserve element identity rather than deep-cloning arbitrary objects. Enumerable method parameters remain available for registration and traversal.
 
-Activation-policy declaration batches are atomic: incompatible policies or invalid screens reject the entire batch. Explicit declarations are distinguished from policies inferred when a host creates an instance. `IApplicationScreen` supplies UI-independent help metadata, cancellation-aware activation/deactivation hooks and a navigation guard. `ApplicationAction.ExecuteAsync` receives the executing service provider and cancellation token; callbacks should resolve scoped services there. Registration-time callbacks must not capture scoped services or mutable per-user state.
+Activation-policy declaration batches are atomic: incompatible policies or invalid screens reject the entire batch. Explicit declarations are distinguished from policies inferred when a host creates an instance. `IApplicationScreen` supplies UI-independent help metadata, cancellation-aware activation/deactivation hooks and a navigation guard. `ApplicationAction.ExecuteAsync` receives the executing service provider and cancellation token; callbacks should resolve scoped services there. Owner-aware synchronous callbacks use `ApplicationAction.UIAction` and `Execute(IUserInterfaceServices)`; `ExecuteAsync` resolves those UI services from the executing provider. `PrimaryUIController` supplies the platform UI owner. Registration-time callbacks must not capture scoped services or mutable per-user state.
 
 The [WinForms adapter](../Sphere10.Framework.Windows.Forms/README.md) retains controls, images, UI-thread dispatch and desktop screen ownership. The [Blazor adapter](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) retains component validation, rendering, circuit scopes and browser interaction. Each supplies factories and platform validation to the shared engines. An ApplicationBlock describes navigation metadata; `ModuleConfiguration` continues to handle service registration and framework startup.
 
@@ -90,6 +90,27 @@ public class AdministrationSettings {
 `ApplicationBase` shares command storage, notifications, default plugin-to-block flattening and active-plugin lookup by the selected block ID. Platform adapters may override `Blocks` with their live registration projection. `IApplicationCommandProvider` supplies array-valued `Menus` and `ToolBarItems`. `Tools.UI.MergeMenus` and `MergeMenuItems` combine contributions from broader to narrower scopes: application, the active screen's owning block, then active screen. With no active screen, the selected navigation block supplies block commands. Matching IDs retain their original position and take the narrower command; matching menus combine their items. Separators are normalized and the `help` menu remains last. Merging creates membership snapshots and preserves command identity, so callbacks continue to execute on the original definitions.
 
 `ScreenMode.SingleView` and `ScreenMode.MultiView` live in this shared namespace alongside `ScreenActivationMode`. Platform hosts retain responsibility for rendering, instance ownership and navigation guards.
+
+## Shared fluent builders
+
+The fluent methods live in this library. WinForms and Blazor inherit the same configuration, validation and child-builder composition; their adapters supply native products, supported screen/step checks, and platform presentation options.
+
+| Shared base | Responsibility |
+|---|---|
+| `ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult>` | Application title, existing plugins, `ConfigurePlugin(builder => ...)`, deferred application callbacks and a terminal `Build`. The platform registers or creates its host without the base resolving services. |
+| `ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin>` | Plugin name, service callbacks, existing blocks and `ConfigureBlock(builder => ...)`. |
+| `ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>` | Block metadata, default screen policy, existing menus and `ConfigureMenu(builder => ...)`. |
+| `ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu>` | Menu metadata, existing items and `ConfigureItem(builder => ...)`. |
+| `ApplicationMenuItemBuilderBase<TSelf>` | Screen/action selection, screen captions and instance policies. Platform factories reject unsupported item kinds. |
+| `WizardBuilderBase<TSelf, TModel, TStep, TWizard>` | Fluent wizard setup, reset, ordered steps, cancellation, callbacks and build validation. |
+
+`ConfigurePlugin`, `ConfigureBlock`, `ConfigureMenu` and `ConfigureItem` follow `ProtocolBuilder`: create a child builder, invoke its callback, call `Build()` and register the product through the corresponding `Add` method. `AddPlugin`, `AddBlock`, `AddMenu` and `AddItem` accept existing definitions. Convenience `Add` methods construct definitions directly from their arguments without invoking a child builder.
+
+`IApplicationUIBuilder<out TProduct>` lets a parent accept child builders through their product interfaces. The self type preserves fluent platform return types; the smaller state bases remain available for custom builders that need a different facade. New platform adapters should override factories and validation hooks or add genuine platform options, rather than repeat `WithName`, `ConfigureBlock`, `ConfigureMenu` or wizard lifecycle methods. Web icon URLs, native `Image` objects, Razor step constraints and DI registration stay in their respective libraries.
+
+Native builders retain their existing live-product ownership; Blazor factories produce registration snapshots. Application host registration is terminal so repeating `Build` cannot repeat service-registration side effects. Plugin service callbacks and application configuration callbacks remain deferred to the existing startup and scoped application paths.
+
+Keep each builder invocation as one continuous indented block without blank separator lines. Put each configuration call on its own line, indent nested calls one tab below their owner and align multiline closing parentheses with the owning call. See [the code guide](../../docs/guidelines/code-styling.md#fluent-configuration-hierarchy), [WinForms plugin configuration](../Sphere10.Framework.Windows.Forms/README.md#grouping-blocks-into-application-plugins), and [Blazor examples](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md). Both testers and the package-consumer fixtures use these inherited APIs.
 
 ## Default, permanent and empty screens
 
@@ -143,7 +164,7 @@ var result = await wizard.FinishAsync();
 
 `MoveNextAsync` and `MovePreviousAsync` provide awaited navigation. `UpdateStepsAsync` and `RemoveStepAsync` let platform adapters update their displayed controls before returning. `WizardStepUpdateType` supports injecting steps, replacing the remaining branch, replacing all steps and removing subsequent steps. The workflow returns defensive `Steps` arrays while retaining step and model identities. Finish and Cancel share a [Stateless](https://www.nuget.org/packages/Stateless/5.20.1) lifecycle: concurrent terminal operations are rejected while busy; a declined or failed callback leaves a retryable workflow; successful completion runs once. Callbacks must not recursively finish or cancel the same wizard.
 
-`WizardBuilderBase<TModel, TStep, TWizard>` centralizes configuration, callbacks and build validation. Platform builders supply their step validation and factories. Use `WinFormsWizardBuilder<TModel>` for native dialogs, or `BlazorWizardBuilder<TModel>` from the chosen Blazor wizard generation. Their adapters keep rendering, screen initialization and component validation in the UI libraries while consuming the same workflow. `WizardDecorator` forwards the common contract for behavior extensions.
+`WizardBuilderBase<TSelf, TModel, TStep, TWizard>` centralizes the fluent setup methods, reset/start requirements, callbacks and build validation over its shared state base. The shared `IWizardBuilder<TSelf, TModel, TStep, TWizard>` also carries the fluent contract, so interface-returning chains retain the same capabilities. Platform builders supply their step validation and factories. Use `WinFormsWizardBuilder<TModel>` for native dialogs, or `BlazorWizardBuilder<TModel>` from the chosen Blazor wizard generation. Their adapters keep rendering, screen initialization and component validation in the UI libraries while consuming the same workflow. `WizardDecorator` forwards the common contract for behavior extensions.
 
 ## Awaitable UI services
 

@@ -181,7 +181,8 @@ public class MainFormExitTests {
 			}
 		};
 		RequestExit.Start();
-		Sphere10Framework.Instance.BuildWinFormsApplication()
+		Sphere10Framework.Instance
+			.BuildWinFormsApplication()
 			.ConfigureServices(Services => {
 				Services.AddSingleton<IProductUsageServices, ProbeUsageServices>();
 				Services.AddSingleton<ShutdownProbeSettingsProvider>(_ => SettingsProvider);
@@ -290,7 +291,10 @@ public class MainFormExitTests {
 	private static void RunWithMessageLoop(Func<ExitProbeMainForm, Task> Test) {
 		var StartFramework = !Sphere10Framework.Instance.IsStarted;
 		if (StartFramework)
-			Sphere10Framework.Instance.Build().ConfigureServices(Services => Services.AddSingleton<IProductUsageServices, ProbeUsageServices>()).Start();
+			Sphere10Framework.Instance
+				.Build()
+				.ConfigureServices(Services => Services.AddSingleton<IProductUsageServices, ProbeUsageServices>())
+				.Start();
 		using var FrameworkLifetime = Tools.Scope.ExecuteOnDispose(() => {
 			if (StartFramework)
 				Sphere10Framework.Instance.EndFramework();

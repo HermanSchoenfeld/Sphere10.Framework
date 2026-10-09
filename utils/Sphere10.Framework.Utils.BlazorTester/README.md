@@ -155,13 +155,14 @@ This is a source configuration example. It hides create/edit/delete commands whi
 The active host calls these definitions directly, followed by the screen-policy plugin. The `permanentScreen` and `emptyScreenLifetime` values come from the selected launch profile:
 
 ```csharp
-services.BuildBlazorApplication()
+services
+	.BuildBlazorApplication()
 	.WithTitle("Sphere10 Blazor demos")
 	.WithFavicon("img/logo.svg", "image/svg+xml")
 	.ConfigureApplication(WorkspaceCommands.Configure)
-	.AddPlugin(Sphere10Plugin.Configure)
-	.AddPlugin(WidgetGalleryPlugin.Configure)
-	.AddPlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
+	.ConfigurePlugin(Sphere10Plugin.Configure)
+	.ConfigurePlugin(WidgetGalleryPlugin.Configure)
+	.ConfigurePlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
 	.Build();
 ```
 
@@ -174,17 +175,28 @@ Each plugin owns the dependencies its registered screens and their content need.
 The configuration has this shape, using the tester's existing screen and state types:
 
 ```csharp
-services.AddSphere10BlazorPlugin(plugin => plugin
-	.WithName("Blazor tester")
-	.ConfigureServices(registry => registry.AddScoped<WorkspaceStatus>())
-	.AddBlock(block => block
-		.WithId("workspace")
-		.WithName("Workspace")
-		.WithIconUrl("img/heading-solid.svg")
-		.WithDefaultScreen<OverviewScreen>()
-		.AddMenu(menu => menu.WithId("work").WithText("Screen hosting").WithIcon("fas fa-desktop")
-			.ConfigureItem(item => item.WithId("overview").WithText("Overview")
-				.WithIcon("fas fa-home").WithScreen<OverviewScreen>()))));
+services
+	.AddSphere10BlazorPlugin(plugin => plugin
+		.WithName("Blazor tester")
+		.ConfigureServices(registry => registry.AddScoped<WorkspaceStatus>())
+		.ConfigureBlock(block => block
+			.WithId("workspace")
+			.WithName("Workspace")
+			.WithIconUrl("img/heading-solid.svg")
+			.WithDefaultScreen<OverviewScreen>()
+			.ConfigureMenu(menu => menu
+				.WithId("work")
+				.WithText("Screen hosting")
+				.WithIcon("fas fa-desktop")
+				.ConfigureItem(item => item
+					.WithId("overview")
+					.WithText("Overview")
+					.WithIcon("fas fa-home")
+					.WithScreen<OverviewScreen>()
+				)
+			)
+		)
+	);
 ```
 
 Import `Microsoft.Extensions.DependencyInjection`, `Sphere10.Framework.Web.AspNetCore.Blazor` and `Sphere10.Framework.Utils.BlazorTester.Application` for this standalone example. In the running tester, use the three plugin definitions above rather than registering this additional workspace block; block IDs must remain unique. Original URLs such as `/widget-gallery/wizards` and `/servers` select the corresponding Legacy examples screens through Workspace. Their content uses services registered by those same plugins.

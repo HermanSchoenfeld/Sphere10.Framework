@@ -6,15 +6,22 @@ description: WinForms screens, wizards, and application blocks. Trigger when cre
 # WinForms UI Skill
 
 ## Application blocks & screens
-- Navigation via `WinFormsApplicationBlock` + `WinFormsApplicationBlockBuilder`:
-  ```csharp
-  var block =
-	  new WinFormsApplicationBlockBuilder()
-		  .WithName("Admin")
-		  .WithDefaultScreen<DashboardScreen>()
-		  .AddMenu(mb => mb.AddScreenItem<UsersScreen>())
-		  .Build();
-  ```
+
+Navigation via `WinFormsApplicationBlock` + `WinFormsApplicationBlockBuilder`:
+
+```csharp
+var block = new WinFormsApplicationBlockBuilder()
+	.WithName("Admin")
+	.WithDefaultScreen<DashboardScreen>()
+	.ConfigureMenu(menu => menu
+		.WithText("Users")
+		.AddScreenItem<UsersScreen>("Users")
+	)
+	.Build();
+```
+
+- Keep each builder invocation continuous, with no blank separator lines. Put each configuration call on its own line, indent nested child calls one tab deeper and align multiline closing parentheses with the owning call.
+- Use `ConfigureMenu` and `ConfigureItem` for nested builder callbacks. `AddMenu(menu)` and `AddItem(item)` register existing definitions; `AddScreenItem` and `AddActionItem` construct definitions directly without a child builder.
 - Derive screens from `WinFormsApplicationScreen`.
 - Use the [crud-grid](../crud-grid/SKILL.md) skill for `CrudGrid` binding, editing, reference pickers, paging, and dropdown layout; use [data-source](../data-source/SKILL.md) when implementing its `IDataSource<T>`.
 
