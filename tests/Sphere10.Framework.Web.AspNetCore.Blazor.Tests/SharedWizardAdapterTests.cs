@@ -41,8 +41,17 @@ public class SharedWizardAdapterTests {
 	public void BothBuildersCopySharedConfigurationAndResetForANewWizard(bool modern) {
 		if (modern) {
 			var builder = new BlazorWizardBuilder<object>();
-			var first = builder.NewWizard("First").WithModel(new object()).WithCancellation(false).AddStep<ModernStep>().Build();
-			var second = builder.NewWizard("Second").WithModel(new object()).AddStep<ModernStep>().Build();
+			var first = builder
+				.NewWizard("First")
+				.WithModel(new object())
+				.WithCancellation(false)
+				.AddStep<ModernStep>()
+				.Build();
+			var second = builder
+				.NewWizard("Second")
+				.WithModel(new object())
+				.AddStep<ModernStep>()
+				.Build();
 			Assert.That(first.Title, Is.EqualTo("First"));
 			Assert.That(first.IsCancellable, Is.False);
 			Assert.That(second.IsCancellable, Is.True);
@@ -50,8 +59,17 @@ public class SharedWizardAdapterTests {
 			Assert.That(first.CurrentStep, Is.EqualTo(typeof(ModernStep)));
 		} else {
 			var builder = new Services.BlazorWizardBuilder<object>();
-			var first = builder.NewWizard("First").WithModel(new object()).WithCancellation(false).AddStep<LegacyStep>().Build();
-			var second = builder.NewWizard("Second").WithModel(new object()).AddStep<LegacyStep>().Build();
+			var first = builder
+				.NewWizard("First")
+				.WithModel(new object())
+				.WithCancellation(false)
+				.AddStep<LegacyStep>()
+				.Build();
+			var second = builder
+				.NewWizard("Second")
+				.WithModel(new object())
+				.AddStep<LegacyStep>()
+				.Build();
 			Assert.That(first.Title, Is.EqualTo("First"));
 			Assert.That(first.IsCancellable, Is.False);
 			Assert.That(second.IsCancellable, Is.True);

@@ -42,18 +42,40 @@ public class WizardCancellationTests {
 		};
 		if (modern) {
 			var builder = new Modern.BlazorWizardBuilder<ProbeModel>();
-			var blocked = builder.NewWizard("Blocked").WithModel(new ProbeModel()).AddStep<ModernStep>().WithCancellation(false).OnCancelled(cancel).Build();
+			var blocked = builder
+				.NewWizard("Blocked")
+				.WithModel(new ProbeModel())
+				.AddStep<ModernStep>()
+				.WithCancellation(false)
+				.OnCancelled(cancel)
+				.Build();
 			Assert.That(blocked.IsCancellable, Is.False);
 			Assert.That((bool)await blocked.CancelAsync(), Is.False);
-			var allowed = builder.NewWizard("Allowed").WithModel(new ProbeModel()).AddStep<ModernStep>().OnCancelled(cancel).Build();
+			var allowed = builder
+				.NewWizard("Allowed")
+				.WithModel(new ProbeModel())
+				.AddStep<ModernStep>()
+				.OnCancelled(cancel)
+				.Build();
 			Assert.That(allowed.IsCancellable, Is.True);
 			Assert.That((bool)await allowed.CancelAsync(), Is.True);
 		} else {
 			var builder = new Services.BlazorWizardBuilder<ProbeModel>();
-			var blocked = builder.NewWizard("Blocked").WithModel(new ProbeModel()).AddStep<LegacyStep>().WithCancellation(false).OnCancelled(cancel).Build();
+			var blocked = builder
+				.NewWizard("Blocked")
+				.WithModel(new ProbeModel())
+				.AddStep<LegacyStep>()
+				.WithCancellation(false)
+				.OnCancelled(cancel)
+				.Build();
 			Assert.That(blocked.IsCancellable, Is.False);
 			Assert.That((bool)await blocked.CancelAsync(), Is.False);
-			var allowed = builder.NewWizard("Allowed").WithModel(new ProbeModel()).AddStep<LegacyStep>().OnCancelled(cancel).Build();
+			var allowed = builder
+				.NewWizard("Allowed")
+				.WithModel(new ProbeModel())
+				.AddStep<LegacyStep>()
+				.OnCancelled(cancel)
+				.Build();
 			Assert.That(allowed.IsCancellable, Is.True);
 			Assert.That((bool)await allowed.CancelAsync(), Is.True);
 		}

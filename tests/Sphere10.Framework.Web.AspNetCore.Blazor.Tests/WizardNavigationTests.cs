@@ -147,8 +147,13 @@ public class WizardNavigationTests {
 			_provider = services.BuildServiceProvider();
 			_activator = _provider.GetRequiredService<Activator>();
 			Renderer = new HtmlRenderer(_provider, _provider.GetRequiredService<ILoggerFactory>());
-			Wizard = new BlazorWizardBuilder<Model>().NewWizard("Navigation").WithModel(Model)
-				.AddStep<DetailsStep>().AddStep<RouteStep>().AddStep<FinalStep>().Build();
+			Wizard = new BlazorWizardBuilder<Model>()
+				.NewWizard("Navigation")
+				.WithModel(Model)
+				.AddStep<DetailsStep>()
+				.AddStep<RouteStep>()
+				.AddStep<FinalStep>()
+				.Build();
 		}
 		public Model Model { get; } = new();
 		public IBlazorWizard<Model> Wizard { get; }

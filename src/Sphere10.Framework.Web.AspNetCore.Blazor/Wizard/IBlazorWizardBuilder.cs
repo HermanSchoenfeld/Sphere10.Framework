@@ -7,26 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
-/// <summary>
-/// Wizard builder
-/// </summary>
-public interface IBlazorWizardBuilder<TModel> {
-	IBlazorWizardBuilder<TModel> NewWizard(string title);
-
-	IBlazorWizardBuilder<TModel> WithModel(TModel instance);
-
-	IBlazorWizardBuilder<TModel> WithCancellation(bool isCancellable);
-
+/// <summary>Specializes the shared fluent wizard contract with Blazor step components.</summary>
+public interface IBlazorWizardBuilder<TModel> : IWizardBuilder<IBlazorWizardBuilder<TModel>, TModel, Type, IBlazorWizard<TModel>> {
 	IBlazorWizardBuilder<TModel> AddStep<TWizardStep>() where TWizardStep : BlazorWizardStepBase;
-
-	IBlazorWizardBuilder<TModel> OnFinished(Func<TModel, Task<Result<bool>>> onFinished);
-
-	IBlazorWizardBuilder<TModel> OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled);
-
-	IBlazorWizard<TModel> Build();
 }

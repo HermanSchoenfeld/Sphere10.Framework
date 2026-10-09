@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Shared wizard configuration storage; platform builders supply steps and product factories.</summary>
-public abstract class WizardBuilderBase<TModel, TStep, TWizard> {
+public abstract class WizardBuilderBase<TModel, TStep, TWizard> : IApplicationUIBuilder<TWizard> {
 	private readonly List<TStep> _steps = new();
 
 	protected string Title { get; private set; }
@@ -65,4 +65,95 @@ public abstract class WizardBuilderBase<TModel, TStep, TWizard> {
 	}
 
 	protected abstract TWizard CreateWizard(TStep[] steps);
+}
+
+/// <summary>Portable fluent wizard configuration, including startup and completion requirements chosen by the host.</summary>
+public abstract class WizardBuilderBase<TSelf, TModel, TStep, TWizard> : WizardBuilderBase<TModel, TStep, TWizard>, IWizardBuilder<TSelf, TModel, TStep, TWizard>
+	where TSelf : class {
+	private readonly bool _requiresStart;
+	private readonly bool _requiresModel;
+	private readonly bool _requiresFinish;
+	private bool _started;
+
+	protected WizardBuilderBase(bool requiresStart = false, bool requiresModel = false, bool requiresFinish = false) {
+		_requiresStart = requiresStart;
+		_requiresModel = requiresModel;
+		_requiresFinish = requiresFinish;
+	}
+
+	protected Func<TModel, Result> SynchronousCancelCallback { get; private set; }
+
+	public TSelf NewWizard(string title) {
+		Reset(title);
+		SynchronousCancelCallback = null;
+		_started = true;
+		return (TSelf)(object)this;
+	}
+
+	public TSelf WithTitle(string title) {
+		EnsureStarted();
+		SetTitle(title);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf WithModel(TModel model) {
+		EnsureStarted();
+		if (_requiresModel)
+			Guard.ArgumentNotNull(model, nameof(model));
+		SetModel(model);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf WithCancellation(bool isCancellable) {
+		EnsureStarted();
+		SetCancellation(isCancellable);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf AddStep(TStep step) {
+		EnsureStarted();
+		AddStepDefinition(step);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf OnFinished(Func<TModel, Task<Result<bool>>> onFinished) {
+		EnsureStarted();
+		SetFinishCallback(onFinished);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf OnCancelled(Func<TModel, Task<Result<bool>>> onCancelled) {
+		EnsureStarted();
+		SetCancelCallback(onCancelled);
+		SynchronousCancelCallback = null;
+		return (TSelf)(object)this;
+	}
+
+	public TSelf OnFinished(Func<TModel, Task<Result>> onFinished) {
+		Guard.ArgumentNotNull(onFinished, nameof(onFinished));
+		return OnFinished(async model => ToOutcome(await onFinished(model)));
+	}
+
+	public TSelf OnCancelled(Func<TModel, Result> onCancelled) {
+		Guard.ArgumentNotNull(onCancelled, nameof(onCancelled));
+		OnCancelled(model => Task.FromResult(ToOutcome(onCancelled(model))));
+		SynchronousCancelCallback = onCancelled;
+		return (TSelf)(object)this;
+	}
+
+	public override TWizard Build() {
+		EnsureStarted();
+		Guard.Ensure(!_requiresModel || Model is not null, "Model has not been set. Use WithModel(instance).");
+		Guard.Ensure(!_requiresFinish || FinishCallback != null, "Finish function is required.");
+		return base.Build();
+	}
+
+	private static Result<bool> ToOutcome(Result result) {
+		Guard.ArgumentNotNull(result, nameof(result));
+		var outcome = new Result<bool>(result.IsSuccess);
+		outcome.Merge(result);
+		return outcome;
+	}
+
+	protected void EnsureStarted() => Guard.Ensure(!_requiresStart || _started, "Start the wizard with NewWizard(title).");
 }

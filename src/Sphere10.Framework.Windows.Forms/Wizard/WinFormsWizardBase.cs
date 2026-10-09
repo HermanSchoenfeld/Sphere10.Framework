@@ -206,6 +206,22 @@ public abstract class WinFormsWizardBase<T> : SyncDisposable, IWinFormsWizard<T>
 	protected virtual Task<Result> Validate() => Task.FromResult(Result.Default);
 	protected abstract Task<Result> Finish();
 
+	/// <summary>Adapts legacy completion hooks; native wizards with asynchronous boolean outcomes override this directly.</summary>
+	protected virtual async Task<Result<bool>> FinishOutcomeAsync() {
+		var result = await Finish();
+		var outcome = new Result<bool>(result.IsSuccess);
+		outcome.Merge(result);
+		return outcome;
+	}
+
+	/// <summary>Adapts legacy cancellation hooks without blocking the native UI thread.</summary>
+	protected virtual Task<Result<bool>> CancelOutcomeAsync() {
+		var result = CancelRequested();
+		var outcome = new Result<bool>(result.IsSuccess && IsCancellable);
+		outcome.Merge(result);
+		return Task.FromResult(outcome);
+	}
+
 	protected async Task Complete() {
 		var result = await FinishAndCloseAsync();
 		if (result.IsFailure)
@@ -260,18 +276,10 @@ public abstract class WinFormsWizardBase<T> : SyncDisposable, IWinFormsWizard<T>
 		var validation = await Validate();
 		if (validation.IsFailure)
 			return Result<bool>.Error(validation.ErrorMessages);
-		var result = await Finish();
-		var outcome = new Result<bool>(result.IsSuccess);
-		outcome.Merge(result);
-		return outcome;
+		return await FinishOutcomeAsync();
 	}
 
-	private Task<Result<bool>> CancelCoreAsync(T model) {
-		var result = CancelRequested();
-		var outcome = new Result<bool>(result.IsSuccess && IsCancellable);
-		outcome.Merge(result);
-		return Task.FromResult(outcome);
-	}
+	private Task<Result<bool>> CancelCoreAsync(T model) => CancelOutcomeAsync();
 
 	private Task ShowErrors(Result result) => DialogEx.ShowAsync(_dialog, SystemIconType.Error, "Error", result.ErrorMessages.ToParagraphCase(), "OK");
 

@@ -24,8 +24,13 @@ public class WinFormsWizardAdapterTests {
 		var model = new object();
 		var first = new WinFormsWizardScreen<object>();
 		var second = new WinFormsWizardScreen<object>();
-		using var wizard = new WinFormsWizardBuilder<object>().WithTitle("Native setup").WithModel(model)
-			.AddScreen(first).AddScreen(second).OnFinished(_ => Task.FromResult(Result.Success)).Build();
+		using var wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Native setup")
+			.WithModel(model)
+			.AddScreen(first)
+			.AddScreen(second)
+			.OnFinished(_ => Task.FromResult(Result.Success))
+			.Build();
 		IWizard<object, WinFormsWizardScreen<object>> shared = wizard;
 		Assert.That(shared.Model, Is.SameAs(model));
 		Assert.That(shared.Title, Is.EqualTo("Native setup"));
@@ -40,10 +45,13 @@ public class WinFormsWizardAdapterTests {
 	public async Task NativeFinishAndCancelCallbacksUseSharedTerminalRules() {
 		var finishes = 0;
 		var cancellations = 0;
-		using var wizard = new WinFormsWizardBuilder<object>().WithTitle("Native setup").WithModel(new object())
+		using var wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Native setup")
+			.WithModel(new object())
 			.AddScreen(new WinFormsWizardScreen<object>())
 			.OnFinished(_ => { finishes++; return Task.FromResult(Result.Success); })
-			.OnCancelled(_ => { cancellations++; return Result.Error("Keep editing."); }).Build();
+			.OnCancelled(_ => { cancellations++; return Result.Error("Keep editing."); })
+			.Build();
 		var cancellation = await wizard.CancelAsync();
 		Assert.That(cancellation.IsFailure, Is.True);
 		Assert.That(cancellation.Value, Is.False);
@@ -59,8 +67,11 @@ public class WinFormsWizardAdapterTests {
 	[TestCase(true)]
 	public async Task ACompletedNativeWizardCannotOpenAnUnusableDialog(bool finish) {
 		using var owner = new Form();
-		using var wizard = new WinFormsWizardBuilder<object>().WithTitle("Native setup")
-			.AddScreen(new WinFormsWizardScreen<object>()).OnFinished(_ => Task.FromResult(Result.Success)).Build();
+		using var wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Native setup")
+			.AddScreen(new WinFormsWizardScreen<object>())
+			.OnFinished(_ => Task.FromResult(Result.Success))
+			.Build();
 		var result = finish ? await wizard.FinishAsync() : await wizard.CancelAsync();
 		Assert.That(result.IsSuccess && result.Value, Is.True);
 		Assert.That(async () => await wizard.Start(owner), Throws.InvalidOperationException);
@@ -71,8 +82,11 @@ public class WinFormsWizardAdapterTests {
 	[Test]
 	public void DisposingAnUnstartedNativeWizardStillDisposesItsScreens() {
 		var screen = new WinFormsWizardScreen<object>();
-		var wizard = new WinFormsWizardBuilder<object>().WithTitle("Native setup").AddScreen(screen)
-			.OnFinished(_ => Task.FromResult(Result.Success)).Build();
+		var wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Native setup")
+			.AddScreen(screen)
+			.OnFinished(_ => Task.FromResult(Result.Success))
+			.Build();
 		wizard.Dispose();
 		Assert.That(screen.IsDisposed, Is.True);
 	}
@@ -81,8 +95,11 @@ public class WinFormsWizardAdapterTests {
 	public async Task ScreensAddedThroughTheSharedContractRemainOwnedAfterRemoval() {
 		var first = new WinFormsWizardScreen<object>();
 		var injected = new WinFormsWizardScreen<object>();
-		var wizard = new WinFormsWizardBuilder<object>().WithTitle("Native setup").AddScreen(first)
-			.OnFinished(_ => Task.FromResult(Result.Success)).Build();
+		var wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Native setup")
+			.AddScreen(first)
+			.OnFinished(_ => Task.FromResult(Result.Success))
+			.Build();
 		IWizard<object, WinFormsWizardScreen<object>> shared = wizard;
 		await shared.UpdateStepsAsync(WizardStepUpdateType.Inject, new[] { injected });
 		await shared.RemoveStepAsync(injected);
@@ -95,7 +112,9 @@ public class WinFormsWizardAdapterTests {
 	public async Task BuiltNativeWizardKeepsItsCallbacksAfterBuilderReuse() {
 		var original = 0;
 		var replacement = 0;
-		var builder = new WinFormsWizardBuilder<object>().WithTitle("Native setup").AddScreen(new WinFormsWizardScreen<object>())
+		var builder = new WinFormsWizardBuilder<object>()
+			.WithTitle("Native setup")
+			.AddScreen(new WinFormsWizardScreen<object>())
 			.OnFinished(_ => { original++; return Task.FromResult(Result.Success); });
 		using var first = builder.Build();
 		builder.OnFinished(_ => { replacement++; return Task.FromResult(Result.Success); });
