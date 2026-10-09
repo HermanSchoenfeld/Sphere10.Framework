@@ -59,6 +59,47 @@ public class ComponentParameterLifecycleTests {
 		});
 	}
 
+	[TestCase(typeof(PageSizeSelector))]
+	[TestCase(typeof(UI.Grids.PageSizeSelector))]
+	public async Task PageSizeSelectorsShareConfiguredChoicesWithoutMutatingTheirCaller(Type selectorType) {
+		var choices = new[] { 40, 6, 12, 6 };
+		var pageSize = 8;
+		await using var provider = CreateServices();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var parameters = new Dictionary<string, object> {
+				["Value"] = pageSize,
+				["ValueExpression"] = (Expression<Func<int>>)(() => pageSize),
+				["PageSizeOptions"] = choices,
+				["Disabled"] = true
+			};
+			if (selectorType == typeof(PageSizeSelector))
+				parameters["Model"] = new object();
+			var rendered = await renderer.RenderComponentAsync<ComponentHost>(HostParameters(selectorType, parameters, _ => { }));
+			var html = rendered.ToHtmlString();
+			Assert.That(Regex.Matches(html, "<option[^>]*value=\"([0-9]+)\"").Select(match => int.Parse(match.Groups[1].Value)), Is.EqualTo(new[] { 6, 8, 12, 40 }));
+			Assert.That(Regex.Match(html, "<select[^>]*>").Value, Does.Contain("disabled"));
+			Assert.That(choices, Is.EqualTo(new[] { 40, 6, 12, 6 }));
+		});
+	}
+
+	[TestCase(0)]
+	[TestCase(10000)]
+	public async Task PageSizeSelectorRejectsChoicesOutsideTheGridPageSizeRange(int invalidSize) {
+		await using var provider = CreateServices();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var pageSize = 10;
+			var parameters = new Dictionary<string, object> {
+				["Value"] = pageSize,
+				["ValueExpression"] = (Expression<Func<int>>)(() => pageSize),
+				["PageSizeOptions"] = new[] { invalidSize }
+			};
+			await Assert.ThatAsync(async () => { await renderer.RenderComponentAsync<UI.Grids.PageSizeSelector>(ParameterView.FromDictionary(parameters)); },
+				Throws.ArgumentException.With.Property("ParamName").EqualTo("PageSizeOptions"));
+		});
+	}
+
 	[TestCase(typeof(PagedTable<int>))]
 	[TestCase(typeof(VirtualPagedTable<int>))]
 	[TestCase(typeof(UI.Grids.PagedTable<int>))]

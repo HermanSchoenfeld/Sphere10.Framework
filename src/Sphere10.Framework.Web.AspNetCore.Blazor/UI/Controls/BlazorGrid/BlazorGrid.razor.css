@@ -15,8 +15,9 @@ This notice must not be removed when duplicating this file or its contents, in w
 	--grid-accent: var(--sphere10-focus, #1263a1);
 	color: var(--sphere10-text, inherit);
 	font: inherit;
-	border: 1px solid var(--grid-border);
-	border-radius: .4rem;
+	border: var(--sphere10-card-border-width, 1px) solid var(--grid-border);
+	border-radius: var(--sphere10-panel-radius, .4rem);
+	box-shadow: var(--sphere10-card-shadow, none);
 	background: var(--sphere10-surface, #fff);
 }
 .sphere10-grid-toolbar, .sphere10-grid-footer, .sphere10-grid-edit-bar, .sphere10-grid-confirm {
@@ -31,17 +32,34 @@ This notice must not be removed when duplicating this file or its contents, in w
 }
 .sphere10-grid-footer { border-top: 1px solid var(--grid-border); }
 .sphere10-grid-toolbar label, .sphere10-grid-footer label { margin: 0; }
-.sphere10-grid button, .sphere10-grid input, .sphere10-grid select {
+.sphere10-grid button, .sphere10-grid input, .sphere10-grid select, .sphere10-grid ::deep .sphere10-page-size {
 	font: inherit;
-	border: 1px solid var(--sphere10-border-strong, #adb9c8);
-	border-radius: .25rem;
-	padding: .25rem .5rem;
+	font-weight: var(--sphere10-control-font-weight, 400);
+	box-shadow: var(--sphere10-control-shadow, none);
+	border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-border-strong, #adb9c8);
+	border-radius: var(--sphere10-control-radius, .25rem);
+	padding: var(--sphere10-control-padding-y, .25rem) var(--sphere10-control-padding-x, .5rem);
 	background: var(--sphere10-surface, #fff);
 	color: var(--sphere10-text, #172f47);
 }
+.sphere10-grid input, .sphere10-grid select, .sphere10-grid ::deep .sphere10-page-size {
+	border-radius: var(--sphere10-input-radius, var(--sphere10-control-radius, .25rem));
+}
+/* Text actions follow the button style; sorting and icon navigation retain their compact presentation. */
+.sphere10-grid button:not(.sphere10-grid-sort):not(.sphere10-grid-page-button) {
+	padding: var(--sphere10-button-padding-y, var(--sphere10-control-padding-y, .25rem)) var(--sphere10-button-padding-x, var(--sphere10-control-padding-x, .5rem));
+	box-shadow: var(--sphere10-button-shadow, var(--sphere10-control-shadow, none));
+	font-weight: var(--sphere10-button-font-weight, var(--sphere10-control-font-weight, 400));
+	text-transform: var(--sphere10-button-text-transform, none);
+	letter-spacing: var(--sphere10-button-letter-spacing, normal);
+}
 .sphere10-grid button:not(:disabled):hover { background: var(--sphere10-hover, #eaf3fa); }
-.sphere10-grid button:disabled { opacity: .5; cursor: default; }
-.sphere10-grid button:focus-visible, .sphere10-grid input:focus-visible, .sphere10-grid select:focus-visible, .sphere10-grid tr:focus-visible {
+.sphere10-grid button:disabled, .sphere10-grid ::deep .sphere10-page-size:disabled { opacity: .5; cursor: default; }
+.sphere10-grid input:disabled, .sphere10-grid select:disabled, .sphere10-grid ::deep .sphere10-page-size:disabled {
+	color: var(--sphere10-muted, #58687b);
+	background: var(--sphere10-surface-raised, #edf2f7);
+}
+.sphere10-grid button:focus-visible, .sphere10-grid input:focus-visible, .sphere10-grid select:focus-visible, .sphere10-grid tr:focus-visible, .sphere10-grid ::deep .sphere10-page-size:focus-visible {
 	outline: 2px solid var(--grid-accent);
 	outline-offset: 2px;
 }
@@ -49,7 +67,7 @@ This notice must not be removed when duplicating this file or its contents, in w
 .sphere10-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .sphere10-grid-table th, .sphere10-grid-table td {
 	box-sizing: border-box;
-	padding: .5rem .6rem;
+	padding: var(--sphere10-grid-cell-padding, .5rem .6rem);
 	border-bottom: 1px solid var(--sphere10-border, #e4e9f0);
 	text-align: left;
 	vertical-align: middle;
@@ -62,21 +80,28 @@ This notice must not be removed when duplicating this file or its contents, in w
 	z-index: 1;
 	font-weight: 600;
 }
-.sphere10-grid-table tbody tr:hover { background: var(--sphere10-hover, #f5f8fc); }
+.sphere10-grid-table tbody tr:nth-child(even) { background: var(--sphere10-table-striped-background, transparent); }
+.sphere10-grid-table tbody tr:hover { background: var(--sphere10-table-hover-background, var(--sphere10-hover, #f5f8fc)); }
 .sphere10-grid-table tbody tr.sphere10-grid-selected { background: var(--sphere10-selected, #deeffd); }
 .sphere10-grid-table tbody tr.sphere10-grid-editing { background: var(--sphere10-editing, #f2f8ed); }
 .sphere10-grid-table .sphere10-grid-empty { padding: 2rem; text-align: center; color: var(--sphere10-muted, #58687b); }
-.sphere10-grid-table .sphere10-grid-sort { background: transparent; border: 0; padding: 0; text-align: left; }
+.sphere10-grid-table .sphere10-grid-sort { background: transparent; border: 0; padding: 0; box-shadow: none; text-align: left; }
 .sphere10-grid-resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; touch-action: none; }
 .sphere10-grid-resizer:hover { background: var(--sphere10-accent, #1263a160); }
-.sphere10-grid-footer input { width: 5rem; }
+.sphere10-grid-pagination, .sphere10-grid-page-size { display: flex; align-items: center; gap: .4rem; }
+.sphere10-grid-pagination { flex-wrap: wrap; }
+.sphere10-grid-pagination > span, .sphere10-grid-page-size > label { white-space: nowrap; }
+.sphere10-grid-footer input { width: 4rem; }
+.sphere10-grid .sphere10-grid-page-button { box-sizing: border-box; display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 2rem; height: 2rem; min-width: 2rem; min-height: 2rem; padding: 0; }
+.sphere10-grid-page-button svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sphere10-grid-page-size ::deep .sphere10-page-size { width: auto; min-width: 4.5rem; appearance: auto; }
 .sphere10-grid-footer [role="status"] { margin-right: auto; }
-.sphere10-grid-error { color: var(--sphere10-danger, #a51c30); padding: .5rem .8rem; }
+.sphere10-grid-error { color: var(--sphere10-danger-text, var(--sphere10-danger, #a51c30)); padding: .5rem .8rem; }
 .sphere10-grid-confirm { background: var(--sphere10-warning-background, #fff6e2); }
 .sphere10-grid-edit-bar { background: var(--sphere10-hover, #eaf3fa); }
 .sphere10-grid-caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .sphere10-grid ::deep .sphere10-grid-editor > input:not([type="checkbox"]), .sphere10-grid ::deep .sphere10-grid-editor > select { width: 100%; min-width: 3rem; }
-.sphere10-grid ::deep .sphere10-grid-editor > input, .sphere10-grid ::deep .sphere10-grid-editor > select { border: 1px solid var(--sphere10-border-strong, #adb9c8); padding: .25rem; border-radius: .2rem; }
+.sphere10-grid ::deep .sphere10-grid-editor > input, .sphere10-grid ::deep .sphere10-grid-editor > select { border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-border-strong, #adb9c8); padding: var(--sphere10-control-padding-y, .25rem) var(--sphere10-control-padding-x, .25rem); border-radius: var(--sphere10-input-radius, var(--sphere10-control-radius, .25rem)); }
 .sphere10-grid ::deep .sphere10-grid-editor > .sphere10-grid-error { display: block; padding: .25rem 0; }
 .sphere10-grid-actions button { margin: .1rem; }
 .sphere10-grid ::deep fieldset.sphere10-grid-editor { border: 0; margin: 0; padding: 0; min-width: 0; }

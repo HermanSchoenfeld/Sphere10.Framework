@@ -10,15 +10,26 @@
 
 @using System.Linq.Expressions
 
-<EditForm Model="@(new object())" class="d-inline-block">
-	<InputSelect aria-label="Rows per page" class="form-select form-select-sm w-auto" Value="Value" ValueChanged="ValueChanged" ValueExpression="ValueExpression">
-		@foreach (var pageSize in AvailablePageSizes) {
-			<option value="@pageSize">@pageSize</option>
-		}
-	</InputSelect>
-</EditForm>
+<InputSelect id="@Id" aria-label="Rows per page" class="form-select form-select-sm w-auto sphere10-page-size" Value="Value"
+	ValueChanged="ValueChanged" ValueExpression="ValueExpression" disabled="@Disabled">
+	@foreach (var pageSize in AvailablePageSizes) {
+		<option value="@pageSize">@pageSize</option>
+	}
+</InputSelect>
 
 @code {
+	private static readonly int[] _defaultPageSizes = { 5, 10, 25, 50, 100 };
+
+	[Parameter]
+	public string Id { get; set; }
+
+	[Parameter]
+	public bool Disabled { get; set; }
+
+	/// <summary>Optional page sizes. The current value is always included; null uses the standard choices.</summary>
+	[Parameter]
+	public int[] PageSizeOptions { get; set; }
+
 	/// <summary>
 	/// Gets or sets the value of the input. This should be used with two-way binding.
 	/// </summary>
@@ -40,5 +51,10 @@
 	[Parameter]
 	public Expression<Func<int>> ValueExpression { get; set; }
 
-	private int[] AvailablePageSizes => new[] { 5, 10, 25, 50, Value }.Where(size => size > 0).Distinct().OrderBy(size => size).ToArray();
+	private int[] AvailablePageSizes => (PageSizeOptions ?? _defaultPageSizes).Append(Value).Where(size => size > 0).Distinct().OrderBy(size => size).ToArray();
+
+	protected override void OnParametersSet() {
+		Guard.Argument(PageSizeOptions == null || PageSizeOptions.All(size => size is >= 1 and <= 9999), nameof(PageSizeOptions), "Page sizes must be between 1 and 9999.");
+		base.OnParametersSet();
+	}
 }

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
@@ -118,6 +119,69 @@ public class BlazorGridBrowserTests {
 		Assert.That(resized.StyleWrites, Is.Zero, resized.Description("Manual resize style writes"));
 		Assert.That(resized.ResizeEvents, Is.Zero, resized.Description("Manual resize events"));
 		Assert.That(errors, Is.Empty, "Browser script errors must not mask a stopped resize loop.");
+	}
+
+	[TestCase(1500, 1000)]
+	[TestCase(390, 844)]
+	public async Task IconPagerNavigatesAndPageSizeDropdownPreservesEditingGuards(int width, int height) {
+		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True,
+			"Set BlazorTesterUrl to the running local tester origin in a .runsettings TestRunParameters entry.");
+		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
+		using var playwright = await Playwright.CreateAsync();
+		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions {
+			Headless = true,
+			ExecutablePath = string.IsNullOrWhiteSpace(executable) ? null : executable
+		});
+		await using var context = await browser.NewContextAsync(new BrowserNewContextOptions { ViewportSize = new ViewportSize { Width = width, Height = height } });
+		var page = await context.NewPageAsync();
+		page.SetDefaultTimeout(15000);
+		var errors = new List<string>();
+		page.PageError += (_, error) => errors.Add(error);
+		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
+		var grid = page.Locator(".sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid");
+		await page.WaitForFunctionAsync("() => !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table')?.style.width");
+		var pager = grid.GetByRole(AriaRole.Navigation, new() { Name = "Grid pages", Exact = true });
+		var pageSize = grid.GetByRole(AriaRole.Combobox, new() { Name = "Rows per page", Exact = true });
+		var currentPage = pager.GetByRole(AriaRole.Spinbutton, new() { Name = "Current page", Exact = true });
+		var first = pager.GetByRole(AriaRole.Button, new() { Name = "First page", Exact = true });
+		var previous = pager.GetByRole(AriaRole.Button, new() { Name = "Previous page", Exact = true });
+		var next = pager.GetByRole(AriaRole.Button, new() { Name = "Next page", Exact = true });
+		var last = pager.GetByRole(AriaRole.Button, new() { Name = "Last page", Exact = true });
+		Assert.That(await pager.Locator("button > svg[aria-hidden=true]").CountAsync(), Is.EqualTo(4));
+		await Assertions.Expect(first).ToBeDisabledAsync();
+		await Assertions.Expect(previous).ToBeDisabledAsync();
+		await pageSize.SelectOptionAsync("25");
+		await Assertions.Expect(grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr")).ToHaveCountAsync(25);
+		await last.ClickAsync();
+		await Assertions.Expect(currentPage).ToHaveValueAsync("3");
+		await Assertions.Expect(next).ToBeDisabledAsync();
+		await Assertions.Expect(last).ToBeDisabledAsync();
+		await Assertions.Expect(grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr")).ToHaveCountAsync(23);
+		await previous.ClickAsync();
+		await Assertions.Expect(currentPage).ToHaveValueAsync("2");
+		await first.ClickAsync();
+		await Assertions.Expect(currentPage).ToHaveValueAsync("1");
+		await next.ClickAsync();
+		await Assertions.Expect(currentPage).ToHaveValueAsync("2");
+		await pageSize.SelectOptionAsync("5");
+		await Assertions.Expect(currentPage).ToHaveValueAsync("1");
+		await Assertions.Expect(grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr")).ToHaveCountAsync(5);
+		await grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr").First.ClickAsync();
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Edit", Exact = true }).ClickAsync();
+		await Assertions.Expect(pageSize).ToBeDisabledAsync();
+		await Assertions.Expect(next).ToBeDisabledAsync();
+		await grid.GetByRole(AriaRole.Group, new() { Name = "Edit item", Exact = true }).GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
+		await Assertions.Expect(pageSize).ToBeEnabledAsync();
+		await Assertions.Expect(pageSize).ToHaveValueAsync("5");
+		await Assertions.Expect(next).ToBeEnabledAsync();
+		Assert.That(await pageSize.EvaluateAsync<string>("element => getComputedStyle(element).appearance"), Is.EqualTo("auto"), "The dropdown uses the native browser arrow.");
+		Assert.That(await pageSize.EvaluateAsync<string>("element => getComputedStyle(element).backgroundImage"), Is.EqualTo("none"), "Bootstrap must not add a second dropdown arrow.");
+		Assert.That(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth + 1"), Is.True, "Pager groups must wrap within narrow screens.");
+		var screenshot = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"grid-pager-{width}.png");
+		await grid.Locator(":scope > .sphere10-grid-footer").ScreenshotAsync(new LocatorScreenshotOptions { Path = screenshot });
+		TestContext.AddTestAttachment(screenshot, "Grid icon navigation and page-size dropdown");
+		Assert.That(errors, Is.Empty);
 	}
 
 	private static async Task<LayoutObservation> SampleLayoutAsync(ILocator grid) {

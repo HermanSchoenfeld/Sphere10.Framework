@@ -7,6 +7,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Grids
 @typeparam TItem
 
 <div class="sphere10-grid" @ref="_element" aria-busy="@IsBusy.ToString().ToLowerInvariant()">
@@ -143,17 +144,34 @@
 	<div class="sphere10-grid-footer">
 		<span role="status">@(Controller.IsLoading ? "Loading…" : $"{TotalDataCount} items")</span>
 		@if (Can(DataSourceCapabilities.CanPage)) {
-			<button type="button" disabled="@(NavigationDisabled || CurrentPage == 0)" @onclick="() => SetPageAsync(0)">First</button>
-			<button type="button" disabled="@(NavigationDisabled || CurrentPage == 0)" @onclick="() => SetPageAsync(CurrentPage - 1)">Previous</button>
-			<label for="@(Id)-page">Page</label>
-			<input id="@(Id)-page" aria-label="Current page" type="number" min="1" max="@TotalPages" value="@(CurrentPage + 1)"
-				disabled="@NavigationDisabled" @onchange="ChangePageAsync" />
-			<span>of @TotalPages</span>
-			<button type="button" disabled="@(NavigationDisabled || CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(CurrentPage + 1)">Next</button>
-			<button type="button" disabled="@(NavigationDisabled || CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(TotalPages - 1)">Last</button>
+			<nav class="sphere10-grid-pagination" aria-label="Grid pages">
+				<button type="button" class="sphere10-grid-page-button" aria-label="First page" title="First page"
+					disabled="@(NavigationDisabled || CurrentPage == 0)" @onclick="() => SetPageAsync(0)">
+					<svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="18" height="18"><path d="M5 4v12m9-12-6 6 6 6" /></svg>
+				</button>
+				<button type="button" class="sphere10-grid-page-button" aria-label="Previous page" title="Previous page"
+					disabled="@(NavigationDisabled || CurrentPage == 0)" @onclick="() => SetPageAsync(CurrentPage - 1)">
+					<svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="18" height="18"><path d="m13 4-6 6 6 6" /></svg>
+				</button>
+				<label for="@(Id)-page">Page</label>
+				<input id="@(Id)-page" aria-label="Current page" type="number" min="1" max="@TotalPages" value="@(CurrentPage + 1)"
+					disabled="@NavigationDisabled" @onchange="ChangePageAsync" />
+				<span>of @TotalPages</span>
+				<button type="button" class="sphere10-grid-page-button" aria-label="Next page" title="Next page"
+					disabled="@(NavigationDisabled || CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(CurrentPage + 1)">
+					<svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="18" height="18"><path d="m7 4 6 6-6 6" /></svg>
+				</button>
+				<button type="button" class="sphere10-grid-page-button" aria-label="Last page" title="Last page"
+					disabled="@(NavigationDisabled || CurrentPage >= TotalPages - 1)" @onclick="() => SetPageAsync(TotalPages - 1)">
+					<svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="18" height="18"><path d="m6 4 6 6-6 6m9-12v12" /></svg>
+				</button>
+			</nav>
 			@if (!AutoPageSize) {
-				<label for="@(Id)-page-size">Rows per page</label>
-				<input id="@(Id)-page-size" type="number" min="1" max="9999" value="@Controller.PageSize" disabled="@NavigationDisabled" @onchange="ChangePageSizeAsync" />
+				<div class="sphere10-grid-page-size">
+					<label for="@(Id)-page-size">Rows per page</label>
+					<PageSizeSelector Id="@(Id + "-page-size")" Value="Controller.PageSize" ValueExpression="() => Controller.PageSize"
+						ValueChanged="SetPageSizeAsync" PageSizeOptions="PageSizeOptions" Disabled="NavigationDisabled" />
+				</div>
 			}
 		}
 	</div>

@@ -53,6 +53,9 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	[Parameter] public int PageSize { get; set; } = 10;
 
+	/// <summary>Optional rows-per-page choices. The active size is retained even when it is not listed.</summary>
+	[Parameter] public int[] PageSizeOptions { get; set; }
+
 	[Parameter] public IDataSource<TItem> DataSource { get; set; }
 
 	[Parameter] public DataSourceCapabilities AllowedCapabilities { get; set; } = DataSourceCapabilities.Default;
@@ -336,9 +339,6 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	private Task ChangePageAsync(ChangeEventArgs args) =>
 		int.TryParse(args.Value?.ToString(), out var page) ? SetPageAsync(page > 0 ? page - 1 : 0) : Task.CompletedTask;
-
-	private Task ChangePageSizeAsync(ChangeEventArgs args) =>
-		int.TryParse(args.Value?.ToString(), out var pageSize) && pageSize is >= 1 and <= 9999 ? SetPageSizeAsync(pageSize) : Task.CompletedTask;
 
 	private async Task PerformActionAsync(GridAction<TItem> action, TItem item) {
 		if (NavigationDisabled || !(action.IsActionAvailable?.Invoke(item) ?? true))

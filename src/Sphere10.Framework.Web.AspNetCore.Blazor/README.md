@@ -426,7 +426,7 @@ Default editors support strings/chars, booleans (including nullable tri-state va
 
 ### Paging and external refresh
 
-`PageSize` defaults to 10 and accepts 1–9999. `CurrentPage` and `SetPageAsync` are **zero-based**; the visible pager starts at one. The source returns the actual zero-based `DataSourceItems.Page` and the filtered `TotalCount`, not the count of items on that page. Filter and sort before paging.
+`PageSize` defaults to 10 and accepts 1–9999. The pager uses accessible First/Previous/Next/Last icon buttons with tooltips and a **Rows per page** dropdown. `PageSizeOptions="new[] { 5, 10, 25, 50, 100 }"` customizes the choices; those are also the defaults. The active size is included automatically even when it is not listed (for example, `PageSize="6"`). Paging and page-size changes remain disabled during editing/loading. Automatic page sizing hides the dropdown. `CurrentPage` and `SetPageAsync` are **zero-based**; the visible pager starts at one. The source returns the actual zero-based `DataSourceItems.Page` and the filtered `TotalCount`, not the count of items on that page. Filter and sort before paging.
 
 Add `@ref="_grid"` to a grid to call its public component methods from the owning renderer context:
 

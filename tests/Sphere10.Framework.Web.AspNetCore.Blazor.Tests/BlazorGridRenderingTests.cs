@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -73,6 +74,54 @@ public class BlazorGridRenderingTests {
 			Assert.That(html, Does.Not.Contain(">Delete</button>"));
 			Assert.That(html, Does.Not.Contain("type=\"search\""));
 			Assert.That(html, Does.Not.Contain("Rows per page"));
+			return Task.CompletedTask;
+		});
+	}
+
+	[Test]
+	public async Task PagerUsesAccessibleIconsAndPreservesTheCurrentSizeAlongsideConfiguredChoices() {
+		var parameters = GridParameters(new ProbeSource<Row>(Enumerable.Range(1, 20).Select(index => new Row { Name = $"Row {index}" }).ToArray()));
+		parameters["Id"] = "pager-grid";
+		parameters["PageSize"] = 6;
+		parameters["PageSizeOptions"] = new[] { 25, 10, 10, 5 };
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, host, rendered) => {
+			var html = rendered.ToHtmlString();
+			Assert.That(html, Does.Not.Contain("<form"), "The grid must be usable inside an application edit form without introducing a nested form.");
+			var selector = Regex.Match(html, "<select[^>]*id=\"pager-grid-page-size\"[^>]*>(.*?)</select>", RegexOptions.Singleline);
+			Assert.That(selector.Success, Is.True);
+			Assert.That(Regex.Matches(selector.Value, "<option[^>]*value=\"([0-9]+)\"").Select(match => int.Parse(match.Groups[1].Value)),
+				Is.EqualTo(new[] { 5, 6, 10, 25 }));
+			Assert.That(Regex.IsMatch(selector.Value, "<option(?=[^>]*value=\"6\")(?=[^>]*selected)[^>]*>"), Is.True);
+			foreach (var label in new[] { "First page", "Previous page", "Next page", "Last page" }) {
+				var button = Regex.Match(html, $"<button[^>]*aria-label=\"{label}\"[^>]*>(.*?)</button>", RegexOptions.Singleline);
+				Assert.That(button.Success, Is.True, label);
+				Assert.That(button.Value, Does.Contain($"title=\"{label}\"").And.Contain("<svg").And.Contain("aria-hidden=\"true\""));
+			}
+			await grid.SetPageSizeAsync(10);
+			parameters["Caption"] = "Rerendered grid";
+			await host.UpdateAsync(parameters);
+			Assert.That(grid.Controller.PageSize, Is.EqualTo(10), "An unrelated parameter update must preserve the user's selected size.");
+			Assert.That(Regex.IsMatch(rendered.ToHtmlString(), "<option(?=[^>]*value=\"10\")(?=[^>]*selected)[^>]*>"), Is.True);
+		});
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task PageSizeDropdownHonorsEditingAndAutomaticSizing(bool automaticSize) {
+		var row = new Row { Name = "Editable" };
+		var parameters = GridParameters(new ProbeSource<Row>(row));
+		parameters["AutoPageSize"] = automaticSize;
+		await RenderAsync<BlazorGrid<Row>>(parameters, (grid, _, rendered) => {
+			grid.BeginEdit(row);
+			var html = rendered.ToHtmlString();
+			var selector = Regex.Match(html, "<select[^>]*aria-label=\"Rows per page\"[^>]*>");
+			Assert.That(selector.Success, Is.EqualTo(!automaticSize));
+			if (!automaticSize)
+				Assert.That(selector.Value, Does.Contain("disabled"));
+			Assert.That(Regex.IsMatch(html, "<button(?=[^>]*aria-label=\"Next page\")(?=[^>]*disabled)[^>]*>"), Is.True);
+			grid.CancelEdit();
+			if (!automaticSize)
+				Assert.That(Regex.Match(rendered.ToHtmlString(), "<select[^>]*aria-label=\"Rows per page\"[^>]*>").Value, Does.Not.Contain("disabled"));
 			return Task.CompletedTask;
 		});
 	}
