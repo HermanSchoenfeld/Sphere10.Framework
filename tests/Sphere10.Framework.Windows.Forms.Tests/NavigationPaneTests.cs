@@ -29,7 +29,9 @@ public class NavigationPaneTests {
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
-			Sphere10Framework.Instance.Build().Start();
+			Sphere10Framework.Instance
+				.Build()
+				.Start();
 	}
 
 	[OneTimeTearDown]
@@ -263,9 +265,11 @@ public class NavigationPaneTests {
 		using var Icon = new Bitmap(16, 16);
 		using var Block = new WinFormsApplicationBlockBuilder()
 			.WithName("Navigation width")
-			.AddMenu(Menu => Menu.WithText("Screens")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
 				.AddScreenItem<NavigationScreen>("ApplicationServicesTester", Icon)
-				.AddScreenItem<NavigationScreen>("FlagsCheckedListBox", Icon))
+				.AddScreenItem<NavigationScreen>("FlagsCheckedListBox", Icon)
+			)
 			.Build();
 		Form.RegisterBlock(Block);
 		Form.Show();

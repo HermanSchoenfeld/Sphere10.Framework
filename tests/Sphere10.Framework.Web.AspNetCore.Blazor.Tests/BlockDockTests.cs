@@ -50,7 +50,12 @@ public class BlockDockTests {
 	[Test]
 	public async Task CompactBlockMenuSupportsOrderedIconLinksAndFallbackLabels() {
 		var services = CreateServices();
-		services.AddApplicationBlock(block => block.WithId("with & spaces").WithName("Special block").WithPosition(2));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("with & spaces")
+				.WithName("Special block")
+				.WithPosition(2)
+			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var navigation = provider.GetRequiredService<NavigationManager>();
@@ -167,9 +172,29 @@ public class BlockDockTests {
 		services.AddSphere10Blazor();
 		services.AddSingleton<NavigationManager>(new DockNavigationManager());
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
-		services.AddApplicationBlock(block => block.WithId("second").WithName("Second block").WithPosition(1)
-			.WithIconUrl("img/second.svg").WithDefaultScreen<OtherScreen>().AddMenu(menu => menu.WithText("Screens").AddScreenItem<OtherScreen>("screen", "Second screen")));
-		services.AddApplicationBlock(block => block.WithId("first").WithName("First block").WithIconUrl("img/first.svg").WithDefaultScreen<GuardedScreen>().AddMenu(menu => menu.WithText("Screens").AddScreenItem<GuardedScreen>("screen", "First screen")));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("second")
+				.WithName("Second block")
+				.WithPosition(1)
+				.WithIconUrl("img/second.svg")
+				.WithDefaultScreen<OtherScreen>()
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.AddScreenItem<OtherScreen>("screen", "Second screen")
+				)
+			);
+		services
+			.AddApplicationBlock(block => block
+				.WithId("first")
+				.WithName("First block")
+				.WithIconUrl("img/first.svg")
+				.WithDefaultScreen<GuardedScreen>()
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.AddScreenItem<GuardedScreen>("screen", "First screen")
+				)
+			);
 		return services;
 	}
 

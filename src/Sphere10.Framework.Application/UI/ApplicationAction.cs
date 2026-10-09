@@ -16,12 +16,20 @@ namespace Sphere10.Framework.Application.UI;
 public class ApplicationAction {
 	public Action Action { get; set; }
 
+	public Action<IUserInterfaceServices> UIAction { get; set; }
+
 	public Func<IServiceProvider, CancellationToken, Task> AsyncAction { get; set; }
 
-	public void Execute() {
+	public void Execute() => Execute(null);
+
+	public void Execute(IUserInterfaceServices userInterface) {
 		Guard.Ensure(AsyncAction == null, "Use ExecuteAsync for an asynchronous action.");
-		Guard.Ensure(Action != null, "The action has no callback.");
-		Action();
+		Guard.Ensure(Action != null || UIAction != null, "The action has no callback.");
+		if (UIAction != null) {
+			Guard.ArgumentNotNull(userInterface, nameof(userInterface));
+			UIAction(userInterface);
+		} else
+			Action();
 	}
 
 	public async Task ExecuteAsync(IServiceProvider services, CancellationToken cancellationToken = default) {
@@ -30,6 +38,6 @@ public class ApplicationAction {
 		if (AsyncAction != null)
 			await AsyncAction(services, cancellationToken);
 		else
-			Execute();
+			Execute(UIAction == null ? null : services.GetService(typeof(IUserInterfaceServices)) as IUserInterfaceServices);
 	}
 }

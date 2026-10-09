@@ -25,6 +25,9 @@ public class BlazorScreenMenuItem : BlazorApplicationMenuItem, IScreenMenuItem {
 		}
 	}
 
+	/// <summary>Optional screen caption, independent of the navigation command label.</summary>
+	public string ScreenTitle { get; init; }
+
 	public ScreenActivationMode ActivationMode { get; init; } = ScreenActivationMode.MultiInstance;
 
 	public ScreenKind ScreenKind { get; init; }
@@ -41,7 +44,7 @@ public class BlazorScreenMenuItem : BlazorApplicationMenuItem, IScreenMenuItem {
 
 	ScreenActivationMode? IScreenMenuItem.ActivationMode => ActivationMode;
 
-	string IScreenMenuItem.ScreenTitle => Title;
+	string IScreenMenuItem.ScreenTitle => ScreenTitle ?? Title;
 
 	public static BlazorScreenMenuItem For<TScreen>(string icon, string title) where TScreen : IBlazorApplicationScreen
 		=> new() { Id = typeof(TScreen).Name, Icon = icon, Title = title, ScreenType = typeof(TScreen) };

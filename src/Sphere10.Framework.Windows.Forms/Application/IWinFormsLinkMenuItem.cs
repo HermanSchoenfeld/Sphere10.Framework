@@ -6,11 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Sphere10.Framework.Application;
+
 namespace Sphere10.Framework.Windows.Forms;
 
 public interface IWinFormsLinkMenuItem : IWinFormsApplicationMenuItem {
 	string Text { get; }
 
 	void OnSelect();
+
+	/// <summary>Receives the executing UI while preserving existing link implementations.</summary>
+	void OnSelect(IUserInterfaceServices userInterface) => OnSelect();
 }
 

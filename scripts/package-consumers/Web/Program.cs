@@ -16,15 +16,28 @@ using PackageConsumer.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.BuildBlazorApplication()
+builder.Services
+	.BuildBlazorApplication()
 	.WithTitle("Sphere10 package consumer")
 	.WithFavicon("data:,")
-	.AddPlugin(plugin => plugin
+	.ConfigurePlugin(plugin => plugin
 		.WithName("Package plugin")
-		.AddBlock(block => block.WithId("package").WithName("Package block")
+		.ConfigureBlock(block => block
+			.WithId("package")
+			.WithName("Package block")
 			.WithDefaultScreen<WelcomeScreen>("Package screen")
-			.AddMenu(menu => menu.WithId("records").WithText("Records")
-				.ConfigureItem(item => item.WithId("grid").WithText("Package grid").WithScreen<WelcomeScreen>().AsPermanentSingleton()))))
+			.ConfigureMenu(menu => menu
+				.WithId("records")
+				.WithText("Records")
+				.ConfigureItem(item => item
+					.WithId("grid")
+					.WithText("Package grid")
+					.WithScreen<WelcomeScreen>()
+					.AsPermanentSingleton()
+				)
+			)
+		)
+	)
 	.Build();
 var app = builder.Build();
 app.UseAntiforgery();

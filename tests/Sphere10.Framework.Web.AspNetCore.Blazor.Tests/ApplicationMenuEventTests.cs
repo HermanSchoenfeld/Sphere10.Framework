@@ -50,8 +50,15 @@ public class ApplicationMenuEventTests {
 		var selections = 0;
 		var item = new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) };
 		item.Select += () => selections++;
-		var block = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block").WithDefaultScreen<TestScreen>("Dashboard")
-			.AddMenu(menu => menu.WithText("Menu").AddItem(item)).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.WithDefaultScreen<TestScreen>("Dashboard")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddItem(item)
+			)
+			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 
@@ -146,7 +153,14 @@ public class ApplicationMenuEventTests {
 	}
 
 	private static BlazorApplicationBlockCatalog CreateCatalog(IBlazorApplicationMenuItem item) => new(new[] {
-		new BlazorApplicationBlockBuilder().WithId("block").WithName("Block").AddMenu(menu => menu.WithText("Menu").AddItem(item)).Build()
+		new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddItem(item)
+			)
+			.Build()
 	});
 
 	public class TestScreen : ComponentBase, IBlazorApplicationScreen {

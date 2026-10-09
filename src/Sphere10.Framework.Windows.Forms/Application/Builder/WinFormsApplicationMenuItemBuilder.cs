@@ -8,12 +8,13 @@
 
 using System;
 using System.Drawing;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationMenuItemBuilder {
-	private object _specificBuilder;
+public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinFormsApplicationMenuItem> {
+	private IApplicationUIBuilder<IWinFormsApplicationMenuItem> _specificBuilder;
 
 	public WinFormsScreenMenuItemBuilder AsScreenItem() {
 		_specificBuilder = new WinFormsScreenMenuItemBuilder();
@@ -27,63 +28,18 @@ public class WinFormsApplicationMenuItemBuilder {
 
 	public IWinFormsApplicationMenuItem Build() {
 		Guard.Ensure(_specificBuilder != null, "Menu item type is not configured");
-		return _specificBuilder is WinFormsScreenMenuItemBuilder screenBuilder
-			? screenBuilder.Build()
-			: ((WinFormsActionMenuItemBuilder)_specificBuilder).Build();
+		return _specificBuilder.Build();
 	}
 
-	public class WinFormsScreenMenuItemBuilder : ApplicationMenuItemBuilderBase {
+	public class WinFormsScreenMenuItemBuilder : ApplicationMenuItemBuilderBase<WinFormsScreenMenuItemBuilder>, IApplicationUIBuilder<WinFormsScreenMenuItem> {
 		private Image _image16x16;
 		private bool _showOnExplorerBar = true;
 		private bool _showOnToolBar = true;
 		private bool _isStartScreen = false;
 
-		public WinFormsScreenMenuItemBuilder WithText(string text) {
-			SetText(text);
-			return this;
-		}
-
-		public WinFormsScreenMenuItemBuilder WithScreen(Type screenType) {
-			SetScreenType(screenType);
-			return this;
-		}
-
-		public WinFormsScreenMenuItemBuilder WithScreen<TScreen>() where TScreen : WinFormsApplicationScreen {
-			return WithScreen(typeof(TScreen));
-		}
-
-		/// <summary>Declares one instance for this screen type across all of the host's blocks and menus.</summary>
-		public WinFormsScreenMenuItemBuilder AsSingleInstance() {
-			SetActivationMode(ScreenActivationMode.SingleInstance);
-			return this;
-		}
-
-		/// <summary>Declares that every activation of this screen type creates a new instance.</summary>
-		public WinFormsScreenMenuItemBuilder AsMultiInstance() {
-			SetActivationMode(ScreenActivationMode.MultiInstance);
-			return this;
-		}
-
-		/// <summary>Opens one anchored instance during application startup.</summary>
-		public WinFormsScreenMenuItemBuilder AsPermanentSingleton() {
-			SetActivationMode(ScreenActivationMode.PermanentSingleton);
-			return this;
-		}
-
-		public WinFormsScreenMenuItemBuilder WithScreenKind(ScreenKind screenKind) {
-			SetScreenKind(screenKind);
-			return this;
-		}
-
-		public WinFormsScreenMenuItemBuilder AsDefault(bool isDefault = true) {
-			SetIsDefault(isDefault);
-			return this;
-		}
-
 		public WinFormsScreenMenuItemBuilder WithTitle(string Title) {
 			Guard.ArgumentNotNullOrEmpty(Title, nameof(Title));
-			SetScreenTitle(Title);
-			return this;
+			return WithScreenTitle(Title);
 		}
 
 		public WinFormsScreenMenuItemBuilder WithImage(Image image16x16) {
@@ -106,10 +62,9 @@ public class WinFormsApplicationMenuItemBuilder {
 			return this;
 		}
 
-		protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
-
-		internal WinFormsScreenMenuItem Build() {
+		public WinFormsScreenMenuItem Build() {
 			ValidateItem();
+			Guard.Ensure(ScreenType != null, "A native screen item requires a screen.");
 			return new WinFormsScreenMenuItem(Text, ScreenType, _image16x16, _showOnExplorerBar, _showOnToolBar, _isStartScreen) {
 				Id = Id,
 				ActivationMode = ActivationMode,
@@ -118,20 +73,17 @@ public class WinFormsApplicationMenuItemBuilder {
 				IsDefault = IsDefault
 			};
 		}
+
+		protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
 	}
 
-	public class WinFormsActionMenuItemBuilder : ApplicationMenuItemBuilderBase {
+	public class WinFormsActionMenuItemBuilder : ApplicationMenuItemBuilderBase<WinFormsActionMenuItemBuilder>, IApplicationUIBuilder<WinFormsActionMenuItem> {
 		private Image _image16x16;
 		private bool _showOnExplorerBar = true;
 		private bool _showOnToolBar = true;
 		private bool _executeOnLoad = false;
 
-		public WinFormsActionMenuItemBuilder WithText(string text) {
-			SetText(text);
-			return this;
-		}
-
-		public WinFormsActionMenuItemBuilder WithAction(Action action) {
+		public WinFormsActionMenuItemBuilder WithAction(Action<IUserInterfaceServices> action) {
 			SetAction(action);
 			return this;
 		}
@@ -156,15 +108,16 @@ public class WinFormsApplicationMenuItemBuilder {
 			return this;
 		}
 
-		internal WinFormsActionMenuItem Build() {
+		public WinFormsActionMenuItem Build() {
 			ValidateItem();
-			return new WinFormsActionMenuItem(Text, Action) {
-				Id = Id,
-				Image16x16 = _image16x16,
-				ShowOnExplorerBar = _showOnExplorerBar,
-				ShowOnToolStrip = _showOnToolBar,
-				ExecuteOnLoad = _executeOnLoad
-			};
+			Guard.Ensure(ScreenType == null && (Action != null || UIAction != null) && AsyncAction == null, "A native action item requires a synchronous action.");
+			var item = UIAction != null ? new WinFormsActionMenuItem(Text, UIAction) : new WinFormsActionMenuItem(Text, Action);
+			item.Id = Id;
+			item.Image16x16 = _image16x16;
+			item.ShowOnExplorerBar = _showOnExplorerBar;
+			item.ShowOnToolStrip = _showOnToolBar;
+			item.ExecuteOnLoad = _executeOnLoad;
+			return item;
 		}
 	}
 }

@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -19,14 +20,30 @@ public class WinFormsActionMenuItem : WinFormsApplicationMenuItem, IWinFormsLink
 		: this(string.Empty, onClick) {
 	}
 
+	public WinFormsActionMenuItem(Action<IUserInterfaceServices> onClick)
+		: this(string.Empty, onClick) {
+	}
+
 	public WinFormsActionMenuItem(string text, Action select) {
 		Guard.ArgumentNotNull(select, nameof(select));
 		Text = text;
 		_action.Action = select;
 	}
 
+	public WinFormsActionMenuItem(string text, Action<IUserInterfaceServices> select) {
+		Guard.ArgumentNotNull(select, nameof(select));
+		Text = text;
+		_action.UIAction = select;
+	}
+
 	public WinFormsActionMenuItem(string text, Image image16x16, Action OnClick)
-		: this(text, image16x16, true, true, false) {
+		: this(text, OnClick) {
+		Image16x16 = image16x16;
+	}
+
+	public WinFormsActionMenuItem(string text, Image image16x16, Action<IUserInterfaceServices> onClick)
+		: this(text, onClick) {
+		Image16x16 = image16x16;
 	}
 
 	public WinFormsActionMenuItem(
@@ -48,6 +65,15 @@ public class WinFormsActionMenuItem : WinFormsApplicationMenuItem, IWinFormsLink
 
 	public virtual void OnSelect() {
 		_action.Execute();
+		NotifySelect();
+	}
+
+	public virtual void OnSelect(IUserInterfaceServices userInterface) {
+		if (_action.UIAction == null) {
+			OnSelect();
+			return;
+		}
+		_action.Execute(userInterface);
 		NotifySelect();
 	}
 

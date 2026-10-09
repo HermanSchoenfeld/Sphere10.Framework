@@ -24,7 +24,9 @@ public class ScreenActivationBuilderTests {
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
-			Sphere10Framework.Instance.Build().Start();
+			Sphere10Framework.Instance
+				.Build()
+				.Start();
 	}
 
 	[OneTimeTearDown]
@@ -37,7 +39,10 @@ public class ScreenActivationBuilderTests {
 	[TestCase(ScreenActivationMode.MultiInstance)]
 	public void FluentMethodsPreserveTheBuilderAndDeclareMetadata(ScreenActivationMode Mode) {
 		var Builder = new WinFormsApplicationMenuItemBuilder();
-		var ScreenBuilder = Builder.AsScreenItem().WithScreen<DefaultSingleScreen>().WithText("Open");
+		var ScreenBuilder = Builder
+			.AsScreenItem()
+			.WithScreen<DefaultSingleScreen>()
+			.WithText("Open");
 		var Result = Mode == ScreenActivationMode.SingleInstance ? ScreenBuilder.AsSingleInstance() : ScreenBuilder.AsMultiInstance();
 		using var Item = (WinFormsScreenMenuItem)Builder.Build();
 		Assert.That(Result, Is.SameAs(ScreenBuilder));
@@ -50,11 +55,21 @@ public class ScreenActivationBuilderTests {
 	[TestCase(ScreenMode.MultiView)]
 	public void UnspecifiedScreenPolicyCreatesIndependentInstancesThroughMenuNavigation(ScreenMode mode) {
 		using var form = new BlockMainForm { ScreenMode = mode };
-		using var firstBlock = new WinFormsApplicationBlockBuilder().WithName("First")
+		using var firstBlock = new WinFormsApplicationBlockBuilder()
+			.WithName("First")
 			.WithDefaultScreen<UnconfiguredScreen>()
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<UnconfiguredScreen>("Open")).Build();
-		using var otherBlock = new WinFormsApplicationBlockBuilder().WithName("Other")
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<UnconfiguredScreen>("Open again")).Build();
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<UnconfiguredScreen>("Open")
+			)
+			.Build();
+		using var otherBlock = new WinFormsApplicationBlockBuilder()
+			.WithName("Other")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<UnconfiguredScreen>("Open again")
+			)
+			.Build();
 		form.RegisterBlock(firstBlock);
 		form.RegisterBlock(otherBlock);
 		var first = (UnconfiguredScreen)form.ActiveScreen;
@@ -75,9 +90,18 @@ public class ScreenActivationBuilderTests {
 
 	[Test]
 	public void UnspecifiedMetadataRetainsTheScreenConstructorDefault() {
-		using var Block = new WinFormsApplicationBlockBuilder().WithName("Defaults").AddMenu(Menu => Menu.WithText("Screens")
-			.AddScreenItem<DefaultSingleScreen>("Settings")
-			.ConfigureItem(Item => Item.AsScreenItem().WithScreen<DefaultMultiScreen>().WithText("Design"))).Build();
+		using var Block = new WinFormsApplicationBlockBuilder()
+			.WithName("Defaults")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
+				.AddScreenItem<DefaultSingleScreen>("Settings")
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultMultiScreen>()
+					.WithText("Design")
+				)
+			)
+			.Build();
 		using var DirectItem = new WinFormsScreenMenuItem("Direct", typeof(DefaultSingleScreen));
 		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		Assert.That(Block.Menus[0].Items.Cast<IWinFormsScreenMenuItem>().Select(Item => Item.ActivationMode), Is.All.Null);
@@ -122,10 +146,22 @@ public class ScreenActivationBuilderTests {
 
 	[Test]
 	public void UnspecifiedAliasUsesALaterDeclarationFromAnotherMenu() {
-		using var Block = new WinFormsApplicationBlockBuilder().WithName("Aliases")
-			.AddMenu(Menu => Menu.WithText("Shortcuts").AddScreenItem<DefaultSingleScreen>("Design shortcut"))
-			.AddMenu(Menu => Menu.WithText("Designs").ConfigureItem(Item => Item.AsScreenItem()
-				.WithScreen<DefaultSingleScreen>().WithText("New design").AsMultiInstance())).Build();
+		using var Block = new WinFormsApplicationBlockBuilder()
+			.WithName("Aliases")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Shortcuts")
+				.AddScreenItem<DefaultSingleScreen>("Design shortcut")
+			)
+			.ConfigureMenu(Menu => Menu
+				.WithText("Designs")
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultSingleScreen>()
+					.WithText("New design")
+					.AsMultiInstance()
+				)
+			)
+			.Build();
 		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var Alias = (IWinFormsScreenMenuItem)Block.Menus[0].Items[0];
 		var First = Host.ActivateScreen(Alias.Parent.Parent, Alias.Screen)!;
@@ -191,9 +227,24 @@ public class ScreenActivationBuilderTests {
 	[Test]
 	public void ConflictingDeclarationsAcrossRegisteredBlocksAreAtomic() {
 		using var RegisteredBlock = CreateBlock<DefaultMultiScreen>(ScreenActivationMode.SingleInstance);
-		using var ConflictingBlock = new WinFormsApplicationBlockBuilder().WithName("Conflict").AddMenu(Menu => Menu.WithText("Screens")
-			.ConfigureItem(Item => Item.AsScreenItem().WithScreen<DefaultSingleScreen>().WithText("New design").AsMultiInstance())
-			.ConfigureItem(Item => Item.AsScreenItem().WithScreen<DefaultMultiScreen>().WithText("Conflict").AsMultiInstance())).Build();
+		using var ConflictingBlock = new WinFormsApplicationBlockBuilder()
+			.WithName("Conflict")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultSingleScreen>()
+					.WithText("New design")
+					.AsMultiInstance()
+				)
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultMultiScreen>()
+					.WithText("Conflict")
+					.AsMultiInstance()
+				)
+			)
+			.Build();
 		using var EmptyBlock = new WinFormsApplicationBlock();
 		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		Host.RegisterScreenTypes(RegisteredBlock);
@@ -238,10 +289,23 @@ public class ScreenActivationBuilderTests {
 
 	[Test]
 	public void RegisterBlockAppliesALaterDeclarationToItsDefaultScreen() {
-		using var Block = new WinFormsApplicationBlockBuilder().WithName("Default").WithDefaultScreen<DefaultSingleScreen>("Initial design")
-			.AddMenu(Menu => Menu.WithText("Shortcuts").AddScreenItem<DefaultSingleScreen>("Design shortcut"))
-			.AddMenu(Menu => Menu.WithText("Designs").ConfigureItem(Item => Item.AsScreenItem()
-				.WithScreen<DefaultSingleScreen>().WithText("New design").AsMultiInstance())).Build();
+		using var Block = new WinFormsApplicationBlockBuilder()
+			.WithName("Default")
+			.WithDefaultScreen<DefaultSingleScreen>("Initial design")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Shortcuts")
+				.AddScreenItem<DefaultSingleScreen>("Design shortcut")
+			)
+			.ConfigureMenu(Menu => Menu
+				.WithText("Designs")
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultSingleScreen>()
+					.WithText("New design")
+					.AsMultiInstance()
+				)
+			)
+			.Build();
 		using var Form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
 		Form.RegisterBlock(Block);
 		var Initial = Form.ActiveScreen!;
@@ -255,13 +319,25 @@ public class ScreenActivationBuilderTests {
 	public void RegisterBlockAppliesAllDeclarationsBeforeAnyExecuteOnLoadAction() {
 		using var Form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
 		WinFormsApplicationScreen? StartupScreen = null;
-		using var Block = new WinFormsApplicationBlockBuilder().WithName("Startup")
-			.AddMenu(Menu => Menu.WithText("Startup").AddActionItem("Open initial design", () => {
-				StartupScreen = new DefaultSingleScreen();
-				Form.ShowScreen(StartupScreen);
-			}, executeOnLoad: true))
-			.AddMenu(Menu => Menu.WithText("Designs").ConfigureItem(Item => Item.AsScreenItem()
-				.WithScreen<DefaultSingleScreen>().WithText("New design").AsMultiInstance())).Build();
+		using var Block = new WinFormsApplicationBlockBuilder()
+			.WithName("Startup")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Startup")
+				.AddActionItem("Open initial design", () => {
+					StartupScreen = new DefaultSingleScreen();
+					Form.ShowScreen(StartupScreen);
+				}, executeOnLoad: true)
+			)
+			.ConfigureMenu(Menu => Menu
+				.WithText("Designs")
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultSingleScreen>()
+					.WithText("New design")
+					.AsMultiInstance()
+				)
+			)
+			.Build();
 		Form.RegisterBlock(Block);
 		Assert.That(StartupScreen, Is.Not.Null);
 		Assert.That(StartupScreen!.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
@@ -274,7 +350,12 @@ public class ScreenActivationBuilderTests {
 		using var Form = new BlockMainForm { ScreenMode = ScreenMode.MultiView, Text = "Original" };
 		using var Block = CreateConflictingBlock();
 		var Executed = false;
-		Block.AddMenu(new WinFormsApplicationMenuBuilder().WithText("Startup").AddActionItem("Run", () => Executed = true, executeOnLoad: true).Build());
+		Block
+			.AddMenu(new WinFormsApplicationMenuBuilder()
+				.WithText("Startup")
+				.AddActionItem("Run", () => Executed = true, executeOnLoad: true)
+				.Build()
+			);
 		Assert.That(() => Form.RegisterBlock(Block), Throws.ArgumentException);
 		Assert.That(Executed, Is.False);
 		Assert.That(Form.Text, Is.EqualTo("Original"));
@@ -285,20 +366,49 @@ public class ScreenActivationBuilderTests {
 	}
 
 	private static WinFormsApplicationBlock CreateBlock<TScreen>(ScreenActivationMode Mode) where TScreen : WinFormsApplicationScreen {
-		return new WinFormsApplicationBlockBuilder().WithName("Declarations").AddMenu(Menu => Menu.WithText("Screens").ConfigureItem(Item => {
-			var ScreenBuilder = Item.AsScreenItem().WithScreen<TScreen>().WithText("Open");
-			if (Mode == ScreenActivationMode.SingleInstance)
-				ScreenBuilder.AsSingleInstance();
-			else
-				ScreenBuilder.AsMultiInstance();
-		})).Build();
+		return new WinFormsApplicationBlockBuilder()
+			.WithName("Declarations")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
+				.ConfigureItem(Item => {
+					var ScreenBuilder = Item
+						.AsScreenItem()
+						.WithScreen<TScreen>()
+						.WithText("Open");
+					if (Mode == ScreenActivationMode.SingleInstance)
+						ScreenBuilder.AsSingleInstance();
+					else
+						ScreenBuilder.AsMultiInstance();
+				})
+			)
+			.Build();
 	}
 
 	private static WinFormsApplicationBlock CreateConflictingBlock() {
-		return new WinFormsApplicationBlockBuilder().WithName("Conflict").AddMenu(Menu => Menu.WithText("Screens")
-			.ConfigureItem(Item => Item.AsScreenItem().WithScreen<DefaultSingleScreen>().WithText("New design").AsMultiInstance())
-			.ConfigureItem(Item => Item.AsScreenItem().WithScreen<DefaultMultiScreen>().WithText("Settings").AsSingleInstance())
-			.ConfigureItem(Item => Item.AsScreenItem().WithScreen<DefaultMultiScreen>().WithText("Conflict").AsMultiInstance())).Build();
+		return new WinFormsApplicationBlockBuilder()
+			.WithName("Conflict")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultSingleScreen>()
+					.WithText("New design")
+					.AsMultiInstance()
+				)
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultMultiScreen>()
+					.WithText("Settings")
+					.AsSingleInstance()
+				)
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<DefaultMultiScreen>()
+					.WithText("Conflict")
+					.AsMultiInstance()
+				)
+			)
+			.Build();
 	}
 
 	public class UnconfiguredScreen : WinFormsApplicationScreen {

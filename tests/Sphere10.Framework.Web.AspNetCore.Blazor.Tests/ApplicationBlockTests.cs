@@ -80,11 +80,22 @@ public class ApplicationBlockTests {
 
 	[Test]
 	public void BuilderBuildsIndependentSnapshots() {
-		var builder = new BlazorApplicationBlockBuilder().WithId("first").WithName("First").AddMenu(menu => menu.WithText("Screens")
-			.AddScreenItem<TestScreen>("first-screen", "First screen"));
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithId("first")
+			.WithName("First")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<TestScreen>("first-screen", "First screen")
+			);
 		var first = builder.Build();
-		var second = builder.WithId("second").WithName("Second").AddMenu(menu => menu.WithText("Actions")
-			.AddActionItem("refresh", "Refresh", () => { })).Build();
+		var second = builder
+			.WithId("second")
+			.WithName("Second")
+			.ConfigureMenu(menu => menu
+				.WithText("Actions")
+				.AddActionItem("refresh", "Refresh", () => { })
+			)
+			.Build();
 
 		Assert.That(first.Id, Is.EqualTo("first"));
 		Assert.That(first.Title, Is.EqualTo("First"));
@@ -97,20 +108,43 @@ public class ApplicationBlockTests {
 	[TestCase("menu")]
 	[TestCase("item")]
 	public void DuplicateStableIdsAreRejected(string duplicateKind) {
-		var first = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block")
-			.AddMenu(menu => menu.WithId("menu").WithText("First").AddScreenItem<TestScreen>("item", "First"));
+		var first = new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.ConfigureMenu(menu => menu
+				.WithId("menu")
+				.WithText("First")
+				.AddScreenItem<TestScreen>("item", "First")
+			);
 		Action build = duplicateKind switch {
 			"block" => () => new BlazorApplicationBlockCatalog(new[] { first.Build(), first.Build() }),
-			"menu" => () => first.AddMenu(menu => menu.WithId("menu").WithText("Second").AddScreenItem<TestScreen>("other-item", "Second")).Build(),
-			_ => () => first.AddMenu(menu => menu.WithId("other-menu").WithText("Second").AddScreenItem<TestScreen>("item", "Second")).Build()
+			"menu" => () => first
+				.ConfigureMenu(menu => menu
+					.WithId("menu")
+					.WithText("Second")
+					.AddScreenItem<TestScreen>("other-item", "Second")
+				)
+				.Build(),
+			_ => () => first
+				.ConfigureMenu(menu => menu
+					.WithId("other-menu")
+					.WithText("Second")
+					.AddScreenItem<TestScreen>("item", "Second")
+				)
+				.Build()
 		};
 		Assert.That(build, Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
 	public void ReservedDefaultIdIsRejected() {
-		Assert.That(() => new BlazorApplicationBlockBuilder().WithName("Block")
-			.AddMenu(menu => menu.WithText("Menu").AddScreenItem<TestScreen>("__default", "Screen")).Build(), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => new BlazorApplicationBlockBuilder()
+			.WithName("Block")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddScreenItem<TestScreen>("__default", "Screen")
+			)
+			.Build(), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
@@ -122,16 +156,34 @@ public class ApplicationBlockTests {
 
 	[Test]
 	public void CatalogOrdersBlocksByPosition() {
-		var second = new BlazorApplicationBlockBuilder().WithId("second").WithName("Second").WithPosition(20).Build();
-		var first = new BlazorApplicationBlockBuilder().WithId("first").WithName("First").WithPosition(10).Build();
+		var second = new BlazorApplicationBlockBuilder()
+			.WithId("second")
+			.WithName("Second")
+			.WithPosition(20)
+			.Build();
+		var first = new BlazorApplicationBlockBuilder()
+			.WithId("first")
+			.WithName("First")
+			.WithPosition(10)
+			.Build();
 		Assert.That(new BlazorApplicationBlockCatalog(new[] { second, first }).Blocks.Select(block => block.Id), Is.EqualTo(new[] { "first", "second" }));
 	}
 
 	[Test]
 	public void ConflictingActivationPoliciesAcrossBlocksAreRejected() {
-		var single = new BlazorApplicationBlockBuilder().WithId("single").WithName("Single").WithDefaultScreen<TestScreen>(activationMode: ScreenActivationMode.SingleInstance).Build();
-		var multiple = new BlazorApplicationBlockBuilder().WithId("multiple").WithName("Multiple")
-			.AddMenu(menu => menu.WithText("Menu").AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)).Build();
+		var single = new BlazorApplicationBlockBuilder()
+			.WithId("single")
+			.WithName("Single")
+			.WithDefaultScreen<TestScreen>(activationMode: ScreenActivationMode.SingleInstance)
+			.Build();
+		var multiple = new BlazorApplicationBlockBuilder()
+			.WithId("multiple")
+			.WithName("Multiple")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)
+			)
+			.Build();
 		Assert.That(() => new BlazorApplicationBlockCatalog(new[] { single, multiple }), Throws.InstanceOf<ArgumentException>());
 	}
 
@@ -146,8 +198,15 @@ public class ApplicationBlockTests {
 	[Test]
 	public async Task DefaultScreenTitleAndStableIdAreRetained() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block").WithDefaultScreen<TestScreen>("Dashboard")
-			.AddMenu(menu => menu.WithText("Menu").AddScreenItem<TestScreen>("screen", "Open dashboard", ScreenActivationMode.SingleInstance)).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.WithDefaultScreen<TestScreen>("Dashboard")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddScreenItem<TestScreen>("screen", "Open dashboard", ScreenActivationMode.SingleInstance)
+			)
+			.Build();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var session = await host.ActivateBlockAsync("block");
 
@@ -163,30 +222,38 @@ public class ApplicationBlockTests {
 	[TestCase("item-builder")]
 	[TestCase("default-only")]
 	public async Task OmittedLifetimeCreatesIndependentSessionsThroughEveryRegistrationPath(string registration) {
-		var builder = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block");
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block");
 		if (registration == "default-only")
 			builder.WithDefaultScreen<TestScreen>();
 		else
-			builder.AddMenu(menu => {
-				menu.WithText("Screens");
-				switch (registration) {
-					case "model":
-						menu.AddItem(new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) });
-						break;
-					case "factory":
-						menu.AddItem(BlazorScreenMenuItem.For<TestScreen>("screen", "Screen"));
-						break;
-					case "generic-builder":
-						menu.AddScreenItem<TestScreen>("screen", "Screen");
-						break;
-					case "type-builder":
-						menu.AddScreenItem("screen", "Screen", typeof(TestScreen));
-						break;
-					case "item-builder":
-						menu.ConfigureItem(item => item.WithId("screen").WithText("Screen").WithScreen<TestScreen>());
-						break;
-				}
-			});
+			builder
+				.ConfigureMenu(menu => {
+					menu.WithText("Screens");
+					switch (registration) {
+						case "model":
+							menu.AddItem(new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) });
+							break;
+						case "factory":
+							menu.AddItem(BlazorScreenMenuItem.For<TestScreen>("screen", "Screen"));
+							break;
+						case "generic-builder":
+							menu.AddScreenItem<TestScreen>("screen", "Screen");
+							break;
+						case "type-builder":
+							menu.AddScreenItem("screen", "Screen", typeof(TestScreen));
+							break;
+						case "item-builder":
+							menu
+								.ConfigureItem(item => item
+									.WithId("screen")
+									.WithText("Screen")
+									.WithScreen<TestScreen>()
+								);
+							break;
+					}
+				});
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { builder.Build() }), provider);
 		var first = await host.ActivateBlockAsync("block");
@@ -200,7 +267,11 @@ public class ApplicationBlockTests {
 	[Test]
 	public async Task DefaultOnlyScreenRoundTripsThroughItsSyntheticId() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block").WithDefaultScreen<TestScreen>("Dashboard").Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.WithDefaultScreen<TestScreen>("Dashboard")
+			.Build();
 		var catalog = new BlazorApplicationBlockCatalog(new[] { block });
 		using var firstHost = new BlazorApplicationScreenHost(catalog, provider);
 		using var secondHost = new BlazorApplicationScreenHost(catalog, provider);

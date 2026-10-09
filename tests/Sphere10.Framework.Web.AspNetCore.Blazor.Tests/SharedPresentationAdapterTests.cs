@@ -23,9 +23,16 @@ public class SharedPresentationAdapterTests {
 	[Test]
 	public void RegistrationExposesTheSameCatalogThroughSharedContracts() {
 		var services = new ServiceCollection();
-		services.AddApplicationBlock(block => block.WithId("workspace").WithName("Workspace")
-			.WithDefaultScreen<ExtensionScreen>()
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<ExtensionScreen>("overview", "Overview")));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("workspace")
+				.WithName("Workspace")
+				.WithDefaultScreen<ExtensionScreen>()
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.AddScreenItem<ExtensionScreen>("overview", "Overview")
+				)
+			);
 		using var provider = services.BuildServiceProvider();
 		var platformCatalog = provider.GetRequiredService<IBlazorApplicationBlockCatalog>();
 		var sharedCatalog = provider.GetRequiredService<IApplicationBlockCatalog<IApplicationBlock>>();
@@ -47,7 +54,10 @@ public class SharedPresentationAdapterTests {
 
 	[Test]
 	public void ExplicitPlatformCatalogMembersDispatchThroughSharedRegistration() {
-		var block = new BlazorApplicationBlockBuilder().WithId("workspace").WithName("Workspace").Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("workspace")
+			.WithName("Workspace")
+			.Build();
 		var catalog = new ExplicitPlatformCatalog(block);
 		var services = new ServiceCollection();
 		services.AddSingleton<IBlazorApplicationBlockCatalog>(catalog);
@@ -67,7 +77,11 @@ public class SharedPresentationAdapterTests {
 	[Test]
 	public async Task NewBlazorScreenExtensionParticipatesInSharedLifecycle() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder().WithId("workspace").WithName("Workspace").WithDefaultScreen<ExtensionScreen>().Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("workspace")
+			.WithName("Workspace")
+			.WithDefaultScreen<ExtensionScreen>()
+			.Build();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var session = await host.ActivateBlockAsync("workspace");
 		var screen = new ExtensionScreen { AllowDeactivation = false };

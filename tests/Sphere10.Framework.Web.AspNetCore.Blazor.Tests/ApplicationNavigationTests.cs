@@ -171,10 +171,22 @@ public class ApplicationNavigationTests {
 		services.AddSphere10Blazor();
 		services.AddSingleton(navigation);
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
-		services.AddApplicationBlock(block => block.WithId("projects").WithName("Projects")
-			.AddMenu(menu => menu.WithText("Screens")
-				.ConfigureItem(item => item.WithId("anchor").WithText("Projects").WithScreen<AnchorScreen>().AsSingleInstance().AsDefault())
-				.AddScreenItem<ProjectScreen>("project", "Project", ScreenActivationMode.MultiInstance)));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("projects")
+				.WithName("Projects")
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.ConfigureItem(item => item
+						.WithId("anchor")
+						.WithText("Projects")
+						.WithScreen<AnchorScreen>()
+						.AsSingleInstance()
+						.AsDefault()
+					)
+					.AddScreenItem<ProjectScreen>("project", "Project", ScreenActivationMode.MultiInstance)
+				)
+			);
 		return services;
 	}
 
@@ -194,8 +206,14 @@ public class ApplicationNavigationTests {
 		new(new Dictionary<string, object> { ["ProjectId"] = projectId }, projectId.ToString("N"));
 
 	private static BlazorApplicationScreenHost CreateHost(IServiceProvider provider) {
-		var block = new BlazorApplicationBlockBuilder().WithId("projects").WithName("Projects")
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("project", "Project", ScreenActivationMode.MultiInstance)).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("projects")
+			.WithName("Projects")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("project", "Project", ScreenActivationMode.MultiInstance)
+			)
+			.Build();
 		return new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 	}
 

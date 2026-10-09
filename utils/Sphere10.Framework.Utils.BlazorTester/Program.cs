@@ -36,13 +36,14 @@ public static class Program {
 	public static void ConfigureServices(IServiceCollection services, bool permanentScreen = false, ScreenActivationMode emptyScreenLifetime = ScreenActivationMode.SingleInstance) {
 		Guard.Argument(emptyScreenLifetime is ScreenActivationMode.SingleInstance or ScreenActivationMode.MultiInstance, nameof(emptyScreenLifetime), "Choose a supported empty-screen lifetime.");
 		services.AddScoped<IThemeService>(_ => new ThemeService(ThemeMode.ClassicBlue));
-		services.BuildBlazorApplication()
+		services
+			.BuildBlazorApplication()
 			.WithTitle("Sphere10 Blazor demos")
 			.WithFavicon("img/logo.svg", "image/svg+xml")
 			.ConfigureApplication(WorkspaceCommands.Configure)
-			.AddPlugin(Sphere10Plugin.Configure)
-			.AddPlugin(WidgetGalleryPlugin.Configure)
-			.AddPlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
+			.ConfigurePlugin(Sphere10Plugin.Configure)
+			.ConfigurePlugin(WidgetGalleryPlugin.Configure)
+			.ConfigurePlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
 			.Build();
 	}
 }

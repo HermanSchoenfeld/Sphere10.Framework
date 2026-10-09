@@ -9,30 +9,15 @@
 using System;
 using System.Drawing;
 using System.Collections.Generic;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<IWinFormsApplicationMenuItem, WinFormsApplicationMenu> {
+public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<WinFormsApplicationMenuBuilder, IWinFormsApplicationMenuItem, WinFormsApplicationMenuItemBuilder, WinFormsApplicationMenu> {
 	private WinFormsApplicationMenu _menu;
 	private Image _image32x32;
 	private bool _showInMenuStrip;
-
-	public WinFormsApplicationMenuBuilder WithText(string text) {
-		SetText(text);
-		if (_menu != null) {
-			_menu.Text = text;
-			_menu.Id = Id;
-		}
-		return this;
-	}
-
-	public WinFormsApplicationMenuBuilder WithId(string id) {
-		SetId(id);
-		if (_menu != null)
-			_menu.Id = id;
-		return this;
-	}
 
 	public WinFormsApplicationMenuBuilder WithImage32x32(Image image) {
 		_image32x32 = image;
@@ -48,43 +33,47 @@ public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<IWinFor
 		return this;
 	}
 
-	public WinFormsApplicationMenuBuilder AddItem(IWinFormsApplicationMenuItem item) {
-		AddItemDefinition(item);
-		_menu?.AddItem(item);
-		return this;
-	}
-
 	public WinFormsApplicationMenuBuilder AddScreenItem(string text, Type screenType, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false,
-		string title = null) {
-		Guard.ArgumentNotNull(text, nameof(text));
+		string title = null
+	) {
+		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 		Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
-		var item = new WinFormsScreenMenuItem(text, screenType, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) { ScreenTitle = title };
-		return AddItem(item);
+		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
+		return AddItem(new WinFormsScreenMenuItem(text, screenType, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
+			Id = text,
+			ScreenTitle = title
+		});
 	}
 
 	public WinFormsApplicationMenuBuilder AddScreenItem<TScreen>(string text, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false,
-		string title = null) where TScreen : WinFormsApplicationScreen {
-		return AddScreenItem(text, typeof(TScreen), image16x16, showOnExplorerBar, showOnToolBar, isStartScreen, title);
-	}
+		string title = null
+	) where TScreen : WinFormsApplicationScreen => AddScreenItem(text, typeof(TScreen), image16x16, showOnExplorerBar, showOnToolBar, isStartScreen, title);
 
 	public WinFormsApplicationMenuBuilder AddActionItem(string text, Action action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false) {
 		Guard.ArgumentNotNull(text, nameof(text));
 		Guard.ArgumentNotNull(action, nameof(action));
-		var item = new WinFormsActionMenuItem(text, action) {
-			Image16x16 = image16x16,
+		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
+		return AddItem(new WinFormsActionMenuItem(text, image16x16, action) {
+			Id = text,
 			ShowOnExplorerBar = showOnExplorerBar,
 			ShowOnToolStrip = showOnToolBar,
 			ExecuteOnLoad = executeOnLoad
-		};
-		return AddItem(item);
+		});
 	}
 
-	public WinFormsApplicationMenuBuilder ConfigureItem(Action<WinFormsApplicationMenuItemBuilder> itemBuild) {
-		Guard.ArgumentNotNull(itemBuild, nameof(itemBuild));
-		var itemBuilder = new WinFormsApplicationMenuItemBuilder();
-		itemBuild(itemBuilder);
-		var item = itemBuilder.Build();
-		return AddItem(item);
+	/// <summary>Passes the executing UI services; PrimaryUIController supplies the native modal owner.</summary>
+	public WinFormsApplicationMenuBuilder AddActionItem(string text, Action<IUserInterfaceServices> action, Image image16x16 = null,
+		bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false
+	) {
+		Guard.ArgumentNotNull(text, nameof(text));
+		Guard.ArgumentNotNull(action, nameof(action));
+		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
+		return AddItem(new WinFormsActionMenuItem(text, image16x16, action) {
+			Id = text,
+			ShowOnExplorerBar = showOnExplorerBar,
+			ShowOnToolStrip = showOnToolBar,
+			ExecuteOnLoad = executeOnLoad
+		});
 	}
 
 	public override WinFormsApplicationMenu Build() {
@@ -93,6 +82,22 @@ public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<IWinFor
 		Guard.Ensure(!string.IsNullOrEmpty(_menu.Text), "Menu text is required");
 		return _menu;
 	}
+
+	protected override void OnConfigurationChanged(string propertyName) {
+		if (_menu == null)
+			return;
+		switch (propertyName) {
+			case nameof(Text):
+				_menu.Text = Text;
+				_menu.Id = Id;
+				break;
+			case nameof(Id):
+				_menu.Id = Id;
+				break;
+		}
+	}
+
+	protected override void OnItemAdded(IWinFormsApplicationMenuItem item) => _menu?.AddItem(item);
 
 	protected override WinFormsApplicationMenu CreateMenu(IReadOnlyList<IWinFormsApplicationMenuItem> items) {
 		if (_menu != null)

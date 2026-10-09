@@ -41,7 +41,7 @@ public sealed class BlazorApplicationScreenSession {
 
 	public ScreenKind ScreenKind => MenuItem.ScreenKind;
 
-	public string Title => Screen?.Title ?? MenuItem.Title;
+	public string Title => Screen?.Title ?? MenuItem.ScreenTitle ?? MenuItem.Title;
 
 	public IDictionary<string, object> Parameters { get; }
 

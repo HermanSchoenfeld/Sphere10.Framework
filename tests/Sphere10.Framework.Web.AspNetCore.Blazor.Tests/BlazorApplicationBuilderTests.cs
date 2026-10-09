@@ -31,14 +31,28 @@ public class BlazorApplicationBuilderTests {
 	public async Task BuildUsesExistingPluginAndScopedApplicationRegistrations() {
 		var loaded = 0;
 		var configured = new List<string>();
-		var plugin = new BlazorPluginBuilder().WithName("Workspace")
-			.AddBlock(block => block.WithId("workspace").WithName("Workspace").WithDefaultScreen<ProbeScreen>()).Build();
+		var plugin = new BlazorPluginBuilder()
+			.WithName("Workspace")
+			.ConfigureBlock(block => block
+				.WithId("workspace")
+				.WithName("Workspace")
+				.WithDefaultScreen<ProbeScreen>()
+			)
+			.Build();
 		plugin.Loaded += () => loaded++;
 		var services = new ServiceCollection();
-		var builder = services.BuildBlazorApplication()
-			.WithTitle("Configured application").WithFavicon("img/application.svg", "image/svg+xml")
+		var builder = services
+			.BuildBlazorApplication()
+			.WithTitle("Configured application")
+			.WithFavicon("img/application.svg", "image/svg+xml")
 			.AddPlugin(plugin)
-			.AddPlugin(definition => definition.WithName("Tools").AddBlock(block => block.WithId("tools").WithName("Tools")))
+			.ConfigurePlugin(definition => definition
+				.WithName("Tools")
+				.ConfigureBlock(block => block
+					.WithId("tools")
+					.WithName("Tools")
+				)
+			)
 			.ConfigureApplication(_ => configured.Add("first"))
 			.ConfigureApplication(_ => configured.Add("second"));
 		Assert.That(services, Is.Empty, "Collecting builder settings must not register services or load plugins.");
@@ -80,10 +94,16 @@ public class BlazorApplicationBuilderTests {
 	[Test]
 	public void BuildFreezesBrandingAndCannotRepeatPluginSideEffects() {
 		var loaded = 0;
-		var plugin = new BlazorPluginBuilder().WithName("Plugin").Build();
+		var plugin = new BlazorPluginBuilder()
+			.WithName("Plugin")
+			.Build();
 		plugin.Loaded += () => loaded++;
 		var services = new ServiceCollection();
-		var builder = services.BuildBlazorApplication().WithTitle("Original").WithFavicon("favicon.ico").AddPlugin(plugin);
+		var builder = services
+			.BuildBlazorApplication()
+			.WithTitle("Original")
+			.WithFavicon("favicon.ico")
+			.AddPlugin(plugin);
 		builder.Build();
 		services.AddSphere10Blazor();
 		using var provider = services.BuildServiceProvider();
@@ -132,7 +152,10 @@ public class BlazorApplicationBuilderTests {
 	public async Task WorkspaceRendersConfiguredBrandingInHeadAndShell() {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
-		services.BuildBlazorApplication().WithTitle("Custom & branded application").Build();
+		services
+			.BuildBlazorApplication()
+			.WithTitle("Custom & branded application")
+			.Build();
 		services.AddSingleton<NavigationManager>(new TestNavigationManager());
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();

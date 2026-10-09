@@ -20,7 +20,8 @@ namespace Sphere10.Framework.Utils.BlazorTester.Loader;
 public static class Sphere10Plugin {
 	public static void Configure(BlazorPluginBuilder plugin) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
-		plugin.WithName("Sphere10.Framework")
+		plugin
+			.WithName("Sphere10.Framework")
 			.ConfigureServices(services => {
 				services.AddScoped<WorkspaceStatus>();
 				services.AddScoped<IEndpointManager, DefaultEndpointManager>();
@@ -29,25 +30,58 @@ public static class Sphere10Plugin {
 				services.AddTransient<ServersViewModel>();
 				services.AddTransient<SidebarBrandViewModel>();
 			})
-			.AddBlock(block => block
+			.ConfigureBlock(block => block
 				.WithId("workspace")
 				.WithName("Workspace")
 				.WithIconUrl("img/heading-solid.svg")
 				.WithTooltip("Workspace")
 				.WithDefaultScreen<OverviewScreen>()
 				.AddToolBarSeparator()
-				.AddToolBarItem(item => item.WithId("block-action").WithText("Workspace action").WithIcon("fas fa-desktop").WithAction((provider, token) => {
-					token.ThrowIfCancellationRequested();
-					provider.GetRequiredService<WorkspaceStatus>().Increment();
-					return Task.CompletedTask;
-				}))
-				.AddMenu(menu => menu.WithId("work").WithText("Screen hosting").WithIcon("fas fa-desktop")
-					.ConfigureItem(item => item.WithId("overview").WithText("Overview").WithIcon("fas fa-home").WithScreen<OverviewScreen>().AsSingleInstance())
-					.ConfigureItem(item => item.WithId("editor").WithText("Single-instance screen").WithIcon("fas fa-edit").WithScreen<EditorScreen>().AsSingleInstance())
-					.ConfigureItem(item => item.WithId("scratchpad").WithText("New screen instance").WithIcon("fas fa-sticky-note").WithScreen<ScratchpadScreen>().AsMultiInstance())
-					.ConfigureItem(item => item.WithId("action").WithText("Run scoped async action").WithIcon("fas fa-play").WithAction(async (provider, cancellationToken) => {
-						await Task.Delay(250, cancellationToken);
+				.ConfigureToolBarItem(item => item
+					.WithId("block-action")
+					.WithText("Workspace action")
+					.WithIcon("fas fa-desktop")
+					.WithAction((provider, token) => {
+						token.ThrowIfCancellationRequested();
 						provider.GetRequiredService<WorkspaceStatus>().Increment();
-					}))));
+						return Task.CompletedTask;
+					})
+				)
+				.ConfigureMenu(menu => menu
+					.WithId("work")
+					.WithText("Screen hosting")
+					.WithIcon("fas fa-desktop")
+					.ConfigureItem(item => item
+						.WithId("overview")
+						.WithText("Overview")
+						.WithIcon("fas fa-home")
+						.WithScreen<OverviewScreen>()
+						.AsSingleInstance()
+					)
+					.ConfigureItem(item => item
+						.WithId("editor")
+						.WithText("Single-instance screen")
+						.WithIcon("fas fa-edit")
+						.WithScreen<EditorScreen>()
+						.AsSingleInstance()
+					)
+					.ConfigureItem(item => item
+						.WithId("scratchpad")
+						.WithText("New screen instance")
+						.WithIcon("fas fa-sticky-note")
+						.WithScreen<ScratchpadScreen>()
+						.AsMultiInstance()
+					)
+					.ConfigureItem(item => item
+						.WithId("action")
+						.WithText("Run scoped async action")
+						.WithIcon("fas fa-play")
+						.WithAction(async (provider, cancellationToken) => {
+							await Task.Delay(250, cancellationToken);
+							provider.GetRequiredService<WorkspaceStatus>().Increment();
+						})
+					)
+				)
+			);
 	}
 }

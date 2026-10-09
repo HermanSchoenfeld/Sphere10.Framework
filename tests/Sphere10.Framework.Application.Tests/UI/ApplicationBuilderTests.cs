@@ -21,11 +21,20 @@ namespace Sphere10.Framework.Application.Tests;
 public class ApplicationBuilderTests {
 	[Test]
 	public void BlockBuildsRetainIndependentMenuArrays() {
-		var firstMenu = new MenuBuilder().WithText("First menu").Build();
-		var secondMenu = new MenuBuilder().WithText("Second menu").Build();
-		var builder = new BlockBuilder().WithName("First").AddMenu(firstMenu);
+		var firstMenu = new MenuBuilder()
+			.WithText("First menu")
+			.Build();
+		var secondMenu = new MenuBuilder()
+			.WithText("Second menu")
+			.Build();
+		var builder = new BlockBuilder()
+			.WithName("First")
+			.AddMenu(firstMenu);
 		var first = builder.Build();
-		var second = builder.WithName("Second").AddMenu(secondMenu).Build();
+		var second = builder
+			.WithName("Second")
+			.AddMenu(secondMenu)
+			.Build();
 
 		Assert.That(first.Name, Is.EqualTo("First"));
 		Assert.That(first.Id, Is.EqualTo("First"));
@@ -38,11 +47,22 @@ public class ApplicationBuilderTests {
 
 	[Test]
 	public void MenuBuildsRetainIndependentItemArrays() {
-		var firstItem = new ItemBuilder().WithText("First").WithAction(() => { }).Build();
-		var secondItem = new ItemBuilder().WithText("Second").WithAction(() => { }).Build();
-		var builder = new MenuBuilder().WithText("First menu").AddItem(firstItem);
+		var firstItem = new ItemBuilder()
+			.WithText("First")
+			.WithAction(() => { })
+			.Build();
+		var secondItem = new ItemBuilder()
+			.WithText("Second")
+			.WithAction(() => { })
+			.Build();
+		var builder = new MenuBuilder()
+			.WithText("First menu")
+			.AddItem(firstItem);
 		var first = builder.Build();
-		var second = builder.WithText("Second menu").AddItem(secondItem).Build();
+		var second = builder
+			.WithText("Second menu")
+			.AddItem(secondItem)
+			.Build();
 
 		Assert.That(first.Text, Is.EqualTo("First menu"));
 		Assert.That(first.Id, Is.EqualTo("First menu"));
@@ -56,7 +76,10 @@ public class ApplicationBuilderTests {
 	[Test]
 	public void ItemParametersAreCopiedAtConfigurationAndIsolatedAcrossBuilds() {
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
-		var builder = new ItemBuilder().WithText("Screen").WithScreen(typeof(PlainScreen)).WithParameters(parameters);
+		var builder = new ItemBuilder()
+			.WithText("Screen")
+			.WithScreen(typeof(PlainScreen))
+			.WithParameters(parameters);
 		parameters["Message"] = "Changed before build";
 		var first = builder.Build();
 		var second = builder.WithParameters(new Dictionary<string, object> { ["Message"] = "Second" }).Build();
@@ -70,7 +93,9 @@ public class ApplicationBuilderTests {
 	[Test]
 	public void ActionConfigurationReplacesTheOtherActionKind() {
 		var syncCalls = 0;
-		var builder = new ItemBuilder().WithText("Action").WithAction(() => syncCalls++);
+		var builder = new ItemBuilder()
+			.WithText("Action")
+			.WithAction(() => syncCalls++);
 		var first = builder.Build();
 		var second = builder.WithAction((_, _) => Task.CompletedTask).Build();
 		var third = builder.WithAction(() => syncCalls += 10).Build();
@@ -149,7 +174,7 @@ public class ApplicationBuilderTests {
 		}
 
 		public MenuBuilder AddItem(ItemDefinition item) {
-			AddItemDefinition(item);
+			AddItemInternal(item);
 			return this;
 		}
 

@@ -23,12 +23,19 @@ public class ApplicationAggregateTests {
 	public async Task SharedAndPlatformRegistrationsProjectOneLiveApplicationPerCircuit() {
 		var loaded = 0;
 		var unloaded = 0;
-		var plugin = new BlazorPluginBuilder().WithName("Workspace")
-			.AddBlock(block => block.WithId("work").WithName("Work").WithDefaultScreen<ProbeScreen>()).Build();
+		var plugin = new BlazorPluginBuilder()
+			.WithName("Workspace")
+			.ConfigureBlock(block => block
+				.WithId("work")
+				.WithName("Work")
+				.WithDefaultScreen<ProbeScreen>()
+			)
+			.Build();
 		plugin.Loaded += () => loaded++;
 		plugin.Unloaded += () => unloaded++;
 		var configured = 0;
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin)
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin)
 			.AddSphere10BlazorApplication(application => {
 				configured++;
 				application.SetToolBarItems(new[] { new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } } });
@@ -73,10 +80,21 @@ public class ApplicationAggregateTests {
 
 	[Test]
 	public async Task StandaloneBlocksHaveALiveImplicitPluginAndBrowsingUpdatesTheSharedActiveOwner() {
-		var explicitPlugin = new BlazorPluginBuilder().WithName("Application")
-			.AddBlock(block => block.WithId("registered").WithName("Registered").WithDefaultScreen<ProbeScreen>()).Build();
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(explicitPlugin)
-			.AddApplicationBlock(block => block.WithId("standalone").WithName("Standalone").WithDefaultScreen<ProbeScreen>());
+		var explicitPlugin = new BlazorPluginBuilder()
+			.WithName("Application")
+			.ConfigureBlock(block => block
+				.WithId("registered")
+				.WithName("Registered")
+				.WithDefaultScreen<ProbeScreen>()
+			)
+			.Build();
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(explicitPlugin)
+			.AddApplicationBlock(block => block
+				.WithId("standalone")
+				.WithName("Standalone")
+				.WithDefaultScreen<ProbeScreen>()
+			);
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
 		await using var otherScope = provider.CreateAsyncScope();
@@ -107,7 +125,11 @@ public class ApplicationAggregateTests {
 
 	[Test]
 	public async Task AnApplicationWithOnlyStandaloneBlocksStillHasACompletePluginHierarchy() {
-		var services = new ServiceCollection().AddApplicationBlock(block => block.WithId("direct").WithName("Direct"));
+		var services = new ServiceCollection()
+			.AddApplicationBlock(block => block
+				.WithId("direct")
+				.WithName("Direct")
+			);
 		await using var provider = services.BuildServiceProvider();
 		await using var scope = provider.CreateAsyncScope();
 		var application = scope.ServiceProvider.GetRequiredService<IApplication>();

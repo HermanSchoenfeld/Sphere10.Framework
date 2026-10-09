@@ -81,6 +81,79 @@ public class ApplicationActionTests {
 		Assert.That(calls, Is.Zero);
 	}
 
+	[Test]
+	public void SynchronousUIActionReceivesItsOwningInterface() {
+		var userInterface = new ConsoleApplicationUserInterfaceServices();
+		IUserInterfaceServices received = null;
+		var action = new ApplicationAction { UIAction = ui => received = ui };
+
+		action.Execute(userInterface);
+
+		Assert.That(received, Is.SameAs(userInterface));
+	}
+
+	[TestCase(true)]
+	[TestCase(false)]
+	public void SynchronousUIActionRejectsMissingOwningInterface(bool parameterless) {
+		var calls = 0;
+		var action = new ApplicationAction { UIAction = _ => calls++ };
+
+		Assert.That(() => {
+			if (parameterless)
+				action.Execute();
+			else
+				action.Execute(null);
+		}, Throws.ArgumentNullException.With.Property("ParamName").EqualTo("userInterface"));
+		Assert.That(calls, Is.Zero);
+	}
+
+	[Test]
+	public async Task UIActionResolvesOwningInterfaceFromTheExecutingScope() {
+		using var provider = new ServiceCollection().AddScoped<IUserInterfaceServices, ConsoleApplicationUserInterfaceServices>().BuildServiceProvider();
+		using var first = provider.CreateScope();
+		using var second = provider.CreateScope();
+		IUserInterfaceServices received = null;
+		var action = new ApplicationAction { UIAction = ui => received = ui };
+
+		await action.ExecuteAsync(first.ServiceProvider);
+		Assert.That(received, Is.SameAs(first.ServiceProvider.GetRequiredService<IUserInterfaceServices>()));
+		await action.ExecuteAsync(second.ServiceProvider);
+		Assert.That(received, Is.SameAs(second.ServiceProvider.GetRequiredService<IUserInterfaceServices>()));
+		Assert.That(received, Is.Not.SameAs(first.ServiceProvider.GetRequiredService<IUserInterfaceServices>()));
+	}
+
+	[Test]
+	public void AsyncUIActionRejectsMissingOwningInterface() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var calls = 0;
+		var action = new ApplicationAction { UIAction = _ => calls++ };
+
+		Assert.That(async () => await action.ExecuteAsync(provider), Throws.ArgumentNullException.With.Property("ParamName").EqualTo("userInterface"));
+		Assert.That(calls, Is.Zero);
+	}
+
+	[Test]
+	public void CancellationPreventsUIActionExecution() {
+		using var provider = new ServiceCollection().AddSingleton<IUserInterfaceServices, ConsoleApplicationUserInterfaceServices>().BuildServiceProvider();
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		var calls = 0;
+		var action = new ApplicationAction { UIAction = _ => calls++ };
+
+		Assert.That(async () => await action.ExecuteAsync(provider, cancellation.Token), Throws.TypeOf<OperationCanceledException>());
+		Assert.That(calls, Is.Zero);
+	}
+
+	[Test]
+	public void ParameterlessActionDoesNotRequireAnOwningInterface() {
+		var calls = 0;
+		var action = new ApplicationAction { Action = () => calls++ };
+
+		action.Execute();
+
+		Assert.That(calls, Is.EqualTo(1));
+	}
+
 	private class ScopedCounter {
 		public int Calls { get; set; }
 	}

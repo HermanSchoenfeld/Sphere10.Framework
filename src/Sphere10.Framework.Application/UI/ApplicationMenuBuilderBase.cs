@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class ApplicationMenuBuilderBase<TItem, TMenu> where TItem : IApplicationMenuItem where TMenu : IApplicationMenu {
+public abstract class ApplicationMenuBuilderBase<TItem, TMenu> : IApplicationUIBuilder<TMenu> where TItem : IApplicationMenuItem where TMenu : IApplicationMenu {
 	private readonly List<TItem> _items = new();
 	private string _id;
 
@@ -29,19 +29,60 @@ public abstract class ApplicationMenuBuilderBase<TItem, TMenu> where TItem : IAp
 	protected void SetId(string id) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		_id = id;
+		OnConfigurationChanged(nameof(Id));
 	}
 
 	protected void SetText(string text) {
-		Guard.ArgumentNotNull(text, nameof(text));
+		ValidateText(text);
 		Text = text;
+		OnConfigurationChanged(nameof(Text));
 	}
 
-	protected void SetIcon(string icon) => Icon = icon;
+	protected void SetIcon(string icon) {
+		Icon = icon;
+		OnConfigurationChanged(nameof(Icon));
+	}
 
-	protected void AddItemDefinition(TItem item) {
+	protected void AddItemInternal(TItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		_items.Add(item);
+		OnItemAdded(item);
 	}
 
+	protected virtual void OnConfigurationChanged(string propertyName) {
+	}
+
+	protected virtual void OnItemAdded(TItem item) {
+	}
+
+	protected virtual void ValidateText(string text) => Guard.ArgumentNotNull(text, nameof(text));
+
 	protected abstract TMenu CreateMenu(IReadOnlyList<TItem> items);
+}
+
+/// <summary>Shared menu metadata and item-builder composition.</summary>
+public abstract class ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu> : ApplicationMenuBuilderBase<TItem, TMenu>
+	where TSelf : class where TItem : IApplicationMenuItem where TMenu : IApplicationMenu
+	where TItemBuilder : IApplicationUIBuilder<TItem>, new() {
+	public TSelf WithId(string id) {
+		SetId(id);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf WithText(string text) {
+		SetText(text);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf AddItem(TItem item) {
+		AddItemInternal(item);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf ConfigureItem(Action<TItemBuilder> configure) {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var builder = new TItemBuilder();
+		configure(builder);
+		return AddItem(builder.Build());
+	}
 }

@@ -28,7 +28,9 @@ public class ApplicationScreenHostTests {
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
-			Sphere10Framework.Instance.Build().Start();
+			Sphere10Framework.Instance
+				.Build()
+				.Start();
 	}
 
 	[OneTimeTearDown]
@@ -348,8 +350,14 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public void UnregisterBlockClosesEveryInstanceAndHonorsCancellation() {
 		using var Form = new ProbeMainForm { ScreenMode = ScreenMode.MultiView };
-		var Block = new WinFormsApplicationBlockBuilder().WithName("Test").WithDefaultScreen<MultiProbeScreen>()
-			.AddMenu(Menu => Menu.WithText("Screens").AddScreenItem<MultiProbeScreen>("Open")).Build();
+		var Block = new WinFormsApplicationBlockBuilder()
+			.WithName("Test")
+			.WithDefaultScreen<MultiProbeScreen>()
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
+				.AddScreenItem<MultiProbeScreen>("Open")
+			)
+			.Build();
 		Form.RegisterBlock(Block);
 		var First = (ProbeScreen)Form.ActiveScreen!;
 		var Second = (ProbeScreen)Form.ScreenHost.ActivateScreen(Block, typeof(MultiProbeScreen))!;
@@ -367,11 +375,19 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void BuildersApplyScreenTypesTitlesAndMainFormConfiguration() {
-		using var Block = new WinFormsApplicationBlockBuilder().WithName("Test")
+		using var Block = new WinFormsApplicationBlockBuilder()
+			.WithName("Test")
 			.WithDefaultScreen<MultiProbeScreen>("Default title")
-			.AddMenu(Menu => Menu.WithText("Screens")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
 				.AddScreenItem<ProbeScreen>("Open", title: "Direct title")
-				.ConfigureItem(Item => Item.AsScreenItem().WithScreen<MultiProbeScreen>().WithText("Configured").WithTitle("Configured title")))
+				.ConfigureItem(Item => Item
+					.AsScreenItem()
+					.WithScreen<MultiProbeScreen>()
+					.WithText("Configured")
+					.WithTitle("Configured title")
+				)
+			)
 			.Build();
 		Assert.That(Block.DefaultScreen, Is.EqualTo(typeof(MultiProbeScreen)));
 		Assert.That(Block.DefaultScreenTitle, Is.EqualTo("Default title"));
@@ -379,7 +395,10 @@ public class ApplicationScreenHostTests {
 		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[1]).Screen, Is.EqualTo(typeof(MultiProbeScreen)));
 		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[1]).ScreenTitle, Is.EqualTo("Configured title"));
 		var Services = new ServiceCollection();
-		new Sphere10Framework().Build().UseMainForm<ProbeMainForm>(Form => Form.ScreenMode = ScreenMode.MultiView).RegisterModules(Services);
+		new Sphere10Framework()
+			.Build()
+			.UseMainForm<ProbeMainForm>(Form => Form.ScreenMode = ScreenMode.MultiView)
+			.RegisterModules(Services);
 		using var Provider = Services.BuildServiceProvider();
 		var Form = (ProbeMainForm)Provider.GetRequiredService<IMainForm>();
 		Assert.That(Form.ScreenMode, Is.EqualTo(ScreenMode.MultiView));
@@ -389,10 +408,15 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public void BuilderMenuExecutionHonorsScreenTypeModesAndSwitchesChrome() {
 		using var Form = new ProbeMainForm { ScreenMode = ScreenMode.MultiView };
-		using var Block = new WinFormsApplicationBlockBuilder().WithName("Test").AddMenu(Menu => Menu.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("Settings")
-			.AddScreenItem<MultiProbeScreen>("New design")
-			.AddScreenItem<ProbeScreen>("Settings shortcut")).Build();
+		using var Block = new WinFormsApplicationBlockBuilder()
+			.WithName("Test")
+			.ConfigureMenu(Menu => Menu
+				.WithText("Screens")
+				.AddScreenItem<ProbeScreen>("Settings")
+				.AddScreenItem<MultiProbeScreen>("New design")
+				.AddScreenItem<ProbeScreen>("Settings shortcut")
+			)
+			.Build();
 		Form.RegisterBlock(Block);
 		Form.ExecuteMenuItem(Block.Menus[0].Items[0]);
 		var First = (ProbeScreen)Form.ActiveScreen!;

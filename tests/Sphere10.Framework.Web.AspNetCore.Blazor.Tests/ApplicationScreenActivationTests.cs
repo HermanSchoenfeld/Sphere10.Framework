@@ -80,8 +80,14 @@ public class ApplicationScreenActivationTests {
 	[TestCase(ScreenActivationMode.SingleInstance)]
 	[TestCase(ScreenActivationMode.PermanentSingleton)]
 	public async Task RuntimeKeysCannotOverrideRegisteredSingletonPolicy(ScreenActivationMode policy) {
-		var block = new BlazorApplicationBlockBuilder().WithId("singleton").WithName("Singleton")
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("screen", "Screen", policy)).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("singleton")
+			.WithName("Singleton")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("screen", "Screen", policy)
+			)
+			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var firstId = Guid.NewGuid();
@@ -218,13 +224,29 @@ public class ApplicationScreenActivationTests {
 
 	private static BlazorApplicationScreenHost CreateHost(IServiceProvider provider) {
 		var blocks = new[] {
-			new BlazorApplicationBlockBuilder().WithId("projects").WithName("Projects")
-				.AddMenu(menu => menu.WithText("Screens")
-					.ConfigureItem(item => item.WithId("project").WithText("Project").WithScreen<ApplicationScreenHostTests.ProbeScreen>().AsMultiInstance()
-						.WithParameters(new Dictionary<string, object> { ["Caption"] = "Registered", ["Units"] = "Metric" }))
-					.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("other", "Other", ScreenActivationMode.MultiInstance)).Build(),
-			new BlazorApplicationBlockBuilder().WithId("other-projects").WithName("Other projects")
-				.AddMenu(menu => menu.WithText("Screens").AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("project", "Project", ScreenActivationMode.MultiInstance)).Build()
+			new BlazorApplicationBlockBuilder()
+				.WithId("projects")
+				.WithName("Projects")
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.ConfigureItem(item => item
+						.WithId("project")
+						.WithText("Project")
+						.WithScreen<ApplicationScreenHostTests.ProbeScreen>()
+						.AsMultiInstance()
+						.WithParameters(new Dictionary<string, object> { ["Caption"] = "Registered", ["Units"] = "Metric" })
+					)
+					.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("other", "Other", ScreenActivationMode.MultiInstance)
+				)
+				.Build(),
+			new BlazorApplicationBlockBuilder()
+				.WithId("other-projects")
+				.WithName("Other projects")
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("project", "Project", ScreenActivationMode.MultiInstance)
+				)
+				.Build()
 		};
 		return new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(blocks), provider);
 	}

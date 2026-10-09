@@ -12,22 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Builds neutral plugin definitions, including service-only plugins with no application blocks.</summary>
-public class ApplicationPluginBuilder : ApplicationPluginBuilderBase<IApplicationBlock, ApplicationPlugin> {
-	public ApplicationPluginBuilder WithName(string name) {
-		SetName(name);
-		return this;
-	}
-
-	public ApplicationPluginBuilder AddBlock(IApplicationBlock block) {
-		AddBlockDefinition(block);
-		return this;
-	}
-
-	public ApplicationPluginBuilder ConfigureServices(Action<IServiceCollection> configure) {
-		AddServiceConfiguration(configure);
-		return this;
-	}
-
+public class ApplicationPluginBuilder : ApplicationPluginBuilderBase<ApplicationPluginBuilder, IApplicationBlock, ApplicationPlugin> {
 	protected override ApplicationPlugin CreatePlugin(IApplicationBlock[] blocks, Action<IServiceCollection> configureServices) =>
 		new(Name, blocks, configureServices);
 }

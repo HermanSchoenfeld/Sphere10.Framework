@@ -77,7 +77,7 @@ internal static class BlazorApplicationBlockSnapshot {
 			}
 			if (item is BlazorScreenMenuItem screen) {
 				var snapshot = new BlazorScreenMenuItem {
-					Id = id, Title = screen.Title, Icon = screen.Icon, IsVisible = screen.IsVisible, CanExecute = screen.CanExecute, ScreenType = screen.ScreenType,
+					Id = id, Title = screen.Title, Icon = screen.Icon, IsVisible = screen.IsVisible, CanExecute = screen.CanExecute, ScreenType = screen.ScreenType, ScreenTitle = screen.ScreenTitle,
 					ActivationMode = screen.ActivationMode, ScreenKind = screen.ScreenKind, IsDefault = screen.IsDefault, Parameters = screen.Parameters
 				};
 				snapshot.CopySubscriptionsFrom(screen);
@@ -95,6 +95,7 @@ internal static class BlazorApplicationBlockSnapshot {
 			var screen = (BlazorScreenMenuItem)matchingScreen;
 			var defaultScreen = new BlazorScreenMenuItem {
 				Id = screen?.Id ?? DefaultScreenItemId, Title = block.DefaultScreenTitle ?? screen?.Title ?? block.DefaultScreen.Name,
+				ScreenTitle = block.DefaultScreenTitle ?? screen?.ScreenTitle,
 				Icon = screen?.Icon, IsVisible = screen?.IsVisible ?? true, CanExecute = screen?.CanExecute, ScreenType = block.DefaultScreen,
 				ActivationMode = block.DefaultScreenActivationMode ?? screen?.ActivationMode ?? ScreenActivationMode.MultiInstance,
 				ScreenKind = block.DefaultScreenKind == ScreenKind.Normal ? screen?.ScreenKind ?? ScreenKind.Normal : block.DefaultScreenKind, IsDefault = true,

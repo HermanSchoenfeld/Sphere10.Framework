@@ -141,7 +141,12 @@ public class ApplicationRenderingTests {
 	[Test]
 	public async Task DefaultScreenWithoutMenuCanBeReopenedFromItsBookmark() {
 		var services = CreateServices();
-		services.AddApplicationBlock(block => block.WithId("default").WithName("Default only").WithDefaultScreen<DefaultOnlyScreen>());
+		services
+			.AddApplicationBlock(block => block
+				.WithId("default")
+				.WithName("Default only")
+				.WithDefaultScreen<DefaultOnlyScreen>()
+			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -278,9 +283,18 @@ public class ApplicationRenderingTests {
 		services.AddScoped<ProbeState>();
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/application"));
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
-		services.AddApplicationBlock(block => block.WithId("test").WithName("Test application").WithDefaultScreen<ProbeScreen>()
-			.AddMenu(menu => menu.WithText("Screens").WithIcon("fa fa-folder").AddScreenItem<ProbeScreen>("single", "Single", ScreenActivationMode.SingleInstance)
-				.AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("test")
+				.WithName("Test application")
+				.WithDefaultScreen<ProbeScreen>()
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.WithIcon("fa fa-folder")
+					.AddScreenItem<ProbeScreen>("single", "Single", ScreenActivationMode.SingleInstance)
+					.AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)
+				)
+			);
 		return services;
 	}
 

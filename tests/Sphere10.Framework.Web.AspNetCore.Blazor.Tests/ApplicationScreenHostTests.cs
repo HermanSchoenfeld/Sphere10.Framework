@@ -250,12 +250,18 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public async Task ActionUsesCurrentScopeAndCanNavigateWithoutReenteringTheTransitionGate() {
-		var block = new BlazorApplicationBlockBuilder().WithId("actions").WithName("Actions").AddMenu(menu => menu.WithText("Menu")
-			.AddScreenItem<ProbeScreen>("screen", "Screen")
-			.AddActionItem("run", "Run", async (services, token) => {
-				services.GetRequiredService<ActionState>().Calls++;
-				await services.GetRequiredService<IBlazorApplicationScreenHost>().ActivateScreenAsync("actions", "screen", token);
-			})).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("actions")
+			.WithName("Actions")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddScreenItem<ProbeScreen>("screen", "Screen")
+				.AddActionItem("run", "Run", async (services, token) => {
+					services.GetRequiredService<ActionState>().Calls++;
+					await services.GetRequiredService<IBlazorApplicationScreenHost>().ActivateScreenAsync("actions", "screen", token);
+				})
+			)
+			.Build();
 		await using var provider = new ServiceCollection().AddSingleton<IBlazorApplicationBlockCatalog>(new BlazorApplicationBlockCatalog(new[] { block }))
 			.AddScoped<IBlazorApplicationScreenHost, BlazorApplicationScreenHost>().AddScoped<ActionState>().BuildServiceProvider();
 		await using var firstScope = provider.CreateAsyncScope();
@@ -272,8 +278,14 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public void ActionFailuresAreObservable() {
 		var failure = new InvalidOperationException("Action failed");
-		var block = new BlazorApplicationBlockBuilder().WithId("actions").WithName("Actions")
-			.AddMenu(menu => menu.WithText("Menu").AddActionItem("run", "Run", (_, _) => Task.FromException(failure))).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("actions")
+			.WithName("Actions")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddActionItem("run", "Run", (_, _) => Task.FromException(failure))
+			)
+			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		Assert.That(async () => await host.ExecuteMenuItemAsync("actions", "run"), Throws.InstanceOf<InvalidOperationException>().With.Message.EqualTo(failure.Message));
@@ -332,8 +344,14 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task ActionOnlyBlockPreservesRetainedSessionsAndBecomesActive() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var actionBlock = new BlazorApplicationBlockBuilder().WithId("actions").WithName("Actions")
-			.AddMenu(menu => menu.WithText("Menu").AddActionItem("run", "Run", () => { })).Build();
+		var actionBlock = new BlazorApplicationBlockBuilder()
+			.WithId("actions")
+			.WithName("Actions")
+			.ConfigureMenu(menu => menu
+				.WithText("Menu")
+				.AddActionItem("run", "Run", () => { })
+			)
+			.Build();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(CreateCatalog().Blocks.Append(actionBlock)), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		await host.ActivateBlockAsync("actions");
@@ -354,7 +372,11 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task DisposalDuringAsyncScreenInitializationDoesNotLeaveItAttached() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block").WithDefaultScreen<InitializingScreen>().Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.WithDefaultScreen<InitializingScreen>()
+			.Build();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var session = await host.ActivateBlockAsync("block");
 		var screen = new InitializingScreen();
@@ -368,10 +390,23 @@ public class ApplicationScreenHostTests {
 	}
 
 	private static BlazorApplicationBlockCatalog CreateCatalog() => new(new[] {
-		new BlazorApplicationBlockBuilder().WithId("first").WithName("First").AddMenu(menu => menu.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("single", "Single", ScreenActivationMode.SingleInstance).AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)).Build(),
-		new BlazorApplicationBlockBuilder().WithId("second").WithName("Second").AddMenu(menu => menu.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("shared", "Shared", ScreenActivationMode.SingleInstance)).Build()
+		new BlazorApplicationBlockBuilder()
+			.WithId("first")
+			.WithName("First")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<ProbeScreen>("single", "Single", ScreenActivationMode.SingleInstance)
+				.AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)
+			)
+			.Build(),
+		new BlazorApplicationBlockBuilder()
+			.WithId("second")
+			.WithName("Second")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<ProbeScreen>("shared", "Shared", ScreenActivationMode.SingleInstance)
+			)
+			.Build()
 	});
 
 	public class ProbeScreen : ComponentBase, IBlazorApplicationScreen, IDisposable {

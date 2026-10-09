@@ -59,9 +59,20 @@ public class ApplicationCommandRenderingTests {
 	[Test]
 	public async Task BrowsingAnotherBlockKeepsCommandsBoundToTheActiveScreenUntilItCloses() {
 		var services = Services();
-		services.AddApplicationBlock(block => block.WithId("browse").WithName("Browse")
-			.AddMenu(menu => menu.WithText("Browse menu").AddActionItem("browse-action", "Browse action", () => { }))
-			.AddToolBarItem(item => item.WithId("browse-tool").WithText("Browse tool").WithAction((_, _) => Task.CompletedTask)));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("browse")
+				.WithName("Browse")
+				.ConfigureMenu(menu => menu
+					.WithText("Browse menu")
+					.AddActionItem("browse-action", "Browse action", () => { })
+				)
+				.ConfigureToolBarItem(item => item
+					.WithId("browse-tool")
+					.WithText("Browse tool")
+					.WithAction((_, _) => Task.CompletedTask)
+				)
+			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -164,10 +175,22 @@ public class ApplicationCommandRenderingTests {
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/application"));
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
 		services.AddScoped<ScreenRenderState>();
-		services.AddApplicationBlock(block => block.WithId("test").WithName("Test")
-			.AddMenu(menu => menu.WithId("work").WithText("Work").AddScreenItem<CommandScreen>("one", "One", ScreenActivationMode.SingleInstance)
-				.AddScreenItem<TemporaryScreen>("two", "Two", ScreenActivationMode.MultiInstance)));
-		services.AddApplicationBlock(block => block.WithId("empty").WithName("Empty"));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("test")
+				.WithName("Test")
+				.ConfigureMenu(menu => menu
+					.WithId("work")
+					.WithText("Work")
+					.AddScreenItem<CommandScreen>("one", "One", ScreenActivationMode.SingleInstance)
+					.AddScreenItem<TemporaryScreen>("two", "Two", ScreenActivationMode.MultiInstance)
+				)
+			);
+		services
+			.AddApplicationBlock(block => block
+				.WithId("empty")
+				.WithName("Empty")
+			);
 		return services;
 	}
 

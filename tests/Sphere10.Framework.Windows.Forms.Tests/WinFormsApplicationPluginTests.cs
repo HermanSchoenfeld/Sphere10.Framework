@@ -26,7 +26,9 @@ public class WinFormsApplicationPluginTests {
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
-			Sphere10Framework.Instance.Build().Start();
+			Sphere10Framework.Instance
+				.Build()
+				.Start();
 	}
 
 	[OneTimeTearDown]
@@ -41,8 +43,11 @@ public class WinFormsApplicationPluginTests {
 		var configured = 0;
 		var loaded = 0;
 		var unloaded = 0;
-		var plugin = new WinFormsApplicationPluginBuilder().WithName("Features").AddBlock(block)
-			.ConfigureServices(_ => configured++).Build();
+		var plugin = new WinFormsApplicationPluginBuilder()
+			.WithName("Features")
+			.AddBlock(block)
+			.ConfigureServices(_ => configured++)
+			.Build();
 		IApplicationPlugin shared = plugin;
 		shared.Loaded += () => loaded++;
 		shared.Unloaded += () => unloaded++;
@@ -65,10 +70,19 @@ public class WinFormsApplicationPluginTests {
 		var unloaded = 0;
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var block = new WinFormsApplicationBlockBuilder().WithId("workspace").WithName("Workspace")
-			.AddMenu(menu => menu.WithText("Commands").AddActionItem("Startup", () => startupActions++, executeOnLoad: true)).Build();
-		var plugin = new WinFormsApplicationPluginBuilder().WithName("Workspace plugin").AddBlock(block)
-			.ConfigureServices(registry => registry.AddSingleton<StartupMarker>()).Build();
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithId("workspace")
+			.WithName("Workspace")
+			.ConfigureMenu(menu => menu
+				.WithText("Commands")
+				.AddActionItem("Startup", () => startupActions++, executeOnLoad: true)
+			)
+			.Build();
+		var plugin = new WinFormsApplicationPluginBuilder()
+			.WithName("Workspace plugin")
+			.AddBlock(block)
+			.ConfigureServices(registry => registry.AddSingleton<StartupMarker>())
+			.Build();
 		plugin.Loaded += () => loaded++;
 		plugin.Unloaded += () => unloaded++;
 		services.AddWinFormsApplicationPlugin(plugin);
@@ -103,7 +117,11 @@ public class WinFormsApplicationPluginTests {
 		services.AddMainForm<TrackingMainForm>();
 		using var explicitBlock = new WinFormsApplicationBlock { Id = "plugin-block", Name = "Plugin block", Position = 2 };
 		using var legacyBlock = new WinFormsApplicationBlock { Id = "legacy", Name = "Legacy", Position = 1 };
-		services.AddWinFormsApplicationPlugin(plugin => plugin.WithName("Application").AddBlock(explicitBlock));
+		services
+			.AddWinFormsApplicationPlugin(plugin => plugin
+				.WithName("Application")
+				.AddBlock(explicitBlock)
+			);
 		services.AddApplicationBlock(legacyBlock);
 		services.AddApplicationBlock(explicitBlock);
 		using var provider = services.BuildServiceProvider();
@@ -179,9 +197,15 @@ public class WinFormsApplicationPluginTests {
 	[Test]
 	public void DuplicatePluginNamesAreRejectedBeforeLoadingServices() {
 		var services = new ServiceCollection();
-		services.AddWinFormsApplicationPlugin(plugin => plugin.WithName("Duplicate"));
+		services
+			.AddWinFormsApplicationPlugin(plugin => plugin
+				.WithName("Duplicate")
+			);
 		var loads = 0;
-		var duplicate = new WinFormsApplicationPluginBuilder().WithName("Duplicate").ConfigureServices(_ => loads++).Build();
+		var duplicate = new WinFormsApplicationPluginBuilder()
+			.WithName("Duplicate")
+			.ConfigureServices(_ => loads++)
+			.Build();
 		Assert.That(() => services.AddWinFormsApplicationPlugin(duplicate), Throws.ArgumentException);
 		Assert.That(loads, Is.Zero);
 		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IWinFormsApplicationPlugin)), Is.EqualTo(1));
@@ -191,8 +215,16 @@ public class WinFormsApplicationPluginTests {
 	public void BlocksCannotBeOwnedByTwoPlugins() {
 		using var block = new WinFormsApplicationBlock { Id = "same", Name = "Block" };
 		var services = new ServiceCollection();
-		services.AddWinFormsApplicationPlugin(plugin => plugin.WithName("First").AddBlock(block));
-		Assert.That(() => services.AddWinFormsApplicationPlugin(plugin => plugin.WithName("Second").AddBlock(block)), Throws.ArgumentException);
+		services
+			.AddWinFormsApplicationPlugin(plugin => plugin
+				.WithName("First")
+				.AddBlock(block)
+			);
+		Assert.That(() => services
+			.AddWinFormsApplicationPlugin(plugin => plugin
+				.WithName("Second")
+				.AddBlock(block)
+			), Throws.ArgumentException);
 	}
 
 	public sealed class TrackingMainForm : BlockMainForm {

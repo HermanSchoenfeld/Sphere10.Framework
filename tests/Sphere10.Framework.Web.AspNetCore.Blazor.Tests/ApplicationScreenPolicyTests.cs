@@ -46,10 +46,21 @@ public class ApplicationScreenPolicyTests {
 
 	[Test]
 	public async Task MarkedMenuDefaultWinsOverEarlierUnmarkedScreen() {
-		var block = new BlazorApplicationBlockBuilder().WithId("work").WithName("Work")
-			.AddMenu(menu => menu.WithId("screens").WithText("Screens")
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("work")
+			.WithName("Work")
+			.ConfigureMenu(menu => menu
+				.WithId("screens")
+				.WithText("Screens")
 				.AddScreenItem<FirstScreen>("first", "First")
-				.ConfigureItem(item => item.WithId("second").WithText("Second").WithScreen<SecondScreen>().AsDefault())).Build();
+				.ConfigureItem(item => item
+					.WithId("second")
+					.WithText("Second")
+					.WithScreen<SecondScreen>()
+					.AsDefault()
+				)
+			)
+			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		await host.InitializeAsync();
@@ -166,7 +177,10 @@ public class ApplicationScreenPolicyTests {
 		var blocks = new[] {
 			Block("permanent", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton),
 			Block("empty", typeof(EmptyScreen), ScreenActivationMode.SingleInstance, ScreenKind.Empty),
-			new BlazorApplicationBlockBuilder().WithId("unrelated").WithName("Unrelated").Build()
+			new BlazorApplicationBlockBuilder()
+				.WithId("unrelated")
+				.WithName("Unrelated")
+				.Build()
 		};
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(blocks), provider);
 		var empty = await host.ActivateBlockAsync("empty");
@@ -206,15 +220,29 @@ public class ApplicationScreenPolicyTests {
 
 	[Test]
 	public void BuildersPreserveFlagsAndRejectPermanentEmptyCombinations() {
-		var item = (BlazorScreenMenuItem)new BlazorApplicationMenuItemBuilder().WithId("empty").WithText("Empty")
-			.WithScreen<EmptyScreen>().WithScreenKind(ScreenKind.Empty).AsDefault().AsMultiInstance().Build();
-		var block = new BlazorApplicationBlockBuilder().WithId("work").WithName("Work")
-			.AddMenu(menu => menu.WithId("screens").WithText("Screens").AddItem(item)).Build();
+		var item = (BlazorScreenMenuItem)new BlazorApplicationMenuItemBuilder()
+			.WithId("empty")
+			.WithText("Empty")
+			.WithScreen<EmptyScreen>()
+			.WithScreenKind(ScreenKind.Empty)
+			.AsDefault()
+			.AsMultiInstance()
+			.Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("work")
+			.WithName("Work")
+			.ConfigureMenu(menu => menu
+				.WithId("screens")
+				.WithText("Screens")
+				.AddItem(item)
+			)
+			.Build();
 		var copy = new BlazorApplicationBlockCatalog(new[] { block }).Blocks.Single().Menus.Single().Items.OfType<BlazorScreenMenuItem>().Single();
 		Assert.That(copy.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		Assert.That(copy.IsDefault, Is.True);
 		Assert.That(copy.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(() => new BlazorApplicationBlockBuilder().WithName("Invalid")
+		Assert.That(() => new BlazorApplicationBlockBuilder()
+			.WithName("Invalid")
 			.WithDefaultScreen<EmptyScreen>(activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty), Throws.ArgumentException);
 	}
 
@@ -298,8 +326,12 @@ public class ApplicationScreenPolicyTests {
 	}
 
 	private static BlazorApplicationBlock Block(string id, Type type, ScreenActivationMode? mode = null, ScreenKind kind = ScreenKind.Normal, int position = 0) =>
-		new BlazorApplicationBlockBuilder().WithId(id).WithName(id).WithPosition(position)
-			.WithDefaultScreen(type, id, mode, kind).Build();
+		new BlazorApplicationBlockBuilder()
+			.WithId(id)
+			.WithName(id)
+			.WithPosition(position)
+			.WithDefaultScreen(type, id, mode, kind)
+			.Build();
 
 	public class RenderedScreenState {
 		public TaskCompletionSource<RenderedEmptyScreen> Attached { get; set; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

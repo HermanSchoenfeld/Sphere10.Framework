@@ -30,11 +30,28 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 public class ApplicationCommandStateTests {
 	[Test]
 	public async Task HiddenRegistrationStaysOutOfNavigationAndCommandsWhileKeyedActivationWorks() {
-		var hidden = new BlazorApplicationMenuItemBuilder().WithId("project").WithText("Hidden project launcher")
-			.WithScreen<ProjectScreen>().AsMultiInstance().WithVisibility(false).Build();
-		var visible = new BlazorApplicationMenuItemBuilder().WithId("browse").WithText("Browse projects").WithAction((_, _) => Task.CompletedTask).Build();
-		var block = new BlazorApplicationBlockBuilder().WithId("projects").WithName("Projects")
-			.AddMenu(menu => menu.WithId("navigation").WithText("Project navigation").AddItem(hidden).AddItem(visible)).Build();
+		var hidden = new BlazorApplicationMenuItemBuilder()
+			.WithId("project")
+			.WithText("Hidden project launcher")
+			.WithScreen<ProjectScreen>()
+			.AsMultiInstance()
+			.WithVisibility(false)
+			.Build();
+		var visible = new BlazorApplicationMenuItemBuilder()
+			.WithId("browse")
+			.WithText("Browse projects")
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("projects")
+			.WithName("Projects")
+			.ConfigureMenu(menu => menu
+				.WithId("navigation")
+				.WithText("Project navigation")
+				.AddItem(hidden)
+				.AddItem(visible)
+			)
+			.Build();
 		await using var provider = Services().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -69,10 +86,27 @@ public class ApplicationCommandStateTests {
 	public async Task HiddenSeparatorRetainsPresentationMetadataThroughRegistration() {
 		var enabled = false;
 		var separator = new BlazorMenuSeparator { Id = "boundary", IsVisible = false, CanExecute = () => enabled };
-		var before = new BlazorApplicationMenuItemBuilder().WithId("before").WithText("Before").WithAction((_, _) => Task.CompletedTask).Build();
-		var after = new BlazorApplicationMenuItemBuilder().WithId("after").WithText("After").WithAction((_, _) => Task.CompletedTask).Build();
-		var block = new BlazorApplicationBlockBuilder().WithId("projects").WithName("Projects")
-			.AddMenu(menu => menu.WithId("work").WithText("Work").AddItem(before).AddItem(separator).AddItem(after)).Build();
+		var before = new BlazorApplicationMenuItemBuilder()
+			.WithId("before")
+			.WithText("Before")
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var after = new BlazorApplicationMenuItemBuilder()
+			.WithId("after")
+			.WithText("After")
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("projects")
+			.WithName("Projects")
+			.ConfigureMenu(menu => menu
+				.WithId("work")
+				.WithText("Work")
+				.AddItem(before)
+				.AddItem(separator)
+				.AddItem(after)
+			)
+			.Build();
 		await using var provider = Services().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var registered = host.Blocks.Single();
@@ -96,9 +130,22 @@ public class ApplicationCommandStateTests {
 	[Test]
 	public async Task HiddenScreenRemainsReachableThroughIncomingShellLocation() {
 		var services = Services();
-		services.AddApplicationBlock(block => block.WithId("projects").WithName("Projects")
-			.AddMenu(menu => menu.WithId("navigation").WithText("Project navigation")
-				.ConfigureItem(item => item.WithId("project").WithText("Hidden project launcher").WithScreen<ProjectScreen>().AsMultiInstance().WithVisibility(false))));
+		services
+			.AddApplicationBlock(block => block
+				.WithId("projects")
+				.WithName("Projects")
+				.ConfigureMenu(menu => menu
+					.WithId("navigation")
+					.WithText("Project navigation")
+					.ConfigureItem(item => item
+						.WithId("project")
+						.WithText("Hidden project launcher")
+						.WithScreen<ProjectScreen>()
+						.AsMultiInstance()
+						.WithVisibility(false)
+					)
+				)
+			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -120,11 +167,22 @@ public class ApplicationCommandStateTests {
 	public async Task DisabledLeafCannotExecuteThroughEitherHostEntryPoint(bool resolveById) {
 		var enabled = false;
 		var calls = new List<string>();
-		var command = new BlazorApplicationMenuItemBuilder().WithId("save").WithText("Save draft").EnabledWhen(() => enabled)
-			.WithAction((_, _) => { calls.Add("action"); return Task.CompletedTask; }).Build();
+		var command = new BlazorApplicationMenuItemBuilder()
+			.WithId("save")
+			.WithText("Save draft")
+			.EnabledWhen(() => enabled)
+			.WithAction((_, _) => { calls.Add("action"); return Task.CompletedTask; })
+			.Build();
 		command.Select += () => calls.Add("select");
-		var block = new BlazorApplicationBlockBuilder().WithId("projects").WithName("Projects")
-			.AddMenu(menu => menu.WithId("work").WithText("Work").AddItem(command)).Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("projects")
+			.WithName("Projects")
+			.ConfigureMenu(menu => menu
+				.WithId("work")
+				.WithText("Work")
+				.AddItem(command)
+			)
+			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
@@ -145,9 +203,17 @@ public class ApplicationCommandStateTests {
 	[Test]
 	public async Task EnabledPredicateUpdatesRenderedMenuAndToolbarWithoutReplacingTheCommand() {
 		var enabled = false;
-		var command = new BlazorApplicationMenuItemBuilder().WithId("save").WithText("Save draft").EnabledWhen(() => enabled)
-			.WithAction((_, _) => Task.CompletedTask).Build();
-		var menu = new BlazorApplicationMenuBuilder().WithId("work").WithText("Work").AddItem(command).Build();
+		var command = new BlazorApplicationMenuItemBuilder()
+			.WithId("save")
+			.WithText("Save draft")
+			.EnabledWhen(() => enabled)
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var menu = new BlazorApplicationMenuBuilder()
+			.WithId("work")
+			.WithText("Work")
+			.AddItem(command)
+			.Build();
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -169,12 +235,23 @@ public class ApplicationCommandStateTests {
 	[Test]
 	public async Task ToolbarGroupDispatchesSelectedChildOnceAndClosesTheMenu() {
 		var calls = new List<string>();
-		var child = new BlazorApplicationMenuItemBuilder().WithId("route").WithText("Export route")
-			.WithAction((_, _) => { calls.Add("action"); return Task.CompletedTask; }).Build();
+		var child = new BlazorApplicationMenuItemBuilder()
+			.WithId("route")
+			.WithText("Export route")
+			.WithAction((_, _) => { calls.Add("action"); return Task.CompletedTask; })
+			.Build();
 		child.Select += () => calls.Add("select");
-		var hidden = new BlazorApplicationMenuItemBuilder().WithId("hidden").WithText("Hidden export").WithVisibility(false)
-			.WithAction((_, _) => Task.CompletedTask).Build();
-		var group = (BlazorApplicationMenuGroup)new BlazorApplicationMenuItemBuilder().WithId("export").WithText("Export").WithChildren(child, hidden).Build();
+		var hidden = new BlazorApplicationMenuItemBuilder()
+			.WithId("hidden")
+			.WithText("Hidden export")
+			.WithVisibility(false)
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var group = (BlazorApplicationMenuGroup)new BlazorApplicationMenuItemBuilder()
+			.WithId("export")
+			.WithText("Export")
+			.WithChildren(child, hidden)
+			.Build();
 		group.Select += () => calls.Add("group");
 		await using var provider = Services().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(Array.Empty<IBlazorApplicationBlock>()), provider);
@@ -205,8 +282,16 @@ public class ApplicationCommandStateTests {
 	[TestCase("Toggle")]
 	public async Task ToolbarDropdownDismissesWithoutExecutingItsChildren(string dismissal) {
 		var selections = 0;
-		var child = new BlazorApplicationMenuItemBuilder().WithId("route").WithText("Export route").WithAction((_, _) => Task.CompletedTask).Build();
-		var group = new BlazorApplicationMenuItemBuilder().WithId("export").WithText("Export").WithChildren(child).Build();
+		var child = new BlazorApplicationMenuItemBuilder()
+			.WithId("route")
+			.WithText("Export route")
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var group = new BlazorApplicationMenuItemBuilder()
+			.WithId("export")
+			.WithText("Export")
+			.WithChildren(child)
+			.Build();
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -230,8 +315,16 @@ public class ApplicationCommandStateTests {
 
 	[Test]
 	public async Task RepeatedToolbarSelectionWhileChildIsRunningIsCoalesced() {
-		var child = new BlazorApplicationMenuItemBuilder().WithId("route").WithText("Export route").WithAction((_, _) => Task.CompletedTask).Build();
-		var group = (BlazorApplicationMenuGroup)new BlazorApplicationMenuItemBuilder().WithId("export").WithText("Export").WithChildren(child).Build();
+		var child = new BlazorApplicationMenuItemBuilder()
+			.WithId("route")
+			.WithText("Export route")
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var group = (BlazorApplicationMenuGroup)new BlazorApplicationMenuItemBuilder()
+			.WithId("export")
+			.WithText("Export")
+			.WithChildren(child)
+			.Build();
 		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var unblock = Tools.Scope.ExecuteOnDispose(() => release.TrySetResult());
@@ -258,16 +351,31 @@ public class ApplicationCommandStateTests {
 
 	[Test]
 	public void GroupBuilderSnapshotsChildrenAndRejectsDuplicateSiblingIds() {
-		var child = new BlazorApplicationMenuItemBuilder().WithId("route").WithText("Export route").WithAction((_, _) => Task.CompletedTask).Build();
-		var replacement = new BlazorApplicationMenuItemBuilder().WithId("summary").WithText("Print summary").WithAction((_, _) => Task.CompletedTask).Build();
+		var child = new BlazorApplicationMenuItemBuilder()
+			.WithId("route")
+			.WithText("Export route")
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
+		var replacement = new BlazorApplicationMenuItemBuilder()
+			.WithId("summary")
+			.WithText("Print summary")
+			.WithAction((_, _) => Task.CompletedTask)
+			.Build();
 		var children = new IBlazorApplicationMenuItem[] { child };
-		var builder = new BlazorApplicationMenuItemBuilder().WithId("export").WithText("Export").WithChildren(children);
+		var builder = new BlazorApplicationMenuItemBuilder()
+			.WithId("export")
+			.WithText("Export")
+			.WithChildren(children);
 		children[0] = replacement;
 		var group = (BlazorApplicationMenuGroup)builder.Build();
 		var exposed = group.Items;
 		exposed[0] = replacement;
 		Assert.That(group.Items.Single().Id, Is.EqualTo("route"));
-		Assert.That(() => new BlazorApplicationMenuItemBuilder().WithId("duplicate").WithText("Duplicate").WithChildren(child, child).Build(), Throws.ArgumentException);
+		Assert.That(() => new BlazorApplicationMenuItemBuilder()
+			.WithId("duplicate")
+			.WithText("Duplicate")
+			.WithChildren(child, child)
+			.Build(), Throws.ArgumentException);
 	}
 
 	private static IServiceCollection Services() {

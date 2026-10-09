@@ -442,7 +442,7 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 			return item;
 		var resolved = new BlazorScreenMenuItem {
 			Id = item.Id, Title = item.Title, Icon = item.Icon, IsVisible = item.IsVisible, CanExecute = item.CanExecute, ScreenType = item.ScreenType, ActivationMode = mode,
-			ScreenKind = definition.ScreenKind, IsDefault = definition.IsDefault, Parameters = item.Parameters
+			ScreenKind = definition.ScreenKind, IsDefault = definition.IsDefault, Parameters = item.Parameters, ScreenTitle = item.ScreenTitle
 		};
 		resolved.CopySubscriptionsFrom(item);
 		return resolved;

@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Accumulates portable plugin configuration while platform builders supply their typed definition.</summary>
-public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> where TBlock : class, IApplicationBlock where TPlugin : IApplicationPlugin {
+public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicationUIBuilder<TPlugin> where TBlock : class, IApplicationBlock where TPlugin : IApplicationPlugin {
 	private readonly List<TBlock> _blocks = new();
 	private Action<IServiceCollection> _configureServices;
 
@@ -40,4 +40,35 @@ public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> where TBlock
 	}
 
 	protected abstract TPlugin CreatePlugin(TBlock[] blocks, Action<IServiceCollection> configureServices);
+}
+
+/// <summary>Shared fluent plugin configuration for existing block definitions.</summary>
+public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : ApplicationPluginBuilderBase<TBlock, TPlugin>
+	where TSelf : class where TBlock : class, IApplicationBlock where TPlugin : IApplicationPlugin {
+	public TSelf WithName(string name) {
+		SetName(name);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf AddBlock(TBlock block) {
+		AddBlockDefinition(block);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf ConfigureServices(Action<IServiceCollection> configure) {
+		AddServiceConfiguration(configure);
+		return (TSelf)(object)this;
+	}
+}
+
+/// <summary>Composes child block builders without coupling plugin configuration to a UI platform.</summary>
+public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin> : ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin>
+	where TSelf : class where TBlock : class, IApplicationBlock where TPlugin : IApplicationPlugin
+	where TBlockBuilder : IApplicationUIBuilder<TBlock>, new() {
+	public TSelf ConfigureBlock(Action<TBlockBuilder> configure) {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var builder = new TBlockBuilder();
+		configure(builder);
+		return AddBlock(builder.Build());
+	}
 }

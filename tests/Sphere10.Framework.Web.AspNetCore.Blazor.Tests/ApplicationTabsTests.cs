@@ -99,11 +99,23 @@ public class ApplicationTabsTests {
 	[Test]
 	public async Task ExplicitScreenCommandUsesActiveBlockAndCanonicalParameters() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		var firstBlock = new BlazorApplicationBlockBuilder().WithId("first").WithName("First")
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<Probe>("same", "First", ScreenActivationMode.MultiInstance)).Build();
-		var secondBlock = new BlazorApplicationBlockBuilder().WithId("second").WithName("Second")
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<Probe>("same", "Second", ScreenActivationMode.MultiInstance,
-				new System.Collections.Generic.Dictionary<string, object> { ["Caption"] = "Canonical" })).Build();
+		var firstBlock = new BlazorApplicationBlockBuilder()
+			.WithId("first")
+			.WithName("First")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<Probe>("same", "First", ScreenActivationMode.MultiInstance)
+			)
+			.Build();
+		var secondBlock = new BlazorApplicationBlockBuilder()
+			.WithId("second")
+			.WithName("Second")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<Probe>("same", "Second", ScreenActivationMode.MultiInstance,
+					new System.Collections.Generic.Dictionary<string, object> { ["Caption"] = "Canonical" })
+			)
+			.Build();
 		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { firstBlock, secondBlock }), services);
 		await host.ActivateBlockAsync("second");
 		var supplied = new BlazorScreenMenuItem { Id = "same", Title = "Forged", ScreenType = typeof(Probe), ActivationMode = ScreenActivationMode.MultiInstance };
@@ -133,17 +145,37 @@ public class ApplicationTabsTests {
 
 	[Test]
 	public void ToolbarScreenItemsMustMatchRegisteredActivationPolicies() {
-		var builder = new BlazorApplicationBlockBuilder().WithId("block").WithName("Block")
-			.AddMenu(menu => menu.WithText("Screens").AddScreenItem<Probe>("single", "Single", ScreenActivationMode.SingleInstance))
-			.AddToolBarItem(item => item.WithId("single").WithText("Wrong policy").WithScreen<Probe>().AsMultiInstance());
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.AddScreenItem<Probe>("single", "Single", ScreenActivationMode.SingleInstance)
+			)
+			.ConfigureToolBarItem(item => item
+				.WithId("single")
+				.WithText("Wrong policy")
+				.WithScreen<Probe>()
+				.AsMultiInstance()
+			);
 		Assert.That(() => builder.Build(), Throws.ArgumentException);
 	}
 
 	private static BlazorApplicationBlockCatalog Catalog() => new(new[] {
-		new BlazorApplicationBlockBuilder().WithId("block").WithName("Block")
-			.AddMenu(menu => menu.WithId("work").WithText("Work").AddScreenItem<Probe>("single", "Single", ScreenActivationMode.SingleInstance)
-				.AddScreenItem<OtherProbe>("multiple", "Multiple", ScreenActivationMode.MultiInstance)).Build(),
-		new BlazorApplicationBlockBuilder().WithId("actions").WithName("Actions").Build()
+		new BlazorApplicationBlockBuilder()
+			.WithId("block")
+			.WithName("Block")
+			.ConfigureMenu(menu => menu
+				.WithId("work")
+				.WithText("Work")
+				.AddScreenItem<Probe>("single", "Single", ScreenActivationMode.SingleInstance)
+				.AddScreenItem<OtherProbe>("multiple", "Multiple", ScreenActivationMode.MultiInstance)
+			)
+			.Build(),
+		new BlazorApplicationBlockBuilder()
+			.WithId("actions")
+			.WithName("Actions")
+			.Build()
 	});
 
 	public class Probe : ComponentBase, IBlazorApplicationScreen {

@@ -296,7 +296,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	private void ExecuteLinkMenuItem(IWinFormsLinkMenuItem linkItem) {
-		linkItem.OnSelect();
+		linkItem.OnSelect(this);
 	}
 
 	private void ExecuteControlMenuItem(IWinFormsControlMenuItem controlItem) {

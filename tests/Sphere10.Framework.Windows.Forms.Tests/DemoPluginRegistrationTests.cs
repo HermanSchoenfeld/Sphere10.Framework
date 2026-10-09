@@ -207,12 +207,12 @@ public class DemoPluginRegistrationTests {
 		var guard = notes.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<CheckBox>().Single();
 		var removeNotes = (IWinFormsLinkMenuItem)GetItem(form, "notes", "Remove notes block");
 		guard.Checked = true;
-		removeNotes.OnSelect();
+		form.ExecuteMenuItem(removeNotes);
 		Assert.That(form.IsBlockRegistered(notesBlock), Is.True);
 		Assert.That(notes.IsDisposed, Is.False);
 		Assert.That(form.Status, Does.Contain("blocked removal"));
 		guard.Checked = false;
-		removeNotes.OnSelect();
+		form.ExecuteMenuItem(removeNotes);
 		Assert.That(form.IsBlockRegistered(notesBlock), Is.False);
 		Assert.That(notes.IsDisposed, Is.True);
 
@@ -246,10 +246,14 @@ public class DemoPluginRegistrationTests {
 	}
 
 	private BlockMainForm StartDemo(bool freshEmptyWorkspace = false) {
-		Sphere10Framework.Instance.Build().ConfigureServices(services => {
-			services.AddMainForm<BlockMainForm>(form => form.ScreenMode = ScreenMode.MultiView);
-			services.AddWinFormsApplicationPlugin(plugin => WinFormsDemoPlugin.Configure(plugin, freshEmptyWorkspace));
-		}).Start();
+		Sphere10Framework.Instance
+			.Build()
+			.ConfigureServices(services => {
+				services.AddMainForm<BlockMainForm>(form => form.ScreenMode = ScreenMode.MultiView);
+				services
+					.AddWinFormsApplicationPlugin(plugin => WinFormsDemoPlugin.Configure(plugin, freshEmptyWorkspace));
+			})
+			.Start();
 		_startedFramework = true;
 		var provider = Sphere10Framework.Instance.ServiceProvider;
 		provider.GetRequiredService<IWinFormsApplication>().Initialize();

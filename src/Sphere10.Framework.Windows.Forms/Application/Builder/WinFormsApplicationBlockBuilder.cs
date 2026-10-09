@@ -13,36 +13,13 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<IWinFormsApplicationMenu, WinFormsApplicationBlock> {
+public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFormsApplicationBlockBuilder, IWinFormsApplicationMenu, WinFormsApplicationMenuBuilder, WinFormsApplicationBlock> {
 	private WinFormsApplicationBlock _block;
 	private Image _image32x32;
 	private Image _image8x8;
 	private string _helpFile;
 	private bool _showInMenuStrip;
 	private bool _showInToolStrip;
-
-	public WinFormsApplicationBlockBuilder WithName(string name) {
-		SetName(name);
-		if (_block != null) {
-			_block.Name = name;
-			_block.Id = Id;
-		}
-		return this;
-	}
-
-	public WinFormsApplicationBlockBuilder WithId(string id) {
-		SetId(id);
-		if (_block != null)
-			_block.Id = id;
-		return this;
-	}
-
-	public WinFormsApplicationBlockBuilder WithPosition(int position) {
-		SetPosition(position);
-		if (_block != null)
-			_block.Position = position;
-		return this;
-	}
 
 	public WinFormsApplicationBlockBuilder WithImage32x32(Image image) {
 		_image32x32 = image;
@@ -79,40 +56,37 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<IWinF
 		return this;
 	}
 
-	public WinFormsApplicationBlockBuilder WithDefaultScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) {
-		SetDefaultScreen(screenType, title, activationMode, screenKind);
-		if (_block != null) {
-			_block.DefaultScreen = screenType;
-			_block.DefaultScreenTitle = title;
-			_block.DefaultScreenActivationMode = activationMode;
-			_block.DefaultScreenKind = screenKind;
-		}
-		return this;
-	}
-
-	public WinFormsApplicationBlockBuilder WithDefaultScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) where TScreen : WinFormsApplicationScreen {
-		return WithDefaultScreen(typeof(TScreen), title, activationMode, screenKind);
-	}
-
-	public WinFormsApplicationBlockBuilder AddMenu(Action<WinFormsApplicationMenuBuilder> menuBuild) {
-		Guard.ArgumentNotNull(menuBuild, nameof(menuBuild));
-		var menuBuilder = new WinFormsApplicationMenuBuilder();
-		menuBuild(menuBuilder);
-		return AddMenu(menuBuilder.Build());
-	}
-
-	public WinFormsApplicationBlockBuilder AddMenu(IWinFormsApplicationMenu menu) {
-		AddMenuDefinition(menu);
-		_block?.AddMenu(menu);
-		return this;
-	}
-
 	public override WinFormsApplicationBlock Build() {
 		if (_block == null)
 			return base.Build();
 		Guard.Ensure(!string.IsNullOrEmpty(_block.Name), "Block name is required");
 		return _block;
 	}
+
+	protected override void OnConfigurationChanged(string propertyName) {
+		if (_block == null)
+			return;
+		switch (propertyName) {
+			case nameof(Name):
+				_block.Name = Name;
+				_block.Id = Id;
+				break;
+			case nameof(Id):
+				_block.Id = Id;
+				break;
+			case nameof(Position):
+				_block.Position = Position;
+				break;
+			case nameof(DefaultScreen):
+				_block.DefaultScreen = DefaultScreen;
+				_block.DefaultScreenTitle = DefaultScreenTitle;
+				_block.DefaultScreenActivationMode = DefaultScreenActivationMode;
+				_block.DefaultScreenKind = DefaultScreenKind;
+				break;
+		}
+	}
+
+	protected override void OnMenuAdded(IWinFormsApplicationMenu menu) => _block?.AddMenu(menu);
 
 	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
 

@@ -16,25 +16,9 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<IBlazorApplicationMenuItem, BlazorApplicationMenu> {
-	public BlazorApplicationMenuBuilder WithId(string id) {
-		SetId(id);
-		return this;
-	}
-
-	public BlazorApplicationMenuBuilder WithText(string text) {
-		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
-		SetText(text);
-		return this;
-	}
-
+public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<BlazorApplicationMenuBuilder, IBlazorApplicationMenuItem, BlazorApplicationMenuItemBuilder, BlazorApplicationMenu> {
 	public BlazorApplicationMenuBuilder WithIcon(string icon) {
 		SetIcon(icon);
-		return this;
-	}
-
-	public BlazorApplicationMenuBuilder AddItem(IBlazorApplicationMenuItem item) {
-		AddItemDefinition(item);
 		return this;
 	}
 
@@ -50,9 +34,12 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<IBlazorAp
 	) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
+		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
+		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
 		return AddItem(new BlazorScreenMenuItem {
-			Id = id, Title = text, ScreenType = screenType, ActivationMode = activationMode, ScreenKind = screenKind, IsDefault = isDefault,
-			Parameters = parameters ?? new Dictionary<string, object>()
+			Id = id, Title = text, ScreenType = screenType, ActivationMode = activationMode, ScreenKind = screenKind,
+			IsDefault = isDefault, Parameters = parameters ?? new Dictionary<string, object>()
 		});
 	}
 
@@ -60,24 +47,19 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<IBlazorAp
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 		Guard.ArgumentNotNull(action, nameof(action));
+		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
 		return AddItem(new BlazorActionMenuItem { Id = id, Title = text, AsyncAction = action });
 	}
 
 	public BlazorApplicationMenuBuilder AddActionItem(string id, string text, Action action) {
+		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
+		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 		Guard.ArgumentNotNull(action, nameof(action));
-		return AddActionItem(id, text, (_, cancellationToken) => {
-			cancellationToken.ThrowIfCancellationRequested();
-			action();
-			return Task.CompletedTask;
-		});
+		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
+		return AddItem(new BlazorActionMenuItem { Id = id, Title = text, Action = action });
 	}
 
-	public BlazorApplicationMenuBuilder ConfigureItem(Action<BlazorApplicationMenuItemBuilder> configure) {
-		Guard.ArgumentNotNull(configure, nameof(configure));
-		var builder = new BlazorApplicationMenuItemBuilder();
-		configure(builder);
-		return AddItem(builder.Build());
-	}
+	protected override void ValidateText(string text) => Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 
 	protected override BlazorApplicationMenu CreateMenu(IReadOnlyList<IBlazorApplicationMenuItem> items) =>
 		BlazorApplicationBlockSnapshot.CreateMenu(new BlazorApplicationMenu { Id = Id, Text = Text, Icon = Icon, Items = items.ToArray() });
