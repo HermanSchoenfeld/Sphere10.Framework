@@ -46,9 +46,17 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 
 	[Parameter] public bool ShowScreenModeSelector { get; set; }
 
+	/// <summary>Activates a block's default screen when its dock button is selected; false only browses that block's navigation.</summary>
+	/// <remarks>Activation uses screen leave guards and synchronizes browser history. A rejected transition preserves the current selection.</remarks>
+	[Parameter] public bool ActivateBlockOnSelection { get; set; }
+
 	[Parameter] public string Title { get; set; } = "Application";
 
 	[Parameter] public string NavigationPath { get; set; } = "application";
+
+	/// <summary>Optional selected command in the active block's sidebar; null uses the active screen registration.</summary>
+	/// <remarks>Use this for guarded subviews within a retained screen. Update it only after a subview transition succeeds.</remarks>
+	[Parameter] public string NavigationActiveItemId { get; set; }
 
 	/// <summary>Optionally maps the currently selected session (or null) to a path within the application base, without query or fragment.</summary>
 	/// <remarks>Evaluated when synchronizing selection; custom paths omit the default block, screen and instance query parameters.</remarks>
@@ -171,6 +179,13 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	private async Task SelectBlockAsync(IBlazorApplicationBlock block) {
 		if (_disposed)
 			return;
+		if (ActivateBlockOnSelection) {
+			await RunInteractionAsync(async token => {
+				var session = await ScreenHost.ActivateBlockAsync(block.Id, token);
+				return session != null || ScreenHost.ActiveScreen == null && ScreenHost.ActiveBlock?.Id == block.Id;
+			}, false);
+			return;
+		}
 		CancelRouteRequest();
 		var token = _lifetimeCancellation.Token;
 		try {
@@ -198,7 +213,9 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		Application.ToolBarItems, CommandBlock?.ToolBarItems ?? Array.Empty<IBlazorApplicationMenuItem>(),
 		ScreenHost.ActiveScreen?.Screen?.ToolBarItems ?? Array.Empty<IBlazorApplicationMenuItem>());
 
-	private Task ExecuteCommandAsync(IBlazorApplicationMenuItem item) =>
+	/// <summary>Executes a custom navigation command through the shell's guarded interaction and browser-history path.</summary>
+	/// <remarks>Await this from custom sidebar controls. Successful commands close the navigation drawer and synchronize the active screen URL.</remarks>
+	public Task ExecuteCommandAsync(IBlazorApplicationMenuItem item) =>
 		RunInteractionAsync(token => ScreenHost.ExecuteMenuItemAsync(item, token), false);
 
 	private Task CloseScreensAsync(Guid[] ids) => RunInteractionAsync(token => ScreenHost.CloseScreensAsync(ids, token), true);

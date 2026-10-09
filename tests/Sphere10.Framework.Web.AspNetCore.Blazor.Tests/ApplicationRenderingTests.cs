@@ -270,6 +270,28 @@ public class ApplicationRenderingTests {
 		});
 	}
 
+
+	[Test]
+	public async Task SidebarSubviewSelectionOverridesPresentationWithoutChangingTheSession() {
+		await using var provider = CreateServices().BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			ApplicationShell shell = null;
+			var rendered = await renderer.RenderComponentAsync<ShellHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(ShellHarness.Capture)] = (Action<ApplicationShell>)(instance => shell = instance)
+			}));
+			var original = host.ActiveScreen;
+			Assert.That(rendered.ToHtmlString(), Does.Match("aria-current=\"page\"[^>]*>\\s*Single"));
+			await shell.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object> { [nameof(ApplicationShell.NavigationActiveItemId)] = "multiple" }));
+			Assert.That(rendered.ToHtmlString(), Does.Match("aria-current=\"page\"[^>]*>\\s*Multiple"));
+			Assert.That(host.ActiveScreen, Is.SameAs(original));
+			Assert.That(host.Screens, Has.Length.EqualTo(1));
+			await shell.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object> { [nameof(ApplicationShell.NavigationActiveItemId)] = null }));
+			Assert.That(rendered.ToHtmlString(), Does.Match("aria-current=\"page\"[^>]*>\\s*Single"));
+		});
+	}
+
 	private static ParameterView Request(string screenId, Guid? instanceId = null) => ParameterView.FromDictionary(new Dictionary<string, object> {
 		[nameof(ApplicationShell.BlockId)] = "test",
 		[nameof(ApplicationShell.ScreenId)] = screenId,

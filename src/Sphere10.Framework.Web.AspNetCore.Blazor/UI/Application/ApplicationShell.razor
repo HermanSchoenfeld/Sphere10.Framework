@@ -44,7 +44,7 @@
 				<div class="sphere10-sidebar-header">@SidebarHeader</div>
 			}
 			<div class="sphere10-sidebar-menus">
-				<ApplicationMenus Block="ScreenHost.ActiveBlock" ActiveItemId="@(ScreenHost.ActiveScreen?.Block.Id == ScreenHost.ActiveBlock?.Id ? ScreenHost.ActiveScreen?.MenuItem.Id : null)"
+				<ApplicationMenus Block="ScreenHost.ActiveBlock" ActiveItemId="@(NavigationActiveItemId ?? (ScreenHost.ActiveScreen?.Block.Id == ScreenHost.ActiveBlock?.Id ? ScreenHost.ActiveScreen?.MenuItem.Id : null))"
 					NavigationPalette="true" OnSelect="ExecuteMenuItemAsync" />
 				@Sidebar
 			</div>

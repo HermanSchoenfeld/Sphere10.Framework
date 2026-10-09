@@ -16,12 +16,12 @@
 	@if (Menus.Any(menu => menu.Items.Any(item => item.IsVisible))) {
 		<nav class="sphere10-menu-strip" aria-label="Application commands">
 			@foreach (var menu in Menus.Where(menu => menu.Items.Any(item => item.IsVisible))) {
-				var key = "menu:" + menu.Id;
+				var key = "menu:" + Uri.EscapeDataString(menu.Id);
 				<div @key="key" class="sphere10-top-menu">
 					<button @ref="_menuButtons[key]" type="button" class="sphere10-menu-button" aria-haspopup="true"
 						aria-expanded="@(_openMenu == key ? "true" : "false")" disabled="@_executing" @onclick="() => ToggleMenu(key)">@menu.Text</button>
 					@if (_openMenu == key) {
-						<div class="sphere10-command-menu" role="group" aria-label="@menu.Text">@MenuItems(menu.Items)</div>
+						<div class="sphere10-command-menu" role="group" aria-label="@menu.Text">@MenuItems(menu.Items, key)</div>
 					}
 				</div>
 			}
@@ -34,7 +34,7 @@
 					@if (item is IApplicationMenuSeparator) {
 						<span role="separator" aria-orientation="vertical"></span>
 					} else if (item is BlazorApplicationMenuGroup group) {
-						var key = "toolbar:" + group.Id;
+						var key = "toolbar:" + Uri.EscapeDataString(group.Id);
 						<div @key="key" class="sphere10-top-menu">
 							<button @ref="_menuButtons[key]" type="button" title="@item.Title" aria-haspopup="true"
 								aria-expanded="@(_openMenu == key ? "true" : "false")" disabled="@(_executing || !item.IsEnabled)"
@@ -43,7 +43,7 @@
 								@item.Title <span class="sphere10-dropdown-arrow" aria-hidden="true">▾</span>
 							</button>
 							@if (_openMenu == key) {
-								<div class="sphere10-command-menu" role="group" aria-label="@group.Title">@MenuItems(group.Items, group.IsEnabled)</div>
+								<div class="sphere10-command-menu" role="group" aria-label="@group.Title">@MenuItems(group.Items, key, group.IsEnabled)</div>
 							}
 						</div>
 					} else {
@@ -64,6 +64,10 @@
 
 @code {
 	private readonly Dictionary<string, ElementReference> _menuButtons = new();
+	private readonly Dictionary<string, IBlazorApplicationMenuItem> _menuItems = new();
+	private readonly Dictionary<string, string> _itemParents = new();
+	private readonly string _submenuId = "sphere10-submenu-" + Guid.NewGuid().ToString("N");
+	private string _openSubmenu;
 	private bool _executing;
 	private string _openMenu;
 	private string _focusMenu;
@@ -79,12 +83,24 @@
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Menus, nameof(Menus));
 		Guard.ArgumentNotNull(ToolBarItems, nameof(ToolBarItems));
-		var keys = Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => "menu:" + menu.Id)
-			.Concat(ToolBarItems.OfType<BlazorApplicationMenuGroup>().Where(group => group.IsVisible && group.IsEnabled).Select(group => "toolbar:" + group.Id)).ToHashSet();
-		foreach (var id in _menuButtons.Keys.Where(id => !keys.Contains(id)).ToArray())
+		var keys = Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => "menu:" + Uri.EscapeDataString(menu.Id))
+			.Concat(ToolBarItems.OfType<BlazorApplicationMenuGroup>().Where(group => group.IsVisible && group.IsEnabled).Select(group => "toolbar:" + Uri.EscapeDataString(group.Id))).ToHashSet();
+		_menuItems.Clear();
+		_itemParents.Clear();
+		foreach (var menu in Menus)
+			RegisterItems(menu.Items, "menu:" + Uri.EscapeDataString(menu.Id));
+		foreach (var group in ToolBarItems.OfType<BlazorApplicationMenuGroup>())
+			RegisterItems(group.Items, "toolbar:" + Uri.EscapeDataString(group.Id));
+		foreach (var id in _menuButtons.Keys.Where(id => !keys.Contains(id) && !_menuItems.ContainsKey(id)).ToArray())
 			_menuButtons.Remove(id);
-		if (_openMenu != null && !keys.Contains(_openMenu))
+		if (_openMenu != null && !keys.Contains(_openMenu)) {
 			_openMenu = null;
+			_openSubmenu = null;
+		}
+		if (_openSubmenu != null && !IsAvailable(_openSubmenu)) {
+			_openSubmenu = null;
+			_focusMenu = _openMenu;
+		}
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
@@ -94,17 +110,39 @@
 			await button.FocusAsync();
 	}
 
-	private RenderFragment MenuItems(IBlazorApplicationMenuItem[] items, bool ancestorEnabled = true) => @<text>
+	private void RegisterItems(IBlazorApplicationMenuItem[] items, string parentKey) {
+		foreach (var item in items.Where(item => item.IsVisible && item is not IApplicationMenuSeparator)) {
+			var key = ItemKey(parentKey, item.Id);
+			_menuItems[key] = item;
+			_itemParents[key] = parentKey;
+			if (item is BlazorApplicationMenuGroup group)
+				RegisterItems(group.Items, key);
+		}
+	}
+
+	private RenderFragment MenuItems(IBlazorApplicationMenuItem[] items, string parentKey, bool ancestorEnabled = true) => @<text>
 		@foreach (var item in items.Where(item => item.IsVisible)) {
+			var key = ItemKey(parentKey, item.Id);
 			@if (item is IApplicationMenuSeparator) {
 				<hr />
 			} else if (item is BlazorApplicationMenuGroup group) {
-				<div class="sphere10-command-group" role="group" aria-label="@group.Title">
-					<span class="sphere10-command-group-label">@group.Title</span>
-					@MenuItems(group.Items, ancestorEnabled && group.IsEnabled)
+				<div @key="key" class="sphere10-command-group">
+					<button @ref="_menuButtons[key]" type="button" class="sphere10-submenu-button"
+						aria-expanded="@(IsExpanded(key) ? "true" : "false")" aria-controls="@(_submenuId + "-" + key)"
+						disabled="@(_executing || !ancestorEnabled || !group.IsEnabled)" @onclick="() => ToggleSubmenu(key)"
+						@onkeydown="args => SubmenuKeyDown(args, key)" @onkeydown:stopPropagation="true"
+						@onmouseenter="() => NotifyHover(group)" @onfocus="() => NotifyHover(group)">
+						@if (!string.IsNullOrEmpty(group.Icon)) { <span class="@group.Icon" aria-hidden="true"></span> }
+						<span class="sphere10-command-title">@group.Title</span><span class="sphere10-submenu-arrow" aria-hidden="true">@(IsExpanded(key) ? "▾" : "›")</span>
+					</button>
+					@if (IsExpanded(key)) {
+						<div id="@(_submenuId + "-" + key)" class="sphere10-submenu" role="group" aria-label="@group.Title">
+							@MenuItems(group.Items, key, ancestorEnabled && group.IsEnabled)
+						</div>
+					}
 				</div>
 			} else {
-				<button type="button" disabled="@(_executing || !ancestorEnabled || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
+				<button @ref="_menuButtons[key]" type="button" disabled="@(_executing || !ancestorEnabled || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
 					@onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
 					@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
 					@item.Title
@@ -113,16 +151,62 @@
 		}
 	</text>;
 
-	private void ToggleMenu(string id) => _openMenu = _openMenu == id ? null : id;
+	private static string ItemKey(string parentKey, string id) => parentKey + "/" + Uri.EscapeDataString(id);
+
+	private bool IsExpanded(string key) => _openSubmenu == key || _openSubmenu?.StartsWith(key + "/", StringComparison.Ordinal) == true;
+
+	private bool IsAvailable(string key) {
+		if (!_menuItems.TryGetValue(key, out var item) || !item.IsVisible || !item.IsEnabled || !_itemParents.TryGetValue(key, out var parent))
+			return false;
+		return _menuItems.ContainsKey(parent) ? IsAvailable(parent) : parent == _openMenu;
+	}
+
+	private void ToggleMenu(string id) {
+		if (_executing)
+			return;
+		_openMenu = _openMenu == id ? null : id;
+		_openSubmenu = null;
+		_focusMenu = null;
+	}
+
+	private void ToggleSubmenu(string key) {
+		if (_executing || !IsAvailable(key) || _menuItems[key] is not BlazorApplicationMenuGroup)
+			return;
+		_openSubmenu = IsExpanded(key) ? ParentSubmenu(key) : key;
+	}
+
+	private string ParentSubmenu(string key) =>
+		_itemParents.TryGetValue(key, out var parent) && _menuItems.GetValueOrDefault(parent) is BlazorApplicationMenuGroup ? parent : null;
 
 	private void CloseMenu() {
 		_focusMenu = _openMenu;
 		_openMenu = null;
+		_openSubmenu = null;
+	}
+
+	private void CloseSubmenu() {
+		if (_openSubmenu == null)
+			return;
+		_focusMenu = _openSubmenu;
+		_openSubmenu = ParentSubmenu(_openSubmenu);
+	}
+
+	private void SubmenuKeyDown(KeyboardEventArgs args, string key) {
+		if (args.Key == "ArrowRight" && !_executing && IsAvailable(key) && _menuItems[key] is BlazorApplicationMenuGroup group) {
+			_openSubmenu = key;
+			_focusMenu = group.Items.Select(item => ItemKey(key, item.Id)).FirstOrDefault(IsAvailable) ?? key;
+		} else {
+			KeyDown(args);
+		}
 	}
 
 	private void KeyDown(KeyboardEventArgs args) {
-		if (args.Key == "Escape")
-			CloseMenu();
+		if (args.Key is "Escape" or "ArrowLeft") {
+			if (_openSubmenu != null)
+				CloseSubmenu();
+			else if (args.Key == "Escape")
+				CloseMenu();
+		}
 	}
 
 	private static void NotifyHover(IBlazorApplicationMenuItem item) {

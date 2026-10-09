@@ -1,10 +1,10 @@
 .sphere10-command-bar { min-width: 0; margin-bottom: 0; color: var(--sphere10-text, #202b3d); }
 .sphere10-menu-strip, .sphere10-tool-strip { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; background: var(--sphere10-surface, white); border: 0; border-top: 1px solid var(--sphere10-border, #dce2eb); padding: .15rem .45rem; }
 .sphere10-top-menu { position: relative; }
-.sphere10-menu-button { padding: .4rem .7rem; cursor: pointer; border-radius: .25rem; }
-.sphere10-command-menu { position: absolute; z-index: 42; min-width: 13rem; max-width: min(24rem, 85vw); padding: .35rem; background: var(--sphere10-surface, white); border: 1px solid var(--sphere10-border, #dce2eb); box-shadow: var(--sphere10-shadow, 0 .3rem 1rem #0002); }
-.sphere10-command-menu button { display: block; width: 100%; text-align: left; }
-.sphere10-command-bar button { border: 0; background: transparent; color: inherit; padding: .3rem .55rem; font-size: .85rem; border-radius: .25rem; }
+.sphere10-menu-button { padding: .4rem .7rem; cursor: pointer; border-radius: var(--sphere10-control-radius, .25rem); }
+.sphere10-command-menu { position: absolute; z-index: 42; min-width: 13rem; max-width: min(24rem, 85vw); max-height: min(32rem, 70vh); overflow-y: auto; overscroll-behavior: contain; padding: .35rem; background: var(--sphere10-surface, white); border: 1px solid var(--sphere10-border, #dce2eb); box-shadow: var(--sphere10-shadow, 0 .3rem 1rem #0002); }
+.sphere10-command-menu button { display: block; width: 100%; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.sphere10-command-bar button { border: 0; background: transparent; color: inherit; padding: .3rem .55rem; font-size: .85rem; border-radius: var(--sphere10-control-radius, .25rem); }
 .sphere10-command-bar button:hover:not(:disabled), .sphere10-menu-button:hover { background: var(--sphere10-hover, #e9eef6); }
 .sphere10-command-bar button:focus-visible, .sphere10-menu-button:focus-visible { outline: 2px solid var(--sphere10-focus, #2456a6); outline-offset: -2px; }
 .sphere10-command-bar button:disabled { opacity: .5; }
@@ -14,9 +14,9 @@
 .sphere10-menu-button[aria-expanded="true"] { background: var(--sphere10-hover, #e9eef6); }
 .sphere10-command-bar button > span[aria-hidden="true"] { margin-inline-end: .4rem; }
 
-.sphere10-menu-strip { min-height: 1.75rem; }
+.sphere10-menu-strip { min-height: 1.75rem; background: var(--sphere10-menu-background, var(--sphere10-surface, white)); }
 .sphere10-menu-strip .sphere10-menu-button { padding: .2rem .5rem; }
-.sphere10-tool-strip { justify-content: space-between; gap: .35rem .8rem; min-height: 2.6rem; padding: .3rem .55rem; }
+.sphere10-tool-strip { background: var(--sphere10-toolbar-background, var(--sphere10-surface, white)); justify-content: space-between; gap: .35rem .8rem; min-height: 2.6rem; padding: .3rem .55rem; }
 .sphere10-tool-commands, .sphere10-tool-content { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; min-width: 0; }
 .sphere10-tool-commands { flex: 1 1 auto; }
 .sphere10-tool-content { flex: 0 1 auto; justify-content: flex-end; gap: .5rem; margin-inline-start: auto; max-width: 100%; }
@@ -25,5 +25,13 @@
 	.sphere10-tool-content { flex: 1 1 100%; }
 }
 
-.sphere10-command-group-label { display: block; padding: .3rem .55rem; font-size: .8rem; font-weight: 600; color: var(--sphere10-text-muted, #526274); }
 .sphere10-command-group + .sphere10-command-group { border-top: 1px solid var(--sphere10-border, #dce2eb); }
+
+.sphere10-command-menu .sphere10-submenu-button { display: flex; align-items: center; gap: .3rem; }
+.sphere10-command-title { flex: 1; min-width: 0; }
+.sphere10-submenu-button[aria-expanded="true"] { background: var(--sphere10-hover, #e9eef6); }
+.sphere10-submenu { margin: .15rem 0 .3rem .6rem; padding-inline-start: .4rem; border-inline-start: 2px solid var(--sphere10-border, #dce2eb); }
+.sphere10-submenu-arrow { flex: 0 0 auto; }
+@media (max-width: 600px) {
+	.sphere10-command-menu { position: fixed; inset-inline: .5rem; top: 6rem; min-width: 0; max-width: none; max-height: calc(100dvh - 7rem); }
+}

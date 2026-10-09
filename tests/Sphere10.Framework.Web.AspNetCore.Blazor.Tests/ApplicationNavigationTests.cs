@@ -137,6 +137,50 @@ public class ApplicationNavigationTests {
 		Assert.That(guards, Is.EqualTo(2));
 	}
 
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task PublicCustomCommandPreservesLeaveGuardsAndSynchronizesDrawerAndRoute(bool allowNavigation) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var nextId = Guid.NewGuid();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("projects")
+			.WithName("Projects")
+			.ConfigureMenu(menu => menu
+				.WithText("Screens")
+				.ConfigureItem(item => item
+					.WithId("project")
+					.WithText("Project")
+					.WithScreen<ApplicationScreenHostTests.ProbeScreen>()
+					.AsMultiInstance()
+					.WithParameters(new Dictionary<string, object> { ["ProjectId"] = nextId })
+				)
+			)
+			.Build();
+		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		var navigation = new ProbeNavigation();
+		var shell = CreateShell(host, navigation, ProjectPath);
+		var handler = typeof(ApplicationShell).GetMethod("OnBeforeInternalNavigationAsync", BindingFlags.Instance | BindingFlags.NonPublic)
+			.CreateDelegate<Func<LocationChangingContext, Task>>(shell);
+		using var registration = navigation.RegisterLocationChangingHandler(context => new ValueTask(handler(context)));
+		var firstId = Guid.NewGuid();
+		var first = await host.ActivateScreenAsync("projects", "project", Activation(firstId));
+		var guards = 0;
+		await host.AttachScreenAsync(first.Id, new ApplicationScreenHostTests.ProbeScreen {
+			Guard = _ => { guards++; return Task.FromResult(allowNavigation); }
+		});
+		Synchronize(shell);
+		await navigation.PendingNavigation;
+		typeof(ApplicationShell).GetMethod("ToggleNavigation", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(shell, null);
+		await shell.ExecuteCommandAsync(host.Blocks[0].Menus[0].Items[0]);
+		await navigation.PendingNavigation;
+		var drawerOpen = (bool)typeof(ApplicationShell).GetField("_navigationOpen", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(shell);
+		Assert.That(guards, Is.EqualTo(1), "A custom command uses the host guard once; its generated route must not repeat it.");
+		Assert.That(drawerOpen, Is.EqualTo(!allowNavigation));
+		Assert.That(navigation.Uri, Is.EqualTo($"http://localhost/app/project/{(allowNavigation ? nextId : firstId):D}"));
+		Assert.That(host.Screens, Has.Length.EqualTo(allowNavigation ? 2 : 1));
+		Assert.That(navigation.ReplacedLastEntry, Is.False);
+	}
+
 	[TestCase("https://example.com/project/1")]
 	[TestCase("//example.com/project/1")]
 	[TestCase("../outside")]
