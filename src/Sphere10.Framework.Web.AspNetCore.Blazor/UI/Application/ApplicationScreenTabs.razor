@@ -26,7 +26,9 @@
 				</button>
 				@if (!session.IsPermanent) {
 					<button type="button" disabled="@_closing" class="sphere10-tab-close" aria-label="@($"Close {session.Title}")" title="Close screen"
-						@onclick="() => CloseAsync(new[] { session.Id })">×</button>
+						@onclick="() => CloseAsync(new[] { session.Id })">
+						<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><path d="M4 4 12 12M12 4 4 12" /></svg>
+					</button>
 				}
 			</div>
 		}

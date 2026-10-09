@@ -67,6 +67,24 @@ public class WizardBrowserTests {
 		await dialog.GetByRole(AriaRole.Alert).WaitForAsync();
 		Assert.That(await dialog.IsVisibleAsync(), Is.True, "Escape must preserve a non-cancellable wizard and its validation state.");
 
+		// Measure the visible content after the transition; the centering wrapper spans the viewport.
+		await dialog.EvaluateAsync("async element => await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {})))");
+		var bounds = await dialog.Locator(".modal-content").BoundingBoxAsync();
+		Assert.That(bounds.X + bounds.Width / 2, Is.EqualTo(720).Within(1), "Wizard content must be horizontally centered.");
+		Assert.That(bounds.Y + bounds.Height / 2, Is.EqualTo(500).Within(1), "Wizard content must be vertically centered.");
+
+		// A short viewport must keep the top reachable and allow scrolling to the final action.
+		await page.SetViewportSizeAsync(390, 320);
+		bounds = await dialog.Locator(".modal-content").BoundingBoxAsync();
+		Assert.That(bounds.Y, Is.GreaterThanOrEqualTo(0), "Oversized dialogs must not place their header above the viewport.");
+		var next = dialog.GetByRole(AriaRole.Button, new() { Name = "Next", Exact = true });
+		await next.ScrollIntoViewIfNeededAsync();
+		var nextBounds = await next.BoundingBoxAsync();
+		Assert.That(nextBounds.Y, Is.GreaterThanOrEqualTo(0));
+		Assert.That(nextBounds.Y + nextBounds.Height, Is.LessThanOrEqualTo(320));
+		await page.SetViewportSizeAsync(1440, 1000);
+		await dialog.EvaluateAsync("element => element.scrollTop = 0");
+
 		var directory = Path.Combine(TestContext.CurrentContext.WorkDirectory, "WizardBrowserTests");
 		Tools.FileSystem.CreateDirectory(directory);
 		var screenshot = Path.Combine(directory, legacy ? "widget-validation.png" : "wallet-validation.png");

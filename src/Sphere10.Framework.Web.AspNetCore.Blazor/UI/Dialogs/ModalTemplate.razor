@@ -10,13 +10,13 @@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
 
-<div class="modal-dialog @SizeClass" role="document">
+<div class="modal-dialog modal-dialog-centered @SizeClass" role="document">
 	<div class="modal-content">
 		<div class="modal-header">
 			@HeaderTemplate
 			@if (ShowCloseButton) {
 				<button type="button" class="close" @onclick="OnCloseAsync" aria-label="Close">
-					<span aria-hidden="true">&times;</span>
+					<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18" /></svg>
 				</button>
 			}
 		</div>

@@ -12,15 +12,22 @@ This notice must not be removed when duplicating this file or its contents, in w
 	color: var(--sphere10-text, #202b3d);
 	background: var(--sphere10-surface, #fff);
 	border-color: var(--sphere10-border, #d5dce5);
+	border-radius: var(--sphere10-panel-radius, .4rem);
 	box-shadow: var(--sphere10-shadow, 0 .25rem .75rem #17324d20);
 }
 .modal-header,
 .modal-footer { border-color: var(--sphere10-border, #d5dce5); }
 .modal-header .close {
-	margin-left: auto;
+	box-sizing: border-box;
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 2rem;
+	height: 2rem;
+	margin: 0 0 0 auto;
 	border: 0;
-	border-radius: .25rem;
-	padding: .25rem .5rem;
+	border-radius: var(--sphere10-control-radius, .25rem);
+	padding: 0;
 	color: var(--sphere10-text, #202b3d);
 	background: transparent;
 	font: inherit;
@@ -28,6 +35,7 @@ This notice must not be removed when duplicating this file or its contents, in w
 	line-height: 1;
 	cursor: pointer;
 }
+.modal-header .close svg { display: block; width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .modal-header .close:hover { background: var(--sphere10-hover, #eaf1fa); }
 .modal-header .close:focus-visible {
 	outline: 2px solid var(--sphere10-focus, #2456a6);
