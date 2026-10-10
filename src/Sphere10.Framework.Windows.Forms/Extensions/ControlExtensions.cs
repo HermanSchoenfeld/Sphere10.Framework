@@ -24,6 +24,9 @@ public static class ControlExtensions {
 	private static System.Drawing.Size mouseOffset;
 	private static readonly Type[] NeverDisableTypes = new[] { typeof(GroupBox), typeof(Form), typeof(ValidationIndicator) };
 
+	/// <summary>Defers layout and drawing for this control tree; nested scopes render only when the outermost scope ends.</summary>
+	public static ControlRenderingScope EnterRenderingScope(this Control control) => new(control);
+
 	public static bool TryGetParentForm(this Control control, out Form parent) {
 		while (control != null) {
 			if (control is Form form) {
