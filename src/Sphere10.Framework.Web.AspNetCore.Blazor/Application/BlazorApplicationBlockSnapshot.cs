@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Sphere10.Framework.Application.UI;
 
@@ -15,13 +16,26 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Blazor factories over the portable snapshot traversal and validation.</summary>
 internal static class BlazorApplicationBlockSnapshot {
-	internal const string DefaultScreenItemId = ApplicationBlockSnapshotBase<IBlazorApplicationBlock, IBlazorApplicationMenu, IBlazorApplicationMenuItem>.DefaultScreenItemId;
+	internal const string DefaultScreenItemId = "__default";
+	internal const string DefinitionScreenItemPrefix = "__screen:";
 
 	private static readonly BlazorSnapshot Snapshot = new();
 
 	internal static BlazorApplicationBlock Create(IBlazorApplicationBlock block) => (BlazorApplicationBlock)Snapshot.Create(block);
 
+	/// <summary>Validates startup definitions without constructing a service provider or a runtime UI.</summary>
+	internal static IBlazorApplicationBlock[] CreateBlocks(IEnumerable<IBlazorApplicationBlock> blocks, bool orderByPosition = true) {
+		Guard.ArgumentNotNull(blocks, nameof(blocks));
+		var snapshots = blocks.Select(Create).Cast<IBlazorApplicationBlock>().ToArray();
+		Guard.Argument(snapshots.Select(block => block.Id).Distinct(StringComparer.Ordinal).Count() == snapshots.Length, nameof(blocks), "Block IDs must be unique.");
+		var definitions = Tools.UI.GetScreenDefinitions(snapshots);
+		ApplicationScreenDefinition.ValidateDefinitions(definitions);
+		return orderByPosition ? snapshots.OrderBy(block => block.Position).ToArray() : snapshots;
+	}
+
 	internal static BlazorApplicationMenu CreateMenu(IBlazorApplicationMenu menu) => (BlazorApplicationMenu)Snapshot.CreateMenu(menu);
+
+	internal static BlazorApplicationMenu CreateBuilderMenu(IBlazorApplicationMenu menu) => Snapshot.CreateBuilderMenu(menu);
 
 	internal static IBlazorApplicationMenuItem CreateItem(IBlazorApplicationMenuItem item) => Snapshot.CreateItem(item);
 
@@ -36,48 +50,117 @@ internal static class BlazorApplicationBlockSnapshot {
 
 	internal static void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 
-	internal static BlazorScreenMenuItem GetDefaultScreen(IBlazorApplicationBlock block) => (BlazorScreenMenuItem)Snapshot.GetDefaultScreen(block);
+	/// <summary>Maps successful startup contribution order to the host's immutable browser snapshots using platform-local IDs.</summary>
+	internal static IBlazorApplicationBlock[] OrderBlocks(IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> registrations, IEnumerable<IBlazorApplicationBlock> blocks) {
+		var registered = blocks.ToArray();
+		var ordered = new List<IBlazorApplicationBlock>();
+		foreach (var source in registrations.SelectMany(registration => registration.Blocks).Cast<IBlazorApplicationBlock>()) {
+			var block = registered.FirstOrDefault(candidate => candidate.Id == source.Id);
+			if (block != null && !ordered.Contains(block))
+				ordered.Add(block);
+		}
+		ordered.AddRange(registered.Where(block => !ordered.Contains(block)));
+		return ordered.ToArray();
+	}
+
+	internal static BlazorScreenMenuItem GetDefaultScreen(IBlazorApplicationBlock block) {
+		var definition = block.DefaultScreenDefinition;
+		var screens = block.ScreenDefinitions.SelectMany(candidate => candidate.Activators).OfType<BlazorScreenMenuItem>()
+			.Where(item => ReferenceEquals(item.Parent?.Parent, block)).ToArray();
+		if (definition == null)
+			return screens.FirstOrDefault(screen => screen.IsDefault) ?? screens.FirstOrDefault(screen => screen.ScreenKind == ScreenKind.Normal) ?? screens.FirstOrDefault();
+		var matching = screens.FirstOrDefault(screen => screen.IsDefault && ReferenceEquals(screen.ScreenDefinition, definition))
+			?? screens.FirstOrDefault(screen => ReferenceEquals(screen.ScreenDefinition, definition)) ?? screens.FirstOrDefault(screen => screen.ScreenType == definition.ScreenType);
+		return Guard.ArgumentCast<BlazorApplicationBlock>(block, nameof(block))
+			.GetGeneratedScreenCommand(definition, matching?.Id ?? DefaultScreenItemId, matching, isDefault: true);
+	}
+
+	internal static IBlazorApplicationMenuItem ResolveMenuItem(IBlazorApplicationBlock block, string menuItemId) {
+		Guard.ArgumentNotNullOrEmpty(menuItemId, nameof(menuItemId));
+		var item = EnumerateItems(block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems)).FirstOrDefault(candidate => candidate.Id == menuItemId);
+		var defaultScreen = block.DefaultScreen == null ? null : GetDefaultScreen(block);
+		if (defaultScreen?.Id == menuItemId)
+			item = defaultScreen;
+		if (item == null && TryGetDefinitionIndex(block, menuItemId, out var index))
+			item = GetDefinitionMenuItem(block, block.ScreenDefinitions[index]);
+		Guard.Argument(item != null, nameof(menuItemId), $"Unknown menu item '{menuItemId}' in block '{block.Id}'.");
+		return item;
+	}
+
+	internal static BlazorScreenMenuItem GetDefinitionMenuItem(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
+		var index = Array.FindIndex(block.ScreenDefinitions, candidate => ReferenceEquals(candidate, definition));
+		Guard.Argument(index >= 0, nameof(definition), "The screen definition is not owned by this block.");
+		return Guard.ArgumentCast<BlazorApplicationBlock>(block, nameof(block))
+			.GetGeneratedScreenCommand(definition, DefinitionScreenItemPrefix + index.ToString(CultureInfo.InvariantCulture));
+	}
+
+	internal static bool IsDefinitionScreenId(IBlazorApplicationBlock block, string id) => TryGetDefinitionIndex(block, id, out _);
+
+	private static bool TryGetDefinitionIndex(IBlazorApplicationBlock block, string id, out int index) {
+		index = -1;
+		return id != null && id.StartsWith(DefinitionScreenItemPrefix, StringComparison.Ordinal)
+			&& int.TryParse(id[DefinitionScreenItemPrefix.Length..], NumberStyles.None, CultureInfo.InvariantCulture, out index)
+			&& index >= 0 && index < block.ScreenDefinitions.Length;
+	}
 
 	private sealed class BlazorSnapshot : ApplicationBlockSnapshotBase<IBlazorApplicationBlock, IBlazorApplicationMenu, IBlazorApplicationMenuItem> {
+		/// <summary>Staged menu builders clone commands while retaining prototype definitions until their block graph is copied.</summary>
+		public BlazorApplicationMenu CreateBuilderMenu(IBlazorApplicationMenu menu) {
+			var definitions = new Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance);
+			foreach (var definition in menu.Items.OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition))
+				definitions.TryAdd(definition, definition);
+			return (BlazorApplicationMenu)CreateMenuSnapshot(menu, menu.Items.Select(item => CreateItem(item, definitions)).ToArray());
+		}
+
 		protected override void ValidateScreenType(Type screenType) => BlazorApplicationBlockSnapshot.ValidateScreenType(screenType);
 
-		protected override IBlazorApplicationBlock CreateBlockSnapshot(IBlazorApplicationBlock block, string id, IBlazorApplicationMenu[] menus) {
+		protected override IBlazorApplicationBlock CreateBlockSnapshot(IBlazorApplicationBlock block, IBlazorApplicationMenu[] menus,
+			Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
+			Guard.ArgumentNotNullOrEmpty(block.Id, nameof(block));
 			Guard.ArgumentNotNull(block.ToolBarItems, nameof(block));
+			Guard.Argument(menus.Select(menu => menu.Id).Distinct(StringComparer.Ordinal).Count() == menus.Length, nameof(block), "Menu IDs must be unique within a block.");
 			var registeredItems = EnumerateItems(menus.SelectMany(menu => menu.Items)).ToArray();
 			Guard.Argument(registeredItems.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count() == registeredItems.Length, nameof(block),
 				"Menu item IDs, including grouped actions, must be unique within a block.");
-			var toolbar = block.ToolBarItems.Select(CreateItem).ToArray();
-			foreach (var screen in toolbar.OfType<BlazorScreenMenuItem>())
-				Guard.Argument(menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
-					.Any(item => item.Id == screen.Id && item.ScreenType == screen.ScreenType && item.ActivationMode == screen.ActivationMode),
-					nameof(block), "A toolbar screen command must match a screen registered in the block's menus.");
+			var toolbar = block.ToolBarItems.Select(item => CreateItem(item, definitions)).ToArray();
 			return new BlazorApplicationBlock {
-				Id = id, Title = block.Title, Position = block.Position, IconUrl = block.IconUrl, Tooltip = block.Tooltip,
+				Id = block.Id, Title = block.Title, Position = block.Position, IconUrl = block.IconUrl, Tooltip = block.Tooltip,
 				Menus = menus, ToolBarItems = toolbar, DefaultScreen = block.DefaultScreen, DefaultScreenTitle = block.DefaultScreenTitle,
-				DefaultScreenActivationMode = block.DefaultScreenActivationMode, DefaultScreenKind = block.DefaultScreenKind
+				DefaultScreenActivationMode = block.DefaultScreenActivationMode, DefaultScreenKind = block.DefaultScreenKind,
+				ScreenDefinitions = block.ScreenDefinitions.Select(definition => SnapshotDefinition(definition, definitions)).ToArray(),
+				DefaultScreenDefinition = SnapshotDefinition(block.DefaultScreenDefinition, definitions)
+					?? menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>().FirstOrDefault(item => item.IsDefault)?.ScreenDefinition
 			};
 		}
 
-		protected override IBlazorApplicationMenu CreateMenuSnapshot(IBlazorApplicationMenu menu, string id, IBlazorApplicationMenuItem[] items) =>
-			new BlazorApplicationMenu { Id = id, Text = menu.Text, Icon = menu.Icon, Items = items };
+		protected override IBlazorApplicationMenu CreateMenuSnapshot(IBlazorApplicationMenu menu, IBlazorApplicationMenuItem[] items) {
+			Guard.ArgumentNotNullOrEmpty(menu.Id, nameof(menu));
+			Guard.Argument(items.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count() == items.Length, nameof(menu), "Menu item IDs must be unique within a menu.");
+			return new BlazorApplicationMenu { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items };
+		}
 
-		protected override IBlazorApplicationMenuItem CreateItemSnapshot(IBlazorApplicationMenuItem item, string id) {
+		protected override IBlazorApplicationMenuItem CreateItemSnapshot(IBlazorApplicationMenuItem item,
+			Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
+			Guard.ArgumentNotNullOrEmpty(item.Id, nameof(item));
+			Guard.Argument(item.Id != DefaultScreenItemId, nameof(item), "The default screen ID is reserved for browser navigation.");
+			Guard.Argument(!item.Id.StartsWith(DefinitionScreenItemPrefix, StringComparison.Ordinal), nameof(item), "The definition screen ID prefix is reserved for browser navigation.");
 			if (item is BlazorMenuSeparator separator)
-				return new BlazorMenuSeparator { Id = id, IsVisible = separator.IsVisible, CanExecute = separator.CanExecute };
+				return new BlazorMenuSeparator { Id = item.Id, IsVisible = separator.IsVisible, CanExecute = separator.CanExecute };
 			if (item is BlazorApplicationMenuGroup group) {
-				var items = group.Items.Select(CreateItem).ToArray();
+				var items = group.Items.Select(child => CreateItem(child, definitions)).ToArray();
 				Guard.Argument(items.Length > 0 && items.All(child => child is not BlazorScreenMenuItem), nameof(item),
 					"Action groups require children; screen registrations must remain top-level block menu items.");
 				Guard.Argument(items.Select(child => child.Id).Distinct(StringComparer.Ordinal).Count() == items.Length, nameof(item), "Action group child IDs must be unique.");
 				var groupSnapshot = new BlazorApplicationMenuGroup {
-					Id = id, Title = group.Title, Icon = group.Icon, IsVisible = group.IsVisible, CanExecute = group.CanExecute, Items = items
+					Id = item.Id, Title = group.Title, Icon = group.Icon, IsVisible = group.IsVisible, CanExecute = group.CanExecute, Items = items
 				};
 				groupSnapshot.CopySubscriptionsFrom(group);
 				return groupSnapshot;
 			}
 			if (item is BlazorScreenMenuItem screen) {
 				var snapshot = new BlazorScreenMenuItem {
-					Id = id, Title = screen.Title, Icon = screen.Icon, IsVisible = screen.IsVisible, CanExecute = screen.CanExecute, ScreenType = screen.ScreenType, ScreenTitle = screen.ScreenTitle,
+					Id = item.Id, Title = screen.Title, Icon = screen.Icon, IsVisible = screen.IsVisible, CanExecute = screen.CanExecute,
+					ScreenDefinition = SnapshotDefinition(screen.ScreenDefinition, definitions),
 					ActivationMode = screen.ActivationMode, ScreenKind = screen.ScreenKind, IsDefault = screen.IsDefault, Parameters = screen.Parameters
 				};
 				snapshot.CopySubscriptionsFrom(screen);
@@ -86,24 +169,9 @@ internal static class BlazorApplicationBlockSnapshot {
 			Guard.Argument(item is BlazorActionMenuItem, nameof(item), "A screen or action menu item is required.");
 			var action = (BlazorActionMenuItem)item;
 			Guard.Argument(action.Action != null || action.AsyncAction != null, nameof(item), "An action callback is required.");
-			var actionSnapshot = new BlazorActionMenuItem { Id = id, Title = action.Title, Icon = action.Icon, IsVisible = action.IsVisible, CanExecute = action.CanExecute, Action = action.Action, AsyncAction = action.AsyncAction };
+			var actionSnapshot = new BlazorActionMenuItem { Id = item.Id, Title = action.Title, Icon = action.Icon, IsVisible = action.IsVisible, CanExecute = action.CanExecute, Action = action.Action, AsyncAction = action.AsyncAction };
 			actionSnapshot.CopySubscriptionsFrom(action);
 			return actionSnapshot;
-		}
-
-		protected override IBlazorApplicationMenuItem CreateDefaultScreen(IBlazorApplicationBlock block, IBlazorApplicationMenuItem matchingScreen) {
-			var screen = (BlazorScreenMenuItem)matchingScreen;
-			var defaultScreen = new BlazorScreenMenuItem {
-				Id = screen?.Id ?? DefaultScreenItemId, Title = block.DefaultScreenTitle ?? screen?.Title ?? block.DefaultScreen.Name,
-				ScreenTitle = block.DefaultScreenTitle ?? screen?.ScreenTitle,
-				Icon = screen?.Icon, IsVisible = screen?.IsVisible ?? true, CanExecute = screen?.CanExecute, ScreenType = block.DefaultScreen,
-				ActivationMode = block.DefaultScreenActivationMode ?? screen?.ActivationMode ?? ScreenActivationMode.MultiInstance,
-				ScreenKind = block.DefaultScreenKind == ScreenKind.Normal ? screen?.ScreenKind ?? ScreenKind.Normal : block.DefaultScreenKind, IsDefault = true,
-				Parameters = screen?.Parameters ?? new Dictionary<string, object>()
-			};
-			if (screen != null)
-				defaultScreen.CopySubscriptionsFrom(screen);
-			return defaultScreen;
 		}
 	}
 }

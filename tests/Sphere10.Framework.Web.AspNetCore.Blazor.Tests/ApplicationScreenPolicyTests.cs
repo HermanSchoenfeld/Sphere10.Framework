@@ -6,19 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NUnit.Framework;
 using Microsoft.JSInterop;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
+using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -31,9 +32,9 @@ public class ApplicationScreenPolicyTests {
 		var first = Block("first", typeof(FirstScreen), position: 50);
 		var second = Block("second", typeof(SecondScreen), position: -10);
 		var services = new ServiceCollection();
-		services.AddSingleton<IBlazorPlugin>(new BlazorPlugin("Ordered", new[] { first, second }));
+		services.AddSphere10BlazorPlugin(new BlazorPlugin("Ordered", new[] { first, second }));
 		using var provider = services.BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { second, first }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { second, first }, provider);
 		await host.InitializeAsync();
 		var startup = host.ActiveScreen;
 		Assert.That(host.Blocks.Select(block => block.Id), Is.EqualTo(new[] { "second", "first" }));
@@ -62,9 +63,9 @@ public class ApplicationScreenPolicyTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		await host.InitializeAsync();
-		Assert.That(host.ActiveScreen.MenuItem.Id, Is.EqualTo("second"));
+		Assert.That(host.ActiveScreen.MenuItemId, Is.EqualTo("second"));
 		Assert.That(host.ActiveScreen.MenuItem.IsDefault, Is.True);
 	}
 
@@ -159,7 +160,7 @@ public class ApplicationScreenPolicyTests {
 			Block("second", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton),
 			Block("empty", typeof(EmptyScreen), ScreenActivationMode.SingleInstance, ScreenKind.Empty)
 		};
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(blocks), provider);
+		using var host = new BlazorApplicationScreenHost(blocks, provider);
 		await host.InitializeAsync();
 		var original = host.ActiveScreen;
 		Assert.That(original.Block.Id, Is.EqualTo("first"));
@@ -182,7 +183,7 @@ public class ApplicationScreenPolicyTests {
 				.WithName("Unrelated")
 				.Build()
 		};
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(blocks), provider);
+		using var host = new BlazorApplicationScreenHost(blocks, provider);
 		var empty = await host.ActivateBlockAsync("empty");
 		var probe = new EmptyScreen { AllowLeave = false };
 		await host.AttachScreenAsync(empty.Id, probe);
@@ -213,13 +214,17 @@ public class ApplicationScreenPolicyTests {
 
 	[Test]
 	public void UnspecifiedSyntheticDefaultCannotConflictWithPermanentSingleton() {
-		var defaultBlock = Block("default", typeof(PermanentScreen));
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
+		var defaultBlock = new BlazorApplicationBlock { Id = "default", Title = "Default", DefaultScreen = typeof(PermanentScreen) };
 		var declared = Block("declared", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton);
-		Assert.That(() => new BlazorApplicationBlockCatalog(new[] { defaultBlock, declared }), Throws.ArgumentException);
+		Assert.That(() => new BlazorApplicationScreenHost(new[] { defaultBlock, declared }, provider), Throws.ArgumentException);
 	}
 
 	[Test]
 	public void BuildersPreserveFlagsAndRejectPermanentEmptyCombinations() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
 		var item = (BlazorScreenMenuItem)new BlazorApplicationMenuItemBuilder()
 			.WithId("empty")
 			.WithText("Empty")
@@ -237,7 +242,8 @@ public class ApplicationScreenPolicyTests {
 				.AddItem(item)
 			)
 			.Build();
-		var copy = new BlazorApplicationBlockCatalog(new[] { block }).Blocks.Single().Menus.Single().Items.OfType<BlazorScreenMenuItem>().Single();
+		using var metadataHost = new BlazorApplicationScreenHost(new[] { block }, provider);
+		var copy = metadataHost.AvailableBlocks.Single().Menus.Single().Items.OfType<BlazorScreenMenuItem>().Single();
 		Assert.That(copy.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		Assert.That(copy.IsDefault, Is.True);
 		Assert.That(copy.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
@@ -322,7 +328,7 @@ public class ApplicationScreenPolicyTests {
 			Block("empty", typeof(EmptyScreen), emptyMode, ScreenKind.Empty),
 			Block("permanent", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton)
 		};
-		return new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(permanent ? blocks : blocks.Take(2)), provider);
+		return new BlazorApplicationScreenHost(permanent ? blocks : blocks.Take(2), provider);
 	}
 
 	private static BlazorApplicationBlock Block(string id, Type type, ScreenActivationMode? mode = null, ScreenKind kind = ScreenKind.Normal, int position = 0) =>
@@ -350,10 +356,26 @@ public class ApplicationScreenPolicyTests {
 			return ValueTask.CompletedTask;
 		}
 	}
-	public class FirstScreen : ComponentBase, IBlazorApplicationScreen { }
-	public class SecondScreen : ComponentBase, IBlazorApplicationScreen { }
-	public class PermanentScreen : ComponentBase, IBlazorApplicationScreen { }
+	public class FirstScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+	}
+	public class SecondScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+	}
+	public class PermanentScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+	}
 	public class EmptyScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 		public bool AllowLeave { get; set; } = true;
 		public int Activations { get; private set; }
 		public int Deactivations { get; private set; }

@@ -31,7 +31,6 @@ public class NativeApplicationMenuBuilderPatternTests {
 			.WithText("Screens")
 			.ConfigureItem(item => item
 				.AsScreenItem()
-				.WithId("Stock")
 				.WithText("Stock")
 				.WithScreen<Screen>()
 				.WithImage(configuredImage)
@@ -43,13 +42,11 @@ public class NativeApplicationMenuBuilderPatternTests {
 			.Build();
 		var directItem = (WinFormsScreenMenuItem)direct.Items[0];
 		var configuredItem = (WinFormsScreenMenuItem)configured.Items[0];
-
-		Assert.That(directItem.Id, Is.EqualTo(configuredItem.Id));
 		Assert.That(directItem.Text, Is.EqualTo(configuredItem.Text));
-		Assert.That(directItem.Screen, Is.EqualTo(configuredItem.Screen));
-		Assert.That(directItem.ScreenTitle, Is.EqualTo(configuredItem.ScreenTitle));
-		Assert.That(directItem.ActivationMode, Is.EqualTo(configuredItem.ActivationMode));
-		Assert.That(directItem.ScreenKind, Is.EqualTo(configuredItem.ScreenKind));
+		Assert.That(directItem.ScreenDefinition.ScreenType, Is.EqualTo(configuredItem.ScreenDefinition.ScreenType));
+		Assert.That(directItem.ScreenDefinition.Title, Is.EqualTo(configuredItem.ScreenDefinition.Title));
+		Assert.That(directItem.ScreenDefinition.ActivationMode, Is.EqualTo(configuredItem.ScreenDefinition.ActivationMode));
+		Assert.That(directItem.ScreenDefinition.ScreenKind, Is.EqualTo(configuredItem.ScreenDefinition.ScreenKind));
 		Assert.That(directItem.IsDefault, Is.EqualTo(configuredItem.IsDefault));
 		Assert.That(directItem.ShowOnExplorerBar, Is.EqualTo(configuredItem.ShowOnExplorerBar));
 		Assert.That(directItem.ShowOnToolStrip, Is.EqualTo(configuredItem.ShowOnToolStrip));
@@ -69,8 +66,6 @@ public class NativeApplicationMenuBuilderPatternTests {
 		var item = (WinFormsActionMenuItem)menu.Items[0];
 
 		item.OnSelect(userInterface);
-
-		Assert.That(item.Id, Is.EqualTo("Run"));
 		Assert.That(item.Text, Is.EqualTo("Run"));
 		Assert.That(item.Image16x16, Is.SameAs(image));
 		Assert.That(item.ShowOnExplorerBar, Is.False);

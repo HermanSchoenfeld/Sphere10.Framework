@@ -36,7 +36,7 @@ public class BlazorApplicationBuilderPatternTests {
 		Assert.That(item.ScreenKind, Is.EqualTo(ScreenKind.Normal));
 		Assert.That(item.IsDefault, Is.True);
 		Assert.That(item.Parameters["Message"], Is.EqualTo("Original"));
-		Assert.That(((IScreenMenuItem)item).ScreenTitle, Is.EqualTo("Open document"));
+		Assert.That(((IScreenMenuItem)item).ScreenDefinition.Title, Is.EqualTo("Open document"));
 	}
 
 	[Test]
@@ -187,8 +187,16 @@ public class BlazorApplicationBuilderPatternTests {
 	}
 
 	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 	}
 
 	private sealed class NeutralScreen : IApplicationScreen {
+		public IApplicationScreenHost Host { get; set; }
+
+		public IApplicationBlock Block { get; set; }
+
 	}
 }

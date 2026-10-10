@@ -199,7 +199,7 @@ public class ApplicationNestedMenuTests {
 			.Build();
 
 	private static IBlazorApplicationMenu Menu(params IBlazorApplicationMenuItem[] items) =>
-		new BlazorApplicationMenu { Id = "views", Text = "Views", Items = items };
+		new BlazorApplicationMenu(ownsItems: false) { Id = "views", Text = "Views", Items = items };
 
 	private static ParameterView Parameters(IBlazorApplicationMenuItem[] items, Action<ApplicationCommandBar> capture, EventCallback<IBlazorApplicationMenuItem> select = default) =>
 		ParameterView.FromDictionary(new Dictionary<string, object> {

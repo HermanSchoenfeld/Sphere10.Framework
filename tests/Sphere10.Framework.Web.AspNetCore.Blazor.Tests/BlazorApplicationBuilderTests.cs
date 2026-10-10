@@ -70,11 +70,11 @@ public class BlazorApplicationBuilderTests {
 		var application = first.ServiceProvider.GetRequiredService<IBlazorApplication>();
 		Assert.That(first.ServiceProvider.GetRequiredService<IApplication>(), Is.SameAs(application));
 		Assert.That(application.ScreenHost, Is.SameAs(first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>()));
-		Assert.That(application.Blocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "tools" }));
-		Assert.That(application.Plugins.Select(item => item.Name), Is.EqualTo(new[] { "Workspace", "Tools" }));
-		Assert.That(application.Plugins.First(), Is.SameAs(plugin));
-		Assert.That(provider.GetServices<IApplicationPlugin>().ToArray(), Is.EqualTo(application.Plugins));
-		Assert.That(((IApplication)application).Plugins.SelectMany(item => item.Blocks).Select(block => block.Id), Is.EquivalentTo(application.Blocks.Select(block => block.Id)));
+		Assert.That(application.ScreenHost.Blocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "tools" }));
+		Assert.That(application.LoadedPlugins.Select(item => item.Name), Is.EqualTo(new[] { "Workspace", "Tools" }));
+		Assert.That(application.LoadedPlugins.First(), Is.SameAs(plugin));
+		Assert.That(provider.GetServices<IApplicationPlugin>().ToArray(), Is.EqualTo(application.LoadedPlugins));
+		Assert.That(((IApplication)application).Blocks, Is.EqualTo(application.ScreenHost.Blocks));
 		Assert.That(second.ServiceProvider.GetRequiredService<IBlazorApplication>(), Is.Not.SameAs(application));
 		Assert.That(configured, Is.EqualTo(new[] { "first", "second", "first", "second" }));
 		Assert.That(second.ServiceProvider.GetRequiredService<BlazorApplicationOptions>(), Is.SameAs(options));
@@ -166,6 +166,10 @@ public class BlazorApplicationBuilderTests {
 	}
 
 	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 	}
 
 	public sealed class BrandingHost : ComponentBase {

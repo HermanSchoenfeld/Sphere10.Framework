@@ -14,41 +14,55 @@ dotnet add package Sphere10.Framework.Application
 
 ## Shared UI framework
 
-`Sphere10.Framework.Application.UI` contains the common ApplicationBlock model used by the WinForms and Blazor adapters. The Application package targets `net10.0` and has no ASP.NET Core, Windows desktop or other UI framework dependency. The `UI` folder also contains the existing help, website launcher and user-interface services, which retain their `Sphere10.Framework.Application` namespace.
+`Sphere10.Framework.Application.UI` contains the common application-block model used by the WinForms and Blazor adapters. The Application package targets `net10.0` and has no ASP.NET Core, Windows desktop or other UI framework dependency. The `UI` folder also contains the existing help, website launcher and user-interface services, which retain their `Sphere10.Framework.Application` namespace.
 
 | Shared responsibility | Types |
 |---|---|
 | Plugin definitions and lifecycle | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginDecorator`, `ApplicationPluginBuilder` |
 | Running application and commands | `IApplication`, `ApplicationBase`, `ApplicationDecorator`, `IApplicationCommandProvider` |
-| Menu and toolbar merging | `Tools.UI.MergeMenus`, `Tools.UI.MergeMenuItems`, `IApplicationMenuSeparator` |
+| Application interactions and command execution | `IUserInterfaceServices`, `ApplicationUserInterfaceServices`, `UserInterfaceServicesDecorator` |
+| Application command composition | `ApplicationCommandLevel`, `ApplicationCommandLayer`, `Tools.UI.GetCommandLayers`, `Tools.UI.MergeApplicationMenus`, `Tools.UI.MergeApplicationToolBarItems` |
+| General menu and toolbar merging | `Tools.UI.MergeMenus`, `Tools.UI.MergeMenuItems`, `IApplicationMenuSeparator` |
 | Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `IWizardBuilder`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
 | Block, menu and item contracts | `IApplicationBlock`, `IApplicationMenu`, `IApplicationMenuItem`, `IScreenMenuItem` |
-| Mutable metadata and notification handlers | `ApplicationBlock`, `ApplicationMenu<TItem>`, `ApplicationMenuItem` |
+| Mutable metadata and notification handlers | `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, `ApplicationMenuItemBase` |
 | Fluent builder composition and validation | `IApplicationUIBuilder<TProduct>`, `ApplicationBuilderBase`, `ApplicationPluginBuilderBase`, `ApplicationBlockBuilderBase`, `ApplicationMenuBuilderBase`, `ApplicationMenuItemBuilderBase` |
-| Snapshot traversal, stable IDs and ordering | `ApplicationBlockSnapshotBase<TBlock, TMenu, TItem>`, `ApplicationBlockCatalog<TBlock>` |
-| Activation policy and lifecycle | `ScreenActivationPolicyRegistry`, `ScreenActivationMode`, `ScreenKind`, `ApplicationScreenDefinition`, `IApplicationScreen` |
+| Snapshot traversal and ownership validation | `ApplicationBlockSnapshotBase<TBlock, TMenu, TItem>` |
+| Screen metadata validation and lifecycle | `ScreenActivationMode`, `ScreenKind`, `ApplicationScreenDefinition`, `IApplicationScreen` |
+| Block navigation and screen hosting | `IApplicationScreenHost`, `IApplicationScreenHost<TBlock, TScreen>`, `ApplicationScreenHostBase<TBlock, TScreen>`, `ApplicationScreenHost<TBlock, TScreen>`, `ApplicationScreenHost`, `ApplicationScreenHostDecorator` |
+| Single-screen operations | `ISingleApplicationScreenHost`, `ISingleApplicationScreenHost<TBlock, TScreen>`, `SingleApplicationScreenHostDecorator` |
+| Multiple-screen operations | `IMultiApplicationScreenHost`, `IMultiApplicationScreenHost<TBlock, TScreen>`, `MultiApplicationScreenHostDecorator` |
 | Awaitable menu actions | `ApplicationAction` |
 
 Platform-specific extensions use explicit names: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`, implemented by `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Their menus, builders and screen hosts follow the same convention. Import the shared UI namespace normally alongside the platform namespace; the APIs do not require namespace aliases. Both platforms use the shared `ScreenActivationMode` directly.
 
-The shared `ApplicationBlock` stores `IApplicationMenu` directly, allowing different menu implementations in the same block. The shared models can be constructed without either UI adapter:
+The shared storage classes are abstract extension foundations. Platform adapters provide concrete blocks and menus. A block owns `ApplicationScreenDefinition` objects with immutable screen type, title, activation mode and kind. Its `DefaultScreenDefinition` references one of its `ScreenDefinitions`; screen commands reference those same objects. `Activators` returns the attached commands targeting that definition. Navigation is optional: a screen can be registered and activated without a menu entry.
 
 ```csharp
 using Sphere10.Framework.Application.UI;
 
-var block = new ApplicationBlock {
-	Id = "administration",
-	Name = "Administration",
-	Position = 10
-};
-var menu = new ApplicationMenu<ApplicationMenuItem> { Id = "tools", Text = "Tools" };
-menu.AddItem(new ApplicationMenuItem { Id = "refresh", Title = "Refresh" });
-block.AddMenu(menu);
+var block = new WorkspaceBlock { Name = "Administration", Position = 10 };
+var users = new ApplicationScreenDefinition(typeof(UsersScreen), "Users", ScreenActivationMode.SingleInstance);
+block.AddScreenDefinition(users);
+block.DefaultScreenDefinition = users;
+// await host.OpenScreenAsync(block, users);
+
+public sealed class WorkspaceBlock : ApplicationBlockBase {
+}
+
+public sealed class UsersScreen : IApplicationScreen {
+	public IApplicationScreenHost Host { get; set; }
+	public IApplicationBlock Block { get; set; }
+}
 ```
 
-IDs default to their display names when omitted. The shared builder bases copy menu, item and parameter collections when building; Blazor uses this to isolate registration snapshots. WinForms builders retain and update the same mutable native product across builds to preserve desktop ownership semantics. Snapshot factories copy platform metadata while the shared engine validates names, screen types, duplicate IDs and the reserved `__default` item ID. The catalog snapshots registrations before ordering blocks by position and indexing their IDs. The `Menus`, `Items` and catalog `Blocks` properties expose arrays. Shared models and catalogs return a fresh membership snapshot on each read, so replacing or reordering slots in a returned array cannot alter stored membership or catalog lookup. Previously returned arrays do not track later add/remove calls; use the model methods to change its membership and read the property again. These array copies preserve element identity rather than deep-cloning arbitrary objects. Enumerable method parameters remain available for registration and traversal.
+`AddMenu` registers each screen command's definition on the block and assigns the menu's `Parent`. `AddItem` assigns the item's `Parent` and updates its definition's reverse activator membership. Removing membership clears that parent; transferring a menu or item requires removing it from its current owner first. Removing a menu leaves its block-owned screens available for direct activation. `IApplicationBlock.Parent` identifies the running application, while `Source` identifies its original startup plugin; standalone blocks have no source plugin. UI services activate a screen command through `item.Parent.Parent`.
 
-Activation-policy declaration batches are atomic: incompatible policies or invalid screens reject the entire batch. Explicit declarations are distinguished from policies inferred when a host creates an instance. `IApplicationScreen` supplies UI-independent help metadata, cancellation-aware activation/deactivation hooks and a navigation guard. `ApplicationAction.ExecuteAsync` receives the executing service provider and cancellation token; callbacks should resolve scoped services there. Owner-aware synchronous callbacks use `ApplicationAction.UIAction` and `Execute(IUserInterfaceServices)`; `ExecuteAsync` resolves those UI services from the executing provider. `PrimaryUIController` supplies the platform UI owner. Registration-time callbacks must not capture scoped services or mutable per-user state.
+Block builders collect definitions introduced by child menu builders, explicit `AddScreenDefinition` calls and `WithDefaultScreen` configuration. Snapshot factories clone definition metadata once per source reference in each copied graph. Its default, commands and activators use the same canonical cloned objects; separate snapshots have independent parents and reverse membership. `WithTitle` and `WithActivationMode` create metadata variants with no copied activators. Blazor owns named IDs, reserved routing IDs, parameter copies and lookup validation; the shared models require none of these.
+
+`Menus`, `Items`, `ScreenDefinitions`, `Activators`, `Blocks` and `AvailableBlocks` return defensive arrays; modifying array slots cannot change stored membership. Copies preserve element references within their graph. Presentation command merging borrows the original command references and callbacks without changing their owning parents.
+
+`ApplicationScreenDefinition.ValidateDefinitions` checks a complete collection for valid screen types, activation modes, hosting kinds and conflicting declarations without changing metadata or membership. It accepts an optional platform type validator. The host validates a whole batch before updating its internal type-to-definition index and preserves a retained screen's captured lifetime. `IApplicationScreen` supplies writable `Host` and `Block` ownership slots, UI-independent help metadata, cancellation-aware activation/deactivation hooks and a navigation guard. `ApplicationAction.ExecuteAsync` receives the executing service provider and cancellation token; callbacks should resolve scoped services there. Owner-aware synchronous callbacks use `ApplicationAction.UIAction` and `Execute(IUserInterfaceServices)`; `ExecuteAsync` resolves those UI services from the executing provider. `PrimaryUIController` supplies the platform UI owner. Registration-time callbacks must not capture scoped services or mutable per-user state.
 
 The [WinForms adapter](../Sphere10.Framework.Windows.Forms/README.md) retains controls, images, UI-thread dispatch and desktop screen ownership. The [Blazor adapter](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) retains component validation, rendering, circuit scopes and browser interaction. Each supplies factories and platform validation to the shared engines. An ApplicationBlock describes navigation metadata; `ModuleConfiguration` continues to handle service registration and framework startup.
 
@@ -56,7 +70,7 @@ The [Application test suite](../../tests/Sphere10.Framework.Application.Tests/RE
 
 ## Application plugins
 
-The shared hierarchy is `IApplication` → `Plugins` → `IApplicationPlugin` → `Blocks`. A plugin is a named startup definition, while the running application projects its platform host's current navigation and screen selection. `ActivePlugin` resolves ownership by `ActiveBlock.Id`, allowing platform catalogs to create block snapshots without replacing the original plugin object. Browsing another block changes this navigation selection without requiring a screen switch.
+The runtime hierarchy is `IApplication` → `Blocks` → menus and screen definitions. A plugin is a named startup contribution that can supply several blocks. `LoadedPlugins` records the actual plugins whose startup registration completed successfully. Standalone blocks participate directly in the application hierarchy. The application's `Blocks` projects its `ScreenHost.Blocks`, so the host remains the single owner of live membership and navigation selection. Shell block icons select blocks; browsing another block does not require a screen switch.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -64,13 +78,13 @@ using Sphere10.Framework.Application.UI;
 
 var plugin = new ApplicationPluginBuilder()
 	.WithName("Administration")
-	.AddBlock(new ApplicationBlock { Id = "users", Name = "Users" })
+	.AddBlock(new WorkspaceBlock { Name = "Users" })
 	.ConfigureServices(services => services.AddSingleton<AdministrationSettings>())
 	.Build();
 
 var services = new ServiceCollection();
 plugin.Load(services); // Startup owner calls this before building its service provider.
-// The same startup owner calls plugin.Unload() during its shutdown sequence.
+// A startup owner can call plugin.Unload() during its own shutdown sequence.
 
 public class AdministrationSettings {
 	public string Title { get; set; } = "Administration";
@@ -79,17 +93,87 @@ public class AdministrationSettings {
 
 `ApplicationPluginBase.Load(IServiceCollection)` applies service configuration, invokes `OnLoaded`, then raises `Loaded`. `Unload` invokes `OnUnloaded`, then raises `Unloaded`. Registration failures propagate without announcing a successful load. The parameterless `Load()` is a notification-only compatibility entry point. These methods do not construct a service provider or enforce a once-only load policy: the startup owner controls calls, and runtime application adapters never load or unload plugins merely because a form or circuit opens or closes. Resolve scoped services when commands execute, rather than capturing them in startup definitions.
 
+Platform startup registrars publish an `ApplicationPluginRegistration<TPlugin>` only after loading the plugin, validating its finalized definitions and registering its blocks. They assign each registered block's `Source` to the original plugin. The immutable receipt retains that plugin and copies finalized block membership; constructing a receipt validates existing source ownership without changing it or invoking lifecycle methods. Application factories resolve this receipt inventory to supply `LoadedPlugins`; an unrelated plugin registered directly in DI does not become a loaded startup plugin. The framework does not currently connect plugin `Unload` to process shutdown, application disposal or Blazor circuit disposal.
+
 `ApplicationPlugin` supports constructor configuration and init-only `Name`/`Blocks`; its arrays copy membership and retain block identity. Platform adapters can snapshot their own block metadata before forwarding it to shared storage. `ApplicationPluginBuilderBase<TBlock, TPlugin>` shares name validation, accumulated blocks, service callback composition and independent build inputs with typed platform builders. Empty applications and service-only plugins with no blocks are valid.
 
-`Tools.UI.ValidatePlugins` validates plugin names and block ownership with ordinal comparison: names must be nonblank and unique, and each nonblank block ID belongs to exactly one plugin. It returns an owned membership array preserving the supplied plugin instances. `ValidatePluginBlocks` provides the corresponding single-plugin block validation. `GetImplicitPluginName` returns the first free name from `Application`, `Application 2`, and so on, allowing adapters to wrap legacy standalone block registrations without creating a second plugin pipeline. Platform interfaces extend `IApplicationPlugin` with typed block arrays; existing plugins remain the same startup definitions when accessed through shared or platform contracts.
+Typed plugin implementations derive from `ApplicationPluginBase<TBlock>` to share storage and lifecycle while remaining assignable to the existing `ApplicationPlugin`. The generic interface supplies the neutral `Blocks` projection for direct interface implementations. Because an inherited class implementation takes precedence over an interface default, the typed base retains one compatibility hook that sends neutral class reads through the typed virtual getter. Platform plugins use this shared hook instead of repeating explicit interface adapters.
+
+`Tools.UI.ValidatePlugins` validates plugin names and block ownership for startup configuration: plugin names must be nonblank and unique with ordinal comparison, and each block object belongs to exactly one plugin. Blocks require nonblank names but are identified by reference. It returns an owned membership array preserving the supplied plugin instances. `ValidatePluginBlocks` provides the corresponding single-plugin block validation. `ValidatePluginRegistrations` applies the same name and ownership checks to captured registration receipts without rereading mutable plugin block membership. Platform interfaces extend `IApplicationPlugin` with typed block arrays; existing plugins remain the same startup definitions when accessed through shared or platform contracts.
 
 ## Running application and command scopes
 
-`IApplication` represents the running UI rather than service-container startup. It exposes `Plugins`, `ActivePlugin`, `Blocks`, `ActiveBlock`, `ActiveScreen`, `HasUnsavedChanges` and a `Changed` event. `IBlazorApplication` and `IWinFormsApplication` specialize that contract and project their existing screen hosts. Resolving the shared interface returns the same platform application instance; disposing that adapter releases subscriptions without taking ownership of the host, screens or plugin registrations.
+`IApplication` represents the running application rather than service-container startup. It exposes array-valued `Blocks` and `LoadedPlugins`, `ScreenHost`, `HasUnsavedChanges` and a `Changed` event, alongside application menus and toolbar commands. `Blocks` reflects the host's current registered membership; `LoadedPlugins` preserves startup provenance, including service-only plugins with no blocks. Navigate through `ScreenHost`, inspect its `ActiveBlock` and `ActiveScreen`, and obtain interactions through `ScreenHost.UserInterfaceServices`. The application keeps no duplicate navigation state. `IBlazorApplication` and `IWinFormsApplication` specialize that contract. Resolving the shared interface returns the same platform application instance; disposing that adapter releases subscriptions without taking ownership of the host, its interaction services, screens or plugin registrations.
 
-`ApplicationBase` shares command storage, notifications, default plugin-to-block flattening and active-plugin lookup by the selected block ID. Platform adapters may override `Blocks` with their live registration projection. `IApplicationCommandProvider` supplies array-valued `Menus` and `ToolBarItems`. `Tools.UI.MergeMenus` and `MergeMenuItems` combine contributions from broader to narrower scopes: application, the active screen's owning block, then active screen. With no active screen, the selected navigation block supplies block commands. Matching IDs retain their original position and take the narrower command; matching menus combine their items. Separators are normalized and the `help` menu remains last. Merging creates membership snapshots and preserves command identity, so callbacks continue to execute on the original definitions.
+`IApplication<TPlugin, THost>`, `IApplicationPlugin<TBlock>`, `IApplicationBlock<TMenu, TItem>`, `IApplicationMenu<TItem>` and `IApplicationCommandProvider<TMenu, TItem>` provide typed platform collections and a typed host while centrally projecting the same instances through their neutral contracts. Platform interfaces inherit these generic contracts instead of redeclaring common members. Consumers should inject the neutral contract for shared behavior and use a typed platform contract when they need platform presentation details.
 
-`ScreenMode.SingleView` and `ScreenMode.MultiView` live in this shared namespace alongside `ScreenActivationMode`. Platform hosts retain responsibility for rendering, instance ownership and navigation guards.
+`ApplicationBase` shares command storage, notifications and live projections of the host's blocks and dirty state. Derived applications call `ObserveScreenHost()` after assigning their host; it maintains each registered block's `Parent`, clears it on unregistration or application disposal, and preserves startup `Source`. `IApplicationCommandProvider` supplies array-valued `Menus` and `ToolBarItems`. `Tools.UI.GetCommandLayers(application)` identifies the application, the active screen's owning block and the active screen. With no active screen, it uses the browsed navigation block. Application commands also work when no block is selected.
+
+Use `MergeApplicationMenus` and `MergeApplicationToolBarItems` to compose those layers. Application contributions survive matching contextual captions or platform keys; within contextual contributions, a screen replaces a matching block command in its original position. Reusing the exact application command object in a screen replaces matching block context without duplicating that global command. Matching menus combine items and take the narrower menu's display metadata. Separators are normalized and Help remains last. The results retain original command references and callbacks. UI adapters distinguish application and contextual rendering keys when both use the same local command ID.
+
+```csharp
+using System;
+using Sphere10.Framework.Application.UI;
+
+public static class ApplicationCommands {
+	public static TMenu[] ComposeMenus<TMenu, TItem>(IApplication application, Func<TMenu, TItem[], TMenu> createMenu)
+		where TMenu : class, IApplicationMenu
+		where TItem : class, IApplicationMenuItem =>
+		Tools.UI.MergeApplicationMenus<TMenu, TItem>(createMenu, Tools.UI.GetCommandLayers(application));
+}
+```
+
+The convenience overloads use display captions; adapters can supply semantic key selectors. General `MergeMenus` and `MergeMenuItems` remain available for arbitrary ordered layers where every narrower contribution may replace a broader one. Application shells use the level-aware helpers to preserve application commands.
+
+`ScreenMode.SingleView` and `ScreenMode.MultiView` live in this shared namespace alongside `ScreenActivationMode`. Their screen retention rules belong to the shared screen host; platform adapters own presentation and view disposal.
+
+## Shared application screen host
+
+Use `IApplicationScreenHost` for block navigation, current-screen hosting, view mode and unsaved-state checks. Use `ISingleApplicationScreenHost` to close the current screen, and `IMultiApplicationScreenHost` when working with retained collections, ordering or other tabs. Use `IUserInterfaceServices` for application interactions and menu-command execution. The Blazor and WinForms registrations expose their platform implementations through these neutral interfaces, preserving circuit or native application lifetimes. `IApplication.ScreenHost.UserInterfaceServices` exposes the host's interaction service. Resolve a platform interface when code needs component metadata, native controls or docking.
+
+The generic screen-host interfaces provide neutral property and method projections, including argument validation and asynchronous return adaptation, for direct implementations. Reusable host bases and typed decorators retain their neutral class mappings so virtual overrides remain authoritative even when a subclass explicitly remaps the typed interface.
+
+`IApplicationScreenHost` owns available and registered blocks, the selected navigation block, the current screen and lifecycle transitions. `IApplicationScreenHost<TBlock, TScreen>` supplies typed projections constrained to application blocks and screens. The single and multiple host contracts have corresponding typed variants. The dynamic shared implementation supports both capability interfaces; consumers depend on the operations they use. Hosting uses screen reference identity; there is no abstract session descriptor, runtime GUID or renderer-attachment API.
+
+`SelectBlockAsync(block)` browses its navigation without leaving the current screen. `ActivateBlockAsync(block)` opens its configured default; `ActivateScreenAsync(block, type)` and the screen-menu overload resolve type policy before creating or selecting a screen. `OpenScreenAsync(block, definition)` accepts a canonical definition owned by that block. `AvailableBlocks` retains startup definitions while `Blocks` reflects registration. Removing a block preflights its owned screens, including permanent screens, before updating membership. Registering a known block restores its definitions and permanent screens after the current placeholder's leave guard permits the transition.
+
+On `IMultiApplicationScreenHost`, `Screens` includes hidden singletons and `OpenScreens` contains normal screens in presentation order. An empty placeholder has no tab. `ActiveBlock` may differ from the active screen's owner after browsing another block; `GetCommandLayers` resolves the owner when composing that screen's commands. Explicit screen selection restores its owner's navigation. Dirty-state notifications preserve a separately browsed block.
+
+The host assigns a screen's `Host` and `Block` before activation and lifecycle hooks. They remain attached while a single instance is hidden, and clear after actual removal cleanup or host disposal. A rejected deactivation guard preserves ownership. Shared host cleanup detaches those slots; platform adapters retain responsibility for disposing their views and screen instances.
+
+```csharp
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
+
+public static class WorkspaceCommands {
+	public static Task<IApplicationScreen> OpenSettingsAsync(IApplicationScreenHost host) {
+		var settings = host.Blocks.Single(block => block.Name == "Settings");
+		return host.ActivateBlockAsync(settings);
+	}
+
+	public static Task<bool> CloseOtherTabsAsync(IMultiApplicationScreenHost host) {
+		var current = host.ActiveScreen;
+		var closing = host.OpenScreens.Where(screen => !ReferenceEquals(screen, current)).ToArray();
+		return host.CloseScreensAsync(closing);
+	}
+}
+```
+
+`ISingleApplicationScreenHost.CloseActiveScreenAsync` and `CanCloseActiveScreenAsync` work on the current screen. The multiple host contract adds reference-based Show, Close, CanClose, Move and batch Close operations. `ApplicationScreenHostDecorator`, `SingleApplicationScreenHostDecorator` and `MultiApplicationScreenHostDecorator` forward their respective contracts; choose the matching decorator when overriding a capability.
+
+The writable `ScreenMode` property supports safe configuration: the same value, promotion to multiple view, or switching to single view when no other ordinary open screen requires closure. It rejects a switch requiring lifecycle work before changing any state. Runtime controls must await `TrySetScreenModeAsync(mode)`, which preflights all affected guards before removing anything; the synchronous setter never blocks on an asynchronous guard. A change during an in-progress transition is also rejected.
+
+Permanent screens reject ordinary closure. `CanNavigateAsync` checks all retained screens. `NotifyScreenChanged(screen)` reports changes to a retained screen's title, commands or dirty state. The host's asynchronous engine serializes lifecycle work, checks cancellation before committing selection or removal, and propagates post-commit activation failures. Lifecycle callbacks must not await another transition on the same host.
+
+`ApplicationScreenHost<TBlock, TScreen>` shares registration, type policies, singleton retention, selection, ordering and guards. Its overridable `CreateScreen`, reuse and removal hooks let adapters own platform presentation. The neutral factory resolves or creates the actual screen through dependency injection. Native adapters create and own controls; Blazor keeps its renderer proxy, session GUIDs, runtime reuse keys, parameters and attachment bookkeeping in the Blazor library. Those presentation details do not enter the abstract host contract. Named routing IDs and lookup APIs live in Blazor. Shared menu merging uses display captions by default and accepts adapter-supplied key selectors when a platform needs another semantic identity.
+
+`IUserInterfaceServices` provides application dialogs, status, reporting, exit, UI dispatch and menu/action execution. `ApplicationUserInterfaceServices` borrows the host for screen commands without retaining another block or screen collection. The neutral host uses a registered interaction service when available; otherwise it lazily owns one shared command-capable fallback. Host disposal releases that fallback and leaves registered services to their independent owner. Platform interaction implementations supply dialogs and native/browser dispatch.
+
+Actions execute outside the host's lifecycle gate and may navigate through `ScreenHost`. Owner-aware callbacks receive the interaction service executing the command, while asynchronous callbacks receive the executing scoped provider. The interaction service's `Changed` event reports interaction/status changes; host membership and screen changes are reported by the host. Disposing UI services does not dispose the borrowed host or platform screens.
+
+The [host tests](../../tests/Sphere10.Framework.Application.Tests/UI/ApplicationScreenHostTests.cs) protect lifecycle and retention, and the [navigation tests](../../tests/Sphere10.Framework.Application.Tests/UI/ApplicationScreenHostNavigationTests.cs) cover block selection and guarded membership changes. The [capability tests](../../tests/Sphere10.Framework.Application.Tests/UI/ApplicationScreenHostCapabilityTests.cs) cover the interface split and safe synchronous and asynchronous mode changes. The [identity tests](../../tests/Sphere10.Framework.Application.Tests/UI/ApplicationScreenIdentityTests.cs) exercise actual screen references, including distinct screens with equal values. The [UI-services tests](../../tests/Sphere10.Framework.Application.Tests/UI/ApplicationUserInterfaceServicesTests.cs) cover command execution, interactions and the responsibility boundary.
 
 ## Shared fluent builders
 
@@ -116,7 +200,9 @@ Keep each builder invocation as one continuous indented block without blank sepa
 
 Ordinary Blazor and WinForms screens default to `ScreenActivationMode.MultiInstance`: each activation creates a new screen. Choose `SingleInstance` explicitly for a retained screen, such as Settings; permanent and empty-screen test scenarios keep their declared lifetimes. Enum numeric values are unchanged.
 
-Both UI adapters use the same screen metadata and selection rules. Mark a screen menu item with `IsDefault`, or use a block's `DefaultScreen` (the platform builders expose `AsDefault()` and `WithDefaultScreen<TScreen>(...)`). Startup chooses the first marked screen in plugin registration order, then each plugin's block order, then menu declaration order. `Position` remains a navigation display setting and does not override plugin ownership order. Explicit navigation to a screen takes precedence over startup selection.
+Both UI adapters use the same screen metadata and selection rules. Set a block's canonical `DefaultScreenDefinition`, or use the platform builders' `AsDefault()` and `WithDefaultScreen<TScreen>(...)` convenience APIs. Menu default hints are promoted to the block's selected definition. Startup chooses the first marked screen in plugin registration order, then each plugin's block order, then menu declaration order. `Position` remains a navigation display setting and does not override plugin ownership order. Explicit navigation to a screen takes precedence over startup selection.
+
+The shared block builder resolves type-based defaults against matching owned definitions before creating the block. Menu registrations take precedence over definitions supplied through `AddScreenDefinition`. Omitted captions and policies inherit the matching definition's metadata; matching metadata reuses its exact reference. An explicit caption or policy override creates a separate definition owned by the block. `WithDefaultScreen(definition)` always retains the supplied definition unchanged. Platform builders can extend the inference candidates through `GetDefaultScreenDefinitions`, including canonical definitions retained by a cached block after its navigation changes.
 
 | Configuration | Behavior |
 |---|---|
@@ -128,17 +214,15 @@ Both UI adapters use the same screen metadata and selection rules. Mark a screen
 
 `Empty` describes the screen's role, separately from its activation mode. It never has a tab and cannot be combined with `PermanentSingleton`. A permanently open normal screen therefore keeps an empty placeholder hidden. Administrative block removal ends its screens' lifetime, including permanent screens, after applicable navigation guards permit removal; normal application shutdown also disposes them. A permanent screen does not make application shutdown impossible.
 
-`Tools.UI.OrderApplicationBlocks` resolves plugin membership against live block registrations. `GetScreenDefinitions` produces immutable `ApplicationScreenDefinition` metadata from block defaults and menu entries, validating lifetime and role consistency for each screen type. `GetDefaultScreen` and `GetEmptyScreen` select from those definitions, so both platforms share the ordering algorithm. The first explicitly marked empty candidate is preferred; otherwise the first empty candidate is used. A default block screen inherits a matching menu entry's lifetime when no override is specified. Conflicting explicit policies fail before registration.
+`Tools.UI.OrderApplicationBlocks` resolves plugin membership against registered blocks and appends standalone blocks in their supplied order. Its receipt overload uses captured startup membership, preserving registration order even when a plugin later changes its live `Blocks`. `GetScreenDefinitions` returns the immutable definitions already owned by each block, validating command references and lifetime/role consistency. `GetDefaultScreen(blocks)` and `GetEmptyScreen(blocks)` inspect the blocks' selected default references. Hosts can specialize startup order through `GetStartupScreen` without changing the definition model. The first explicitly marked empty candidate is preferred; otherwise the first empty candidate is used. Platform convenience APIs may reuse a matching owned definition; explicitly supplied definitions retain their reference identity. Conflicting explicit policies fail before registration.
 
 For example, a UI-independent placeholder declaration is:
 
 ```csharp
-var block = new ApplicationBlock {
-	Id = "welcome",
+var block = new WorkspaceBlock {
 	Name = "Welcome",
-	DefaultScreen = typeof(WelcomeScreen),
-	DefaultScreenActivationMode = ScreenActivationMode.SingleInstance,
-	DefaultScreenKind = ScreenKind.Empty
+	DefaultScreenDefinition = new ApplicationScreenDefinition(typeof(WelcomeScreen), "Welcome",
+		ScreenActivationMode.SingleInstance, ScreenKind.Empty)
 };
 ```
 

@@ -14,6 +14,15 @@ namespace Sphere10.Framework.Application.UI;
 /// <summary>Shared help metadata and asynchronous lifecycle contract for application screens.</summary>
 /// <remarks>UI adapters own rendering, thread affinity, attachment and disposal.</remarks>
 public interface IApplicationScreen : IHelpableObject, IApplicationCommandProvider {
+	/// <summary>The host retaining this instance, or null when it is not hosted.</summary>
+	IApplicationScreenHost Host { get; set; }
+
+	/// <summary>The block that owns this retained instance.</summary>
+	IApplicationBlock Block { get; set; }
+
+	/// <summary>Optional dynamic display caption.</summary>
+	string Title => null;
+
 	bool HasUnsavedChanges => false;
 
 	/// <summary>Allows or vetoes hiding, closing, or navigating away; may be called for a hidden screen.</summary>
@@ -22,7 +31,7 @@ public interface IApplicationScreen : IHelpableObject, IApplicationCommandProvid
 		return Task.FromResult(true);
 	}
 
-	/// <summary>Runs on first active attachment and whenever this retained screen is selected again.</summary>
+	/// <summary>Runs when the screen becomes active.</summary>
 	Task OnActivatedAsync(CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		return Task.CompletedTask;
@@ -45,4 +54,9 @@ public interface IApplicationScreen : IHelpableObject, IApplicationCommandProvid
 	int? IHelpableObject.HelpTopicID => null;
 
 	int? IHelpableObject.HelpTopicAlias => null;
+}
+
+public interface IApplicationScreen<out TMenu, out TItem> : IApplicationScreen, IApplicationCommandProvider<TMenu, TItem>
+	where TMenu : class, IApplicationMenu
+	where TItem : class, IApplicationMenuItem {
 }

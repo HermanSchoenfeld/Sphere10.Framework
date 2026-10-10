@@ -12,7 +12,7 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationBlock : ApplicationBlock, IWinFormsApplicationBlock {
+public class WinFormsApplicationBlock : ApplicationBlockBase, IWinFormsApplicationBlock {
 	public WinFormsApplicationBlock()
 		: this(string.Empty, null, null, null) {
 	}
@@ -37,6 +37,16 @@ public class WinFormsApplicationBlock : ApplicationBlock, IWinFormsApplicationBl
 				AddMenu(menu);
 	}
 
+	public new virtual IWinFormsApplication Parent {
+		get => (IWinFormsApplication)base.Parent;
+		set => base.Parent = value;
+	}
+
+	public new virtual IWinFormsApplicationPlugin Source {
+		get => (IWinFormsApplicationPlugin)base.Source;
+		set => base.Source = value;
+	}
+
 	public bool ShowInToolStrip { get; set; }
 
 	public virtual bool ShowInMenuStrip { get; set; }
@@ -56,8 +66,8 @@ public class WinFormsApplicationBlock : ApplicationBlock, IWinFormsApplicationBl
 
 	public virtual void AddMenu(IWinFormsApplicationMenu menu) {
 		Guard.ArgumentNotNull(menu, nameof(menu));
-		menu.Parent = this;
 		base.AddMenu(menu);
+		DefaultScreenDefinition ??= menu.Items.OfType<WinFormsScreenMenuItem>().FirstOrDefault(item => item.IsDefault)?.ScreenDefinition;
 	}
 
 	public override bool ContainsMenu(IApplicationMenu menu) => menu is IWinFormsApplicationMenu nativeMenu && ContainsMenu(nativeMenu);

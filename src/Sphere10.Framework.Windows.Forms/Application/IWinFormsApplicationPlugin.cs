@@ -11,8 +11,5 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A named group of native block definitions and startup services.</summary>
-public interface IWinFormsApplicationPlugin : IApplicationPlugin {
-	new IWinFormsApplicationBlock[] Blocks { get; }
-
-	IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
+public interface IWinFormsApplicationPlugin : IApplicationPlugin<IWinFormsApplicationBlock> {
 }

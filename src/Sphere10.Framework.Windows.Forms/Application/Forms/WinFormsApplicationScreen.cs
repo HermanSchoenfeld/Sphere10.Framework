@@ -41,7 +41,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	}
 
 	public WinFormsApplicationScreen(IWinFormsApplicationBlock applicationBlock) {
-		ApplicationBlock = applicationBlock;
+		Block = applicationBlock;
 		Url = FileName = null;
 		Type = HelpType.None;
 		_menuStripItems = new List<ToolStripItem>();
@@ -64,7 +64,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 		get => _activationMode;
 		protected set {
 			Tools.UI.ValidateActivationMode(value);
-			Guard.Ensure(ScreenHost == null, "A screen's activation mode cannot change while it belongs to a host");
+			Guard.Ensure(Host == null, "A screen's activation mode cannot change while it belongs to a host");
 			_activationMode = value;
 		}
 	}
@@ -75,13 +75,25 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 		set => Text = value;
 	}
 
-	[Browsable(false)] public IWinFormsApplicationBlock ApplicationBlock { get; set; }
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public IWinFormsApplicationScreenHost Host { get; set; }
+
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public IWinFormsApplicationBlock Block { get; set; }
+
+	[Browsable(false)]
+	public IWinFormsApplicationBlock ApplicationBlock {
+		get => Block;
+		set => Block = value;
+	}
 
 	/// <summary>The registered presentation role. Empty screens occupy the workspace without a tab.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public ScreenKind ScreenKind { get; internal set; }
 
-	internal IWinFormsApplicationScreenHost? ScreenHost { get; set; }
+	/// <summary>The owning host, for operations on this screen instance.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	protected IApplicationScreenHost ApplicationScreenHost => Host;
 
 	/// <summary>
 	/// The menu items associated with this screen.
@@ -94,6 +106,14 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	/// </summary>
 	[Browsable(true), Category("Behavior"), Description("The toolbar associated with this screen.")]
 	public ToolStrip ToolBar { get; set; }
+
+	/// <summary>Screen commands contributed to the shared application menu layers.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public virtual IWinFormsApplicationMenu[] Menus => Array.Empty<IWinFormsApplicationMenu>();
+
+	/// <summary>Screen commands contributed to the shared application toolbar layers.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public virtual IWinFormsApplicationMenuItem[] ToolBarItems => Array.Empty<IWinFormsApplicationMenuItem>();
 
 	public HelpType Type { get; }
 

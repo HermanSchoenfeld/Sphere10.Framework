@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -17,49 +18,50 @@ namespace Sphere10.Framework.Windows.Forms;
 public class WinFormsApplication : ApplicationBase, IWinFormsApplication {
 	private readonly BlockMainForm _mainForm;
 	private readonly IWinFormsApplicationBlock[] _configuredBlocks;
-	private readonly IWinFormsApplicationPlugin[] _plugins;
-	private readonly IWinFormsApplicationPlugin _implicitPlugin;
+	private readonly ApplicationPluginRegistration<IWinFormsApplicationPlugin>[] _loadedPluginRegistrations;
+	private readonly IWinFormsApplicationPlugin[] _loadedPlugins;
 	private bool _initialized;
 
 	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks)
 		: this(mainForm, blocks, Array.Empty<IWinFormsApplicationPlugin>()) {
 	}
 
-	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks, IEnumerable<IWinFormsApplicationPlugin> plugins) {
+	/// <summary>Adapts blocks and plugins that the caller has already loaded; this constructor does not invoke plugin lifecycle methods.</summary>
+	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks, IEnumerable<IWinFormsApplicationPlugin> loadedPlugins)
+		: this(mainForm, blocks, Tools.UI.ValidatePlugins(loadedPlugins).Cast<IWinFormsApplicationPlugin>()
+			.Select(plugin => new ApplicationPluginRegistration<IWinFormsApplicationPlugin>(plugin, plugin.Blocks))) {
+	}
+
+	internal WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks,
+		IEnumerable<ApplicationPluginRegistration<IWinFormsApplicationPlugin>> loadedPluginRegistrations) {
 		Guard.ArgumentNotNull(mainForm, nameof(mainForm));
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		Guard.ArgumentNotNull(plugins, nameof(plugins));
+		Guard.ArgumentNotNull(loadedPluginRegistrations, nameof(loadedPluginRegistrations));
 		_mainForm = mainForm;
-		var definitions = Tools.UI.ValidatePlugins(plugins).Cast<IWinFormsApplicationPlugin>().ToArray();
-		var groupedBlocks = definitions.SelectMany(plugin => plugin.Blocks).ToArray();
-		_configuredBlocks = blocks.Concat(groupedBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		_loadedPluginRegistrations = Tools.UI.ValidatePluginRegistrations(loadedPluginRegistrations);
+		_loadedPlugins = _loadedPluginRegistrations.Select(registration => registration.Plugin).ToArray();
+		var contributedBlocks = _loadedPluginRegistrations.SelectMany(registration => registration.Blocks).Cast<IWinFormsApplicationBlock>();
+		_configuredBlocks = blocks.Concat(contributedBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
 		Guard.Argument(_configuredBlocks.All(block => block != null), nameof(blocks), "Block definitions cannot be null.");
-		_plugins = definitions;
-		_implicitPlugin = new ImplicitApplicationPlugin(Tools.UI.GetImplicitPluginName(definitions), GetUngroupedBlocks);
-		_ = Plugins;
+		foreach (var registration in _loadedPluginRegistrations)
+			foreach (var block in registration.Blocks)
+				Guard.Argument(block.Source == null || ReferenceEquals(block.Source, registration.Plugin), nameof(loadedPluginRegistrations), "The block already has another source plugin.");
+		foreach (var registration in _loadedPluginRegistrations)
+			foreach (var block in registration.Blocks)
+				block.Source = registration.Plugin;
+		ObserveScreenHost();
 		_mainForm.ApplicationChanged += OnChanged;
 	}
 
 	public IBlockManager BlockManager => _mainForm;
 
-	public IWinFormsApplicationScreenHost ScreenHost => _mainForm.ScreenHost;
+	public override IWinFormsApplicationScreenHost ScreenHost => _mainForm.ScreenHost;
 
-	public override IWinFormsApplicationPlugin[] Plugins {
-		get {
-			var plugins = GetUngroupedBlocks().Length == 0 ? _plugins : _plugins.Append(_implicitPlugin);
-			return Tools.UI.ValidatePlugins(plugins).Cast<IWinFormsApplicationPlugin>().ToArray();
-		}
-	}
+	public override IWinFormsApplicationPlugin[] LoadedPlugins => Tools.Array.Clone(_loadedPlugins);
 
-	public override IWinFormsApplicationPlugin ActivePlugin => (IWinFormsApplicationPlugin)base.ActivePlugin;
+	public override IWinFormsApplicationBlock[] Blocks => ScreenHost.Blocks;
 
-	public override IWinFormsApplicationBlock[] Blocks => _mainForm.RegisteredBlocks;
-
-	public override IWinFormsApplicationBlock ActiveBlock => _mainForm.ActiveBlock;
-
-	public override IWinFormsApplicationScreen ActiveScreen => _mainForm.ActiveScreen;
-
-	public override bool HasUnsavedChanges => ScreenHost.Screens.Any(screen => ((IApplicationScreen)screen).HasUnsavedChanges);
+	public override bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
 
 	public override IWinFormsApplicationMenu[] Menus => base.Menus.Cast<IWinFormsApplicationMenu>().ToArray();
 
@@ -69,7 +71,8 @@ public class WinFormsApplication : ApplicationBase, IWinFormsApplication {
 		Guard.Ensure(!IsDisposed, "The application has been disposed.");
 		if (_initialized)
 			return;
-		var ordered = Tools.UI.OrderApplicationBlocks(Plugins, _configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance));
+		var ordered = Tools.UI.OrderApplicationBlocks(_loadedPluginRegistrations,
+			_configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance));
 		_initialized = _mainForm.RegisterBlocks(ordered.Cast<IWinFormsApplicationBlock>());
 	}
 
@@ -91,30 +94,9 @@ public class WinFormsApplication : ApplicationBase, IWinFormsApplication {
 		base.SetToolBarItems(definitions);
 	}
 
-	private IWinFormsApplicationBlock[] GetUngroupedBlocks() {
-		var registered = _mainForm.RegisteredBlocks;
-		var candidates = _initialized ? registered : _configuredBlocks.Concat(registered);
-		var grouped = _plugins.SelectMany(plugin => plugin.Blocks).ToArray();
-		return candidates.Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance)
-			.Where(block => !grouped.Any(definition => ReferenceEquals(definition, block))).ToArray();
-	}
-
 	protected override void FreeManagedResources() {
 		_mainForm.ApplicationChanged -= OnChanged;
 		base.FreeManagedResources();
 	}
 
-	private sealed class ImplicitApplicationPlugin : WinFormsApplicationPlugin {
-		private readonly Func<IWinFormsApplicationBlock[]> _getBlocks;
-
-		public ImplicitApplicationPlugin(string name, Func<IWinFormsApplicationBlock[]> getBlocks)
-			: base(name, Array.Empty<IWinFormsApplicationBlock>()) {
-			_getBlocks = getBlocks;
-		}
-
-		public override IWinFormsApplicationBlock[] Blocks {
-			get => _getBlocks();
-			init => base.Blocks = value;
-		}
-	}
 }

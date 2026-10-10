@@ -9,17 +9,17 @@
 using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Owns screen instances, selection and their docked or detached presentation.</summary>
-public interface IWinFormsApplicationScreenHost {
+public interface IWinFormsApplicationScreenHost : ISingleApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen>,
+	IMultiApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen> {
 	event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanging;
 	event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanged;
-	ScreenMode ScreenMode { get; set; }
-	WinFormsApplicationScreen? ActiveScreen { get; }
-	WinFormsApplicationScreen[] Screens { get; }
-	WinFormsApplicationScreen[] OpenScreens { get; }
+	/// <summary>Browses a registered block without changing the active screen or running leave guards.</summary>
+	void SelectBlock(IWinFormsApplicationBlock block);
 	/// <summary>Registers a block's explicit screen type policies before activating any screen. Conflicting declarations are rejected atomically.</summary>
 	void RegisterScreenTypes(IWinFormsApplicationBlock Block);
 	/// <summary>Opens permanent screens and chooses the ordered default when no screen is active.</summary>
@@ -28,6 +28,7 @@ public interface IWinFormsApplicationScreenHost {
 	bool UnregisterScreenTypes(IWinFormsApplicationBlock block);
 	/// <summary>Creates a screen or selects its existing single instance, including when registered through another block.</summary>
 	WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null);
+	WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock block, ApplicationScreenDefinition definition);
 	/// <summary>Shows a supplied instance using its registered type policy. Rejects duplicate single-instance screens and conflicting constructor defaults.</summary>
 	bool ShowScreen(WinFormsApplicationScreen Screen);
 	bool CloseScreen(WinFormsApplicationScreen Screen);

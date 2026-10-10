@@ -15,6 +15,13 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorApplicationBlockBuilder, IBlazorApplicationMenu, BlazorApplicationMenuBuilder, BlazorApplicationBlock> {
 	private readonly List<IBlazorApplicationMenuItem> _toolBarItems = new();
+	private string _id;
+
+	public BlazorApplicationBlockBuilder WithId(string id) {
+		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
+		_id = id;
+		return this;
+	}
 
 	public BlazorApplicationBlockBuilder WithTitle(string title) => WithName(title);
 
@@ -48,9 +55,44 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 
 	protected override BlazorApplicationBlock CreateBlock(IReadOnlyList<IBlazorApplicationMenu> menus) =>
-		BlazorApplicationBlockSnapshot.Create(new BlazorApplicationBlock {
-			Id = Id, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip,
+		BlazorApplicationBlockSnapshot.Create(new BlockSource {
+			Id = _id ?? Name, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip,
+			ScreenDefinitions = ScreenDefinitions.Concat(_toolBarItems.OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition))
+				.Distinct<ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance).ToArray(), DefaultScreenDefinition = DefaultScreenDefinition,
 			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle,
 			DefaultScreenActivationMode = DefaultScreenActivationMode, DefaultScreenKind = DefaultScreenKind, Menus = menus.ToArray(), ToolBarItems = _toolBarItems.ToArray()
 		});
+
+	/// <summary>Builder inputs are borrowed until the final snapshot owns their cloned graph.</summary>
+	private sealed class BlockSource : IBlazorApplicationBlock {
+		public IBlazorApplication Parent { get; set; }
+
+		public IBlazorPlugin Source { get; set; }
+
+		public string Id { get; init; }
+
+		public string Title { get; init; }
+
+		public int Position { get; init; }
+
+		public string IconUrl { get; init; }
+
+		public string Tooltip { get; init; }
+
+		public IBlazorApplicationMenu[] Menus { get; init; }
+
+		public IBlazorApplicationMenuItem[] ToolBarItems { get; init; }
+
+		public ApplicationScreenDefinition[] ScreenDefinitions { get; init; }
+
+		public ApplicationScreenDefinition DefaultScreenDefinition { get; init; }
+
+		public Type DefaultScreen { get; init; }
+
+		public string DefaultScreenTitle { get; init; }
+
+		public ScreenActivationMode? DefaultScreenActivationMode { get; init; }
+
+		public ScreenKind DefaultScreenKind { get; init; }
+	}
 }

@@ -17,6 +17,14 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<BlazorApplicationMenuBuilder, IBlazorApplicationMenuItem, BlazorApplicationMenuItemBuilder, BlazorApplicationMenu> {
+	private string _id;
+
+	public BlazorApplicationMenuBuilder WithId(string id) {
+		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
+		_id = id;
+		return this;
+	}
+
 	public BlazorApplicationMenuBuilder WithIcon(string icon) {
 		SetIcon(icon);
 		return this;
@@ -24,9 +32,11 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<BlazorApp
 
 	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string id, string text, ScreenActivationMode activationMode = ScreenActivationMode.MultiInstance,
 		IReadOnlyDictionary<string, object> parameters = null, ScreenKind screenKind = ScreenKind.Normal, bool isDefault = false
-	) where TScreen : IComponent, IBlazorApplicationScreen => AddScreenItem(id, text, typeof(TScreen), activationMode, parameters, screenKind, isDefault);
+	)
+		where TScreen : IComponent, IBlazorApplicationScreen => AddScreenItem(id, text, typeof(TScreen), activationMode, parameters, screenKind, isDefault);
 
-	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string text) where TScreen : IComponent, IBlazorApplicationScreen =>
+	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string text)
+		where TScreen : IComponent, IBlazorApplicationScreen =>
 		AddScreenItem<TScreen>(typeof(TScreen).Name, text);
 
 	public BlazorApplicationMenuBuilder AddScreenItem(string id, string text, Type screenType, ScreenActivationMode activationMode = ScreenActivationMode.MultiInstance,
@@ -51,6 +61,17 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<BlazorApp
 		return AddItem(new BlazorActionMenuItem { Id = id, Title = text, AsyncAction = action });
 	}
 
+	/// <summary>References an existing immutable definition without creating a second screen registration.</summary>
+	public BlazorApplicationMenuBuilder AddScreenItem(string id, string text, ApplicationScreenDefinition definition,
+		IReadOnlyDictionary<string, object> parameters = null, bool isDefault = false) {
+		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
+		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		return AddItem(new BlazorScreenMenuItem {
+			Id = id, Title = text, ScreenDefinition = definition, Parameters = parameters ?? new Dictionary<string, object>(), IsDefault = isDefault
+		});
+	}
+
 	public BlazorApplicationMenuBuilder AddActionItem(string id, string text, Action action) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
@@ -62,5 +83,5 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<BlazorApp
 	protected override void ValidateText(string text) => Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 
 	protected override BlazorApplicationMenu CreateMenu(IReadOnlyList<IBlazorApplicationMenuItem> items) =>
-		BlazorApplicationBlockSnapshot.CreateMenu(new BlazorApplicationMenu { Id = Id, Text = Text, Icon = Icon, Items = items.ToArray() });
+		BlazorApplicationBlockSnapshot.CreateBuilderMenu(new BlazorApplicationMenu(ownsItems: false) { Id = _id ?? Text, Text = Text, Icon = Icon, Items = items.ToArray() });
 }

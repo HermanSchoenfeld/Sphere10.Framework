@@ -6,22 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 using FluentValidation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Utils.BlazorTester;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Services;
+using Sphere10.Framework.Utils.BlazorTester;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -32,15 +33,20 @@ public class DemoPluginRegistrationTests {
 	[Test]
 	public void StartupValidatesAndRegistersModernPluginsWithoutLegacyNavigationServices() {
 		using var provider = CreateProvider();
-		var plugins = provider.GetServices<IBlazorPlugin>().ToArray();
-		var catalog = provider.GetRequiredService<IBlazorApplicationBlockCatalog>();
+		using var scope = provider.CreateScope();
+		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var plugins = application.LoadedPlugins;
+		var metadataHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var registeredBlocks = provider.GetServices<IBlazorApplicationBlock>().ToArray();
 
 		Assert.That(plugins.Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery", "Screen policies" }));
 		Assert.That(plugins.Single(plugin => plugin.Name == "Sphere10.Framework").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace" }));
 		Assert.That(plugins.Single(plugin => plugin.Name == "Widget Gallery").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "components", "legacy" }));
 		Assert.That(registeredBlocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "components", "legacy", "empty-workspace" }));
-		Assert.That(catalog.Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "components", "legacy", "empty-workspace" }));
+		Assert.That(metadataHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "components", "legacy", "empty-workspace" }));
+		Assert.That(application.Blocks, Is.EqualTo(metadataHost.Blocks));
+		Assert.That(application.Blocks, Has.Length.EqualTo(4));
+		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Select(registration => registration.Plugin), Is.EqualTo(plugins));
 		Assert.That(provider.GetService<IBlazorRoutedPluginLocator>(), Is.Null);
 		Assert.That(provider.GetService<IBlazorRoutedPluginManager>(), Is.Null);
 		Assert.That(provider.GetService<IBlazorRoutedApplicationManager>(), Is.Null);
@@ -55,11 +61,11 @@ public class DemoPluginRegistrationTests {
 		var first = await host.ActivateScreenAsync(blockId, screenId);
 		var second = await host.ActivateScreenAsync(blockId, screenId);
 		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
-		Assert.That(first.MenuItem.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+		Assert.That(first.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 
 		var editor = await host.ActivateScreenAsync("workspace", "editor");
 		Assert.That(await host.ActivateScreenAsync("workspace", "editor"), Is.SameAs(editor));
-		Assert.That(editor.MenuItem.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
+		Assert.That(editor.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 	}
 
 	[Test]
@@ -82,15 +88,17 @@ public class DemoPluginRegistrationTests {
 		using var first = provider.CreateScope();
 		using var second = provider.CreateScope();
 		var firstHost = first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstHostUserInterface = first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var secondHost = second.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var secondHostUserInterface = second.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var firstState = first.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		var secondState = second.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 
-		await firstHost.ExecuteMenuItemAsync("workspace", "action");
+		await firstHostUserInterface.ExecuteMenuItemAsync("workspace", "action");
 		Assert.That(firstState.ActionCount, Is.EqualTo(1));
 		Assert.That(secondState.ActionCount, Is.Zero);
-		await secondHost.ExecuteMenuItemAsync("workspace", "action");
-		await firstHost.ExecuteMenuItemAsync("workspace", "action");
+		await secondHostUserInterface.ExecuteMenuItemAsync("workspace", "action");
+		await firstHostUserInterface.ExecuteMenuItemAsync("workspace", "action");
 		Assert.That(firstState.ActionCount, Is.EqualTo(2));
 		Assert.That(secondState.ActionCount, Is.EqualTo(1));
 		Assert.That(firstState, Is.Not.SameAs(secondState));
@@ -110,7 +118,7 @@ public class DemoPluginRegistrationTests {
 		var secondSession = await secondHost.ActivateBlockAsync("workspace");
 		await firstHost.ActivateBlockAsync("components");
 		Assert.That(firstHost, Is.Not.SameAs(secondHost));
-		Assert.That(firstHost.Catalog, Is.SameAs(secondHost.Catalog));
+		Assert.That(firstHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(secondHost.AvailableBlocks.Select(block => block.Id)));
 		Assert.That(firstSession.Id, Is.Not.EqualTo(secondSession.Id));
 		Assert.That(firstHost.ActiveBlock.Id, Is.EqualTo("components"));
 		Assert.That(secondHost.ActiveBlock.Id, Is.EqualTo("workspace"));

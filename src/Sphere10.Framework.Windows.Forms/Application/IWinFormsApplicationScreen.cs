@@ -14,8 +14,12 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A native application screen whose synchronous hooks are exposed through the shared lifecycle contract.</summary>
 /// <remarks>Callbacks run on the calling UI thread. The native host never blocks an asynchronous continuation.</remarks>
-public interface IWinFormsApplicationScreen : IApplicationScreen {
-	string Title { get; set; }
+public interface IWinFormsApplicationScreen : IApplicationScreen<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
+	new string Title { get; set; }
+
+	new IWinFormsApplicationScreenHost Host { get; set; }
+
+	new IWinFormsApplicationBlock Block { get; set; }
 
 	IWinFormsApplicationBlock ApplicationBlock { get; set; }
 
@@ -26,6 +30,20 @@ public interface IWinFormsApplicationScreen : IApplicationScreen {
 	void OnActivated();
 
 	void OnDeactivated();
+
+	#region Base Interface Bridges
+
+	string IApplicationScreen.Title => Title;
+
+	IApplicationScreenHost IApplicationScreen.Host {
+		get => Host;
+		set => Host = value == null ? null : Guard.ArgumentCast<IWinFormsApplicationScreenHost>(value, nameof(value));
+	}
+
+	IApplicationBlock IApplicationScreen.Block {
+		get => Block;
+		set => Block = value == null ? null : Guard.ArgumentCast<IWinFormsApplicationBlock>(value, nameof(value));
+	}
 
 	Task<bool> IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
@@ -43,4 +61,6 @@ public interface IWinFormsApplicationScreen : IApplicationScreen {
 		OnDeactivated();
 		return Task.CompletedTask;
 	}
+
+	#endregion
 }

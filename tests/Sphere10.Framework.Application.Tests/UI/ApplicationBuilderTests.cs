@@ -37,7 +37,6 @@ public class ApplicationBuilderTests {
 			.Build();
 
 		Assert.That(first.Name, Is.EqualTo("First"));
-		Assert.That(first.Id, Is.EqualTo("First"));
 		Assert.That(first.MenuDefinitions, Is.EqualTo(new[] { firstMenu }));
 		Assert.That(second.MenuDefinitions, Is.EqualTo(new[] { firstMenu, secondMenu }));
 		first.MenuDefinitions[0] = secondMenu;
@@ -65,7 +64,6 @@ public class ApplicationBuilderTests {
 			.Build();
 
 		Assert.That(first.Text, Is.EqualTo("First menu"));
-		Assert.That(first.Id, Is.EqualTo("First menu"));
 		Assert.That(first.ItemDefinitions, Is.EqualTo(new[] { firstItem }));
 		Assert.That(second.ItemDefinitions, Is.EqualTo(new[] { firstItem, secondItem }));
 		first.ItemDefinitions[0] = secondItem;
@@ -74,20 +72,35 @@ public class ApplicationBuilderTests {
 	}
 
 	[Test]
-	public void ItemParametersAreCopiedAtConfigurationAndIsolatedAcrossBuilds() {
-		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
+	public void ItemBuildsRetainTheirImmutableScreenDefinitionReferences() {
+		var firstDefinition = new ApplicationScreenDefinition(typeof(PlainScreen), "Original", ScreenActivationMode.SingleInstance);
+		var secondDefinition = new ApplicationScreenDefinition(typeof(PlainScreen), "Second", ScreenActivationMode.SingleInstance);
 		var builder = new ItemBuilder()
 			.WithText("Screen")
-			.WithScreen(typeof(PlainScreen))
-			.WithParameters(parameters);
-		parameters["Message"] = "Changed before build";
-		var first = builder.Build();
-		var second = builder.WithParameters(new Dictionary<string, object> { ["Message"] = "Second" }).Build();
+			.WithScreen(firstDefinition);
+		var first = (ScreenItemDefinition)builder.Build();
+		var second = (ScreenItemDefinition)builder.WithScreen(secondDefinition).Build();
 
-		Assert.That(first.Id, Is.EqualTo(nameof(PlainScreen)));
-		Assert.That(first.Parameters["Message"], Is.EqualTo("Original"));
-		Assert.That(second.Parameters["Message"], Is.EqualTo("Second"));
-		Assert.That(() => ((IDictionary<string, object>)first.Parameters).Add("New", "value"), Throws.TypeOf<NotSupportedException>());
+		Assert.That(first.ScreenDefinition, Is.SameAs(firstDefinition));
+		Assert.That(second.ScreenDefinition, Is.SameAs(secondDefinition));
+		Assert.That(first.ScreenDefinition.Title, Is.EqualTo("Original"));
+		Assert.That(second.ScreenDefinition.Title, Is.EqualTo("Second"));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void ExplicitDefinitionIdentityDoesNotDependOnCaptionConfigurationOrder(bool captionFirst) {
+		var definition = new ApplicationScreenDefinition(typeof(PlainScreen), "Screen title", ScreenActivationMode.SingleInstance);
+		var builder = new ItemBuilder();
+		if (captionFirst)
+			builder.WithText("Menu caption").WithScreen(definition);
+		else
+			builder.WithScreen(definition).WithText("Menu caption");
+		var item = (ScreenItemDefinition)builder.Build();
+
+		Assert.That(item.Title, Is.EqualTo("Menu caption"));
+		Assert.That(item.ScreenDefinition, Is.SameAs(definition));
+		Assert.That(item.ScreenDefinition.Title, Is.EqualTo("Screen title"));
 	}
 
 	[Test]
@@ -137,21 +150,34 @@ public class ApplicationBuilderTests {
 		Assert.That(() => build(), Throws.TypeOf<InvalidOperationException>());
 	}
 
-	private sealed record BlockDefinition(string Id, string Name, MenuDefinition[] MenuDefinitions) : IApplicationBlock {
+	private sealed record BlockDefinition(string Name, MenuDefinition[] MenuDefinitions) : IApplicationBlock {
+		public IApplication Parent { get; set; }
+
+		public IApplicationPlugin Source { get; set; }
+
 		public int Position => 0;
 
-		public Type DefaultScreen => null;
+		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
+
+		public ApplicationScreenDefinition DefaultScreenDefinition => null;
 
 		public IApplicationMenu[] Menus => MenuDefinitions;
 	}
 
-	private sealed record MenuDefinition(string Id, string Text, ItemDefinition[] ItemDefinitions) : IApplicationMenu {
+	private sealed record MenuDefinition(string Text, ItemDefinition[] ItemDefinitions) : IApplicationMenu {
+		public IApplicationBlock Parent { get; set; }
+
 		public IApplicationMenuItem[] Items => ItemDefinitions;
 	}
 
-	private sealed record ItemDefinition(
-		string Id, string Title, IReadOnlyDictionary<string, object> Parameters, Action Action, Func<IServiceProvider, CancellationToken, Task> AsyncAction
-	) : IApplicationMenuItem;
+	private record ItemDefinition(
+		string Title, Action Action, Func<IServiceProvider, CancellationToken, Task> AsyncAction
+	) : IApplicationMenuItem {
+		public IApplicationMenu Parent { get; set; }
+	}
+
+	private sealed record ScreenItemDefinition(string ScreenTitle, ApplicationScreenDefinition ScreenDefinition)
+		: ItemDefinition(ScreenTitle, null, null), IScreenMenuItem;
 
 	private sealed class BlockBuilder : ApplicationBlockBuilderBase<MenuDefinition, BlockDefinition> {
 		public BlockBuilder WithName(string name) {
@@ -164,7 +190,7 @@ public class ApplicationBuilderTests {
 			return this;
 		}
 
-		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) => new(Id, Name, menus.ToArray());
+		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) => new(Name, menus.ToArray());
 	}
 
 	private sealed class MenuBuilder : ApplicationMenuBuilderBase<ItemDefinition, MenuDefinition> {
@@ -178,7 +204,7 @@ public class ApplicationBuilderTests {
 			return this;
 		}
 
-		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) => new(Id, Text, items.ToArray());
+		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) => new(Text, items.ToArray());
 	}
 
 	private sealed class ItemBuilder : ApplicationMenuItemBuilderBase {
@@ -192,8 +218,8 @@ public class ApplicationBuilderTests {
 			return this;
 		}
 
-		public ItemBuilder WithParameters(IReadOnlyDictionary<string, object> parameters) {
-			SetParameters(parameters);
+		public ItemBuilder WithScreen(ApplicationScreenDefinition definition) {
+			SetScreenDefinition(definition);
 			return this;
 		}
 
@@ -209,10 +235,13 @@ public class ApplicationBuilderTests {
 
 		public ItemDefinition Build() {
 			ValidateItem();
-			return new ItemDefinition(Id, Text, Parameters, Action, AsyncAction);
+			return ScreenDefinition == null ? new ItemDefinition(Text, Action, AsyncAction) : new ScreenItemDefinition(Text, ScreenDefinition);
 		}
 	}
 
 	private class PlainScreen : IApplicationScreen {
+		public IApplicationScreenHost Host { get; set; }
+
+		public IApplicationBlock Block { get; set; }
 	}
 }

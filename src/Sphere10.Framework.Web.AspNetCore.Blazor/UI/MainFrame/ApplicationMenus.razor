@@ -53,7 +53,7 @@
 	</ul>;
 
 	private static void NotifyHover(IBlazorApplicationMenuItem item) {
-		if (item is BlazorApplicationMenuItem menuItem)
+		if (item is BlazorApplicationMenuItemBase menuItem)
 			menuItem.NotifyHover();
 	}
 }

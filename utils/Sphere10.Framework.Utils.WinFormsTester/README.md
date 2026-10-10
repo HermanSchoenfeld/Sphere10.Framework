@@ -2,7 +2,7 @@
 
 Build and run `Sphere10.Framework.Utils.WinFormsTester.csproj` on Windows. The application starts with `BlockMainForm.ScreenMode = ScreenMode.MultiView` configured through `UseMainForm`. It uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales the complete interface, preserving the legacy screen and dialog layouts. Shared build settings keep `ForceDesignerDPIUnaware=true` for the Visual Studio designer. `UseMainFormSettings()` enables per-user window placement: resize or move the main window, close it through an accepted exit, then restart to restore its size, monitor, maximized state, and left menu width. Settings are written once by the framework shutdown task after accepted exit. The menu starts at 320 logical pixels and can expand to 480, with a smaller limit when the content needs room. Drag the divider to test your own width, including closing with the menu collapsed; moving or resizing does not write settings.
 
-The tester registers one application plugin through `AddWinFormsApplicationPlugin` in `ModuleConfiguration.cs`. `WinFormsDemoPlugin.Configure` contains the complete fluent block/menu definition; named callbacks below it implement the demo commands. Startup selects Settings from the Workspace block. Run from the repository root:
+The tester loads one application plugin through `AddWinFormsApplicationPlugin` in `ModuleConfiguration.cs`. It appears in `IWinFormsApplication.LoadedPlugins` and contributes the six independent navigation blocks below to the application's live `Blocks` array. The bottom-left buttons select blocks. `WinFormsDemoPlugin.Configure` contains the complete fluent block/menu definition; named callbacks below it implement the demo commands. Startup selects Settings from the Workspace block. Run from the repository root:
 
 ```powershell
 dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
@@ -20,6 +20,10 @@ dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p
 | Utilities | Compression, cryptography, text/image/file transformations, user settings, scheduling, and visual inheritance. |
 
 Choose a block from the bottom navigation buttons, then open a screen from its menus. Block selection changes the available navigation without changing the active screen. The former generic Block 1/Block 2 and repeated Opt entries are replaced by these functional groups; the original Screen A/B/C examples are under **Workspace > Navigation samples** as **Calendar and toolbar**, **Expandable panels**, and **Task pane grids**.
+
+The shared `IApplicationScreenHost` owns block registration, navigation and screen lifecycle. It exposes actual native controls by reference. The form's `IUserInterfaceServices` provides interactions and command execution. Screen examples close themselves through the common host with their own screen reference, including when detached. Typed hosting uses the generic base contract; native tab and docking commands remain on `IWinFormsApplicationScreenHost`. `SharedScreenHostIntegrationTests` verifies service identity, shared reference operations and native presentation behavior.
+
+Blocks own their `ScreenDefinitions` independently of navigation. Each screen menu item references the same immutable definition held by its block; the default is a `DefaultScreenDefinition` reference. Native menus merge by their visible text and commands by title, with no string IDs in the shared model. The shared metadata classes are abstract `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, and `ApplicationMenuItemBase`; native `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` remain abstract intermediates. Concrete screen and action items add images, placement, and resource ownership.
 
 ## Default, permanent, and empty screens
 
@@ -79,3 +83,6 @@ dotnet test tests/Sphere10.Framework.Windows.Forms.Tests/Sphere10.Framework.Wind
 ```
 
 `ScreenPolicyTests` covers ordered defaults, permanent close/undock protection, guarded block registration/removal, view-mode retention, and tabless Empty screen lifetimes. Run it independently with `--filter FullyQualifiedName~ScreenPolicyTests` appended to the test command above.
+
+
+The application-level **Views > Toggle screen mode** command is also a toolbar button. It remains available when switching blocks, uses the guarded native host transition and toggles between the live single/multi-view implementations. Try it with a screen's cancellation checkbox selected to verify that vetoed changes leave the workspace intact.

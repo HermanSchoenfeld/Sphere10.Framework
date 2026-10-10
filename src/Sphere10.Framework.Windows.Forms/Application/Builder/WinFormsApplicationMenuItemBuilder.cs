@@ -66,10 +66,7 @@ public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinForm
 			ValidateItem();
 			Guard.Ensure(ScreenType != null, "A native screen item requires a screen.");
 			return new WinFormsScreenMenuItem(Text, ScreenType, _image16x16, _showOnExplorerBar, _showOnToolBar, _isStartScreen) {
-				Id = Id,
-				ActivationMode = ActivationMode,
-				ScreenTitle = ScreenTitle,
-				ScreenKind = ScreenKind,
+				ScreenDefinition = ScreenDefinition,
 				IsDefault = IsDefault
 			};
 		}
@@ -112,7 +109,6 @@ public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinForm
 			ValidateItem();
 			Guard.Ensure(ScreenType == null && (Action != null || UIAction != null) && AsyncAction == null, "A native action item requires a synchronous action.");
 			var item = UIAction != null ? new WinFormsActionMenuItem(Text, UIAction) : new WinFormsActionMenuItem(Text, Action);
-			item.Id = Id;
 			item.Image16x16 = _image16x16;
 			item.ShowOnExplorerBar = _showOnExplorerBar;
 			item.ShowOnToolStrip = _showOnToolBar;

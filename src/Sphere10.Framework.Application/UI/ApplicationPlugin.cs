@@ -38,9 +38,15 @@ public class ApplicationPlugin : ApplicationPluginBase {
 
 	/// <summary>Copies membership on assignment and retrieval; platform adapters may snapshot their block definitions.</summary>
 	public override IApplicationBlock[] Blocks {
-		get => Tools.Array.Clone(_blocks);
+		get => GetBlocks();
 		init => _blocks = Tools.UI.ValidatePluginBlocks(value);
 	}
 
 	protected override void ConfigureServices(IServiceCollection serviceCollection) => _configureServices?.Invoke(serviceCollection);
+
+	/// <summary>Projects stored membership through the overridable plugin contract.</summary>
+	protected virtual IApplicationBlock[] GetBlocks() => ReadStoredBlocks();
+
+	/// <summary>Copies stored membership without re-entering a platform projection.</summary>
+	protected IApplicationBlock[] ReadStoredBlocks() => Tools.Array.Clone(_blocks);
 }

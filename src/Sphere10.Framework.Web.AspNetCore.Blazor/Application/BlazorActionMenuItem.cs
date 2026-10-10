@@ -13,7 +13,7 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class BlazorActionMenuItem : BlazorApplicationMenuItem {
+public class BlazorActionMenuItem : BlazorApplicationMenuItemBase {
 	private readonly ApplicationAction _action = new();
 
 	public Action Action {

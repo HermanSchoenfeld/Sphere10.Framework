@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
@@ -39,7 +40,7 @@ public class WinFormsApplicationPluginTests {
 
 	[Test]
 	public void SharedStorageCopiesMembershipWithoutCopyingOrDisposingNativeDefinitions() {
-		using var block = new TrackingBlock { Id = "work", Name = "Workspace" };
+		using var block = new TrackingBlock { Name = "Workspace" };
 		var configured = 0;
 		var loaded = 0;
 		var unloaded = 0;
@@ -71,7 +72,6 @@ public class WinFormsApplicationPluginTests {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
 		using var block = new WinFormsApplicationBlockBuilder()
-			.WithId("workspace")
 			.WithName("Workspace")
 			.ConfigureMenu(menu => menu
 				.WithText("Commands")
@@ -94,29 +94,30 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null);
 		Assert.That(provider.GetRequiredService<IWinFormsApplicationPlugin>(), Is.SameAs(plugin));
 		Assert.That(provider.GetRequiredService<IApplicationPlugin>(), Is.SameAs(plugin));
-		Assert.That(shared.Plugins.Single(), Is.SameAs(application.Plugins.Single()));
+		Assert.That(shared.LoadedPlugins.Single(), Is.SameAs(application.LoadedPlugins.Single()));
 		application.Initialize();
 		application.Initialize();
-		Assert.That(application.Blocks.Single(), Is.SameAs(block));
+		Assert.That(application.ScreenHost.Blocks.Single(), Is.SameAs(block));
 		Assert.That(((TrackingMainForm)provider.GetRequiredService<IMainForm>()).RegisterCount, Is.EqualTo(1));
 		Assert.That(startupActions, Is.EqualTo(1));
 		Assert.That(loaded, Is.EqualTo(1));
 		application.ScreenHost.ActivateScreen(block, typeof(ProbeScreen));
-		Assert.That(application.ActivePlugin, Is.SameAs(plugin));
-		Assert.That(shared.ActivePlugin, Is.SameAs(plugin));
-		application.Plugins[0] = null;
-		shared.Plugins[0] = null;
-		Assert.That(application.Plugins.Single(), Is.SameAs(plugin));
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(block));
+		Assert.That(application.Blocks.Single(), Is.SameAs(block));
+		Assert.That(shared.Blocks.Single(), Is.SameAs(block));
+		application.LoadedPlugins[0] = null;
+		shared.LoadedPlugins[0] = null;
+		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
 		application.Dispose();
 		Assert.That(unloaded, Is.Zero, "Disposing the application adapter must not unload shared startup definitions.");
 	}
 
 	[Test]
-	public void CallbackRegistrationAndLegacyBlocksShareOneCollisionSafeHierarchy() {
+	public void CallbackRegistrationAndDirectBlocksShareTheLiveApplicationMembership() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var explicitBlock = new WinFormsApplicationBlock { Id = "plugin-block", Name = "Plugin block", Position = 2 };
-		using var legacyBlock = new WinFormsApplicationBlock { Id = "legacy", Name = "Legacy", Position = 1 };
+		using var explicitBlock = new WinFormsApplicationBlock { Name = "Plugin block", Position = 2 };
+		using var legacyBlock = new WinFormsApplicationBlock { Name = "Legacy", Position = 1 };
 		services
 			.AddWinFormsApplicationPlugin(plugin => plugin
 				.WithName("Application")
@@ -127,71 +128,94 @@ public class WinFormsApplicationPluginTests {
 		using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IWinFormsApplication>();
 		application.Initialize();
-		Assert.That(application.Plugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Application", "Application 2" }));
-		Assert.That(application.Plugins[0].Blocks, Is.EqualTo(new[] { explicitBlock }));
-		Assert.That(application.Plugins[1].Blocks, Is.EqualTo(new[] { legacyBlock }));
+		Assert.That(application.LoadedPlugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Application" }));
+		Assert.That(application.LoadedPlugins[0].Blocks, Is.EqualTo(new[] { explicitBlock }));
 		Assert.That(application.Blocks, Is.EqualTo(new[] { legacyBlock, explicitBlock }));
 		Assert.That(((TrackingMainForm)application.BlockManager).RegisterCount, Is.EqualTo(2));
 		application.ScreenHost.ActivateScreen(legacyBlock, typeof(ProbeScreen));
-		Assert.That(application.ActivePlugin, Is.SameAs(application.Plugins[1]));
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(legacyBlock));
 		application.ScreenHost.ActivateScreen(explicitBlock, typeof(OtherScreen));
-		Assert.That(application.ActivePlugin, Is.SameAs(application.Plugins[0]));
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(explicitBlock));
 	}
 
 	[Test]
-	public void LegacyConstructorGroupsBlocksWithoutChangingStartupOrOwnership() {
+	public void DirectBlockConstructorPreservesStartupAndOwnershipWithoutCreatingAPlugin() {
 		using var form = new TrackingMainForm();
 		using var block = new TrackingBlock { Name = "Existing block" };
 		using var application = new WinFormsApplication(form, new[] { block });
-		Assert.That(application.Plugins.Single().Name, Is.EqualTo("Application"));
-		Assert.That(application.Plugins.Single().Blocks.Single(), Is.SameAs(block));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(application.Blocks, Is.Empty);
 		application.Initialize();
 		Assert.That(form.RegisterCount, Is.EqualTo(1));
-		Assert.That(application.ActivePlugin, Is.SameAs(application.Plugins.Single()));
+		Assert.That(application.Blocks.Single(), Is.SameAs(block));
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(block));
 		application.Dispose();
 		Assert.That(block.DisposeCount, Is.Zero);
 		Assert.That(form.IsDisposed, Is.False);
 	}
 
 	[Test]
-	public void LegacyTransientBlockIsMaterializedOnceForTheRuntimeGrouping() {
+	public void DirectTransientBlockIsMaterializedOnceForRuntimeMembership() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
 		services.AddApplicationBlock<LegacyTransientBlock>();
 		using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IWinFormsApplication>();
 		application.Initialize();
-		Assert.That(application.Plugins.Single().Blocks.Single(), Is.SameAs(application.Blocks.Single()));
-		Assert.That(provider.GetRequiredService<IApplication>().Plugins.Single(), Is.SameAs(application.Plugins.Single()));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(application.Blocks.Single(), Is.SameAs(application.ScreenHost.Blocks.Single()));
+		Assert.That(provider.GetRequiredService<IApplication>().Blocks.Single(), Is.SameAs(application.Blocks.Single()));
 		Assert.That(((TrackingMainForm)application.BlockManager).RegisterCount, Is.EqualTo(1));
 	}
 
 	[Test]
-	public void ImplicitPluginTracksAlreadyRegisteredAndLaterBlocksWithStableIdentity() {
+	public void AlreadyLoadedPluginConstructorBindsCapturedProvenanceWithoutLoadingAgain() {
+		using var form = new TrackingMainForm();
+		using var block = new WinFormsApplicationBlock { Name = "Loaded contribution" };
+		var loads = 0;
+		var plugin = new WinFormsApplicationPlugin("Loaded", new[] { block }, _ => loads++);
+		plugin.Load(new ServiceCollection());
+		Assert.That(block.Source, Is.Null);
+		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>(), new[] { plugin });
+		Assert.That(block.Source, Is.SameAs(plugin));
+		Assert.That(block.Parent, Is.Null);
+		Assert.That(loads, Is.EqualTo(1));
+		application.Initialize();
+		Assert.That(block.Parent, Is.SameAs(application));
+		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
+	}
+
+	[Test]
+	public void LiveMembershipTracksAlreadyRegisteredAndLaterBlocksWithoutCreatingAPlugin() {
 		using var form = new TrackingMainForm();
 		var initial = new WinFormsApplicationBlock { Name = "Before adapter" };
 		var later = new TrackingBlock { Name = "After adapter" };
 		form.RegisterBlock(initial);
 		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
 		IApplication shared = application;
-		var implicitPlugin = application.Plugins.Single();
-		Assert.That(implicitPlugin.Blocks.Single(), Is.SameAs(initial));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(application.Blocks.Single(), Is.SameAs(initial));
 		application.Initialize();
 		form.RegisterBlock(later);
-		Assert.That(application.Plugins.Single(), Is.SameAs(implicitPlugin));
-		Assert.That(shared.Plugins.Single().Blocks, Is.EqualTo(new[] { initial, later }));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(shared.Blocks, Is.EqualTo(new[] { initial, later }));
+		Assert.That(form.Blocks, Is.EqualTo(shared.Blocks));
+		shared.Blocks[0] = null;
+		application.Blocks[0] = null;
+		form.Blocks[0] = null;
+		Assert.That(application.Blocks[0], Is.SameAs(initial));
 		form.ActiveBlock = later;
-		Assert.That(application.ActivePlugin, Is.SameAs(implicitPlugin));
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(later));
 		form.UnregisterBlock(later);
-		Assert.That(application.Plugins.Single(), Is.SameAs(implicitPlugin));
-		Assert.That(implicitPlugin.Blocks, Is.EqualTo(new[] { initial }));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(application.Blocks, Is.EqualTo(new[] { initial }));
 		Assert.That(later.DisposeCount, Is.EqualTo(1), "The existing block manager remains the only owner during removal.");
 		using var last = new WinFormsApplicationBlock { Name = "Last block" };
 		form.UnregisterBlock(initial);
-		Assert.That(application.Plugins, Is.Empty);
+		Assert.That(application.Blocks, Is.Empty);
 		form.RegisterBlock(last);
-		Assert.That(application.Plugins.Single(), Is.SameAs(implicitPlugin), "Temporary emptiness must not replace the implicit grouping.");
-		Assert.That(shared.ActivePlugin, Is.SameAs(implicitPlugin));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(shared.Blocks.Single(), Is.SameAs(last));
 	}
 
 	[Test]
@@ -213,7 +237,7 @@ public class WinFormsApplicationPluginTests {
 
 	[Test]
 	public void BlocksCannotBeOwnedByTwoPlugins() {
-		using var block = new WinFormsApplicationBlock { Id = "same", Name = "Block" };
+		using var block = new WinFormsApplicationBlock { Name = "Block" };
 		var services = new ServiceCollection();
 		services
 			.AddWinFormsApplicationPlugin(plugin => plugin
@@ -227,10 +251,215 @@ public class WinFormsApplicationPluginTests {
 			), Throws.ArgumentException);
 	}
 
+	[Test]
+	public void PluginsContributeIndividualNavigationBlocksInPositionOrder() {
+		var services = new ServiceCollection();
+		services.AddMainForm<TrackingMainForm>();
+		using var first = new WinFormsApplicationBlockBuilder()
+			.WithName("First")
+			.WithPosition(30)
+			.WithDefaultScreen<ProbeScreen>()
+			.Build();
+		using var second = new WinFormsApplicationBlockBuilder()
+			.WithName("Second")
+			.WithPosition(20)
+			.WithDefaultScreen<OtherScreen>()
+			.Build();
+		using var third = new WinFormsApplicationBlock { Name = "Third", Position = 10 };
+		services
+			.AddWinFormsApplicationPlugin(plugin => plugin
+				.WithName("First contribution")
+				.AddBlock(first)
+				.AddBlock(second)
+			)
+			.AddWinFormsApplicationPlugin(plugin => plugin
+				.WithName("Second contribution")
+				.AddBlock(third)
+			);
+		using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		application.Initialize();
+		var form = (TrackingMainForm)application.BlockManager;
+		var navigation = form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
+		Assert.That(application.LoadedPlugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "First contribution", "Second contribution" }));
+		Assert.That(application.Blocks, Is.EqualTo(new[] { third, second, first }));
+		Assert.That(navigation.Items.Select(item => item.Text), Is.EqualTo(new[] { "Third", "Second", "First" }));
+		Assert.That(form.RegisterCount, Is.EqualTo(3));
+		Assert.That(application.ScreenHost.ActiveScreen, Is.TypeOf<ProbeScreen>(), "Startup follows contribution order independently of icon Position.");
+		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.MenuControl, form.BlockBindings[second])).Button);
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(second));
+		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.MenuControl, form.BlockBindings[third])).Button);
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(third));
+		Assert.That(navigation.ApplicationBarControl, Is.SameAs(form.BlockBindings[third]));
+	}
+
+	[Test]
+	public void ServiceOnlyPluginIsLoadedWithoutCreatingANavigationBlock() {
+		var services = new ServiceCollection();
+		services.AddMainForm<TrackingMainForm>();
+		var loads = 0;
+		services.AddWinFormsApplicationPlugin(plugin => plugin
+			.WithName("Services")
+			.ConfigureServices(registry => {
+				loads++;
+				registry.AddSingleton<StartupMarker>();
+			})
+		);
+		using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		application.Initialize();
+		Assert.That(loads, Is.EqualTo(1));
+		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null);
+		Assert.That(application.LoadedPlugins.Single().Name, Is.EqualTo("Services"));
+		Assert.That(application.Blocks, Is.Empty);
+		Assert.That(((TrackingMainForm)application.BlockManager).BlockBindings, Is.Empty);
+	}
+
+	[Test]
+	public void ManuallyRegisteredUnloadedPluginIsExcludedFromTheApplicationInventory() {
+		var services = new ServiceCollection();
+		services.AddMainForm<TrackingMainForm>();
+		using var block = new WinFormsApplicationBlock { Name = "Unloaded block" };
+		var loads = 0;
+		var plugin = new WinFormsApplicationPlugin("Unloaded", new[] { block }, _ => loads++);
+		services.AddSingleton<IWinFormsApplicationPlugin>(plugin);
+		services.AddSingleton<IApplicationPlugin>(plugin);
+		using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		application.Initialize();
+		Assert.That(provider.GetRequiredService<IWinFormsApplicationPlugin>(), Is.SameAs(plugin));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(application.Blocks, Is.Empty);
+		Assert.That(loads, Is.Zero);
+		Assert.That(block.Source, Is.Null);
+		Assert.That(block.Parent, Is.Null);
+	}
+
+	[Test]
+	public void FailedLoadDoesNotPublishARegistrationReceipt() {
+		var services = new ServiceCollection();
+		services.AddMainForm<TrackingMainForm>();
+		using var block = new WinFormsApplicationBlock { Name = "Failed contribution" };
+		var plugin = new WinFormsApplicationPlugin("Fails", new[] { block }, _ => Guard.Ensure(false, "Load failed."));
+		Assert.That(() => services.AddWinFormsApplicationPlugin(plugin), Throws.InvalidOperationException);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>)), Is.False);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IWinFormsApplicationPlugin)), Is.False);
+		using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		application.Initialize();
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(application.Blocks, Is.Empty);
+		Assert.That(block.Source, Is.Null);
+		Assert.That(block.Parent, Is.Null);
+	}
+
+	[Test]
+	public void PostLoadValidationFailureDoesNotPublishTheFailedPluginOrItsBlocks() {
+		var services = new ServiceCollection();
+		services.AddMainForm<TrackingMainForm>();
+		using var owned = new WinFormsApplicationBlock { Name = "Owned" };
+		using var initial = new WinFormsApplicationBlock { Name = "Initial" };
+		var first = new WinFormsApplicationPlugin("First", new[] { owned });
+		services.AddWinFormsApplicationPlugin(first);
+		var failed = new MutablePlugin("Failed", new[] { initial });
+		failed.Loaded += () => failed.CurrentBlocks = new[] { owned };
+		Assert.That(() => services.AddWinFormsApplicationPlugin(failed), Throws.ArgumentException);
+		using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		application.Initialize();
+		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { first }));
+		Assert.That(application.Blocks, Is.EqualTo(new[] { owned }));
+		Assert.That(owned.Source, Is.SameAs(first));
+		Assert.That(initial.Source, Is.Null);
+		Assert.That(provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>().Count(), Is.EqualTo(1));
+	}
+
+	[Test]
+	public void RegistrationCapturesPostLoadMembershipAndPreservesItsArrayOwnership() {
+		var services = new ServiceCollection();
+		services.AddMainForm<TrackingMainForm>();
+		using var initial = new WinFormsApplicationBlock { Name = "Initial" };
+		using var contributed = new WinFormsApplicationBlockBuilder()
+			.WithName("Contributed")
+			.WithDefaultScreen<ProbeScreen>()
+			.Build();
+		using var later = new WinFormsApplicationBlock { Name = "Later" };
+		var plugin = new MutablePlugin("Mutable", new[] { initial });
+		plugin.Loaded += () => plugin.CurrentBlocks = new[] { contributed };
+		services.AddWinFormsApplicationPlugin(plugin);
+		using var provider = services.BuildServiceProvider();
+		var registration = provider.GetRequiredService<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>();
+		Assert.That(registration.Plugin, Is.SameAs(plugin));
+		Assert.That(registration.Blocks, Is.EqualTo(new[] { contributed }));
+		Assert.That(contributed.Source, Is.SameAs(plugin));
+		Assert.That(contributed.Parent, Is.Null);
+		Assert.That(initial.Source, Is.Null);
+		registration.Blocks[0] = later;
+		plugin.CurrentBlocks[0] = later;
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		application.Initialize();
+		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
+		Assert.That(application.Blocks, Is.EqualTo(new[] { contributed }));
+		Assert.That(contributed.Parent, Is.SameAs(application));
+		Assert.That(((IApplicationBlock)contributed).Parent, Is.SameAs(application));
+		Assert.That(((IApplicationBlock)contributed).Source, Is.SameAs(plugin));
+		Assert.That(later.Source, Is.Null);
+		Assert.That(application.ScreenHost.ActiveScreen.ApplicationBlock, Is.SameAs(contributed));
+		Assert.That(registration.Blocks, Is.EqualTo(new[] { contributed }));
+	}
+
+	[Test]
+	public void DuplicateValidationUsesCapturedContributionsAfterAPluginGetterChanges() {
+		using var contributed = new WinFormsApplicationBlock { Name = "Contributed" };
+		using var later = new WinFormsApplicationBlock { Name = "Later" };
+		var first = new MutablePlugin("First", new[] { contributed });
+		var services = new ServiceCollection();
+		services.AddWinFormsApplicationPlugin(first);
+		first.CurrentBlocks = new[] { later };
+		var loads = 0;
+		var duplicate = new WinFormsApplicationPlugin("Second", new[] { contributed }, _ => loads++);
+		Assert.That(() => services.AddWinFormsApplicationPlugin(duplicate), Throws.ArgumentException);
+		Assert.That(loads, Is.Zero);
+		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>)), Is.EqualTo(1));
+	}
+
+	[Test]
+	public void RemovingAContributedBlockUpdatesLiveMembershipWithoutUnloadingItsPlugin() {
+		var services = new ServiceCollection();
+		services.AddMainForm<TrackingMainForm>();
+		var block = new TrackingBlock { Name = "Contributed" };
+		var plugin = new WinFormsApplicationPlugin("Loaded", new[] { block });
+		var unloads = 0;
+		plugin.Unloaded += () => unloads++;
+		services.AddWinFormsApplicationPlugin(plugin);
+		using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		application.Initialize();
+		Assert.That(block.Parent, Is.SameAs(application));
+		Assert.That(block.Source, Is.SameAs(plugin));
+		application.BlockManager.UnregisterBlock(block);
+		Assert.That(application.Blocks, Is.Empty);
+		Assert.That(((IApplication)application).Blocks, Is.Empty);
+		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
+		Assert.That(unloads, Is.Zero);
+		Assert.That(block.DisposeCount, Is.EqualTo(1));
+		Assert.That(block.Parent, Is.Null);
+		Assert.That(block.Source, Is.SameAs(plugin));
+		application.BlockManager.RegisterBlock(block);
+		Assert.That(block.Parent, Is.SameAs(application));
+		Assert.That(block.Source, Is.SameAs(plugin));
+		application.Dispose();
+		Assert.That(block.Parent, Is.Null);
+		Assert.That(block.Source, Is.SameAs(plugin));
+		Assert.That(unloads, Is.Zero);
+	}
+
 	public sealed class TrackingMainForm : BlockMainForm {
 		private int _registerCount;
 
 		public int RegisterCount => _registerCount;
+
+		public void ClickNavigationButton(SquareButton button) => InvokeOnClick(button, EventArgs.Empty);
 
 		public override void RegisterBlock(IWinFormsApplicationBlock block) {
 			_registerCount++;
@@ -257,6 +486,20 @@ public class WinFormsApplicationPluginTests {
 		public override void Dispose() {
 			DisposeCount++;
 			base.Dispose();
+		}
+	}
+
+	private sealed class MutablePlugin : WinFormsApplicationPlugin {
+		public MutablePlugin(string name, IWinFormsApplicationBlock[] blocks)
+			: base(name, blocks) {
+			CurrentBlocks = blocks;
+		}
+
+		public IWinFormsApplicationBlock[] CurrentBlocks { get; set; }
+
+		public override IWinFormsApplicationBlock[] Blocks {
+			get => CurrentBlocks;
+			init => base.Blocks = value;
 		}
 	}
 }

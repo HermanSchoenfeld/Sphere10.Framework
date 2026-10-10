@@ -56,15 +56,32 @@ public class DemoPluginRegistrationTests {
 	}
 
 	[Test]
+	public void ApplicationModeToggleIsAvailableAcrossBlocksAndSwitchesTheLiveHost() {
+		var form = StartDemo();
+		var application = (WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+		WinFormsDemoPlugin.ConfigureApplicationCommands(application);
+		var toggle = application.ToolBarItems.OfType<IWinFormsLinkMenuItem>().Single();
+		Assert.That(toggle.Text, Is.EqualTo("Toggle screen mode"));
+		toggle.OnSelect(form);
+		Assert.That(form.ScreenMode, Is.EqualTo(ScreenMode.SingleView));
+		form.ActiveBlock = form.RegisteredBlocks.Single(block => block.Name == "Controls");
+		toggle.OnSelect(form);
+		Assert.That(form.ScreenMode, Is.EqualTo(ScreenMode.MultiView));
+		Assert.That(application.ToolBarItems.Single(), Is.SameAs(toggle));
+	}
+
+	[Test]
 	public void DemoGroupsEveryExistingScreenWithoutDuplicatingRegistrations() {
 		var form = StartDemo();
 		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
-		var plugin = application.Plugins.Single();
+		var plugin = application.LoadedPlugins.Single();
 		Assert.That(plugin.Name, Is.EqualTo("WinForms demonstrations"));
-		Assert.That(plugin.Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "notes", "controls", "data", "integration", "utilities" }));
 		Assert.That(plugin.Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Workspace", "Notes", "Controls", "Data and collections", "Integration", "Utilities" }));
 		Assert.That(form.RegisteredBlocks, Is.EqualTo(plugin.Blocks));
-		Assert.That(((IApplication)application).Plugins.Single(), Is.SameAs(plugin));
+		Assert.That(application.Blocks, Is.EqualTo(form.RegisteredBlocks));
+		Assert.That(((IApplication)application).LoadedPlugins.Single(), Is.SameAs(plugin));
+		var navigation = form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
+		Assert.That(navigation.Items, Has.Length.EqualTo(6), "The six blocks contributed by one plugin each have their own navigation button.");
 
 		// Preserve the original screen inventory across both launch profiles while removing duplicate menu registrations.
 		var builder = new WinFormsApplicationPluginBuilder();
@@ -74,8 +91,8 @@ public class DemoPluginRegistrationTests {
 			foreach (var block in freshPlugin.Blocks)
 				block.Dispose();
 		});
-		var normalScreens = Tools.UI.GetScreenDefinitions(plugin.Blocks).Select(screen => screen.ScreenType).ToArray();
-		var freshScreens = Tools.UI.GetScreenDefinitions(freshPlugin.Blocks).Select(screen => screen.ScreenType).ToArray();
+		var normalScreens = Tools.UI.GetScreenDefinitions(plugin.Blocks).Select(screen => screen.ScreenType).Distinct().ToArray();
+		var freshScreens = Tools.UI.GetScreenDefinitions(freshPlugin.Blocks).Select(screen => screen.ScreenType).Distinct().ToArray();
 		Assert.That(normalScreens.Distinct().Count(), Is.EqualTo(normalScreens.Length));
 		Assert.That(freshScreens.Distinct().Count(), Is.EqualTo(freshScreens.Length));
 		Assert.That(normalScreens.Concat(freshScreens).Select(type => type.Name).Distinct(), Is.EquivalentTo(new[] {
@@ -131,31 +148,31 @@ public class DemoPluginRegistrationTests {
 		}));
 	}
 
-	[TestCase("workspace", typeof(ScreenA))]
-	[TestCase("notes", typeof(ScreenHostingPermanentTestScreen))]
-	[TestCase("controls", typeof(EnumComboScreen))]
-	[TestCase("data", typeof(CrudTestScreen))]
-	[TestCase("integration", typeof(CommunicationsTestScreen))]
-	[TestCase("utilities", typeof(CompressionTestScreen))]
-	public void ScreenBelongsToItsFeatureBlock(string blockId, Type screenType) {
+	[TestCase("Workspace", typeof(ScreenA))]
+	[TestCase("Notes", typeof(ScreenHostingPermanentTestScreen))]
+	[TestCase("Controls", typeof(EnumComboScreen))]
+	[TestCase("Data and collections", typeof(CrudTestScreen))]
+	[TestCase("Integration", typeof(CommunicationsTestScreen))]
+	[TestCase("Utilities", typeof(CompressionTestScreen))]
+	public void ScreenBelongsToItsFeatureBlock(string blockName, Type screenType) {
 		var form = StartDemo();
 		var definition = Tools.UI.GetScreenDefinitions(form.RegisteredBlocks).Single(screen => screen.ScreenType == screenType);
-		Assert.That(definition.Block.Id, Is.EqualTo(blockId));
+		Assert.That(form.RegisteredBlocks.Single(block => block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, definition))).Name, Is.EqualTo(blockName));
 	}
 
 	[TestCase(false)]
 	[TestCase(true)]
 	public void LaunchProfileChoosesItsDefaultAndKeepsEmptyWorkspaceOutOfNavigation(bool freshEmptyWorkspace) {
 		var form = StartDemo(freshEmptyWorkspace);
-		var empty = form.RegisteredBlocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items)
-			.OfType<IWinFormsScreenMenuItem>().Single(item => item.ScreenKind == ScreenKind.Empty);
+		var empty = form.RegisteredBlocks.Single(block => block.Name == "Workspace").Menus.SelectMany(menu => menu.Items)
+			.OfType<IWinFormsScreenMenuItem>().Single(item => item.ScreenDefinition.ScreenKind == ScreenKind.Empty);
 		Assert.That(empty.ShowOnExplorerBar, Is.False);
 		Assert.That(empty.ShowOnToolStrip, Is.False);
-		Assert.That(empty.ActivationMode, Is.EqualTo(freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance));
+		Assert.That(empty.ScreenDefinition.ActivationMode, Is.EqualTo(freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance));
 		Assert.That(form.ActiveScreen.GetType(), Is.EqualTo(freshEmptyWorkspace ? typeof(ScreenHostingEmptyMultiTestScreen) : typeof(ScreenHostingSettingsTestScreen)));
 		Assert.That(form.ScreenHost.OpenScreens.Length, Is.EqualTo(freshEmptyWorkspace ? 0 : 2));
 		Assert.That(form.ScreenHost.TabControl.TabCount, Is.EqualTo(freshEmptyWorkspace ? 0 : 2));
-		Assert.That(form.RegisteredBlocks.Any(block => block.Id == "notes"), Is.EqualTo(!freshEmptyWorkspace));
+		Assert.That(form.RegisteredBlocks.Any(block => block.Name == "Notes"), Is.EqualTo(!freshEmptyWorkspace));
 		if (!freshEmptyWorkspace) {
 			var permanent = form.ScreenHost.OpenScreens.OfType<ScreenHostingPermanentTestScreen>().Single();
 			Assert.That(form.ScreenHost.CloseScreen(permanent), Is.False);
@@ -173,7 +190,7 @@ public class DemoPluginRegistrationTests {
 	public void OrdinaryDemoScreensOpenIndependentInstancesThroughTheirRegisteredMenus(Type screenType) {
 		var form = StartDemo();
 		var item = form.RegisteredBlocks.SelectMany(block => block.Menus).SelectMany(menu => menu.Items)
-			.OfType<IWinFormsScreenMenuItem>().Single(item => item.Screen == screenType);
+			.OfType<IWinFormsScreenMenuItem>().Single(item => item.ScreenDefinition.ScreenType == screenType);
 		form.ExecuteMenuItem(item);
 		var first = form.ActiveScreen;
 		form.ExecuteMenuItem(item);
@@ -191,8 +208,8 @@ public class DemoPluginRegistrationTests {
 		var form = StartDemo();
 		var settings = form.ActiveScreen;
 		GetNotesEditor(settings).Text = "Keep this settings draft";
-		form.ExecuteMenuItem(GetItem(form, "workspace", "New design"));
-		form.ExecuteMenuItem(GetItem(form, "workspace", "Settings"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "New design"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "Settings"));
 		Assert.That(form.ActiveScreen, Is.SameAs(settings));
 		Assert.That(settings.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(GetNotesEditor(settings).Text, Is.EqualTo("Keep this settings draft"));
@@ -203,9 +220,9 @@ public class DemoPluginRegistrationTests {
 	public void NotesRemovalCommandHonorsItsGuardThenRevealsTheCachedEmptyWorkspace() {
 		var form = StartDemo();
 		var notes = form.ScreenHost.OpenScreens.OfType<ScreenHostingPermanentTestScreen>().Single();
-		var notesBlock = form.RegisteredBlocks.Single(block => block.Id == "notes");
+		var notesBlock = form.RegisteredBlocks.Single(block => block.Name == "Notes");
 		var guard = notes.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<CheckBox>().Single();
-		var removeNotes = (IWinFormsLinkMenuItem)GetItem(form, "notes", "Remove notes block");
+		var removeNotes = (IWinFormsLinkMenuItem)GetItem(form, "Notes", "Remove notes block");
 		guard.Checked = true;
 		form.ExecuteMenuItem(removeNotes);
 		Assert.That(form.IsBlockRegistered(notesBlock), Is.True);
@@ -216,14 +233,14 @@ public class DemoPluginRegistrationTests {
 		Assert.That(form.IsBlockRegistered(notesBlock), Is.False);
 		Assert.That(notes.IsDisposed, Is.True);
 
-		form.ExecuteMenuItem(GetItem(form, "workspace", "Close ordinary screens"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close ordinary screens"));
 		var empty = form.ActiveScreen;
 		Assert.That(empty, Is.TypeOf<ScreenHostingEmptyTestScreen>());
 		Assert.That(form.ScreenHost.TabControl.TabCount, Is.Zero);
 		GetNotesEditor(empty).Text = "Retain my empty workspace";
-		form.ExecuteMenuItem(GetItem(form, "workspace", "New design"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "New design"));
 		Assert.That(empty.IsDisposed, Is.False);
-		form.ExecuteMenuItem(GetItem(form, "workspace", "Close ordinary screens"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close ordinary screens"));
 		Assert.That(form.ActiveScreen, Is.SameAs(empty));
 		Assert.That(GetNotesEditor(form.ActiveScreen).Text, Is.EqualTo("Retain my empty workspace"));
 		Assert.That(form.ScreenHost.OpenScreens, Is.Empty);
@@ -234,10 +251,10 @@ public class DemoPluginRegistrationTests {
 		var form = StartDemo(freshEmptyWorkspace: true);
 		var empty = form.ActiveScreen;
 		GetNotesEditor(empty).Text = "This draft belongs to this instance";
-		form.ExecuteMenuItem(GetItem(form, "workspace", "New design"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "New design"));
 		Assert.That(empty.IsDisposed, Is.True);
 		Assert.That(form.ScreenHost.TabControl.TabCount, Is.EqualTo(1));
-		form.ExecuteMenuItem(GetItem(form, "workspace", "Close ordinary screens"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close ordinary screens"));
 		Assert.That(form.ActiveScreen, Is.TypeOf<ScreenHostingEmptyMultiTestScreen>());
 		Assert.That(form.ActiveScreen, Is.Not.SameAs(empty));
 		Assert.That(GetNotesEditor(form.ActiveScreen).Text, Is.Not.EqualTo("This draft belongs to this instance"));
@@ -263,8 +280,8 @@ public class DemoPluginRegistrationTests {
 		return form;
 	}
 
-	private static IWinFormsApplicationMenuItem GetItem(BlockMainForm form, string blockId, string title) =>
-		form.RegisteredBlocks.Single(block => block.Id == blockId).Menus.SelectMany(menu => menu.Items).Single(item => item.Title == title);
+	private static IWinFormsApplicationMenuItem GetItem(BlockMainForm form, string blockName, string title) =>
+		form.RegisteredBlocks.Single(block => block.Name == blockName).Menus.SelectMany(menu => menu.Items).Single(item => item.Title == title);
 
 	private static TextBox GetNotesEditor(WinFormsApplicationScreen screen) =>
 		screen.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<TextBox>().Single(editor => !editor.ReadOnly);

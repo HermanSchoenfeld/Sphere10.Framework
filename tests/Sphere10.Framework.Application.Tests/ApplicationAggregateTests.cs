@@ -8,6 +8,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
 
@@ -19,8 +20,9 @@ public class ApplicationAggregateTests {
 	[Test]
 	public void CommandMembershipIsCopiedAndInvalidUpdatesLeaveExistingCommandsIntact() {
 		using var application = new ProbeApplication();
-		var menu = new ApplicationMenu<IApplicationMenuItem> { Text = "File" };
-		var item = new ApplicationMenuItem { Title = "Save" };
+		Assert.That(application.Blocks, Is.Empty);
+		var menu = new TestApplicationMenu<IApplicationMenuItem> { Text = "File" };
+		var item = new TestApplicationMenuItem { Title = "Save" };
 		var menus = new IApplicationMenu[] { menu };
 		var items = new IApplicationMenuItem[] { item };
 		var notifications = 0;
@@ -43,20 +45,23 @@ public class ApplicationAggregateTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task DecoratorForwardsLiveStateNotificationsAndDisposal(bool asynchronous) {
-		var application = new ProbeApplication();
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var block = new TestApplicationBlock("Work", new(typeof(ProbeScreen)));
+		using var host = new ProbeHost(block, new ProbeScreen(), provider);
+		var application = new ProbeApplication(host);
 		var decorator = new ProbeDecorator(application);
 		var notifications = 0;
 		EventHandlerEx handler = () => notifications++;
 		decorator.Changed += handler;
-		var menu = new ApplicationMenu<IApplicationMenuItem> { Text = "File" };
-		var item = new ApplicationMenuItem { Title = "Save" };
+		var menu = new TestApplicationMenu<IApplicationMenuItem> { Text = "File" };
+		var item = new TestApplicationMenuItem { Title = "Save" };
 		application.SetMenus(new[] { menu });
 		application.SetToolBarItems(new[] { item });
-		Assert.That(decorator.Plugins, Is.EqualTo(application.Plugins));
-		Assert.That(decorator.ActivePlugin, Is.SameAs(application.ActivePlugin));
+		Assert.That(decorator.LoadedPlugins, Is.EqualTo(application.LoadedPlugins));
 		Assert.That(decorator.Blocks, Is.EqualTo(application.Blocks));
-		Assert.That(decorator.ActiveBlock, Is.SameAs(application.ActiveBlock));
-		Assert.That(decorator.ActiveScreen, Is.SameAs(application.ActiveScreen));
+		Assert.That(decorator.ScreenHost, Is.SameAs(application.ScreenHost));
+		Assert.That(decorator.ScreenHost.ActiveBlock, Is.SameAs(block));
+		Assert.That(decorator.ScreenHost.ActiveScreen, Is.SameAs(host.ActiveScreen));
 		Assert.That(decorator.HasUnsavedChanges, Is.True);
 		Assert.That(decorator.Menus, Is.EqualTo(new[] { menu }));
 		Assert.That(decorator.ToolBarItems, Is.EqualTo(new[] { item }));
@@ -73,20 +78,32 @@ public class ApplicationAggregateTests {
 	}
 
 	private sealed class ProbeApplication : ApplicationBase {
-		private readonly ApplicationBlock _block = new() { Name = "Work" };
-		private readonly ProbeScreen _screen = new();
 		private readonly ApplicationPlugin _plugin;
 
-		public ProbeApplication() => _plugin = new ApplicationPlugin("Work", new[] { _block });
+		public ProbeApplication(IApplicationScreenHost host = null) {
+			_plugin = new("Work", host?.Blocks ?? Array.Empty<IApplicationBlock>());
+			ScreenHost = host;
+			if (host != null)
+				ObserveScreenHost();
+		}
 
-		public override IApplicationPlugin[] Plugins => new[] { _plugin };
-		public override IApplicationBlock ActiveBlock => _block;
-		public override IApplicationScreen ActiveScreen => _screen;
-		public override bool HasUnsavedChanges => _screen.HasUnsavedChanges;
+		public override IApplicationPlugin[] LoadedPlugins => new[] { _plugin };
+		public override IApplicationScreenHost ScreenHost { get; }
 		public bool WasDisposed => IsDisposed;
 	}
 
+	private sealed class ProbeHost : ApplicationScreenHost {
+		public ProbeHost(TestApplicationBlock block, ProbeScreen screen, IServiceProvider provider)
+			: base(new[] { block }, provider) {
+			TrackScreen(screen, block, block.DefaultScreenDefinition);
+			SetTrackedSelection(screen);
+		}
+	}
+
 	private sealed class ProbeScreen : IApplicationScreen {
+		public IApplicationScreenHost Host { get; set; }
+
+		public IApplicationBlock Block { get; set; }
 		public bool HasUnsavedChanges => true;
 	}
 

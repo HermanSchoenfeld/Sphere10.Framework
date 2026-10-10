@@ -40,6 +40,41 @@ Run the STA regression tests with `dotnet test tests/Sphere10.Framework.Windows.
 
 File > Exit and the close button use an asynchronous confirmation backed by native WinForms modality. The initial close is cancelled before awaiting confirmation, and an accepted request closes the form after screen and application veto checks. Framework shutdown occurs after `Application.Run` returns, allowing normal window disposal to finish first.
 
+## Application screen hosting
+
+`IApplicationScreenHost` in `Sphere10.Framework.Application.UI` owns available and registered blocks, active navigation, the active screen, UI services, view mode, unsaved changes and lifecycle guards. `ISingleApplicationScreenHost` adds operations on the current screen; `IMultiApplicationScreenHost` adds retained/open collections, ordering and instance operations. The native host implements both interfaces and can switch modes through the guarded `ScreenMode` setter or `TrySetScreenModeAsync`. `IUserInterfaceServices` owns dialogs, status, UI dispatch and command execution. Read them from `application.ScreenHost.UserInterfaceServices`; application aggregates expose plugins, the host and application commands.
+
+`AddMainForm<TForm>()` registers shared, typed and native hosting interfaces against the existing host of a `MainForm`; it does not create another workspace. UI services resolve the form. Inject the common host for navigation and lifecycle operations:
+
+```csharp
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
+
+public class WorkspaceNavigation {
+	private readonly IApplicationScreenHost _host;
+
+	public WorkspaceNavigation(IApplicationScreenHost host) => _host = host;
+
+	public Task<IApplicationScreen> OpenEditorAsync(IApplicationBlock block, IScreenMenuItem item) =>
+		_host.ActivateScreenAsync(block, item);
+
+	public Task<bool> CloseActiveEditorAsync() => _host.ActiveScreen == null
+		? Task.FromResult(true)
+		: _host.CloseScreenAsync(_host.ActiveScreen);
+}
+```
+
+The native host exposes actual `WinFormsApplicationScreen` instances through every hosting interface. `Screens` includes retained singleton controls even when hidden; `OpenScreens` follows open order, including detached windows. Control identity remains stable across hide, show, docking and title changes. `SelectBlockAsync` browses a block without replacing the active editor; `ActivateBlockAsync` opens its default screen. Both navigation and hosting changes raise `Changed`. Showing a retained screen again selects its owner for application navigation.
+
+The generic `IApplicationScreenHost<TBlock, TScreen>` provides typed blocks, screens and lifecycle operations once for every platform. `IWinFormsApplicationScreenHost` adds native docking and existing synchronous presentation APIs. A reference to a screen identifies the same object through neutral, generic and native interfaces. Blocks also use reference identity; distinct native block definitions can have matching names.
+
+The native adapter composes the common logical host and performs native presentation on the UI thread. Its binding dictionary contains only tabs and detached windows. A screen exposes its public native `Host` and owning `Block` through both native and shared contracts; `ApplicationBlock` remains an alias of `Block`. These references are available during activation and destruction hooks, remain attached while a singleton is hidden or a window is undocked, and clear when the instance leaves the host. A `WinFormsApplicationScreen` can also access the owning shared host through protected `ApplicationScreenHost` and close itself with `await ApplicationScreenHost.CloseScreenAsync(this)`.
+
+`OpenScreenAsync(block, definition)` accepts a registered block and an exact definition reference from its `ScreenDefinitions`. Blocks own immutable definitions independently of menus, so a screen can open without a navigation item. A menu item references `ScreenDefinition`, and the block's `DefaultScreenDefinition` references the desired startup definition. Use `RegisterBlockAsync` and `UnregisterBlockAsync` for application membership; guarded removal closes its native controls and updates the same host registry.
+
+Menu items expose their declaring menu through `Parent`, and menus expose their block through `Parent`. Adding and removing items and menus through their containers maintains these references. A screen definition's `Activators` array is a snapshot of the commands attached to menus that reference it; replacing a command's definition or removing the command updates that reverse membership. Application-level menus have no block parent. Rendering merged menus preserves each command's original parent. Screen commands outside menus resolve their owning block through the host's registered definition inventory.
+
+A registered block's `Parent` references the running application. That link follows live host membership and clears when the block is removed or the application adapter is disposed. `Source` records the plugin that successfully contributed the captured block; standalone blocks have no source plugin. Removing and registering a contributed block again preserves its source, independently of its current application membership. Native and shared interfaces expose the same references.
 ## ⚡ 10-Second Example
 
 ```csharp
@@ -345,7 +380,7 @@ The builder pattern supports:
 
 ### Grouping blocks into application plugins
 
-The shared hierarchy is `IApplication` → `IApplicationPlugin` → `IApplicationBlock`. Native extensions use `IWinFormsApplication`, `IWinFormsApplicationPlugin` and `IWinFormsApplicationBlock`. A plugin groups related blocks and their startup service registrations; it is not another service provider or screen host.
+The running UI hierarchy is `IApplication` → `IApplicationBlock` → menus and screens. Native extensions use `IWinFormsApplication`, `IWinFormsApplicationBlock` and their native menu and screen contracts. A plugin contributes startup services and any number of blocks, including zero. `LoadedPlugins` records those startup contributors; every contributed block has its own navigation icon and menus.
 
 In your existing module's `RegisterComponents(IServiceCollection serviceCollection)` method, group blocks with the native plugin builder:
 
@@ -358,7 +393,6 @@ serviceCollection
 		.WithName("Administration")
 		.ConfigureServices(services => services.AddSingleton<AdministrationService>())
 		.ConfigureBlock(block => block
-			.WithId("administration")
 			.WithName("Administration")
 			.WithDefaultScreen<DashboardScreen>()
 			.ConfigureMenu(menu => menu
@@ -371,11 +405,15 @@ serviceCollection
 
 `AdministrationService`, `DashboardScreen` and `SettingsScreen` are application types; screens derive from `WinFormsApplicationScreen`. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `ConfigureBlock(block => ...)` builds a nested block; `AddBlock(block)` registers an existing `IWinFormsApplicationBlock`.
 
-Registration invokes `Load(IServiceCollection)` once, then supplies the plugin's blocks to the existing `AddApplicationBlock` startup path. The same plugin instance is available through native and shared DI contracts. `WinFormsApplication.Initialize()` registers each native block once, retaining position ordering, default screens and `ExecuteOnLoad` behavior. Resolving or disposing an application adapter does not load, unload or dispose shared plugin definitions. Plugin membership arrays are copied, while block objects, menu parent links, images and disposal ownership remain with the existing native code.
+Registration invokes `Load(IServiceCollection)` once, validates the completed contribution, and supplies its blocks to the existing `AddApplicationBlock` startup path. Only after those registrations succeed does it publish an `ApplicationPluginRegistration<IWinFormsApplicationPlugin>` receipt containing the original plugin and a defensive copy of its contributed block membership. The application factory reads these receipts; manually registering an unloaded plugin in DI does not add it to `LoadedPlugins`. Failed loading or contribution validation does not publish a receipt. Later changes to a plugin's block getter do not change the captured startup contribution.
 
-Existing `AddApplicationBlock` calls and the `WinFormsApplication(form, blocks)` constructor remain supported. Their ungrouped blocks appear under an implicit **Application** plugin; if that name already exists, the shared naming policy chooses **Application 2**, **Application 3**, and so on. The implicit plugin retains its identity and follows blocks registered before or after adapter construction and removed through the block manager. No application startup migration is required. Explicit plugin names and block IDs must be unique, and a block cannot belong to two plugins.
+The same plugin instance remains available through native and shared DI contracts. `WinFormsApplication.Initialize()` registers each native block once, retaining position ordering, default screens and `ExecuteOnLoad` behavior. Startup selection follows receipt and block declaration order, while `Position` orders the navigation icons. Resolving or disposing an application adapter does not load, unload or dispose plugin definitions. Block objects, menu parent links, images and disposal ownership remain with the existing native code.
 
-`IWinFormsApplication.Plugins` exposes these groups and `ActivePlugin` identifies the owner of the selected navigation block. `Blocks` remains the flattened live native view. The shared `IApplication` resolves to the same application object and projects the same plugins and blocks.
+`WinFormsApplicationPlugin` uses `ApplicationPluginBase<IWinFormsApplicationBlock>` and retains compatibility with `ApplicationPlugin`, including typed virtual `Blocks` overrides. Shared screen-host projections live in the generic interfaces. Native hosts and decorators inherit the shared mutable `ScreenMode` contract; virtual overrides dispatch through both shared and native views.
+
+Existing `AddApplicationBlock` calls and the `WinFormsApplication(form, blocks)` constructor remain supported. Their blocks appear directly in the application's live `Blocks` array without creating a plugin. The three-argument constructor accepts `loadedPlugins` that the caller has already loaded and captures their contributions without invoking lifecycle methods. Successfully registered plugin names must be unique, and a block reference cannot be contributed by two plugins.
+
+`IWinFormsApplication.LoadedPlugins` returns a snapshot of the original loaded plugin instances. `Blocks` projects the host's current registered blocks and follows direct registration and guarded removal. Removing a contributed block does not unload its plugin. Select navigation through `ScreenHost.ActiveBlock` and screen operations through the host; plugins have no active UI selection. The shared `IApplication` resolves to the same application object and projects the same loaded plugins and live blocks. `BlockMainForm.BlockBindings` maps each block to its native navigation pane.
 
 ### Remembering the main window
 
@@ -399,15 +437,15 @@ Other forms can keep `Tools.WinForms.AutoPersistWindowSettings(Form, SettingsID)
 
 ### Shared presentation contracts
 
-The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts; existing custom implementations receive default projections for IDs, metadata, typed collections and nullable activation policies. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` use the shared metadata/storage bases, while their native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit common metadata, screen policies and child-builder composition from the typed shared bases, then create WinForms products on the first `Build()`. Plugin `ConfigureBlock`, block `ConfigureMenu`, menu `ConfigureItem`, their corresponding `Add` methods for existing definitions and their common setters are implemented in `Sphere10.Framework.Application`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same native product, and later fluent calls update it immediately, preserving one owner for menus, items and images.
+The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts with typed collections and native presentation options. Custom blocks supply `ScreenDefinitions` and `DefaultScreenDefinition`; custom screen items supply a canonical `ScreenDefinition` reference. Shared metadata has no string IDs. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` derive from abstract `ApplicationBlockBase` and `ApplicationMenuBase<TItem>`. `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` are abstract native intermediates above the concrete screen and action items. Native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit common metadata, screen policies and child-builder composition from typed shared bases, then create WinForms products on the first `Build()`. Plugin `ConfigureBlock`, block `ConfigureMenu`, menu `ConfigureItem`, their corresponding `Add` methods and common setters live in `Sphere10.Framework.Application`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same product and incorporate additional canonical definitions. Later name, position, default and menu configuration updates the existing native product, preserving one owner for menus, items and images.
 
 `IWinFormsApplicationScreen` extends the shared `IApplicationScreen` contract with synchronous native hooks. `WinFormsApplicationScreen` maps those hooks to its existing display and cancelable hide events on the calling UI thread. Shared `CanDeactivateAsync` invokes the native hide guard; `OnDeactivatedAsync` does not emit the hide notification again. Cancellation is checked before invoking a native hook. The WinForms host remains synchronous and continues to manage controls, tabs, docking and screen disposal.
 
-Both UI hosts use the common `ScreenActivationPolicyRegistry`. The native adapter uses the shared `ScreenActivationMode` enum directly; an unspecified menu policy still leaves the choice to the screen constructor. Help metadata remains available through the shared screen contract.
+Screen definitions carry activation modes for both UI hosts. The host resolves declarations and captures a constructor's mode in a definition when no mode was declared, then validates subsequent instances against that metadata. The native adapter uses the shared `ScreenActivationMode` enum directly; an unspecified menu mode still leaves the initial choice to the screen constructor. Help metadata remains available through the shared screen contract.
 
 ### Running application and shared wizards
 
-`IWinFormsApplication : Sphere10.Framework.Application.UI.IApplication` exposes the running `BlockMainForm` through plugins, registered blocks, active plugin/block/screen, retained unsaved state and change notifications. For `BlockMainForm` and its subclasses, `AddMainForm` registers the native and shared interfaces to the same adapter; framework startup initializes its configured blocks. The adapter borrows the form and screen host rather than creating a second owner. `SetMenus` and `SetToolBarItems` accept native command definitions and update the actual application menu and toolbar using the form's existing bindings and execution path.
+`IWinFormsApplication : Sphere10.Framework.Application.UI.IApplication` exposes the running `BlockMainForm` through live blocks, loaded startup plugins, its screen host, retained unsaved state and change notifications. The host owns active block and screen selection. For `BlockMainForm` and its subclasses, `AddMainForm` registers the native and shared interfaces to the same adapter; framework startup initializes its configured blocks. The adapter borrows the form and screen host rather than creating a second owner. `SetMenus` and `SetToolBarItems` accept native command definitions and update the actual application menu and toolbar using the form's existing bindings and execution path.
 
 `WinFormsWizardBuilder<TModel>`, `WinFormsActionWizard<TModel>`, `IWinFormsWizard<TModel>`, `WinFormsWizardScreen<TModel>` and `WinFormsWizardDialog<TModel>` replace the unprefixed native wizard names. Navigation, step membership, callbacks and completion policy use the shared `Application.UI` wizard workflow; native adapters retain control initialization, validation, presentation, sizing and disposal. Dynamically removed screens remain owned by their wizard and are disposed with it. `WizardResult`, `WizardStepUpdateType` and `ScreenMode` now come directly from the shared UI namespace.
 
@@ -467,7 +505,7 @@ The left navigation pane starts at 320 logical pixels wide and scales with the f
 
 `MainForm.ScreenHost` exposes `ActivateScreen`, `ShowScreen`, `CloseScreen`, `CloseScreens`, `CanCloseScreens`, `UndockScreen`, `DockScreen`, `OpenScreens` and `Screens`. `ActiveScreen` identifies the selected docked screen; detached windows retain independent chrome. `Screens` also includes cached single-instance screens hidden in SingleView. `ActivateScreen` and menu navigation reuse an existing singleton. Direct `ShowScreen` calls reject a second singleton instance; the caller still owns a rejected instance. A screen belongs to one host at a time.
 
-`Menus`, `Items`, `IBlockManager.RegisteredBlocks`, `Screens` and `OpenScreens` expose arrays. The built-in models, block manager and screen host return snapshots: replacing entries in a returned array does not change their owned collections. Use menu mutation methods, block registration methods and screen-host operations to change those collections. The referenced menus and screens retain their existing identity and disposal ownership.
+`LoadedPlugins`, `Blocks`, `Menus`, `Items`, `IBlockManager.RegisteredBlocks`, `Screens` and `OpenScreens` expose arrays. The built-in models, application, block manager and screen host return snapshots: replacing entries in a returned array does not change their owned collections. Use menu mutation methods, block registration methods and screen-host operations to change those collections. The referenced plugins, blocks, menus and screens retain their existing identity and disposal ownership.
 
 SingleView retains hidden single-instance screens and disposes multi-instance screens when navigating away, preserving the previous behavior. Explicit close destroys an ordinary instance; opening it again constructs a fresh screen. Switching from MultiView to SingleView closes other ordinary open screens and retains the selected screen. Permanent singletons remain owned and return to the tab strip when MultiView is restored. Use `ScreenHost.TrySetScreenMode` to handle cancellation without an exception; assigning `ScreenMode` throws if a screen vetoes the change.
 
@@ -564,3 +602,8 @@ These low-level moves require recompilation and the listed source updates for co
 Custom closing behavior should override `OnFormClosing(FormClosingEventArgs)`. The framework forms use this supported lifecycle hook. Image attachment selection now returns the selected file or clipboard source instead of always reporting `None`.
 
 Legacy DES stream helpers retain their existing full-length input buffer and zero-filled tail at end of input; short reads are completed before encryption or decryption. The existing DES key, IV, and ciphertext format are preserved.
+
+
+Application, block and screen command layers compose through `Tools.UI.MergeApplicationMenus` and `MergeApplicationToolBarItems`. Application commands survive contextual commands with the same caption; screen commands replace matching block commands. Native captions merge without mnemonic markers, including contributions to the existing File and Help headers. Exit and help commands survive screen changes, with Help last. Native presentation honors block/menu placement flags and preserves caller-owned menu and item references.
+
+`Control.EnterRenderingScope()` defers layout and native redraw across the control tree. Nested scopes, added controls, newly created handles and newly shown controls share suppression. The last scope flushes parent/child layout and performs one redraw; disposed and intentionally hidden controls remain so. Dispose scopes on the creating UI thread. Screen-host transitions use this scope around the form and publish one completed selection and command update.

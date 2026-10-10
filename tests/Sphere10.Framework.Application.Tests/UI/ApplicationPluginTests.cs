@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
@@ -50,7 +51,7 @@ public class ApplicationPluginTests {
 
 	[Test]
 	public void MembershipArraysAreOwnedWhileDefinitionIdentityAndInitCompatibilityArePreserved() {
-		var block = new ApplicationBlock { Id = "work", Name = "Work" };
+		var block = new TestApplicationBlock { Name = "Work" };
 		var input = new IApplicationBlock[] { block };
 		var plugin = new ApplicationPlugin("Original", Array.Empty<IApplicationBlock>()) { Name = "Configured", Blocks = input };
 		input[0] = null;
@@ -63,8 +64,8 @@ public class ApplicationPluginTests {
 
 	[Test]
 	public void TypedAdapterInitializerSharesStorageWithTheCommonContract() {
-		var first = new SpecialBlock { Id = "first", Name = "First" };
-		var second = new SpecialBlock { Id = "second", Name = "Second" };
+		var first = new SpecialBlock { Name = "First" };
+		var second = new SpecialBlock { Name = "Second" };
 		var plugin = new TypedPlugin(new[] { first }) { Blocks = new[] { second } };
 		IApplicationPlugin shared = plugin;
 		Assert.That(shared.Blocks.Single(), Is.SameAs(second));
@@ -77,8 +78,8 @@ public class ApplicationPluginTests {
 	[Test]
 	public void BuilderCopiesAccumulatedMembershipAndServiceConfigurationForEachBuild() {
 		var calls = new List<string>();
-		var firstBlock = new ApplicationBlock { Name = "First" };
-		var secondBlock = new ApplicationBlock { Name = "Second" };
+		var firstBlock = new TestApplicationBlock { Name = "First" };
+		var secondBlock = new TestApplicationBlock { Name = "Second" };
 		var builder = new ApplicationPluginBuilder()
 			.WithName("First plugin")
 			.AddBlock(firstBlock)
@@ -109,21 +110,21 @@ public class ApplicationPluginTests {
 
 	[Test]
 	public void MembershipValidationRejectsMissingAndDuplicateBlocks() {
-		var block = new ApplicationBlock { Id = "same", Name = "First" };
+		var block = new TestApplicationBlock { Name = "First" };
 		Assert.That(() => new ApplicationPlugin("Work", null), Throws.ArgumentNullException);
 		Assert.That(() => new ApplicationPlugin("Work", new IApplicationBlock[] { null }), Throws.ArgumentNullException);
-		Assert.That(() => new ApplicationPlugin("Work", new[] { new ApplicationBlock() }), Throws.ArgumentException);
-		Assert.That(() => new ApplicationPlugin("Work", new[] { block, new ApplicationBlock { Id = "same", Name = "Second" } }), Throws.ArgumentException);
+		Assert.That(() => new ApplicationPlugin("Work", new[] { new TestApplicationBlock() }), Throws.ArgumentException);
+		Assert.That(() => new ApplicationPlugin("Work", new[] { block, block }), Throws.ArgumentException);
 	}
 
 	[Test]
 	public void PluginValidationRejectsDuplicateNamesAndBlockOwnershipAcrossPlugins() {
-		var firstBlock = new ApplicationBlock { Id = "same", Name = "First" };
+		var firstBlock = new TestApplicationBlock { Name = "First" };
 		var first = new ApplicationPlugin("First", new[] { firstBlock });
 		var sameName = new ApplicationPlugin("First", Array.Empty<IApplicationBlock>());
-		var sameBlockId = new ApplicationPlugin("Second", new[] { new ApplicationBlock { Id = "same", Name = "Second" } });
+		var sameBlock = new ApplicationPlugin("Second", new[] { firstBlock });
 		Assert.That(() => Tools.UI.ValidatePlugins(new[] { first, sameName }), Throws.ArgumentException);
-		Assert.That(() => Tools.UI.ValidatePlugins(new[] { first, sameBlockId }), Throws.ArgumentException);
+		Assert.That(() => Tools.UI.ValidatePlugins(new[] { first, sameBlock }), Throws.ArgumentException);
 		Assert.That(() => Tools.UI.ValidatePlugins(new IApplicationPlugin[] { null }), Throws.ArgumentNullException);
 		Assert.That(() => Tools.UI.ValidatePlugins(new[] { new UnvalidatedPlugin { Name = " " } }), Throws.ArgumentException);
 		Assert.That(() => Tools.UI.ValidatePlugins(new[] { new UnvalidatedPlugin { Name = "Invalid", Blocks = null } }), Throws.ArgumentNullException);
@@ -144,20 +145,8 @@ public class ApplicationPluginTests {
 	}
 
 	[Test]
-	public void ImplicitPluginNamesUseTheFirstAvailableOrdinalSuffix() {
-		var plugins = new[] {
-			new ApplicationPlugin("Application", Array.Empty<IApplicationBlock>()),
-			new ApplicationPlugin("Application 3", Array.Empty<IApplicationBlock>()),
-			new ApplicationPlugin("application 2", Array.Empty<IApplicationBlock>())
-		};
-		Assert.That(Tools.UI.GetImplicitPluginName(Array.Empty<IApplicationPlugin>()), Is.EqualTo("Application"));
-		Assert.That(Tools.UI.GetImplicitPluginName(plugins), Is.EqualTo("Application 2"));
-		Assert.That(Tools.UI.GetImplicitPluginName(plugins.Append(new ApplicationPlugin("Application 2", Array.Empty<IApplicationBlock>()))), Is.EqualTo("Application 4"));
-	}
-
-	[Test]
 	public void DecoratorForwardsIdentityRegistrationAndBothEventSubscriptions() {
-		var plugin = new ApplicationPlugin("Work", new[] { new ApplicationBlock { Name = "Work" } });
+		var plugin = new ApplicationPlugin("Work", new[] { new TestApplicationBlock { Name = "Work" } });
 		var decorator = new PluginDecorator(plugin);
 		var loaded = 0;
 		var unloaded = 0;
@@ -180,29 +169,51 @@ public class ApplicationPluginTests {
 	}
 
 	[Test]
-	public void ApplicationProjectsOriginalPluginsAndFindsOwnershipByRuntimeBlockIdWithoutManagingPluginLifetime() {
-		var plugin = new ApplicationPlugin("Work", new[] { new ApplicationBlock { Id = "work", Name = "Definition" } });
+	public async Task ApplicationProjectsLiveHostBlocksAndOriginalLoadedPluginsWithoutSyntheticGroups() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var first = new TestApplicationBlock { Name = "First" };
+		var second = new TestApplicationBlock { Name = "Second" };
+		var plugin = new ApplicationPlugin("Work", new[] { first, second });
+		var services = new ApplicationPlugin("Services", Array.Empty<IApplicationBlock>());
+		var standalone = new TestApplicationBlock { Name = "Definition" };
+		using var host = new ApplicationScreenHost(new[] { first, standalone, second }, provider);
+		using var application = new PluginApplication(new[] { plugin, services }, host);
+		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { plugin, services }));
+		Assert.That(application.LoadedPlugins[0], Is.SameAs(plugin));
+		Assert.That(application.Blocks, Is.EqualTo(new[] { first, standalone, second }));
+		application.LoadedPlugins[0] = null;
+		application.Blocks[0] = null;
+		Assert.That(application.LoadedPlugins[0], Is.SameAs(plugin));
+		Assert.That(application.Blocks[0], Is.SameAs(first));
+		await host.SelectBlockAsync(standalone);
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(standalone));
+		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { plugin, services }));
+		await host.UnregisterBlockAsync(second);
+		Assert.That(application.Blocks, Is.EqualTo(new[] { first, standalone }));
+		await host.RegisterBlockAsync(second);
+		Assert.That(application.Blocks, Is.EqualTo(new[] { first, standalone, second }));
+	}
+
+	[Test]
+	public void ApplicationDisposalDoesNotManageStartupPluginLifetimeAndEmptyMembershipIsSupported() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var plugin = new ApplicationPlugin("Services", Array.Empty<IApplicationBlock>());
 		var loaded = 0;
 		var unloaded = 0;
 		plugin.Loaded += () => loaded++;
 		plugin.Unloaded += () => unloaded++;
-		var application = new PluginApplication(new[] { plugin }) { SelectedBlock = new ApplicationBlock { Id = "work", Name = "Runtime snapshot" } };
-		Assert.That(application.ActivePlugin, Is.SameAs(plugin));
-		Assert.That(application.Plugins.Single(), Is.SameAs(plugin));
-		Assert.That(application.Blocks.Single(), Is.SameAs(plugin.Blocks.Single()));
-		application.Plugins[0] = null;
-		application.Blocks[0] = null;
-		Assert.That(application.ActivePlugin, Is.SameAs(plugin));
-		application.SelectedBlock = new ApplicationBlock { Id = "unknown" };
-		Assert.That(application.ActivePlugin, Is.Null);
-		application.SelectedBlock = null;
-		Assert.That(application.ActivePlugin, Is.Null);
+		plugin.Load(new ServiceCollection());
+		using var host = new ApplicationScreenHost(provider);
+		var application = new PluginApplication(new[] { plugin }, host);
 		application.Dispose();
-		Assert.That(loaded, Is.Zero);
+		Assert.That(loaded, Is.EqualTo(1));
 		Assert.That(unloaded, Is.Zero);
-		using var empty = new PluginApplication(Array.Empty<IApplicationPlugin>());
+		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
+		Assert.That(application.Blocks, Is.Empty);
+		using var emptyHost = new ApplicationScreenHost(provider);
+		using var empty = new PluginApplication(Array.Empty<IApplicationPlugin>(), emptyHost);
 		Assert.That(empty.Blocks, Is.Empty);
-		Assert.That(empty.ActivePlugin, Is.Null);
+		Assert.That(empty.LoadedPlugins, Is.Empty);
 	}
 
 	private sealed class Marker {
@@ -221,7 +232,7 @@ public class ApplicationPluginTests {
 		protected override void OnUnloaded() => _calls.Add("unloaded hook");
 	}
 
-	private sealed class SpecialBlock : ApplicationBlock {
+	private sealed class SpecialBlock : TestApplicationBlock {
 	}
 
 	private sealed class TypedPlugin : ApplicationPlugin {
@@ -248,18 +259,16 @@ public class ApplicationPluginTests {
 	}
 
 	private sealed class PluginApplication : ApplicationBase {
-		private readonly IApplicationPlugin[] _plugins;
+		private readonly IApplicationPlugin[] _loadedPlugins;
 
-		public PluginApplication(IEnumerable<IApplicationPlugin> plugins) => _plugins = Tools.UI.ValidatePlugins(plugins);
+		public PluginApplication(IEnumerable<IApplicationPlugin> loadedPlugins, IApplicationScreenHost host) {
+			_loadedPlugins = Tools.UI.ValidatePlugins(loadedPlugins);
+			ScreenHost = host;
+			ObserveScreenHost();
+		}
 
-		public IApplicationBlock SelectedBlock { get; set; }
+		public override IApplicationPlugin[] LoadedPlugins => Tools.Array.Clone(_loadedPlugins);
 
-		public override IApplicationPlugin[] Plugins => Tools.Array.Clone(_plugins);
-
-		public override IApplicationBlock ActiveBlock => SelectedBlock;
-
-		public override IApplicationScreen ActiveScreen => null;
-
-		public override bool HasUnsavedChanges => false;
+		public override IApplicationScreenHost ScreenHost { get; }
 	}
 }

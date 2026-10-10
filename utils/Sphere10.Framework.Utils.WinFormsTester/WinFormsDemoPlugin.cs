@@ -20,6 +20,22 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Registers the running tester's workspace and component demonstrations through the framework's plugin builder.</summary>
 public static class WinFormsDemoPlugin {
+	/// <summary>Keeps the live mode toggle in the application layer while individual blocks contribute contextual commands.</summary>
+	public static void ConfigureApplicationCommands(WinFormsApplication application) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		var menu = new WinFormsApplicationMenuBuilder()
+			.WithText("Views")
+			.AddActionItem("Toggle screen mode", userInterface => {
+				var mode = userInterface.ScreenHost.ScreenMode == ScreenMode.MultiView ? ScreenMode.SingleView : ScreenMode.MultiView;
+				SetScreenMode(userInterface, mode);
+			}, (Image)Resources.Generic16x16.Clone())
+			.Build();
+		application.SetMenus(new[] { menu });
+		application.SetToolBarItems(menu.Items);
+		if (application.ScreenHost.UserInterfaceServices.PrimaryUIController is Form form)
+			form.Disposed += (_, _) => menu.Dispose();
+	}
+
 	public static void Configure(WinFormsApplicationPluginBuilder plugin, bool freshEmptyWorkspace = false) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
 		var emptyScreen = freshEmptyWorkspace ? typeof(ScreenHostingEmptyMultiTestScreen) : typeof(ScreenHostingEmptyTestScreen);
@@ -29,7 +45,6 @@ public static class WinFormsDemoPlugin {
 		plugin
 			.WithName("WinForms demonstrations")
 			.ConfigureBlock(block => block
-				.WithId("workspace")
 				.WithName("Workspace")
 				.WithImage32x32((Image)Resources.TestBlock32x32.Clone())
 				.WithImage8x8((Image)Resources.TestBlock8x8.Clone())
@@ -81,7 +96,6 @@ public static class WinFormsDemoPlugin {
 		if (!freshEmptyWorkspace)
 			plugin
 				.ConfigureBlock(block => block
-					.WithId("notes")
 					.WithName("Notes")
 					.WithImage32x32((Image)Resources.Menu32x32.Clone())
 					.ConfigureMenu(menu => menu
@@ -100,7 +114,6 @@ public static class WinFormsDemoPlugin {
 
 		plugin
 			.ConfigureBlock(block => block
-				.WithId("controls")
 				.WithName("Controls")
 				.WithImage32x32((Image)Resources.Tests32x32.Clone())
 				.ConfigureMenu(menu => menu
@@ -134,7 +147,6 @@ public static class WinFormsDemoPlugin {
 				)
 			)
 			.ConfigureBlock(block => block
-				.WithId("data")
 				.WithName("Data and collections")
 				.WithImage32x32((Image)Resources.Tests232x32.Clone())
 				.ConfigureMenu(menu => menu
@@ -153,7 +165,6 @@ public static class WinFormsDemoPlugin {
 				)
 			)
 			.ConfigureBlock(block => block
-				.WithId("integration")
 				.WithName("Integration")
 				.WithImage32x32((Image)Resources.TestBlock32x32.Clone())
 				.ConfigureMenu(menu => menu
@@ -174,7 +185,6 @@ public static class WinFormsDemoPlugin {
 				)
 			)
 			.ConfigureBlock(block => block
-				.WithId("utilities")
 				.WithName("Utilities")
 				.WithImage32x32((Image)Resources.Menu32x32.Clone())
 				.ConfigureMenu(menu => menu
@@ -207,7 +217,7 @@ public static class WinFormsDemoPlugin {
 
 	private static void RemoveNotesBlock(IUserInterfaceServices userInterface) {
 		var form = (BlockMainForm)userInterface.PrimaryUIController;
-		var block = form.RegisteredBlocks.FirstOrDefault(block => block.Id == "notes");
+		var block = form.RegisteredBlocks.FirstOrDefault(block => block.Name == "Notes");
 		if (block == null)
 			return;
 		form.UnregisterBlock(block);

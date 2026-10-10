@@ -9,6 +9,7 @@
 using System;
 using Sphere10.Framework.Application.UI;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -46,7 +47,7 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 		CountMenu.ShortcutKeys = Keys.Control | Keys.Shift | Keys.K;
 		var FileMenu = new ToolStripMenuItem("&File");
 		FileMenu.DropDownItems.Add(new ToolStripMenuItem("Rename tab...", null, async (_, _) => await RenameTab()));
-		FileMenu.DropDownItems.Add(new ToolStripMenuItem("Close screen", null, (_, _) => CloseScreen()) { ShortcutKeys = Keys.Control | Keys.W, Enabled = Mode != ScreenActivationMode.PermanentSingleton });
+		FileMenu.DropDownItems.Add(new ToolStripMenuItem("Close screen", null, async (_, _) => await CloseScreenAsync()) { ShortcutKeys = Keys.Control | Keys.W, Enabled = Mode != ScreenActivationMode.PermanentSingleton });
 		RegisterMenuItem(FileMenu);
 		var ActionsMenu = new ToolStripMenuItem("&Actions");
 		ActionsMenu.DropDownItems.Add(CountMenu);
@@ -125,11 +126,10 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 			Title = NewTitle;
 	}
 
-	private void CloseScreen() {
-		if (FindForm() is WinFormsApplicationScreenForm DetachedWindow)
-			DetachedWindow.Close();
-		else if (FindForm() is MainForm MainWindow)
-			MainWindow.ScreenHost.CloseScreen(this);
+	private async Task CloseScreenAsync() {
+		if (ApplicationScreenHost is not IMultiApplicationScreenHost host)
+			return;
+		await host.CloseScreenAsync(this);
 	}
 
 	private void AddInstruction(string heading, string description, Font headingFont) {

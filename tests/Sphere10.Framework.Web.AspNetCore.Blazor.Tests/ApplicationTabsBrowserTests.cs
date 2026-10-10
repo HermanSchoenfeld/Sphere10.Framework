@@ -73,7 +73,7 @@ public class ApplicationTabsBrowserTests {
 		await _page.GetByText("Counter: 1", new() { Exact = true }).WaitForAsync();
 		await workspaceMenu.GetByRole(AriaRole.Button, new() { Name = "Single-instance screen", Exact = true }).ClickAsync();
 		await toolbar.GetByRole(AriaRole.Button, new() { Name = "Save in session", Exact = true }).WaitForAsync();
-		Assert.That(await toolbar.GetByRole(AriaRole.Button, new() { Name = "Application command", Exact = true }).CountAsync(), Is.Zero);
+		Assert.That(await toolbar.GetByRole(AriaRole.Button, new() { Name = "Application command", Exact = true }).CountAsync(), Is.EqualTo(1));
 		Assert.That(await toolbar.GetByRole(AriaRole.Button, new() { Name = "Workspace action", Exact = true }).CountAsync(), Is.EqualTo(1));
 		await _page.GetByRole(AriaRole.Textbox, new() { Name = "Session note" }).FillAsync("Draft retained by tab guard");
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }).ClickAsync();
@@ -86,7 +86,8 @@ public class ApplicationTabsBrowserTests {
 		Assert.That(await commands.Locator(".sphere10-menu-button").Last.InnerTextAsync(), Is.EqualTo("Help"));
 		await commands.GetByRole(AriaRole.Button, new() { Name = "File", Exact = true }).ClickAsync();
 		var file = commands.GetByRole(AriaRole.Group, new() { Name = "File", Exact = true });
-		Assert.That(await file.GetByRole(AriaRole.Button, new() { Name = "Application command", Exact = true }).CountAsync(), Is.Zero);
+		await file.WaitForAsync();
+		Assert.That(await file.GetByRole(AriaRole.Button, new() { Name = "Application command", Exact = true }).CountAsync(), Is.EqualTo(1));
 		await file.GetByRole(AriaRole.Button, new() { Name = "Save in session", Exact = true }).ClickAsync();
 		await file.WaitForAsync(new() { State = WaitForSelectorState.Detached });
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }).ClickAsync();

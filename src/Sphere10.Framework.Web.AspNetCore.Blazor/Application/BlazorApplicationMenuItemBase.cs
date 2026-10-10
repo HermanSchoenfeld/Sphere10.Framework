@@ -11,22 +11,17 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class BlazorApplicationMenuItem : IBlazorApplicationMenuItem {
-	public event EventHandlerEx Hover {
-		add => _definition.Hover += value;
-		remove => _definition.Hover -= value;
-	}
+public abstract class BlazorApplicationMenuItemBase : ApplicationMenuItemBase, IBlazorApplicationMenuItem {
+	private string _id;
 
-	public event EventHandlerEx Select {
-		add => _definition.Select += value;
-		remove => _definition.Select -= value;
+	public new IBlazorApplicationMenu Parent {
+		get => (IBlazorApplicationMenu)base.Parent;
+		set => base.Parent = value;
 	}
-
-	private readonly ApplicationMenuItem _definition = new();
 
 	public string Id {
-		get => _definition.Id;
-		init => _definition.Id = value;
+		get => _id ?? Title;
+		init => _id = value;
 	}
 
 	public string Icon { get; init; }
@@ -38,23 +33,23 @@ public abstract class BlazorApplicationMenuItem : IBlazorApplicationMenuItem {
 
 	public bool IsEnabled => CanExecute?.Invoke() ?? true;
 
-	public string Title {
-		get => _definition.Title;
-		init => _definition.Title = value;
+	public new string Title {
+		get => base.Title;
+		init => base.Title = value;
 	}
 
-	internal void CopySubscriptionsFrom(BlazorApplicationMenuItem source) {
+	internal void CopySubscriptionsFrom(BlazorApplicationMenuItemBase source) {
 		Guard.ArgumentNotNull(source, nameof(source));
-		_definition.CopySubscriptionsFrom(source._definition);
+		base.CopySubscriptionsFrom(source);
 	}
 
-	internal void NotifyHover() {
-		_definition.NotifyHover();
+	public override void NotifyHover() {
+		base.NotifyHover();
 		OnHover();
 	}
 
-	internal void NotifySelect() {
-		_definition.NotifySelect();
+	public override void NotifySelect() {
+		base.NotifySelect();
 		OnSelect();
 	}
 

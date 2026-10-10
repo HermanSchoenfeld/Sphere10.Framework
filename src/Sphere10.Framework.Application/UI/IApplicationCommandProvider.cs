@@ -15,3 +15,12 @@ public interface IApplicationCommandProvider {
 
 	IApplicationMenuItem[] ToolBarItems => Array.Empty<IApplicationMenuItem>();
 }
+
+public interface IApplicationCommandProvider<out TMenu, out TItem> : IApplicationCommandProvider
+	where TMenu : class, IApplicationMenu
+	where TItem : class, IApplicationMenuItem {
+	new TMenu[] Menus => Array.Empty<TMenu>();
+	new TItem[] ToolBarItems => Array.Empty<TItem>();
+	IApplicationMenu[] IApplicationCommandProvider.Menus => Menus;
+	IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems => ToolBarItems;
+}

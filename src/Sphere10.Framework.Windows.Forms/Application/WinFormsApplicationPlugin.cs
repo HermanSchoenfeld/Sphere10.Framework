@@ -8,14 +8,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Uses shared plugin storage and lifecycle while preserving native block identities and ownership.</summary>
-public class WinFormsApplicationPlugin : ApplicationPlugin, IWinFormsApplicationPlugin {
+public class WinFormsApplicationPlugin : ApplicationPluginBase<IWinFormsApplicationBlock>, IWinFormsApplicationPlugin {
 	public WinFormsApplicationPlugin(string name, IEnumerable<IWinFormsApplicationBlock> blocks)
 		: this(name, blocks, null) {
 	}
@@ -23,11 +22,4 @@ public class WinFormsApplicationPlugin : ApplicationPlugin, IWinFormsApplication
 	public WinFormsApplicationPlugin(string name, IEnumerable<IWinFormsApplicationBlock> blocks, Action<IServiceCollection> configureServices)
 		: base(name, blocks, configureServices) {
 	}
-
-	public new virtual IWinFormsApplicationBlock[] Blocks {
-		get => base.Blocks.Cast<IWinFormsApplicationBlock>().ToArray();
-		init => base.Blocks = value;
-	}
-
-	IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
 }

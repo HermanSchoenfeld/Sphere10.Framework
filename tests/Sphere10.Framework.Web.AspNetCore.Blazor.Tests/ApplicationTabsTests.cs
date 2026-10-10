@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -22,7 +23,7 @@ public class ApplicationTabsTests {
 	[Test]
 	public async Task ReorderingRetainsSelectionIdentityAndLifecycleAndUsesTabOrderOnClose() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(Catalog(), services);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
 		var first = await host.ActivateScreenAsync("block", "single");
 		var original = new Probe();
 		await host.AttachScreenAsync(first.Id, original);
@@ -44,7 +45,7 @@ public class ApplicationTabsTests {
 	[Test]
 	public async Task BatchCloseVetoAndModeSwitchAreAtomicAcrossHiddenAndVisibleGuards() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(Catalog(), services);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
 		var first = await host.ActivateScreenAsync("block", "single");
 		var guarded = new Probe();
 		await host.AttachScreenAsync(first.Id, guarded);
@@ -64,7 +65,7 @@ public class ApplicationTabsTests {
 	[Test]
 	public async Task SingleViewRetainsSingletonButReleasesDepartedMultiInstance() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(Catalog(), services);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
 		await host.TrySetScreenModeAsync(ScreenMode.SingleView);
 		var first = await host.ActivateScreenAsync("block", "single");
 		var original = new Probe();
@@ -84,7 +85,7 @@ public class ApplicationTabsTests {
 	[Test]
 	public async Task RetainedSingletonStillGuardsNavigationWhenSingleViewHasNoActiveScreen() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(Catalog(), services);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
 		await host.TrySetScreenModeAsync(ScreenMode.SingleView);
 		var first = await host.ActivateScreenAsync("block", "single");
 		var screen = new Probe();
@@ -116,22 +117,23 @@ public class ApplicationTabsTests {
 					new System.Collections.Generic.Dictionary<string, object> { ["Caption"] = "Canonical" })
 			)
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { firstBlock, secondBlock }), services);
+		using var host = new BlazorApplicationScreenHost(new[] { firstBlock, secondBlock }, services);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		await host.ActivateBlockAsync("second");
 		var supplied = new BlazorScreenMenuItem { Id = "same", Title = "Forged", ScreenType = typeof(Probe), ActivationMode = ScreenActivationMode.MultiInstance };
-		Assert.That(await host.ExecuteMenuItemAsync(supplied), Is.True);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(supplied), Is.True);
 		Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("second"));
 		Assert.That(host.ActiveScreen.Title, Is.EqualTo("Second"));
 		Assert.That(host.ActiveScreen.Parameters["Caption"], Is.EqualTo("Canonical"));
 		var canonicalFirst = host.Blocks.Single(block => block.Id == "first").Menus.Single().Items.Single();
-		Assert.That(await host.ExecuteMenuItemAsync(canonicalFirst), Is.True);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(canonicalFirst), Is.True);
 		Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("first"), "A canonical command retains its owning block even when another block is active.");
 	}
 
 	[Test]
 	public async Task CancelledBatchLeavesEverySessionAndSelectionUntouched() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(Catalog(), services);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
 		var first = await host.ActivateScreenAsync("block", "single");
 		using var cancellation = new CancellationTokenSource();
 		await host.AttachScreenAsync(first.Id, new Probe { Guard = token => {
@@ -161,7 +163,7 @@ public class ApplicationTabsTests {
 		Assert.That(() => builder.Build(), Throws.ArgumentException);
 	}
 
-	private static BlazorApplicationBlockCatalog Catalog() => new(new[] {
+	private static IBlazorApplicationBlock[] CreateBlocks() => new[] {
 		new BlazorApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
@@ -176,9 +178,13 @@ public class ApplicationTabsTests {
 			.WithId("actions")
 			.WithName("Actions")
 			.Build()
-	});
+	};
 
 	public class Probe : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 		public bool AllowLeave { get; set; } = true;
 
 		public int Activations { get; private set; }

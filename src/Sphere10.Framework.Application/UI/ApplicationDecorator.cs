@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class ApplicationDecorator<TConcrete> : IApplication where TConcrete : IApplication {
+public abstract class ApplicationDecorator<TConcrete> : IApplication
+	where TConcrete : IApplication {
 	public virtual event EventHandlerEx Changed {
 		add => InternalApplication.Changed += value;
 		remove => InternalApplication.Changed -= value;
@@ -23,15 +24,11 @@ public abstract class ApplicationDecorator<TConcrete> : IApplication where TConc
 		InternalApplication = application;
 	}
 
-	public virtual IApplicationPlugin[] Plugins => InternalApplication.Plugins;
-
-	public virtual IApplicationPlugin ActivePlugin => InternalApplication.ActivePlugin;
+	public virtual IApplicationPlugin[] LoadedPlugins => InternalApplication.LoadedPlugins;
 
 	public virtual IApplicationBlock[] Blocks => InternalApplication.Blocks;
 
-	public virtual IApplicationBlock ActiveBlock => InternalApplication.ActiveBlock;
-
-	public virtual IApplicationScreen ActiveScreen => InternalApplication.ActiveScreen;
+	public virtual IApplicationScreenHost ScreenHost => InternalApplication.ScreenHost;
 
 	public virtual bool HasUnsavedChanges => InternalApplication.HasUnsavedChanges;
 

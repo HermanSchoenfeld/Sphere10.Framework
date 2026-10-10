@@ -133,11 +133,9 @@ public class ApplicationRegistrationBuilderTests {
 
 		public string Name { get; }
 
-		public override IApplicationPlugin[] Plugins => Array.Empty<IApplicationPlugin>();
+		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
 
-		public override IApplicationBlock ActiveBlock => null;
-
-		public override IApplicationScreen ActiveScreen => null;
+		public override IApplicationScreenHost ScreenHost => null;
 
 		public override bool HasUnsavedChanges => false;
 	}

@@ -6,17 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-
-using Sphere10.Framework.Application.UI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -30,19 +29,20 @@ public class ApplicationMenuEventTests {
 		EventHandlerEx selected = () => selections++;
 		var item = new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) };
 		item.Select += selected;
-		var catalog = CreateCatalog(item);
+		var blocks = CreateBlocks(item);
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(blocks, provider);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		item.Select -= selected;
 		item.Select += () => lateSelections++;
-		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(catalog, provider);
 
-		Assert.That(await host.ExecuteMenuItemAsync("block", "screen"), Is.True);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("block", "screen"), Is.True);
 		Assert.That(selections, Is.EqualTo(1));
 		await host.ActivateScreenAsync("block", "screen");
 		Assert.That(selections, Is.EqualTo(2));
 		await host.ShowScreenAsync(host.ActiveScreen.Id);
 		Assert.That(selections, Is.EqualTo(2), "Selecting an existing tab does not select a menu item.");
-		Assert.That(lateSelections, Is.Zero, "Subscriptions added to the original item after registration do not alter the catalog snapshot.");
+		Assert.That(lateSelections, Is.Zero, "Subscriptions added to the original item after registration do not alter the UI-services snapshot.");
 	}
 
 	[Test]
@@ -60,7 +60,7 @@ public class ApplicationMenuEventTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 
 		var session = await host.ActivateBlockAsync("block");
 		Assert.That(session.Title, Is.EqualTo("Dashboard"));
@@ -75,12 +75,13 @@ public class ApplicationMenuEventTests {
 		};
 		item.Select += () => selections++;
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(item), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var session = await host.ActivateScreenAsync("block", "screen");
 		var component = new TestScreen { AllowDeactivation = false };
 		await host.AttachScreenAsync(session.Id, component);
 
-		Assert.That(await host.ExecuteMenuItemAsync("block", "screen"), Is.False);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("block", "screen"), Is.False);
 		Assert.That(selections, Is.EqualTo(1));
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
@@ -100,8 +101,9 @@ public class ApplicationMenuEventTests {
 		item.Select += () => calls.Add("select");
 
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(item), provider);
-		Assert.That(await host.ExecuteMenuItemAsync("block", "action"), Is.True);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("block", "action"), Is.True);
 		Assert.That(calls, Is.EqualTo(new[] { "action", "select" }));
 	}
 
@@ -114,8 +116,9 @@ public class ApplicationMenuEventTests {
 		item.Select += () => selections++;
 
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(item), provider);
-		Assert.That(async () => await host.ExecuteMenuItemAsync("block", "action"), Throws.InstanceOf<InvalidOperationException>());
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
+		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync("block", "action"), Throws.InstanceOf<InvalidOperationException>());
 		Assert.That(selections, Is.Zero);
 	}
 
@@ -126,25 +129,29 @@ public class ApplicationMenuEventTests {
 		EventHandlerEx hovered = () => hovers++;
 		var item = new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) };
 		item.Hover += hovered;
-		var snapshot = CreateCatalog(item).Get("block").Menus.Single().Items.Single();
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
+		using var metadataHost = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		var snapshot = metadataHost.AvailableBlocks.Single().Menus.Single().Items.Single();
 		item.Hover -= hovered;
 		item.Hover += () => lateHovers++;
-		// Exercise the internal UI notification entry point without exposing it as a public consumer API.
-		typeof(BlazorApplicationMenuItem).GetMethod("NotifyHover", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(snapshot, null);
+		((BlazorApplicationMenuItemBase)snapshot).NotifyHover();
 
 		Assert.That(hovers, Is.EqualTo(1));
 		Assert.That(lateHovers, Is.Zero);
 	}
 
 	[Test]
-	public void CatalogFreezesMenuTextAndIconFromMutableRegistrationImplementations() {
+	public void HostFreezesMenuTextAndIconFromMutableRegistrationImplementations() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
 		var menu = new MutableMenu { Id = "menu", Text = "Original title", Icon = "original-icon" };
-		var catalog = new BlazorApplicationBlockCatalog(new[] {
+		using var metadataHost = new BlazorApplicationScreenHost(new[] {
 			new BlazorApplicationBlock { Id = "block", Title = "Block", Menus = new[] { menu } }
-		});
+		}, provider);
 		menu.Text = "Changed title";
 		menu.Icon = "changed-icon";
-		var snapshot = catalog.Get("block").Menus.Single();
+		var snapshot = metadataHost.AvailableBlocks.Single().Menus.Single();
 
 		Assert.That(snapshot.Text, Is.EqualTo("Original title"));
 		Assert.That(snapshot.Icon, Is.EqualTo("original-icon"));
@@ -152,7 +159,7 @@ public class ApplicationMenuEventTests {
 		Assert.That(typeof(IBlazorApplicationMenu).GetProperty(nameof(IBlazorApplicationMenu.Icon)).CanWrite, Is.False);
 	}
 
-	private static BlazorApplicationBlockCatalog CreateCatalog(IBlazorApplicationMenuItem item) => new(new[] {
+	private static IBlazorApplicationBlock[] CreateBlocks(IBlazorApplicationMenuItem item) => new[] {
 		new BlazorApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
@@ -161,15 +168,21 @@ public class ApplicationMenuEventTests {
 				.AddItem(item)
 			)
 			.Build()
-	});
+	};
 
 	public class TestScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 		public bool AllowDeactivation { get; set; } = true;
 
 		public Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) => Task.FromResult(AllowDeactivation);
 	}
 
 	private sealed class MutableMenu : IBlazorApplicationMenu {
+		public IBlazorApplicationBlock Parent { get; set; }
+
 		public string Id { get; set; }
 
 		public string Text { get; set; }

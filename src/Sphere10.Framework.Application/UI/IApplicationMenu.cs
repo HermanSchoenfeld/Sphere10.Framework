@@ -9,9 +9,20 @@
 namespace Sphere10.Framework.Application.UI;
 
 public interface IApplicationMenu {
-	string Id => Text;
+	IApplicationBlock Parent { get; set; }
 
 	string Text { get; }
 
 	IApplicationMenuItem[] Items { get; }
+}
+
+public interface IApplicationMenu<out TItem> : IApplicationMenu
+	where TItem : class, IApplicationMenuItem {
+	new TItem[] Items { get; }
+
+	#region Base Interface Bridges
+
+	IApplicationMenuItem[] IApplicationMenu.Items => Items;
+
+	#endregion
 }

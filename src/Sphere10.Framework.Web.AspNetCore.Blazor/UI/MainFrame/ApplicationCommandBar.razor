@@ -34,7 +34,7 @@
 					@if (item is IApplicationMenuSeparator) {
 						<span role="separator" aria-orientation="vertical"></span>
 					} else if (item is BlazorApplicationMenuGroup group) {
-						var key = "toolbar:" + Uri.EscapeDataString(group.Id);
+						var key = ToolbarKey(group);
 						<div @key="key" class="sphere10-top-menu">
 							<button @ref="_menuButtons[key]" type="button" title="@item.Title" aria-haspopup="true"
 								aria-expanded="@(_openMenu == key ? "true" : "false")" disabled="@(_executing || !item.IsEnabled)"
@@ -78,19 +78,22 @@
 
 	[Parameter] public RenderFragment ToolBarContent { get; set; }
 
+	/// <summary>Optional presentation identity for commands from separate ownership levels sharing a local ID.</summary>
+	[Parameter] public Func<IBlazorApplicationMenuItem, string> CommandKeySelector { get; set; }
+
 	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelect { get; set; }
 
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Menus, nameof(Menus));
 		Guard.ArgumentNotNull(ToolBarItems, nameof(ToolBarItems));
 		var keys = Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => "menu:" + Uri.EscapeDataString(menu.Id))
-			.Concat(ToolBarItems.OfType<BlazorApplicationMenuGroup>().Where(group => group.IsVisible && group.IsEnabled).Select(group => "toolbar:" + Uri.EscapeDataString(group.Id))).ToHashSet();
+			.Concat(ToolBarItems.OfType<BlazorApplicationMenuGroup>().Where(group => group.IsVisible && group.IsEnabled).Select(group => ToolbarKey(group))).ToHashSet();
 		_menuItems.Clear();
 		_itemParents.Clear();
 		foreach (var menu in Menus)
 			RegisterItems(menu.Items, "menu:" + Uri.EscapeDataString(menu.Id));
 		foreach (var group in ToolBarItems.OfType<BlazorApplicationMenuGroup>())
-			RegisterItems(group.Items, "toolbar:" + Uri.EscapeDataString(group.Id));
+			RegisterItems(group.Items, ToolbarKey(group));
 		foreach (var id in _menuButtons.Keys.Where(id => !keys.Contains(id) && !_menuItems.ContainsKey(id)).ToArray())
 			_menuButtons.Remove(id);
 		if (_openMenu != null && !keys.Contains(_openMenu)) {
@@ -112,7 +115,7 @@
 
 	private void RegisterItems(IBlazorApplicationMenuItem[] items, string parentKey) {
 		foreach (var item in items.Where(item => item.IsVisible && item is not IApplicationMenuSeparator)) {
-			var key = ItemKey(parentKey, item.Id);
+			var key = ItemKey(parentKey, item);
 			_menuItems[key] = item;
 			_itemParents[key] = parentKey;
 			if (item is BlazorApplicationMenuGroup group)
@@ -122,7 +125,7 @@
 
 	private RenderFragment MenuItems(IBlazorApplicationMenuItem[] items, string parentKey, bool ancestorEnabled = true) => @<text>
 		@foreach (var item in items.Where(item => item.IsVisible)) {
-			var key = ItemKey(parentKey, item.Id);
+			var key = ItemKey(parentKey, item);
 			@if (item is IApplicationMenuSeparator) {
 				<hr />
 			} else if (item is BlazorApplicationMenuGroup group) {
@@ -151,7 +154,11 @@
 		}
 	</text>;
 
-	private static string ItemKey(string parentKey, string id) => parentKey + "/" + Uri.EscapeDataString(id);
+	private string CommandKey(IBlazorApplicationMenuItem item) => CommandKeySelector?.Invoke(item) ?? item.Id;
+
+	private string ToolbarKey(IBlazorApplicationMenuItem item) => "toolbar:" + Uri.EscapeDataString(CommandKey(item));
+
+	private string ItemKey(string parentKey, IBlazorApplicationMenuItem item) => parentKey + "/" + Uri.EscapeDataString(CommandKey(item));
 
 	private bool IsExpanded(string key) => _openSubmenu == key || _openSubmenu?.StartsWith(key + "/", StringComparison.Ordinal) == true;
 
@@ -194,7 +201,7 @@
 	private void SubmenuKeyDown(KeyboardEventArgs args, string key) {
 		if (args.Key == "ArrowRight" && !_executing && IsAvailable(key) && _menuItems[key] is BlazorApplicationMenuGroup group) {
 			_openSubmenu = key;
-			_focusMenu = group.Items.Select(item => ItemKey(key, item.Id)).FirstOrDefault(IsAvailable) ?? key;
+			_focusMenu = group.Items.Select(item => ItemKey(key, item)).FirstOrDefault(IsAvailable) ?? key;
 		} else {
 			KeyDown(args);
 		}
@@ -210,7 +217,7 @@
 	}
 
 	private static void NotifyHover(IBlazorApplicationMenuItem item) {
-		if (item is BlazorApplicationMenuItem command)
+		if (item is BlazorApplicationMenuItemBase command)
 			command.NotifyHover();
 	}
 

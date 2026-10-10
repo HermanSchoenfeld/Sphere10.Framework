@@ -9,7 +9,7 @@
 namespace Sphere10.Framework.Application.UI;
 
 public interface IApplicationMenuItem {
-	string Id => Title;
+	IApplicationMenu Parent { get; set; }
 
 	string Title { get; }
 }

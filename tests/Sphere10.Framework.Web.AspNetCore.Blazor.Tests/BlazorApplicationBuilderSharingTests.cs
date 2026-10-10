@@ -6,14 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -53,8 +54,8 @@ public class BlazorApplicationBuilderSharingTests {
 		var first = await host.ActivateScreenAsync("work", "document");
 		var second = await host.ActivateScreenAsync("work", "document");
 
-		Assert.That(first.MenuItem.Title, Is.EqualTo("Open document"));
-		Assert.That(((IScreenMenuItem)first.MenuItem).ScreenTitle, Is.EqualTo("Document editor"));
+		Assert.That(((BlazorApplicationScreenSession)first).MenuItem.Title, Is.EqualTo("Open document"));
+		Assert.That(((IScreenMenuItem)((BlazorApplicationScreenSession)first).MenuItem).ScreenDefinition.Title, Is.EqualTo("Document editor"));
 		Assert.That(first.Title, Is.EqualTo("Document editor"));
 		Assert.That(first.Parameters["Message"], Is.EqualTo("Original"));
 		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
@@ -86,10 +87,11 @@ public class BlazorApplicationBuilderSharingTests {
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
 		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var hostUserInterface = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 
-		Assert.That(async () => await host.ExecuteMenuItemAsync("Work", "run", new CancellationToken(true)), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync("Work", "run", new CancellationToken(true)), Throws.InstanceOf<OperationCanceledException>());
 		Assert.That(calls, Is.Zero);
-		Assert.That(await host.ExecuteMenuItemAsync("Work", "run"), Is.True);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("Work", "run"), Is.True);
 		Assert.That(calls, Is.EqualTo(1));
 	}
 
@@ -218,9 +220,17 @@ public class BlazorApplicationBuilderSharingTests {
 	}
 
 	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 	}
 
 	private sealed class NeutralScreen : IApplicationScreen {
+		public IApplicationScreenHost Host { get; set; }
+
+		public IApplicationBlock Block { get; set; }
+
 	}
 
 	private sealed class ModernStep : UI.Wizard.BlazorWizardStepBase {

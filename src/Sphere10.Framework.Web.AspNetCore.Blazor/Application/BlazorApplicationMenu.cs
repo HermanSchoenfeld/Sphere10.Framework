@@ -12,11 +12,25 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Immutable Blazor facade over shared menu metadata.</summary>
 public class BlazorApplicationMenu : IBlazorApplicationMenu {
-	private readonly ApplicationMenu<IBlazorApplicationMenuItem> _definition = new();
+	private readonly MenuMetadata _definition;
+	private string _id;
+
+	public BlazorApplicationMenu()
+		: this(true) {
+	}
+
+	public BlazorApplicationMenu(bool ownsItems) {
+		_definition = new MenuMetadata(this, ownsItems);
+	}
+
+	public IBlazorApplicationBlock Parent {
+		get => (IBlazorApplicationBlock)_definition.Parent;
+		set => _definition.Parent = value;
+	}
 
 	public string Id {
-		get => _definition.Id;
-		init => _definition.Id = value;
+		get => _id ?? Text;
+		init => _id = value;
 	}
 
 	public string Icon { get; init; }
@@ -33,5 +47,23 @@ public class BlazorApplicationMenu : IBlazorApplicationMenu {
 			foreach (var item in value)
 				_definition.AddItem(item);
 		}
+	}
+
+	internal void AddItem(IBlazorApplicationMenuItem item) => _definition.AddItem(item);
+
+	internal void RemoveItem(IBlazorApplicationMenuItem item) => _definition.RemoveItem(item);
+
+	private sealed class MenuMetadata : ApplicationMenuBase<IBlazorApplicationMenuItem> {
+		private readonly IBlazorApplicationMenu _owner;
+		private readonly bool _ownsItems;
+
+		public MenuMetadata(IBlazorApplicationMenu owner, bool ownsItems) {
+			_owner = owner;
+			_ownsItems = ownsItems;
+		}
+
+		protected override IApplicationMenu ItemOwner => _owner;
+
+		protected override bool OwnsItems => _ownsItems;
 	}
 }

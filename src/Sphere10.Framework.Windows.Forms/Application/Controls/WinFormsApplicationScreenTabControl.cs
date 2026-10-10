@@ -19,6 +19,7 @@ namespace Sphere10.Framework.Windows.Forms;
 public class WinFormsApplicationScreenTabControl : TabControl {
 	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenCloseRequested;
 	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenUndockRequested;
+	public event EventHandlerEx TabOrderChanged;
 
 	private const int LogicalDpi = 96;
 	private const int LogicalHorizontalPadding = 20;
@@ -171,6 +172,7 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 		TabPages.Insert(Index, Page);
 		SelectedTab = Selected;
 		Invalidate();
+		TabOrderChanged?.Invoke();
 	}
 
 	protected override void OnDrawItem(DrawItemEventArgs Args) {

@@ -6,14 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -176,7 +177,10 @@ public class PluginBuilderTests {
 		Assert.That(loaded, Is.EqualTo(1));
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
 		Assert.That(provider.GetServices<IApplicationPlugin>().Single(), Is.SameAs(plugin));
-		Assert.That(provider.GetRequiredService<IBlazorApplicationBlockCatalog>().Blocks, Is.Empty);
+		Assert.That(provider.GetRequiredService<IBlazorApplicationScreenHost>().AvailableBlocks, Is.Empty);
+		Assert.That(provider.GetRequiredService<IBlazorApplication>().LoadedPlugins.Single(), Is.SameAs(plugin));
+		Assert.That(provider.GetRequiredService<IBlazorApplication>().Blocks, Is.Empty);
+		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single().Blocks, Is.Empty);
 	}
 
 	[Test]
@@ -199,7 +203,7 @@ public class PluginBuilderTests {
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();
 
-		await scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>().ExecuteMenuItemAsync("work", "run");
+		await scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>().ExecuteMenuItemAsync("work", "run");
 
 		Assert.That(executed, Is.EqualTo(1));
 		Assert.That(selected, Is.EqualTo(1));
@@ -221,9 +225,18 @@ public class PluginBuilderTests {
 				)
 			)
 			.Build();
+		var loaded = 0;
+		plugin.Loaded += () => loaded++;
 
 		Assert.That(() => services.AddSphere10BlazorPlugin(plugin), Throws.InstanceOf<ArgumentException>());
+		Assert.That(loaded, Is.EqualTo(1), "The Loaded callback precedes final validation; only the receipt publishes a successful registration.");
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IBlazorPlugin)), Is.False);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IApplicationPlugin)), Is.False);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>)), Is.False);
+		using var provider = services.BuildServiceProvider();
+		Assert.That(provider.GetRequiredService<IBlazorApplication>().LoadedPlugins, Is.Empty);
+		Assert.That(provider.GetRequiredService<IBlazorApplication>().Blocks.Single().Name, Is.EqualTo("Callback block"),
+			"Existing callback registrations remain usable without inventing a loaded plugin owner.");
 	}
 
 	[Test]
@@ -236,10 +249,12 @@ public class PluginBuilderTests {
 		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var session = await host.ActivateBlockAsync("late");
 
-		Assert.That(host.Catalog.Blocks.Single().Id, Is.EqualTo("late"));
+		Assert.That(host.AvailableBlocks.Single().Id, Is.EqualTo("late"));
 		Assert.That(session.ScreenType, Is.EqualTo(typeof(TestScreen)));
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
 		Assert.That(provider.GetServices<IApplicationPlugin>().Single(), Is.SameAs(plugin));
+		Assert.That(scope.ServiceProvider.GetRequiredService<IBlazorApplication>().LoadedPlugins.Single(), Is.SameAs(plugin));
+		Assert.That(((IBlazorApplicationBlock)provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single().Blocks.Single()).Id, Is.EqualTo("late"));
 	}
 
 	[Test]
@@ -304,7 +319,7 @@ public class PluginBuilderTests {
 	}
 
 	[Test]
-	public async Task PluginBlocksUseTheSharedCatalogAndCircuitScopedServicesAndScreenSessions() {
+	public async Task PluginBlocksUseUiServicesAndCircuitScopedScreenSessions() {
 		var services = new ServiceCollection();
 		services
 			.AddSphere10BlazorPlugin(plugin => plugin
@@ -328,20 +343,22 @@ public class PluginBuilderTests {
 		using var firstScope = provider.CreateScope();
 		using var secondScope = provider.CreateScope();
 		var firstHost = firstScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstHostUserInterface = firstScope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var secondHost = secondScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var secondHostUserInterface = secondScope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var firstScreen = await firstHost.ActivateBlockAsync("work");
 		var secondScreen = await secondHost.ActivateBlockAsync("work");
-		await firstHost.ExecuteMenuItemAsync("work", "increment");
-		await firstHost.ExecuteMenuItemAsync("work", "increment");
-		await secondHost.ExecuteMenuItemAsync("work", "increment");
+		await firstHostUserInterface.ExecuteMenuItemAsync("work", "increment");
+		await firstHostUserInterface.ExecuteMenuItemAsync("work", "increment");
+		await secondHostUserInterface.ExecuteMenuItemAsync("work", "increment");
 
 		Assert.That(firstScope.ServiceProvider.GetRequiredService<ScopedCounter>().Count, Is.EqualTo(2));
 		Assert.That(secondScope.ServiceProvider.GetRequiredService<ScopedCounter>().Count, Is.EqualTo(1));
 		Assert.That(firstHost, Is.Not.SameAs(secondHost));
-		Assert.That(firstHost.Catalog, Is.SameAs(secondHost.Catalog));
+		Assert.That(firstHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(secondHost.AvailableBlocks.Select(block => block.Id)));
 		Assert.That(firstScreen.Id, Is.Not.EqualTo(secondScreen.Id));
-		Assert.That(provider.GetRequiredService<IApplicationBlockCatalog<IApplicationBlock>>(), Is.SameAs(firstHost.Catalog));
-		Assert.That(provider.GetServices<IApplicationBlock>().Single().Id, Is.EqualTo("work"));
+		Assert.That(firstScope.ServiceProvider.GetRequiredService<IUserInterfaceServices>(), Is.SameAs(firstHostUserInterface));
+		Assert.That(provider.GetServices<IApplicationBlock>().Single().Name, Is.EqualTo("Work"));
 		Assert.That(firstScope.ServiceProvider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(secondScope.ServiceProvider.GetServices<IBlazorPlugin>().Single()));
 	}
 
@@ -368,7 +385,7 @@ public class PluginBuilderTests {
 	}
 
 	[Test]
-	public void ExplicitLegacyPluginMembersDispatchThroughTheSharedContract() {
+	public void ExplicitPluginMembersDispatchThroughTheGenericSharedContract() {
 		IBlazorPlugin platform = new ExplicitPlugin();
 		IApplicationPlugin shared = platform;
 		var loaded = 0;
@@ -392,28 +409,28 @@ public class PluginBuilderTests {
 			.WithName("Explicit")
 			.Build();
 
-		event EventHandlerEx IBlazorPlugin.Loaded {
+		event EventHandlerEx IApplicationPlugin.Loaded {
 			add => _loaded += value;
 			remove => _loaded -= value;
 		}
 
-		event EventHandlerEx IBlazorPlugin.Unloaded {
+		event EventHandlerEx IApplicationPlugin.Unloaded {
 			add => _unloaded += value;
 			remove => _unloaded -= value;
 		}
 
-		string IBlazorPlugin.Name => "Explicit";
+		string IApplicationPlugin.Name => "Explicit";
 
-		IBlazorApplicationBlock[] IBlazorPlugin.Blocks => new[] { _block };
+		IBlazorApplicationBlock[] IApplicationPlugin<IBlazorApplicationBlock>.Blocks => new[] { _block };
 
 		IServiceProvider IBlazorPlugin.IoCContainer => null;
 
-		void IBlazorPlugin.Load(IServiceCollection services) {
+		void IApplicationPlugin.Load(IServiceCollection services) {
 			services.AddScoped<ScopedCounter>();
 			_loaded?.Invoke();
 		}
 
-		void IBlazorPlugin.Unload() => _unloaded?.Invoke();
+		void IApplicationPlugin.Unload() => _unloaded?.Invoke();
 	}
 
 	private sealed class LateBlockPlugin : IBlazorPlugin {
@@ -441,6 +458,10 @@ public class PluginBuilderTests {
 	}
 
 	public class TestScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 	}
 
 	public class ScopedCounter {

@@ -13,7 +13,7 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsActionMenuItem : WinFormsApplicationMenuItem, IWinFormsLinkMenuItem {
+public class WinFormsActionMenuItem : WinFormsApplicationMenuItemBase, IWinFormsLinkMenuItem {
 	private readonly ApplicationAction _action = new();
 
 	public WinFormsActionMenuItem(Action onClick)

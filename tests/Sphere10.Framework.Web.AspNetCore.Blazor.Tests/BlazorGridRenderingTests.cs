@@ -534,7 +534,8 @@ public class BlazorGridRenderingTests {
 		Dictionary<string, object> parameters,
 		Func<TComponent, ComponentHost, HtmlRootComponent, Task> assertions,
 		IJSRuntime runtime = null
-	) where TComponent : IComponent {
+	)
+		where TComponent : IComponent {
 		await using var provider = new ServiceCollection().AddLogging().AddSingleton(runtime ?? new GalleryRenderingTests.TestJsRuntime()).BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {

@@ -10,10 +10,11 @@
 
 @using System.Security.Claims
 @using Microsoft.Extensions.DependencyInjection
+@using Sphere10.Framework.Application.UI
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
-@inject IBlazorApplicationScreenHost ScreenHost
+@inject Sphere10.Framework.Application.IUserInterfaceServices UserInterfaceServices
 
 <IdentityControl User="_user" SecondaryText="Local demo account" Items="@(_user.Identity.IsAuthenticated ? _signedInItems : _guestItems)" OnSelect="ExecuteAsync" />
 
@@ -60,7 +61,7 @@
 		};
 	}
 
-	private Task ExecuteAsync(IBlazorApplicationMenuItem item) => ScreenHost.ExecuteMenuItemAsync(item);
+	private Task ExecuteAsync(IBlazorApplicationMenuItem item) => UserInterfaceServices.ExecuteMenuItemAsync(item);
 
 	private static ClaimsPrincipal CreateDemoUser() => new(new ClaimsIdentity(new[] {
 		new Claim(ClaimTypes.Name, "Demo user"),

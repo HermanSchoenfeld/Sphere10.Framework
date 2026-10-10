@@ -8,11 +8,12 @@
 
 using System;
 using System.Linq;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A group of action commands, rendered as a dropdown on application toolbars.</summary>
-public sealed class BlazorApplicationMenuGroup : BlazorApplicationMenuItem {
+public sealed class BlazorApplicationMenuGroup : BlazorApplicationMenuItemBase {
 	private readonly IBlazorApplicationMenuItem[] _items = Array.Empty<IBlazorApplicationMenuItem>();
 
 	public IBlazorApplicationMenuItem[] Items {
@@ -20,6 +21,17 @@ public sealed class BlazorApplicationMenuGroup : BlazorApplicationMenuItem {
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_items = value.ToArray();
+			if (Parent != null)
+				foreach (var item in _items)
+					if (item.Parent == null)
+						item.Parent = Parent;
 		}
+	}
+
+	protected override void OnParentChanged(IApplicationMenu previous, IApplicationMenu current) {
+		base.OnParentChanged(previous, current);
+		foreach (var item in _items)
+			if (item.Parent == null || ReferenceEquals(item.Parent, previous))
+				item.Parent = (IBlazorApplicationMenu)current;
 	}
 }

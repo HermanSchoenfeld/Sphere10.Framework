@@ -273,7 +273,7 @@ public class NavigationPaneTests {
 			.Build();
 		Form.RegisterBlock(Block);
 		Form.Show();
-		var Pane = Form.PluginBindings[Block];
+		var Pane = Form.BlockBindings[Block];
 		var Menu = Pane.Expandos.Cast<Expando>().Single();
 		Pane.DoLayout(true);
 		Menu.DoLayout(true);
@@ -481,8 +481,8 @@ public class NavigationPaneTests {
 		using var SecondBlock = new WinFormsApplicationBlock { Name = "Second" };
 		Form.RegisterBlock(FirstBlock);
 		Form.RegisterBlock(SecondBlock);
-		var FirstPane = Form.PluginBindings[FirstBlock];
-		var SecondPane = Form.PluginBindings[SecondBlock];
+		var FirstPane = Form.BlockBindings[FirstBlock];
+		var SecondPane = Form.BlockBindings[SecondBlock];
 		FirstPane.CustomSettings.GradientStartColor = Color.LightSkyBlue;
 		SecondPane.CustomSettings.GradientStartColor = Color.MidnightBlue;
 		var Screen = new NavigationScreen { ApplicationBlock = FirstBlock };
@@ -514,7 +514,7 @@ public class NavigationPaneTests {
 		using var Form = new BlockMainForm();
 		using var Block = new WinFormsApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
-		var Pane = Form.PluginBindings[Block];
+		var Pane = Form.BlockBindings[Block];
 		Pane.CustomSettings.GradientStartColor = Color.MidnightBlue;
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(Color.MidnightBlue));
 		Pane.ResetCustomSettings();
@@ -532,7 +532,7 @@ public class NavigationPaneTests {
 		var DefaultForeColor = Form.ScreenHost.TabControl.DockPreviewForeColor;
 		var Block = new WinFormsApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
-		Form.PluginBindings[Block].CustomSettings.GradientStartColor = Color.MidnightBlue;
+		Form.BlockBindings[Block].CustomSettings.GradientStartColor = Color.MidnightBlue;
 		Form.UnregisterBlock(Block);
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(DefaultBackColor));
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewForeColor, Is.EqualTo(DefaultForeColor));

@@ -11,11 +11,10 @@ using System.Collections.Generic;
 
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class ApplicationMenuBuilderBase<TItem, TMenu> : IApplicationUIBuilder<TMenu> where TItem : IApplicationMenuItem where TMenu : IApplicationMenu {
+public abstract class ApplicationMenuBuilderBase<TItem, TMenu> : IApplicationUIBuilder<TMenu>
+	where TItem : IApplicationMenuItem
+	where TMenu : IApplicationMenu {
 	private readonly List<TItem> _items = new();
-	private string _id;
-
-	protected string Id => _id ?? Text;
 
 	protected string Text { get; private set; }
 
@@ -24,12 +23,6 @@ public abstract class ApplicationMenuBuilderBase<TItem, TMenu> : IApplicationUIB
 	public virtual TMenu Build() {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Text), "Menu text is required.");
 		return CreateMenu(Array.AsReadOnly(_items.ToArray()));
-	}
-
-	protected void SetId(string id) {
-		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
-		_id = id;
-		OnConfigurationChanged(nameof(Id));
 	}
 
 	protected void SetText(string text) {
@@ -62,13 +55,10 @@ public abstract class ApplicationMenuBuilderBase<TItem, TMenu> : IApplicationUIB
 
 /// <summary>Shared menu metadata and item-builder composition.</summary>
 public abstract class ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu> : ApplicationMenuBuilderBase<TItem, TMenu>
-	where TSelf : class where TItem : IApplicationMenuItem where TMenu : IApplicationMenu
+	where TSelf : class
+	where TItem : IApplicationMenuItem
+	where TMenu : IApplicationMenu
 	where TItemBuilder : IApplicationUIBuilder<TItem>, new() {
-	public TSelf WithId(string id) {
-		SetId(id);
-		return (TSelf)(object)this;
-	}
-
 	public TSelf WithText(string text) {
 		SetText(text);
 		return (TSelf)(object)this;

@@ -11,7 +11,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A separator; command merging removes leading, trailing and repeated boundaries.</summary>
-public sealed class BlazorMenuSeparator : BlazorApplicationMenuItem, IApplicationMenuSeparator {
+public sealed class BlazorMenuSeparator : BlazorApplicationMenuItemBase, IApplicationMenuSeparator {
 	public BlazorMenuSeparator() {
 		Id = Guid.NewGuid().ToString("N");
 		Title = "Separator";

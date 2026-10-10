@@ -18,6 +18,4 @@ public interface IApplicationBlockSnapshot<TBlock, TMenu, TItem>
 	TMenu CreateMenu(TMenu menu);
 
 	TItem CreateItem(TItem item);
-
-	TItem GetDefaultScreen(TBlock block);
 }

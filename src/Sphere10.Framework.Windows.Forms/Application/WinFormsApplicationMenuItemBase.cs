@@ -11,33 +11,31 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationMenuItem : ApplicationMenuItem, IWinFormsApplicationMenuItem {
-	private IWinFormsApplicationMenu _parent;
+public abstract class WinFormsApplicationMenuItemBase : ApplicationMenuItemBase, IWinFormsApplicationMenuItem {
 	private Image _image16x16;
 	private bool _showOnExplorerBar;
 	private bool _showOnToolBar;
 	private bool _executeOnLoad;
 
 
-	public WinFormsApplicationMenuItem()
+	protected WinFormsApplicationMenuItemBase()
 		: this(null) {
 	}
 
-	public WinFormsApplicationMenuItem(Image image16x16)
+	protected WinFormsApplicationMenuItemBase(Image image16x16)
 		: this(image16x16, true, true, false) {
 	}
 
-	public WinFormsApplicationMenuItem(Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad) {
-		_parent = null;
+	protected WinFormsApplicationMenuItemBase(Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad) {
 		_image16x16 = image16x16;
 		_showOnExplorerBar = showOnExplorerBar;
 		_showOnToolBar = showOnToolBar;
 		_executeOnLoad = executeOnLoad;
 	}
 
-	public IWinFormsApplicationMenu Parent {
-		get { return _parent; }
-		set { _parent = value; }
+	public new IWinFormsApplicationMenu Parent {
+		get => (IWinFormsApplicationMenu)base.Parent;
+		set => base.Parent = value;
 	}
 
 	public Image Image16x16 {
@@ -61,7 +59,7 @@ public class WinFormsApplicationMenuItem : ApplicationMenuItem, IWinFormsApplica
 	}
 
 	public virtual void Dispose() {
-		_parent = null;
+		Parent = null;
 		if (_image16x16 != null) {
 			_image16x16.Dispose();
 		}

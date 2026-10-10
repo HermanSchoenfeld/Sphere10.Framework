@@ -6,20 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -51,6 +52,39 @@ public class ApplicationNavigationTests {
 			await shell.SynchronizeBrowserAsync();
 			await navigation.PendingNavigation;
 			Assert.That(navigation.Uri, Is.EqualTo($"http://localhost/app/project/{secondId:D}"));
+		});
+	}
+
+	[Test]
+	public async Task RepeatingAcceptedRouteParametersAfterClosingTheirScreenDoesNotReopenIt() {
+		var navigation = new ProbeNavigation();
+		await using var provider = CreateRenderingServices(navigation).BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			await host.InitializeAsync();
+			var project = await host.ActivateScreenAsync("projects", "project", Activation(Guid.NewGuid()));
+			BrowserShell shell = null;
+			await renderer.RenderComponentAsync<NavigationHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(NavigationHarness.Capture)] = (Action<BrowserShell>)(component => shell = component)
+			}));
+			var suppliedRoute = new Dictionary<string, object> {
+				[nameof(ApplicationShell.BlockId)] = "projects", [nameof(ApplicationShell.ScreenId)] = "project", [nameof(ApplicationShell.InstanceId)] = project.Id
+			};
+			await shell.SetParametersAsync(ParameterView.FromDictionary(suppliedRoute));
+			await shell.SynchronizeBrowserAsync();
+			await navigation.PendingNavigation;
+			Assert.That(host.ActiveScreen, Is.SameAs(project));
+			Assert.That(await host.CloseScreenAsync(project.Id), Is.True);
+			var fallback = host.ActiveScreen;
+			Assert.That(fallback.ScreenType, Is.EqualTo(typeof(AnchorScreen)));
+			await shell.SynchronizeBrowserAsync();
+			await navigation.PendingNavigation;
+			Assert.That(navigation.Uri, Is.EqualTo("http://localhost/app/application"));
+			await shell.SetParametersAsync(ParameterView.FromDictionary(suppliedRoute));
+			Assert.That(host.ActiveScreen, Is.SameAs(fallback));
+			Assert.That(host.Screens, Has.Length.EqualTo(1));
+			Assert.That(host.OpenScreens, Is.EqualTo(new[] { fallback }));
 		});
 	}
 
@@ -156,7 +190,7 @@ public class ApplicationNavigationTests {
 				)
 			)
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var navigation = new ProbeNavigation();
 		var shell = CreateShell(host, navigation, ProjectPath);
 		var handler = typeof(ApplicationShell).GetMethod("OnBeforeInternalNavigationAsync", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -258,7 +292,7 @@ public class ApplicationNavigationTests {
 				.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("project", "Project", ScreenActivationMode.MultiInstance)
 			)
 			.Build();
-		return new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		return new BlazorApplicationScreenHost(new[] { block }, provider);
 	}
 
 	public class BrowserShell : ApplicationShell {

@@ -52,16 +52,21 @@ public class ApplicationAggregateTests {
 		var shared = provider.GetRequiredService<IApplication>();
 		Assert.That(shared, Is.SameAs(application));
 		Assert.That(application.BlockManager, Is.SameAs(provider.GetRequiredService<IBlockManager>()));
+		Assert.That(application.LoadedPlugins, Is.Empty);
+		Assert.That(shared.Blocks, Is.Empty);
 		application.Initialize();
 		application.Initialize();
-		Assert.That(shared.Blocks, Is.EqualTo(new[] { first, later }));
+		Assert.That(shared.ScreenHost.Blocks, Is.EqualTo(new[] { first, later }));
+		Assert.That(application.Blocks, Is.EqualTo(shared.ScreenHost.Blocks));
+		Assert.That(shared.Blocks, Is.EqualTo(application.Blocks));
+		shared.ScreenHost.Blocks[0] = null;
 		shared.Blocks[0] = null;
-		Assert.That(application.Blocks.First(), Is.SameAs(first));
+		Assert.That(application.ScreenHost.Blocks.First(), Is.SameAs(first));
 		var notifications = 0;
 		shared.Changed += () => notifications++;
 		var screen = application.ScreenHost.ActivateScreen(later, typeof(DirtyScreen));
-		Assert.That(shared.ActiveBlock, Is.SameAs(later));
-		Assert.That(shared.ActiveScreen, Is.SameAs(screen));
+		Assert.That(shared.ScreenHost.ActiveBlock, Is.SameAs(later));
+		Assert.That(shared.ScreenHost.ActiveScreen, Is.SameAs(screen));
 		Assert.That(notifications, Is.GreaterThan(0));
 		application.Dispose();
 		var countAfterDisposal = notifications;
@@ -88,6 +93,32 @@ public class ApplicationAggregateTests {
 	}
 
 	[Test]
+	public void StandaloneBlockParentsFollowExistingAndLaterHostMembership() {
+		using var form = new ProbeMainForm();
+		using var existing = new WinFormsApplicationBlock { Name = "Existing" };
+		using var later = new WinFormsApplicationBlock { Name = "Later" };
+		form.RegisterBlock(existing);
+		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		application.Changed += () => Assert.That(application.Blocks.All(block => ReferenceEquals(block.Parent, application)), Is.True,
+			"Application notifications expose updated block parents.");
+		Assert.That(existing.Parent, Is.SameAs(application));
+		Assert.That(existing.Source, Is.Null);
+		form.RegisterBlock(later);
+		Assert.That(later.Parent, Is.SameAs(application));
+		Assert.That(later.Source, Is.Null);
+		form.UnregisterBlock(existing);
+		Assert.That(existing.Parent, Is.Null);
+		form.RegisterBlock(existing);
+		Assert.That(existing.Parent, Is.SameAs(application));
+		application.Dispose();
+		Assert.That(existing.Parent, Is.Null);
+		Assert.That(later.Parent, Is.Null);
+		form.UnregisterBlock(later);
+		form.RegisterBlock(later);
+		Assert.That(later.Parent, Is.Null, "A disposed application no longer observes its form's host.");
+	}
+
+	[Test]
 	public void ApplicationCommandsRenderAndExecuteThroughNativeChromeWithoutTakingDefinitionOwnership() {
 		using var form = new ProbeMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
@@ -103,7 +134,8 @@ public class ApplicationAggregateTests {
 		header.DropDownItems[0].PerformClick();
 		form.ToolEntries.OfType<ToolStripButton>().Single(entry => entry.ToolTipText == "Run").PerformClick();
 		Assert.That(executions, Is.EqualTo(2));
-		Assert.That(item.Parent, Is.Null, "Global commands must not reparent caller-owned definitions");
+		Assert.That(item.Parent, Is.SameAs(menu), "Global commands retain their declaring menu.");
+		Assert.That(menu.Parent, Is.Null);
 		application.SetMenus(Array.Empty<IApplicationMenu>());
 		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
 		Assert.That(form.MenuEntries.Any(entry => entry.Text == "Application commands"), Is.False);
@@ -118,11 +150,13 @@ public class ApplicationAggregateTests {
 		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
 		using var item = new WinFormsActionMenuItem("Run", () => { });
 		application.SetToolBarItems(new[] { item });
-		using var unsupported = new WinFormsApplicationMenuItem();
+		using var unsupported = new UnsupportedMenuItem();
 		Assert.That(() => application.SetToolBarItems(new[] { unsupported }), Throws.ArgumentException);
 		Assert.That(application.ToolBarItems, Is.EqualTo(new[] { item }));
 		Assert.That(form.ToolEntries.Count(entry => entry.ToolTipText == "Run"), Is.EqualTo(1));
 	}
+
+	private sealed class UnsupportedMenuItem : WinFormsApplicationMenuItemBase { }
 
 	public sealed class ProbeMainForm : BlockMainForm {
 		public ToolStripItem[] MenuEntries => MenuStrip.Items.Cast<ToolStripItem>().ToArray();

@@ -9,10 +9,14 @@
 using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : IWinFormsApplicationScreenHost where TConcrete : IWinFormsApplicationScreenHost {
+public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : MultiApplicationScreenHostDecorator<IWinFormsApplicationBlock, WinFormsApplicationScreen, TConcrete>, IWinFormsApplicationScreenHost
+	where TConcrete : IWinFormsApplicationScreenHost {
 	public event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanging {
 		add => InternalHost.ActiveScreenChanging += value;
 		remove => InternalHost.ActiveScreenChanging -= value;
@@ -23,23 +27,22 @@ public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : IWinFo
 		remove => InternalHost.ActiveScreenChanged -= value;
 	}
 
-	protected readonly TConcrete InternalHost;
-
-	protected WinFormsApplicationScreenHostDecorator(TConcrete Host) {
-		Guard.ArgumentNotNull(Host, nameof(Host));
-		InternalHost = Host;
+	protected WinFormsApplicationScreenHostDecorator(TConcrete host)
+		: base(host) {
 	}
 
-	public virtual ScreenMode ScreenMode {
+	public override ScreenMode ScreenMode {
 		get => InternalHost.ScreenMode;
 		set => InternalHost.ScreenMode = value;
 	}
 
-	public virtual WinFormsApplicationScreen? ActiveScreen => InternalHost.ActiveScreen;
+	public override IUserInterfaceServices UserInterfaceServices => InternalHost.UserInterfaceServices;
 
-	public virtual WinFormsApplicationScreen[] Screens => InternalHost.Screens;
+	public virtual Task<bool> CloseActiveScreenAsync(CancellationToken cancellationToken = default) => InternalHost.CloseActiveScreenAsync(cancellationToken);
 
-	public virtual WinFormsApplicationScreen[] OpenScreens => InternalHost.OpenScreens;
+	public virtual Task<bool> CanCloseActiveScreenAsync(CancellationToken cancellationToken = default) => InternalHost.CanCloseActiveScreenAsync(cancellationToken);
+
+	public virtual void SelectBlock(IWinFormsApplicationBlock block) => InternalHost.SelectBlock(block);
 
 	public virtual void RegisterScreenTypes(IWinFormsApplicationBlock Block) => InternalHost.RegisterScreenTypes(Block);
 
@@ -49,6 +52,9 @@ public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : IWinFo
 
 	public virtual WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null)
 		=> InternalHost.ActivateScreen(Block, ScreenType, Title);
+
+	public virtual WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock block, ApplicationScreenDefinition definition)
+		=> InternalHost.ActivateScreen(block, definition);
 
 	public virtual bool ShowScreen(WinFormsApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
 
@@ -65,6 +71,7 @@ public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : IWinFo
 	public virtual bool IsScreenUndocked(WinFormsApplicationScreen Screen) => InternalHost.IsScreenUndocked(Screen);
 
 	public virtual bool TrySetScreenMode(ScreenMode Mode) => InternalHost.TrySetScreenMode(Mode);
+
 }
 
 public abstract class WinFormsApplicationScreenHostDecorator : WinFormsApplicationScreenHostDecorator<IWinFormsApplicationScreenHost> {

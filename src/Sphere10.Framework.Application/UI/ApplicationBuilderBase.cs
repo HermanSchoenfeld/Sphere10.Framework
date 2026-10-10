@@ -14,7 +14,9 @@ namespace Sphere10.Framework.Application.UI;
 /// <summary>Collects application configuration and plugins before a platform registers or creates its host.</summary>
 /// <remarks>Build is terminal and never resolves application services itself.</remarks>
 public abstract class ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult> : IApplicationUIBuilder<TResult>
-	where TSelf : class where TApplication : IApplication where TPlugin : IApplicationPlugin
+	where TSelf : class
+	where TApplication : IApplication
+	where TPlugin : IApplicationPlugin
 	where TPluginBuilder : IApplicationUIBuilder<TPlugin>, new() {
 	private readonly List<TPlugin> _plugins = new();
 	private Action<TApplication> _configureApplication;

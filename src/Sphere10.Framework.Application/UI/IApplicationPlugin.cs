@@ -24,3 +24,9 @@ public interface IApplicationPlugin {
 
 	void Unload();
 }
+
+public interface IApplicationPlugin<out TBlock> : IApplicationPlugin
+	where TBlock : class, IApplicationBlock {
+	new TBlock[] Blocks { get; }
+	IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
+}

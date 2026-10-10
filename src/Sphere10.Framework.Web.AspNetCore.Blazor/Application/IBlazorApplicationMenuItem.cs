@@ -13,6 +13,10 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 /// <summary>Blazor menu metadata and registration-time notification handlers.</summary>
 /// <remarks>Shared registrations must not capture scoped services or mutable per-user state in handlers.</remarks>
 public interface IBlazorApplicationMenuItem : IApplicationMenuItem {
+	new IBlazorApplicationMenu Parent { get; set; }
+
+	string Id => Title;
+
 	event EventHandlerEx Hover;
 
 	event EventHandlerEx Select;
@@ -25,4 +29,12 @@ public interface IBlazorApplicationMenuItem : IApplicationMenuItem {
 	/// <summary>Whether this command can currently execute.</summary>
 	bool IsEnabled => true;
 
+	#region Base Interface Bridges
+
+	IApplicationMenu IApplicationMenuItem.Parent {
+		get => Parent;
+		set => Parent = value == null ? null : Guard.ArgumentCast<IBlazorApplicationMenu>(value, nameof(value));
+	}
+
+	#endregion
 }

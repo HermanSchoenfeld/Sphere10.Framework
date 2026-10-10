@@ -6,18 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using System;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Utils.BlazorTester;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Utils.BlazorTester.Loader.Components;
 using Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
+using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 
@@ -51,13 +53,13 @@ public class EndpointSelectorTests {
 		using var scope = provider.CreateScope();
 		var selector = scope.ServiceProvider.GetRequiredService<SidebarBrandViewModel>();
 		var manager = scope.ServiceProvider.GetRequiredService<IEndpointManager>();
-		var catalog = scope.ServiceProvider.GetRequiredService<IBlazorApplicationBlockCatalog>();
+		var metadataHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 
 		Assert.That(selector.Endpoint, Is.EqualTo(manager.Endpoint));
-		Assert.That(catalog.Get("workspace").IconUrl, Is.EqualTo("img/heading-solid.svg"));
-		Assert.That(catalog.Get("workspace").Tooltip, Is.EqualTo("Workspace"));
-		Assert.That(catalog.Get("components").IconUrl, Is.EqualTo("img/boxes-solid.svg"));
-		Assert.That(catalog.Get("components").Tooltip, Is.EqualTo("Component gallery"));
+		Assert.That(metadataHost.AvailableBlocks.Single(block => block.Id == "workspace").IconUrl, Is.EqualTo("img/heading-solid.svg"));
+		Assert.That(metadataHost.AvailableBlocks.Single(block => block.Id == "workspace").Tooltip, Is.EqualTo("Workspace"));
+		Assert.That(metadataHost.AvailableBlocks.Single(block => block.Id == "components").IconUrl, Is.EqualTo("img/boxes-solid.svg"));
+		Assert.That(metadataHost.AvailableBlocks.Single(block => block.Id == "components").Tooltip, Is.EqualTo("Component gallery"));
 	}
 
 	[Test]

@@ -6,22 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
 
@@ -34,7 +35,7 @@ public class BlockDockTests {
 	public async Task ExistingBlockMenuDefaultsToSelectionButtons() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var blocks = provider.GetRequiredService<IBlazorApplicationBlockCatalog>().Blocks;
+		var blocks = provider.GetRequiredService<IBlazorApplicationScreenHost>().AvailableBlocks;
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationBlockMenu>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationBlockMenu.Blocks)] = blocks,
@@ -78,6 +79,51 @@ public class BlockDockTests {
 	}
 
 	[Test]
+	public async Task OneLoadedPluginContributesTwoIndependentBlockDockEntries() {
+		var plugin = new BlazorPluginBuilder()
+			.WithName("Shared plugin")
+			.ConfigureBlock(block => block
+				.WithId("first")
+				.WithName("First block")
+				.WithIconUrl("img/first.svg")
+				.WithDefaultScreen<GuardedScreen>()
+				.ConfigureMenu(menu => menu
+					.WithText("First menus")
+					.AddScreenItem<GuardedScreen>("first-screen", "First screen")
+				)
+			)
+			.ConfigureBlock(block => block
+				.WithId("second")
+				.WithName("Second block")
+				.WithPosition(1)
+				.WithIconUrl("img/second.svg")
+				.WithDefaultScreen<OtherScreen>()
+				.ConfigureMenu(menu => menu
+					.WithText("Second menus")
+					.AddScreenItem<OtherScreen>("second-screen", "Second screen")
+				)
+			)
+			.Build();
+		var services = new ServiceCollection().AddLogging().AddSphere10BlazorPlugin(plugin);
+		services.AddSingleton<NavigationManager>(new DockNavigationManager());
+		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
+		await using var provider = services.BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var application = provider.GetRequiredService<IBlazorApplication>();
+		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { plugin }));
+		Assert.That(application.Blocks, Has.Length.EqualTo(2));
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
+			var dock = DockMarkup(rendered.ToHtmlString());
+			Assert.That(Regex.Matches(dock, "<button\\b"), Has.Count.EqualTo(2), "Dock entries represent blocks, including multiple contributions from one plugin.");
+			Assert.That(dock, Does.Contain("img/first.svg").And.Contain("img/second.svg").And.Not.Contain("Shared plugin"));
+			await application.ScreenHost.SelectBlockAsync("second");
+			Assert.That(CurrentButton(DockMarkup(rendered.ToHtmlString())), Does.Contain("Second block"));
+			Assert.That(rendered.ToHtmlString(), Does.Contain("aria-label=\"Second block menus\"").And.Contain("Second screen"));
+		});
+	}
+
+	[Test]
 	public async Task FrameworkShellDockTracksCanonicalHostSelectionAndRegistration() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -111,7 +157,7 @@ public class BlockDockTests {
 			var screen = (GuardedScreen)original.Screen;
 			var route = ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationShell.BlockId)] = original.Block.Id,
-				[nameof(ApplicationShell.ScreenId)] = original.MenuItem.Id,
+				[nameof(ApplicationShell.ScreenId)] = original.MenuItemId,
 				[nameof(ApplicationShell.InstanceId)] = original.Id
 			});
 			await shell.SetParametersAsync(route);
@@ -146,7 +192,7 @@ public class BlockDockTests {
 	[Test]
 	public async Task DisposingTheShellReleasesViewSubscriptionsWithoutDisposingScopedRuntime() {
 		var services = CreateServices();
-		services.AddScoped<IBlazorApplicationScreenHost>(provider => new TrackingHost(new BlazorApplicationScreenHost(provider.GetRequiredService<IBlazorApplicationBlockCatalog>(), provider)));
+		services.AddScoped<IBlazorApplicationScreenHost>(provider => new TrackingHost(new BlazorApplicationScreenHost(provider.GetServices<IBlazorApplicationBlock>(), provider)));
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = (TrackingHost)provider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -159,7 +205,7 @@ public class BlockDockTests {
 		Assert.That(host.SubscriberCount, Is.EqualTo(1), "The surviving circuit aggregate remains subscribed.");
 		Assert.That(changed.GetValue(application), Is.Null, "The disposed shell releases its aggregate subscription.");
 		await host.ActivateBlockAsync("second");
-		Assert.That(application.ActiveBlock.Id, Is.EqualTo("second"));
+		Assert.That(application.ScreenHost.ActiveBlock.Id, Is.EqualTo("second"));
 	}
 
 	private static string CurrentButton(string html) => Regex.Match(html, "<button[^>]*aria-current=\"page\"[^>]*>.*?</button>", RegexOptions.Singleline).Value;
@@ -239,7 +285,7 @@ public class BlockDockTests {
 	}
 
 	private sealed class TrackingHost : BlazorApplicationScreenHostDecorator, IBlazorApplicationScreenHost {
-		event EventHandlerEx IBlazorApplicationScreenHost.Changed {
+		event EventHandlerEx IApplicationScreenHost.Changed {
 			add {
 				SubscriberCount++;
 				InternalHost.Changed += value;

@@ -10,6 +10,7 @@ using Sphere10.Framework.Application.UI;
 using System;
 using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Application;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
@@ -56,7 +57,11 @@ static class Program {
 
 		Sphere10Framework.Instance
 			.BuildWinFormsApplication()
-			.UseMainForm<BlockMainForm>(Form => Form.ScreenMode = ScreenMode.MultiView)
+			.UseMainForm<BlockMainForm>(form => {
+				form.ScreenMode = ScreenMode.MultiView;
+				form.Shown += (_, _) => WinFormsDemoPlugin.ConfigureApplicationCommands(
+					(WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>());
+			})
 			.UseMainFormSettings()
 			.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
 			.UseModule<Sphere10.Framework.CryptoEx.ModuleConfiguration>()

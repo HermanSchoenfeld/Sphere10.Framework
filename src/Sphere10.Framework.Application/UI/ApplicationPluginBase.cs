@@ -6,6 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Application.UI;
@@ -49,4 +52,24 @@ public abstract class ApplicationPluginBase : IApplicationPlugin {
 		OnUnloaded();
 		Unloaded?.Invoke();
 	}
+}
+
+/// <summary>Shares typed plugin storage and lifecycle while preserving the existing ApplicationPlugin class contract.</summary>
+public abstract class ApplicationPluginBase<TBlock> : ApplicationPlugin, IApplicationPlugin<TBlock>
+	where TBlock : class, IApplicationBlock {
+	protected ApplicationPluginBase(string name, IEnumerable<TBlock> blocks)
+		: this(name, blocks, null) {
+	}
+
+	protected ApplicationPluginBase(string name, IEnumerable<TBlock> blocks, Action<IServiceCollection> configureServices)
+		: base(name, blocks, configureServices) {
+	}
+
+	public new virtual TBlock[] Blocks {
+		get => ReadStoredBlocks().Cast<TBlock>().ToArray();
+		init => base.Blocks = value;
+	}
+
+	// The inherited class implementation takes precedence over the interface default; keep its projection consistent with typed virtual overrides.
+	protected override IApplicationBlock[] GetBlocks() => Blocks;
 }

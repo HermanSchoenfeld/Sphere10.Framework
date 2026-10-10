@@ -46,9 +46,9 @@ public class ScreenActivationBuilderTests {
 		var Result = Mode == ScreenActivationMode.SingleInstance ? ScreenBuilder.AsSingleInstance() : ScreenBuilder.AsMultiInstance();
 		using var Item = (WinFormsScreenMenuItem)Builder.Build();
 		Assert.That(Result, Is.SameAs(ScreenBuilder));
-		Assert.That(Item.ActivationMode, Is.EqualTo(Mode));
-		Assert.That(((IWinFormsScreenMenuItem)Item).ActivationMode, Is.EqualTo(Mode));
-		Assert.That(Item.Screen, Is.EqualTo(typeof(DefaultSingleScreen)));
+		Assert.That(Item.ScreenDefinition.ActivationMode, Is.EqualTo(Mode));
+		Assert.That(((IWinFormsScreenMenuItem)Item).ScreenDefinition.ActivationMode, Is.EqualTo(Mode));
+		Assert.That(Item.ScreenDefinition.ScreenType, Is.EqualTo(typeof(DefaultSingleScreen)));
 	}
 
 	[TestCase(ScreenMode.SingleView)]
@@ -104,8 +104,8 @@ public class ScreenActivationBuilderTests {
 			.Build();
 		using var DirectItem = new WinFormsScreenMenuItem("Direct", typeof(DefaultSingleScreen));
 		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		Assert.That(Block.Menus[0].Items.Cast<IWinFormsScreenMenuItem>().Select(Item => Item.ActivationMode), Is.All.Null);
-		Assert.That(DirectItem.ActivationMode, Is.Null);
+		Assert.That(Block.Menus[0].Items.Cast<IWinFormsScreenMenuItem>().Select(Item => Item.ScreenDefinition.ActivationMode), Is.All.Null);
+		Assert.That(DirectItem.ScreenDefinition.ActivationMode, Is.Null);
 		var Settings = Host.ActivateScreen(Block, typeof(DefaultSingleScreen));
 		var Design = Host.ActivateScreen(Block, typeof(DefaultMultiScreen));
 		Assert.That(Host.ActivateScreen(Block, typeof(DefaultSingleScreen)), Is.SameAs(Settings));
@@ -164,8 +164,8 @@ public class ScreenActivationBuilderTests {
 			.Build();
 		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var Alias = (IWinFormsScreenMenuItem)Block.Menus[0].Items[0];
-		var First = Host.ActivateScreen(Alias.Parent.Parent, Alias.Screen)!;
-		var Second = Host.ActivateScreen(Alias.Parent.Parent, Alias.Screen)!;
+		var First = Host.ActivateScreen(Alias.Parent.Parent, Alias.ScreenDefinition.ScreenType)!;
+		var Second = Host.ActivateScreen(Alias.Parent.Parent, Alias.ScreenDefinition.ScreenType)!;
 		Assert.That(First.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(Second, Is.Not.SameAs(First));
 		Assert.That(Host.OpenScreens, Has.Length.EqualTo(2));
@@ -287,6 +287,21 @@ public class ScreenActivationBuilderTests {
 		Assert.That(Host.Screens, Is.EqualTo(new[] { Existing }));
 	}
 
+	[TestCase(false)]
+	[TestCase(true)]
+	public void CapturedConstructorModeValidatesLaterInstancesWithoutOverwritingTheirMode(bool closeFirst) {
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var first = new SuppliedModeScreen(ScreenActivationMode.SingleInstance);
+		using var conflicting = new SuppliedModeScreen(ScreenActivationMode.MultiInstance);
+		Assert.That(host.ShowScreen(first), Is.True);
+		if (closeFirst)
+			Assert.That(host.CloseScreen(first), Is.True);
+		Assert.That(() => host.ShowScreen(conflicting), Throws.ArgumentException);
+		Assert.That(conflicting.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+		Assert.That(conflicting.Host, Is.Null);
+		Assert.That(host.Screens, Has.Length.EqualTo(closeFirst ? 0 : 1));
+	}
+
 	[Test]
 	public void RegisterBlockAppliesALaterDeclarationToItsDefaultScreen() {
 		using var Block = new WinFormsApplicationBlockBuilder()
@@ -360,12 +375,13 @@ public class ScreenActivationBuilderTests {
 		Assert.That(Executed, Is.False);
 		Assert.That(Form.Text, Is.EqualTo("Original"));
 		Assert.That(Form.RegisteredBlocks, Is.Empty);
-		Assert.That(Form.PluginBindings, Is.Empty);
+		Assert.That(Form.BlockBindings, Is.Empty);
 		Assert.That(Form.ActiveBlock, Is.Null);
 		Assert.That(Form.ScreenHost.Screens, Is.Empty);
 	}
 
-	private static WinFormsApplicationBlock CreateBlock<TScreen>(ScreenActivationMode Mode) where TScreen : WinFormsApplicationScreen {
+	private static WinFormsApplicationBlock CreateBlock<TScreen>(ScreenActivationMode Mode)
+		where TScreen : WinFormsApplicationScreen {
 		return new WinFormsApplicationBlockBuilder()
 			.WithName("Declarations")
 			.ConfigureMenu(Menu => Menu
@@ -385,30 +401,20 @@ public class ScreenActivationBuilderTests {
 	}
 
 	private static WinFormsApplicationBlock CreateConflictingBlock() {
-		return new WinFormsApplicationBlockBuilder()
-			.WithName("Conflict")
-			.ConfigureMenu(Menu => Menu
-				.WithText("Screens")
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultSingleScreen>()
-					.WithText("New design")
-					.AsMultiInstance()
-				)
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultMultiScreen>()
-					.WithText("Settings")
-					.AsSingleInstance()
-				)
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultMultiScreen>()
-					.WithText("Conflict")
-					.AsMultiInstance()
-				)
-			)
-			.Build();
+		// Bypass builder validation to exercise host registration against malformed caller-supplied metadata.
+		var block = new WinFormsApplicationBlock { Name = "Conflict" };
+		var menu = new WinFormsApplicationMenu("Screens");
+		menu.AddItem(new WinFormsScreenMenuItem("New design", typeof(DefaultSingleScreen)) {
+			ScreenDefinition = new ApplicationScreenDefinition(typeof(DefaultSingleScreen), "New design", ScreenActivationMode.MultiInstance)
+		});
+		menu.AddItem(new WinFormsScreenMenuItem("Settings", typeof(DefaultMultiScreen)) {
+			ScreenDefinition = new ApplicationScreenDefinition(typeof(DefaultMultiScreen), "Settings", ScreenActivationMode.SingleInstance)
+		});
+		menu.AddItem(new WinFormsScreenMenuItem("Conflict", typeof(DefaultMultiScreen)) {
+			ScreenDefinition = new ApplicationScreenDefinition(typeof(DefaultMultiScreen), "Conflict", ScreenActivationMode.MultiInstance)
+		});
+		block.AddMenu(menu);
+		return block;
 	}
 
 	public class UnconfiguredScreen : WinFormsApplicationScreen {
@@ -424,5 +430,9 @@ public class ScreenActivationBuilderTests {
 
 	public class OtherScreen : WinFormsApplicationScreen {
 		public OtherScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
+	}
+
+	public sealed class SuppliedModeScreen : WinFormsApplicationScreen {
+		public SuppliedModeScreen(ScreenActivationMode activationMode) => ActivationMode = activationMode;
 	}
 }

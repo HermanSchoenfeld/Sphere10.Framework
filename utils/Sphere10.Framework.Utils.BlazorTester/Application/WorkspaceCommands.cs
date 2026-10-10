@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 
@@ -22,7 +23,10 @@ public static class WorkspaceCommands {
 			.WithId("new-scratchpad")
 			.WithText("New scratchpad")
 			.WithIcon("fas fa-plus")
-			.WithAction(async (provider, token) => await provider.GetRequiredService<IBlazorApplicationScreenHost>().ActivateScreenAsync("workspace", "scratchpad", token))
+			.WithAction(async (provider, token) => {
+				var host = provider.GetRequiredService<IApplicationScreenHost>();
+				await host.ActivateScreenAsync(host.Blocks.Single(block => block.Name == "Workspace"), typeof(ScratchpadScreen), cancellationToken: token);
+			})
 			.Build();
 		var applicationAction = new BlazorApplicationMenuItemBuilder()
 			.WithId("save")
@@ -46,9 +50,7 @@ public static class WorkspaceCommands {
 					.WithText("Close screen")
 					.WithIcon("fas fa-times")
 					.WithAction(async (provider, token) => {
-						var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
-						if (host.ActiveScreen != null)
-							await host.CloseScreenAsync(host.ActiveScreen.Id, token);
+						await provider.GetRequiredService<ISingleApplicationScreenHost>().CloseActiveScreenAsync(token);
 					})
 				)
 				.ConfigureItem(item => item
@@ -56,8 +58,8 @@ public static class WorkspaceCommands {
 					.WithText("Close all screens")
 					.WithIcon("fas fa-times-circle")
 					.WithAction(async (provider, token) => {
-						var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
-						await host.CloseScreensAsync(host.Screens.Where(session => !session.IsPermanent && session.ScreenKind == ScreenKind.Normal).Select(session => session.Id), token);
+						var host = provider.GetRequiredService<IMultiApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>();
+						await host.CloseScreensAsync(host.Screens.Where(screen => !screen.IsPermanent && screen.ScreenKind == ScreenKind.Normal), token);
 					})
 				)
 				.Build(),
@@ -69,14 +71,14 @@ public static class WorkspaceCommands {
 					.WithText("Tabbed screens")
 					.WithIcon("fas fa-folder")
 					.WithAction(async (provider, token) =>
-						await provider.GetRequiredService<IBlazorApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.MultiView, token))
+						await provider.GetRequiredService<IApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.MultiView, token))
 				)
 				.ConfigureItem(item => item
 					.WithId("layout-single")
 					.WithText("Single screen")
 					.WithIcon("fas fa-window-maximize")
 					.WithAction(async (provider, token) =>
-						await provider.GetRequiredService<IBlazorApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.SingleView, token))
+						await provider.GetRequiredService<IApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.SingleView, token))
 				)
 				.Build(),
 			new BlazorApplicationMenuBuilder()
@@ -86,8 +88,10 @@ public static class WorkspaceCommands {
 					.WithId("workspace-help")
 					.WithText("Application guide")
 					.WithIcon("fas fa-question-circle")
-					.WithAction(async (provider, token) =>
-						await provider.GetRequiredService<IBlazorApplicationScreenHost>().ActivateScreenAsync("workspace", "overview", token))
+					.WithAction(async (provider, token) => {
+						var host = provider.GetRequiredService<IApplicationScreenHost>();
+						await host.ActivateBlockAsync(host.Blocks.Single(block => block.Name == "Workspace"), token);
+					})
 				)
 				.ConfigureItem(item => item
 					.WithId("about")

@@ -10,21 +10,32 @@ using System;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>A running UI application's plugins, registered blocks, active selection and application-level commands.</summary>
-/// <remarks>Platform adapters preserve the host's thread affinity and own only their event subscriptions, not screens or registered definitions.</remarks>
+/// <summary>A running application's blocks, loaded startup plugins, screen host and application-level commands.</summary>
+/// <remarks>The host owns block membership, active UI state and platform interaction services.</remarks>
 public interface IApplication : IApplicationCommandProvider, IDisposable, IAsyncDisposable {
 	event EventHandlerEx Changed;
 
-	IApplicationPlugin[] Plugins { get; }
-
-	IApplicationPlugin ActivePlugin { get; }
+	IApplicationPlugin[] LoadedPlugins { get; }
 
 	IApplicationBlock[] Blocks { get; }
 
-	/// <summary>The block selected for navigation; browsing it need not activate one of its screens.</summary>
-	IApplicationBlock ActiveBlock { get; }
-
-	IApplicationScreen ActiveScreen { get; }
+	IApplicationScreenHost ScreenHost { get; }
 
 	bool HasUnsavedChanges { get; }
+}
+
+public interface IApplication<out TPlugin, out THost> : IApplication
+	where TPlugin : class, IApplicationPlugin
+	where THost : class, IApplicationScreenHost {
+	new TPlugin[] LoadedPlugins { get; }
+
+	new THost ScreenHost { get; }
+
+	#region Base Interface Bridges
+
+	IApplicationPlugin[] IApplication.LoadedPlugins => LoadedPlugins;
+
+	IApplicationScreenHost IApplication.ScreenHost => ScreenHost;
+
+	#endregion
 }

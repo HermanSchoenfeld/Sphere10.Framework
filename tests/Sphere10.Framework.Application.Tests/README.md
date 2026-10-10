@@ -2,7 +2,7 @@
 
 .NET 10 NUnit tests for the UI-independent application foundation in `Sphere10.Framework.Application.UI`. The project references only [Sphere10.Framework.Application](../../src/Sphere10.Framework.Application/README.md); it runs without a browser, ASP.NET Core host or Windows desktop runtime.
 
-The suite protects the contracts shared by the Blazor and WinForms application frameworks: plugins, blocks, menus, metadata snapshots, builders, activation policies, actions and screen lifecycle defaults. Small neutral classes stand in for the screen contracts and product factories supplied by a UI adapter.
+The suite protects the contracts shared by the Blazor and WinForms application frameworks: plugins, blocks, menus, metadata snapshots, builders, activation policies, actions, application interactions, host-owned block navigation, actual screen identity and guarded transitions. Small neutral classes stand in for the screen contracts and product factories supplied by a UI adapter.
 
 ## Run the tests
 
@@ -37,19 +37,29 @@ Quote combined filter expressions so the shell does not interpret `|`. Use `--no
 
 | Fixture | What it protects |
 | --- | --- |
-| [UI/ApplicationPluginTests.cs](UI/ApplicationPluginTests.cs) | Startup callback/event ordering, plugin ownership validation, defensive arrays, typed initializer storage, independent builders and runtime plugin projection. |
+| [UI/ApplicationPluginTests.cs](UI/ApplicationPluginTests.cs) | Startup callback/event ordering, plugin ownership validation, defensive arrays, typed initializer storage, independent builders, loaded-plugin provenance and live application blocks. |
+| [UI/ApplicationPluginRegistrationTests.cs](UI/ApplicationPluginRegistrationTests.cs) | Captured registration membership, original plugin/block identities, defensive receipt arrays, receipt validation and startup ordering without rereading mutable plugin blocks. |
 | [ApplicationAggregateTests.cs](ApplicationAggregateTests.cs) | Shared running-application contract, defensive command membership, notifications and decorator forwarding. |
-| [UI/ApplicationCommandMergeTests.cs](UI/ApplicationCommandMergeTests.cs) | Scoped command replacement, menu extension, stable ordering, Help placement and separator normalization. |
+| [UI/ApplicationCommandMergeTests.cs](UI/ApplicationCommandMergeTests.cs) | Application-level command protection, contextual block-to-screen replacement, callback identity, owner selection, menu extension, stable ordering, Help placement and separator normalization. |
 | [UI/WizardTests.cs](UI/WizardTests.cs) | Navigation and branch updates, owned step arrays, cancellation, retry, concurrent terminal requests, completion-once and decorator forwarding. |
-| [UI/ApplicationMetadataTests.cs](UI/ApplicationMetadataTests.cs) | Non-generic block storage through `IApplicationMenu`, defensive menu/item/catalog arrays, snapshots and indexes, stable IDs, ordering, copied event subscriptions, policy conflicts and default-screen selection/validation. |
-| [UI/ApplicationBuilderTests.cs](UI/ApplicationBuilderTests.cs) | Independent products from shared builder factories, menu/item definition isolation, copied parameters, synchronous/asynchronous action replacement, screen/action exclusivity and incomplete-definition rejection. |
-| [UI/ApplicationScreenDefinitionTests.cs](UI/ApplicationScreenDefinitionTests.cs) | Plugin/block startup order, default and empty selection, permanent lifetime classification, live block snapshots and invalid policy combinations. |
-| [UI/ScreenActivationPolicyTests.cs](UI/ScreenActivationPolicyTests.cs) | Atomic declaration batches, explicit/inferred policy rules, platform validation, locked instance policies and invalid type/mode rejection. |
+| [UI/ApplicationMetadataTests.cs](UI/ApplicationMetadataTests.cs) | Abstract block storage through `IApplicationMenu`, defensive membership arrays, independent snapshot graphs with canonical definition references and activators, malformed factories and toolbar commands, reference-based selection, ordering, copied subscriptions and typed-screen validation. |
+| [UI/ApplicationBuilderTests.cs](UI/ApplicationBuilderTests.cs) | Independent products from shared builder factories, exact screen-definition references across caption configuration order, synchronous/asynchronous action replacement, screen/action exclusivity and incomplete-definition rejection. |
+| [UI/SharedFluentBuilderTests.cs](UI/SharedFluentBuilderTests.cs) | Typed composition, callback order, canonical convenience-default inference, explicit overrides, independent owning graphs on repeated builds and wizard reset behavior. |
+| [UI/ApplicationScreenDefinitionTests.cs](UI/ApplicationScreenDefinitionTests.cs) | Plugin/block reference order, exact default references, menu-independent definitions, empty selection, permanent lifetime classification and invalid policy combinations. |
+| [UI/ScreenActivationPolicyTests.cs](UI/ScreenActivationPolicyTests.cs) | Pure definition validation, compatible aliases, conflicting modes/kinds, platform type validation, atomic host indexing, retained instance lifetime and invalid type/mode rejection. |
+| [UI/ApplicationParentOwnershipTests.cs](UI/ApplicationParentOwnershipTests.cs) | Required writable ownership contracts, application/block/menu/item parents, persistent startup source, transfer guards, reverse activators, screen lifecycle attachment and removal, disposal and explicit command parent navigation. |
 | [UI/ApplicationActionTests.cs](UI/ApplicationActionTests.cs) | Resolving services from the executing scope, awaited callback completion, cancellation and observable failures. |
 | [UI/ApplicationScreenContractTests.cs](UI/ApplicationScreenContractTests.cs) | Default help metadata, navigation permission and cancellation-aware lifecycle methods without UI infrastructure. |
+| [UI/ApplicationScreenHostTests.cs](UI/ApplicationScreenHostTests.cs) | Resolved actual screen hosting, singleton reuse, async guards and cancellation, atomic batch closure, hidden dirty screens, permanent/empty fallback, snapshots, selection notifications, interface/decorator dispatch and platform view ownership. |
+| [UI/ApplicationScreenHostCapabilityTests.cs](UI/ApplicationScreenHostCapabilityTests.cs) | Application-to-host composition, single and multiple host interface boundaries, capability decorators, guarded current-screen closure and safe synchronous versus awaited runtime mode changes. |
+| [UI/ApplicationUserInterfaceServicesTests.cs](UI/ApplicationUserInterfaceServicesTests.cs) | Reentrant menu actions through the borrowed host, executing UI-service identity, interaction notifications, host composition, lazy owned fallback services and independent DI-service lifetime. |
+| [UI/ApplicationGenericContractTests.cs](UI/ApplicationGenericContractTests.cs) | Explicit typed application host/plugin/block/menu members projecting through the neutral interfaces; typed multiple-host decorator overrides and removable notifications. |
+| [UI/UserInterfaceServicesDispatchTests.cs](UI/UserInterfaceServicesDispatchTests.cs) | Asynchronous interaction and UI dispatch through the shared interface and decorator without platform UI dependencies. |
+| [UI/ApplicationScreenIdentityTests.cs](UI/ApplicationScreenIdentityTests.cs) | Actual screen reference identity, value-equal instances remaining distinct, rejection of unhosted references, dynamic metadata and an abstract API without IDs, renderer sessions or GUIDs. |
+| [UI/ApplicationScreenHostNavigationTests.cs](UI/ApplicationScreenHostNavigationTests.cs) | Host-owned block selection and membership, configured defaults, immutable membership arrays, guarded permanent registration/removal and committed notifications. |
 | [Architecture/ApplicationDependencyTests.cs](Architecture/ApplicationDependencyTests.cs) | Application assembly dependency closure remaining independent of UI assemblies. |
 
-The shared `ApplicationBlock` stores `IApplicationMenu` directly, so different menu implementations can coexist. Collection-valued metadata properties return arrays. The tests mutate returned slots and verify that stored menu/item membership, catalog order and ID lookup remain intact, including through the catalog decorator. Array elements retain their original object identities; the ownership guarantee applies to membership rather than deep cloning arbitrary objects. Platform adapters retain their native typed interfaces and ownership rules. The shared builder fixtures use neutral factories; they do not require every platform facade to return a new owned object on repeated Build calls.
+The shared `ApplicationBlockBase` stores `IApplicationMenu` directly, so different menu implementations can coexist. Concrete test models derive from the abstract storage foundations in [UI/TestApplicationModels.cs](UI/TestApplicationModels.cs); test construction does not require unused concrete framework shims. Collection-valued metadata properties return arrays. The tests mutate returned slots and verify that stored membership, parent links and host selection remain intact. Blocks own canonical `ApplicationScreenDefinition` references; commands, defaults and reverse activators refer to those exact objects within a graph. Snapshot factories clone that graph so independent products cannot reparent each other's commands. Presentation composition borrows references without changing their parents. Names and captions do not identify blocks or screens. Direct test screens and blocks implement the required writable ownership slots rather than relying on empty default implementations.
 
 ## Extend coverage without adding a UI dependency
 
@@ -73,13 +83,16 @@ public class ExampleScreenTests {
 		Assert.That(await screen.CanDeactivateAsync(), Is.True);
 	}
 
-	private sealed class ExampleScreen : IApplicationScreen { }
+private sealed class ExampleScreen : IApplicationScreen {
+	public IApplicationScreenHost Host { get; set; }
+	public IApplicationBlock Block { get; set; }
+}
 }
 ```
 
 This illustrates the pattern already covered by `ApplicationScreenContractTests`; add new scenarios for changed behavior rather than duplicating that case. Include the repository license header in new files and follow [the NUnit test guidance](../../.github/skills/unit-testing/SKILL.md).
 
-Use independent fixture state and controlled task completion for asynchronous behavior. Test invariants such as an invalid policy batch leaving the registry unchanged, or a built snapshot retaining its original metadata after the input collections change. Keep actual component/control activation, UI dispatch, retained-screen rendering and platform disposal in the adapter test projects.
+Use independent fixture state and controlled task completion for asynchronous behavior. Test invariants such as rejected definitions leaving the host's type index and retained screens unchanged, or a copied graph retaining its own parent and activator membership after the source changes. Keep actual component/control activation, UI dispatch, retained-screen rendering and platform disposal in the adapter test projects.
 
 ## Dependency and adapter validation
 

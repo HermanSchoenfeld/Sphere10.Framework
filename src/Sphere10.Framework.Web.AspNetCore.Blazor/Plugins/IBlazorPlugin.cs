@@ -13,35 +13,6 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A plugin whose shared application blocks carry Blazor screen and presentation metadata.</summary>
-public interface IBlazorPlugin : IApplicationPlugin {
-	new event EventHandlerEx Loaded;
-	new event EventHandlerEx Unloaded;
-
-	new string Name { get; }
-
-	new IBlazorApplicationBlock[] Blocks { get; }
-
+public interface IBlazorPlugin : IApplicationPlugin<IBlazorApplicationBlock> {
 	IServiceProvider IoCContainer { get; }
-
-	new void Load(IServiceCollection secureComponentRegistry);
-
-	new void Unload();
-
-	event EventHandlerEx IApplicationPlugin.Loaded {
-		add => Loaded += value;
-		remove => Loaded -= value;
-	}
-
-	event EventHandlerEx IApplicationPlugin.Unloaded {
-		add => Unloaded += value;
-		remove => Unloaded -= value;
-	}
-
-	string IApplicationPlugin.Name => Name;
-
-	IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
-
-	void IApplicationPlugin.Load(IServiceCollection serviceCollection) => Load(serviceCollection);
-
-	void IApplicationPlugin.Unload() => Unload();
 }

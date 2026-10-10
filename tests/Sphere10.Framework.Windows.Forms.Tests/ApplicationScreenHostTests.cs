@@ -389,11 +389,11 @@ public class ApplicationScreenHostTests {
 				)
 			)
 			.Build();
-		Assert.That(Block.DefaultScreen, Is.EqualTo(typeof(MultiProbeScreen)));
-		Assert.That(Block.DefaultScreenTitle, Is.EqualTo("Default title"));
-		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[0]).ScreenTitle, Is.EqualTo("Direct title"));
-		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[1]).Screen, Is.EqualTo(typeof(MultiProbeScreen)));
-		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[1]).ScreenTitle, Is.EqualTo("Configured title"));
+		Assert.That(Block.DefaultScreenDefinition.ScreenType, Is.EqualTo(typeof(MultiProbeScreen)));
+		Assert.That(Block.DefaultScreenDefinition.Title, Is.EqualTo("Default title"));
+		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[0]).ScreenDefinition.Title, Is.EqualTo("Direct title"));
+		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[1]).ScreenDefinition.ScreenType, Is.EqualTo(typeof(MultiProbeScreen)));
+		Assert.That(((IWinFormsScreenMenuItem)Block.Menus[0].Items[1]).ScreenDefinition.Title, Is.EqualTo("Configured title"));
 		var Services = new ServiceCollection();
 		new Sphere10Framework()
 			.Build()

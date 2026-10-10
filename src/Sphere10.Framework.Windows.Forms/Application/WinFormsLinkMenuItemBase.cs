@@ -10,21 +10,21 @@ using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsLinkMenuItem : WinFormsApplicationMenuItem, IWinFormsLinkMenuItem {
+public abstract class WinFormsLinkMenuItemBase : WinFormsApplicationMenuItemBase, IWinFormsLinkMenuItem {
 
-	public WinFormsLinkMenuItem()
+	protected WinFormsLinkMenuItemBase()
 		: this(string.Empty) {
 	}
 
-	public WinFormsLinkMenuItem(string text)
+	protected WinFormsLinkMenuItemBase(string text)
 		: this(text, null) {
 	}
 
-	public WinFormsLinkMenuItem(string text, Image image16x16)
+	protected WinFormsLinkMenuItemBase(string text, Image image16x16)
 		: this(text, image16x16, true, true, false) {
 	}
 
-	public WinFormsLinkMenuItem(string text, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad)
+	protected WinFormsLinkMenuItemBase(string text, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad)
 		: base(image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad) {
 
 		Title = text;

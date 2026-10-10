@@ -8,16 +8,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<BlazorApplicationMenuItemBuilder>, IApplicationUIBuilder<BlazorApplicationMenuItem> {
+public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<BlazorApplicationMenuItemBuilder>, IApplicationUIBuilder<BlazorApplicationMenuItemBase> {
 	private string _icon;
 	private bool _isVisible = true;
 	private Func<bool> _canExecute;
 	private IBlazorApplicationMenuItem[] _children;
+	private string _id;
+	private IReadOnlyDictionary<string, object> Parameters { get; set; } = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+	private string Id => _id ?? ScreenType?.Name ?? Text;
+
+	public BlazorApplicationMenuItemBuilder WithId(string id) {
+		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
+		_id = id;
+		return this;
+	}
 
 	public BlazorApplicationMenuItemBuilder WithTitle(string title) => WithText(title);
 
@@ -27,7 +37,8 @@ public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<B
 	}
 
 	public BlazorApplicationMenuItemBuilder WithParameters(IReadOnlyDictionary<string, object> parameters) {
-		SetParameters(parameters);
+		Guard.ArgumentNotNull(parameters, nameof(parameters));
+		Parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(parameters));
 		return this;
 	}
 
@@ -51,7 +62,7 @@ public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<B
 		return this;
 	}
 
-	public BlazorApplicationMenuItem Build() {
+	public BlazorApplicationMenuItemBase Build() {
 		Guard.Ensure(ScreenType != null || Parameters.Count == 0, "Only screen items can declare component parameters.");
 		if (_children != null) {
 			Guard.Ensure(!string.IsNullOrWhiteSpace(Text), "Menu item text is required.");
@@ -64,8 +75,8 @@ public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<B
 		ValidateItem();
 		if (ScreenType != null)
 			return new BlazorScreenMenuItem {
-				Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, ScreenType = ScreenType, ScreenTitle = ScreenTitle,
-				ActivationMode = ActivationMode ?? ScreenActivationMode.MultiInstance, ScreenKind = ScreenKind, IsDefault = IsDefault, Parameters = Parameters
+				Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, ScreenDefinition = ScreenDefinition,
+				IsDefault = IsDefault, Parameters = Parameters
 			};
 		return new BlazorActionMenuItem { Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, Action = Action, AsyncAction = AsyncAction };
 	}

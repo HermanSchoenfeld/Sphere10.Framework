@@ -6,14 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -55,8 +56,8 @@ public class ApplicationScreenActivationTests {
 		Assert.That(session.Parameters["ProjectId"], Is.EqualTo(projectId));
 		Assert.That(session.Parameters["Caption"], Is.EqualTo("Runtime"));
 		Assert.That(session.Parameters["Units"], Is.EqualTo("Metric"));
-		Assert.That(session.MenuItem.Parameters["Caption"], Is.EqualTo("Registered"));
-		Assert.That(session.MenuItem.Parameters.ContainsKey("ProjectId"), Is.False);
+		Assert.That(((BlazorApplicationScreenSession)session).MenuItem.Parameters["Caption"], Is.EqualTo("Registered"));
+		Assert.That(((BlazorApplicationScreenSession)session).MenuItem.Parameters.ContainsKey("ProjectId"), Is.False);
 		Assert.That(() => session.Parameters["ProjectId"] = Guid.NewGuid(), Throws.TypeOf<NotSupportedException>());
 		Assert.That(() => ((IDictionary<string, object>)activation.Parameters).Clear(), Throws.TypeOf<NotSupportedException>());
 	}
@@ -89,7 +90,7 @@ public class ApplicationScreenActivationTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var firstId = Guid.NewGuid();
 		var first = await host.ActivateScreenAsync("singleton", "screen", Activation(firstId, "first"));
 		var second = await host.ActivateScreenAsync("singleton", "screen", Activation(Guid.NewGuid(), "second"));
@@ -97,7 +98,7 @@ public class ApplicationScreenActivationTests {
 		Assert.That(second, Is.SameAs(first));
 		Assert.That(first.InstanceKey, Is.Null);
 		Assert.That(first.Parameters["ProjectId"], Is.EqualTo(firstId));
-		Assert.That(first.MenuItem.ActivationMode, Is.EqualTo(policy));
+		Assert.That(first.ActivationMode, Is.EqualTo(policy));
 		if (policy == ScreenActivationMode.PermanentSingleton)
 			Assert.That(await host.CloseScreenAsync(first.Id), Is.False);
 	}
@@ -248,7 +249,7 @@ public class ApplicationScreenActivationTests {
 				)
 				.Build()
 		};
-		return new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(blocks), provider);
+		return new BlazorApplicationScreenHost(blocks, provider);
 	}
 
 	private sealed class ProbeDecorator : BlazorApplicationScreenHostDecorator {

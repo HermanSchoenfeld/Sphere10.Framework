@@ -236,16 +236,26 @@ public class ApplicationBuilderCompositionTests {
 		}
 	}
 
-	private sealed record ItemDefinition(string Title) : IApplicationMenuItem;
+	private sealed record ItemDefinition(string Title) : IApplicationMenuItem {
+		public IApplicationMenu Parent { get; set; }
+	}
 
 	private sealed record MenuDefinition(string Text, ItemDefinition[] ItemDefinitions) : IApplicationMenu {
+		public IApplicationBlock Parent { get; set; }
+
 		public IApplicationMenuItem[] Items => ItemDefinitions;
 	}
 
 	private sealed record BlockDefinition(string Name, MenuDefinition[] MenuDefinitions) : IApplicationBlock {
+		public IApplication Parent { get; set; }
+
+		public IApplicationPlugin Source { get; set; }
+
 		public int Position => 0;
 
-		public Type DefaultScreen => null;
+		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
+
+		public ApplicationScreenDefinition DefaultScreenDefinition => null;
 
 		public IApplicationMenu[] Menus => MenuDefinitions;
 	}

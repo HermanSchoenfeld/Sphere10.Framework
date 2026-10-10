@@ -20,15 +20,36 @@ public static class UI {
 		Guard.ArgumentNotNull(plugins, nameof(plugins));
 		var definitions = plugins.ToArray();
 		var names = new HashSet<string>(StringComparer.Ordinal);
-		var owners = new Dictionary<string, string>(StringComparer.Ordinal);
+		var owners = new Dictionary<IApplicationBlock, string>(ReferenceEqualityComparer.Instance);
 		foreach (var plugin in definitions) {
 			Guard.ArgumentNotNull(plugin, nameof(plugins));
 			Guard.Argument(!string.IsNullOrWhiteSpace(plugin.Name), nameof(plugins), "A plugin name is required.");
 			Guard.Argument(names.Add(plugin.Name), nameof(plugins), $"Plugin name '{plugin.Name}' is registered more than once.");
 			foreach (var block in ValidatePluginBlocks(plugin.Blocks)) {
-				Guard.Argument(!owners.TryGetValue(block.Id, out var owner), nameof(plugins),
-					$"Block '{block.Id}' cannot belong to both plugin '{owner}' and '{plugin.Name}'.");
-				owners.Add(block.Id, plugin.Name);
+				Guard.Argument(!owners.TryGetValue(block, out var owner), nameof(plugins),
+					$"Block '{block.Name}' cannot belong to both plugin '{owner}' and '{plugin.Name}'.");
+				owners.Add(block, plugin.Name);
+			}
+		}
+		return definitions;
+	}
+
+	/// <summary>Validates completed startup registrations using their captured block membership without rereading plugin definitions.</summary>
+	public static ApplicationPluginRegistration<TPlugin>[] ValidatePluginRegistrations<TPlugin>(IEnumerable<ApplicationPluginRegistration<TPlugin>> registrations)
+		where TPlugin : class, IApplicationPlugin {
+		Guard.ArgumentNotNull(registrations, nameof(registrations));
+		var definitions = registrations.ToArray();
+		var names = new HashSet<string>(StringComparer.Ordinal);
+		var owners = new Dictionary<IApplicationBlock, string>(ReferenceEqualityComparer.Instance);
+		foreach (var registration in definitions) {
+			Guard.ArgumentNotNull(registration, nameof(registrations));
+			var plugin = registration.Plugin;
+			Guard.Argument(!string.IsNullOrWhiteSpace(plugin.Name), nameof(registrations), "A plugin name is required.");
+			Guard.Argument(names.Add(plugin.Name), nameof(registrations), $"Plugin name '{plugin.Name}' is registered more than once.");
+			foreach (var block in ValidatePluginBlocks(registration.Blocks)) {
+				Guard.Argument(!owners.TryGetValue(block, out var owner), nameof(registrations),
+					$"Block '{block.Name}' cannot belong to both plugin '{owner}' and '{plugin.Name}'.");
+				owners.Add(block, plugin.Name);
 			}
 		}
 		return definitions;
@@ -38,32 +59,32 @@ public static class UI {
 	public static IApplicationBlock[] ValidatePluginBlocks(IEnumerable<IApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var definitions = blocks.ToArray();
-		var ids = new HashSet<string>(StringComparer.Ordinal);
+		var members = new HashSet<IApplicationBlock>(ReferenceEqualityComparer.Instance);
 		foreach (var block in definitions) {
 			Guard.ArgumentNotNull(block, nameof(blocks));
-			Guard.Argument(!string.IsNullOrWhiteSpace(block.Id), nameof(blocks), "A plugin block ID is required.");
-			Guard.Argument(ids.Add(block.Id), nameof(blocks), $"Block ID '{block.Id}' is registered more than once in a plugin.");
+			Guard.Argument(!string.IsNullOrWhiteSpace(block.Name), nameof(blocks), "A plugin block name is required.");
+			Guard.Argument(members.Add(block), nameof(blocks), $"Block '{block.Name}' is registered more than once in a plugin.");
 		}
 		return definitions;
 	}
 
-	/// <summary>Finds a collision-free name for the plugin that adapts standalone application blocks.</summary>
-	public static string GetImplicitPluginName(IEnumerable<IApplicationPlugin> plugins) {
-		var names = ValidatePlugins(plugins).Select(plugin => plugin.Name).ToHashSet(StringComparer.Ordinal);
-		var name = "Application";
-		for (var suffix = 2; names.Contains(name); suffix++)
-			name = $"Application {suffix}";
-		return name;
-	}
-
 	/// <summary>
-	/// Merges broader-to-narrower command layers. Matching IDs keep their original position and take the
+	/// Merges broader-to-narrower command layers. Matching semantic keys keep their original position and take the
 	/// narrower command; separators are normalized. Results own their membership but retain command identity.
 	/// </summary>
-	public static TItem[] MergeMenuItems<TItem>(params TItem[][] layers) where TItem : class, IApplicationMenuItem {
+	public static TItem[] MergeMenuItems<TItem>(params TItem[][] layers)
+		where TItem : class, IApplicationMenuItem => MergeMenuItems(item => {
+			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
+			return item.Title;
+		}, layers);
+
+	/// <summary>Lets adapters supply their own command identity without adding platform identifiers to shared metadata.</summary>
+	public static TItem[] MergeMenuItems<TItem>(Func<TItem, object> keySelector, params TItem[][] layers)
+		where TItem : class, IApplicationMenuItem {
+		Guard.ArgumentNotNull(keySelector, nameof(keySelector));
 		Guard.ArgumentNotNull(layers, nameof(layers));
 		var result = new List<TItem>();
-		var positions = new Dictionary<string, int>(StringComparer.Ordinal);
+		var positions = new Dictionary<object, int>();
 		foreach (var layer in layers) {
 			Guard.ArgumentNotNull(layer, nameof(layers));
 			foreach (var item in layer) {
@@ -72,11 +93,12 @@ public static class UI {
 					result.Add(item);
 					continue;
 				}
-				Guard.ArgumentNotNullOrEmpty(item.Id, nameof(layers), "Command IDs are required for merging.");
-				if (positions.TryGetValue(item.Id, out var index))
+				var key = keySelector(item);
+				Guard.ArgumentNotNull(key, nameof(keySelector));
+				if (positions.TryGetValue(key, out var index))
 					result[index] = item;
 				else {
-					positions.Add(item.Id, result.Count);
+					positions.Add(key, result.Count);
 					result.Add(item);
 				}
 			}
@@ -92,109 +114,199 @@ public static class UI {
 
 	/// <summary>
 	/// Extends matching menus across application, block and screen layers. The narrower menu supplies its
-	/// caption and platform metadata. A menu whose ID is "help" remains last, after screen contributions.
+	/// caption and platform metadata. The Help menu remains last, after screen contributions.
 	/// </summary>
 	public static TMenu[] MergeMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu, params TMenu[][] layers)
 		where TMenu : class, IApplicationMenu
+		where TItem : class, IApplicationMenuItem => MergeMenus(createMenu, menu => {
+			Guard.ArgumentNotNullOrEmpty(menu.Text, nameof(layers), "A menu caption is required for merging.");
+			return menu.Text;
+		}, item => {
+			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
+			return item.Title;
+		}, layers);
+
+	/// <summary>Merges menus using adapter-supplied semantic keys.</summary>
+	public static TMenu[] MergeMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu,
+		Func<TMenu, object> menuKeySelector, Func<TItem, object> itemKeySelector, params TMenu[][] layers)
+		where TMenu : class, IApplicationMenu
 		where TItem : class, IApplicationMenuItem {
 		Guard.ArgumentNotNull(createMenu, nameof(createMenu));
+		Guard.ArgumentNotNull(menuKeySelector, nameof(menuKeySelector));
+		Guard.ArgumentNotNull(itemKeySelector, nameof(itemKeySelector));
 		Guard.ArgumentNotNull(layers, nameof(layers));
 		var result = new List<TMenu>();
-		var positions = new Dictionary<string, int>(StringComparer.Ordinal);
+		var positions = new Dictionary<object, int>();
 		foreach (var layer in layers) {
 			Guard.ArgumentNotNull(layer, nameof(layers));
 			foreach (var menu in layer) {
 				Guard.ArgumentNotNull(menu, nameof(layers));
-				Guard.ArgumentNotNullOrEmpty(menu.Id, nameof(layers), "Menu IDs are required for merging.");
+				var key = menuKeySelector(menu);
+				Guard.ArgumentNotNull(key, nameof(menuKeySelector));
 				Guard.ArgumentNotNull(menu.Items, nameof(layers));
 				var items = menu.Items.Cast<TItem>().ToArray();
-				if (positions.TryGetValue(menu.Id, out var index))
-					result[index] = createMenu(menu, MergeMenuItems(result[index].Items.Cast<TItem>().ToArray(), items));
+				if (positions.TryGetValue(key, out var index))
+					result[index] = createMenu(menu, MergeMenuItems(itemKeySelector, result[index].Items.Cast<TItem>().ToArray(), items));
 				else {
-					positions.Add(menu.Id, result.Count);
-					result.Add(createMenu(menu, MergeMenuItems(items)));
+					positions.Add(key, result.Count);
+					result.Add(createMenu(menu, MergeMenuItems(itemKeySelector, items)));
 				}
 			}
 		}
-		return result.OrderBy(menu => string.Equals(menu.Id, "help", StringComparison.OrdinalIgnoreCase) ? 1 : 0).ToArray();
+		return result.OrderBy(menu => string.Equals(menu.Text, "help", StringComparison.OrdinalIgnoreCase) ? 1 : 0).ToArray();
 	}
 
+
+	/// <summary>Application commands persist; block and screen commands follow the hosted screen, falling back to the browsed block.</summary>
+	public static ApplicationCommandLayer[] GetCommandLayers(IApplication application) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		var result = new List<ApplicationCommandLayer> { new(ApplicationCommandLevel.Application, application) };
+		var host = application.ScreenHost;
+		var screen = host?.ActiveScreen;
+		var block = screen?.Block ?? host?.ActiveBlock;
+		if (block != null)
+			result.Add(new ApplicationCommandLayer(ApplicationCommandLevel.Block, block));
+		if (screen != null)
+			result.Add(new ApplicationCommandLayer(ApplicationCommandLevel.Screen, screen));
+		return result.ToArray();
+	}
+
+	/// <summary>Composes menus while protecting application commands from contextual replacements.</summary>
+	public static TMenu[] MergeApplicationMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu, params ApplicationCommandLayer[] layers)
+		where TMenu : class, IApplicationMenu
+		where TItem : class, IApplicationMenuItem => MergeApplicationMenus(createMenu, menu => {
+			Guard.ArgumentNotNullOrEmpty(menu.Text, nameof(layers), "A menu caption is required for merging.");
+			return menu.Text;
+		}, item => {
+			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
+			return item.Title;
+		}, layers);
+
+	/// <summary>Adapters supply their own semantic keys; application and contextual commands have separate identity scopes.</summary>
+	public static TMenu[] MergeApplicationMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu,
+		Func<TMenu, object> menuKeySelector, Func<TItem, object> itemKeySelector, params ApplicationCommandLayer[] layers)
+		where TMenu : class, IApplicationMenu
+		where TItem : class, IApplicationMenuItem {
+		Guard.ArgumentNotNull(itemKeySelector, nameof(itemKeySelector));
+		var ordered = OrderCommandLayers(layers);
+		var applicationMenus = MergeMenus(createMenu, menuKeySelector, itemKeySelector,
+			ordered.Where(layer => layer.Level == ApplicationCommandLevel.Application).Select(layer => layer.Provider.Menus.Cast<TMenu>().ToArray()).ToArray());
+		var contextualMenus = MergeMenus(createMenu, menuKeySelector, itemKeySelector,
+			ordered.Where(layer => layer.Level != ApplicationCommandLevel.Application).Select(layer => layer.Provider.Menus.Cast<TMenu>().ToArray()).ToArray());
+		var applicationItems = applicationMenus.SelectMany(menu => menu.Items).ToHashSet(ReferenceEqualityComparer.Instance);
+		return MergeMenus(createMenu, menuKeySelector, item => {
+			var key = itemKeySelector(item);
+			Guard.ArgumentNotNull(key, nameof(itemKeySelector));
+			return (applicationItems.Contains(item), key);
+		}, applicationMenus, contextualMenus);
+	}
+
+	/// <summary>Composes toolbar items while preserving global commands and contextual block-to-screen overrides.</summary>
+	public static TItem[] MergeApplicationToolBarItems<TItem>(params ApplicationCommandLayer[] layers)
+		where TItem : class, IApplicationMenuItem => MergeApplicationToolBarItems<TItem>(item => {
+			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
+			return item.Title;
+		}, layers);
+
+	public static TItem[] MergeApplicationToolBarItems<TItem>(Func<TItem, object> itemKeySelector, params ApplicationCommandLayer[] layers)
+		where TItem : class, IApplicationMenuItem {
+		Guard.ArgumentNotNull(itemKeySelector, nameof(itemKeySelector));
+		var ordered = OrderCommandLayers(layers);
+		var applicationItems = MergeMenuItems(itemKeySelector,
+			ordered.Where(layer => layer.Level == ApplicationCommandLevel.Application).Select(layer => layer.Provider.ToolBarItems.Cast<TItem>().ToArray()).ToArray());
+		var contextualItems = MergeMenuItems(itemKeySelector,
+			ordered.Where(layer => layer.Level != ApplicationCommandLevel.Application).Select(layer => layer.Provider.ToolBarItems.Cast<TItem>().ToArray()).ToArray());
+		var applicationReferences = applicationItems.ToHashSet(ReferenceEqualityComparer.Instance);
+		return MergeMenuItems<TItem>(item => {
+			var key = itemKeySelector(item);
+			Guard.ArgumentNotNull(key, nameof(itemKeySelector));
+			return (applicationReferences.Contains(item), key);
+		}, applicationItems, contextualItems);
+	}
+
+	private static ApplicationCommandLayer[] OrderCommandLayers(ApplicationCommandLayer[] layers) {
+		Guard.ArgumentNotNull(layers, nameof(layers));
+		Guard.Argument(layers.All(layer => layer != null), nameof(layers), "Command layers cannot be null.");
+		foreach (var layer in layers) {
+			Guard.ArgumentNotNull(layer.Provider.Menus, nameof(layers));
+			Guard.ArgumentNotNull(layer.Provider.ToolBarItems, nameof(layers));
+			Guard.Argument(layer.Provider.Menus.All(menu => menu != null && menu.Items != null), nameof(layers), "Menus and their item collections cannot be null.");
+		}
+		return layers.OrderBy(layer => layer.Level).ToArray();
+	}
 
 	/// <summary>Orders live definitions by plugin membership, then appends directly registered blocks in their supplied order.</summary>
 	public static IApplicationBlock[] OrderApplicationBlocks(IEnumerable<IApplicationPlugin> plugins, IEnumerable<IApplicationBlock> blocks) {
 		var definitions = ValidatePlugins(plugins);
-		var available = ValidatePluginBlocks(blocks).ToDictionary(block => block.Id, StringComparer.Ordinal);
+		var available = ValidatePluginBlocks(blocks).ToDictionary(block => block, ReferenceEqualityComparer.Instance);
 		var ordered = new List<IApplicationBlock>();
 		foreach (var plugin in definitions)
 			foreach (var block in plugin.Blocks)
-				if (available.Remove(block.Id, out var registered))
+				if (available.Remove(block, out var registered))
 					ordered.Add(registered);
 		ordered.AddRange(available.Values);
 		return ordered.ToArray();
 	}
 
-	/// <summary>Resolves defaults and screen policies once, preserving block and menu declaration order.</summary>
+	/// <summary>Orders registered blocks by captured startup membership, then appends directly registered blocks in their supplied order.</summary>
+	public static IApplicationBlock[] OrderApplicationBlocks<TPlugin>(IEnumerable<ApplicationPluginRegistration<TPlugin>> registrations, IEnumerable<IApplicationBlock> blocks)
+		where TPlugin : class, IApplicationPlugin {
+		var definitions = ValidatePluginRegistrations(registrations);
+		var available = ValidatePluginBlocks(blocks).ToDictionary(block => block, ReferenceEqualityComparer.Instance);
+		var ordered = new List<IApplicationBlock>();
+		foreach (var registration in definitions)
+			foreach (var block in registration.Blocks)
+				if (available.Remove(block, out var registered))
+					ordered.Add(registered);
+		ordered.AddRange(available.Values);
+		return ordered.ToArray();
+	}
+
+	/// <summary>Returns block-owned screen definitions in declaration order, preserving reference identity.</summary>
 	public static ApplicationScreenDefinition[] GetScreenDefinitions(IEnumerable<IApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var definitions = new List<ApplicationScreenDefinition>();
 		foreach (var block in blocks) {
 			Guard.ArgumentNotNull(block, nameof(blocks));
-			var menus = block.Menus;
-			Guard.ArgumentNotNull(menus, nameof(blocks));
-			foreach (var menu in menus) {
+			var owned = block.ScreenDefinitions;
+			Guard.ArgumentNotNull(owned, nameof(blocks));
+			Guard.Argument(owned.All(definition => definition != null), nameof(blocks), "Screen definitions cannot be null.");
+			Guard.Argument(owned.Distinct(ReferenceEqualityComparer.Instance).Count() == owned.Length, nameof(blocks), "Screen definitions must be registered once by reference.");
+			Guard.Argument(block.DefaultScreenDefinition == null || owned.Any(definition => ReferenceEquals(definition, block.DefaultScreenDefinition)),
+				nameof(blocks), "The default screen definition must be owned by the block.");
+			Guard.ArgumentNotNull(block.Menus, nameof(blocks));
+			Guard.ArgumentNotNull(block.ToolBarItems, nameof(blocks));
+			Guard.Argument(block.ToolBarItems.All(item => item != null), nameof(blocks), "Toolbar items cannot be null.");
+			foreach (var menu in block.Menus) {
 				Guard.ArgumentNotNull(menu, nameof(blocks));
 				Guard.ArgumentNotNull(menu.Items, nameof(blocks));
 				Guard.Argument(menu.Items.All(item => item != null), nameof(blocks), "Menu items cannot be null.");
 			}
-			var screens = menus.SelectMany(menu => menu.Items).OfType<IScreenMenuItem>().ToArray();
-			var matching = screens.FirstOrDefault(screen => screen.ScreenType == block.DefaultScreen);
-			if (block.DefaultScreen != null && matching == null)
-				definitions.Add(new ApplicationScreenDefinition(block, block.DefaultScreen, ApplicationScreenDefinition.DefaultMenuItemId,
-					block.DefaultScreenTitle, block.DefaultScreenActivationMode, block.DefaultScreenKind, true));
-			foreach (var screen in screens) {
-				var isBlockDefault = ReferenceEquals(screen, matching);
-				if (isBlockDefault) {
-					Guard.Argument(!block.DefaultScreenActivationMode.HasValue || !screen.ActivationMode.HasValue
-						|| block.DefaultScreenActivationMode == screen.ActivationMode, nameof(blocks), "The block default and its menu entry declare conflicting activation modes.");
-					Guard.Argument(block.DefaultScreenKind == ScreenKind.Normal || block.DefaultScreenKind == screen.ScreenKind,
-						nameof(blocks), "The block default and its menu entry declare conflicting screen kinds.");
-				}
-				definitions.Add(new ApplicationScreenDefinition(block, screen.ScreenType, screen.Id,
-					isBlockDefault ? block.DefaultScreenTitle ?? screen.ScreenTitle ?? screen.Title : screen.ScreenTitle ?? screen.Title,
-					isBlockDefault ? block.DefaultScreenActivationMode ?? screen.ActivationMode : screen.ActivationMode,
-					screen.ScreenKind, isBlockDefault || screen.IsDefault));
-			}
+			foreach (var item in block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems).OfType<IScreenMenuItem>())
+				Guard.Argument(item.ScreenDefinition != null && owned.Any(definition => ReferenceEquals(definition, item.ScreenDefinition)),
+					nameof(blocks), "Screen commands must reference a definition owned by their block.");
+			definitions.AddRange(owned);
 		}
-
-		// A component type has one lifetime and role throughout an application, even when referenced by multiple menus.
-		var kinds = new Dictionary<Type, ScreenKind>();
-		var policies = new ScreenActivationPolicyRegistry();
-		foreach (var definition in definitions) {
-			Guard.Argument(!kinds.TryGetValue(definition.ScreenType, out var kind) || kind == definition.ScreenKind,
-				nameof(blocks), $"Screen {definition.ScreenType.Name} declares conflicting screen kinds.");
-			kinds[definition.ScreenType] = definition.ScreenKind;
-			if (definition.ActivationMode.HasValue)
-				policies.RegisterInstance(definition.ScreenType, definition.ActivationMode.Value);
-		}
+		ApplicationScreenDefinition.ValidateDefinitions(definitions);
 		return definitions.ToArray();
 	}
 
-	/// <summary>Returns the first marked startup screen. Placeholders cannot be selected when a permanent normal screen is present.</summary>
-	public static ApplicationScreenDefinition GetDefaultScreen(IEnumerable<ApplicationScreenDefinition> screens) {
-		Guard.ArgumentNotNull(screens, nameof(screens));
-		var definitions = screens.ToArray();
-		Guard.Argument(definitions.All(screen => screen != null), nameof(screens), "Screen definitions cannot be null.");
+	/// <summary>Returns the first block's marked startup screen. Permanent screens exclude empty placeholders.</summary>
+	public static ApplicationScreenDefinition GetDefaultScreen(IEnumerable<IApplicationBlock> blocks) {
+		Guard.ArgumentNotNull(blocks, nameof(blocks));
+		var members = blocks.ToArray();
+		var definitions = GetScreenDefinitions(members);
 		var hasPermanent = definitions.Any(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton);
-		return definitions.FirstOrDefault(screen => screen.IsDefault && (!hasPermanent || screen.ScreenKind != ScreenKind.Empty));
+		return members.Select(block => block.DefaultScreenDefinition).FirstOrDefault(screen => screen != null && (!hasPermanent || screen.ScreenKind != ScreenKind.Empty));
 	}
 
-	/// <summary>Returns the first empty-workspace candidate, preferring one explicitly marked as default.</summary>
-	public static ApplicationScreenDefinition GetEmptyScreen(IEnumerable<ApplicationScreenDefinition> screens) {
-		Guard.ArgumentNotNull(screens, nameof(screens));
-		var definitions = screens.ToArray();
-		Guard.Argument(definitions.All(screen => screen != null), nameof(screens), "Screen definitions cannot be null.");
-		var candidates = definitions.Where(screen => screen.ScreenKind == ScreenKind.Empty).ToArray();
-		return candidates.FirstOrDefault(screen => screen.IsDefault) ?? candidates.FirstOrDefault();
+	/// <summary>Returns a block's explicitly selected placeholder before the first remaining placeholder.</summary>
+	public static ApplicationScreenDefinition GetEmptyScreen(IEnumerable<IApplicationBlock> blocks) {
+		Guard.ArgumentNotNull(blocks, nameof(blocks));
+		var members = blocks.ToArray();
+		var definitions = GetScreenDefinitions(members);
+		return members.Select(block => block.DefaultScreenDefinition).FirstOrDefault(screen => screen?.ScreenKind == ScreenKind.Empty)
+			?? definitions.FirstOrDefault(screen => screen.ScreenKind == ScreenKind.Empty);
 	}
 
 	public static bool IsSingleton(ScreenActivationMode activationMode) {

@@ -36,9 +36,10 @@
 <p>Save or discard the note and clear Prevent tab switching before switching or closing this screen. Saving does not clear the checkbox.</p>
 
 @code {
-	private BlazorApplicationMenuItem _saveCommand;
-	private BlazorApplicationMenuItem _discardCommand;
-	private BlazorApplicationMenuItem _counterCommand;
+	private IBlazorApplicationMenu[] _menus;
+	private BlazorApplicationMenuItemBase _saveCommand;
+	private BlazorApplicationMenuItemBase _discardCommand;
+	private BlazorApplicationMenuItemBase _counterCommand;
 	private string _title = "Single-instance screen";
 	private string _draft = string.Empty;
 	private string _saved = string.Empty;
@@ -47,7 +48,7 @@
 
 	public override string Title => string.IsNullOrWhiteSpace(_title) ? "Single-instance screen" : _title;
 
-	public override IBlazorApplicationMenu[] Menus => new[] {
+	public override IBlazorApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= new IBlazorApplicationMenu[] {
 		new BlazorApplicationMenuBuilder()
 			.WithId("file")
 			.WithText("File")
@@ -55,13 +56,13 @@
 			.AddItem(DiscardCommand)
 			.AddItem(CounterCommand)
 			.Build()
-	};
+	});
 
 	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { SaveCommand, DiscardCommand, CounterCommand };
 
 	public override bool HasUnsavedChanges => _draft != _saved;
 
-	private BlazorApplicationMenuItem SaveCommand => _saveCommand ??= new BlazorApplicationMenuItemBuilder()
+	private BlazorApplicationMenuItemBase SaveCommand => _saveCommand ??= new BlazorApplicationMenuItemBuilder()
 		.WithId("save")
 		.WithText("Save in session")
 		.WithIcon("fas fa-save")
@@ -73,7 +74,7 @@
 		})
 		.Build();
 
-	private BlazorApplicationMenuItem DiscardCommand => _discardCommand ??= new BlazorApplicationMenuItemBuilder()
+	private BlazorApplicationMenuItemBase DiscardCommand => _discardCommand ??= new BlazorApplicationMenuItemBuilder()
 		.WithId("discard")
 		.WithText("Discard changes")
 		.WithIcon("fas fa-undo")
@@ -85,7 +86,7 @@
 		})
 		.Build();
 
-	private BlazorApplicationMenuItem CounterCommand => _counterCommand ??= new BlazorApplicationMenuItemBuilder()
+	private BlazorApplicationMenuItemBase CounterCommand => _counterCommand ??= new BlazorApplicationMenuItemBuilder()
 		.WithId("instance-counter")
 		.WithText("Increment instance counter")
 		.WithIcon("fas fa-plus-circle")

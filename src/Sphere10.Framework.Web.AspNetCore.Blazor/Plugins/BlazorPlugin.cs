@@ -8,14 +8,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A startup plugin definition using shared storage and lifecycle with immutable Blazor block snapshots.</summary>
-public class BlazorPlugin : ApplicationPlugin, IBlazorPlugin {
+public class BlazorPlugin : ApplicationPluginBase<IBlazorApplicationBlock>, IBlazorPlugin {
 	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks)
 		: this(name, blocks, null) {
 	}
@@ -25,20 +24,16 @@ public class BlazorPlugin : ApplicationPlugin, IBlazorPlugin {
 	}
 
 	/// <summary>Returns an array copy over immutable block snapshots for compatibility with the original plugin contract.</summary>
-	public new IBlazorApplicationBlock[] Blocks {
-		get => base.Blocks.Cast<IBlazorApplicationBlock>().ToArray();
+	public override IBlazorApplicationBlock[] Blocks {
+		get => base.Blocks;
 		init => base.Blocks = SnapshotBlocks(value);
 	}
 
 	/// <summary>Retained for compatibility. Plugins register into the host and never create a separate service provider.</summary>
 	public IServiceProvider IoCContainer => null;
 
-	IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
-
 	private static IBlazorApplicationBlock[] SnapshotBlocks(IEnumerable<IBlazorApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		var definitions = blocks.ToArray();
-		var catalog = new BlazorApplicationBlockCatalog(definitions);
-		return definitions.Select(block => catalog.Get(block.Id ?? block.Title)).ToArray();
+		return BlazorApplicationBlockSnapshot.CreateBlocks(blocks, false);
 	}
 }

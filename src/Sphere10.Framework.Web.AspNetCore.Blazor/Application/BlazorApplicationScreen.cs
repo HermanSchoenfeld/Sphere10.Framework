@@ -8,7 +8,6 @@
 
 using Sphere10.Framework.Application.UI;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -26,6 +25,13 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 
 	[Inject]
 	public IBlazorApplicationScreenHost ScreenHost { get; set; }
+
+	[Inject]
+	public IUserInterfaceServices UserInterfaceServices { get; set; }
+
+	public IBlazorApplicationScreenHost Host { get; set; }
+
+	public IBlazorApplicationBlock Block { get; set; }
 
 	/// <summary>Override for a dynamic tab title and call NotifyScreenChanged after changing it.</summary>
 	public virtual string Title => null;
@@ -80,9 +86,8 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 
 	protected void NotifyScreenChanged() {
 		// Closing removes the session before the renderer disposes this component.
-		if (!_disposed && _attachedSessionId.HasValue
-			&& ScreenHost.Screens.Any(session => session.Id == _attachedSessionId.Value && ReferenceEquals(session.Screen, this)))
-			ScreenHost.NotifyScreenChanged(_attachedSessionId.Value);
+		if (!_disposed && _attachedSessionId.HasValue && Host != null && Session?.Host == Host && ReferenceEquals(Session.Screen, this))
+			Host.NotifyScreenChanged(_attachedSessionId.Value);
 	}
 
 	Task<bool> IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) => CanDeactivateAsync(cancellationToken);
@@ -91,4 +96,3 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 
 	Task IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) => OnDeactivatedAsync(cancellationToken);
 }
-

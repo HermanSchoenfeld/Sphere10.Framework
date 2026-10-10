@@ -6,21 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Application.UI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -154,7 +155,7 @@ public class ApplicationRenderingTests {
 			var session = await host.ActivateBlockAsync("default");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationShell.BlockId)] = "default",
-				[nameof(ApplicationShell.ScreenId)] = session.MenuItem.Id,
+				[nameof(ApplicationShell.ScreenId)] = session.MenuItemId,
 				[nameof(ApplicationShell.InstanceId)] = session.Id
 			}));
 			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("not found"));

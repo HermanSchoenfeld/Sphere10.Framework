@@ -19,19 +19,17 @@ public abstract class ApplicationBase : Disposable, IApplication {
 
 	private IApplicationMenu[] _menus = Array.Empty<IApplicationMenu>();
 	private IApplicationMenuItem[] _toolBarItems = Array.Empty<IApplicationMenuItem>();
+	private IApplicationScreenHost _observedHost;
+	private IApplicationBlock[] _parentedBlocks = Array.Empty<IApplicationBlock>();
 
-	public abstract IApplicationPlugin[] Plugins { get; }
+	public abstract IApplicationPlugin[] LoadedPlugins { get; }
 
-	public virtual IApplicationPlugin ActivePlugin => ActiveBlock == null ? null :
-		Plugins.FirstOrDefault(plugin => plugin.Blocks.Any(block => string.Equals(block.Id, ActiveBlock.Id, StringComparison.Ordinal)));
+	/// <summary>Projects the host's current registered block membership without retaining another collection.</summary>
+	public virtual IApplicationBlock[] Blocks => ScreenHost?.Blocks ?? Array.Empty<IApplicationBlock>();
 
-	public virtual IApplicationBlock[] Blocks => Plugins.SelectMany(plugin => plugin.Blocks).ToArray();
+	public abstract IApplicationScreenHost ScreenHost { get; }
 
-	public abstract IApplicationBlock ActiveBlock { get; }
-
-	public abstract IApplicationScreen ActiveScreen { get; }
-
-	public abstract bool HasUnsavedChanges { get; }
+	public virtual bool HasUnsavedChanges => ScreenHost?.HasUnsavedChanges ?? false;
 
 	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus);
 
@@ -60,17 +58,51 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	}
 
 	protected virtual void OnChanged() {
-		if (!IsDisposed)
-			Changed?.Invoke();
+		if (IsDisposed)
+			return;
+		RefreshBlockParents();
+		Changed?.Invoke();
 	}
+
+	/// <summary>Call after assigning the borrowed platform host to maintain its live blocks' application parent.</summary>
+	protected void ObserveScreenHost() {
+		Guard.Ensure(_observedHost == null, "The application already observes a screen host.");
+		Guard.ArgumentNotNull(ScreenHost, nameof(ScreenHost));
+		RefreshBlockParents();
+		_observedHost = ScreenHost;
+		_observedHost.Changed += OnScreenHostChanged;
+	}
+
+	protected virtual void OnScreenHostChanged() => RefreshBlockParents();
 
 	protected override void FreeManagedResources() {
 		IsDisposed = true;
+		if (_observedHost != null)
+			_observedHost.Changed -= OnScreenHostChanged;
+		foreach (var block in _parentedBlocks)
+			if (ReferenceEquals(block.Parent, this))
+				block.Parent = null;
+		_parentedBlocks = Array.Empty<IApplicationBlock>();
+		_observedHost = null;
 		Changed = null;
 	}
 
 	protected override ValueTask FreeManagedResourcesAsync() {
 		FreeManagedResources();
 		return ValueTask.CompletedTask;
+	}
+
+	private void RefreshBlockParents() {
+		if (IsDisposed)
+			return;
+		var blocks = ScreenHost?.Blocks ?? Array.Empty<IApplicationBlock>();
+		Guard.Ensure(blocks.All(block => block.Parent == null || ReferenceEquals(block.Parent, this)), "A registered block belongs to another application.");
+		var members = blocks.ToHashSet(ReferenceEqualityComparer.Instance);
+		foreach (var block in _parentedBlocks)
+			if (!members.Contains(block) && ReferenceEquals(block.Parent, this))
+				block.Parent = null;
+		foreach (var block in blocks)
+			block.Parent = this;
+		_parentedBlocks = blocks;
 	}
 }

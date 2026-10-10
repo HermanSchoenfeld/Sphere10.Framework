@@ -6,31 +6,31 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using ModernWizard = Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Utils.BlazorTester;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Utils.BlazorTester.Layouts;
 using Sphere10.Framework.Utils.BlazorTester.Loader.Pages;
 using Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Pages;
+using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
-
-using ModernWizard = Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -68,7 +68,7 @@ public class GalleryRenderingTests {
 			return rendered.ToHtmlString();
 		});
 		Assert.That(host.ActiveBlock.Id, Is.EqualTo(blockId));
-		Assert.That(host.ActiveScreen.MenuItem.Id, Is.EqualTo(screenId));
+		Assert.That(host.ActiveScreen.MenuItemId, Is.EqualTo(screenId));
 		Assert.That(host.ActiveScreen.Screen, Is.Not.Null, "Alias content must be an attached application screen.");
 		Assert.That(html, Does.Contain(expectedText));
 		Assert.That(Regex.Matches(html, "class=\"sphere10-application(?: |\")").Count, Is.EqualTo(1), "Every demo has one application shell.");
@@ -94,11 +94,11 @@ public class GalleryRenderingTests {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
 		using var provider = services.BuildServiceProvider();
-		var catalog = provider.GetRequiredService<IBlazorApplicationBlockCatalog>();
+		var metadataHost = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		Assert.That(DemoNavigation.Aliases.Select(alias => alias.Route), Is.Unique);
 		foreach (var alias in DemoNavigation.Aliases) {
 			Assert.That(routes[alias.Route].ToArray(), Is.EqualTo(new[] { typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace) }), alias.Route);
-			var screen = catalog.Get(alias.BlockId).Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>().Single(item => item.Id == alias.ScreenId);
+			var screen = metadataHost.AvailableBlocks.Single(block => block.Id == alias.BlockId).Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>().Single(item => item.Id == alias.ScreenId);
 			Assert.That(screen.Icon, Does.StartWith("fas fa-"), alias.Route);
 		}
 		Assert.That(routes["/modern"].Single(), Is.EqualTo(routes["/components/grid"].Single()));
@@ -128,11 +128,11 @@ public class GalleryRenderingTests {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
 		using var provider = services.BuildServiceProvider();
-		var catalog = provider.GetRequiredService<IBlazorApplicationBlockCatalog>();
+		var metadataHost = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var plugins = provider.GetServices<IBlazorPlugin>().ToArray();
-		Assert.That(plugins.SelectMany(plugin => plugin.Blocks).Select(block => block.Id), Is.EquivalentTo(catalog.Blocks.Select(block => block.Id)),
+		Assert.That(plugins.SelectMany(plugin => plugin.Blocks).Select(block => block.Id), Is.EquivalentTo(metadataHost.AvailableBlocks.Select(block => block.Id)),
 			"The registered demo plugins must supply the workspace blocks through the existing catalog.");
-		var workspace = catalog.Get("workspace").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
+		var workspace = metadataHost.AvailableBlocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
 		Assert.That(workspace.Keys, Is.EquivalentTo(new[] { "overview", "editor", "scratchpad", "action" }));
 		Assert.That(workspace["overview"].Icon, Is.EqualTo("fas fa-home"));
 		Assert.That(workspace["editor"].Icon, Is.EqualTo("fas fa-edit"));
@@ -140,14 +140,14 @@ public class GalleryRenderingTests {
 		Assert.That(workspace["action"].Icon, Is.EqualTo("fas fa-play"));
 		Assert.That(((BlazorScreenMenuItem)workspace["editor"]).ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(((BlazorScreenMenuItem)workspace["scratchpad"]).ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		var components = catalog.Get("components").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
+		var components = metadataHost.AvailableBlocks.Single(block => block.Id == "components").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
 		Assert.That(components.Keys, Is.EquivalentTo(new[] { "gallery", "tables", "dialogs", "wizards", "themes" }));
 		Assert.That(components["gallery"], Is.TypeOf<BlazorScreenMenuItem>());
 		Assert.That(((BlazorScreenMenuItem)components["gallery"]).ScreenType, Is.EqualTo(typeof(Sphere10.Framework.Utils.BlazorTester.Application.ComponentScreen)));
-		var legacy = catalog.Get("legacy").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
+		var legacy = metadataHost.AvailableBlocks.Single(block => block.Id == "legacy").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
 		Assert.That(legacy.Keys, Is.EquivalentTo(new[] { "gallery", "dialogs", "tables", "wizards", "servers", "dashboard" }));
 		Assert.That(legacy.Values, Is.All.InstanceOf<BlazorScreenMenuItem>());
-		Assert.That(catalog.Blocks.SelectMany(block => block.Menus).SelectMany(menu => menu.Items).Select(item => item.Icon), Is.All.Not.Null.And.Not.Empty);
+		Assert.That(metadataHost.AvailableBlocks.SelectMany(block => block.Menus).SelectMany(menu => menu.Items).Select(item => item.Icon), Is.All.Not.Null.And.Not.Empty);
 	}
 
 	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.GridDemo))]
@@ -215,10 +215,11 @@ public class GalleryRenderingTests {
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var hostUserInterface = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.ActivateBlockAsync("workspace");
 			var rendered = await renderer.RenderComponentAsync<UI.Application.ApplicationScreenHostView>();
-			await host.ExecuteMenuItemAsync("workspace", "action");
+			await hostUserInterface.ExecuteMenuItemAsync("workspace", "action");
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Scoped async action executions: 1"));
 		});
 	}

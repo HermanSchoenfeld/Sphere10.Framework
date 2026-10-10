@@ -12,8 +12,8 @@ using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsScreenMenuItem : WinFormsLinkMenuItem, IWinFormsScreenMenuItem {
-	private Type _screen;
+public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenMenuItem {
+	private ApplicationScreenDefinition _screenDefinition;
 
 	public WinFormsScreenMenuItem()
 		: this(string.Empty, null) {
@@ -30,19 +30,21 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItem, IWinFormsScreenMenuI
 
 	public WinFormsScreenMenuItem(string text, Type screenType, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool isStartScreen)
 		: base(text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
-		_screen = screenType;
+		ScreenDefinition = screenType == null ? null : new ApplicationScreenDefinition(screenType, text);
 	}
 
-	public virtual Type Screen {
-		get { return _screen; }
-		set { _screen = value; }
+	public virtual ApplicationScreenDefinition ScreenDefinition {
+		get => _screenDefinition;
+		set {
+			if (ReferenceEquals(_screenDefinition, value))
+				return;
+			if (Parent != null)
+				_screenDefinition?.RemoveActivator(this);
+			_screenDefinition = value;
+			if (Parent != null)
+				_screenDefinition?.AddActivator(this);
+		}
 	}
-
-	public virtual ScreenActivationMode? ActivationMode { get; set; }
-
-	public virtual string ScreenTitle { get; set; }
-
-	public virtual ScreenKind ScreenKind { get; set; }
 
 	public virtual bool IsDefault { get; set; }
 

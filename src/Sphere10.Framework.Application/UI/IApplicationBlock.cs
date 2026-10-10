@@ -12,7 +12,11 @@ namespace Sphere10.Framework.Application.UI;
 
 /// <summary>UI-independent application block metadata. Platform adapters retain ownership of presentation resources.</summary>
 public interface IApplicationBlock : IApplicationCommandProvider {
-	string Id => Name;
+	/// <summary>The application currently registering this block, or null when it is not registered.</summary>
+	IApplication Parent { get; set; }
+
+	/// <summary>The startup plugin that contributed this block, or null for a standalone block.</summary>
+	IApplicationPlugin Source { get; set; }
 
 	string Name { get; }
 
@@ -22,11 +26,15 @@ public interface IApplicationBlock : IApplicationCommandProvider {
 
 	IApplicationMenu[] IApplicationCommandProvider.Menus => Menus;
 
-	Type DefaultScreen { get; }
+	ApplicationScreenDefinition[] ScreenDefinitions { get; }
 
-	string DefaultScreenTitle => null;
+	ApplicationScreenDefinition DefaultScreenDefinition { get; }
+}
 
-	ScreenActivationMode? DefaultScreenActivationMode => null;
-
-	ScreenKind DefaultScreenKind => ScreenKind.Normal;
+public interface IApplicationBlock<out TMenu, out TItem> : IApplicationBlock, IApplicationCommandProvider<TMenu, TItem>
+	where TMenu : class, IApplicationMenu
+	where TItem : class, IApplicationMenuItem {
+	new TMenu[] Menus { get; }
+	IApplicationMenu[] IApplicationBlock.Menus => Menus;
+	IApplicationMenu[] IApplicationCommandProvider.Menus => Menus;
 }

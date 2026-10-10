@@ -6,19 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using System;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
@@ -53,7 +54,7 @@ public class ApplicationCommandStateTests {
 			)
 			.Build();
 		await using var provider = Services().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var registered = host.Blocks.Single();
 		Assert.That(registered.Menus.Single().Items.Select(item => item.Id), Is.EqualTo(new[] { "project", "browse" }));
@@ -78,7 +79,7 @@ public class ApplicationCommandStateTests {
 		Assert.That(repeated, Is.SameAs(first));
 		Assert.That(second, Is.Not.SameAs(first));
 		Assert.That(first.Parameters[nameof(ProjectScreen.ProjectId)], Is.EqualTo(projectId));
-		Assert.That(first.MenuItem.IsVisible, Is.False);
+		Assert.That(((BlazorApplicationScreenSession)first).MenuItem.IsVisible, Is.False);
 		Assert.That(host.Screens, Has.Length.EqualTo(2));
 	}
 
@@ -108,7 +109,7 @@ public class ApplicationCommandStateTests {
 			)
 			.Build();
 		await using var provider = Services().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var registered = host.Blocks.Single();
 		var boundary = registered.Menus.Single().Items.Single(item => item.Id == "boundary");
 		Assert.That(boundary, Is.Not.SameAs(separator));
@@ -153,7 +154,7 @@ public class ApplicationCommandStateTests {
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationShell.BlockId)] = "projects", [nameof(ApplicationShell.ScreenId)] = "project"
 			}));
-			Assert.That(host.ActiveScreen.MenuItem.Id, Is.EqualTo("project"));
+			Assert.That(host.ActiveScreen.MenuItemId, Is.EqualTo("project"));
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Project content"));
 			var header = Regex.Match(rendered.ToHtmlString(), "<header\\b.*?</header>", RegexOptions.Singleline).Value;
 			var sidebar = Regex.Match(rendered.ToHtmlString(), "<aside\\b.*?</aside>", RegexOptions.Singleline).Value;
@@ -184,9 +185,10 @@ public class ApplicationCommandStateTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
-		Task<bool> Execute() => resolveById ? host.ExecuteMenuItemAsync("projects", "save") : host.ExecuteMenuItemAsync(registered);
+		Task<bool> Execute() => resolveById ? hostUserInterface.ExecuteMenuItemAsync("projects", "save") : hostUserInterface.ExecuteMenuItemAsync(registered);
 
 		Assert.That(registered.IsEnabled, Is.False);
 		Assert.That(await Execute(), Is.False);
@@ -254,14 +256,15 @@ public class ApplicationCommandStateTests {
 			.Build();
 		group.Select += () => calls.Add("group");
 		await using var provider = Services().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(Array.Empty<IBlazorApplicationBlock>()), provider);
+		using var host = new BlazorApplicationScreenHost(Array.Empty<IBlazorApplicationBlock>(), provider);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationCommandBar bar = null;
 			var selected = 0;
 			var callback = EventCallback.Factory.Create<IBlazorApplicationMenuItem>(new object(), async item => {
 				selected++;
-				await host.ExecuteMenuItemAsync(item);
+				await hostUserInterface.ExecuteMenuItemAsync(item);
 			});
 			var rendered = await renderer.RenderComponentAsync<CommandBarHarness>(BarParameters(Array.Empty<IBlazorApplicationMenu>(), new[] { group },
 				component => bar = component, callback));

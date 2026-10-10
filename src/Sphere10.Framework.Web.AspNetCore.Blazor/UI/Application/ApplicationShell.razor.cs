@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,10 +39,16 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	private ElementReference _navigationToggle;
 	private bool _navigationOpen;
 	private bool _focusNavigationToggle;
+	private IDisposable _controllerScope;
 
 	[Inject] public IBlazorApplication Application { get; set; }
 
 	[Inject] public IBlazorApplicationScreenHost ScreenHost { get; set; }
+
+	private IUserInterfaceServices UserInterfaceServices => ScreenHost.UserInterfaceServices;
+
+	private IBlazorApplicationBlock ActiveBlock => ScreenHost.ActiveBlock;
+	private IBlazorApplicationBlock[] Blocks => Application.Blocks;
 
 	[Inject] public NavigationManager Navigation { get; set; }
 
@@ -85,6 +93,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 
 	protected override void OnInitialized() {
 		Application.Changed += OnHostChanged;
+		_controllerScope = ((IBlazorUserInterfaceServices)UserInterfaceServices).AttachController(this, action => InvokeAsync(action));
 	}
 
 	protected override async Task OnParametersSetAsync() {
@@ -113,8 +122,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		}
 
 		var block = string.IsNullOrEmpty(request.BlockId)
-			? ScreenHost.ActiveBlock ?? ScreenHost.Blocks.FirstOrDefault()
-			: ScreenHost.Blocks.FirstOrDefault(candidate => candidate.Id == request.BlockId);
+			? ActiveBlock ?? Blocks.FirstOrDefault()
+			: Blocks.FirstOrDefault(candidate => candidate.Id == request.BlockId);
 		try {
 			if (block == null) {
 				await ScreenHost.InitializeAsync(token);
@@ -127,7 +136,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 			if (existing != null) {
 				await ScreenHost.ShowScreenAsync(existing.Id, token);
 			} else if (!string.IsNullOrEmpty(request.ScreenId)) {
-				if (!block.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>().Any(item => item.Id == request.ScreenId)
+				if (!block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems).OfType<BlazorScreenMenuItem>().Any(item => item.Id == request.ScreenId)
+					&& !BlazorApplicationBlockSnapshot.IsDefinitionScreenId(block, request.ScreenId)
 					&& !(request.ScreenId == BlazorApplicationBlockSnapshot.DefaultScreenItemId && block.DefaultScreen != null)) {
 					await ScreenHost.InitializeAsync(token);
 					if (!_disposed && !token.IsCancellationRequested && version == _navigationVersion)
@@ -162,6 +172,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		_lifetimeCancellation.Dispose();
 		CancelRouteRequest();
 		Application.Changed -= OnHostChanged;
+		_controllerScope?.Dispose();
 	}
 
 	private void ToggleNavigation() => _navigationOpen = !_navigationOpen;
@@ -182,7 +193,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		if (ActivateBlockOnSelection) {
 			await RunInteractionAsync(async token => {
 				var session = await ScreenHost.ActivateBlockAsync(block.Id, token);
-				return session != null || ScreenHost.ActiveScreen == null && ScreenHost.ActiveBlock?.Id == block.Id;
+				return session != null || ScreenHost.ActiveScreen == null && ActiveBlock?.Id == block.Id;
 			}, false);
 			return;
 		}
@@ -197,26 +208,27 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		}
 	}
 
-	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) {
-		var block = ScreenHost.ActiveBlock;
-		return block == null ? Task.CompletedTask : RunInteractionAsync(token => ScreenHost.ExecuteMenuItemAsync(block.Id, item.Id, token), false);
+	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) => RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
+
+	private IBlazorApplicationMenu[] MergedMenus => Tools.UI.MergeApplicationMenus<IBlazorApplicationMenu, IBlazorApplicationMenuItem>(
+		(menu, items) => new BlazorApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
+		menu => menu.Id, item => item.Id, Tools.UI.GetCommandLayers(Application));
+
+	private IBlazorApplicationMenuItem[] MergedToolBarItems => Tools.UI.MergeApplicationToolBarItems<IBlazorApplicationMenuItem>(
+		item => item.Id, Tools.UI.GetCommandLayers(Application));
+
+	private string GetCommandRenderKey(IBlazorApplicationMenuItem item) {
+		var applicationItems = Application.Menus.SelectMany(menu => menu.Items).Concat(Application.ToolBarItems);
+		return (ContainsCommand(applicationItems, item) ? "application:" : "context:") + item.Id;
 	}
 
-	private IBlazorApplicationBlock CommandBlock => ScreenHost.ActiveScreen?.Block ?? ScreenHost.ActiveBlock;
-
-	private IBlazorApplicationMenu[] MergedMenus => Tools.UI.MergeMenus<IBlazorApplicationMenu, IBlazorApplicationMenuItem>(
-		(menu, items) => new BlazorApplicationMenu { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
-		Application.Menus, CommandBlock?.Menus ?? Array.Empty<IBlazorApplicationMenu>(),
-		ScreenHost.ActiveScreen?.Screen?.Menus ?? Array.Empty<IBlazorApplicationMenu>());
-
-	private IBlazorApplicationMenuItem[] MergedToolBarItems => Tools.UI.MergeMenuItems(
-		Application.ToolBarItems, CommandBlock?.ToolBarItems ?? Array.Empty<IBlazorApplicationMenuItem>(),
-		ScreenHost.ActiveScreen?.Screen?.ToolBarItems ?? Array.Empty<IBlazorApplicationMenuItem>());
+	private static bool ContainsCommand(IEnumerable<IBlazorApplicationMenuItem> items, IBlazorApplicationMenuItem command) =>
+		items.Any(item => ReferenceEquals(item, command) || item is BlazorApplicationMenuGroup group && ContainsCommand(group.Items, command));
 
 	/// <summary>Executes a custom navigation command through the shell's guarded interaction and browser-history path.</summary>
 	/// <remarks>Await this from custom sidebar controls. Successful commands close the navigation drawer and synchronize the active screen URL.</remarks>
 	public Task ExecuteCommandAsync(IBlazorApplicationMenuItem item) =>
-		RunInteractionAsync(token => ScreenHost.ExecuteMenuItemAsync(item, token), false);
+		RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
 
 	private Task CloseScreensAsync(Guid[] ids) => RunInteractionAsync(token => ScreenHost.CloseScreensAsync(ids, token), true);
 
@@ -261,10 +273,9 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		if (NavigationUriFactory == null) {
 			if (session != null)
 				target += $"?block={Uri.EscapeDataString(session.Block.Id)}&screen={Uri.EscapeDataString(session.MenuItem.Id)}&instance={session.Id:D}";
-			else if (ScreenHost.ActiveBlock != null)
-				target += $"?block={Uri.EscapeDataString(ScreenHost.ActiveBlock.Id)}";
+			else if (ActiveBlock != null)
+				target += $"?block={Uri.EscapeDataString(ActiveBlock.Id)}";
 		}
-		_lastRequest = (session?.Block.Id ?? ScreenHost.ActiveBlock?.Id, session?.MenuItem.Id, session?.Id);
 		if (!string.Equals(Navigation.Uri, target, StringComparison.Ordinal)) {
 			// This location reflects a transition already accepted by the host; do not run its leave guards twice.
 			_synchronizedLocation = target;

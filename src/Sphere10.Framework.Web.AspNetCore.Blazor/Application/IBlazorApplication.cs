@@ -11,37 +11,10 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>The circuit-local application aggregate over the existing retained-screen host.</summary>
-public interface IBlazorApplication : IApplication {
-	IBlazorApplicationScreenHost ScreenHost { get; }
-
-	new IBlazorPlugin[] Plugins => LoadedPlugins;
-
-	/// <summary>Compatibility alias for Plugins, including any implicit plugin containing standalone blocks.</summary>
-	IBlazorPlugin[] LoadedPlugins { get; }
-
-	new IBlazorPlugin ActivePlugin { get; }
-
+public interface IBlazorApplication : IApplication<IBlazorPlugin, IBlazorApplicationScreenHost>, IApplicationCommandProvider<IBlazorApplicationMenu, IBlazorApplicationMenuItem> {
 	new IBlazorApplicationBlock[] Blocks { get; }
 
-	new IBlazorApplicationBlock ActiveBlock { get; }
-
-	new IBlazorApplicationScreen ActiveScreen { get; }
-
-	new IBlazorApplicationMenu[] Menus { get; }
-
-	new IBlazorApplicationMenuItem[] ToolBarItems { get; }
-
-	IApplicationPlugin[] IApplication.Plugins => Plugins;
-
-	IApplicationPlugin IApplication.ActivePlugin => ActivePlugin;
-
+	#region Base Interface Bridges
 	IApplicationBlock[] IApplication.Blocks => Blocks;
-
-	IApplicationBlock IApplication.ActiveBlock => ActiveBlock;
-
-	IApplicationScreen IApplication.ActiveScreen => ActiveScreen;
-
-	IApplicationMenu[] IApplicationCommandProvider.Menus => Menus;
-
-	IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems => ToolBarItems;
+	#endregion
 }

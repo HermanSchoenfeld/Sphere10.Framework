@@ -6,15 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-
-using Sphere10.Framework.Application.UI;
-using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -25,7 +25,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(ScreenMode.MultiView)]
 	public async Task SelectingNavigationKeepsTheActiveScreenAndDoesNotRunItsGuardOrLifecycle(ScreenMode mode) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		await host.TrySetScreenModeAsync(mode);
 		var session = await host.ActivateScreenAsync("first", "single");
 		var guards = 0;
@@ -57,7 +57,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task NavigationSelectionDoesNotActivateDefaultsAndRejectsInvalidOrCancelledRequests() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		await host.SelectBlockAsync("first");
 		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
 		Assert.That(host.ActiveScreen, Is.Null);
@@ -73,7 +73,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task ClosingLastScreenKeepsTheBrowsedBlockAndUnregisteringItSelectsAnAvailableBlock() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		await host.SelectBlockAsync("second");
 		Assert.That(await host.CloseScreenAsync(session.Id), Is.True);
@@ -87,7 +87,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task ReturnedArraysCannotRemoveRegisteredBlocksOrOpenSessions() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		var blocks = host.Blocks;
 		var screens = host.OpenScreens;
@@ -104,7 +104,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task SingleInstanceIsRetainedAcrossBlocksAndMultipleInstancesAreIndependent() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var single = await host.ActivateScreenAsync("first", "single");
 		var component = new ProbeScreen();
 		await host.AttachScreenAsync(single.Id, component);
@@ -122,7 +122,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task HiddenAttachmentDoesNotActivateUntilShown() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var first = await host.ActivateScreenAsync("first", "single");
 		var second = await host.ActivateScreenAsync("first", "multiple");
 		var firstComponent = new ProbeScreen();
@@ -142,7 +142,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task GuardVetoPreservesSelectionAndOpenScreens() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		var component = new ProbeScreen { Guard = _ => Task.FromResult(false) };
 		await host.AttachScreenAsync(session.Id, component);
@@ -156,7 +156,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task GuardCancellationLeavesStateUnchangedAndReleasesTransitionGate() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		using var cancellation = new CancellationTokenSource();
 		var component = new ProbeScreen { Guard = _ => {
@@ -174,7 +174,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task OverlappingTransitionsWaitForTheCurrentGuard() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -197,7 +197,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task NavigationChecksHiddenScreensAsWellAsActiveScreen() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var first = await host.ActivateScreenAsync("first", "single");
 		var component = new ProbeScreen();
 		await host.AttachScreenAsync(first.Id, component);
@@ -213,7 +213,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task UnregisterBlockPreflightsEveryScreenBeforeRemovingAnySession() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var first = await host.ActivateScreenAsync("first", "multiple");
 		var second = await host.ActivateScreenAsync("first", "multiple");
 		var component = new OtherScreen { Guard = _ => Task.FromResult(false) };
@@ -233,7 +233,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task ClosingActiveScreenSelectsRetainedScreenWithoutDisposingComponents() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var first = await host.ActivateScreenAsync("first", "single");
 		var firstComponent = new ProbeScreen();
 		await host.AttachScreenAsync(first.Id, firstComponent);
@@ -262,13 +262,16 @@ public class ApplicationScreenHostTests {
 				})
 			)
 			.Build();
-		await using var provider = new ServiceCollection().AddSingleton<IBlazorApplicationBlockCatalog>(new BlazorApplicationBlockCatalog(new[] { block }))
-			.AddScoped<IBlazorApplicationScreenHost, BlazorApplicationScreenHost>().AddScoped<ActionState>().BuildServiceProvider();
+		var registrations = new ServiceCollection().AddSphere10Blazor();
+		registrations.AddSingleton<IBlazorApplicationBlock>(block);
+		registrations.AddScoped<ActionState>();
+		await using var provider = registrations.BuildServiceProvider();
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
 		var firstHost = firstScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstHostUserInterface = firstScope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var secondHost = secondScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
-		Assert.That(await firstHost.ExecuteMenuItemAsync("actions", "run").WaitAsync(TimeSpan.FromSeconds(5)), Is.True);
+		Assert.That(await firstHostUserInterface.ExecuteMenuItemAsync("actions", "run").WaitAsync(TimeSpan.FromSeconds(5)), Is.True);
 		Assert.That(firstScope.ServiceProvider.GetRequiredService<ActionState>().Calls, Is.EqualTo(1));
 		Assert.That(secondScope.ServiceProvider.GetRequiredService<ActionState>().Calls, Is.Zero);
 		Assert.That(firstHost.OpenScreens, Has.Length.EqualTo(1));
@@ -287,14 +290,15 @@ public class ApplicationScreenHostTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
-		Assert.That(async () => await host.ExecuteMenuItemAsync("actions", "run"), Throws.InstanceOf<InvalidOperationException>().With.Message.EqualTo(failure.Message));
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
+		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync("actions", "run"), Throws.InstanceOf<InvalidOperationException>().With.Message.EqualTo(failure.Message));
 	}
 
 	[Test]
 	public async Task DirtyNotificationReflectsAttachedStateAndDetachClearsIt() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		var component = new ProbeScreen();
 		await host.AttachScreenAsync(session.Id, component);
@@ -312,7 +316,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task FailedActivationDoesNotLeaveComponentAttached() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		var component = new ProbeScreen { Activation = _ => Task.FromException(new InvalidOperationException("Activation failed")) };
 		Assert.That(async () => await host.AttachScreenAsync(session.Id, component), Throws.InstanceOf<InvalidOperationException>());
@@ -325,7 +329,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task HostDisposalCancelsAnInFlightGuardWithoutCommittingNavigation() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		await host.AttachScreenAsync(session.Id, new ProbeScreen { Guard = async token => {
@@ -352,7 +356,7 @@ public class ApplicationScreenHostTests {
 				.AddActionItem("run", "Run", () => { })
 			)
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(CreateCatalog().Blocks.Append(actionBlock)), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks().Append(actionBlock), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		await host.ActivateBlockAsync("actions");
 		Assert.That(host.ActiveBlock.Id, Is.EqualTo("actions"));
@@ -363,7 +367,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public async Task SessionParametersCannotBeMutatedByConsumers() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateCatalog(), provider);
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		Assert.That(() => session.Parameters.Add("Message", "changed"), Throws.TypeOf<NotSupportedException>());
 	}
@@ -377,10 +381,10 @@ public class ApplicationScreenHostTests {
 			.WithName("Block")
 			.WithDefaultScreen<InitializingScreen>()
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var session = await host.ActivateBlockAsync("block");
 		var screen = new InitializingScreen();
-		var initialization = screen.InitializeAsync(host, session);
+		var initialization = screen.InitializeAsync(host, (BlazorApplicationScreenSession)session);
 		await screen.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
 		await screen.DisposeAsync();
 		screen.Release.SetResult();
@@ -389,7 +393,7 @@ public class ApplicationScreenHostTests {
 		Assert.That(screen.Disposals, Is.EqualTo(1));
 	}
 
-	private static BlazorApplicationBlockCatalog CreateCatalog() => new(new[] {
+	private static IBlazorApplicationBlock[] CreateBlocks() => new[] {
 		new BlazorApplicationBlockBuilder()
 			.WithId("first")
 			.WithName("First")
@@ -407,9 +411,13 @@ public class ApplicationScreenHostTests {
 				.AddScreenItem<ProbeScreen>("shared", "Shared", ScreenActivationMode.SingleInstance)
 			)
 			.Build()
-	});
+	};
 
 	public class ProbeScreen : ComponentBase, IBlazorApplicationScreen, IDisposable {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 		public bool HasUnsavedChanges { get; set; }
 
 		public Func<CancellationToken, Task<bool>> Guard { get; set; } = _ => Task.FromResult(true);

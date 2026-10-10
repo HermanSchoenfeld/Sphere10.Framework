@@ -102,7 +102,9 @@ public class ApplicationScreenPoliciesBrowserTests {
 		await note.FillAsync("Permanent draft");
 		var instance = await _page.Locator("[data-permanent-instance]").InnerTextAsync();
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }).ClickAsync();
+		await _page.WaitForFunctionAsync("() => document.querySelector('[role=tab][aria-selected=true]')?.textContent === 'Overview'");
 		await CloseAllAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }).WaitForAsync(new() { State = WaitForSelectorState.Detached });
 		await note.WaitForAsync();
 		Assert.That(await note.InputValueAsync(), Is.EqualTo("Permanent draft"));
 		Assert.That(await _page.GetByRole(AriaRole.Tab).CountAsync(), Is.EqualTo(1));

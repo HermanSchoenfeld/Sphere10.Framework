@@ -25,8 +25,6 @@ public abstract class ApplicationBlockSnapshotDecorator<TBlock, TMenu, TItem, TC
 	public virtual TMenu CreateMenu(TMenu menu) => InternalSnapshot.CreateMenu(menu);
 
 	public virtual TItem CreateItem(TItem item) => InternalSnapshot.CreateItem(item);
-
-	public virtual TItem GetDefaultScreen(TBlock block) => InternalSnapshot.GetDefaultScreen(block);
 }
 
 public abstract class ApplicationBlockSnapshotDecorator<TBlock, TMenu, TItem>

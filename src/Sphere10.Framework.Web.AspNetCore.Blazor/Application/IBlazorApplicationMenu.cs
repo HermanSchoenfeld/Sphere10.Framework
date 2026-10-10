@@ -10,10 +10,19 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IBlazorApplicationMenu : IApplicationMenu {
+public interface IBlazorApplicationMenu : IApplicationMenu<IBlazorApplicationMenuItem> {
+	new IBlazorApplicationBlock Parent { get; set; }
+
+	string Id => Text;
+
 	string Icon { get; }
 
-	new IBlazorApplicationMenuItem[] Items { get; }
+	#region Base Interface Bridges
 
-	IApplicationMenuItem[] IApplicationMenu.Items => Items;
+	IApplicationBlock IApplicationMenu.Parent {
+		get => Parent;
+		set => Parent = value == null ? null : Guard.ArgumentCast<IBlazorApplicationBlock>(value, nameof(value));
+	}
+
+	#endregion
 }

@@ -40,21 +40,20 @@ public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<WinForm
 		Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
 		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
 		return AddItem(new WinFormsScreenMenuItem(text, screenType, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
-			Id = text,
-			ScreenTitle = title
+			ScreenDefinition = new ApplicationScreenDefinition(screenType, title ?? text)
 		});
 	}
 
 	public WinFormsApplicationMenuBuilder AddScreenItem<TScreen>(string text, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false,
 		string title = null
-	) where TScreen : WinFormsApplicationScreen => AddScreenItem(text, typeof(TScreen), image16x16, showOnExplorerBar, showOnToolBar, isStartScreen, title);
+	)
+		where TScreen : WinFormsApplicationScreen => AddScreenItem(text, typeof(TScreen), image16x16, showOnExplorerBar, showOnToolBar, isStartScreen, title);
 
 	public WinFormsApplicationMenuBuilder AddActionItem(string text, Action action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false) {
 		Guard.ArgumentNotNull(text, nameof(text));
 		Guard.ArgumentNotNull(action, nameof(action));
 		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
 		return AddItem(new WinFormsActionMenuItem(text, image16x16, action) {
-			Id = text,
 			ShowOnExplorerBar = showOnExplorerBar,
 			ShowOnToolStrip = showOnToolBar,
 			ExecuteOnLoad = executeOnLoad
@@ -69,7 +68,6 @@ public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<WinForm
 		Guard.ArgumentNotNull(action, nameof(action));
 		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
 		return AddItem(new WinFormsActionMenuItem(text, image16x16, action) {
-			Id = text,
 			ShowOnExplorerBar = showOnExplorerBar,
 			ShowOnToolStrip = showOnToolBar,
 			ExecuteOnLoad = executeOnLoad
@@ -89,10 +87,6 @@ public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<WinForm
 		switch (propertyName) {
 			case nameof(Text):
 				_menu.Text = Text;
-				_menu.Id = Id;
-				break;
-			case nameof(Id):
-				_menu.Id = Id;
 				break;
 		}
 	}
@@ -102,7 +96,7 @@ public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<WinForm
 	protected override WinFormsApplicationMenu CreateMenu(IReadOnlyList<IWinFormsApplicationMenuItem> items) {
 		if (_menu != null)
 			return _menu;
-		_menu = new WinFormsApplicationMenu(Text) { Id = Id, Image32x32 = _image32x32, ShowInMenuStrip = _showInMenuStrip };
+		_menu = new WinFormsApplicationMenu(Text) { Image32x32 = _image32x32, ShowInMenuStrip = _showInMenuStrip };
 		foreach (var item in items)
 			_menu.AddItem(item);
 		return _menu;

@@ -10,11 +10,11 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public interface IBlockManager {
 
-	void RegisterBlock(IWinFormsApplicationBlock plugin);
+	void RegisterBlock(IWinFormsApplicationBlock block);
 
-	void UnregisterBlock(IWinFormsApplicationBlock plugin);
+	void UnregisterBlock(IWinFormsApplicationBlock block);
 
-	bool IsBlockRegistered(IWinFormsApplicationBlock plugin);
+	bool IsBlockRegistered(IWinFormsApplicationBlock block);
 
 	IWinFormsApplicationBlock[] RegisteredBlocks { get; }
 

@@ -8,21 +8,33 @@
 
 using Sphere10.Framework.Application.UI;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class MainForm : LiteMainForm {
+public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	private readonly List<ToolStripItem> _screenToolBarItems = new();
+	private readonly List<ToolStripItem> _screenMenuItems = new();
 	private ToolStripMenuItem? _screenMenu;
+	private bool _ownsScreenMenu;
 	private bool _screenToolBarVisible;
 
 	public MainForm() {
 		InitializeComponent();
+		HelpToolStripMenuItem = new ToolStripMenuItem("Help");
+		HelpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
+			_userguideToolStripMenuItem, _contextHelpToolStripMenuItem, toolStripSeparator1,
+			_requestAFeatureToolStripMenuItem, sendACommentToolStripMenuItem, reportABugToolStripMenuItem,
+			toolStripSeparator4, _aboutToolStripMenuItem
+		});
+		MenuStrip.Items.Add(HelpToolStripMenuItem);
 		ScreenHost = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill };
 		Controls.Add(ScreenHost);
 		ScreenHost.BringToFront();
@@ -55,23 +67,52 @@ public partial class MainForm : LiteMainForm {
 	protected virtual void OnActiveScreenChanging(WinFormsApplicationScreen? Screen) {
 		RestoreScreenToolBar();
 		if (_screenMenu != null) {
-			_screenMenu.DropDownItems.Clear();
-			MenuStrip.Items.Remove(_screenMenu);
-			_screenMenu.Dispose();
+			foreach (var item in _screenMenuItems)
+				_screenMenu.DropDownItems.Remove(item);
+			_screenMenuItems.Clear();
+			if (_ownsScreenMenu) {
+				MenuStrip.Items.Remove(_screenMenu);
+				_screenMenu.Dispose();
+			}
 			_screenMenu = null;
+			_ownsScreenMenu = false;
 		}
 	}
 
 	protected virtual void OnActiveScreenChanged(WinFormsApplicationScreen? Screen) {
+		MergeScreenMenu(Screen);
+		MergeScreenToolBar();
+	}
+
+	protected virtual void MergeScreenMenu(WinFormsApplicationScreen? Screen) {
 		if (Screen == null)
 			return;
 		if (Screen.ShowInApplicationMenuStrip) {
-			_screenMenu = new ToolStripMenuItem(Screen.ApplicationMenuStripText) { Tag = Screen };
-			_screenMenu.DropDownItems.AddRange(Screen.MenuItems);
-			var HelpIndex = HelpToolStripMenuItem == null ? -1 : MenuStrip.Items.IndexOf(HelpToolStripMenuItem);
-			MenuStrip.Items.Insert(HelpIndex < 0 ? MenuStrip.Items.Count : HelpIndex, _screenMenu);
+			_screenMenu = FindApplicationMenuHeader(Screen.ApplicationMenuStripText);
+			_ownsScreenMenu = _screenMenu == null;
+			if (_ownsScreenMenu) {
+				_screenMenu = new ToolStripMenuItem(Screen.ApplicationMenuStripText) { Tag = Screen };
+				var helpIndex = MenuStrip.Items.IndexOf(HelpToolStripMenuItem);
+				MenuStrip.Items.Insert(helpIndex < 0 ? MenuStrip.Items.Count : helpIndex, _screenMenu);
+			}
+			_screenMenuItems.AddRange(Screen.MenuItems);
+			_screenMenu.DropDownItems.AddRange(_screenMenuItems.ToArray());
+			KeepHelpMenuLast();
 		}
-		MergeScreenToolBar();
+	}
+
+	protected static string GetMenuCaptionKey(string caption) => (caption ?? string.Empty).Replace("&", string.Empty).Trim().ToUpperInvariant();
+
+	protected virtual ToolStripMenuItem FindApplicationMenuHeader(string caption) => MenuStrip.Items.OfType<ToolStripMenuItem>()
+		.FirstOrDefault(item => GetMenuCaptionKey(item.Text) == GetMenuCaptionKey(caption));
+
+	protected virtual void KeepHelpMenuLast() {
+		if (HelpToolStripMenuItem == null || HelpToolStripMenuItem.IsDisposed || !MenuStrip.Items.Contains(HelpToolStripMenuItem))
+			return;
+		if (MenuStrip.Items.IndexOf(HelpToolStripMenuItem) == MenuStrip.Items.Count - 1)
+			return;
+		MenuStrip.Items.Remove(HelpToolStripMenuItem);
+		MenuStrip.Items.Add(HelpToolStripMenuItem);
 	}
 
 	protected void RestoreScreenToolBar() {
@@ -138,6 +179,27 @@ public partial class MainForm : LiteMainForm {
 	#endregion
 
 	#region IUserInterfaceServices Overrides
+
+	event EventHandlerEx IUserInterfaceServices.Changed {
+		add => ScreenHost.Changed += value;
+		remove => ScreenHost.Changed -= value;
+	}
+
+	IApplicationScreenHost IUserInterfaceServices.ScreenHost => ScreenHost;
+
+	public virtual async Task<bool> ExecuteMenuItemAsync(IApplicationMenuItem item, CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		var nativeItem = Guard.ArgumentCast<IWinFormsApplicationMenuItem>(item, nameof(item));
+		if (nativeItem is IWinFormsScreenMenuItem screenItem) {
+			var block = screenItem.Parent?.Parent ?? ScreenHost.GetDefinitionOwner(screenItem.ScreenDefinition);
+			Guard.Argument(block != null && ScreenHost.Blocks.Contains(block, ReferenceEqualityComparer.Instance), nameof(item), "The screen command's block is not registered.");
+			if (await ScreenHost.ActivateScreenAsync(block, screenItem, cancellationToken) == null)
+				return false;
+		}
+		if (nativeItem is IWinFormsLinkMenuItem link)
+			link.OnSelect(this);
+		return true;
+	}
 
 	public override string Status {
 		get => _statusLabel.Text;

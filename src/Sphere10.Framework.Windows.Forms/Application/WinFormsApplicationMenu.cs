@@ -11,7 +11,7 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationMenu : ApplicationMenu<IWinFormsApplicationMenuItem>, IWinFormsApplicationMenu {
+public class WinFormsApplicationMenu : ApplicationMenuBase<IWinFormsApplicationMenuItem>, IWinFormsApplicationMenu {
 	public WinFormsApplicationMenu()
 		: this(string.Empty) {
 	}
@@ -39,7 +39,10 @@ public class WinFormsApplicationMenu : ApplicationMenu<IWinFormsApplicationMenuI
 
 	public bool ShowInMenuStrip { get; set; }
 
-	public virtual IWinFormsApplicationBlock Parent { get; set; }
+	public new virtual IWinFormsApplicationBlock Parent {
+		get => (IWinFormsApplicationBlock)base.Parent;
+		set => base.Parent = value;
+	}
 
 	public override IWinFormsApplicationMenuItem[] Items => base.Items;
 
@@ -47,9 +50,12 @@ public class WinFormsApplicationMenu : ApplicationMenu<IWinFormsApplicationMenuI
 
 	public override void AddItem(IWinFormsApplicationMenuItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
-		if (item is WinFormsScreenMenuItem && item.Parent == null)
-			item.Parent = this;
 		base.AddItem(item);
+		if (Parent is WinFormsApplicationBlock block && item is IScreenMenuItem screen) {
+			block.AddScreenDefinition(screen.ScreenDefinition);
+			if (item is WinFormsScreenMenuItem { IsDefault: true })
+				block.DefaultScreenDefinition ??= screen.ScreenDefinition;
+		}
 	}
 
 	public virtual void Dispose() {

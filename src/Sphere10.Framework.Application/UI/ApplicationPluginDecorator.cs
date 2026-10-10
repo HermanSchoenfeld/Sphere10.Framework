@@ -11,7 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Forwards plugin definitions and startup lifetime without taking separate ownership.</summary>
-public abstract class ApplicationPluginDecorator<TConcrete> : IApplicationPlugin where TConcrete : IApplicationPlugin {
+public abstract class ApplicationPluginDecorator<TConcrete> : IApplicationPlugin
+	where TConcrete : IApplicationPlugin {
 	public virtual event EventHandlerEx Loaded {
 		add => InternalPlugin.Loaded += value;
 		remove => InternalPlugin.Loaded -= value;

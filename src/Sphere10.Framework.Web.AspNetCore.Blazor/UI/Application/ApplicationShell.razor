@@ -32,7 +32,7 @@
 			}
 		</div>
 		<div class="sphere10-command-chrome">
-			<ApplicationCommandBar Menus="MergedMenus" ToolBarItems="MergedToolBarItems" ToolBarContent="ToolBarContent" OnSelect="ExecuteCommandAsync" />
+			<ApplicationCommandBar Menus="MergedMenus" ToolBarItems="MergedToolBarItems" ToolBarContent="ToolBarContent" CommandKeySelector="GetCommandRenderKey" OnSelect="ExecuteCommandAsync" />
 		</div>
 	</header>
 	<div class="sphere10-workspace">
@@ -44,12 +44,12 @@
 				<div class="sphere10-sidebar-header">@SidebarHeader</div>
 			}
 			<div class="sphere10-sidebar-menus">
-				<ApplicationMenus Block="ScreenHost.ActiveBlock" ActiveItemId="@(NavigationActiveItemId ?? (ScreenHost.ActiveScreen?.Block.Id == ScreenHost.ActiveBlock?.Id ? ScreenHost.ActiveScreen?.MenuItem.Id : null))"
+				<ApplicationMenus Block="ActiveBlock" ActiveItemId="@(NavigationActiveItemId ?? (ScreenHost.ActiveScreen?.Block.Id == ActiveBlock?.Id ? ScreenHost.ActiveScreen?.MenuItem.Id : null))"
 					NavigationPalette="true" OnSelect="ExecuteMenuItemAsync" />
 				@Sidebar
 			</div>
 			<div class="sphere10-block-dock">
-				<ApplicationBlockMenu Compact="true" Blocks="ScreenHost.Blocks" ActiveBlock="ScreenHost.ActiveBlock" OnSelect="SelectBlockAsync" />
+				<ApplicationBlockMenu Compact="true" Blocks="Blocks" ActiveBlock="ActiveBlock" OnSelect="SelectBlockAsync" />
 			</div>
 		</aside>
 		<main id="@($"{_navigationId}-content")" class="sphere10-content" tabindex="-1">

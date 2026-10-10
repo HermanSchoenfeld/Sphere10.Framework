@@ -6,7 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sphere10.Framework.Application.UI;
@@ -15,33 +14,34 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Projects a circuit's live host and startup plugin definitions without loading or owning those plugins again.</summary>
 public class BlazorApplication : ApplicationBase, IBlazorApplication {
-	private readonly IBlazorPlugin[] _plugins;
-	private readonly IBlazorPlugin _implicitPlugin;
+	private readonly IBlazorPlugin[] _loadedPlugins;
 
-	public BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<IBlazorPlugin> plugins) {
-		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
-		Guard.ArgumentNotNull(plugins, nameof(plugins));
-		_plugins = Tools.UI.ValidatePlugins(plugins).Cast<IBlazorPlugin>().ToArray();
-		ScreenHost = screenHost;
-		_implicitPlugin = new StandalonePlugin(Tools.UI.GetImplicitPluginName(_plugins), GetStandaloneBlocks);
-		ScreenHost.Changed += OnChanged;
+	/// <summary>Projects plugins already loaded successfully during startup; construction does not load or unload plugins.</summary>
+	public BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<IBlazorPlugin> loadedPlugins)
+		: this(screenHost, CaptureLoadedPlugins(loadedPlugins)) {
 	}
 
-	public IBlazorApplicationScreenHost ScreenHost { get; }
+	internal BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> pluginRegistrations) {
+		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
+		var registrations = Tools.UI.ValidatePluginRegistrations(pluginRegistrations);
+		_loadedPlugins = registrations.Select(registration => registration.Plugin).ToArray();
+		ScreenHost = screenHost;
+		var sources = registrations.SelectMany(registration => registration.Blocks.Cast<IBlazorApplicationBlock>()
+			.Select(block => (block.Id, registration.Plugin))).ToDictionary(contribution => contribution.Id, contribution => contribution.Plugin);
+		foreach (var block in ScreenHost.AvailableBlocks)
+			if (sources.TryGetValue(block.Id, out var plugin))
+				Guard.Argument(block.Source == null || ReferenceEquals(block.Source, plugin), nameof(pluginRegistrations), "The block already has another source plugin.");
+		foreach (var block in ScreenHost.AvailableBlocks)
+			if (sources.TryGetValue(block.Id, out var plugin))
+				block.Source = plugin;
+		ObserveScreenHost();
+	}
 
-	/// <summary>Registered definitions plus the circuit's implicit plugin while standalone blocks exist.</summary>
-	public override IBlazorPlugin[] Plugins => _implicitPlugin.Blocks.Length == 0 ? Tools.Array.Clone(_plugins) : _plugins.Append(_implicitPlugin).ToArray();
+	public override IBlazorApplicationScreenHost ScreenHost { get; }
 
-	/// <summary>Compatibility alias for Plugins. Reading it never loads plugin services again.</summary>
-	public IBlazorPlugin[] LoadedPlugins => Plugins;
-
-	public override IBlazorPlugin ActivePlugin => (IBlazorPlugin)base.ActivePlugin;
+	public override IBlazorPlugin[] LoadedPlugins => Tools.Array.Clone(_loadedPlugins);
 
 	public override IBlazorApplicationBlock[] Blocks => ScreenHost.Blocks;
-
-	public override IBlazorApplicationBlock ActiveBlock => ScreenHost.ActiveBlock;
-
-	public override IBlazorApplicationScreen ActiveScreen => ScreenHost.ActiveScreen?.Screen;
 
 	public override bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
 
@@ -63,29 +63,11 @@ public class BlazorApplication : ApplicationBase, IBlazorApplication {
 		base.SetToolBarItems(definitions.Cast<IBlazorApplicationMenuItem>().Select(BlazorApplicationBlockSnapshot.CreateItem));
 	}
 
-	protected override void FreeManagedResources() {
-		ScreenHost.Changed -= OnChanged;
-		base.FreeManagedResources();
-	}
+	protected override void OnScreenHostChanged() => OnChanged();
 
-	private IBlazorApplicationBlock[] GetStandaloneBlocks() {
-		var ownedIds = _plugins.SelectMany(plugin => plugin.Blocks).Select(block => block.Id).ToHashSet(StringComparer.Ordinal);
-		return ScreenHost.Blocks.Where(block => !ownedIds.Contains(block.Id)).ToArray();
-	}
-
-	/// <summary>Groups the host's otherwise unowned blocks without loading services or owning their lifecycle.</summary>
-	private sealed class StandalonePlugin : ApplicationPlugin, IBlazorPlugin {
-		private readonly Func<IBlazorApplicationBlock[]> _getBlocks;
-
-		public StandalonePlugin(string name, Func<IBlazorApplicationBlock[]> getBlocks)
-			: base(name, Array.Empty<IApplicationBlock>()) {
-			_getBlocks = getBlocks;
-		}
-
-		public new IBlazorApplicationBlock[] Blocks => _getBlocks();
-
-		public IServiceProvider IoCContainer => null;
-
-		IApplicationBlock[] IApplicationPlugin.Blocks => Blocks;
+	private static ApplicationPluginRegistration<IBlazorPlugin>[] CaptureLoadedPlugins(IEnumerable<IBlazorPlugin> loadedPlugins) {
+		Guard.ArgumentNotNull(loadedPlugins, nameof(loadedPlugins));
+		return Tools.UI.ValidatePlugins(loadedPlugins)
+			.Select(plugin => new ApplicationPluginRegistration<IBlazorPlugin>((IBlazorPlugin)plugin, plugin.Blocks)).ToArray();
 	}
 }

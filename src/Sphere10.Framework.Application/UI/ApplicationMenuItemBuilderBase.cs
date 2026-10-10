@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,11 +14,12 @@ namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Shared screen/action selection and validation for platform menu item builders.</summary>
 public abstract class ApplicationMenuItemBuilderBase {
-	private string _id;
-
-	protected string Id => _id ?? ScreenType?.Name ?? Text;
+	private ApplicationScreenDefinition _screenDefinition;
 
 	protected string Text { get; private set; }
+
+	protected ApplicationScreenDefinition ScreenDefinition => ScreenType == null ? null :
+		_screenDefinition ??= new ApplicationScreenDefinition(ScreenType, ScreenTitle ?? Text, ActivationMode, ScreenKind);
 
 	protected Type ScreenType { get; private set; }
 
@@ -32,48 +31,53 @@ public abstract class ApplicationMenuItemBuilderBase {
 
 	protected bool IsDefault { get; private set; }
 
-	protected IReadOnlyDictionary<string, object> Parameters { get; private set; } = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
-
 	protected Action Action { get; private set; }
 
 	protected Action<IUserInterfaceServices> UIAction { get; private set; }
 
 	protected Func<IServiceProvider, CancellationToken, Task> AsyncAction { get; private set; }
 
-	protected void SetId(string id) {
-		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
-		_id = id;
-	}
-
 	protected void SetText(string text) {
 		ValidateText(text);
 		Text = text;
+		if (ScreenTitle == null)
+			_screenDefinition = null;
 	}
 
 	protected void SetScreenType(Type screenType) {
 		ValidateScreenType(screenType);
 		Guard.Ensure(Action == null && UIAction == null && AsyncAction == null, "A menu item cannot contain both a screen and an action.");
 		ScreenType = screenType;
+		_screenDefinition = null;
 	}
 
-	protected void SetScreenTitle(string title) => ScreenTitle = title;
+	protected void SetScreenTitle(string title) {
+		ScreenTitle = title;
+		_screenDefinition = null;
+	}
 
 	protected void SetActivationMode(ScreenActivationMode activationMode) {
 		Tools.UI.ValidateActivationMode(activationMode);
 		ActivationMode = activationMode;
+		_screenDefinition = null;
 	}
 
 	protected void SetScreenKind(ScreenKind screenKind) {
 		Tools.UI.ValidateScreenKind(screenKind);
 		ScreenKind = screenKind;
+		_screenDefinition = null;
+	}
+
+	protected void SetScreenDefinition(ApplicationScreenDefinition definition) {
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		SetScreenType(definition.ScreenType);
+		ScreenTitle = definition.Title;
+		ActivationMode = definition.ActivationMode;
+		ScreenKind = definition.ScreenKind;
+		_screenDefinition = definition;
 	}
 
 	protected void SetIsDefault(bool isDefault) => IsDefault = isDefault;
-
-	protected void SetParameters(IReadOnlyDictionary<string, object> parameters) {
-		Guard.ArgumentNotNull(parameters, nameof(parameters));
-		Parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(parameters));
-	}
 
 	protected void SetAction(Action action) {
 		Guard.ArgumentNotNull(action, nameof(action));
@@ -112,12 +116,8 @@ public abstract class ApplicationMenuItemBuilderBase {
 }
 
 /// <summary>Shared fluent screen and action configuration. Platform factories validate the item kinds they support.</summary>
-public abstract class ApplicationMenuItemBuilderBase<TSelf> : ApplicationMenuItemBuilderBase where TSelf : class {
-	public TSelf WithId(string id) {
-		SetId(id);
-		return (TSelf)(object)this;
-	}
-
+public abstract class ApplicationMenuItemBuilderBase<TSelf> : ApplicationMenuItemBuilderBase
+	where TSelf : class {
 	public TSelf WithText(string text) {
 		SetText(text);
 		return (TSelf)(object)this;
@@ -125,6 +125,11 @@ public abstract class ApplicationMenuItemBuilderBase<TSelf> : ApplicationMenuIte
 
 	public TSelf WithScreen(Type screenType) {
 		SetScreenType(screenType);
+		return (TSelf)(object)this;
+	}
+
+	public TSelf WithScreen(ApplicationScreenDefinition definition) {
+		SetScreenDefinition(definition);
 		return (TSelf)(object)this;
 	}
 
@@ -158,7 +163,8 @@ public abstract class ApplicationMenuItemBuilderBase<TSelf> : ApplicationMenuIte
 		return (TSelf)(object)this;
 	}
 
-	public TSelf WithScreen<TScreen>() where TScreen : IApplicationScreen => WithScreen(typeof(TScreen));
+	public TSelf WithScreen<TScreen>()
+		where TScreen : IApplicationScreen => WithScreen(typeof(TScreen));
 
 	public TSelf AsSingleInstance() => WithActivationMode(ScreenActivationMode.SingleInstance);
 

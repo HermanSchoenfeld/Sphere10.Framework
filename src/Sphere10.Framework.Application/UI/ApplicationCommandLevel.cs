@@ -8,8 +8,9 @@
 
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class ApplicationBlockCatalogBase<TBlock> : IApplicationBlockCatalog<TBlock> where TBlock : class, IApplicationBlock {
-	public abstract TBlock[] Blocks { get; }
-
-	public abstract TBlock Get(string id);
+/// <summary>The lifetime and composition scope of a menu or toolbar contribution.</summary>
+public enum ApplicationCommandLevel {
+	Application,
+	Block,
+	Screen
 }

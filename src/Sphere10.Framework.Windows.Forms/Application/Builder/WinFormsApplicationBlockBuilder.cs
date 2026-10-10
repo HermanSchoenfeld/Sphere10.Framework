@@ -9,12 +9,14 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFormsApplicationBlockBuilder, IWinFormsApplicationMenu, WinFormsApplicationMenuBuilder, WinFormsApplicationBlock> {
 	private WinFormsApplicationBlock _block;
+	private ApplicationScreenDefinition _generatedDefaultScreenDefinition;
 	private Image _image32x32;
 	private Image _image8x8;
 	private string _helpFile;
@@ -60,6 +62,10 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 		if (_block == null)
 			return base.Build();
 		Guard.Ensure(!string.IsNullOrEmpty(_block.Name), "Block name is required");
+		ResolveDefaultScreen();
+		foreach (var definition in ScreenDefinitions)
+			_block.AddScreenDefinition(definition);
+		Tools.UI.GetScreenDefinitions(new IApplicationBlock[] { _block });
 		return _block;
 	}
 
@@ -69,24 +75,25 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 		switch (propertyName) {
 			case nameof(Name):
 				_block.Name = Name;
-				_block.Id = Id;
-				break;
-			case nameof(Id):
-				_block.Id = Id;
 				break;
 			case nameof(Position):
 				_block.Position = Position;
 				break;
-			case nameof(DefaultScreen):
-				_block.DefaultScreen = DefaultScreen;
-				_block.DefaultScreenTitle = DefaultScreenTitle;
-				_block.DefaultScreenActivationMode = DefaultScreenActivationMode;
-				_block.DefaultScreenKind = DefaultScreenKind;
+			case nameof(DefaultScreenDefinition):
+				UpdateDefaultScreenDefinition();
 				break;
 		}
 	}
 
-	protected override void OnMenuAdded(IWinFormsApplicationMenu menu) => _block?.AddMenu(menu);
+	protected override void OnMenuAdded(IWinFormsApplicationMenu menu) {
+		_block?.AddMenu(menu);
+		if (_generatedDefaultScreenDefinition != null && IsMenuDefinition(_generatedDefaultScreenDefinition))
+			_generatedDefaultScreenDefinition = null;
+	}
+
+	protected override IEnumerable<ApplicationScreenDefinition> GetDefaultScreenDefinitions() =>
+		base.GetDefaultScreenDefinitions().Concat((_block?.ScreenDefinitions ?? Array.Empty<ApplicationScreenDefinition>())
+			.Where(definition => !ReferenceEquals(definition, _generatedDefaultScreenDefinition)));
 
 	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
 
@@ -94,15 +101,24 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 		if (_block != null)
 			return _block;
 		_block = new WinFormsApplicationBlock(Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null) {
-			Id = Id,
 			Position = Position,
-			DefaultScreen = DefaultScreen,
-			DefaultScreenTitle = DefaultScreenTitle,
-			DefaultScreenActivationMode = DefaultScreenActivationMode,
-			DefaultScreenKind = DefaultScreenKind
+			DefaultScreenDefinition = DefaultScreenDefinition
 		};
 		foreach (var menu in menus)
 			_block.AddMenu(menu);
+		if (DefaultScreenDefinition != null)
+			UpdateDefaultScreenDefinition();
 		return _block;
+	}
+
+	private bool IsMenuDefinition(ApplicationScreenDefinition definition) =>
+		_block != null && definition != null && definition.Activators.Any(item => ReferenceEquals(item.Parent?.Parent, _block));
+
+	private void UpdateDefaultScreenDefinition() {
+		var previousGenerated = _generatedDefaultScreenDefinition;
+		_block.DefaultScreenDefinition = DefaultScreenDefinition;
+		_generatedDefaultScreenDefinition = IsTypeBasedDefault && !IsMenuDefinition(DefaultScreenDefinition) ? DefaultScreenDefinition : null;
+		if (previousGenerated != null && !ScreenDefinitions.Any(definition => ReferenceEquals(definition, previousGenerated)))
+			_block.RemoveScreenDefinition(previousGenerated);
 	}
 }

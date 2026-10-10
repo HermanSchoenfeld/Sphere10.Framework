@@ -6,12 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -50,7 +51,7 @@ public class BlazorApplicationScreenContractTests {
 			.WithName("Workspace")
 			.WithDefaultScreen(screen.GetType())
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var session = await host.ActivateBlockAsync("workspace");
 		await host.AttachScreenAsync(session.Id, (IBlazorApplicationScreen)screen);
 
@@ -91,6 +92,10 @@ public class BlazorApplicationScreenContractTests {
 	}
 
 	public abstract class ProbeScreen : ComponentBase {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 		public bool IsDirty { get; set; }
 
 		public bool AllowDeactivation { get; set; } = true;

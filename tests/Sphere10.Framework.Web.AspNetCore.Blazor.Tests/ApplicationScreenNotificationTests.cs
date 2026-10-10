@@ -6,10 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -22,13 +23,13 @@ public class ApplicationScreenNotificationTests {
 		using var host = CreateHost(provider);
 		var originalSession = await host.ActivateBlockAsync("workspace");
 		await using var original = new NotificationScreen();
-		await original.InitializeAsync(host, originalSession);
+		await original.InitializeAsync(host, (BlazorApplicationScreenSession)originalSession);
 		Assert.That(await host.CloseScreenAsync(originalSession.Id), Is.True);
 		Assert.That(original.Disposals, Is.Zero, "The renderer may not yet have disposed a closed component.");
 
 		var replacementSession = await host.ActivateBlockAsync("workspace");
 		await using var replacement = new NotificationScreen();
-		await replacement.InitializeAsync(host, replacementSession);
+		await replacement.InitializeAsync(host, (BlazorApplicationScreenSession)replacementSession);
 		var notifications = 0;
 		host.Changed += () => notifications++;
 
@@ -51,7 +52,7 @@ public class ApplicationScreenNotificationTests {
 		using var host = CreateHost(provider);
 		var session = await host.ActivateBlockAsync("workspace");
 		await using var screen = new NotificationScreen { AllowDeactivation = false };
-		await screen.InitializeAsync(host, session);
+		await screen.InitializeAsync(host, (BlazorApplicationScreenSession)session);
 		Assert.That(await host.CloseScreenAsync(session.Id), Is.False);
 		var notifications = 0;
 		host.Changed += () => notifications++;
@@ -69,7 +70,7 @@ public class ApplicationScreenNotificationTests {
 			.WithName("Workspace")
 			.WithDefaultScreen<NotificationScreen>()
 			.Build();
-		return new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		return new BlazorApplicationScreenHost(new[] { block }, provider);
 	}
 
 	public sealed class NotificationScreen : BlazorApplicationScreen {

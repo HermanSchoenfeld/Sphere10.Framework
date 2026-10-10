@@ -21,16 +21,16 @@ namespace Sphere10.Framework.Windows.Forms;
 
 // TODO: Add icons
 // TODO: Add menus
-// TODO: Add plugin stuff to menus
+// TODO: Add block stuff to menus
 
 public partial class BlockMainForm : MainForm, IBlockManager {
 	/// <summary>Signals block registration or active application selection changes on the UI thread.</summary>
 	public event EventHandlerEx ApplicationChanged;
 
-	private IWinFormsApplicationBlock _activeBlock;
 	private IWinFormsApplicationMenu[] _applicationMenus = Array.Empty<IWinFormsApplicationMenu>();
 	private IWinFormsApplicationMenuItem[] _applicationToolBarItems = Array.Empty<IWinFormsApplicationMenuItem>();
 	private readonly List<ToolStripMenuItem> _applicationMenuHeaders = new();
+	private readonly List<ToolStripItem> _applicationMenuItems = new();
 	private readonly SidebarToggleButton _navigationPaneToggleButton;
 	private readonly (Color BackColor, Color ForeColor) _defaultDockPreviewColors;
 	private TaskPane? _navigationThemePane;
@@ -41,7 +41,6 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	private int _navigationPaneDpi = 96;
 	private bool _updatingNavigationPaneWidth;
 	private bool _registeringBlocks;
-	private readonly List<IWinFormsApplicationBlock> _screenStartupBlocks = new();
 
 	#region Form activation/destruction
 
@@ -49,12 +48,10 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		InitializeComponent();
 
 		// initialize local members
-		PluginBindings = new Dictionary<IWinFormsApplicationBlock, TaskPane>();
-		MenuBindings = new Dictionary<IWinFormsApplicationMenu, Expando>();
+		BlockBindings = new Dictionary<IWinFormsApplicationBlock, TaskPane>(ReferenceEqualityComparer.Instance);
+		MenuBindings = new Dictionary<IWinFormsApplicationMenu, Expando>(ReferenceEqualityComparer.Instance);
 		MenuItemBindings = new Dictionary<Control, IWinFormsApplicationMenuItem>();
 		ToolStripBindings = new Dictionary<ToolStripItem, IWinFormsApplicationMenuItem>();
-		Plugins = new List<IWinFormsApplicationBlock>();
-		ActivePlugin = null;
 		_navigationPaneWidth = _splitContainer.SplitterDistance;
 		_navigationPaneDpi = DeviceDpi;
 		_navigationPaneMinimumContentWidth = _splitContainer.Panel2MinSize;
@@ -62,6 +59,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		_splitContainer.SizeChanged += NavigationPaneSizeChanged;
 		_defaultDockPreviewColors = (ScreenHost.TabControl.DockPreviewBackColor, ScreenHost.TabControl.DockPreviewForeColor);
 		_applicationBar.ButtonPressed += NavigationSelectionChanged;
+		ScreenHost.Changed += ScreenHostChanged;
 		Disposed += NavigationThemeChanged;
 
 		_navigationPaneToggleButton = new SidebarToggleButton {
@@ -124,30 +122,26 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
-	public IDictionary<IWinFormsApplicationBlock, TaskPane> PluginBindings { get; set; }
+	public IDictionary<IWinFormsApplicationBlock, TaskPane> BlockBindings { get; set; }
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IWinFormsApplicationBlock ActiveBlock {
-		get => _activeBlock;
+		get => ScreenHost.ActiveBlock;
 		set {
-			if (ReferenceEquals(_activeBlock, value))
+			if (ReferenceEquals(ScreenHost.ActiveBlock, value))
 				return;
-			_activeBlock = value;
-			OnApplicationChanged();
+			ScreenHost.SelectBlock(value);
 		}
 	}
 
-	public IWinFormsApplicationBlock[] Blocks { get; set; }
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public IWinFormsApplicationBlock[] Blocks => RegisteredBlocks;
 
 	private IDictionary<IWinFormsApplicationMenu, Expando> MenuBindings { get; set; }
 
 	private IDictionary<Control, IWinFormsApplicationMenuItem> MenuItemBindings { get; set; }
 
 	private IDictionary<ToolStripItem, IWinFormsApplicationMenuItem> ToolStripBindings { get; set; }
-
-	private IList<IWinFormsApplicationBlock> Plugins { get; set; }
-
-	private IWinFormsApplicationBlock ActivePlugin { get; set; }
 
 	private bool HasUsableNavigationPaneBounds => WindowState != FormWindowState.Minimized &&
 		Math.Min(ClientSize.Width, _splitContainer.Width) - _splitContainer.SplitterWidth - Math.Round(_navigationPaneMinimumContentWidth) >= _splitContainer.Panel1MinSize;
@@ -156,25 +150,25 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Block management
 
-	public virtual void RegisterBlock(IWinFormsApplicationBlock plugin) {
+	public virtual void RegisterBlock(IWinFormsApplicationBlock block) {
 		if (_registeringBlocks)
-			RegisterBlockCore(plugin);
+			RegisterBlockCore(block);
 		else
-			RegisterBlocks(_screenStartupBlocks.Append(plugin), false);
+			RegisterBlocks(ScreenHost.StartupBlocks.Append(block), false);
 	}
 
-	private void RegisterBlockCore(IWinFormsApplicationBlock plugin) {
+	private void RegisterBlockCore(IWinFormsApplicationBlock block) {
 		#region Pre-conditions
 
-		Debug.Assert(plugin != null);
-		Debug.Assert(!PluginBindings.ContainsKey(plugin));
+		Debug.Assert(block != null);
+		Debug.Assert(!BlockBindings.ContainsKey(block));
 
 		#endregion
 
-		ScreenHost.RegisterScreenTypes(plugin);
-		this.Text = plugin.Name;
+		ScreenHost.RegisterScreenTypes(block);
+		this.Text = block.Name;
 
-		TaskPane taskPane = CreateApplicationBlockPane(plugin);
+		TaskPane taskPane = CreateApplicationBlockPane(block);
 		taskPane.AutoScroll = true;
 		taskPane.Dock = DockStyle.Fill;
 		taskPane.Size = new Size(
@@ -184,25 +178,17 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		_applicationBar.AddItem(
 			new ApplicationBar.Item(
 				taskPane,
-				plugin.Image32x32,
-				plugin.Name
+				block.Image32x32,
+				block.Name
 			)
 		);
 
-		Plugins.Add(plugin);
-		PluginBindings.Add(plugin, taskPane);
+		BlockBindings.Add(block, taskPane);
 		UpdateNavigationTheme();
 
 		if (ActiveBlock == null) {
-			ActiveBlock = plugin;
+			ActiveBlock = block;
 		}
-		if (plugin.ShowInMenuStrip) {
-			RegisterBlockInMenu(plugin);
-		}
-		RebuildApplicationMenus();
-		RebuildToolBar();
-
-		OnApplicationChanged();
 	}
 
 	/// <summary>Preserves startup declaration order independently of the navigation's Position ordering.</summary>
@@ -219,25 +205,21 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 						RegisterBlockCore(block);
 				}
 			}
-			var hasDefault = Tools.UI.GetDefaultScreen(Tools.UI.GetScreenDefinitions(ordered)) != null;
+			var hasDefault = Tools.UI.GetDefaultScreen(ordered) != null;
 			foreach (var item in definitions.SelectMany(block => block.Menus).SelectMany(menu => menu.Items)) {
 				if (item.ExecuteOnLoad && (item is not IWinFormsScreenMenuItem || !hasDefault))
 					ExecuteMenuItem(item);
 			}
 		});
-		if (accepted) {
-			_screenStartupBlocks.Clear();
-			_screenStartupBlocks.AddRange(ordered);
-		}
 		return accepted;
 	}
 
 	public virtual void UnregisterBlock(IWinFormsApplicationBlock Block) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
-		Guard.Argument(PluginBindings.ContainsKey(Block), nameof(Block), "Block is not registered");
+		Guard.Argument(BlockBindings.ContainsKey(Block), nameof(Block), "Block is not registered");
+		using var update = ScreenHost.EnterPresentationScope();
 		if (!ScreenHost.UnregisterScreenTypes(Block))
 			return;
-		_screenStartupBlocks.Remove(Block);
 		foreach (var Binding in MenuItemBindings.Where(Pair => ReferenceEquals(Pair.Value.Parent?.Parent, Block)).ToArray()) {
 			MenuItemBindings.Remove(Binding.Key);
 			Binding.Key.Dispose();
@@ -248,33 +230,29 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 		foreach (var Item in MenuStrip.Items.Cast<ToolStripItem>().Where(Item => ReferenceEquals(Item.Tag, Block)).ToArray())
 			Item.Dispose();
-		foreach (var Item in _applicationBar.Items.Where(Item => ReferenceEquals(Item.MenuControl, PluginBindings[Block])))
+		foreach (var Item in _applicationBar.Items.Where(Item => ReferenceEquals(Item.MenuControl, BlockBindings[Block])))
 			_applicationBar.RemoveItem(Item);
 		foreach (var Menu in Block.Menus)
 			MenuBindings.Remove(Menu);
-		PluginBindings[Block].Dispose();
-		PluginBindings.Remove(Block);
-		Plugins.Remove(Block);
+		BlockBindings[Block].Dispose();
+		BlockBindings.Remove(Block);
 		UpdateNavigationTheme();
 		if (ReferenceEquals(ActiveBlock, Block))
-			ActiveBlock = ActiveScreen?.ApplicationBlock ?? Plugins.FirstOrDefault();
-		RebuildApplicationMenus();
+			ActiveBlock = ActiveScreen?.Block ?? ScreenHost.Blocks.FirstOrDefault();
 		Block.Dispose();
-		RebuildToolBar();
-		OnApplicationChanged();
 	}
-	public virtual bool IsBlockRegistered(IWinFormsApplicationBlock plugin) {
+	public virtual bool IsBlockRegistered(IWinFormsApplicationBlock block) {
 
 		#region Pre-conditions
 
-		Debug.Assert(plugin != null);
+		Debug.Assert(block != null);
 
 		#endregion
 
-		return PluginBindings.ContainsKey(plugin);
+		return BlockBindings.ContainsKey(block);
 	}
 
-	public virtual IWinFormsApplicationBlock[] RegisteredBlocks => Plugins.ToArray();
+	public virtual IWinFormsApplicationBlock[] RegisteredBlocks => ScreenHost.Blocks;
 
 	public virtual void ExecuteMenuItem(IWinFormsApplicationMenuItem menuItem) {
 		try {
@@ -291,7 +269,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	private void ExecuteViewMenuItem(IWinFormsScreenMenuItem ViewItem) {
-		if (ScreenHost.ActivateScreen(ViewItem.Parent.Parent, ViewItem.Screen, ViewItem.ScreenTitle ?? ViewItem.Text) != null)
+		if (ScreenHost.ActivateScreen(ViewItem.Parent.Parent, ViewItem.ScreenDefinition) != null)
 			ExecuteLinkMenuItem(ViewItem);
 	}
 
@@ -392,16 +370,16 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	void expando_SizeChanged(object sender, EventArgs e) {
 	}
 
-	private TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock plugin) {
+	private TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
 		TaskPane taskPane = new TaskPane();
 		taskPane.AutoScroll = true;
 		taskPane.AutoScrollMargin = new System.Drawing.Size(12, 12);
 		taskPane.Dock = System.Windows.Forms.DockStyle.Fill;
 		taskPane.Location = new System.Drawing.Point(0, 0);
-		taskPane.Name = plugin.Name + " TaskPane";
+		taskPane.Name = block.Name + " TaskPane";
 		taskPane.TabIndex = 0;
 		taskPane.Text = "N/A";
-		foreach (IWinFormsApplicationMenu menu in plugin.Menus) {
+		foreach (IWinFormsApplicationMenu menu in block.Menus) {
 			taskPane.Expandos.Add(
 				CreateMenu(menu)
 			);
@@ -443,29 +421,70 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		Guard.Argument(items.OfType<IWinFormsScreenMenuItem>().All(item => item.Parent?.Parent != null), nameof(menus), "Application screen commands must belong to a block menu.");
 		_applicationMenus = Tools.Array.Clone(menus);
 		_applicationToolBarItems = Tools.Array.Clone(toolBarItems);
-		RebuildApplicationMenus();
-		RebuildToolBar();
+		using var rendering = this.EnterRenderingScope();
+		UpdateApplicationCommands();
 	}
 
-	private void RebuildApplicationMenus() {
-		foreach (var header in _applicationMenuHeaders) {
-			foreach (var item in header.DropDownItems.Cast<ToolStripItem>().ToArray())
-				ToolStripBindings.Remove(item);
-			header.Dispose();
+	/// <summary>Rebuilds the visible application and contextual commands once after a completed host transition.</summary>
+	protected virtual void UpdateApplicationCommands() {
+		var layers = GetApplicationCommandLayers();
+		RebuildApplicationMenus(layers);
+		RebuildToolBar(layers);
+	}
+
+	private ApplicationCommandLayer[] GetApplicationCommandLayers() {
+		var layers = new List<ApplicationCommandLayer> {
+			new(ApplicationCommandLevel.Application, new NativeCommandProvider(_applicationMenus, _applicationToolBarItems))
+		};
+		var block = ActiveScreen?.Block ?? ActiveBlock;
+		if (block != null) {
+			var menus = block.ShowInMenuStrip ? block.Menus.Where(menu => menu.ShowInMenuStrip).ToArray() : Array.Empty<IWinFormsApplicationMenu>();
+			var toolbar = block.ShowInToolStrip ? block.Menus.SelectMany(menu => menu.Items).OfType<IWinFormsLinkMenuItem>()
+				.Where(item => item.ShowOnToolStrip).Cast<IWinFormsApplicationMenuItem>() : Enumerable.Empty<IWinFormsApplicationMenuItem>();
+			layers.Add(new ApplicationCommandLayer(ApplicationCommandLevel.Block, new NativeCommandProvider(menus, block.ToolBarItems.Concat(toolbar).ToArray())));
 		}
-		_applicationMenuHeaders.Clear();
-		foreach (var menu in _applicationMenus) {
-			var header = new ToolStripMenuItem(menu.Text);
+		if (ActiveScreen is IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> screen)
+			layers.Add(new ApplicationCommandLayer(ApplicationCommandLevel.Screen, screen));
+		return layers.ToArray();
+	}
+
+	private void RebuildApplicationMenus(ApplicationCommandLayer[] layers) {
+		foreach (var item in _applicationMenuItems) {
+			ToolStripBindings.Remove(item);
+			item.Dispose();
+		}
+		_applicationMenuItems.Clear();
+		foreach (var header in _applicationMenuHeaders.Where(header => header.IsDisposed || header.DropDownItems.Count == 0).ToArray()) {
+			header.Dispose();
+			_applicationMenuHeaders.Remove(header);
+		}
+		var menus = Tools.UI.MergeApplicationMenus<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem>(
+			(source, items) => new NativeMenuProjection(source, items), menu => GetMenuCaptionKey(menu.Text),
+			item => GetMenuCaptionKey(item.Title), layers);
+		foreach (var menu in menus) {
+			var header = FindApplicationMenuHeader(menu.Text);
+			if (header == null) {
+				header = new ToolStripMenuItem(menu.Text);
+				_applicationMenuHeaders.Add(header);
+				InsertMenuItemBeforeHelpMenu(header);
+			}
+			var hasExistingItems = header.DropDownItems.Count > 0;
+			var insertionIndex = 0;
 			foreach (var item in menu.Items.Cast<IWinFormsLinkMenuItem>()) {
 				var button = new ToolStripMenuItem(item.Text, item.Image16x16, ToolStripItemActivate) {
 					Enabled = IsApplicationCommandAvailable(item)
 				};
-				header.DropDownItems.Add(button);
+				header.DropDownItems.Insert(insertionIndex++, button);
+				_applicationMenuItems.Add(button);
 				ToolStripBindings.Add(button, item);
 			}
-			_applicationMenuHeaders.Add(header);
-			InsertMenuItemBeforeHelpMenu(header);
+			if (hasExistingItems && insertionIndex > 0) {
+				var separator = new ToolStripSeparator();
+				header.DropDownItems.Insert(insertionIndex, separator);
+				_applicationMenuItems.Add(separator);
+			}
 		}
+		KeepHelpMenuLast();
 	}
 
 	private bool IsApplicationCommandAvailable(IWinFormsLinkMenuItem item) =>
@@ -480,44 +499,6 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		ToolStripBindings.Add(button, item);
 	}
 
-	private void RegisterBlockInMenu(IWinFormsApplicationBlock block) {
-		ToolStripMenuItem blockHeader = new ToolStripMenuItem(
-			block.Name
-		);
-
-		blockHeader.Tag = block;
-
-		// register each menu in block
-		foreach (IWinFormsApplicationMenu menu in block.Menus) {
-
-			if (menu.ShowInMenuStrip) {
-
-				ToolStripMenuItem menuHeader = new ToolStripMenuItem(menu.Text);
-				menuHeader.Tag = menu;
-				foreach (IWinFormsApplicationMenuItem item in menu.Items) {
-					IWinFormsLinkMenuItem linkItem = item as IWinFormsLinkMenuItem;
-					if (linkItem.ShowOnExplorerBar) {
-						ToolStripMenuItem newItem = new ToolStripMenuItem(
-							linkItem.Text,
-							linkItem.Image16x16,
-							ToolStripItemActivate
-						);
-						int index = menuHeader.DropDownItems.Add(newItem);
-						menuHeader.DropDownItems[index].Tag = item;
-						ToolStripBindings.Add(
-							newItem,
-							item
-						);
-					}
-				}
-				blockHeader.DropDownItems.Add(menuHeader);
-			}
-		}
-
-		// insert the block menu before the help menu
-		InsertMenuItemBeforeHelpMenu(blockHeader);
-	}
-
 	private void ToolStripItemActivate(object sender, EventArgs e) {
 		if (sender is ToolStripItem) {
 			ToolStripItem stripItem = sender as ToolStripItem;
@@ -530,7 +511,9 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
-	private void RebuildToolBar() {
+	private void RebuildToolBar() => RebuildToolBar(GetApplicationCommandLayers());
+
+	private void RebuildToolBar(ApplicationCommandLayer[] layers) {
 		RestoreScreenToolBar();
 		ToolStrip.SuspendLayout();
 		using var Layout = Tools.Scope.ExecuteOnDispose(() => ToolStrip.ResumeLayout());
@@ -546,30 +529,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		#region Add standard buttons
 
 		ToolStrip.Items.Add(_navigationPaneToggleButton);
-		foreach (var item in _applicationToolBarItems.Cast<IWinFormsLinkMenuItem>())
+		foreach (var item in Tools.UI.MergeApplicationToolBarItems<IWinFormsApplicationMenuItem>(item => GetMenuCaptionKey(item.Title), layers).Cast<IWinFormsLinkMenuItem>())
 			AddToolBarItem(item, IsApplicationCommandAvailable(item));
-
-		#endregion
-
-		#region Add screen list buttons
-
-		foreach (IWinFormsApplicationBlock block in Plugins) {
-			if (block.ShowInToolStrip) {
-				if (ToolStrip.Items.Count > 0) {
-					ToolStrip.Items.Add(new ToolStripSeparator());
-				}
-				foreach (IWinFormsApplicationMenu menu in block.Menus) {
-					foreach (IWinFormsApplicationMenuItem item in menu.Items) {
-						if (item is IWinFormsLinkMenuItem) {
-							IWinFormsLinkMenuItem linkItem = item as IWinFormsLinkMenuItem;
-							if (linkItem.ShowOnToolStrip) {
-								AddToolBarItem(linkItem);
-							}
-						}
-					}
-				}
-			}
-		}
 
 		#endregion
 
@@ -612,14 +573,11 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	protected override void OnActiveScreenChanged(WinFormsApplicationScreen? Screen) {
 		if (Screen != null) {
-			ActiveBlock = Screen.ApplicationBlock;
+			ActiveBlock = Screen.Block;
 			if (Screen.DisplayMode == ScreenDisplayMode.Maximized || Screen.DisplayMode == ScreenDisplayMode.FilledAndMaximized)
 				WindowState = FormWindowState.Maximized;
 		}
-		UpdateNavigationPane(Screen);
-		RebuildToolBar();
-		base.OnActiveScreenChanged(Screen);
-		OnApplicationChanged();
+		MergeScreenMenu(Screen);
 	}
 
 	protected override bool ProcessCmdKey(ref Message Message, Keys KeyData) {
@@ -782,7 +740,25 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region ApplicationBar Handlers
 
-	private void NavigationSelectionChanged(ApplicationBar Source, ApplicationBar.Item Button) => UpdateNavigationTheme();
+	private void NavigationSelectionChanged(ApplicationBar source, ApplicationBar.Item button) {
+		var block = BlockBindings.FirstOrDefault(binding => ReferenceEquals(binding.Value, button.MenuControl)).Key;
+		if (block != null)
+			ScreenHost.SelectBlock(block);
+		UpdateNavigationTheme();
+	}
+
+	private void ScreenHostChanged() {
+		if (IsDisposed || Disposing)
+			return;
+		if (ActiveBlock != null && BlockBindings.TryGetValue(ActiveBlock, out var pane)) {
+			var selected = _applicationBar.Items.FirstOrDefault(item => ReferenceEquals(item.MenuControl, pane));
+			if (selected != null && !ReferenceEquals(selected, _applicationBar.SelectedItem))
+				_applicationBar.SelectedItem = selected;
+		}
+		UpdateNavigationPane(ActiveScreen);
+		UpdateApplicationCommands();
+		OnApplicationChanged();
+	}
 
 	private void NavigationThemeChanged(object? Sender, EventArgs Args) => UpdateNavigationTheme();
 
@@ -818,25 +794,34 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		return (Luminance + 0.05) / 0.05 >= 1.05 / (Luminance + 0.05) ? Color.Black : Color.White;
 	}
 
-	private void _applicationBar_ButtonPressed(ApplicationBar source, ApplicationBar.Item button) {
-		// purpose here is to set ActivePlugin to current Plugin visible in application bar
-		// current taskpane on application bar is current active view
-		if (_applicationBar.ApplicationBarControl != null) {
-			TaskPane pane = (TaskPane)_applicationBar.ApplicationBarControl;
-			foreach (Control control in PluginBindings.Values) {
-				if (pane == control) {
-					foreach (IWinFormsApplicationBlock block in PluginBindings.Keys) {
-						if (PluginBindings[block] == control) {
-							ActiveBlock = block;
-							break;
-						}
-					}
-					break;
-				}
-			}
+	#endregion
+
+	private sealed class NativeCommandProvider : IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
+		public NativeCommandProvider(IWinFormsApplicationMenu[] menus, IWinFormsApplicationMenuItem[] toolBarItems) {
+			Menus = menus;
+			ToolBarItems = toolBarItems;
 		}
+
+		public IWinFormsApplicationMenu[] Menus { get; }
+		public IWinFormsApplicationMenuItem[] ToolBarItems { get; }
 	}
 
-	#endregion
+	private sealed class NativeMenuProjection : IWinFormsApplicationMenu {
+		private readonly IWinFormsApplicationMenu _source;
+		private readonly IWinFormsApplicationMenuItem[] _items;
+
+		public NativeMenuProjection(IWinFormsApplicationMenu source, IWinFormsApplicationMenuItem[] items) {
+			_source = source;
+			_items = Tools.Array.Clone(items);
+			Parent = source.Parent;
+		}
+
+		public string Text => _source.Text;
+		public Image Image32x32 => _source.Image32x32;
+		public bool ShowInMenuStrip => _source.ShowInMenuStrip;
+		public IWinFormsApplicationBlock Parent { get; set; }
+		public IWinFormsApplicationMenuItem[] Items => Tools.Array.Clone(_items);
+		public void Dispose() { }
+	}
 
 }

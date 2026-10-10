@@ -195,7 +195,7 @@ public class ActionMenuOwnerTests {
 		Assert.That(notifications, Is.EqualTo(1));
 	}
 
-	private sealed class LegacyLinkMenuItem : WinFormsApplicationMenuItem, IWinFormsLinkMenuItem {
+	private sealed class LegacyLinkMenuItem : WinFormsApplicationMenuItemBase, IWinFormsLinkMenuItem {
 		public string Text => "Legacy link";
 
 		public int SelectionCount { get; private set; }

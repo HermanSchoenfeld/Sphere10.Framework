@@ -21,6 +21,7 @@ using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -28,10 +29,11 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationCommandRenderingTests {
 	[Test]
-	public async Task SwitchingScreensRestoresBroaderCommandsWithoutDuplicationOrLostSubscriptions() {
+	public async Task ApplicationCommandsStayVisibleAlongsideScreenCommandsWithTheSameId() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var hostUserInterface = provider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
 		var calls = 0;
 		var applicationSave = new BlazorActionMenuItem { Id = "save", Title = "Application save", Action = () => calls++ };
@@ -42,17 +44,67 @@ public class ApplicationCommandRenderingTests {
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
 			var screen = (CommandScreen)first.Screen;
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Screen save").Count, Is.EqualTo(2));
-			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("Application save"));
-			await host.ExecuteMenuItemAsync(screen.ToolBarItems.Single());
+			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Application save").Count, Is.EqualTo(2));
+			await hostUserInterface.ExecuteMenuItemAsync(application.ToolBarItems.Single());
+			Assert.That(calls, Is.EqualTo(1));
+			Assert.That(screen.Saves, Is.Zero);
+			await hostUserInterface.ExecuteMenuItemAsync(screen.ToolBarItems.Single());
 			Assert.That(screen.Saves, Is.EqualTo(1));
-			Assert.That(calls, Is.Zero);
+			Assert.That(calls, Is.EqualTo(1));
 			await host.ActivateScreenAsync("test", "two");
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Application save").Count, Is.EqualTo(2));
 			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("Screen save"));
 			await host.ShowScreenAsync(first.Id);
-			await host.ExecuteMenuItemAsync(screen.ToolBarItems.Single());
+			await hostUserInterface.ExecuteMenuItemAsync(screen.ToolBarItems.Single());
 			Assert.That(screen.Saves, Is.EqualTo(2), "Returning to the screen must not duplicate command subscriptions.");
 			Assert.That(first.Screen, Is.SameAs(screen));
+		});
+	}
+
+	[Test]
+	public async Task ApplicationCommandExecutesWhenThereIsNoActiveBlockOrScreen() {
+		var services = new ServiceCollection().AddLogging().AddSphere10Blazor();
+		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/application"));
+		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
+		await using var provider = services.BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var calls = 0;
+		application.SetToolBarItems(new[] { new BlazorActionMenuItem { Id = "run", Title = "Run application command", Action = () => calls++ } });
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
+			Assert.That(rendered.ToHtmlString(), Does.Contain("Run application command"));
+			Assert.That(host.ActiveBlock, Is.Null);
+			Assert.That(host.ActiveScreen, Is.Null);
+			using var shell = new ApplicationShell { Application = application, ScreenHost = host, Navigation = provider.GetRequiredService<NavigationManager>() };
+			await shell.ExecuteCommandAsync(application.ToolBarItems.Single());
+			Assert.That(calls, Is.EqualTo(1));
+		});
+	}
+
+	[Test]
+	public async Task DuplicateApplicationAndScreenGroupsKeepIndependentRenderIdentityAndActions() {
+		await using var provider = Services().BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var calls = 0;
+		var action = new BlazorActionMenuItem { Id = "save", Title = "Application child", Action = () => calls++ };
+		application.SetToolBarItems(new[] { new BlazorApplicationMenuGroup { Id = "group", Title = "Application group", Items = new[] { action } } });
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var session = await host.ActivateScreenAsync("test", "one");
+			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
+			var screen = (CommandScreen)session.Screen;
+			screen.UseCommandGroup = true;
+			host.NotifyScreenChanged(session);
+			Assert.That(rendered.ToHtmlString(), Does.Contain("Application group").And.Contain("Screen group"));
+			var appGroup = (BlazorApplicationMenuGroup)application.ToolBarItems.Single();
+			var screenGroup = (BlazorApplicationMenuGroup)screen.ToolBarItems.Single();
+			await host.UserInterfaceServices.ExecuteMenuItemAsync(appGroup.Items.Single());
+			await host.UserInterfaceServices.ExecuteMenuItemAsync(screenGroup.Items.Single());
+			Assert.That(calls, Is.EqualTo(1));
+			Assert.That(screen.Saves, Is.EqualTo(1));
 		});
 	}
 
@@ -196,18 +248,24 @@ public class ApplicationCommandRenderingTests {
 
 	public class CommandScreen : BlazorApplicationScreen {
 		private readonly BlazorActionMenuItem _save;
+		private readonly BlazorApplicationMenuGroup _group;
+		private readonly BlazorApplicationMenu _menu;
 
 		public CommandScreen() {
 			_save = new BlazorActionMenuItem { Id = "save", Title = "Screen save", Action = () => Saves++ };
+			_group = new BlazorApplicationMenuGroup { Id = "group", Title = "Screen group", Items = new[] { _save } };
+			_menu = new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { _save } };
 		}
 
 		public int Saves { get; private set; }
 
 		public int Disposals { get; private set; }
 
-		public override IBlazorApplicationMenu[] Menus => new[] { new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { _save } } };
+		public bool UseCommandGroup { get; set; }
 
-		public override IBlazorApplicationMenuItem[] ToolBarItems => new[] { _save };
+		public override IBlazorApplicationMenu[] Menus => new[] { _menu };
+
+		public override IBlazorApplicationMenuItem[] ToolBarItems => UseCommandGroup ? new IBlazorApplicationMenuItem[] { _group } : new[] { _save };
 
 		protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "Command screen");
 

@@ -17,6 +17,7 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
@@ -37,10 +38,17 @@ public static class IServiceCollectionExtensions {
 		services.TryAddTransient(typeof(Wizard.IBlazorWizardBuilder<>), typeof(Wizard.BlazorWizardBuilder<>));
 		services.TryAddScoped<Modal.ModalService>();
 		services.TryAddScoped<Modal.ViewService>();
-		services.TryAddSingleton<IBlazorApplicationBlockCatalog, BlazorApplicationBlockCatalog>();
-		services.TryAddSingleton<IApplicationBlockCatalog<IApplicationBlock>>(provider => provider.GetRequiredService<IBlazorApplicationBlockCatalog>());
-		services.TryAddScoped<IBlazorApplicationScreenHost, BlazorApplicationScreenHost>();
-		services.TryAddScoped<IBlazorApplication, BlazorApplication>();
+		services.TryAddScoped<IBlazorApplicationScreenHost>(provider => new BlazorApplicationScreenHost(provider.GetServices<IBlazorApplicationBlock>(), provider));
+		services.TryAddScoped<IApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
+		services.TryAddScoped<IApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
+		services.TryAddScoped<ISingleApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
+		services.TryAddScoped<ISingleApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
+		services.TryAddScoped<IMultiApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
+		services.TryAddScoped<IMultiApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
+		services.TryAddScoped<IBlazorUserInterfaceServices>(provider => new BlazorUserInterfaceServices(provider.GetRequiredService<IBlazorApplicationScreenHost>(), provider));
+		services.TryAddScoped<IUserInterfaceServices>(provider => provider.GetRequiredService<IBlazorUserInterfaceServices>());
+		services.TryAddScoped<IBlazorApplication>(provider => new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+			provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>()));
 		services.TryAddScoped<IApplication>(provider => provider.GetRequiredService<IBlazorApplication>());
 		services.TryAddScoped<IThemeService, ThemeService>();
 		return services;
@@ -52,7 +60,8 @@ public static class IServiceCollectionExtensions {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		services.AddSphere10Blazor();
 		services.Replace(ServiceDescriptor.Scoped<IBlazorApplication>(provider => {
-			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(), provider.GetServices<IBlazorPlugin>());
+			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>());
 			try {
 				configure(application);
 				return application;
@@ -95,10 +104,14 @@ public static class IServiceCollectionExtensions {
 		// Load hooks can finish definitions, attach menu subscribers, or add other block registrations.
 		var blocks = GetValidatedPluginBlocks(services, plugin);
 		services.AddSphere10Blazor();
-		foreach (var block in blocks)
+		foreach (var block in blocks.OrderBy(block => block.Position))
 			services.AddApplicationBlock(block);
 		services.AddSingleton(plugin);
 		services.AddSingleton<IApplicationPlugin>(plugin);
+		// Publish successful startup membership only after loading, validation and every contributed block registration.
+		foreach (var block in blocks)
+			block.Source = plugin;
+		services.AddSingleton(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<IApplicationBlock>().ToArray()));
 		return services;
 	}
 
@@ -131,14 +144,13 @@ public static class IServiceCollectionExtensions {
 	}
 
 	private static IReadOnlyList<IBlazorApplicationBlock> GetValidatedPluginBlocks(IServiceCollection services, IBlazorPlugin plugin) {
-		var registeredPlugins = services.Where(descriptor => descriptor.ServiceType == typeof(IBlazorPlugin))
-			.Select(descriptor => descriptor.ImplementationInstance).OfType<IBlazorPlugin>();
-		Tools.UI.ValidatePlugins(registeredPlugins.Append(plugin));
-		var blocks = new BlazorApplicationBlockCatalog(plugin.Blocks).Blocks;
+		var registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>))
+			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IBlazorPlugin>>();
+		var blocks = BlazorApplicationBlockSnapshot.CreateBlocks(plugin.Blocks, orderByPosition: false);
+		Tools.UI.ValidatePluginRegistrations(registrations.Append(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<IApplicationBlock>().ToArray())));
 		var existingBlocks = services.Where(descriptor => descriptor.ServiceType == typeof(IBlazorApplicationBlock))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<IBlazorApplicationBlock>();
-		_ = new BlazorApplicationBlockCatalog(existingBlocks.Concat(blocks));
+		_ = BlazorApplicationBlockSnapshot.CreateBlocks(existingBlocks.Concat(blocks));
 		return blocks;
 	}
 }
-

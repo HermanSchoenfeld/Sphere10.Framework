@@ -6,20 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
 
@@ -41,8 +42,8 @@ public class ApplicationCommandScopeTests {
 			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "tools", "inspect", "help" }));
 			Assert.That(bar.Menus.Count(menu => menu.Id == "file"), Is.EqualTo(1));
 			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item.Id),
-				Is.EqualTo(new[] { "common-open", "save", "export", "pipe-file" }));
-			Assert.That(bar.ToolBarItems.Select(item => item.Title), Is.EqualTo(new[] { "Common tool", "Pipe save", "Pipe calculator" }));
+				Is.EqualTo(new[] { "common-open", "save", "export", "pipe-file", "export", "save" }));
+			Assert.That(bar.ToolBarItems.Select(item => item.Title), Is.EqualTo(new[] { "Common tool", "Common save", "Pipe calculator", "Pipe save" }));
 			Assert.That(Header(rendered.ToHtmlString()), Does.Not.Contain("Internal commands").And.Not.Contain("Hidden pipe registration"));
 
 			var admin = await host.ActivateScreenAsync("administration", "admin-screen");
@@ -57,8 +58,9 @@ public class ApplicationCommandScopeTests {
 			Assert.That(host.ActiveScreen, Is.SameAs(pipe));
 			Assert.That(host.Screens, Has.Length.EqualTo(2));
 			Assert.That(host.Screens.Single(session => session.Id == admin.Id), Is.SameAs(admin));
-			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Count(item => item.Id == "save"), Is.EqualTo(1));
-			Assert.That(bar.ToolBarItems.Select(item => item.Title), Is.EqualTo(new[] { "Common tool", "Pipe save", "Pipe calculator" }));
+			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.Id == "save").Select(item => item.Title),
+				Is.EqualTo(new[] { "Common save", "Pipe save" }));
+			Assert.That(bar.ToolBarItems.Select(item => item.Title), Is.EqualTo(new[] { "Common tool", "Common save", "Pipe calculator", "Pipe save" }));
 		});
 	}
 
@@ -73,15 +75,16 @@ public class ApplicationCommandScopeTests {
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
 			var bar = provider.GetRequiredService<CommandCapture>().Bar;
 			var file = bar.Menus.Single(menu => menu.Id == "file");
-			var export = (BlazorApplicationMenuGroup)file.Items.Single(item => item.Id == "export");
+			var export = (BlazorApplicationMenuGroup)file.Items.Single(item => item.Id == "export" && item.Title == "Pipe export");
+			Assert.That(file.Items.Where(item => item.Id == "export").Select(item => item.Title), Is.EqualTo(new[] { "Common export", "Pipe export" }));
 			Assert.That(export.Title, Is.EqualTo("Pipe export"));
 			Assert.That(export.Items.Single().Id, Is.EqualTo("formats"));
 			Assert.That(((BlazorApplicationMenuGroup)application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "export")).Items.Single().Id,
 				Is.EqualTo("common-report"), "Merging a narrower group must not mutate the application definition.");
 
 			await DispatchAsync(bar, "ToggleMenu", "menu:file");
-			await DispatchAsync(bar, "ToggleSubmenu", "menu:file/export");
-			await DispatchAsync(bar, "ToggleSubmenu", "menu:file/export/formats");
+			await DispatchAsync(bar, "ToggleSubmenu", "menu:file/context%3Aexport");
+			await DispatchAsync(bar, "ToggleSubmenu", "menu:file/context%3Aexport/context%3Aformats");
 			Assert.That(Header(rendered.ToHtmlString()), Does.Contain("Route CSV").And.Not.Contain("Internal export").And.Not.Contain("Hidden pipe registration"));
 			Assert.That(export.Items.OfType<BlazorApplicationMenuGroup>().Single().Items, Has.Length.EqualTo(2), "Visibility must not remove registered children.");
 

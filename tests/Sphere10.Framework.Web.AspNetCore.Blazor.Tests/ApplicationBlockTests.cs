@@ -6,16 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-
-using Sphere10.Framework.Application.UI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -36,24 +36,26 @@ public class ApplicationBlockTests {
 	}
 
 	[Test]
-	public void CatalogCopiesMutableRegistrationCollectionsAndParameters() {
+	public void HostCopiesMutableRegistrationCollectionsAndParameters() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
 		var items = new IBlazorApplicationMenuItem[] {
 			new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen), Parameters = parameters }
 		};
 		var menus = new IBlazorApplicationMenu[] { new BlazorApplicationMenu { Id = "menu", Text = "Menu", Items = items } };
 		var blocks = new List<IBlazorApplicationBlock> { new BlazorApplicationBlock { Id = "block", Title = "Block", Menus = menus } };
-		var catalog = new BlazorApplicationBlockCatalog(blocks);
+		using var metadataHost = new BlazorApplicationScreenHost(blocks, provider);
 		parameters["Message"] = "Changed";
 		items[0] = null;
 		menus[0] = null;
 		blocks.Clear();
-		catalog.Blocks[0] = null;
-		catalog.Get("block").Menus[0].Items[0] = null;
+		metadataHost.AvailableBlocks[0] = null;
+		metadataHost.AvailableBlocks.Single().Menus[0].Items[0] = null;
 
-		var block = catalog.Get("block");
+		var block = metadataHost.AvailableBlocks.Single();
 		var screen = (BlazorScreenMenuItem)block.Menus.Single().Items.Single();
-		Assert.That(catalog.Blocks, Has.Length.EqualTo(1));
+		Assert.That(metadataHost.AvailableBlocks, Has.Length.EqualTo(1));
 		Assert.That(screen.Parameters["Message"], Is.EqualTo("Original"));
 		Assert.That(() => ((IDictionary<string, object>)screen.Parameters).Add("New", "value"), Throws.TypeOf<NotSupportedException>());
 	}
@@ -108,6 +110,8 @@ public class ApplicationBlockTests {
 	[TestCase("menu")]
 	[TestCase("item")]
 	public void DuplicateStableIdsAreRejected(string duplicateKind) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
 		var first = new BlazorApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
@@ -117,7 +121,7 @@ public class ApplicationBlockTests {
 				.AddScreenItem<TestScreen>("item", "First")
 			);
 		Action build = duplicateKind switch {
-			"block" => () => new BlazorApplicationBlockCatalog(new[] { first.Build(), first.Build() }),
+			"block" => () => new BlazorApplicationScreenHost(new[] { first.Build(), first.Build() }, provider),
 			"menu" => () => first
 				.ConfigureMenu(menu => menu
 					.WithId("menu")
@@ -149,13 +153,17 @@ public class ApplicationBlockTests {
 
 	[Test]
 	public void EmptyMenuIdIsRejected() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
 		var menu = new BlazorApplicationMenu { Id = "", Text = "Menu" };
-		Assert.That(() => new BlazorApplicationBlockCatalog(new[] { new BlazorApplicationBlock { Id = "block", Title = "Block", Menus = new[] { menu } } }),
+		Assert.That(() => new BlazorApplicationScreenHost(new[] { new BlazorApplicationBlock { Id = "block", Title = "Block", Menus = new[] { menu } } }, provider),
 			Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
-	public void CatalogOrdersBlocksByPosition() {
+	public void HostOrdersAvailableBlocksByPosition() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
 		var second = new BlazorApplicationBlockBuilder()
 			.WithId("second")
 			.WithName("Second")
@@ -166,11 +174,14 @@ public class ApplicationBlockTests {
 			.WithName("First")
 			.WithPosition(10)
 			.Build();
-		Assert.That(new BlazorApplicationBlockCatalog(new[] { second, first }).Blocks.Select(block => block.Id), Is.EqualTo(new[] { "first", "second" }));
+		using var metadataHost = new BlazorApplicationScreenHost(new[] { second, first }, provider);
+		Assert.That(metadataHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(new[] { "first", "second" }));
 	}
 
 	[Test]
 	public void ConflictingActivationPoliciesAcrossBlocksAreRejected() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(provider);
 		var single = new BlazorApplicationBlockBuilder()
 			.WithId("single")
 			.WithName("Single")
@@ -184,7 +195,7 @@ public class ApplicationBlockTests {
 				.AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)
 			)
 			.Build();
-		Assert.That(() => new BlazorApplicationBlockCatalog(new[] { single, multiple }), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => new BlazorApplicationScreenHost(new[] { single, multiple }, provider), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[TestCase(typeof(ComponentBase))]
@@ -207,12 +218,12 @@ public class ApplicationBlockTests {
 				.AddScreenItem<TestScreen>("screen", "Open dashboard", ScreenActivationMode.SingleInstance)
 			)
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { block }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var session = await host.ActivateBlockAsync("block");
 
 		Assert.That(session.Title, Is.EqualTo("Dashboard"));
-		Assert.That(session.MenuItem.Id, Is.EqualTo("screen"));
-		Assert.That(await host.ActivateScreenAsync("block", session.MenuItem.Id), Is.SameAs(session));
+		Assert.That(session.MenuItemId, Is.EqualTo("screen"));
+		Assert.That(await host.ActivateScreenAsync("block", session.MenuItemId), Is.SameAs(session));
 	}
 
 	[TestCase("model")]
@@ -255,11 +266,11 @@ public class ApplicationBlockTests {
 					}
 				});
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new BlazorApplicationBlockCatalog(new[] { builder.Build() }), provider);
+		using var host = new BlazorApplicationScreenHost(new[] { builder.Build() }, provider);
 		var first = await host.ActivateBlockAsync("block");
 		var second = await host.ActivateBlockAsync("block");
 
-		Assert.That(first.MenuItem.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+		Assert.That(first.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
 		Assert.That(host.OpenScreens, Has.Length.EqualTo(2));
 	}
@@ -272,11 +283,11 @@ public class ApplicationBlockTests {
 			.WithName("Block")
 			.WithDefaultScreen<TestScreen>("Dashboard")
 			.Build();
-		var catalog = new BlazorApplicationBlockCatalog(new[] { block });
-		using var firstHost = new BlazorApplicationScreenHost(catalog, provider);
-		using var secondHost = new BlazorApplicationScreenHost(catalog, provider);
+		var blocks = new[] { block };
+		using var firstHost = new BlazorApplicationScreenHost(blocks, provider);
+		using var secondHost = new BlazorApplicationScreenHost(blocks, provider);
 		var session = await firstHost.ActivateBlockAsync("block");
-		var reopened = await secondHost.ActivateScreenAsync("block", session.MenuItem.Id);
+		var reopened = await secondHost.ActivateScreenAsync("block", session.MenuItemId);
 
 		Assert.That(reopened.ScreenType, Is.EqualTo(typeof(TestScreen)));
 		Assert.That(reopened.Title, Is.EqualTo("Dashboard"));
@@ -284,12 +295,24 @@ public class ApplicationBlockTests {
 	}
 
 	public class TestScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 	}
 
 	public abstract class AbstractScreen : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 	}
 
 	public class GenericScreen<T> : ComponentBase, IBlazorApplicationScreen {
+		public IBlazorApplicationScreenHost Host { get; set; }
+
+		public IBlazorApplicationBlock Block { get; set; }
+
 	}
 }
 

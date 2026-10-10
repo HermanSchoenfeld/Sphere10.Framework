@@ -13,11 +13,20 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 public interface IWinFormsApplicationMenuItem : IDisposable, IApplicationMenuItem {
-	IWinFormsApplicationMenu Parent { get; set; }
+	new IWinFormsApplicationMenu Parent { get; set; }
 	Image Image16x16 { get; }
 	bool ShowOnExplorerBar { get; }
 	bool ShowOnToolStrip { get; }
 	bool ExecuteOnLoad { get; }
 
+	#region Base Interface Bridges
+
+	IApplicationMenu IApplicationMenuItem.Parent {
+		get => Parent;
+		set => Parent = value == null ? null : Guard.ArgumentCast<IWinFormsApplicationMenu>(value, nameof(value));
+	}
+
 	string IApplicationMenuItem.Title => this is IWinFormsLinkMenuItem link ? link.Text : string.Empty;
+
+	#endregion
 }

@@ -13,7 +13,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Accumulates portable plugin configuration while platform builders supply their typed definition.</summary>
-public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicationUIBuilder<TPlugin> where TBlock : class, IApplicationBlock where TPlugin : IApplicationPlugin {
+public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicationUIBuilder<TPlugin>
+	where TBlock : class, IApplicationBlock
+	where TPlugin : IApplicationPlugin {
 	private readonly List<TBlock> _blocks = new();
 	private Action<IServiceCollection> _configureServices;
 
@@ -44,7 +46,9 @@ public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicati
 
 /// <summary>Shared fluent plugin configuration for existing block definitions.</summary>
 public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : ApplicationPluginBuilderBase<TBlock, TPlugin>
-	where TSelf : class where TBlock : class, IApplicationBlock where TPlugin : IApplicationPlugin {
+	where TSelf : class
+	where TBlock : class, IApplicationBlock
+	where TPlugin : IApplicationPlugin {
 	public TSelf WithName(string name) {
 		SetName(name);
 		return (TSelf)(object)this;
@@ -63,7 +67,9 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 
 /// <summary>Composes child block builders without coupling plugin configuration to a UI platform.</summary>
 public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin> : ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin>
-	where TSelf : class where TBlock : class, IApplicationBlock where TPlugin : IApplicationPlugin
+	where TSelf : class
+	where TBlock : class, IApplicationBlock
+	where TPlugin : IApplicationPlugin
 	where TBlockBuilder : IApplicationUIBuilder<TBlock>, new() {
 	public TSelf ConfigureBlock(Action<TBlockBuilder> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));

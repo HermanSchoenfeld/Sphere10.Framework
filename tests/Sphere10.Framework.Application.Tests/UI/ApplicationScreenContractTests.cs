@@ -56,5 +56,8 @@ public class ApplicationScreenContractTests {
 	}
 
 	private class PlainScreen : IApplicationScreen {
+		public IApplicationScreenHost Host { get; set; }
+
+		public IApplicationBlock Block { get; set; }
 	}
 }
