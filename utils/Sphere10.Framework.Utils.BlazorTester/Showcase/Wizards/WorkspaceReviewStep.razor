@@ -1,0 +1,38 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard
+@inherits BlazorWizardStep<WorkspaceSetupDraft>
+
+<div class="workspace-review">
+	<h3>Review your workspace</h3>
+	<p class="text-body-secondary">Go Back to change the draft. Create workspace adds this snapshot to the example.</p>
+	<dl>
+		<div><dt>Workspace name</dt><dd>@Model.Name</dd></div>
+		<div><dt>Workspace mode</dt><dd>@Model.Mode</dd></div>
+		<div><dt>Capacity</dt><dd>@Model.Capacity people</dd></div>
+		<div><dt>Access</dt><dd>@Model.Access</dd></div>
+		<div><dt>Weekly digest</dt><dd>@(Model.WeeklyDigest ? "Enabled" : "Disabled")</dd></div>
+		<div><dt>Preset</dt><dd>@Model.Preset</dd></div>
+		@if (Model.Mode == "Team") {
+			<div><dt>Reviewers</dt><dd>@Model.Reviewers</dd></div>
+		}
+	</dl>
+	<label class="workspace-confirm"><input type="checkbox" @bind="Model.Acknowledged" /><span>I have reviewed these settings</span></label>
+</div>
+
+@code {
+	public override string Title => "Review workspace";
+	public override string FinishButtonText => "Create workspace";
+
+	public override Task<Result> OnNextAsync() => Task.FromResult(Model.Acknowledged
+		? Result.Success
+		: Result.Error("Confirm that you have reviewed the settings before creating the workspace."));
+}

@@ -326,10 +326,45 @@ public class DemoShellBrowserTests {
 		Assert.That(bodyBounds.X, Is.GreaterThanOrEqualTo(sidebarBounds.X + sidebarBounds.Width - 1));
 		Assert.That(await commands.Locator(".sphere10-menu-button").AllTextContentsAsync(), Does.Contain("File").And.Contain("View").And.Contain("Help"));
 		Assert.That(await commands.Locator(".sphere10-menu-button").Last.InnerTextAsync(), Is.EqualTo("Help"));
-		Assert.That(await sidebar.GetByRole(AriaRole.Navigation, new() { Name = "Application blocks", Exact = true }).GetByRole(AriaRole.Button).CountAsync(), Is.EqualTo(4));
+		var blocks = sidebar.GetByRole(AriaRole.Navigation, new() { Name = "Application blocks", Exact = true });
+		Assert.That(await blocks.GetByRole(AriaRole.Button).CountAsync(), Is.EqualTo(5));
+		Assert.That(await blocks.GetByRole(AriaRole.Button, new() { Name = "Application patterns", Exact = true }).CountAsync(), Is.EqualTo(1));
 		Assert.That(await _page.Locator(".demo-sidebar, .demo-header, .demo-main").CountAsync(), Is.Zero, "Provider layout must not create a second navigation shell.");
 		Assert.That(await _page.Locator(".sphere10-screen[role=tabpanel]:not([hidden])").CountAsync(), Is.EqualTo(1));
 		await AttachScreenshotAsync("full-page-application-shell");
+	}
+
+	[TestCase(1500, 1000)]
+	[TestCase(390, 844)]
+	public async Task GlobalCommandsAndLayoutToggleRemainUsableAlongsideScreenSave(int width, int height) {
+		await _page.SetViewportSizeAsync(width, height);
+		await _page.GotoAsync(new Uri(_origin, "/application?block=workspace&screen=editor").ToString());
+		var toolbar = _page.GetByRole(AriaRole.Toolbar, new() { Name = "Application toolbar", Exact = true });
+		var note = _page.GetByRole(AriaRole.Textbox, new() { Name = "Session note", Exact = true });
+		await note.WaitForAsync();
+		await _page.WaitForFunctionAsync("() => !!new URLSearchParams(location.search).get('instance')");
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Single-instance screen", Exact = true }).WaitForAsync();
+		await note.FillAsync("Draft survives application commands and layout changes");
+		await toolbar.GetByRole(AriaRole.Button, new() { Name = "Application command", Exact = true }).ClickAsync();
+		await _page.GetByText("Commands run: 1", new() { Exact = true }).WaitForAsync();
+		await _page.GetByText("Unsaved changes — navigation is blocked.", new() { Exact = true }).WaitForAsync();
+		Assert.That(await toolbar.GetByRole(AriaRole.Button, new() { Name = "Save in session", Exact = true }).CountAsync(), Is.EqualTo(1));
+		await toolbar.GetByRole(AriaRole.Button, new() { Name = "Use single screen", Exact = true }).ClickAsync();
+		await toolbar.GetByRole(AriaRole.Button, new() { Name = "Use tabs", Exact = true }).WaitForAsync();
+		Assert.That(await _page.GetByRole(AriaRole.Tablist, new() { Name = "Application screens", Exact = true }).CountAsync(), Is.Zero);
+		Assert.That(await note.InputValueAsync(), Is.EqualTo("Draft survives application commands and layout changes"));
+		await toolbar.GetByRole(AriaRole.Button, new() { Name = "Use tabs", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Single-instance screen", Exact = true }).WaitForAsync();
+		await toolbar.GetByRole(AriaRole.Button, new() { Name = "Save in session", Exact = true }).ClickAsync();
+		await _page.GetByText("No unsaved changes.", new() { Exact = true }).WaitForAsync();
+		if (width <= 760)
+			await _page.GetByRole(AriaRole.Button, new() { Name = "Menu", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Application blocks", Exact = true })
+			.GetByRole(AriaRole.Button, new() { Name = "Application patterns", Exact = true }).ClickAsync();
+		await toolbar.GetByRole(AriaRole.Button, new() { Name = "Application command", Exact = true }).ClickAsync();
+		await _page.GetByText("Commands run: 2", new() { Exact = true }).WaitForAsync();
+		Assert.That(await note.InputValueAsync(), Is.EqualTo("Draft survives application commands and layout changes"));
+		await AttachScreenshotAsync($"global-commands-layout-{width}");
 	}
 
 	[Test]

@@ -1,0 +1,132 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Theming
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@inherits BlazorApplicationScreen
+@inject IThemeService Themes
+@inject ViewService Views
+
+<div class="theme-studio" data-demo="theme-studio">
+	<header class="studio-header">
+		<div><span class="studio-eyebrow">APPLICATION PATTERNS / PRESENTATION</span><h1>Theme studio</h1><p>Try every preset on a complete layout. Your preview edits and selections stay in place.</p></div>
+		<a href="components/themes" class="btn btn-outline-primary">Component color reference <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+	</header>
+	<div class="studio-layout">
+		<aside class="studio-presets" aria-label="Theme presets">
+			<div class="preset-title"><h2>Choose a preset</h2><span class="badge text-bg-secondary">@_presets.Length</span></div>
+			<label for="theme-preset-search">Find a theme</label>
+			<input id="theme-preset-search" class="form-control" type="search" placeholder="Search presets" @bind="_search" @bind:event="oninput" />
+			<label for="theme-scheme">Color scheme</label>
+			<select id="theme-scheme" class="form-select" @bind="_scheme"><option value="all">All schemes</option><option value="light">Light schemes</option><option value="dark">Dark schemes</option></select>
+			<div class="preset-list">
+				@foreach (var preset in VisiblePresets) {
+					<button type="button" class="preset-button @(Themes.CurrentTheme == preset.Mode ? "selected" : "")" aria-pressed="@((Themes.CurrentTheme == preset.Mode).ToString().ToLowerInvariant())" aria-label="@($"Use {preset.Name}")" @onclick="() => Themes.SetTheme(preset.Mode)">
+						<span class="preset-symbol"><i class="fas @(preset.IsDark ? "fa-moon" : "fa-sun")" aria-hidden="true"></i></span>
+						<span><strong>@preset.Name</strong><small>@(preset.IsDark ? "Dark scheme" : "Light scheme")</small></span>
+						@if (Themes.CurrentTheme == preset.Mode) { <i class="fas fa-check" aria-hidden="true"></i> }
+					</button>
+				}
+				@if (!VisiblePresets.Any()) { <p class="studio-muted" role="status">No matching presets. Try another name or scheme.</p> }
+			</div>
+		</aside>
+		<section class="studio-preview" aria-label="Live theme preview">
+			<div class="preview-heading"><div><span class="studio-eyebrow">LIVE PREVIEW</span><h2>Release board</h2></div><span class="badge text-bg-primary" data-testid="studio-active-theme">@Current.Name</span></div>
+			<div class="studio-metrics">
+				<article class="metric"><span class="metric-icon"><i class="fas fa-layer-group" aria-hidden="true"></i></span><div><small>Ready to ship</small><strong>18 <span>items</span></strong></div></article>
+				<article class="metric"><span class="metric-icon success"><i class="fas fa-check-circle" aria-hidden="true"></i></span><div><small>Review complete</small><strong>82<span>%</span></strong></div></article>
+				<article class="metric"><span class="metric-icon warning"><i class="fas fa-clock" aria-hidden="true"></i></span><div><small>Needs a review</small><strong>3 <span>items</span></strong></div></article>
+			</div>
+			<div class="preview-columns">
+				<section class="studio-panel">
+					<div class="panel-heading"><h3>Weekly delivery</h3><label>Period<select class="form-select form-select-sm" aria-label="Preview period" @bind="_period"><option value="current">This month</option><option value="previous">Last month</option></select></label></div>
+					<p class="studio-muted">Select a bar to inspect that week.</p>
+					<svg class="delivery-chart" viewBox="0 0 480 220" role="group" aria-label="Weekly delivery chart">
+						@for (var row = 0; row < 4; row++) {
+							var gridY = 28 + row * 48;
+							<line x1="25" y1="@gridY" x2="455" y2="@gridY" class="chart-guide" />
+						}
+						@for (var week = 0; week < Values.Length; week++) {
+							var weekIndex = week;
+							var height = Values[week] * 5;
+							<g role="button" tabindex="0" aria-label="@($"Week {week + 1}, {Values[week]} completed items")" aria-pressed="@((_week == week).ToString().ToLowerInvariant())" @onclick="() => _week = weekIndex" @onkeydown="args => SelectWeek(args, weekIndex)" class="chart-bar-group @(_week == week ? "chosen" : "")">
+								<rect x="@(50 + week * 105)" y="@(180 - height)" width="65" height="@height" rx="4" class="chart-bar" />
+								<text x="@(82 + week * 105)" y="@(170 - height)" text-anchor="middle">@Values[week]</text>
+								<text x="@(82 + week * 105)" y="207" text-anchor="middle">Week @(week + 1)</text>
+							</g>
+						}
+					</svg>
+					<div class="selected-week" role="status" data-testid="studio-week">Week @(_week + 1) · @Values[_week] completed items · @(_period == "current" ? "This month" : "Last month")</div>
+				</section>
+				<section class="studio-panel preview-form">
+					<h3>A draft that stays with you</h3>
+					<label for="studio-title">Release title</label><input id="studio-title" class="form-control" @bind="_title" @bind:event="oninput" />
+					<label for="studio-note">Team note</label><textarea id="studio-note" class="form-control" rows="3" @bind="_note" @bind:event="oninput"></textarea>
+					<label class="form-check"><input class="form-check-input" type="checkbox" @bind="_reminders" /><span class="form-check-label">Send review reminders</span></label>
+					<div class="preview-actions"><button type="button" class="btn btn-primary" @onclick="PreviewAsync">Preview release</button><button type="button" class="btn btn-outline-primary" @onclick="ResetPreview">Reset preview</button></div>
+				</section>
+			</div>
+			<section class="studio-panel release-summary">
+				<div class="release-heading"><span class="metric-icon"><i class="fas fa-rocket" aria-hidden="true"></i></span><div><h3 data-testid="studio-title-preview">@_title</h3><p>@_note</p></div><span class="badge text-bg-success">Ready for review</span></div>
+				<div class="progress" role="progressbar" aria-label="Release readiness" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar bg-success" style="width:82%">82%</div></div>
+				<div class="release-footer"><span><i class="fas fa-bell" aria-hidden="true"></i> @(_reminders ? "Review reminders enabled" : "Review reminders paused")</span><span>Preview data · stored in this screen</span></div>
+			</section>
+			<div class="alert alert-info studio-note" role="note"><strong>One scoped theme, one layout.</strong> These cards, chart, forms and dialogs share the same theme service as the shell. Changing a preset updates presentation while preserving component state.</div>
+			<details class="studio-implementation"><summary>Library APIs demonstrated</summary><p><code>ThemeCatalog</code> supplies all presets. <code>IThemeService.SetTheme</code> updates the scoped theme, while the shared <code>ThemeProvider</code> supplies the stylesheet and semantic tokens. The preview uses those tokens and Bootstrap semantic classes; <code>ViewService</code> hosts the themed dialog.</p></details>
+		</section>
+	</div>
+</div>
+
+@code {
+	private readonly ThemeDefinition[] _presets = ThemeCatalog.All;
+	private readonly int[] _current = { 15, 22, 18, 27 };
+	private readonly int[] _previous = { 12, 16, 20, 24 };
+	private string _search = string.Empty;
+	private string _scheme = "all";
+	private string _period = "current";
+	private string _title = "Spring collection";
+	private string _note = "Finish the accessibility review before sharing the next release.";
+	private int _week = 2;
+	private bool _reminders = true;
+
+	public override string Title => "Theme studio";
+
+	private ThemeDefinition Current => ThemeCatalog.Get(Themes.CurrentTheme);
+
+	private IEnumerable<ThemeDefinition> VisiblePresets => _presets.Where(preset =>
+		preset.Name.Contains(_search.Trim(), StringComparison.OrdinalIgnoreCase) && (_scheme == "all" || preset.IsDark == (_scheme == "dark")));
+
+	private int[] Values => _period == "current" ? _current : _previous;
+
+	protected override void OnInitialized() => Themes.Changed += ThemeChanged;
+
+	protected override ValueTask DisposeAsyncCore() {
+		Themes.Changed -= ThemeChanged;
+		return ValueTask.CompletedTask;
+	}
+
+	private void ThemeChanged() => _ = InvokeAsync(StateHasChanged);
+
+	private void SelectWeek(KeyboardEventArgs args, int week) {
+		if (args.Key is "Enter" or " ")
+			_week = week;
+	}
+
+	private Task PreviewAsync() => Views.DialogAsync("Release preview", $"{_title}\n{_note}\nWeek {_week + 1}: {Values[_week]} completed items. Review reminders are {(_reminders ? "enabled" : "paused")}.");
+
+	private void ResetPreview() {
+		_title = "Spring collection";
+		_note = "Finish the accessibility review before sharing the next release.";
+		_reminders = true;
+		_period = "current";
+		_week = 2;
+	}
+}

@@ -1,0 +1,35 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+<svg class="collection-artwork artwork-@(Variant % 3)" viewBox="0 0 600 300" role="img" aria-label="@Label" focusable="false">
+	<rect width="600" height="300" class="artwork-background" />
+	@if (Variant % 3 == 0) {
+		<circle cx="450" cy="78" r="48" class="artwork-light" />
+		<path d="M0 200 160 70 310 245 470 120 600 225V300H0Z" class="artwork-mid" />
+		<path d="M0 250 210 170 370 270 600 185V300H0Z" class="artwork-foreground" />
+		<path d="M0 276Q160 230 320 278T600 273" class="artwork-line" />
+	} else if (Variant % 3 == 1) {
+		<circle cx="300" cy="150" r="105" class="artwork-mid" />
+		<circle cx="300" cy="150" r="60" class="artwork-light" />
+		<ellipse cx="300" cy="150" rx="220" ry="70" transform="rotate(-22 300 150)" class="artwork-orbit" />
+		<circle cx="110" cy="210" r="22" class="artwork-foreground" />
+		<circle cx="488" cy="80" r="11" class="artwork-light" />
+	} else {
+		<path d="M68 255V135L148 90V255ZM170 255V70L252 30V255ZM280 255V145L365 100V255ZM390 255V85L495 38V255ZM522 255V150L580 110V255Z" class="artwork-mid" />
+		<path d="M92 160H128M92 186H128M194 98H232M194 128H232M194 158H232M307 168H345M307 198H345M416 112H470M416 144H470M416 176H470" class="artwork-line" />
+		<path d="M0 255H600V300H0Z" class="artwork-foreground" />
+	}
+</svg>
+
+@code {
+	[Parameter] public int Variant { get; set; }
+
+	[Parameter] public string Label { get; set; } = "Abstract collection illustration";
+}

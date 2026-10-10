@@ -12,8 +12,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Utils.BlazorTester;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester.Layouts;
+using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -35,6 +37,10 @@ public class DemoNavigationTests {
 	[TestCase("/MODERN/", "components", "gallery")]
 	[TestCase("/widget-gallery/wizards", "legacy", "wizards")]
 	[TestCase("/servers", "legacy", "servers")]
+	[TestCase("/patterns/cards", "patterns", "cards-gallery")]
+	[TestCase("/patterns/menus", "patterns", "commands")]
+	[TestCase("/patterns/wizards", "patterns", "guided-wizards")]
+	[TestCase("/patterns/themes", "patterns", "theme-studio")]
 	public void CompatibilityAliasesSelectStableRegisteredScreenIds(string path, string blockId, string screenId) {
 		var alias = DemoNavigation.ResolveAlias(path);
 		Assert.That(alias, Is.Not.Null);
@@ -50,6 +56,10 @@ public class DemoNavigationTests {
 	[TestCase(" GRID ", "application?block=components&screen=gallery")]
 	[TestCase("endpoint", "application?block=legacy&screen=servers")]
 	[TestCase("dashboard", "application?block=legacy&screen=dashboard")]
+	[TestCase("cards", "application?block=patterns&screen=cards-gallery")]
+	[TestCase("menus", "application?block=patterns&screen=commands")]
+	[TestCase("guided", "application?block=patterns&screen=guided-wizards")]
+	[TestCase("studio", "application?block=patterns&screen=theme-studio")]
 	public async Task SearchFindsRegisteredScreensWithCanonicalApplicationUrls(string term, string expectedRoute) {
 		using var provider = CreateProvider();
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -59,7 +69,7 @@ public class DemoNavigationTests {
 	}
 
 	[Test]
-	public async Task SearchTracksTheHostsRegisteredBlocksInsteadOfASeparateNavigationList() {
+	public async Task SearchTracksUiServicesRegisteredBlocksInsteadOfASeparateNavigationList() {
 		using var provider = CreateProvider();
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		Assert.That(await DemoNavigation.SearchAsync(host, "grid"), Is.Not.Empty);
@@ -69,13 +79,23 @@ public class DemoNavigationTests {
 		Assert.That((await DemoNavigation.SearchAsync(host, "grid")).Single().Route.OriginalString, Is.EqualTo("application?block=components&screen=gallery"));
 	}
 
+	[Test]
+	public async Task SearchOmitsHiddenParameterizedEditorRegistrations() {
+		using var provider = CreateProvider();
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		Assert.That(await DemoNavigation.SearchAsync(host, "Collection details"), Is.Empty,
+			"An editor without its record parameter is not a useful search destination.");
+		Assert.That((await DemoNavigation.SearchAsync(host, "collections")).Select(result => result.Route.OriginalString),
+			Is.EqualTo(new[] { "application?block=patterns&screen=cards-gallery" }));
+	}
+
 	[TestCase(null)]
 	[TestCase("")]
 	[TestCase("  ")]
 	[TestCase("no-such-demo")]
 	public async Task SearchOmitsEmptyAndUnmatchedQueries(string term) {
 		using var provider = CreateProvider();
-		Assert.That(await DemoNavigation.SearchAsync(provider.GetRequiredService<IBlazorApplicationScreenHost>(), term), Is.Empty);
+		Assert.That(await DemoNavigation.SearchAsync(provider.GetRequiredService<IApplicationScreenHost>(), term), Is.Empty);
 	}
 
 	private static ServiceProvider CreateProvider() {

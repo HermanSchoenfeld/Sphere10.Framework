@@ -43,7 +43,7 @@ The `--filter` value is quoted so shell characters such as `|` remain part of th
 | [BlazorGridBrowserTests.cs](BlazorGridBrowserTests.cs) | Explicit real-browser checks for settled grid geometry after fractional zoom/device scaling, row-three editing, nested reference popup and manual column resizing, accessible icon paging, page-size dropdowns and edit guards at desktop/mobile widths. |
 | [BlazorGridReferencePickerTests.cs](BlazorGridReferencePickerTests.cs) | Compact accessible popover, dismissal and reopening generations, source replacement, disabled state, disposal and JavaScript import races. |
 | [GridDemoDataSourceTests.cs](GridDemoDataSourceTests.cs) | Demo name/age validation, protected deletion, batch rejection before mutation, search, typed sort order and stable ID tie-breaks, page clamping, new-item persistence and related-record identity. |
-| [GalleryRenderingTests.cs](GalleryRenderingTests.cs) | Every compatibility URL renders its registered screen inside the sole ApplicationShell; catalog-backed menus, icons, provider/modal ownership, scoped isolation and local grid integration. |
+| [GalleryRenderingTests.cs](GalleryRenderingTests.cs) | Every compatibility URL renders its registered screen inside the sole ApplicationShell; registration-backed menus, icons, provider/modal ownership, scoped isolation and local grid integration. |
 | [ThemeTests.cs](ThemeTests.cs) | All catalogue presets, defensive metadata arrays, scoped theme isolation, validated changes and notifications, custom registrations and decorator behavior. |
 | [ThemeRenderingTests.cs](ThemeRenderingTests.cs) | Per-template stylesheet links and provider attributes, catalogue-driven selector/toggle state, retained child/draft state, renderer dispatch and subscription disposal. |
 
@@ -55,7 +55,9 @@ The interop cases check that concurrent loads share initialization, disconnected
 
 | Location or fixture | Coverage |
 | --- | --- |
-| [ApplicationBlockTests.cs](ApplicationBlockTests.cs), [ApplicationScreenHostTests.cs](ApplicationScreenHostTests.cs) | Registration/catalog behavior, activation policies, scoped actions, screen guards, host state, cancellation and block removal. |
+| [ApplicationBlockTests.cs](ApplicationBlockTests.cs), [ApplicationScreenHostTests.cs](ApplicationScreenHostTests.cs) | UI registration/snapshot behavior, activation policies, scoped actions, screen guards, host state, cancellation and block removal. |
+| [ApplicationScreenHostHarmonizationTests.cs](ApplicationScreenHostHarmonizationTests.cs) | Shared/typed DI identity, reference-based host navigation and lifecycle, Blazor proxy identity, generic decorator dispatch, attachment cancellation and renderer ownership, scoped commands, asynchronous modal interaction and controller dispatch lifetime. |
+| [ApplicationGraphOwnershipTests.cs](ApplicationGraphOwnershipTests.cs) | Canonical graph cloning, typed ownership bridges, repeated builders, grouped and toolbar commands, borrowed presentation references, cached generated activators, attachment rollback and cleanup, and circuit-local application parents with original plugin sources. |
 | [ApplicationNavigationTests.cs](ApplicationNavigationTests.cs) | Stable per-session navigation paths without ephemeral queries, callback evaluation against current selection, application-base URI validation, direct programmatic activation in a rendered shell, incoming asynchronous route precedence, unchanged default query routing and guard preservation without duplicate checks. |
 | [ApplicationScreenActivationTests.cs](ApplicationScreenActivationTests.cs) | Runtime parameter snapshots and defaults, keyed reuse across concurrent activation, registration/circuit isolation, policy precedence, guard/cancellation behavior, decorator forwarding and key release after closure. `ApplicationRenderingTests` additionally verifies independent keyed component parameters, retained drafts and renderer-owned disposal. |
 | [PluginBuilderTests.cs](PluginBuilderTests.cs) | Shared-backed fluent plugin/block configuration, shared/platform DI identity, explicit legacy contract forwarding, independent metadata snapshots, composed startup callbacks, load-time definitions and menu subscribers, registration validation and circuit-scoped services. |
@@ -65,7 +67,7 @@ The interop cases check that concurrent loads share initialization, disconnected
 | [ApplicationToolBarContentTests.cs](ApplicationToolBarContentTests.cs) | Shell and standalone command bar retain toolbar content when no command items exist. |
 | [SearchInputTests.cs](SearchInputTests.cs) | Search result links, throttling, stale completion/error rejection, provider replacement, dismissal and pending-search disposal. |
 | [EndpointSelectorTests.cs](EndpointSelectorTests.cs) | Restored endpoint selector registration, two-way server-page synchronization, circuit isolation, renderer dispatch and subscription disposal. |
-| [BlockDockTests.cs](BlockDockTests.cs) | Compact menu compatibility, builder-supplied icons, menu-only block browsing, scoped catalog changes and subscription disposal. |
+| [BlockDockTests.cs](BlockDockTests.cs) | Compact menu compatibility, builder-supplied icons, menu-only block browsing, scoped UI registration changes and subscription disposal. |
 | [DemoNavigationTests.cs](DemoNavigationTests.cs) | Compatibility alias resolution and defensive arrays; header search follows the host's registered screen blocks and returns canonical application URLs. |
 | [ApplicationScreenPolicyTests.cs](ApplicationScreenPolicyTests.cs) | Plugin/block startup order; menu defaults; permanent sessions and atomic close rejection; empty-screen lifetimes, guards, renderer retention/disposal, administrative removal and cancellation. |
 | [ApplicationMenuEventTests.cs](ApplicationMenuEventTests.cs) | Menu event and callback behavior. |
@@ -83,6 +85,30 @@ dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framew
 ```
 
 UI-independent metadata, builders and policies have their own [Application test project](../Sphere10.Framework.Application.Tests/README.md). Keep platform rendering and component-lifetime assertions here.
+
+## Application patterns coverage
+
+The [Application patterns showcase](../../utils/Sphere10.Framework.Utils.BlazorTester/README.md) composes reusable library controls into generic collection editors, guided setup flows, native commands and a complete theme preview.
+
+| Fixture | What it protects |
+| --- | --- |
+| [CollectionShowcaseTests.cs](CollectionShowcaseTests.cs) | Detached catalogue drafts, normalized saves and notifications, scoped data isolation, composed filters before paging, typed sorting and stable identity. |
+| [GuidedWorkspaceWizardTests.cs](GuidedWorkspaceWizardTests.cs) | Solo/Team route changes, retained draft values, preset-detour return, settings validation, cancellation and terminal completion rules. |
+| [ShowcaseBrowserTests.cs](ShowcaseBrowserTests.cs) | Native keyboard submenus, guarded and hidden commands, screen-scoped menu merging, theme-preserved drafts and chart selection, card/table filtering, keyed editor reuse and Save/Discard guards, embedded/modal wizard validation, branching, detours, cancellation and one completed snapshot. Desktop/mobile containment and screenshots are included. |
+
+Run the two managed fixtures without a browser:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.csproj -c Release -p:BuildRevision=0 --filter "FullyQualifiedName~CollectionShowcaseTests|FullyQualifiedName~GuidedWorkspaceWizardTests"
+```
+
+After the build/start sequence in [Opt-in browser regression checks](#opt-in-browser-regression-checks), select the showcase fixture using the same local runsettings:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.csproj -c Release -p:BuildRevision=0 --no-build --filter "FullyQualifiedName~ShowcaseBrowserTests" --settings obj/browser-tests/browser.runsettings --logger "trx;LogFileName=showcase-browser.trx" --results-directory obj/test-results/showcase-browser
+```
+
+Browser evidence is attached to the NUnit results under `ShowcaseBrowserTests` in the test work directory. The fixture requires the existing local tester and Chromium setup; ordinary test runs skip it.
 
 ## Add a regression test
 
@@ -104,7 +130,7 @@ If discovery finds no matching tests, use `--list-tests` and check the fixture n
 
 ## Shared runtime, tabs and wizard coverage
 
-`ApplicationAggregateTests` checks that the shared and Blazor application contracts resolve to one scoped runtime, plugin/block hierarchy identity and defensive membership arrays, live navigation ownership, implicit plugins for standalone blocks, scope isolation, and startup plugins that are not loaded again. Configuration runs once per scope. `ApplicationTabsTests` covers ordered tab membership, guarded batch closure, SingleView retention, mode transitions and canonical screen-command routing. `ApplicationCommandRenderingTests` verifies that active-screen menu and toolbar contributions replace the appropriate broader commands and restore on switching.
+`ApplicationAggregateTests` checks that the shared and Blazor application contracts resolve to one scoped runtime, canonical live block references and defensive membership arrays, standalone navigation, scope isolation, and startup plugins that are not loaded again. `LoadedPluginRegistrationTests` distinguishes successful startup receipts from ordinary DI registrations, checks failed/duplicate loads, and preserves captured startup contribution order when source membership changes. `BlockDockTests` verifies that one loaded plugin can contribute several independent block icons and menus. Configuration runs once per scope. `ApplicationTabsTests` covers ordered tab membership, guarded batch closure, SingleView retention, mode transitions and canonical screen-command routing. `ApplicationCommandRenderingTests` verifies that active-screen menu and toolbar contributions replace the appropriate broader commands and restore on switching.
 
 The portable `Application` test project owns wizard navigation, mutation, terminal state and merge-algorithm tests. `SharedWizardAdapterTests`, existing wizard cancellation/completion fixtures, and native wizard adapter tests verify platform integration. JavaScript test doubles follow the same PascalCase module calls as the actual components; browser tests execute the real modules.
 

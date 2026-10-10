@@ -19,7 +19,7 @@ public static class ScreenPoliciesPlugin {
 			.ConfigureBlock(block => block
 				.WithId("empty-workspace")
 				.WithName("Empty workspace")
-				.WithPosition(3)
+				.WithPosition(4)
 				.WithIconUrl("img/heading-solid.svg")
 				.WithTooltip("Shown when all normal screens are closed")
 				.WithDefaultScreen<EmptyWorkspaceScreen>("Empty workspace", emptyScreenLifetime, ScreenKind.Empty)
@@ -29,7 +29,7 @@ public static class ScreenPoliciesPlugin {
 				.ConfigureBlock(block => block
 					.WithId("permanent-workspace")
 					.WithName("Permanent workspace")
-					.WithPosition(4)
+					.WithPosition(5)
 					.WithIconUrl("img/heading-solid.svg")
 					.WithTooltip("A screen that stays open for this application session")
 					.WithDefaultScreen<PermanentWorkspaceScreen>("Permanent screen", ScreenActivationMode.PermanentSingleton)

@@ -39,13 +39,14 @@ public class DemoPluginRegistrationTests {
 		var metadataHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var registeredBlocks = provider.GetServices<IBlazorApplicationBlock>().ToArray();
 
-		Assert.That(plugins.Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery", "Screen policies" }));
+		Assert.That(plugins.Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery", "Application patterns", "Screen policies" }));
 		Assert.That(plugins.Single(plugin => plugin.Name == "Sphere10.Framework").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace" }));
 		Assert.That(plugins.Single(plugin => plugin.Name == "Widget Gallery").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "components", "legacy" }));
-		Assert.That(registeredBlocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "components", "legacy", "empty-workspace" }));
-		Assert.That(metadataHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "components", "legacy", "empty-workspace" }));
+		Assert.That(plugins.Single(plugin => plugin.Name == "Application patterns").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "patterns" }));
+		Assert.That(registeredBlocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "components", "patterns", "legacy", "empty-workspace" }));
+		Assert.That(metadataHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "components", "patterns", "legacy", "empty-workspace" }));
 		Assert.That(application.Blocks, Is.EqualTo(metadataHost.Blocks));
-		Assert.That(application.Blocks, Has.Length.EqualTo(4));
+		Assert.That(application.Blocks, Has.Length.EqualTo(5));
 		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Select(registration => registration.Plugin), Is.EqualTo(plugins));
 		Assert.That(provider.GetService<IBlazorRoutedPluginLocator>(), Is.Null);
 		Assert.That(provider.GetService<IBlazorRoutedPluginManager>(), Is.Null);

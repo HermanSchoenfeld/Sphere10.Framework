@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Models;
 
@@ -24,6 +26,10 @@ public static class DemoNavigation {
 		new("/components/dialogs", "components", "dialogs"),
 		new("/components/wizards", "components", "wizards"),
 		new("/components/themes", "components", "themes"),
+		new("/patterns/cards", "patterns", "cards-gallery"),
+		new("/patterns/menus", "patterns", "commands"),
+		new("/patterns/wizards", "patterns", "guided-wizards"),
+		new("/patterns/themes", "patterns", "theme-studio"),
 		new("/modern", "components", "gallery"),
 		new("/widget-gallery", "legacy", "gallery"),
 		new("/widget-gallery/modals", "legacy", "dialogs"),
@@ -41,13 +47,13 @@ public static class DemoNavigation {
 		return _aliases.FirstOrDefault(alias => string.Equals(alias.Route, normalized, StringComparison.OrdinalIgnoreCase));
 	}
 
-	public static Task<IEnumerable<SearchResult>> SearchAsync(IBlazorApplicationScreenHost host, string term) {
-		Guard.ArgumentNotNull(host, nameof(host));
+	public static Task<IEnumerable<SearchResult>> SearchAsync(IApplicationScreenHost screenHost, string term) {
+		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
 		var query = term?.Trim();
 		IEnumerable<SearchResult> results = string.IsNullOrEmpty(query)
 			? Array.Empty<SearchResult>()
-			: host.Blocks.SelectMany(block => block.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
-				.Where(item => item.Title.Contains(query, StringComparison.OrdinalIgnoreCase) || block.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+			: screenHost.Blocks.Cast<IBlazorApplicationBlock>().SelectMany(block => block.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
+				.Where(item => item.IsVisible && (item.Title.Contains(query, StringComparison.OrdinalIgnoreCase) || block.Name.Contains(query, StringComparison.OrdinalIgnoreCase)))
 				.Select(item => new SearchResult(item.Title, new Uri($"application?block={Uri.EscapeDataString(block.Id)}&screen={Uri.EscapeDataString(item.Id)}", UriKind.Relative))))
 				.ToArray();
 		return Task.FromResult(results);

@@ -1,0 +1,29 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard
+@inherits BlazorWizardStep<WorkspaceSetupDraft>
+
+<h3>A team needs reviewers</h3>
+<p class="text-body-secondary">This step exists only in Team mode. Back to Details lets you choose the Solo branch instead.</p>
+<div class="alert alert-info" role="note"><i class="fas fa-code-branch" aria-hidden="true"></i> The workflow inserted this step after Settings.</div>
+<label class="form-label" for="@_reviewersId">Reviewers</label>
+<input id="@_reviewersId" class="form-control" placeholder="e.g. Avery, Jordan" maxlength="120" @bind="Model.Reviewers" @bind:event="oninput" />
+<p class="text-body-secondary mt-2 mb-0">Names are demonstration text. No invitations are sent.</p>
+
+@code {
+	private readonly string _reviewersId = $"workspace-reviewers-{Guid.NewGuid():N}";
+
+	public override string Title => "Team reviewers";
+
+	public override Task<Result> OnNextAsync() => Task.FromResult(string.IsNullOrWhiteSpace(Model.Reviewers)
+		? Result.Error("Enter at least one reviewer for a team workspace.")
+		: Result.Success);
+}

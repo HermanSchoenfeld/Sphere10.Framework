@@ -15,6 +15,10 @@
 @page "/components/dialogs"
 @page "/components/wizards"
 @page "/components/themes"
+@page "/patterns/cards"
+@page "/patterns/menus"
+@page "/patterns/wizards"
+@page "/patterns/themes"
 @page "/modern"
 @page "/widget-gallery"
 @page "/widget-gallery/modals"
@@ -25,31 +29,38 @@
 @layout Sphere10.Framework.Utils.BlazorTester.Layouts.DemoLayout
 @using Sphere10.Framework.Utils.BlazorTester.Layouts
 @using Sphere10.Framework.Utils.BlazorTester.Loader.Components
+@using Sphere10.Framework.Application.UI
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Models
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
 @implements IDisposable
 @inject NavigationManager Navigation
-@inject IBlazorApplicationScreenHost ScreenHost
+@inject IApplicationScreenHost ScreenHost
 @inject BlazorApplicationOptions ApplicationOptions
+@inject WorkspaceStatus Status
 
 <PageTitle>@ApplicationOptions.Title</PageTitle>
-<ApplicationShell Title="@ApplicationOptions.Title" NavigationPath="application" BlockId="@_blockId" ScreenId="@_screenId" InstanceId="_instanceId">
+<ApplicationShell Title="@ApplicationOptions.Title" NavigationPath="application" BlockId="@_blockId" ScreenId="@_screenId" InstanceId="_instanceId" ActivateBlockOnSelection="Status.ActivateBlockOnSelection">
 	<ToolBarContent>
 		<div class="demo-application-tools">
+			<button type="button" class="btn btn-outline-secondary" disabled="@_changingScreenMode" title="Change the screen layout"
+				@onclick="ToggleScreenModeAsync">@(ScreenHost.ScreenMode == ScreenMode.MultiView ? "Use single screen" : "Use tabs")</button>
 			<div class="demo-search"><Sphere10.Framework.Web.AspNetCore.Blazor.Components.SearchInput SearchProvider="SearchAsync" /></div>
 			<ThemeSelector />
 			<DemoIdentity />
 		</div>
 	</ToolBarContent>
 	<SidebarHeader><SidebarBrand /></SidebarHeader>
-	<Footer>Sphere10 Framework · Local sample data · Changes stay in this browser session.</Footer>
+	<Footer>Sphere10 Framework · Local sample data · Changes stay in this browser session. <span data-application-command-count>Commands run: @Status.ActionCount</span></Footer>
 </ApplicationShell>
 
 @code {
 	private IDisposable _navigationSubscription;
+	private IDisposable _statusSubscription;
+	private IDisposable _screenHostSubscription;
 	private bool _disposed;
+	private bool _changingScreenMode;
 	private string _blockId;
 	private string _screenId;
 	private Guid? _instanceId;
@@ -63,11 +74,17 @@
 	public void Dispose() {
 		_disposed = true;
 		_navigationSubscription?.Dispose();
+		_statusSubscription?.Dispose();
+		_screenHostSubscription?.Dispose();
 	}
 
 	protected override void OnInitialized() {
 		Navigation.LocationChanged += OnLocationChanged;
 		_navigationSubscription = Tools.Scope.ExecuteOnDispose(() => Navigation.LocationChanged -= OnLocationChanged);
+		Status.Changed += OnStatusChanged;
+		_statusSubscription = Tools.Scope.ExecuteOnDispose(() => Status.Changed -= OnStatusChanged);
+		ScreenHost.Changed += OnStatusChanged;
+		_screenHostSubscription = Tools.Scope.ExecuteOnDispose(() => ScreenHost.Changed -= OnStatusChanged);
 	}
 
 	protected override void OnParametersSet() => UpdateRouteRequest();
@@ -95,4 +112,17 @@
 	}
 
 	private Task<IEnumerable<SearchResult>> SearchAsync(string term) => DemoNavigation.SearchAsync(ScreenHost, term);
+
+	private async Task ToggleScreenModeAsync() {
+		if (_changingScreenMode)
+			return;
+		_changingScreenMode = true;
+		using var changingMode = Tools.Scope.ExecuteOnDispose(() => _changingScreenMode = false);
+		await ScreenHost.TrySetScreenModeAsync(ScreenHost.ScreenMode == ScreenMode.MultiView ? ScreenMode.SingleView : ScreenMode.MultiView);
+	}
+
+	private void OnStatusChanged() {
+		if (!_disposed)
+			_ = InvokeAsync(StateHasChanged);
+	}
 }

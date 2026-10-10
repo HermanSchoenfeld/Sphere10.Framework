@@ -1,0 +1,23 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+Distributed under the MIT software license, see LICENSE or https://opensource.org/license/mit.
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.overview-hero { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--sphere10-border); margin-bottom: 1.75rem; padding: .6rem 0 1.6rem; }
+.overview-hero > div:first-child { flex: 1; min-width: min(24rem, 100%); }
+.overview-eyebrow { font-size: .68rem; letter-spacing: .12em; color: var(--sphere10-muted); font-weight: 700; }
+.overview-hero h1 { margin: .5rem 0 .7rem; }
+.overview-hero p { max-width: 45rem; margin: 0; color: var(--sphere10-muted); line-height: 1.6; font-size: .87rem; }
+.overview-summary { display: flex; flex-direction: column; gap: .45rem; max-width: 19rem; padding: 1rem; border-radius: var(--sphere10-panel-radius, .5rem); background: var(--sphere10-selected); color: var(--sphere10-text); }
+.overview-summary strong { font-size: .9rem; }
+.overview-summary span { font-size: .75rem; color: var(--sphere10-muted); }
+.overview-playground { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; padding: 1rem 1.25rem; border: 1px solid var(--sphere10-border); border-radius: var(--sphere10-panel-radius, .5rem); background: var(--sphere10-surface); }
+.overview-playground h2 { font-size: 1rem; margin: 0 0 .25rem; }
+.overview-playground p { font-size: .8rem; margin: 0; color: var(--sphere10-muted); }
+.overview-playground > div { margin-right: auto; }
+.overview-playground .form-check { display: flex; align-items: center; gap: .6rem; margin: 0; }
+.overview-playground .form-check-input { margin: 0; flex-shrink: 0; }
+.overview-guide { margin: 1.25rem 0; padding: 1rem 1.25rem; border: 1px solid var(--sphere10-border); border-radius: var(--sphere10-panel-radius, .5rem); color: var(--sphere10-muted); font-size: .83rem; }
+.overview-guide summary { color: var(--sphere10-text); font-weight: 600; }
+.overview-guide p { margin-top: .8rem; line-height: 1.6; }

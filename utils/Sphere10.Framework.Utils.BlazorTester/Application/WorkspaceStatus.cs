@@ -13,6 +13,15 @@ public class WorkspaceStatus {
 
 	public int ActionCount { get; private set; }
 
+	public bool ActivateBlockOnSelection { get; private set; }
+
+	public void SetBlockActivation(bool activate) {
+		if (ActivateBlockOnSelection == activate)
+			return;
+		ActivateBlockOnSelection = activate;
+		Changed?.Invoke();
+	}
+
 	public void Increment() {
 		ActionCount++;
 		Changed?.Invoke();

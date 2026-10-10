@@ -1,0 +1,55 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Application.UI
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard
+@inherits BlazorWizardStep<WorkspaceSetupDraft>
+
+<div class="workspace-details">
+	<h3>Name your workspace</h3>
+	<p class="text-body-secondary">Start with a name and choose the path that suits you.</p>
+	<label class="form-label" for="@_nameId">Workspace name</label>
+	<input id="@_nameId" class="form-control mb-4" maxlength="60" placeholder="e.g. Design studio" @bind="Model.Name" @bind:event="oninput" />
+	<fieldset>
+		<legend class="fs-6">Workspace mode</legend>
+		<div class="workspace-mode-options">
+			<label class="workspace-mode @(Model.Mode == "Solo" ? "selected" : string.Empty)">
+				<input type="radio" name="@_modeName" value="Solo" aria-label="Solo" checked="@(Model.Mode == "Solo")" @onchange="SelectSolo" />
+				<span><strong>Solo</strong><span>A focused space. Proceed directly from Settings to Review.</span></span>
+				<i class="fas fa-user" aria-hidden="true"></i>
+			</label>
+			<label class="workspace-mode @(Model.Mode == "Team" ? "selected" : string.Empty)">
+				<input type="radio" name="@_modeName" value="Team" aria-label="Team" checked="@(Model.Mode == "Team")" @onchange="SelectTeam" />
+				<span><strong>Team</strong><span>A shared space. Add a Reviewers step before Review.</span></span>
+				<i class="fas fa-users" aria-hidden="true"></i>
+			</label>
+		</div>
+	</fieldset>
+</div>
+
+@code {
+	private readonly string _nameId = $"workspace-name-{Guid.NewGuid():N}";
+	private readonly string _modeName = $"workspace-mode-{Guid.NewGuid():N}";
+
+	public override string Title => "Workspace details";
+
+	public override Task<Result> OnNextAsync() {
+		if (string.IsNullOrWhiteSpace(Model.Name))
+			return Task.FromResult(Result.Error("Enter a workspace name before continuing."));
+		Model.Name = Model.Name.Trim();
+		Model.Acknowledged = false;
+		Wizard.UpdateSteps(WizardStepUpdateType.ReplaceAllNext, new[] { typeof(WorkspaceSettingsStep), typeof(WorkspaceReviewStep) });
+		return Task.FromResult(Result.Success);
+	}
+
+	private void SelectSolo() => Model.Mode = "Solo";
+
+	private void SelectTeam() => Model.Mode = "Team";
+}

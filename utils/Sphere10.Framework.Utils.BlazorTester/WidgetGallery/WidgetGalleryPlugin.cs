@@ -83,7 +83,7 @@ public static class WidgetGalleryPlugin {
 				.WithName("Legacy examples")
 				.WithIconUrl("img/logo.svg")
 				.WithTooltip("Original gallery and loader examples")
-				.WithPosition(2)
+				.WithPosition(3)
 				.WithDefaultScreen<LegacyGalleryScreen>()
 				.ConfigureMenu(menu => menu
 					.WithId("examples")

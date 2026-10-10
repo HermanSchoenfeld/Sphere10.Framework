@@ -1,0 +1,58 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.collection-gallery { max-width: 90rem; margin: 0 auto; min-width: 0; }
+.gallery-heading { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+.gallery-heading h1 { margin: .4rem 0 .5rem; }
+.gallery-heading p { color: var(--sphere10-muted); margin: 0; max-width: 44rem; }
+.gallery-eyebrow { color: var(--sphere10-muted); font-size: .7rem; font-weight: 700; letter-spacing: .15em; }
+.gallery-view-switch { display: flex; gap: .4rem; flex-shrink: 0; }
+.gallery-controls { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; padding: 1rem; background: var(--sphere10-surface); border: 1px solid var(--sphere10-border); border-radius: var(--sphere10-panel-radius); }
+.gallery-controls label { display: grid; gap: .35rem; font-size: .85rem; min-width: 8rem; margin: 0; }
+.gallery-controls .gallery-search { flex: 1 1 13rem; }
+.gallery-controls select { width: 100%; }
+.gallery-result { color: var(--sphere10-muted); margin: 1rem 0; font-size: .85rem; }
+.collection-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.collection-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: var(--sphere10-surface); border: var(--sphere10-card-border-width) solid var(--sphere10-border); border-radius: var(--sphere10-panel-radius); box-shadow: var(--sphere10-card-shadow); }
+.collection-card.is-selected { outline: 2px solid var(--sphere10-accent); outline-offset: 2px; }
+.collection-cover { display: block; position: relative; padding: 0; border: 0; border-radius: 0; width: 100%; aspect-ratio: 2 / 1; background: var(--sphere10-surface-raised); text-align: left; cursor: pointer; overflow: hidden; }
+.collection-cover:focus-visible { outline: 3px solid var(--sphere10-focus); outline-offset: -3px; }
+.cover-category, .cover-selected { position: absolute; top: .75rem; padding: .3rem .55rem; background: var(--sphere10-surface); color: var(--sphere10-text); border-radius: var(--sphere10-control-radius); font-size: .7rem; font-weight: 600; }
+.cover-category { left: .75rem; }
+.cover-selected { right: .75rem; }
+.collection-content { padding: 1.15rem; flex: 1; display: flex; flex-direction: column; }
+.collection-title { display: flex; justify-content: space-between; align-items: baseline; gap: .75rem; }
+.collection-title h2 { font-size: 1.15rem; margin: 0; }
+.collection-status { font-size: .75rem; font-weight: 600; flex-shrink: 0; text-align: right; color: var(--sphere10-muted); }
+.status-active { color: var(--sphere10-success-text); }
+.status-draft { color: var(--sphere10-warning-text); }
+.collection-content > p { color: var(--sphere10-muted); margin: .65rem 0 1rem; font-size: .85rem; line-height: 1.5; }
+.collection-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: auto; }
+.collection-metrics div { display: grid; gap: .2rem; }
+.collection-metrics span { font-size: .6rem; letter-spacing: .08em; color: var(--sphere10-muted); }
+.collection-metrics strong { font-size: 1.35rem; }
+.collection-metrics small { font-size: .75rem; margin-left: .1rem; }
+.collection-content progress { width: 100%; height: .45rem; margin-top: .7rem; accent-color: var(--sphere10-accent); }
+.collection-footer { display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto; gap: .65rem; align-items: center; padding: .9rem 1.15rem; border-top: 1px solid var(--sphere10-border); background: var(--sphere10-card-header-background); }
+.collection-avatar { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--sphere10-selected); color: var(--sphere10-accent-text); font-size: .65rem; font-weight: 700; }
+.collection-footer div { display: grid; gap: .15rem; min-width: 0; }
+.collection-footer strong { font-size: .75rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.collection-footer div > span { font-size: .65rem; color: var(--sphere10-muted); }
+.collection-footer .btn { padding: .3rem .55rem; font-size: .75rem; }
+.gallery-pager { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin: 1.25rem 0; font-size: .85rem; }
+.gallery-page-buttons { display: flex; align-items: center; gap: .5rem; }
+.gallery-page-buttons .btn { display: grid; place-items: center; padding: 0; width: 2rem; height: 2rem; font-size: 1.15rem; }
+.gallery-pager label { display: flex; align-items: center; gap: .5rem; margin: 0; }
+.gallery-empty { border: 1px dashed var(--sphere10-border-strong); border-radius: var(--sphere10-panel-radius); text-align: center; padding: 3rem 1rem; }
+.gallery-empty > i { font-size: 2rem; color: var(--sphere10-muted); margin-bottom: 1rem; }
+.gallery-empty h2 { font-size: 1.3rem; }
+.gallery-foundations { border-top: 1px solid var(--sphere10-border); padding-top: 1rem; color: var(--sphere10-muted); font-size: .85rem; margin-top: 1.25rem; }
+.gallery-foundations summary { color: var(--sphere10-text); cursor: pointer; margin-bottom: .75rem; }
+@media (max-width: 1100px) { .collection-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .gallery-heading { align-items: start; flex-direction: column; } .collection-cards { grid-template-columns: minmax(0, 1fr); } .gallery-pager { justify-content: center; } }

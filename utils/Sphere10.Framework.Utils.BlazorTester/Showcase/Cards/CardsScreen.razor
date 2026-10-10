@@ -1,0 +1,238 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@inherits BlazorApplicationScreen
+@inject CollectionCatalogue Catalogue
+
+<section class="collection-gallery" data-showcase="cards">
+	<header class="gallery-heading">
+		<div><span class="gallery-eyebrow">COMPOSED APPLICATION PATTERN</span><h1>Creative collections</h1>
+			<p>Browse visually, compare in a table, and open a collection in its own retained workspace.</p></div>
+		<div class="gallery-view-switch" role="group" aria-label="Collection presentation">
+			<button type="button" class="btn @(!_tableView ? "btn-primary" : "btn-outline-secondary")" aria-pressed="@((!_tableView).ToString().ToLowerInvariant())" @onclick="() => ChangeViewAsync(false)">
+				<i class="fas fa-th-large" aria-hidden="true"></i> Cards
+			</button>
+			<button type="button" class="btn @(_tableView ? "btn-primary" : "btn-outline-secondary")" aria-pressed="@_tableView.ToString().ToLowerInvariant()" @onclick="() => ChangeViewAsync(true)">
+				<i class="fas fa-table" aria-hidden="true"></i> Table
+			</button>
+		</div>
+	</header>
+	<div class="gallery-controls" role="search" aria-label="Filter collections">
+		<label class="gallery-search">Search collections
+			<input type="search" class="form-control" placeholder="Name, owner or description" @bind="_search" @bind:event="oninput" @onkeydown="SearchKeyDownAsync" />
+		</label>
+		<button type="button" class="btn btn-outline-primary" @onclick="ApplyFiltersAsync">Search</button>
+		<label>Status<select class="form-select" @bind="_status" @bind:after="ApplyFiltersAsync">
+			<option value="">All statuses</option><option>Active</option><option>Draft</option><option>Archived</option>
+		</select></label>
+		<label>Category<select class="form-select" @bind="_category" @bind:after="ApplyFiltersAsync">
+			<option value="">All categories</option><option>Photography</option><option>Illustration</option><option>Research</option>
+		</select></label>
+		@if (!_tableView) {
+			<label>Sort by<select class="form-select" @bind="_sort" @bind:after="SortAsync">
+				<option value="Name">Name</option><option value="Updated">Recently updated</option><option value="Progress">Progress</option>
+				<option value="Owner">Owner</option><option value="Category">Category</option><option value="Status">Status</option><option value="ItemCount">Item count</option>
+				<option value="Description">Description</option>
+			</select></label>
+			<label>Order<select class="form-select" @bind="_sortDirection" @bind:after="SortAsync">
+				<option value="@SortDirection.Ascending">Ascending</option><option value="@SortDirection.Descending">Descending</option>
+			</select></label>
+		}
+		<button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@(string.IsNullOrEmpty(_search) && string.IsNullOrEmpty(_status) && string.IsNullOrEmpty(_category))">Clear</button>
+	</div>
+	<p class="gallery-result" role="status">@_controller.TotalCount collections · @SelectedText</p>
+	@if (!string.IsNullOrEmpty(_controller.ErrorMessage)) {
+		<p class="alert alert-danger" role="alert">@_controller.ErrorMessage</p>
+	}
+	@if (_tableView) {
+		<BlazorGrid @ref="_grid" TItem="CreativeCollection" Id="collection-table" Caption="Creative collections"
+			DataSource="_dataSource" Columns="_columns" Actions="_actions" PageSize="6" PageSizeOptions="_pageSizes"
+			AllowedCapabilities="TableCapabilities" AllowCellEditing="false" SelectedItemChanged="SelectTableItem"
+			EmptyText="No collections match these filters. Choose Clear to see everything." />
+	} else {
+		@if (_controller.Items.Length == 0) {
+			<div class="gallery-empty"><i class="fas fa-search" aria-hidden="true"></i><h2>No matching collections</h2>
+				<p>Try another name, owner, status or category.</p><button type="button" class="btn btn-primary" @onclick="ClearFiltersAsync">Clear filters</button></div>
+		} else {
+			<div class="collection-cards">
+				@foreach (var item in _controller.Items) {
+					<article @key="item.Id" class="collection-card @(_selectedId == item.Id ? "is-selected" : string.Empty)" data-collection-id="@item.Id">
+						<button type="button" class="collection-cover" aria-label="Select @item.Name" aria-pressed="@((_selectedId == item.Id).ToString().ToLowerInvariant())" @onclick="() => SelectCard(item)">
+							<CollectionArtwork Variant="item.Artwork" Label="@($"Illustration for {item.Name}")" />
+							<span class="cover-category">@item.Category</span>
+							@if (_selectedId == item.Id) { <span class="cover-selected"><i class="fas fa-check" aria-hidden="true"></i> Selected</span> }
+						</button>
+						<div class="collection-content">
+							<div class="collection-title"><h2>@item.Name</h2><span class="collection-status status-@item.Status.ToString().ToLowerInvariant()">@item.Status</span></div>
+							<p>@item.Description</p>
+							<div class="collection-metrics"><div><span>COLLECTED ITEMS</span><strong>@item.ItemCount</strong></div>
+								<div><span>COMPLETION</span><strong>@item.Progress<small>%</small></strong></div></div>
+							<progress max="100" value="@item.Progress" aria-label="@($"{item.Name} completion")">@item.Progress%</progress>
+						</div>
+						<footer class="collection-footer"><span class="collection-avatar" aria-hidden="true">@Initials(item.Owner)</span>
+							<div><strong>@item.Owner</strong><span>Updated @item.Updated.ToString("dd MMM yyyy")</span></div>
+							<button type="button" class="btn btn-outline-primary" aria-label="Open @item.Name" @onclick="() => OpenAsync(item)">Open <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+						</footer>
+					</article>
+				}
+			</div>
+			<nav class="gallery-pager" aria-label="Collection pages">
+				<span>@_controller.TotalCount collections</span>
+				<div class="gallery-page-buttons">
+					<button type="button" class="btn btn-outline-secondary" aria-label="First collection page" disabled="@(_controller.CurrentPage == 0)" @onclick="() => _controller.SetPageAsync(0)">«</button>
+					<button type="button" class="btn btn-outline-secondary" aria-label="Previous collection page" disabled="@(_controller.CurrentPage == 0)" @onclick="() => _controller.SetPageAsync(_controller.CurrentPage - 1)">‹</button>
+					<span>Page @(_controller.CurrentPage + 1) of @_controller.TotalPages</span>
+					<button type="button" class="btn btn-outline-secondary" aria-label="Next collection page" disabled="@(_controller.CurrentPage >= _controller.TotalPages - 1)" @onclick="() => _controller.SetPageAsync(_controller.CurrentPage + 1)">›</button>
+					<button type="button" class="btn btn-outline-secondary" aria-label="Last collection page" disabled="@(_controller.CurrentPage >= _controller.TotalPages - 1)" @onclick="() => _controller.SetPageAsync(_controller.TotalPages - 1)">»</button>
+				</div>
+				<label>Cards per page <PageSizeSelector Value="_controller.PageSize" ValueExpression="() => _controller.PageSize" ValueChanged="_controller.SetPageSizeAsync" PageSizeOptions="_pageSizes" /></label>
+			</nav>
+		}
+	}
+	<details class="gallery-foundations"><summary>Framework foundations in this example</summary>
+		<p><code>BulkFetchDataSource&lt;T&gt;</code> supplies both views. <code>BlazorGridController&lt;T&gt;</code> owns card paging;
+			<code>BlazorGrid&lt;T&gt;</code> supplies the table. Theme tokens style the cards and SVG artwork.</p>
+		<p>Opening a collection passes an immutable ID and an instance key to the shared screen host. Open it again to return to the same tab.
+			Edits are buffered until Save; the screen guard requires Save or Discard before leaving. Sample data lasts for this browser session.</p>
+	</details>
+</section>
+
+@code {
+	private const DataSourceCapabilities TableCapabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanPage | DataSourceCapabilities.CanSort;
+	private readonly IBlazorGridController<CreativeCollection> _controller = new BlazorGridController<CreativeCollection>();
+	private readonly int[] _pageSizes = { 3, 6, 9 };
+	private CollectionDataSource _dataSource;
+	private BlazorGrid<CreativeCollection> _grid;
+	private BlazorGridColumn<CreativeCollection>[] _columns;
+	private GridAction<CreativeCollection>[] _actions;
+	private string _selectedId;
+	private string _search = string.Empty;
+	private string _status = string.Empty;
+	private string _category = string.Empty;
+	private string _sort = nameof(CreativeCollection.Name);
+	private SortDirection _sortDirection = SortDirection.Ascending;
+	private bool _tableView;
+	private bool _syncTable;
+	private bool _disposed;
+
+	public override string Title => "Creative collections";
+
+	private string SelectedText => _selectedId == null ? "Select a cover or table row, then open a collection." : $"Selected: {Catalogue.Read(_selectedId)?.Name}.";
+
+	protected override async Task OnInitializedAsync() {
+		_dataSource = new CollectionDataSource(Catalogue);
+		var name = BlazorGridColumn<CreativeCollection>.For(item => item.Name, "Collection");
+		name.ExpandsToFit = true;
+		name.CanEditCell = false;
+		var description = BlazorGridColumn<CreativeCollection>.For(item => item.Description);
+		description.ExpandsToFit = true;
+		description.Width = 240;
+		description.CanEditCell = false;
+		_columns = new[] { name, BlazorGridColumn<CreativeCollection>.For(item => item.Category),
+			BlazorGridColumn<CreativeCollection>.For(item => item.Owner), BlazorGridColumn<CreativeCollection>.For(item => item.Status),
+			BlazorGridColumn<CreativeCollection>.For(item => item.ItemCount, "Items"), BlazorGridColumn<CreativeCollection>.For(item => item.Progress, "Completion (%)"), description };
+		_actions = new[] { new GridAction<CreativeCollection>("Open", item => item, "↗") { ActionWorkAsync = OpenAsync } };
+		_controller.Changed += ControllerChanged;
+		Catalogue.Changed += CatalogueChanged;
+		await _controller.BindAsync(_dataSource, TableCapabilities, 6);
+		await base.OnInitializedAsync();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		await base.OnAfterRenderAsync(firstRender);
+		if (!_syncTable || _grid == null)
+			return;
+		_syncTable = false;
+		await _grid.SetPageSizeAsync(_controller.PageSize);
+		await _grid.Controller.SortAsync(_controller.SortProperty, _controller.SortDirection);
+		await _grid.SetPageAsync(_controller.CurrentPage);
+		var selected = _grid.Controller.Items.FirstOrDefault(item => item.Id == _selectedId);
+		if (selected != null)
+			_grid.Controller.Select(selected);
+	}
+
+	protected override async ValueTask DisposeAsyncCore() {
+		_disposed = true;
+		Catalogue.Changed -= CatalogueChanged;
+		_controller.Changed -= ControllerChanged;
+		await _controller.DisposeAsync();
+		await base.DisposeAsyncCore();
+	}
+
+	private static string Initials(string name) => string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(part => part[0]));
+
+	private void ControllerChanged() {
+		if (!_disposed)
+			_ = InvokeAsync(StateHasChanged);
+	}
+
+	private void CatalogueChanged() {
+		if (!_disposed)
+			_ = InvokeAsync(RefreshAsync);
+	}
+
+	private void SelectCard(CreativeCollection item) {
+		_selectedId = item.Id;
+		_controller.Select(item);
+	}
+
+	private void SelectTableItem(CreativeCollection item) {
+		if (item != null)
+			_selectedId = item.Id;
+	}
+
+	private async Task ChangeViewAsync(bool tableView) {
+		if (tableView == _tableView)
+			return;
+		if (!tableView && _grid != null) {
+			_sort = string.IsNullOrEmpty(_grid.Controller.SortProperty) ? nameof(CreativeCollection.Name) : _grid.Controller.SortProperty;
+			_sortDirection = _grid.Controller.SortDirection == SortDirection.None ? SortDirection.Ascending : _grid.Controller.SortDirection;
+			await _controller.SetPageSizeAsync(_grid.Controller.PageSize);
+			await _controller.SortAsync(_grid.Controller.SortProperty, _grid.Controller.SortDirection);
+			await _controller.SetPageAsync(_grid.CurrentPage);
+		}
+		_tableView = tableView;
+		_syncTable = tableView;
+	}
+
+	private async Task ApplyFiltersAsync() {
+		_dataSource.FilterText = _search;
+		_dataSource.StatusFilter = _status;
+		_dataSource.CategoryFilter = _category;
+		await _controller.SetPageAsync(0);
+		await _controller.RefreshAsync();
+		if (_tableView && _grid != null) {
+			await _grid.SetPageAsync(0);
+			await _grid.RefreshAsync();
+		}
+	}
+
+	private async Task ClearFiltersAsync() {
+		_search = _status = _category = string.Empty;
+		await ApplyFiltersAsync();
+	}
+
+	private Task SortAsync() => _controller.SortAsync(_sort, _sortDirection);
+
+	private Task SearchKeyDownAsync(KeyboardEventArgs args) => args.Key == "Enter" ? ApplyFiltersAsync() : Task.CompletedTask;
+
+	private async Task RefreshAsync() {
+		_dataSource.Invalidate();
+		await _controller.RefreshAsync();
+		if (_tableView && _grid != null)
+			await _grid.RefreshAsync();
+	}
+
+	private async Task OpenAsync(CreativeCollection item) {
+		_selectedId = item.Id;
+		await ScreenHost.ActivateScreenAsync("patterns", "collection-detail",
+			new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(CollectionDetailScreen.CollectionId)] = item.Id }, item.Id));
+	}
+}

@@ -1,0 +1,124 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard
+@inject ViewService ViewService
+
+<section class="guided-workspace demo-example" data-demo="guided-wizards">
+	<div class="guided-introduction">
+		<div>
+			<span class="guided-eyebrow">One draft · two hosts</span>
+			<h2>Workspace setup</h2>
+			<p>Create a solo or team workspace. Try an invalid value, take a preset detour, then go Back and change the branch.</p>
+		</div>
+		<i class="fas fa-layer-group guided-symbol" aria-hidden="true"></i>
+	</div>
+	<div class="guided-launchers">
+		<button type="button" class="btn btn-primary" disabled="@IsRunning" @onclick="StartEmbedded">Start embedded wizard</button>
+		<button type="button" class="btn btn-outline-primary" disabled="@IsRunning" @onclick="OpenDialogAsync">Open dialog wizard</button>
+		<span class="text-body-secondary">The same builder and steps run in either host.</span>
+	</div>
+
+	@if (_embeddedWizard != null) {
+		<section class="guided-editor" aria-label="Embedded workspace wizard">
+			<div class="guided-progress-heading"><strong>Step @(_embeddedWizard.CurrentStepIndex + 1) of @_embeddedWizard.Steps.Length</strong><span>@WorkspaceSetupFlow.StepTitle(_embeddedWizard.CurrentStep)</span></div>
+			<ol class="guided-progress" aria-label="Current wizard route">
+				@for (var index = 0; index < _embeddedWizard.Steps.Length; index++) {
+					<li class="@(index == _embeddedWizard.CurrentStepIndex ? "current" : index < _embeddedWizard.CurrentStepIndex ? "complete" : string.Empty)"
+						aria-current="@(index == _embeddedWizard.CurrentStepIndex ? "step" : null)">@WorkspaceSetupFlow.StepTitle(_embeddedWizard.Steps[index])</li>
+				}
+			</ol>
+			<CascadingValue Value="@((IBlazorWizard)_embeddedWizard)">
+				<CascadingValue Name="OnFinished" Value="@EmbeddedFinished">
+					<CascadingValue Name="OnCancelled" Value="@EmbeddedCancelled">
+						<CascadingValue Name="OnStepChange" Value="@StepChanged">
+							<BlazorWizardHost @key="_embeddedWizard" />
+						</CascadingValue>
+					</CascadingValue>
+				</CascadingValue>
+			</CascadingValue>
+		</section>
+	}
+
+	<div class="guided-result" role="status" data-testid="workspace-result">
+		<i class="fas @(_completed == null ? "fa-clipboard-list" : "fa-check-circle")" aria-hidden="true"></i>
+		<div><strong>@_result</strong><span>Successful completions: @_completionCount</span></div>
+	</div>
+	@if (_completed != null) {
+		<dl class="guided-snapshot" data-testid="workspace-snapshot">
+			<div><dt>Workspace</dt><dd>@_completed.Name</dd></div>
+			<div><dt>Mode</dt><dd>@_completed.Mode</dd></div>
+			<div><dt>Capacity</dt><dd>@_completed.Capacity people</dd></div>
+			<div><dt>Access</dt><dd>@_completed.Access</dd></div>
+			<div><dt>Preset</dt><dd>@_completed.Preset</dd></div>
+			@if (_completed.Mode == "Team") {
+				<div><dt>Reviewers</dt><dd>@_completed.Reviewers</dd></div>
+			}
+		</dl>
+	}
+
+	<details class="guided-notes">
+		<summary>What this example demonstrates</summary>
+		<ul>
+			<li>Next validates the current step; Back keeps the values in the same draft.</li>
+			<li>Team inserts a Reviewers step. Switching back to Solo removes that branch.</li>
+			<li>Choose a preset temporarily replaces the remaining path, then returns to Settings.</li>
+			<li>Finish copies the reviewed draft into the completion summary once. Cancel leaves that summary intact.</li>
+			<li>Drafts and completed examples belong to this screen instance and last for this session.</li>
+		</ul>
+		<code>BlazorWizardBuilder · UpdateSteps · BlazorWizardHost · ViewService</code>
+	</details>
+</section>
+
+@code {
+	private IBlazorWizard<WorkspaceSetupDraft> _embeddedWizard;
+	private WorkspaceSetupDraft _completed;
+	private string _result = "No workspace completed yet.";
+	private int _completionCount;
+	private bool _dialogOpen;
+
+	private bool IsRunning => _embeddedWizard != null || _dialogOpen;
+	private EventCallback EmbeddedFinished => EventCallback.Factory.Create(this, CloseEmbedded);
+	private EventCallback EmbeddedCancelled => EventCallback.Factory.Create(this, CloseEmbedded);
+	private EventCallback StepChanged => EventCallback.Factory.Create(this, StateHasChanged);
+
+	private void StartEmbedded() => _embeddedWizard = CreateWizard();
+
+	private async Task OpenDialogAsync() {
+		_dialogOpen = true;
+		using var scope = Tools.Scope.ExecuteOnDispose(() => _dialogOpen = false);
+		await ViewService.WizardDialogAsync(CreateWizard(), new ModalOptions { Size = ModalSize.Large });
+	}
+
+	private void CloseEmbedded() => _embeddedWizard = null;
+
+	private IBlazorWizard<WorkspaceSetupDraft> CreateWizard() => new BlazorWizardBuilder<WorkspaceSetupDraft>()
+		.NewWizard("Workspace setup")
+		.WithModel(new WorkspaceSetupDraft())
+		.WithCancellation(true)
+		.AddStep<WorkspaceDetailsStep>()
+		.AddStep<WorkspaceSettingsStep>()
+		.AddStep<WorkspaceReviewStep>()
+		.OnFinished(async draft => {
+			_completed = draft.Copy();
+			_completionCount++;
+			_result = $"Workspace '{_completed.Name}' completed.";
+			await InvokeAsync(StateHasChanged);
+			return true;
+		})
+		.OnCancelled(async draft => {
+			_result = "Setup cancelled. Latest completed workspace kept.";
+			await InvokeAsync(StateHasChanged);
+			return true;
+		})
+		.Build();
+}

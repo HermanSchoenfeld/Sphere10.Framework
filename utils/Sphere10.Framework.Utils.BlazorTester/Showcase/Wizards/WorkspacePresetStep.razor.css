@@ -1,0 +1,15 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+Distributed under the MIT software license, see the accompanying file LICENSE or visit https://opensource.org/license/mit.
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.workspace-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.workspace-preset { display: flex; flex-direction: column; align-items: flex-start; gap: .65rem; padding: 1rem; text-align: left; color: var(--sphere10-text); background: var(--sphere10-surface); border: 1px solid var(--sphere10-border); border-radius: var(--sphere10-panel-radius); cursor: pointer; font: inherit; }
+.workspace-preset.selected { border-color: var(--sphere10-accent); box-shadow: inset 0 0 0 1px var(--sphere10-accent); }
+.workspace-preset:hover { background: var(--sphere10-background); }
+.workspace-preset:focus-visible { outline: 2px solid var(--sphere10-accent); outline-offset: 3px; }
+.workspace-preset > i { color: var(--sphere10-accent); font-size: 1.25rem; }
+.workspace-preset > span, .workspace-preset > small { color: var(--sphere10-muted); font-size: .85rem; }
+.workspace-preset > small { margin-top: auto; }
+@media(max-width: 650px) { .workspace-presets { grid-template-columns: minmax(0, 1fr); } }

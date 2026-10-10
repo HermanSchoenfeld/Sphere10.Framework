@@ -1,0 +1,18 @@
+/*
+Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+Author: Herman Schoenfeld
+
+Distributed under the MIT software license, see the accompanying file
+LICENSE or visit https://opensource.org/license/mit.
+
+This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*/
+.collection-artwork { display: block; width: 100%; height: 100%; object-fit: cover; }
+.artwork-background { fill: color-mix(in srgb, var(--sphere10-accent) 24%, var(--sphere10-surface)); }
+.artwork-mid { fill: color-mix(in srgb, var(--sphere10-accent) 70%, var(--sphere10-info)); }
+.artwork-foreground { fill: color-mix(in srgb, var(--sphere10-accent) 65%, var(--sphere10-text)); }
+.artwork-light { fill: color-mix(in srgb, var(--sphere10-warning) 40%, var(--sphere10-surface)); }
+.artwork-line { fill: none; stroke: var(--sphere10-surface); stroke-width: 4; opacity: .7; }
+.artwork-orbit { fill: none; stroke: var(--sphere10-text); stroke-width: 3; opacity: .65; }
+.artwork-1 .artwork-background { fill: color-mix(in srgb, var(--sphere10-info) 25%, var(--sphere10-surface)); }
+.artwork-2 .artwork-background { fill: color-mix(in srgb, var(--sphere10-warning) 30%, var(--sphere10-surface)); }

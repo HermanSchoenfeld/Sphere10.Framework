@@ -1,0 +1,279 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using System.Threading
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@namespace Sphere10.Framework.Utils.BlazorTester.Showcase.Commands
+@inherits BlazorApplicationScreen
+@inject ViewService ViewService
+
+<section class="commands-showcase" data-showcase="commands">
+	<header class="commands-heading">
+		<div class="commands-heading-icon" aria-hidden="true"><span class="fas fa-sliders-h"></span></div>
+		<div>
+			<p class="commands-eyebrow">APPLICATION PATTERNS</p>
+			<h1>Menus &amp; commands</h1>
+			<p>One command definition can appear in the top menu and toolbar, with availability driven by the active screen.</p>
+		</div>
+	</header>
+
+	<div class="commands-layout">
+		<section class="commands-panel" aria-labelledby="commands-context-heading">
+			<div class="commands-panel-heading"><span class="commands-step">01</span><h2 id="commands-context-heading">Choose the context</h2></div>
+			<label class="form-label" for="command-sample">Sample document</label>
+			<select class="form-select" id="command-sample" @bind="_selectedSample" @bind:after="SelectionChanged">
+				<option value="-1">No document selected</option>
+				@for (var index = 0; index < _samples.Length; index++) {
+					<option value="@index">@_samples[index].Name</option>
+				}
+			</select>
+			<p class="commands-hint">Clear the selection to disable Preview and the entire Export group.</p>
+			<label class="form-check commands-switch">
+				<input class="form-check-input" type="checkbox" @bind="_allowReview" @bind:after="ReviewAvailabilityChanged" />
+				<span class="form-check-label">Allow review actions</span>
+			</label>
+			<p class="commands-hint">Tools → Mark reviewed requires a document, this permission, and an unreviewed selection.</p>
+			<label class="form-check commands-switch">
+				<input class="form-check-input" type="checkbox" @bind="_showDiagnostics" @bind:after="DiagnosticsVisibilityChanged" />
+				<span class="form-check-label">Show advanced command</span>
+			</label>
+			<p class="commands-hint">Tools → Inspect command context is added or removed from the menu immediately.</p>
+		</section>
+
+		<section class="commands-panel commands-document" aria-labelledby="commands-document-heading">
+			<div class="commands-panel-heading"><span class="commands-step">02</span><h2 id="commands-document-heading">Use the host commands</h2></div>
+			<div class="commands-document-heading">
+				<span class="commands-document-icon fas fa-file-alt" aria-hidden="true"></span>
+				<div><h3 data-testid="command-selected-document">@(HasSample ? SelectedSample.Name : "Choose a document")</h3><p>@(HasSample ? SelectedSample.Audience : "Commands will follow the selection above.")</p></div>
+				<span class="badge @(IsReviewed ? "text-bg-success" : "text-bg-secondary")" data-testid="command-review-state">@(IsReviewed ? "Reviewed" : HasSample ? "Draft" : "No selection")</span>
+			</div>
+			<dl class="commands-facts">
+				<div><dt>Sections</dt><dd>@(HasSample ? SelectedSample.Sections.ToString() : "—")</dd></div>
+				<div><dt>Preview &amp; export</dt><dd data-testid="command-availability">@(HasSample ? "Available" : "Disabled")</dd></div>
+				<div><dt>Review action</dt><dd>@(CanReview ? "Available" : IsReviewed ? "Already reviewed" : "Disabled")</dd></div>
+			</dl>
+			<div class="commands-guide">
+				<p><strong>File / toolbar:</strong> open Preview or choose Export → Documents or Structured data. An export prepares sample content below.</p>
+				<p><strong>Tools:</strong> mark the selected document reviewed, clear all review marks, or inspect the optional command context.</p>
+				<p><strong>Switch screens:</strong> this screen's File additions, Tools menu, and toolbar commands follow the active screen.</p>
+			</div>
+		</section>
+	</div>
+
+	<div class="commands-layout commands-results">
+		<section class="commands-panel" aria-labelledby="commands-output-heading">
+			<div class="commands-panel-heading"><span class="commands-step">03</span><h2 id="commands-output-heading">Prepared content</h2></div>
+			@if (_preparedContent == null) {
+				<div class="commands-empty"><span class="fas fa-file-export" aria-hidden="true"></span><p>Choose a format from Export to see the result here.</p></div>
+			} else {
+				<p class="commands-output-label" data-testid="command-output-label">@_preparedLabel</p>
+				<pre tabindex="0" aria-label="Prepared export preview" data-testid="command-output">@_preparedContent</pre>
+			}
+		</section>
+		<section class="commands-panel" aria-labelledby="commands-history-heading">
+			<div class="commands-panel-heading"><span class="commands-step">04</span><h2 id="commands-history-heading">Activity</h2></div>
+			<p class="commands-hint">The latest six actions are kept in this screen's session.</p>
+			<ol class="commands-history" aria-live="polite" data-testid="command-activity">
+				@foreach (var activity in _activity) {
+					<li><span class="fas fa-check-circle" aria-hidden="true"></span><span>@activity</span></li>
+				}
+			</ol>
+		</section>
+	</div>
+
+	<details class="commands-api">
+		<summary>Framework APIs behind this example</summary>
+		<p><code>BlazorApplicationScreen.Menus</code> contributes File and Tools; <code>ToolBarItems</code> shares the Preview and Export definitions.</p>
+		<p><code>WithChildren</code> creates the two-level Export menu, <code>EnabledWhen</code> reads this screen's state, and <code>WithVisibility</code> controls the optional action.</p>
+		<p><code>NotifyScreenChanged()</code> refreshes the host after context changes; <code>ViewService.DialogAsync</code> displays the preview using the active theme.</p>
+	</details>
+</section>
+
+@code {
+	private readonly (string Name, string Audience, int Sections)[] _samples = {
+		("Field notes", "Operations team", 4),
+		("Quarterly brief", "Leadership team", 6),
+		("Workshop agenda", "Workshop participants", 3)
+	};
+	private readonly HashSet<string> _reviewedDocuments = new();
+	private readonly List<string> _activity = new() { "Ready. Select a document and explore the host menus." };
+	private BlazorApplicationMenuItemBase _previewCommand;
+	private BlazorApplicationMenuItemBase _exportCommand;
+	private IBlazorApplicationMenu[] _menus;
+	private bool _menuDiagnosticsVisibility;
+	private int _selectedSample = -1;
+	private bool _allowReview = true;
+	private bool _showDiagnostics;
+	private string _preparedContent;
+	private string _preparedLabel;
+
+	public override string Title => "Menus & commands";
+
+	public override IBlazorApplicationMenu[] Menus {
+		get {
+			if (_menus == null || _menuDiagnosticsVisibility != _showDiagnostics) {
+				if (_menus != null)
+					foreach (var menu in _menus)
+						if (ReferenceEquals(menu.Parent, Block))
+							menu.Parent = null;
+				_menuDiagnosticsVisibility = _showDiagnostics;
+				_menus = CreateMenus();
+			}
+			return Tools.Array.Clone(_menus);
+		}
+	}
+
+	private IBlazorApplicationMenu[] CreateMenus() => new IBlazorApplicationMenu[] {
+		new BlazorApplicationMenuBuilder()
+			.WithId("file")
+			.WithText("File")
+			.AddItem(PreviewCommand)
+			.AddItem(ExportCommand)
+			.Build(),
+		new BlazorApplicationMenuBuilder()
+			.WithId("tools")
+			.WithText("Tools")
+			.ConfigureItem(item => item
+				.WithId("showcase-mark-reviewed")
+				.WithText("Mark reviewed")
+				.WithIcon("fas fa-check-circle")
+				.EnabledWhen(() => CanReview)
+				.WithAction((_, token) => RunAsync(MarkReviewed, token))
+			)
+			.ConfigureItem(item => item
+				.WithId("showcase-clear-reviews")
+				.WithText("Clear review marks")
+				.WithIcon("fas fa-undo")
+				.EnabledWhen(() => _reviewedDocuments.Count > 0)
+				.WithAction((_, token) => RunAsync(ClearReviews, token))
+			)
+			.AddItem(new BlazorMenuSeparator())
+			.ConfigureItem(item => item
+				.WithId("showcase-inspect-context")
+				.WithText("Inspect command context")
+				.WithIcon("fas fa-info-circle")
+				.WithVisibility(_showDiagnostics)
+				.WithAction(InspectContextAsync)
+			)
+			.Build()
+	};
+
+	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { PreviewCommand, ExportCommand };
+
+	private bool HasSample => _selectedSample >= 0 && _selectedSample < _samples.Length;
+
+	private (string Name, string Audience, int Sections) SelectedSample => _samples[_selectedSample];
+
+	private bool IsReviewed => HasSample && _reviewedDocuments.Contains(SelectedSample.Name);
+
+	private bool CanReview => HasSample && _allowReview && !IsReviewed;
+
+	private BlazorApplicationMenuItemBase PreviewCommand => _previewCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("showcase-preview")
+		.WithText("Preview document")
+		.WithIcon("fas fa-eye")
+		.EnabledWhen(() => HasSample)
+		.WithAction(PreviewAsync)
+		.Build();
+
+	private BlazorApplicationMenuItemBase ExportCommand => _exportCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("showcase-export")
+		.WithText("Export")
+		.WithIcon("fas fa-file-export")
+		.EnabledWhen(() => HasSample)
+		.WithChildren(
+			new BlazorApplicationMenuItemBuilder()
+				.WithId("showcase-export-documents")
+				.WithText("Documents")
+				.WithIcon("fas fa-file-alt")
+				.WithChildren(CreateExportCommand("markdown", "Markdown"), CreateExportCommand("text", "Plain text"))
+				.Build(),
+			new BlazorApplicationMenuItemBuilder()
+				.WithId("showcase-export-data")
+				.WithText("Structured data")
+				.WithIcon("fas fa-table")
+				.WithChildren(CreateExportCommand("csv", "CSV"))
+				.Build()
+		)
+		.Build();
+
+	private BlazorApplicationMenuItemBase CreateExportCommand(string format, string title) => new BlazorApplicationMenuItemBuilder()
+		.WithId($"showcase-export-{format}")
+		.WithText(title)
+		.EnabledWhen(() => HasSample)
+		.WithAction((_, token) => RunAsync(() => PrepareExport(format, title), token))
+		.Build();
+
+	private Task RunAsync(Action action, CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		action();
+		return Task.CompletedTask;
+	}
+
+	private async Task PreviewAsync(IServiceProvider services, CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		if (!HasSample)
+			return;
+		var sample = SelectedSample;
+		RecordActivity($"Previewed {sample.Name}.");
+		await ViewService.DialogAsync("Document preview", $"{sample.Name} contains {sample.Sections} sections for the {sample.Audience.ToLowerInvariant()}. Review status: {(IsReviewed ? "reviewed" : "draft")}.");
+	}
+
+	private async Task InspectContextAsync(IServiceProvider services, CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		RecordActivity("Inspected the active command context.");
+		await ViewService.DialogAsync("Command context", $"Selection: {(HasSample ? SelectedSample.Name : "none")}. Preview and export: {(HasSample ? "available" : "disabled")}. Review action: {(CanReview ? "available" : "disabled")}. Reviewed documents: {_reviewedDocuments.Count}.");
+	}
+
+	private void PrepareExport(string format, string title) {
+		if (!HasSample)
+			return;
+		var sample = SelectedSample;
+		var reviewState = IsReviewed ? "Reviewed" : "Draft";
+		_preparedLabel = $"{sample.Name} · {title}";
+		_preparedContent = format switch {
+			"csv" => $"Document,Audience,Sections,Status\n{sample.Name},{sample.Audience},{sample.Sections},{reviewState}",
+			"markdown" => $"# {sample.Name}\n\n- Audience: {sample.Audience}\n- Sections: {sample.Sections}\n- Status: {reviewState}",
+			_ => $"{sample.Name}\n\nAudience: {sample.Audience}\nSections: {sample.Sections}\nStatus: {reviewState}"
+		};
+		RecordActivity($"Prepared {title} for {sample.Name}.");
+	}
+
+	private void MarkReviewed() {
+		if (!CanReview)
+			return;
+		_reviewedDocuments.Add(SelectedSample.Name);
+		RecordActivity($"Marked {SelectedSample.Name} reviewed.");
+	}
+
+	private void ClearReviews() {
+		_reviewedDocuments.Clear();
+		RecordActivity("Cleared all review marks.");
+	}
+
+	private void SelectionChanged() {
+		_preparedContent = null;
+		_preparedLabel = null;
+		RecordActivity(HasSample ? $"Selected {SelectedSample.Name}." : "Cleared the document selection.");
+	}
+
+	private void ReviewAvailabilityChanged() => RecordActivity(_allowReview ? "Enabled review actions." : "Disabled review actions.");
+
+	private void DiagnosticsVisibilityChanged() => RecordActivity(_showDiagnostics ? "Showed the advanced command." : "Hid the advanced command.");
+
+	private void RecordActivity(string message) {
+		_activity.Insert(0, message);
+		if (_activity.Count > 6)
+			_activity.RemoveAt(_activity.Count - 1);
+		NotifyScreenChanged();
+		StateHasChanged();
+	}
+}

@@ -145,7 +145,7 @@ public class BlazorApplicationBuilderTests {
 		Assert.That(options.Title, Is.EqualTo("Sphere10 Blazor demos"));
 		Assert.That(options.FaviconUrl, Is.EqualTo("img/logo.svg"));
 		Assert.That(options.FaviconContentType, Is.EqualTo("image/svg+xml"));
-		Assert.That(provider.GetServices<IBlazorPlugin>().Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery", "Screen policies" }));
+		Assert.That(provider.GetServices<IBlazorPlugin>().Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery", "Application patterns", "Screen policies" }));
 	}
 
 	[Test]

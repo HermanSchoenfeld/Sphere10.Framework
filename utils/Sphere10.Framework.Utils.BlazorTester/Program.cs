@@ -15,6 +15,7 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.Loader;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery;
+using Sphere10.Framework.Utils.BlazorTester.Showcase;
 
 namespace Sphere10.Framework.Utils.BlazorTester;
 
@@ -43,6 +44,7 @@ public static class Program {
 			.ConfigureApplication(WorkspaceCommands.Configure)
 			.ConfigurePlugin(Sphere10Plugin.Configure)
 			.ConfigurePlugin(WidgetGalleryPlugin.Configure)
+			.ConfigurePlugin(ShowcasePlugin.Configure)
 			.ConfigurePlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
 			.Build();
 	}

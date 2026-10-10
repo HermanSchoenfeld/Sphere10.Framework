@@ -9,15 +9,32 @@
 *@
 
 
-<header class="demo-page-header">
-	<h2>Explore the demos</h2>
-	<p>Explore reusable components and application screens with local sample data.</p>
-</header>
-<div class="demo-card-grid">
-	<a class="demo-card" href="components/grid"><i class="fas fa-table" aria-hidden="true"></i><h2>CRUD grid</h2><p>Edit typed fields, validate changes and select related records.</p></a>
-	<a class="demo-card" href="components/tables"><i class="fas fa-list-alt" aria-hidden="true"></i><h2>Tables</h2><p>Compare paged, virtual and streaming data.</p></a>
-	<a class="demo-card" href="components/dialogs"><i class="fas fa-comment-alt" aria-hidden="true"></i><h2>Dialogs</h2><p>Try information, confirmation and custom content.</p></a>
-	<a class="demo-card" href="components/wizards"><i class="fas fa-magic" aria-hidden="true"></i><h2>Wizards</h2><p>Follow a branching workflow with validation.</p></a>
-	<a class="demo-card" href="application"><i class="fas fa-desktop" aria-hidden="true"></i><h2>Workspace</h2><p>Retain screen state, guard edits and open independent scratchpads.</p></a>
-	<a class="demo-card" href="widget-gallery"><i class="fas fa-archive" aria-hidden="true"></i><h2>Legacy examples</h2><p>Browse the original plugin gallery and endpoint sample.</p></a>
+<div class="demo-tour" data-demo="tour">
+	<section aria-labelledby="tour-patterns">
+		<header class="tour-section-header"><span class="tour-number">01</span><div><h2 id="tour-patterns">Application patterns</h2><p>Explore complete interactions built from the public library APIs.</p></div></header>
+		<div class="demo-card-grid">
+			<a class="demo-card tour-card" href="patterns/cards"><i class="fas fa-th-large" aria-hidden="true"></i><span class="tour-category">BROWSE & EDIT</span><h3>Cards & collections</h3><p>Switch between artwork cards and a grid, filter a catalogue, and open retained editors for individual records.</p><span class="tour-card-footer">Keyed screens · draft guards <i class="fas fa-arrow-right" aria-hidden="true"></i></span></a>
+			<a class="demo-card tour-card" href="patterns/menus"><i class="fas fa-bars" aria-hidden="true"></i><span class="tour-category">NATIVE COMMANDS</span><h3>Menus & commands</h3><p>Try merged menus, nested toolbar actions, conditional availability and screen-specific commands.</p><span class="tour-card-footer">File · Tools · nested Export <i class="fas fa-arrow-right" aria-hidden="true"></i></span></a>
+			<a class="demo-card tour-card" href="patterns/wizards"><i class="fas fa-magic" aria-hidden="true"></i><span class="tour-category">GUIDED WORKFLOWS</span><h3>Workspace setup</h3><p>Follow a conditional workflow, choose a preset through a return step, and review a draft before finishing.</p><span class="tour-card-footer">Embedded & dialog hosts <i class="fas fa-arrow-right" aria-hidden="true"></i></span></a>
+			<a class="demo-card tour-card" href="patterns/themes"><i class="fas fa-palette" aria-hidden="true"></i><span class="tour-category">PRESENTATION</span><h3>Theme studio</h3><p>Choose from every theme preset and compare a dashboard, chart, editable form and preview dialog.</p><span class="tour-card-footer">Live theme · retained state <i class="fas fa-arrow-right" aria-hidden="true"></i></span></a>
+		</div>
+	</section>
+	<section aria-labelledby="tour-components">
+		<header class="tour-section-header"><span class="tour-number">02</span><div><h2 id="tour-components">Component reference</h2><p>Inspect individual controls and their interaction states.</p></div></header>
+		<div class="demo-card-grid">
+			<a class="demo-card tour-card compact" href="components/grid"><i class="fas fa-table" aria-hidden="true"></i><h3>CRUD grid</h3><p>Edit typed fields, validate changes and select related records.</p></a>
+			<a class="demo-card tour-card compact" href="components/tables"><i class="fas fa-list-alt" aria-hidden="true"></i><h3>Tables</h3><p>Compare paged, virtual and streaming data.</p></a>
+			<a class="demo-card tour-card compact" href="components/dialogs"><i class="fas fa-comment-alt" aria-hidden="true"></i><h3>Dialogs</h3><p>Try information, confirmation and custom content.</p></a>
+			<a class="demo-card tour-card compact" href="components/wizards"><i class="fas fa-route" aria-hidden="true"></i><h3>Wizard examples</h3><p>Compare the new guided workflow with the retained branching wallet example.</p></a>
+			<a class="demo-card tour-card compact" href="components/themes"><i class="fas fa-swatchbook" aria-hidden="true"></i><h3>Theme component gallery</h3><p>Compare semantic colors, forms, validation, navigation and disabled states.</p></a>
+		</div>
+	</section>
+	<section aria-labelledby="tour-reference">
+		<header class="tour-section-header"><span class="tour-number">03</span><div><h2 id="tour-reference">Screen hosting & original examples</h2><p>Experiment with screen lifetimes, or revisit the original gallery and loader.</p></div></header>
+		<div class="demo-card-grid">
+			<a class="demo-card tour-card compact" href="application?block=workspace&amp;screen=editor"><i class="fas fa-edit" aria-hidden="true"></i><h3>Retained editor</h3><p>Rename a singleton tab, edit notes, merge commands and test leave guards.</p></a>
+			<a class="demo-card tour-card compact" href="application?block=workspace&amp;screen=scratchpad"><i class="fas fa-sticky-note" aria-hidden="true"></i><h3>Independent scratchpads</h3><p>Open multiple screen instances and compare their state, commands and activation mode.</p></a>
+			<a class="demo-card tour-card compact" href="widget-gallery"><i class="fas fa-archive" aria-hidden="true"></i><h3>Legacy examples</h3><p>Browse the original plugin gallery, dialogs, tables, wizard and endpoint sample.</p></a>
+		</div>
+	</section>
 </div>

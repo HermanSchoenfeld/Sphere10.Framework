@@ -1,0 +1,172 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@inherits BlazorApplicationScreen
+@inject CollectionCatalogue Catalogue
+
+<section class="collection-detail" data-showcase="collection-detail" data-collection-id="@CollectionId">
+	@if (_draft == null) {
+		<h1>Collection unavailable</h1><p>This collection is no longer in the sample catalogue.</p>
+	} else {
+		<header class="detail-heading"><div><span class="detail-eyebrow">@_draft.Category.ToUpperInvariant() · COLLECTION WORKSPACE</span>
+			<h1>@_draft.Name</h1><p>Edit in this tab, then save to update the shared gallery.</p></div>
+			<span class="detail-status">@_draft.Status</span></header>
+		@if (HasUnsavedChanges) {
+			<div class="detail-notice" role="status"><i class="fas fa-pencil-alt" aria-hidden="true"></i>
+				<div><strong>Unsaved collection changes</strong><span>Choose Save collection or Discard changes before switching tabs, closing this workspace or navigating away.</span></div></div>
+		} else {
+			<p class="detail-saved" role="status">@(_savedNotice ?? "No unsaved changes. This collection has its own retained tab.")</p>
+		}
+		<div class="detail-layout">
+			<aside class="detail-preview"><div class="detail-artwork"><CollectionArtwork Variant="_draft.Artwork" Label="@($"Illustration for {_draft.Name}")" /></div>
+				<div class="detail-preview-content"><h2>Collection at a glance</h2><dl><dt>Collected items</dt><dd>@_draft.ItemCount</dd>
+					<dt>Completion</dt><dd>@_draft.Progress%</dd><dt>Last saved</dt><dd>@_saved.Updated.ToString("dd MMM yyyy")</dd></dl>
+					<progress max="100" value="@_draft.Progress" aria-label="Collection completion">@_draft.Progress%</progress></div></aside>
+			<div class="detail-editor">
+				<h2>Collection details</h2>
+				@if (_errors.Length > 0) {
+					<ul class="detail-errors" role="alert">@foreach (var error in _errors) { <li>@error</li> }</ul>
+				}
+				<label for="@NameId">Collection name</label>
+				<input id="@NameId" class="form-control" maxlength="80" required @bind="_draft.Name" @bind:event="oninput" @bind:after="DraftChanged" />
+				<label for="@OwnerId">Owner</label>
+				<input id="@OwnerId" class="form-control" maxlength="80" required @bind="_draft.Owner" @bind:event="oninput" @bind:after="DraftChanged" />
+				<label for="@DescriptionId">Description</label>
+				<textarea id="@DescriptionId" class="form-control" rows="4" maxlength="500" @bind="_draft.Description" @bind:event="oninput" @bind:after="DraftChanged"></textarea>
+				<div class="detail-fields"><div><label for="@ProgressId">Completion (%)</label>
+					<input id="@ProgressId" class="form-control" type="number" min="0" max="100" @bind="_draft.Progress" @bind:after="DraftChanged" /></div>
+					<div><label for="@StatusId">Status</label><select id="@StatusId" class="form-select" @bind="_draft.Status" @bind:after="DraftChanged">
+						<option value="@CollectionStatus.Draft">Draft</option><option value="@CollectionStatus.Active">Active</option><option value="@CollectionStatus.Archived">Archived</option>
+					</select></div></div>
+				<footer class="detail-actions"><button type="button" class="btn btn-primary" disabled="@(!HasUnsavedChanges)" @onclick="Save">Save collection</button>
+					<button type="button" class="btn btn-outline-secondary" disabled="@(!HasUnsavedChanges)" @onclick="Discard">Discard changes</button>
+					<button type="button" class="btn btn-outline-primary" disabled="@HasUnsavedChanges" @onclick="BackToGalleryAsync">Back to collections</button></footer>
+			</div>
+		</div>
+		<details class="detail-foundations"><summary>How this workspace uses the framework</summary>
+			<p><code>BlazorApplicationScreenActivation</code> passes <code>CollectionId</code> and a reuse key to this multi-instance registration.
+				Different collections get different tabs; opening the same collection returns to its retained component.</p>
+			<p>The active screen contributes Save/Discard commands to File and the toolbar. Their enabled state follows the draft.
+				<code>CanDeactivateAsync</code> checks the draft before any leave or close operation. Saving updates the scoped catalogue under a framework write scope.</p>
+			<p>Data is held in the current browser session for demonstration. Refreshing the page restores the sample catalogue.</p>
+		</details>
+	}
+</section>
+
+@code {
+	private IBlazorApplicationMenu[] _menus;
+	private CreativeCollection _saved;
+	private CreativeCollection _draft;
+	private string[] _errors = Array.Empty<string>();
+	private string _savedNotice;
+	private BlazorApplicationMenuItemBase _saveCommand;
+	private BlazorApplicationMenuItemBase _discardCommand;
+
+	[Parameter] public string CollectionId { get; set; } = "coastal-notes";
+
+	public override string Title => _draft?.Name ?? "Collection workspace";
+
+	public override bool HasUnsavedChanges => _draft != null && !_draft.HasSameEdits(_saved);
+
+	public override IBlazorApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= new IBlazorApplicationMenu[] {
+		new BlazorApplicationMenuBuilder()
+			.WithId("file")
+			.WithText("File")
+			.AddItem(SaveCommand)
+			.AddItem(DiscardCommand)
+			.Build()
+	});
+
+	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { SaveCommand, DiscardCommand };
+
+	private string NameId => $"{CollectionId}-name";
+
+	private string OwnerId => $"{CollectionId}-owner";
+
+	private string DescriptionId => $"{CollectionId}-description";
+
+	private string ProgressId => $"{CollectionId}-progress";
+
+	private string StatusId => $"{CollectionId}-status";
+
+	private BlazorApplicationMenuItemBase SaveCommand => _saveCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("save")
+		.WithText("Save collection")
+		.WithIcon("fas fa-save")
+		.EnabledWhen(() => HasUnsavedChanges)
+		.WithAction((_, token) => {
+			token.ThrowIfCancellationRequested();
+			Save();
+			StateHasChanged();
+			return Task.CompletedTask;
+		})
+		.Build();
+
+	private BlazorApplicationMenuItemBase DiscardCommand => _discardCommand ??= new BlazorApplicationMenuItemBuilder()
+		.WithId("discard")
+		.WithText("Discard changes")
+		.WithIcon("fas fa-undo")
+		.EnabledWhen(() => HasUnsavedChanges)
+		.WithAction((_, token) => {
+			token.ThrowIfCancellationRequested();
+			Discard();
+			StateHasChanged();
+			return Task.CompletedTask;
+		})
+		.Build();
+
+	protected override async Task OnInitializedAsync() {
+		_saved = Catalogue.Read(CollectionId);
+		_draft = _saved?.Copy();
+		await base.OnInitializedAsync();
+	}
+
+	protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(!HasUnsavedChanges);
+	}
+
+	private void DraftChanged() {
+		_savedNotice = null;
+		_errors = Array.Empty<string>();
+		NotifyScreenChanged();
+	}
+
+	private void Save() {
+		if (_draft == null || !HasUnsavedChanges)
+			return;
+		var errors = new List<string>();
+		if (string.IsNullOrWhiteSpace(_draft.Name))
+			errors.Add("Enter a collection name.");
+		if (string.IsNullOrWhiteSpace(_draft.Owner))
+			errors.Add("Enter an owner name.");
+		if (_draft.Progress < 0 || _draft.Progress > 100)
+			errors.Add("Completion must be between 0 and 100 percent.");
+		_errors = errors.ToArray();
+		if (_errors.Length > 0)
+			return;
+		Catalogue.Save(_draft);
+		_saved = Catalogue.Read(CollectionId);
+		_draft = _saved.Copy();
+		_savedNotice = "Collection saved. The gallery and table now show these values.";
+		NotifyScreenChanged();
+	}
+
+	private void Discard() {
+		if (_saved == null)
+			return;
+		_draft = _saved.Copy();
+		_errors = Array.Empty<string>();
+		_savedNotice = "Changes discarded. The last saved values have been restored.";
+		NotifyScreenChanged();
+	}
+
+	private async Task BackToGalleryAsync() => await ScreenHost.ActivateScreenAsync("patterns", "cards-gallery");
+}

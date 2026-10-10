@@ -1,0 +1,54 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard
+@inherits BlazorWizardStep<WorkspaceSetupDraft>
+
+<h3>Choose a starting preset</h3>
+<p class="text-body-secondary">Apply a preset to return to Settings. Back returns with your current values.</p>
+<div class="workspace-presets" role="group" aria-label="Workspace presets">
+	@foreach (var preset in _presets) {
+		<button type="button" class="workspace-preset @(_selected == preset.Name ? "selected" : string.Empty)" aria-pressed="@(_selected == preset.Name)" @onclick="() => _selected = preset.Name">
+			<i class="fas @preset.Icon" aria-hidden="true"></i>
+			<strong>@preset.Name</strong><span>@preset.Description</span><small>@preset.Capacity people · @preset.Access</small>
+		</button>
+	}
+</div>
+
+@code {
+	private readonly Preset[] _presets = {
+		new("Focused", "fa-bullseye", "A small, quiet workspace for focused work.", 4, "Invitation only", false),
+		new("Collaborative", "fa-comments", "A welcoming space for a growing team.", 12, "Anyone in the organization", true),
+		new("Studio", "fa-palette", "A balanced workspace for creative collaboration.", 8, "Invitation only", true)
+	};
+	private string _selected;
+
+	public override string Title => "Preset chooser";
+	public override string FinishButtonText => "Apply preset";
+
+	public override Task<Result> OnNextAsync() {
+		var preset = _presets.FirstOrDefault(candidate => candidate.Name == _selected);
+		if (preset == null)
+			return Task.FromResult(Result.Error("Choose a preset, or use Back to keep your settings."));
+		Model.Preset = preset.Name;
+		Model.Capacity = preset.Capacity;
+		Model.Access = preset.Access;
+		Model.WeeklyDigest = preset.WeeklyDigest;
+		WorkspaceSetupFlow.ReturnFromPresetChooser(Wizard);
+		return Task.FromResult(Result.Success);
+	}
+
+	public override Task<Result> OnPreviousAsync() {
+		WorkspaceSetupFlow.ReturnFromPresetChooser(Wizard);
+		return Task.FromResult(Result.Success);
+	}
+
+	private sealed record Preset(string Name, string Icon, string Description, int Capacity, string Access, bool WeeklyDigest);
+}

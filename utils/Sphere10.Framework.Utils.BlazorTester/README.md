@@ -2,7 +2,7 @@
 
 A .NET 10 Blazor Web App that presents every component demo through one full-page ApplicationBlock shell. It uses prerendered Interactive Server rendering and local sample data. No WebAssembly workload, database, backend node or WebSocket server is required.
 
-Open `/` for the Workspace block or `/components/grid` for the editable CRUD grid. Both use the same application shell; compatibility URLs select registered screens and become canonical `/application?block=...&screen=...&instance=...` URLs. See [the Blazor library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for the reusable APIs and host integration.
+Open `/` for the organized tour or `/components/grid` for the editable CRUD grid. The **Application patterns** block adds complete card, menu, workflow and theme examples alongside the component reference and preserved legacy examples. Every entry uses the same application shell; compatibility URLs select registered screens and become canonical `/application?block=...&screen=...&instance=...` URLs. See [the Blazor library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for the reusable APIs and host integration.
 
 ## Run the tester
 
@@ -26,7 +26,7 @@ Open `http://127.0.0.1:5188/components/grid`. To let the server choose an availa
 
 ## Screen lifetime profiles
 
-Screen menu entries open independent instances by default, including the component and legacy galleries. Overview and **Single-instance screen** explicitly retain their singleton lifetimes to demonstrate state retention; the empty and permanent profiles also declare their intended lifetimes.
+Screen menu entries open independent instances by default, including the component and legacy galleries. Overview, **Single-instance screen**, and the four Application patterns screens explicitly retain their singleton lifetimes. Collection editors use an instance key so each collection has its own retained tab; the empty and permanent profiles also declare their intended lifetimes.
 
 Use File → Close all screens in the default tester to display the real **Empty workspace** screen without a tab. Enter a note, browse back to Workspace and open Overview, then close it. The default empty singleton retains both its note and instance ID.
 
@@ -51,10 +51,15 @@ With `--no-launch-profile`, the same settings can be supplied as `Demo__EmptyScr
 | Entry URL | Registered block / screen | What to try |
 | --- | --- | --- |
 | `/`, `/application` | Workspace / Overview | Retained counter, single/multiple screen instances, explicit switching guards and scoped actions. |
+| `/patterns/cards` | Application patterns / Cards & collections | Artwork cards, shared searchable/paged data source, table selection, keyed retained editors and Save/Discard guards. |
+| `/patterns/menus` | Application patterns / Menus & commands | Merged File/Tools, nested Export, enabled/hidden commands and preview dialogs. |
+| `/patterns/wizards` | Application patterns / Guided workflows | The same validated conditional workflow in an embedded host or a dialog, with a preset detour and review. |
+| `/patterns/themes` | Application patterns / Theme studio | All catalogue presets applied to a complete dashboard, selectable chart, editable form and dialog. |
 | `/components/grid`, `/modern` | Component gallery / CRUD grid | Buffered editing, validation, reference selection and async row actions. |
 | `/components/tables` | Component gallery / Tables | Paged, virtual and streaming tables. |
 | `/components/dialogs` | Component gallery / Dialogs | Awaited information, confirmation and custom dialogs. |
-| `/components/wizards` | Component gallery / Wizards | Branching wallet wizard and step validation. |
+| `/components/wizards` | Component gallery / Wizards | Guided workspace setup plus the retained branching wallet wizard and step validation. |
+| `/components/themes` | Component gallery / Themes | Full semantic component palette, form states, navigation, tables and dialogs. |
 | `/widget-gallery` | Legacy examples / Plugin gallery | Original plugin gallery. |
 | `/widget-gallery/modals` | Legacy examples / Legacy dialogs | Original information and confirmation dialogs. |
 | `/widget-gallery/tables` | Legacy examples / Legacy tables | Original paged, virtual and streaming tables. |
@@ -78,10 +83,15 @@ The single [Workspace.razor](Application/Workspace.razor) route component handle
 | [Modern/UI/Controls/TestClassDataSource.cs](Modern/UI/Controls/TestClassDataSource.cs) | Local CRUD source, search, typed sorting, paging and validation. |
 | [Loader/Sphere10Plugin.cs](Loader/Sphere10Plugin.cs), [WidgetGallery/WidgetGalleryPlugin.cs](WidgetGallery/WidgetGalleryPlugin.cs) | Fluent plugin definitions: service registrations, application blocks, menus and screens. |
 | [Application](Application) | Sole routable workspace, retained screen wrappers, command definitions and scoped state. |
+| [Showcase](Showcase/README.md) | Composed application patterns, their plugin registration, isolated sample data and public-API recipes. |
 | [Loader](Loader), [WidgetGallery](WidgetGallery) | Original content, validators and endpoint services; hosted by the Legacy examples block. |
 | [wwwroot](wwwroot) | Local Bootstrap base, icons and host assets. |
 
-`ApplicationShell` fills the viewport. Its application menu and toolbar span the full width above the sidebar and content. The left sidebar contains the endpoint selector, the selected block's menus, and bottom icons for **Workspace**, **Component gallery** and **Legacy examples**. Tabs sit above the scrollable screen body. Application, block and active-screen commands merge into the shared File/View/Help menu area and toolbar.
+`ApplicationShell` fills the viewport. Its application menu and toolbar span the full width above the sidebar and content. The left sidebar contains the endpoint selector, the selected block's menus, and bottom icons for **Workspace**, **Component gallery**, **Application patterns** and **Legacy examples**, plus the configured screen-policy blocks. Tabs sit above the scrollable screen body. Application, block and active-screen commands merge into the shared File/View/Help menu area and toolbar.
+
+The runtime hierarchy is **Application → Blocks → Menus/screens**. `IApplication.Blocks` follows the live host, and `LoadedPlugins` records the four successfully loaded startup contributors. **Widget Gallery** contributes both **Component gallery** and **Legacy examples**, with an independent navigation icon and menu for each block. The default profile has five block icons; enabling the optional permanent-screen block adds a sixth.
+
+Runtime blocks expose their circuit application through `Parent` and their original loaded plugin through `Source`. Menus and commands expose their owning block/menu, and attached screens expose `Host` and `Block`. Screen menu graphs stay with their component instance; command predicates continue to reflect current state, while diagnostics visibility rebuilds its affected menu graph. Closing or detaching a component clears its runtime ownership without changing renderer disposal.
 
 `DemoLayout` supplies theme and modal services around that shell. It does not add another header, sidebar or navigation list. There is one modal host per component generation, with distinct IDs. The not-found page uses the same providers without creating a nested application shell.
 
@@ -106,7 +116,7 @@ All themes share one presentation structure and the same services. Changing them
 The restored shell provides:
 
 - **Top-left Endpoint selector:** choose an existing sample endpoint, or open **Manage endpoints** to add one. The selector and `/servers` share the plugin-registered `IEndpointManager`, including changes in either direction.
-- **Bottom-left application block icons:** select **Workspace**, **Component gallery** or **Legacy examples**. The library shell uses `ApplicationBlockMenu` and its scoped screen host, with metadata from the existing plugin/block builders. Choosing a block only changes the sidebar menus; the active screen, tabs, URL and history stay unchanged. Screen menu items and tabs still honor the active screen's switching guard.
+- **Bottom-left application block icons:** select **Workspace**, **Component gallery**, **Application patterns** or **Legacy examples**. The library shell uses `ApplicationBlockMenu` and its scoped screen host, with metadata from the existing plugin/block builders. By default, choosing a block changes its sidebar menus while retaining the active screen. Overview's **Activate the block's default screen** checkbox demonstrates the alternate activation mode. Screen changes and tabs honor the active screen's switching guard.
 - **Toolbar search:** the framework `SearchInput` searches registered screens in the current host, including original examples. Results use canonical application URLs. Escape dismisses the results.
 - **Mobile navigation:** **Menu** opens the selected block sidebar and icon dock over the screen. Browsing a block leaves the overlay open so a screen can be chosen; selecting a screen closes it. Theme, search and the identity menu remain in the compact application toolbar.
 
@@ -152,7 +162,7 @@ This is a source configuration example. It hides create/edit/delete commands whi
 
 ## ApplicationBlock workspace
 
-[Sphere10Plugin.cs](Loader/Sphere10Plugin.cs) defines the Workspace block and its scoped state/endpoint services. [WidgetGalleryPlugin.cs](WidgetGallery/WidgetGalleryPlugin.cs) defines the Component gallery block and registers the original gallery's view models, random-number service and validator. Both use `BlazorPluginBuilder` → `BlazorApplicationBlockBuilder` → `BlazorApplicationMenuBuilder` → `BlazorApplicationMenuItemBuilder`, backed by the shared `Sphere10.Framework.Application.UI` models, validation and catalog. The WinForms tester consumes the same neutral foundation through native adapters.
+[Sphere10Plugin.cs](Loader/Sphere10Plugin.cs) defines the Workspace block and its scoped state/endpoint services. [WidgetGalleryPlugin.cs](WidgetGallery/WidgetGalleryPlugin.cs) defines the Component gallery block and registers the original gallery's view models, random-number service and validator. Both use `BlazorPluginBuilder` → `BlazorApplicationBlockBuilder` → `BlazorApplicationMenuBuilder` → `BlazorApplicationMenuItemBuilder`, backed by the shared `Sphere10.Framework.Application.UI` models, validation and UI coordination. The WinForms tester consumes the same neutral foundation through native adapters.
 
 The active host calls these definitions directly, followed by the screen-policy plugin. The `permanentScreen` and `emptyScreenLifetime` values come from the selected launch profile:
 
@@ -173,6 +183,8 @@ services
 `BlazorApplicationBuilder` registers immutable singleton branding options and uses the existing plugin and application registration APIs. [App.razor](App.razor) resolves those options for the document title and SVG favicon, using `Assets` to map the icon path. [Workspace](Application/Workspace.razor) uses the same configured title for `PageTitle` and `ApplicationShell`. Change `WithTitle`/`WithFavicon` in the builder to brand the host; no scoped application is resolved to render the head.
 
 Each plugin owns the dependencies its registered screens and their content need. The active tester no longer constructs legacy `BlazorRoutedApplication`, `BlazorRoutedApplicationBlock` or `BlazorRoutedApplicationPage` graphs, uses a plugin locator, or manually calls `new BlazorRoutedPlugin().ConfigureServices(...)`. The routed navigation library remains covered by its dedicated compatibility tests. Hosted application screens derive from `BlazorApplicationScreen`; both platforms use the shared `Application.UI.ScreenActivationMode` enum.
+
+Block navigation and guards use `IApplicationScreenHost` from `Sphere10.Framework.Application.UI`. File's Close screen command uses `ISingleApplicationScreenHost`; retained screen collections and batch operations use `IMultiApplicationScreenHost`. All these aliases resolve one host per circuit. The application owns plugins and global commands, while its `ScreenHost` owns selection and `UserInterfaceServices`. Global commands remain visible alongside same-ID screen commands and execute when no block is selected. The toolbar's Use single screen / Use tabs button awaits the guarded layout transition and keeps retained screen state. The footer shows global command executions. The shell and collection editor use Blazor extensions for tab IDs, renderer attachment, activation parameters and reuse keys. Razor creates and disposes components; logical screen proxies delegate lifecycle to their retained components.
 
 The configuration has this shape, using the tester's existing screen and state types:
 
@@ -201,7 +213,7 @@ services
 	);
 ```
 
-Import `Microsoft.Extensions.DependencyInjection`, `Sphere10.Framework.Web.AspNetCore.Blazor` and `Sphere10.Framework.Utils.BlazorTester.Application` for this standalone example. In the running tester, use the three plugin definitions above rather than registering this additional workspace block; block IDs must remain unique. Original URLs such as `/widget-gallery/wizards` and `/servers` select the corresponding Legacy examples screens through Workspace. Their content uses services registered by those same plugins.
+Import `Microsoft.Extensions.DependencyInjection`, `Sphere10.Framework.Web.AspNetCore.Blazor` and `Sphere10.Framework.Utils.BlazorTester.Application` for this standalone example. In the running tester, use the four plugin definitions configured in `Program` rather than registering this additional workspace block; block IDs must remain unique. Standalone registrations appear directly in `Application.Blocks` and do not create a loaded plugin. Original URLs such as `/widget-gallery/wizards` and `/servers` select the corresponding Legacy examples screens through Workspace. Their content uses services registered by those same plugins.
 
 Open `/application` and try these flows:
 
@@ -269,7 +281,7 @@ The active host uses import maps and fingerprinted static assets. Grid styles co
 - Start editing a grid row, change a value and change the theme. Browse another block (the grid should stay active), then open one of its screens and return via the grid tab, or follow a Related component demos link. The same draft and selection should survive; Cancel should restore the original record.
 - Open a modern dialog and an original dialog, one at a time. Verify focus, dismissal and colors, and confirm their content appears in the appropriate shared modal host.
 - Add an endpoint on `/servers`, select it from the top-left dropdown and verify the page selection changes too. Navigate to another example and confirm the endpoint is retained.
-- Browse all three blocks using the bottom icons; verify that only the left menus change and the active screen URL stays fixed. Open screens from those menus to check retained state, history and merged screen commands.
+- Browse all configured blocks using the bottom icons; verify that only the left menus change and the active screen URL stays fixed. Check that Component gallery and Legacy examples have separate icons and menus despite sharing the Widget Gallery plugin. Open screens from those menus to check retained state, history and merged screen commands.
 - Compare the same single-instance screen reopened twice with two newly opened multi-instance screens. Lock one instance with **Prevent tab switching**, verify menu/tab selection is blocked while block browsing works, then unlock and retry.
 - Verify the browser title is **Sphere10 Blazor demos** and the tab icon uses the configured Sphere10 SVG logo.
 - Search for `grid` or `dashboard` in the toolbar and follow a result. At a narrow width, use Menu to expose the active block menus and dock.
