@@ -20,7 +20,7 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <typeparam name="K">Lookup key type.</typeparam>
 /// <typeparam name="V">Lookup value type.</typeparam>
-public class BTreeLookup<K, V> : IBTreeLookup<K, V> {
+public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 	private readonly BTreeBase<CompoundKey<K, int>, V> _btree;
 	private readonly IComparer<K> _keyComparer;
 	private readonly IEqualityComparer<V> _valueEqualityComparer;
@@ -167,19 +167,8 @@ public class BTreeLookup<K, V> : IBTreeLookup<K, V> {
 	/// </summary>
 	public bool Validate(out string error) => _btree.Validate(out error);
 
-	#region Explicit ILookup / IEnumerable
-
-	int ILookup<K, V>.Count => DistinctKeyCount;
-
-	IEnumerable<V> ILookup<K, V>.this[K key] => GetValues(key);
-
-	bool ILookup<K, V>.Contains(K key) => ContainsKey(key);
-
-	IEnumerator<IGrouping<K, V>> IEnumerable<IGrouping<K, V>>.GetEnumerator() => EnumerateGroupings().GetEnumerator();
-
+	// Preserve the class enumeration mapping when subclasses add another enumerable interface.
 	IEnumerator IEnumerable.GetEnumerator() => EnumerateGroupings().GetEnumerator();
-
-	#endregion
 
 	private bool TryFindMaxGroupIndex(K key, out int maxIndex) {
 		maxIndex = -1;

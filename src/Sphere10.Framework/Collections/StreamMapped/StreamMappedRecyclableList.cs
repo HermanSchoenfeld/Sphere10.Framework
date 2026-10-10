@@ -49,8 +49,6 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	
 	public ObjectStream<TItem> ObjectStream { get; }
 
-	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
-
 	public IItemSerializer<TItem> ItemSerializer => ObjectStream.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer { get; }

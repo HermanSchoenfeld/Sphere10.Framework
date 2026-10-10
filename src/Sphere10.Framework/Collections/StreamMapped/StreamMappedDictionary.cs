@@ -24,7 +24,7 @@ namespace Sphere10.Framework;
 /// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 /// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
 /// <remarks>When deleting an item the underlying slot in the <see cref="ObjectStream"/> is marked as reaped and that index re-used in subsequent <see cref="Add(TKey,TValue)"/> operations.</remarks>
-public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
+public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue>, IStreamMappedCollection<KeyValuePair<TKey, TValue>> {
 	public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
@@ -44,8 +44,6 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			Load();
 	}
 
-
-	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
 
 	public ObjectStream<KeyValuePair<TKey, TValue>> ObjectStream { get; }
 

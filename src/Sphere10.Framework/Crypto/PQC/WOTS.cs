@@ -14,7 +14,7 @@ namespace Sphere10.Framework;
 /// <summary>
 /// Winternitz One-Time Signature scheme (W-OTS).
 /// </summary>
-public class WOTS : IOTSAlgorithm {
+public class WOTS : IOTSAlgorithm<WOTS.Configuration> {
 
 	public WOTS()
 		: this(Configuration.Default) {
@@ -33,8 +33,6 @@ public class WOTS : IOTSAlgorithm {
 	}
 
 	public Configuration Config { get; }
-
-	OTSConfig IOTSAlgorithm.Config => Config;
 
 	public void SerializeParameters(Span<byte> buffer) {
 		buffer[0] = (byte)Config.W;

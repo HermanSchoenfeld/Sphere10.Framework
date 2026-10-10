@@ -12,11 +12,28 @@ namespace Sphere10.Framework;
 
 public interface ITransactionalScope : IContextScope, ITransactionalObject {
 
-	new ITransactionalScope RootScope { get; }
-
 	void BeginTransaction();
 
 	Task BeginTransactionAsync();
+
+	#region Base Interface Bridges
+
+	new ITransactionalScope RootScope => ((IContextScope)this).RootScope as ITransactionalScope;
+
+	#endregion
+
+}
+
+/// <summary>Retains a specific transactional root type and supplies its non-generic projection.</summary>
+public interface ITransactionalScope<out TRootScope> : ITransactionalScope
+	where TRootScope : ITransactionalScope {
+	new TRootScope RootScope { get; }
+
+	#region Base Interface Bridges
+
+	ITransactionalScope ITransactionalScope.RootScope => RootScope;
+
+	#endregion
 
 }
 

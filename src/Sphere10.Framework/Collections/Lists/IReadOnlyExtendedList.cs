@@ -20,7 +20,13 @@ public interface IReadOnlyExtendedList<T> : IReadOnlyExtendedCollection<T>, IRea
 
 	IEnumerable<T> ReadRange(long index, long count);
 
-	T this[long index] { get; }
+	#region Base Interface Bridges
+
+	T this[long index] => Read(index);
+
+	T IReadOnlyList<T>.this[int index] => this[(long)index];
+
+	#endregion
 }
 
 

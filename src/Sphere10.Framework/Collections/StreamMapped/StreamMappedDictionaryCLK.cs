@@ -28,7 +28,7 @@ namespace Sphere10.Framework;
 /// <remarks>Whilst this implementation can still be used with variable-length keys (via a <see cref="PaddedSerializer{TItem}"/>
 /// it is strongly advised AGAINST this as key comparison does not consider the padding and this can lead
 /// to potential key collisions. This class should be use with keys that are logically constant in length.</remarks>
-public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
+public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue>, IStreamMappedCollection<TValue> {
 	public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
@@ -47,8 +47,6 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 			Load();
 	}
 	
-	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
-
 	public ObjectStream<TValue> ObjectStream { get; }
 
 	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs => GetEnumerator().AsEnumerable();

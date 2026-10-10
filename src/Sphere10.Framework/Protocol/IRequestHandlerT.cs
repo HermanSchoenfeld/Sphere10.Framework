@@ -10,5 +10,15 @@ namespace Sphere10.Framework.Communications;
 
 public interface IRequestHandler<in TRequest, out TResponse> : IRequestHandler {
 	TResponse Execute(ProtocolOrchestrator orchestrator, TRequest request);
+
+	#region Base Interface Bridges
+
+	object IRequestHandler.Execute(ProtocolOrchestrator orchestrator, object request) {
+		Guard.ArgumentCast<TRequest>(request, out var requestT, nameof(request));
+		var result = Execute(orchestrator, requestT);
+		return result;
+	}
+
+	#endregion
 }
 

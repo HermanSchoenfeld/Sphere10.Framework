@@ -108,10 +108,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		return PagedList.Contains(item);
 	}
 
-	bool ICollection<TData>.Contains(TData item) => Contains(item);
-
-	bool IReadOnlyExtendedCollection<TData>.Contains(TData item) => Contains(item);
-
 
 	#endregion
 	
@@ -135,8 +131,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		return PagedList.IndexOf(item);
 	}
 
-	int IList<TData>.IndexOf(TData item) => IndexOf(item);
-
 	#endregion
 
 	#region Add
@@ -157,8 +151,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		throw new NotImplementedException();
 	}
 
-	void ICollection<TData>.Add(TData item) => Add(item);
-
 
 	#endregion
 
@@ -175,10 +167,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		using var _ = Streams.EnterAccessScope();
 		PagedList.Insert(index, item);
 	}
-
-	void IWriteOnlyExtendedList<TData>.Insert(long index, TData item) => Insert(index, item);
-
-	void IList<TData>.Insert(int index, TData item) => Insert(index, item);
 
 	#endregion
 
@@ -218,10 +206,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		return PagedList.Remove(item);
 	}
 
-	bool IWriteOnlyExtendedCollection<TData>.Remove(TData item) => Remove(item);	
-
-	bool ICollection<TData>.Remove(TData item) => Remove(item);
-
 	public void RemoveAt(long index)  {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
@@ -229,8 +213,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 	}
 
 	public void RemoveAt(int index) => RemoveAt((long)index);
-
-	void IList<TData>.RemoveAt(int index) => RemoveAt((long)index);
 
 	#endregion
 
@@ -242,10 +224,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		PagedList.Clear();
 	}
 
-	void IWriteOnlyExtendedCollection<TData>.Clear() => Clear();
-
-	void ICollection<TData>.Clear() => Clear();
-
 	#endregion
 
 	#region CopyTo
@@ -255,10 +233,6 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		using var _ = Streams.EnterAccessScope();
 		PagedList.CopyTo(array, arrayIndex);
 	}
-
-	void IReadOnlyExtendedCollection<TData>.CopyTo(TData[] array, int arrayIndex) => CopyTo(array, arrayIndex);
-
-	void ICollection<TData>.CopyTo(TData[] array, int arrayIndex) => CopyTo(array, arrayIndex);
 
 	#endregion
 

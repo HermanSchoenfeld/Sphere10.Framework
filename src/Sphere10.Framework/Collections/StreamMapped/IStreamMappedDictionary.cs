@@ -16,7 +16,7 @@ public interface IStreamMappedDictionary : IStreamMappedCollection {
 	internal byte[] ReadValueBytes(long index);
 }
 
-public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IStreamMappedDictionary, ILoadable, IDisposable  {
+public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IStreamMappedDictionary, IStreamMappedCollection<TKey, TValue>, ILoadable, IDisposable  {
 
 	TKey ReadKey(long index);
 
@@ -29,6 +29,12 @@ public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValu
 	void RemoveAt(long index);
 
 	new void Clear();
+
+	#region Base Interface Bridges
+
+	void IStreamMappedCollection<TKey, TValue>.Clear() => Clear();
+
+	#endregion
 
 }
 

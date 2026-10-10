@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework;
@@ -16,5 +17,11 @@ public interface IReadOnlyExtendedCollection<T> : IReadOnlyCollection<T> {
 	IEnumerable<bool> ContainsRange(IEnumerable<T> items);
 
 	void CopyTo(T[] array, int arrayIndex);
+
+	#region Base Interface Bridges
+
+	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
+
+	#endregion
 }
 

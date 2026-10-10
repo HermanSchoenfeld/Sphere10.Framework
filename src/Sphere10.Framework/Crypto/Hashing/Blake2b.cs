@@ -389,7 +389,7 @@ public class Blake2b : HashFunctionBase {
 
 	#region Inner classes
 
-	public sealed class Config : ICloneable {
+	public sealed class Config : ICloneable<Config> {
 		public byte[] Key { get; set; }
 		public byte[] Personalization { get; set; }
 		public byte[] Salt { get; set; }
@@ -413,9 +413,6 @@ public class Blake2b : HashFunctionBase {
 			};
 		}
 
-		object ICloneable.Clone() {
-			return Clone();
-		}
 	}
 
 
@@ -475,7 +472,7 @@ public class Blake2b : HashFunctionBase {
 	}
 
 
-	public sealed class TreeConfig : ICloneable {
+	public sealed class TreeConfig : ICloneable<TreeConfig> {
 		public int IntermediateHashSize { get; set; }
 		public int MaxHeight { get; set; }
 		public long LeafSize { get; set; }
@@ -502,9 +499,6 @@ public class Blake2b : HashFunctionBase {
 			return result;
 		}
 
-		object ICloneable.Clone() {
-			return Clone();
-		}
 	}
 
 	#endregion

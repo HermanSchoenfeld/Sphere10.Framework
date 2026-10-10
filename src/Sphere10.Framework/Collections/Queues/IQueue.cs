@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework;
@@ -17,6 +18,14 @@ public interface IQueue<T> : ICollection<T> {
 	public bool TryDequeue(out T value);
 
 	public void Enqueue(T item);
+
+	#region Base Interface Bridges
+
+	void ICollection<T>.Add(T item) => Enqueue(item);
+
+	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
+
+	#endregion
 }
 
 

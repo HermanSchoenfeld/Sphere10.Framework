@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework;
@@ -72,5 +73,11 @@ public interface IPage<TItem> : IEnumerable<TItem> {
 	/// </summary>
 	/// <param name="count">Number of items to remove.</param>
 	void EraseFromEnd(long count);
+
+	#region Base Interface Bridges
+
+	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<TItem>)this).GetEnumerator();
+
+	#endregion
 }
 

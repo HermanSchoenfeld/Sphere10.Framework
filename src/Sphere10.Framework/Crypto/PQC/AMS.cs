@@ -339,7 +339,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 	}
 
 
-	public sealed class Configuration : ICloneable {
+	public sealed class Configuration : ICloneable<Configuration> {
 		public const int DefaultHeight = 8;
 		public readonly int H;
 		public readonly OTSConfig OTS;
@@ -354,8 +354,6 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		}
 
 		public Configuration Clone() => new Configuration(OTS, H);
-
-		object ICloneable.Clone() => Clone();
 
 	}
 

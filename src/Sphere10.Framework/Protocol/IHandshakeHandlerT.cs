@@ -16,5 +16,27 @@ public interface IHandshakeHandler<THandshake, TAck, TVerack> : IHandshakeHandle
 	HandshakeOutcome VerifyHandshake(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, out TVerack verifyAcknowledgement);
 
 	bool AcknowledgeHandshake(ProtocolOrchestrator orchestrator, THandshake handshake, TAck acknowledgement, TVerack verifyAcknowledgement);
+
+	#region Base Interface Bridges
+
+	object IHandshakeHandler.GenerateHandshake(ProtocolOrchestrator orchestrator)
+		=> GenerateHandshake(orchestrator);
+
+	HandshakeOutcome IHandshakeHandler.ReceiveHandshake(ProtocolOrchestrator orchestrator, object handshake, out object acknowledgement) {
+		var result = ReceiveHandshake(orchestrator, (THandshake)handshake, out var ack);
+		acknowledgement = ack;
+		return result;
+	}
+
+	HandshakeOutcome IHandshakeHandler.VerifyHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, out object verifyAcknowledgement) {
+		var result = VerifyHandshake(orchestrator, (THandshake)handshake, (TAck)acknowledgement, out var verack);
+		verifyAcknowledgement = verack;
+		return result;
+	}
+
+	bool IHandshakeHandler.AcknowledgeHandshake(ProtocolOrchestrator orchestrator, object handshake, object acknowledgement, object verifyAcknowledgement)
+		=> AcknowledgeHandshake(orchestrator, (THandshake)handshake, (TAck)acknowledgement, (TVerack)verifyAcknowledgement);
+
+	#endregion
 }
 

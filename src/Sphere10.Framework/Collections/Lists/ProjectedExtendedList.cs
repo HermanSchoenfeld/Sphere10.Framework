@@ -91,11 +91,5 @@ public sealed class ProjectedExtendedList<TFrom, TTo> : IExtendedList<TTo> {
 		set => _source[index] = _inverseProjection(value);
 	}
 
-	TTo IWriteOnlyExtendedList<TTo>.this[long index] {
-		set => this[index] = value;
-	}
-
-	TTo IReadOnlyList<TTo>.this[int index] => this[index];
-
 }
 

@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework;
@@ -28,5 +29,10 @@ public interface IBloomFilter<in TItem> : IEnumerable<bool> {
 
 	void UnionWith(IEnumerable<TItem> other);
 
+	#region Base Interface Bridges
+
+	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<bool>)this).GetEnumerator();
+
+	#endregion
 }
 

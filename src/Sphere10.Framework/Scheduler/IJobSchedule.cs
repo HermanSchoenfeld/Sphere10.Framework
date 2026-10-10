@@ -27,5 +27,11 @@ public interface IJobSchedule : IComparable<IJobSchedule> {
 	JobScheduleSerializableSurrogate ToSerializableSurrogate();
 
 	void FromSerializableSurrogate(JobScheduleSerializableSurrogate scheduleSurrogate);
+
+	#region Base Interface Bridges
+
+	int IComparable<IJobSchedule>.CompareTo(IJobSchedule other) => NextStartTime.CompareTo(other.NextStartTime);
+
+	#endregion
 }
 

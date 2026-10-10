@@ -46,8 +46,6 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public ObjectStream<TItem> ObjectStream { get; }
 
-	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
-
 	public IItemSerializer<TItem> ItemSerializer => ObjectStream.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer { get; }

@@ -10,5 +10,14 @@ namespace Sphere10.Framework.Communications;
 
 public interface ICommandHandler<in TMessage> : ICommandHandler {
 	void Execute(ProtocolOrchestrator orchestrator, TMessage command);
+
+	#region Base Interface Bridges
+
+	void ICommandHandler.Execute(ProtocolOrchestrator orchestrator, object command) {
+		Guard.ArgumentCast<TMessage>(command, out var commandT, nameof(command));
+		Execute(orchestrator, commandT);
+	}
+
+	#endregion
 }
 

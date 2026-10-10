@@ -14,15 +14,53 @@ using System.Linq;
 namespace Sphere10.Framework;
 
 public interface IExtendedList<T> : IExtendedCollection<T>, IReadOnlyExtendedList<T>, IWriteOnlyExtendedList<T>, IList<T> {
-	// Below interface methods resolve ambiguities between IReadOnlyExtendedList<T> and IList<T>
-	new T this[int index] { get; set; }
-	new T this[long index] { get; set; }
-
-	new int IndexOf(T item);
-
 	new void Insert(long index, T item);
 
 	new void RemoveAt(long index);
+
+	#region Base Interface Bridges
+
+	// Below interface methods resolve ambiguities between IReadOnlyExtendedList<T> and IList<T>
+	new T this[int index] {
+		get => this[(long)index];
+		set => this[(long)index] = value;
+	}
+
+	new T this[long index] {
+		get => Read(index);
+		set => Update(index, value);
+	}
+
+	new int IndexOf(T item) => checked((int)IndexOfL(item));
+
+	T IList<T>.this[int index] {
+		get => this[index];
+		set => this[index] = value;
+	}
+
+	T IReadOnlyList<T>.this[int index] => this[index];
+
+	T IReadOnlyExtendedList<T>.this[long index] => this[index];
+
+	T IWriteOnlyExtendedList<T>.this[int index] {
+		set => this[index] = value;
+	}
+
+	T IWriteOnlyExtendedList<T>.this[long index] {
+		set => this[index] = value;
+	}
+
+	int IList<T>.IndexOf(T item) => IndexOf(item);
+
+	void IList<T>.Insert(int index, T item) => Insert((long)index, item);
+
+	void IList<T>.RemoveAt(int index) => RemoveAt((long)index);
+
+	void IWriteOnlyExtendedList<T>.Insert(long index, T item) => Insert(index, item);
+
+	void IWriteOnlyExtendedList<T>.RemoveAt(long index) => RemoveAt(index);
+
+	#endregion
 }
 
 

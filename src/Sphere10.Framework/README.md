@@ -38,6 +38,39 @@ Unlike general-purpose libraries, Sphere10 Framework doesn't provide application
 dotnet add package Sphere10.Framework
 ```
 
+## Typed interface adapters
+
+Generic contracts supply default implementations for their inherited non-generic
+members. Implement the typed operations when creating an
+`IStreamMappedCollection<T>`, `ISynchronizedObject<TReadScope, TWriteScope>`,
+typed protocol handler, `IDigitalSignatureScheme<TPrivateKey, TPublicKey>`,
+`IOTSAlgorithm<TConfig>` or `ICloneable<T>`; the interface supplies the conversion
+to the base contract. Protocol implementations continue to provide their own
+`MessageType`, `RequestType` and `ResponseType` properties. Extended collection,
+stack, queue, page and lookup
+interfaces also supply their inherited collection adapters. `IExtendedBTreeLookup<K, V>`
+provides shared LINQ lookup adapters while existing `IBTreeLookup<K, V>`
+implementations retain their original contract.
+
+`IObjectSpaceDimensionBuilder<TBuilder>` preserves fluent return types while
+providing the non-generic builder view. `ITransactionalScope<TRootScope>` retains
+the root's concrete type. `ICache<TKey, TValue>` can project typed operations over
+an implementation of the object-based cache contract, and `IJobSchedule`
+supplies its chronological comparison.
+
+`IStreamMappedDictionary<TKey, TValue>` also inherits
+`IStreamMappedCollection<TKey, TValue>`, a collection of logical key/value entries.
+Its `ObjectStream` remains non-generic because standard dictionaries store pairs
+and constant-length-key dictionaries store values with a separate key index.
+
+Existing public class methods and inherited dispatch remain supported.
+Compatibility adapters remain where class overrides, interface remapping,
+backing storage or event subscriptions affect behavior. Interface bridges are
+implemented directly in their `Base Interface Bridges` regions, preserving checked
+collection counts and indexes. Class implementations take
+precedence over interface defaults, and defaults are called through interface
+references.
+
 ## 🛠️ Tools.* Namespace — Global Tooling Framework
 
 The **Tools namespace** is a defining feature of Sphere10 Framework, providing a **global, IntelliSense-discoverable collection of static utility methods** organized by domain. This acts as a single point of discovery for developers—instead of searching for the right helper class, simply type `Tools.` and explore available operations across the entire framework.

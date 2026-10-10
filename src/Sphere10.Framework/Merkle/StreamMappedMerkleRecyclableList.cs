@@ -108,11 +108,6 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 	public ObjectStream<TItem> ObjectStream => InternalCollection.ObjectStream;
 
 	/// <summary>
-	/// Gets the underlying object stream as the non-generic interface type.
-	/// </summary>
-	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
-
-	/// <summary>
 	/// Gets the serializer used for list items.
 	/// </summary>
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;

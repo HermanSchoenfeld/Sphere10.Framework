@@ -14,7 +14,7 @@ using Sphere10.Framework.Mapping;
 
 namespace Sphere10.Framework.ObjectSpaces;
 
-public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
+public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder<ObjectSpaceDimensionBuilder<T>> {
 	protected readonly ObjectSpaceBuilder _parent;
 	private readonly IList<ObjectSpaceDefinition.IndexDefinition> _indexes;
 	private int? _averageItemSize;
@@ -95,11 +95,6 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		_isRoot = true;
 		return this;
 	}
-
-	/// <summary>
-	/// Explicit interface implementation for <see cref="IObjectSpaceDimensionBuilder.AsRoot"/>.
-	/// </summary>
-	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.AsRoot() => AsRoot();
 
 	public ObjectSpaceDimensionBuilder<T> WithIdentifier<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) 
 		=> WithIdentifier(memberExpression.ToMember(), indexName);
@@ -207,16 +202,6 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 			ChangeTracker = _changeTracker
 		};
 	}
-
-	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithRecyclableIndexes() 
-		=> WithRecyclableIndexes();
-
-
-	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.Merkleized()
-		=> Merkleized();
-	
-	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.OptimizeAssumingAverageItemSize(int bytes) 
-		=> OptimizeAssumingAverageItemSize(bytes);
 
 }
 

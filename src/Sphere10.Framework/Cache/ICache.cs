@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework;
 
@@ -142,33 +143,41 @@ public interface ICache<TKey, TValue> : ICache {
 	/// <inheritdoc cref="ICache.ItemRemoved"/>
 	new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved;
 
+	#region Base Interface Bridges
+
 	/// <summary>
 	/// Cached entries with value type awareness.
 	/// </summary>
-	new IEnumerable<CachedItem<TValue>> CachedItems { get; }
+	new IEnumerable<CachedItem<TValue>> CachedItems => ((ICache)this).CachedItems.Cast<CachedItem<TValue>>();
 
 	/// <inheritdoc cref="ICache.ContainsCachedItem(object)"/>
-	bool ContainsCachedItem(TKey key);
+	bool ContainsCachedItem(TKey key) => ((ICache)this).ContainsCachedItem(key);
 
 	/// <inheritdoc cref="ICache.Get(object)"/>
-	CachedItem<TValue> Get(TKey key);
+	CachedItem<TValue> Get(TKey key) => (CachedItem<TValue>)((ICache)this).Get(key);
 
 	/// <inheritdoc cref="ICache.Set(object, object)"/>
-	void Set(TKey key, TValue value);
+	void Set(TKey key, TValue value) => ((ICache)this).Set(key, value);
 
 	/// <inheritdoc cref="ICache.BulkLoad(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{object, object}})"/>
-	void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues);
+	void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues)
+		=> ((ICache)this).BulkLoad(bulkLoadedValues.Select(item => new KeyValuePair<object, object>(item.Key, item.Value)));
 
 	/// <inheritdoc cref="ICache.Invalidate(object)"/>
-	void Invalidate(TKey key);
+	void Invalidate(TKey key) => ((ICache)this).Invalidate(key);
 
 	/// <inheritdoc cref="ICache.Remove(object)"/>
-	void Remove(TKey key);
+	void Remove(TKey key) => ((ICache)this).Remove(key);
 
 	/// <summary>
 	/// Strongly-typed indexer for retrieving or setting cached values by key.
 	/// </summary>
-	TValue this[TKey index] { get; set; }
+	TValue this[TKey index] {
+		get => (TValue)((ICache)this)[index];
+		set => ((ICache)this)[index] = value;
+	}
+
+	#endregion
 
 }
 

@@ -45,8 +45,6 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 
 	public abstract IEnumerator<T> GetEnumerator();
 
-	#region ICollection wrapper
-
 	int ICollection<T>.Count {
 		get {
 			checked {
@@ -54,30 +52,6 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 			}
 		}
 	}
-
-	void ICollection<T>.Add(T item) {
-		Add(item);
-	}
-
-	void ICollection<T>.Clear() {
-		Clear();
-	}
-
-	bool ICollection<T>.Contains(T item) {
-		return Contains(item);
-	}
-
-	void ICollection<T>.CopyTo(T[] array, int arrayIndex) {
-		CopyTo(array, arrayIndex);
-	}
-
-	bool ICollection<T>.Remove(T item) {
-		return Remove(item);
-	}
-
-	#endregion
-
-	#region IReadOnlyExtendedCollection wrapper
 
 	int IReadOnlyCollection<T>.Count {
 		get {
@@ -87,34 +61,9 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 		}
 	}
 
-	void IReadOnlyExtendedCollection<T>.CopyTo(T[] array, int arrayIndex) {
-		CopyTo(array, arrayIndex);
-	}
-
-	bool IReadOnlyExtendedCollection<T>.Contains(T item) {
-		return Contains(item);
-	}
 	IEnumerator IEnumerable.GetEnumerator() {
 		return ((IEnumerable<T>)this).GetEnumerator();
 	}
-
-	#endregion
-
-	#region IWriteOnlyExtendedCollection
-
-	void IWriteOnlyExtendedCollection<T>.Add(T item) {
-		Add(item);
-	}
-
-	bool IWriteOnlyExtendedCollection<T>.Remove(T item) {
-		return Remove(item);
-	}
-
-	void IWriteOnlyExtendedCollection<T>.Clear() {
-		Clear();
-	}
-
-	#endregion
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected void CheckVersion(int enumeratedVersion) {

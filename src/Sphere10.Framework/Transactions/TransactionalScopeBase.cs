@@ -17,7 +17,7 @@ namespace Sphere10.Framework;
 /// transactions in a repository.
 /// </summary>
 /// <typeparam name="TTransaction">Type of transaction</typeparam>
-public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITransactionalScope {
+public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITransactionalScope<TransactionalScopeBase<TTransaction>> {
 
 	public event EventHandlerEx Committing;
 	public event EventHandlerEx Committed;
@@ -51,8 +51,6 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 	public virtual bool ParticipatesWithinTransaction => Transaction != null;
 
 	public new TransactionalScopeBase<TTransaction> RootScope => (TransactionalScopeBase<TTransaction>)base.RootScope;
-
-	ITransactionalScope ITransactionalScope.RootScope => RootScope;
 
 	public virtual void BeginTransaction() {
 		if (Transaction == null) {

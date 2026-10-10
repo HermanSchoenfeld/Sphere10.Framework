@@ -31,5 +31,18 @@ public interface ISynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObj
 	new TReadScope EnterReadScope();
 
 	new TWriteScope EnterWriteScope();
+
+	#region Base Interface Bridges
+
+	ISynchronizedObject ISynchronizedObject.ParentSyncObject {
+		get => ParentSyncObject;
+		set => ParentSyncObject = (ISynchronizedObject<TReadScope, TWriteScope>)value;
+	}
+
+	IDisposable ISynchronizedObject.EnterReadScope() => EnterReadScope();
+
+	IDisposable ISynchronizedObject.EnterWriteScope() => EnterWriteScope();
+
+	#endregion
 }
 

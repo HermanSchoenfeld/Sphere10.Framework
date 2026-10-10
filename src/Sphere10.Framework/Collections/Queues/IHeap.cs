@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sphere10.Framework;
@@ -14,5 +15,11 @@ public interface IHeap<T> : IEnumerable<T>, ICollection<T> {
 	T Peek();
 
 	T Pop();
+
+	#region Base Interface Bridges
+
+	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
+
+	#endregion
 }
 

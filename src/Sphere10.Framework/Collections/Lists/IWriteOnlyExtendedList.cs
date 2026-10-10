@@ -11,9 +11,6 @@ using System.Collections.Generic;
 namespace Sphere10.Framework;
 
 public interface IWriteOnlyExtendedList<in T> : IWriteOnlyExtendedCollection<T> {
-	T this[int index] { set; }
-	T this[long index] { set; }
-
 	void Update(long index, T item);
 
 	void UpdateRange(long index, IEnumerable<T> items);
@@ -25,5 +22,17 @@ public interface IWriteOnlyExtendedList<in T> : IWriteOnlyExtendedCollection<T> 
 	void RemoveAt(long index);
 
 	void RemoveRange(long index, long count);
+
+	#region Base Interface Bridges
+
+	T this[int index] {
+		set => this[(long)index] = value;
+	}
+
+	T this[long index] {
+		set => Update(index, value);
+	}
+
+	#endregion
 }
 

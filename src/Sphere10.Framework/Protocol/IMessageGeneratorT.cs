@@ -10,5 +10,14 @@ namespace Sphere10.Framework.Communications;
 
 public interface IMessageGenerator<out TMessage> : IMessageGenerator {
 	new TMessage Execute(ProtocolOrchestrator orchestrator);
+
+	#region Base Interface Bridges
+
+	object IMessageGenerator.Execute(ProtocolOrchestrator orchestrator) {
+		Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));
+		return Execute(orchestrator);
+	}
+
+	#endregion
 }
 

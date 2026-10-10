@@ -22,7 +22,7 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <typeparam name="K">Lookup key type. Must have a constant-size serializer.</typeparam>
 /// <typeparam name="V">Lookup value type. Must have a constant-size serializer.</typeparam>
-public class StreamMappedBTreeLookup<K, V> : IBTreeLookup<K, V>, IDisposable {
+public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDisposable {
 	private readonly StreamMappedBTreePlus<CompoundKey<K, int>, V> _btree;
 	private readonly BTreeLookup<K, V> _lookup;
 
@@ -122,19 +122,8 @@ public class StreamMappedBTreeLookup<K, V> : IBTreeLookup<K, V>, IDisposable {
 	/// </summary>
 	public bool Validate(out string error) => _lookup.Validate(out error);
 
-	#region Explicit ILookup / IEnumerable
-
-	int ILookup<K, V>.Count => DistinctKeyCount;
-
-	IEnumerable<V> ILookup<K, V>.this[K key] => GetValues(key);
-
-	bool ILookup<K, V>.Contains(K key) => ContainsKey(key);
-
-	IEnumerator<IGrouping<K, V>> IEnumerable<IGrouping<K, V>>.GetEnumerator() => EnumerateGroupings().GetEnumerator();
-
+	// Preserve the class enumeration mapping when subclasses add another enumerable interface.
 	IEnumerator IEnumerable.GetEnumerator() => EnumerateGroupings().GetEnumerator();
-
-	#endregion
 
 	public void Dispose() {
 		_btree?.Dispose();

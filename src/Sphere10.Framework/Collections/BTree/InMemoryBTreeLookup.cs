@@ -19,7 +19,7 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <typeparam name="K">Lookup key type.</typeparam>
 /// <typeparam name="V">Lookup value type.</typeparam>
-public class InMemoryBTreeLookup<K, V> : IBTreeLookup<K, V> {
+public class InMemoryBTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 	private readonly BTreeLookup<K, V> _lookup;
 
 	public InMemoryBTreeLookup(int order, IComparer<K> keyComparer) {
@@ -84,17 +84,6 @@ public class InMemoryBTreeLookup<K, V> : IBTreeLookup<K, V> {
 	/// </summary>
 	public bool Validate(out string error) => _lookup.Validate(out error);
 
-	#region Explicit ILookup / IEnumerable
-
-	int ILookup<K, V>.Count => DistinctKeyCount;
-
-	IEnumerable<V> ILookup<K, V>.this[K key] => GetValues(key);
-
-	bool ILookup<K, V>.Contains(K key) => ContainsKey(key);
-
-	IEnumerator<IGrouping<K, V>> IEnumerable<IGrouping<K, V>>.GetEnumerator() => EnumerateGroupings().GetEnumerator();
-
+	// Preserve the class enumeration mapping when subclasses add another enumerable interface.
 	IEnumerator IEnumerable.GetEnumerator() => EnumerateGroupings().GetEnumerator();
-
-	#endregion
 }
