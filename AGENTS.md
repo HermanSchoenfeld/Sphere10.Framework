@@ -17,6 +17,13 @@ Do not treat the Copilot instructions or matching skills as optional. If a
 skill conflicts with `.github/copilot-instructions.md`, the Copilot
 instructions take precedence.
 
+Read [Patterns and Practices](docs/guidelines/patterns-and-practices.md) before
+designing or changing a hierarchy. Inheritance-only classes are abstract and
+named `...Base`; preserve concrete classes for genuine directly usable products.
+Follow [Code Styling](docs/guidelines/code-styling.md#generic-constraints): put
+one generic `where` constraint on each aligned line and the opening brace at
+the end of the final constraint line.
+
 ## Eat your own dog food
 
 This applies to all development in this repository. The purpose of the

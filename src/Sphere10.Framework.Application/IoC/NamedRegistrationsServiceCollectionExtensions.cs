@@ -28,7 +28,8 @@ public static class IServiceCollectionNamedRegistrationsExtensions {
 	public static void AddNamedSingleton<TService, TImpl>(this IServiceCollection services, string name)
 		=> services.AddNamed(ServiceDescriptor.Singleton(typeof(TService), typeof(TImpl)), name);
 
-	public static void AddNamedSingleton<TService>(this IServiceCollection services, TService instance, string name) where TService : class
+	public static void AddNamedSingleton<TService>(this IServiceCollection services, TService instance, string name)
+		where TService : class
 		=> services.AddNamed(ServiceDescriptor.Singleton(instance), name);
 
 

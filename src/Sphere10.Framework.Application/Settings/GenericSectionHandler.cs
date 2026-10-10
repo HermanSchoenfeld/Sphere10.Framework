@@ -41,7 +41,8 @@ public class GenericSectionHandler : IConfigurationSectionHandler {
 		return ser.Deserialize(new XmlNodeReader(section));
 	}
 
-	public static T GetConfig<T>(string sectionName = null) where T : class {
+	public static T GetConfig<T>(string sectionName = null)
+		where T : class {
 		if (sectionName == null)
 			sectionName = typeof(T).Name;
 		var configurationSection = ConfigurationManager.GetSection(sectionName) as T;

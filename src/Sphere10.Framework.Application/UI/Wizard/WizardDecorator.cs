@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
 
-public abstract class WizardDecorator<TModel, TStep, TConcrete> : IWizard<TModel, TStep> where TConcrete : IWizard<TModel, TStep> {
+public abstract class WizardDecorator<TModel, TStep, TConcrete> : IWizard<TModel, TStep>
+	where TConcrete : IWizard<TModel, TStep> {
 	public event EventHandlerEx Changed {
 		add => InternalWizard.Changed += value;
 		remove => InternalWizard.Changed -= value;

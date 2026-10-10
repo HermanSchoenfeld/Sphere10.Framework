@@ -19,6 +19,8 @@ Almost every abstraction follows **Interface → Abstract base → Concrete → 
 
 Design new abstractions as all four layers, not a single concrete class. See [decorator-pattern](../decorator-pattern/SKILL.md).
 
+An inheritance foundation is always abstract and named `FooBase`, even when it implements every interface member. A concrete `Foo` is justified by usable behavior and a genuine direct consumer; do not keep a concrete scaffold merely because adapters derive from it or tests instantiate it. Preserve an existing concrete implementation with real consumers, and introduce a separate abstract base when shared inheritance behavior needs a clearer contract. Do not create unused concrete wrappers to complete the hierarchy mechanically. Simple values, immutable definitions and directly usable actions do not require artificial abstract bases. Follow [Patterns and Practices](../../../docs/guidelines/patterns-and-practices.md).
+
 ## 2. Intermediate "delegation" bases
 Insert an abstract base whose **single-item operations delegate to batch/range operations** so subclasses override only the range methods:
 - `RangedListBase<T>` — `Add`/`Read`/`Update`/`RemoveAt` call `*Range` counterparts.
@@ -48,6 +50,8 @@ Use `EventHandlerEx<TArgs>` for events (e.g. `IBlockchain.BlockApplied`). Decora
 
 ## 9. Generics & self-describing names
 Heavy use of generic type parameters for flexibility (`Blockchain<TBlock, TState, TBlockID, TWeight, TOperationID>`). Prefer explicit generic parameters over `object`/`dynamic`. Names are long and self-describing.
+
+Place each `where` constraint on a separate line aligned one tab below the declaration, with the opening brace on the last constraint line. Follow [code-style](../code-style/SKILL.md) in source, tests and examples.
 
 ## Anti-patterns to avoid
 - A single concrete class with no interface/base/decorator when the concept is reusable.

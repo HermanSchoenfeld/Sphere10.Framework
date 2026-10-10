@@ -18,10 +18,12 @@ public static class ServiceCollectionExtensions {
 	public static bool HasImplementation<T>(this IServiceCollection serviceCollection)
 		=> serviceCollection.Any(x => x.ImplementationType == typeof(T));
 
-	public static IServiceCollection AddInitializer<T>(this IServiceCollection serviceCollection) where T : class, IApplicationInitializer
+	public static IServiceCollection AddInitializer<T>(this IServiceCollection serviceCollection)
+		where T : class, IApplicationInitializer
 		=> serviceCollection.AddTransient<IApplicationInitializer, T>();
 
-	public static IServiceCollection AddFinalizer<T>(this IServiceCollection serviceCollection) where T : class, IApplicationFinalizer
+	public static IServiceCollection AddFinalizer<T>(this IServiceCollection serviceCollection)
+		where T : class, IApplicationFinalizer
 		=> serviceCollection.AddTransient<IApplicationFinalizer, T>();
 
 	//public static void AddProxy<TSource, TDest>(this IServiceCollection serviceCollection) {

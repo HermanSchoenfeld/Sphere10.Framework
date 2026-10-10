@@ -39,7 +39,8 @@ public static class Config {
 	/// <param name="key">The name.</param>
 	/// <param name="defaultValue">The default value.</param>
 	/// <returns>Strongly-typed appSetting from config (or default value if missing)</returns>
-	public static T GetAppSetting<T>(string key, T defaultValue = default(T)) where T : struct {
+	public static T GetAppSetting<T>(string key, T defaultValue = default(T))
+		where T : struct {
 		var returnValue = defaultValue;
 		var stringValue = GetAppSetting(key, null);
 		if (stringValue != null) {

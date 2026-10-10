@@ -30,10 +30,12 @@ public interface ISettingsProvider {
 
 	void ClearSettings();
 
-	public bool Has<T>(object id = null) where T : SettingsObject
+	public bool Has<T>(object id = null)
+		where T : SettingsObject
 		=> ContainsSetting(typeof(T), id);
 
-	public T Get<T>(object id = null) where T : SettingsObject {
+	public T Get<T>(object id = null)
+		where T : SettingsObject {
 		SettingsObject settings;
 		if (!ContainsSetting(typeof(T), id)) {
 			settings = NewSetting(typeof(T), id) as T;

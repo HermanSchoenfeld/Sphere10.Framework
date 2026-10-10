@@ -378,6 +378,7 @@ public class WizardCancellationTests {
 			return component;
 		}
 
-		public T Get<T>() where T : IComponent => _components.OfType<T>().Single();
+		public T Get<T>()
+			where T : IComponent => _components.OfType<T>().Single();
 	}
 }

@@ -23,11 +23,13 @@ public static class UserSettings {
 		set => _provider = value;
 	}
 
-	public static bool Has<T>(object id = null) where T : SettingsObject, new() {
+	public static bool Has<T>(object id = null)
+		where T : SettingsObject, new() {
 		return Provider.Has<T>(id);
 	}
 
-	public static T Get<T>(object id = null) where T : SettingsObject, new() {
+	public static T Get<T>(object id = null)
+		where T : SettingsObject, new() {
 		return Provider.Get<T>(id);
 	}
 

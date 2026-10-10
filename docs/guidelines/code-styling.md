@@ -31,14 +31,33 @@ public class SomeClass {
 
 
 
+### Generic constraints
+
+Place each generic `where` constraint on its own line, aligned one tab beneath the type or method declaration. Keep the opening brace at the end of the final constraint line. Use this structure even when the constraints would fit within the ordinary line-length limit; apply it to source, tests, demos and documentation examples.
+
+```csharp
+public abstract class ApplicationScreenHostBase<TBlock, TScreen> : IApplicationScreenHost<TBlock, TScreen>
+	where TBlock : class, IApplicationBlock
+	where TScreen : class, IApplicationScreen {
+	protected TScreen CreateScreen<TConcrete>()
+		where TConcrete : class, TScreen, new() {
+		return new TConcrete();
+	}
+}
+```
+
+For declarations without a body, such as interface methods, the terminating semicolon remains at the end of the final constraint line.
+
 ### Naming Conventions
 
 The naming conventions should follow the default C# conventions as suggested by Visual Studio IDE and/or Resharper intellisense. These include
-1. Pascal-cased naming convention for all field, argument, variable members.
-2. Capitalized for all public, protected and internal members.
+1. Use PascalCase for types, methods, properties and non-private fields.
+2. Use camelCase for local variables and parameters, including lambda, loop and catch variables; use `_camelCase` for private fields.
 
 And most importantly
 3. Members are named using "self-describing" names so that the code is a "living documentation". This means **generally** avoiding short, cryptic and abbreviated names.
+
+Classes intended only as inheritance foundations must be abstract and named `...Base`. Concrete classes provide usable behavior for genuine direct consumers. See [Patterns and Practices](patterns-and-practices.md#inheritance-foundations-and-concrete-products) for deciding which layer a type belongs to.
 
 **Example:**
 
@@ -61,7 +80,7 @@ public class PascalCasedClassName {
 
 ### Platform-specific application UI types
 
-Shared contracts and models in `Sphere10.Framework.Application.UI` retain unprefixed names such as `IApplicationBlock` and `ApplicationBlock`. A platform extension must identify its platform in its name, for example `IBlazorApplicationBlock : IApplicationBlock` or `IWinFormsApplicationBlock : IApplicationBlock`. Their implementations are `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Apply this convention consistently to menus, screens, hosts, builders and decorators.
+Shared contracts and models in `Sphere10.Framework.Application.UI` retain unprefixed names such as `IApplicationBlock` and `ApplicationBlockBase`. A platform extension must identify its platform in its name, for example `IBlazorApplicationBlock : IApplicationBlock` or `IWinFormsApplicationBlock : IApplicationBlock`. Their implementations are `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Apply this convention consistently to menus, screens, hosts, builders and decorators.
 
 Use the shared type directly when no platform-specific extension is needed. Avoid redeclaring the shared name in a platform namespace and then relying on aliases to distinguish the two.
 

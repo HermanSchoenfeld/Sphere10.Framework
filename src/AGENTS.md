@@ -17,3 +17,10 @@ Before doing substantive work under this directory:
 Do not treat the Copilot instructions or matching skills as optional. If a
 skill conflicts with `../.github/copilot-instructions.md`, the Copilot
 instructions take precedence.
+
+Read [Patterns and Practices](../docs/guidelines/patterns-and-practices.md) when
+changing a hierarchy. Classes supplied only for inheritance are abstract and
+named `...Base`; concrete implementations need genuine direct consumers and
+usable behavior. Put each generic `where` constraint on its own aligned line,
+with the opening brace at the end of the final constraint, as specified in
+[Code Styling](../docs/guidelines/code-styling.md#generic-constraints).

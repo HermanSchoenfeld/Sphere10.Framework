@@ -22,6 +22,14 @@ Sphere10 Framework targets **.NET 10** (`net10.0` / `net10.0-windows`), with **.
 - Remove **redundant `else`** blocks after `return` or `throw`.
 - Do **not** wrap lines unless they exceed ~170 characters or wrapping significantly improves readability. Fluent builder invocations follow the configuration hierarchy below even when their lines are shorter.
 - When wrapping after `(`, place the closing `)` on its own line at the indentation of the originating line.
+- Put each generic `where` constraint on its own line, aligned one tab beneath the declaration. When the declaration has a body, put its opening brace at the end of the final constraint line. Apply this to types, methods and documentation examples even when the constraints would fit on one line.
+
+```csharp
+public abstract class ScreenHostBase<TBlock, TScreen>
+	where TBlock : class, IApplicationBlock
+	where TScreen : class, IApplicationScreen {
+}
+```
 
 ### Naming Conventions
 - **PascalCase** for all types, methods, properties, and non-private fields.
@@ -31,7 +39,7 @@ Sphere10 Framework targets **.NET 10** (`net10.0` / `net10.0-windows`), with **.
 
 ### Platform-specific Extensions
 
-- Keep UI-independent application contracts and models in `Sphere10.Framework.Application.UI` with unprefixed names such as `IApplicationBlock` and `ApplicationBlock`.
+- Keep UI-independent application contracts and models in `Sphere10.Framework.Application.UI` with unprefixed names such as `IApplicationBlock` and `ApplicationBlockBase`.
 - Name platform extensions explicitly: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`, with corresponding `BlazorApplicationBlock` and `WinFormsApplicationBlock` classes. Apply the same convention to related menus, screens, hosts, builders and decorators.
 - Reuse shared contracts and value types directly when no platform extension is needed. Do not redeclare an identically named platform type or introduce a namespace alias to conceal an avoidable naming collision.
 
@@ -71,6 +79,8 @@ Inside a class, order members as:
 - `ImplicitUsings` is **disabled** — always add explicit `using` directives.
 
 ## Architecture Patterns
+
+Read [Patterns and Practices](../docs/guidelines/patterns-and-practices.md) when designing or changing a type hierarchy. A class supplied only as an inheritance foundation must be abstract and named `...Base`. Retain a concrete public implementation when it has a genuine direct consumer and usable behavior; test-only construction or a convenience name does not justify making inheritance scaffolding concrete.
 
 ### Tools Namespace (Maximal Use)
 Static utility/tool classes live in the **`Tools`** global namespace so consumers can discover them via `Tools.` intellisense. Always prefer `Tools.*` over raw BCL calls when a tool exists. Key tools include:

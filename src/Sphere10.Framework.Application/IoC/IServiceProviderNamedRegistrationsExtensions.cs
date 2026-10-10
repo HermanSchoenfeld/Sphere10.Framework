@@ -14,19 +14,22 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceProviderNamedRegistrationsExtensions {
 
-	public static T GetNamedService<T>(this IServiceProvider servicerProvider, string name) where T : class {
+	public static T GetNamedService<T>(this IServiceProvider servicerProvider, string name)
+		where T : class {
 		var namedLookup = servicerProvider.GetService<INamedLookup<T>>();
 		if (namedLookup != null && namedLookup.ContainsKey(name))
 			return namedLookup[name];
 		return default;
 	}
 
-	public static T GetRequiredNamedService<T>(this IServiceProvider servicerProvider, string name) where T : class {
+	public static T GetRequiredNamedService<T>(this IServiceProvider servicerProvider, string name)
+		where T : class {
 		var namedLookup = servicerProvider.GetRequiredService<INamedLookup<T>>();
 		return namedLookup[name];
 	}
 
-	public static bool HasNamedService<T>(this IServiceProvider servicerProvider, string name) where T : class 
+	public static bool HasNamedService<T>(this IServiceProvider servicerProvider, string name)
+		where T : class
 		=> servicerProvider.GetService<INamedLookup<T>>()?.ContainsKey(name) ?? false;
 
 }

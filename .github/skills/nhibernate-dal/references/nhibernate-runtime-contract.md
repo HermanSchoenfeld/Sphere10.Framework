@@ -61,7 +61,8 @@ A domain entity derives `BusinessEntity`, initializes its collections, and uses 
 The mapping base contract is:
 
 ```csharp
-public abstract class BusinessEntityMap<T> : ClassMap<T> where T : BusinessEntity {
+public abstract class BusinessEntityMap<T> : ClassMap<T>
+	where T : BusinessEntity {
 	protected BusinessEntityMap(bool ExplicitID = false) {
 		var PrimaryKey = Id(Entity => Entity.ID).Column("ID");
 		if (ExplicitID)

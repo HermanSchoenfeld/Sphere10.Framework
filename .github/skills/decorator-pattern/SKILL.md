@@ -17,7 +17,8 @@ A decorator family has **two classes** in one file: a full two-generic-arg versi
 /// ensures sub-classes can retrieve the decorated object in its type, without an
 /// expensive chain of casts/retrieves.
 /// </summary>
-public abstract class FooDecorator<TItem, TConcrete> : IFoo<TItem> where TConcrete : IFoo<TItem> {
+public abstract class FooDecorator<TItem, TConcrete> : IFoo<TItem>
+	where TConcrete : IFoo<TItem> {
 	protected readonly TConcrete InternalFoo;
 
 	protected FooDecorator(TConcrete internalFoo) {

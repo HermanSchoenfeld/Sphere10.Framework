@@ -15,6 +15,7 @@ Apply these rules to every file you create or edit. Full rules live in [../../co
 - No redundant `else` after `return`/`throw`.
 - Don't wrap ordinary lines unless > ~170 chars or the expression needs structural clarity. Fluent builder configuration is an explicit exception: use the hierarchy rules below even for shorter lines. If wrapping after `(`, put `)` on its own line at the originating indent.
 - Base/sibling constructor calls (`: base(...)`, `: this(...)`) on the next line, tab-indented.
+- Write every generic `where` constraint on its own line, aligned one tab beneath the declaration. Put the opening brace at the end of the final constraint line. This applies to types, methods and examples regardless of line length. See [the generic-constraint guide](../../../docs/guidelines/code-styling.md#generic-constraints).
 
 ## Fluent configuration hierarchy
 
@@ -30,6 +31,7 @@ Apply these rules to every file you create or edit. Full rules live in [../../co
 - camelCase for local variables and parameters, including lambda, loop, and catch variables.
 - `_camelCase` for private fields.
 - Self-describing names; no cryptic abbreviations.
+- Classes intended only for inheritance are abstract and use a `Base` suffix. Concrete classes must provide usable behavior for genuine direct consumers. See [Patterns and Practices](../../../docs/guidelines/patterns-and-practices.md#inheritance-foundations-and-concrete-products).
 
 ## Platform-specific extensions
 
