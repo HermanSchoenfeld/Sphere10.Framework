@@ -79,6 +79,495 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Web.AspN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Application.Tests", "..\tests\Sphere10.Framework.Application.Tests\Sphere10.Framework.Application.Tests.csproj", "{F8CC830D-08D3-45C1-821C-75175A10CC3F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Agent Guidance", "Agent Guidance", "{321F7331-B86F-5EED-A811-9B04B2CAD3B4}"
+	ProjectSection(SolutionItems) = preProject
+		..\AGENTS.md = ..\AGENTS.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{016755E6-E0EF-5018-87A4-056D06B64C32}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\copilot-instructions.md = ..\.github\copilot-instructions.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{B964E1FE-D96B-50B6-8623-126359123FC0}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\README.md = ..\.github\skills\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "builder-pattern", "builder-pattern", "{B1F6963B-6C76-587B-92B9-E9583D79B3CD}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\builder-pattern\SKILL.md = ..\.github\skills\builder-pattern\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "code-style", "code-style", "{EF6F0175-5CE5-50E5-AD79-82DF11244809}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\code-style\SKILL.md = ..\.github\skills\code-style\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crud-grid", "crud-grid", "{0717CA64-3518-5D33-A64D-DD16B9765634}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\crud-grid\SKILL.md = ..\.github\skills\crud-grid\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crypto", "crypto", "{4005AFE7-C941-526B-9ABF-959DBCEC8D97}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\crypto\SKILL.md = ..\.github\skills\crypto\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data-source", "data-source", "{E215638A-258D-5CEC-8E8C-FB69C349009C}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\data-source\SKILL.md = ..\.github\skills\data-source\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "decorator-pattern", "decorator-pattern", "{7763754E-24EE-5088-9417-FD1494660211}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\decorator-pattern\SKILL.md = ..\.github\skills\decorator-pattern\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "disposable-scopes", "disposable-scopes", "{1A65B448-8BF7-5473-98D5-F3B878A525D4}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\disposable-scopes\SKILL.md = ..\.github\skills\disposable-scopes\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "guards-and-scopes", "guards-and-scopes", "{4CADCD4E-A0B7-5C9E-ADD7-F23874F4D81D}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\guards-and-scopes\SKILL.md = ..\.github\skills\guards-and-scopes\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "job-scheduler", "job-scheduler", "{D5C314FC-15D9-53D2-B3E5-5AC0AB8ABB3B}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\job-scheduler\SKILL.md = ..\.github\skills\job-scheduler\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "logging", "logging", "{71073C65-7307-5E12-A6A1-1A8DC5EE78EE}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\logging\SKILL.md = ..\.github\skills\logging\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nhibernate-dal", "nhibernate-dal", "{98E2C506-9106-5F89-9283-631EA7A09F54}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\nhibernate-dal\SKILL.md = ..\.github\skills\nhibernate-dal\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "references", "references", "{5B95DE6D-B800-5C19-AF33-EC746B93C88B}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\nhibernate-dal\references\nhibernate-runtime-contract.md = ..\.github\skills\nhibernate-dal\references\nhibernate-runtime-contract.md
+		..\.github\skills\nhibernate-dal\references\sql-dac-profile.md = ..\.github\skills\nhibernate-dal\references\sql-dac-profile.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "oo-design", "oo-design", "{F020A02C-5F8B-5AE3-BD49-C967B0E63015}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\oo-design\SKILL.md = ..\.github\skills\oo-design\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "protocols", "protocols", "{F71ACB85-0410-5EE5-8033-5ED60C5B52F8}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\protocols\SKILL.md = ..\.github\skills\protocols\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "references", "references", "{DE4B14C8-6C9E-5DD1-8FDB-EC80008A1BB8}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\protocols\references\current-source-limitations.md = ..\.github\skills\protocols\references\current-source-limitations.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "serialization", "serialization", "{0B6FEC96-C073-5963-B353-3CCFE39EE94C}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\serialization\SKILL.md = ..\.github\skills\serialization\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "state-machines", "state-machines", "{E75609CA-50F1-5DEB-8076-0A2E95CC0F47}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\state-machines\SKILL.md = ..\.github\skills\state-machines\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools-namespace", "tools-namespace", "{5E66CC0E-A4EC-5674-BF9A-96C3FC5123B1}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\tools-namespace\SKILL.md = ..\.github\skills\tools-namespace\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unit-testing", "unit-testing", "{12CFDCDB-4B7F-5F4C-935A-9253014DB77E}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\unit-testing\SKILL.md = ..\.github\skills\unit-testing\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "user-settings", "user-settings", "{8AC37839-5D21-589E-8ADC-A54D6EAC7CA2}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\user-settings\SKILL.md = ..\.github\skills\user-settings\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "winforms-ui", "winforms-ui", "{2CDF5A22-6A70-58C3-82C8-A018A003F4F7}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\skills\winforms-ui\SKILL.md = ..\.github\skills\winforms-ui\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6AEC8257-DEFA-56E9-B4AA-8316753266A6}"
+	ProjectSection(SolutionItems) = preProject
+		AGENTS.md = AGENTS.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{CE85D0EA-3692-5FA8-9D11-1D7EDE01DBFE}"
+	ProjectSection(SolutionItems) = preProject
+		.github\copilot-instructions.md = .github\copilot-instructions.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6812136E-9BC4-5552-A684-6875254945D2}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\AGENTS.md = ..\tests\AGENTS.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{BE329079-384E-5A90-8D3E-6C7E9A949DCE}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\AGENTS.md = ..\utils\AGENTS.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{6225E164-1082-5A99-9BBB-35215CBE6B4F}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\ci.md = ..\.github\ci.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Archive", "Archive", "{AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{D08BEA18-AEC4-52C9-B416-9B1B75BED723}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blockchain", "Blockchain", "{7AEA97CB-DBD7-59E3-8F35-DF222D874ADE}"
+	ProjectSection(SolutionItems) = preProject
+		..\blackhole\docs\Blockchain\AMS.md = ..\blackhole\docs\Blockchain\AMS.md
+		..\blackhole\docs\Blockchain\Dynamic-Merkle-Trees.md = ..\blackhole\docs\Blockchain\Dynamic-Merkle-Trees.md
+		..\blackhole\docs\Blockchain\W-OTS-Sharp.md = ..\blackhole\docs\Blockchain\W-OTS-Sharp.md
+		..\blackhole\docs\Blockchain\WAMS.md = ..\blackhole\docs\Blockchain\WAMS.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.DApp.Core", "Sphere10.Framework.DApp.Core", "{BFB09974-F61C-53E7-912A-066EBCC9EF3D}"
+	ProjectSection(SolutionItems) = preProject
+		..\blackhole\Sphere10.Framework.DApp.Core\README.md = ..\blackhole\Sphere10.Framework.DApp.Core\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.DApp.Host", "Sphere10.Framework.DApp.Host", "{F66A46AC-2F74-5E9D-BEC5-FDD37F483CAD}"
+	ProjectSection(SolutionItems) = preProject
+		..\blackhole\Sphere10.Framework.DApp.Host\README.md = ..\blackhole\Sphere10.Framework.DApp.Host\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.DApp.Node", "Sphere10.Framework.DApp.Node", "{945A321B-5FAB-52C3-B31E-F40CC097A679}"
+	ProjectSection(SolutionItems) = preProject
+		..\blackhole\Sphere10.Framework.DApp.Node\README.md = ..\blackhole\Sphere10.Framework.DApp.Node\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.DApp.Presentation", "Sphere10.Framework.DApp.Presentation", "{5AF4C3C8-380D-5888-80E5-950774133ED7}"
+	ProjectSection(SolutionItems) = preProject
+		..\blackhole\Sphere10.Framework.DApp.Presentation\README.md = ..\blackhole\Sphere10.Framework.DApp.Presentation\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.DApp.Presentation2", "Sphere10.Framework.DApp.Presentation2", "{B49A3056-E521-582C-BC51-9CCF56CED6EB}"
+	ProjectSection(SolutionItems) = preProject
+		..\blackhole\Sphere10.Framework.DApp.Presentation2\README.md = ..\blackhole\Sphere10.Framework.DApp.Presentation2\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{E0128764-7C47-5348-8EA6-99F859F74D0A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Utils.BlazorTester", "Sphere10.Framework.Utils.BlazorTester", "{0FF79322-F85E-57B8-BAE8-B82E3230BFF1}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.BlazorTester\README.md = ..\utils\Sphere10.Framework.Utils.BlazorTester\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loader", "Loader", "{BACAB527-FEBB-524C-A3B8-C0514B28728B}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.BlazorTester\Loader\README.md = ..\utils\Sphere10.Framework.Utils.BlazorTester\Loader\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ModernLoader", "ModernLoader", "{6F9F97D8-8888-57AF-9193-DA0AEDDEED41}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.BlazorTester\ModernLoader\README.md = ..\utils\Sphere10.Framework.Utils.BlazorTester\ModernLoader\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Showcase", "Showcase", "{D04E9D05-C97A-5772-9087-87EBD6084226}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.BlazorTester\Showcase\README.md = ..\utils\Sphere10.Framework.Utils.BlazorTester\Showcase\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WidgetGallery", "WidgetGallery", "{84F4B97D-12E1-5EF4-B1A2-4C258A265DAD}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.BlazorTester\WidgetGallery\README.md = ..\utils\Sphere10.Framework.Utils.BlazorTester\WidgetGallery\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wwwroot", "wwwroot", "{DA049F11-0A0D-51A3-A9F1-D1895652563F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vendor", "vendor", "{FA0F097E-309C-5957-A5EC-25B2A1B81846}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bootstrap", "bootstrap", "{A76F083A-9200-5E59-B54D-B1691BC510D5}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.BlazorTester\wwwroot\vendor\bootstrap\README.md = ..\utils\Sphere10.Framework.Utils.BlazorTester\wwwroot\vendor\bootstrap\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Utils.MvcTester", "Sphere10.Framework.Utils.MvcTester", "{BA9158E6-F1E1-56BF-AFAB-E7CA6675AA53}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.MvcTester\README.md = ..\utils\Sphere10.Framework.Utils.MvcTester\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Utils.WinFormsTester", "Sphere10.Framework.Utils.WinFormsTester", "{D0CAC145-4E8E-5654-BDC7-F339E7E776D0}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\Sphere10.Framework.Utils.WinFormsTester\README.md = ..\utils\Sphere10.Framework.Utils.WinFormsTester\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SystemExpert", "SystemExpert", "{5115FE80-395E-5AAE-A1AF-BED18238A949}"
+	ProjectSection(SolutionItems) = preProject
+		..\utils\SystemExpert\README.md = ..\utils\SystemExpert\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Guides", "Guides", "{A00B713E-E41E-5464-8194-F0D0A0CE0F35}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\README.md = ..\docs\README.md
+		..\docs\real-world-usage-examples.md = ..\docs\real-world-usage-examples.md
+		..\docs\start-here.md = ..\docs\start-here.md
+		..\docs\theming-template-sources.md = ..\docs\theming-template-sources.md
+		..\docs\tools-reference.md = ..\docs\tools-reference.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "architecture", "architecture", "{4A43F791-05A7-51D1-B4A0-4BCD74BD62A4}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\architecture\domains.md = ..\docs\architecture\domains.md
+		..\docs\architecture\sphere10-framework.md = ..\docs\architecture\sphere10-framework.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "guidelines", "guidelines", "{D5126186-FF36-5522-815D-A630ECE5ADAA}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\guidelines\3-tier-architecture.md = ..\docs\guidelines\3-tier-architecture.md
+		..\docs\guidelines\code-styling.md = ..\docs\guidelines\code-styling.md
+		..\docs\guidelines\patterns-and-practices.md = ..\docs\guidelines\patterns-and-practices.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{532962B1-B12B-50F0-BEB4-0F6063E82329}"
+	ProjectSection(SolutionItems) = preProject
+		TODO.md = TODO.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework", "Sphere10.Framework", "{978C990E-7424-51BE-90B3-F6E0E34B1FF5}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework\README.md = Sphere10.Framework\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Android", "Sphere10.Framework.Android", "{C0ABB59C-F2C7-55F8-9236-617DDADBE990}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Android\README.md = Sphere10.Framework.Android\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Application", "Sphere10.Framework.Application", "{8DA41535-487E-505C-9B4C-7A96945DFA5B}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Application\README.md = Sphere10.Framework.Application\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommandLine", "CommandLine", "{AFA44C74-F1BE-54FB-A50A-10D6C4998A9A}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Application\CommandLine\License.md = Sphere10.Framework.Application\CommandLine\License.md
+		Sphere10.Framework.Application\CommandLine\README.md = Sphere10.Framework.Application\CommandLine\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Settings", "Settings", "{E3F841C4-9931-5943-92E3-D410598057A0}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Application\Settings\README.md = Sphere10.Framework.Application\Settings\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Communications", "Sphere10.Framework.Communications", "{B50F1480-88FF-5322-840E-E17B08689290}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Communications\README.md = Sphere10.Framework.Communications\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Consensus", "Sphere10.Framework.Consensus", "{9A59DCB2-8989-5326-A1BB-7D212A564B2D}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Consensus\DESIGN.md = Sphere10.Framework.Consensus\DESIGN.md
+		Sphere10.Framework.Consensus\README.md = Sphere10.Framework.Consensus\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.CryptoEx", "Sphere10.Framework.CryptoEx", "{9B26E23E-6790-5AA6-9063-56A40CE0D0FB}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.CryptoEx\README.md = Sphere10.Framework.CryptoEx\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PascalCoin", "PascalCoin", "{D42F5158-7C65-59DC-8497-8E4B7C128546}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.CryptoEx\PascalCoin\ECIES-compatibility.md = Sphere10.Framework.CryptoEx\PascalCoin\ECIES-compatibility.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data", "Sphere10.Framework.Data", "{CAEB2001-BBA9-570A-8307-1DC1259CFCE4}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data\README.md = Sphere10.Framework.Data\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data.Firebird", "Sphere10.Framework.Data.Firebird", "{5C9851A0-9F5A-5648-8E4E-7D792E718520}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data.Firebird\README.md = Sphere10.Framework.Data.Firebird\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data.MSSQL", "Sphere10.Framework.Data.MSSQL", "{51D8816A-9C5C-5057-9D36-EDA1EB8F72A5}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data.MSSQL\README.md = Sphere10.Framework.Data.MSSQL\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data.MySQL", "Sphere10.Framework.Data.MySQL", "{93BAB183-2D0A-5B76-930B-744F68B3EB4D}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data.MySQL\README.md = Sphere10.Framework.Data.MySQL\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data.NHibernate", "Sphere10.Framework.Data.NHibernate", "{7BC0DA63-94DD-5AA2-9885-D89982B48F0A}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data.NHibernate\README.md = Sphere10.Framework.Data.NHibernate\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data.Oracle", "Sphere10.Framework.Data.Oracle", "{48DB18BA-2EAC-501D-8D2F-43798003F131}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data.Oracle\README.md = Sphere10.Framework.Data.Oracle\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data.PostgreSQL", "Sphere10.Framework.Data.PostgreSQL", "{50F7C2D6-D21C-5930-AE5E-389DBC2D4EB2}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data.PostgreSQL\README.md = Sphere10.Framework.Data.PostgreSQL\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Data.Sqlite", "Sphere10.Framework.Data.Sqlite", "{02FA5CD3-1F05-504B-B9A2-02EA6212AD89}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Data.Sqlite\README.md = Sphere10.Framework.Data.Sqlite\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Drawing", "Sphere10.Framework.Drawing", "{7AED16D7-B7A5-5E5A-89BE-F9D51420270D}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Drawing\README.md = Sphere10.Framework.Drawing\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Generators", "Sphere10.Framework.Generators", "{51985096-1D12-5871-83E5-D12426FD64FA}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Generators\README.md = Sphere10.Framework.Generators\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.iOS", "Sphere10.Framework.iOS", "{44BE9979-05C5-5759-8F0F-33F337ED3CA0}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.iOS\README.md = Sphere10.Framework.iOS\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.macOS", "Sphere10.Framework.macOS", "{C3AA86F8-63DA-5571-94EA-4E07C1562C3F}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.macOS\README.md = Sphere10.Framework.macOS\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.NUnit", "Sphere10.Framework.NUnit", "{E3306C54-CABC-568E-9CBB-640C2036DA5C}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.NUnit\README.md = Sphere10.Framework.NUnit\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.NUnit.DB", "Sphere10.Framework.NUnit.DB", "{98F86DF5-DFB0-58F4-B548-2A46A574BF54}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.NUnit.DB\README.md = Sphere10.Framework.NUnit.DB\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Web", "Sphere10.Framework.Web", "{00A73BE0-F250-5211-A578-DFD328055818}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Web\README.md = Sphere10.Framework.Web\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Web.AspNetCore", "Sphere10.Framework.Web.AspNetCore", "{4BD1939E-6231-5548-B1BB-9C3190106C01}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Web.AspNetCore\README.md = Sphere10.Framework.Web.AspNetCore\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Web.AspNetCore.Blazor", "Sphere10.Framework.Web.AspNetCore.Blazor", "{EF26CEF0-3F6B-5DA4-BB3D-C2D19D2F26CE}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Web.AspNetCore.Blazor\README.md = Sphere10.Framework.Web.AspNetCore.Blazor\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Web.AspNetCore.MVC", "Sphere10.Framework.Web.AspNetCore.MVC", "{BE5D4848-055B-5CB2-89F8-6CBE016D01AF}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Web.AspNetCore.MVC\README.md = Sphere10.Framework.Web.AspNetCore.MVC\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows", "Sphere10.Framework.Windows", "{C4E89A03-07D2-5353-A7A5-BE59F3A0454B}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows\README.md = Sphere10.Framework.Windows\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms", "Sphere10.Framework.Windows.Forms", "{DBF65A11-D80B-561E-B7BA-B9389CDF7572}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.Forms\README.md = Sphere10.Framework.Windows.Forms\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms.Firebird", "Sphere10.Framework.Windows.Forms.Firebird", "{C18D19FD-5C7A-5260-9F57-ADC33D562422}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.Forms.Firebird\README.md = Sphere10.Framework.Windows.Forms.Firebird\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms.MSSQL", "Sphere10.Framework.Windows.Forms.MSSQL", "{0BB0CE6B-791B-5EF7-AB40-AB25C818A158}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.Forms.MSSQL\README.md = Sphere10.Framework.Windows.Forms.MSSQL\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms.MySQL", "Sphere10.Framework.Windows.Forms.MySQL", "{B36E2E5B-6C21-5F5C-8CDF-37D10286E198}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.Forms.MySQL\README.md = Sphere10.Framework.Windows.Forms.MySQL\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms.Oracle", "Sphere10.Framework.Windows.Forms.Oracle", "{E4485892-5D93-5E70-931F-03DA5B7003FA}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.Forms.Oracle\README.md = Sphere10.Framework.Windows.Forms.Oracle\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms.PostgreSQL", "Sphere10.Framework.Windows.Forms.PostgreSQL", "{27D45359-59CF-5C5B-9D7F-6D341D2A08B3}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.Forms.PostgreSQL\README.md = Sphere10.Framework.Windows.Forms.PostgreSQL\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms.Sqlite", "Sphere10.Framework.Windows.Forms.Sqlite", "{4C867D40-9ABB-55CB-9496-10680AFB89AD}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.Forms.Sqlite\README.md = Sphere10.Framework.Windows.Forms.Sqlite\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.LevelDB", "Sphere10.Framework.Windows.LevelDB", "{47DE85A3-2245-56F6-B0BC-C57E296BE7E3}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.Framework.Windows.LevelDB\README.md = Sphere10.Framework.Windows.LevelDB\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.HashLib4CSharp", "Sphere10.HashLib4CSharp", "{8CEA27A9-ED83-5C50-99E1-BDF54F6D0384}"
+	ProjectSection(SolutionItems) = preProject
+		Sphere10.HashLib4CSharp\README.md = Sphere10.HashLib4CSharp\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{F3A0188F-0489-53E8-B15C-1A4A49B2C983}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fonts", "fonts", "{4FACA6C9-1744-5F7B-AD47-EEA8BB2917BE}"
+	ProjectSection(SolutionItems) = preProject
+		..\resources\fonts\README.md = ..\resources\fonts\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "presentations", "presentations", "{0FB6ED41-E817-5CEF-8383-91E6B6F767CD}"
+	ProjectSection(SolutionItems) = preProject
+		..\resources\presentations\README.md = ..\resources\presentations\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{298B3A2A-3909-544C-9B59-A2C018157E50}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "package-consumers", "package-consumers", "{834AFB88-1DF2-5365-9665-64A39CD49648}"
+	ProjectSection(SolutionItems) = preProject
+		..\scripts\package-consumers\README.md = ..\scripts\package-consumers\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6ECEDB78-ADA7-5D7F-A35E-F9154D749B87}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Application.Tests", "Sphere10.Framework.Application.Tests", "{1993952E-42A7-5375-905A-27860AEFA031}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\Sphere10.Framework.Application.Tests\README.md = ..\tests\Sphere10.Framework.Application.Tests\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Web.AspNetCore.Blazor.Tests", "Sphere10.Framework.Web.AspNetCore.Blazor.Tests", "{F9FB8F97-3404-5991-AF61-08860953790D}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\Sphere10.Framework.Web.AspNetCore.Blazor.Tests\README.md = ..\tests\Sphere10.Framework.Web.AspNetCore.Blazor.Tests\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sphere10.Framework.Windows.Forms.Tests", "Sphere10.Framework.Windows.Forms.Tests", "{81A97BC6-2FDC-50EB-993C-1BA086C57379}"
+	ProjectSection(SolutionItems) = preProject
+		..\tests\Sphere10.Framework.Windows.Forms.Tests\README.md = ..\tests\Sphere10.Framework.Windows.Forms.Tests\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -526,6 +1015,104 @@ Global
 		{74C7F0F9-54A6-4E50-911E-D9287D02D120} = {F904F79D-75D5-4918-E32F-904F3CF671B2}
 		{8E0E6E63-FB54-46B3-BC95-2766C3BBE530} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{F8CC830D-08D3-45C1-821C-75175A10CC3F} = {E7705E7B-D04B-488C-8442-149A029F34B8}
+		{016755E6-E0EF-5018-87A4-056D06B64C32} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
+		{B964E1FE-D96B-50B6-8623-126359123FC0} = {016755E6-E0EF-5018-87A4-056D06B64C32}
+		{B1F6963B-6C76-587B-92B9-E9583D79B3CD} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{EF6F0175-5CE5-50E5-AD79-82DF11244809} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{0717CA64-3518-5D33-A64D-DD16B9765634} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{4005AFE7-C941-526B-9ABF-959DBCEC8D97} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{E215638A-258D-5CEC-8E8C-FB69C349009C} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{7763754E-24EE-5088-9417-FD1494660211} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{1A65B448-8BF7-5473-98D5-F3B878A525D4} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{4CADCD4E-A0B7-5C9E-ADD7-F23874F4D81D} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{D5C314FC-15D9-53D2-B3E5-5AC0AB8ABB3B} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{71073C65-7307-5E12-A6A1-1A8DC5EE78EE} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{98E2C506-9106-5F89-9283-631EA7A09F54} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{5B95DE6D-B800-5C19-AF33-EC746B93C88B} = {98E2C506-9106-5F89-9283-631EA7A09F54}
+		{F020A02C-5F8B-5AE3-BD49-C967B0E63015} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{F71ACB85-0410-5EE5-8033-5ED60C5B52F8} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{DE4B14C8-6C9E-5DD1-8FDB-EC80008A1BB8} = {F71ACB85-0410-5EE5-8033-5ED60C5B52F8}
+		{0B6FEC96-C073-5963-B353-3CCFE39EE94C} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{E75609CA-50F1-5DEB-8076-0A2E95CC0F47} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{5E66CC0E-A4EC-5674-BF9A-96C3FC5123B1} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{12CFDCDB-4B7F-5F4C-935A-9253014DB77E} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{8AC37839-5D21-589E-8ADC-A54D6EAC7CA2} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{2CDF5A22-6A70-58C3-82C8-A018A003F4F7} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{6AEC8257-DEFA-56E9-B4AA-8316753266A6} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
+		{CE85D0EA-3692-5FA8-9D11-1D7EDE01DBFE} = {6AEC8257-DEFA-56E9-B4AA-8316753266A6}
+		{6812136E-9BC4-5552-A684-6875254945D2} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
+		{BE329079-384E-5A90-8D3E-6C7E9A949DCE} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
+		{6225E164-1082-5A99-9BBB-35215CBE6B4F} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{AC2B82D2-41CF-5FE1-B595-8D51040FE4FD} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{D08BEA18-AEC4-52C9-B416-9B1B75BED723} = {AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}
+		{7AEA97CB-DBD7-59E3-8F35-DF222D874ADE} = {D08BEA18-AEC4-52C9-B416-9B1B75BED723}
+		{BFB09974-F61C-53E7-912A-066EBCC9EF3D} = {AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}
+		{F66A46AC-2F74-5E9D-BEC5-FDD37F483CAD} = {AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}
+		{945A321B-5FAB-52C3-B31E-F40CC097A679} = {AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}
+		{5AF4C3C8-380D-5888-80E5-950774133ED7} = {AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}
+		{B49A3056-E521-582C-BC51-9CCF56CED6EB} = {AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}
+		{E0128764-7C47-5348-8EA6-99F859F74D0A} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{0FF79322-F85E-57B8-BAE8-B82E3230BFF1} = {E0128764-7C47-5348-8EA6-99F859F74D0A}
+		{BACAB527-FEBB-524C-A3B8-C0514B28728B} = {0FF79322-F85E-57B8-BAE8-B82E3230BFF1}
+		{6F9F97D8-8888-57AF-9193-DA0AEDDEED41} = {0FF79322-F85E-57B8-BAE8-B82E3230BFF1}
+		{D04E9D05-C97A-5772-9087-87EBD6084226} = {0FF79322-F85E-57B8-BAE8-B82E3230BFF1}
+		{84F4B97D-12E1-5EF4-B1A2-4C258A265DAD} = {0FF79322-F85E-57B8-BAE8-B82E3230BFF1}
+		{DA049F11-0A0D-51A3-A9F1-D1895652563F} = {0FF79322-F85E-57B8-BAE8-B82E3230BFF1}
+		{FA0F097E-309C-5957-A5EC-25B2A1B81846} = {DA049F11-0A0D-51A3-A9F1-D1895652563F}
+		{A76F083A-9200-5E59-B54D-B1691BC510D5} = {FA0F097E-309C-5957-A5EC-25B2A1B81846}
+		{BA9158E6-F1E1-56BF-AFAB-E7CA6675AA53} = {E0128764-7C47-5348-8EA6-99F859F74D0A}
+		{D0CAC145-4E8E-5654-BDC7-F339E7E776D0} = {E0128764-7C47-5348-8EA6-99F859F74D0A}
+		{5115FE80-395E-5AAE-A1AF-BED18238A949} = {E0128764-7C47-5348-8EA6-99F859F74D0A}
+		{A00B713E-E41E-5464-8194-F0D0A0CE0F35} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{4A43F791-05A7-51D1-B4A0-4BCD74BD62A4} = {A00B713E-E41E-5464-8194-F0D0A0CE0F35}
+		{D5126186-FF36-5522-815D-A630ECE5ADAA} = {A00B713E-E41E-5464-8194-F0D0A0CE0F35}
+		{532962B1-B12B-50F0-BEB4-0F6063E82329} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{978C990E-7424-51BE-90B3-F6E0E34B1FF5} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{C0ABB59C-F2C7-55F8-9236-617DDADBE990} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{8DA41535-487E-505C-9B4C-7A96945DFA5B} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{AFA44C74-F1BE-54FB-A50A-10D6C4998A9A} = {8DA41535-487E-505C-9B4C-7A96945DFA5B}
+		{E3F841C4-9931-5943-92E3-D410598057A0} = {8DA41535-487E-505C-9B4C-7A96945DFA5B}
+		{B50F1480-88FF-5322-840E-E17B08689290} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{9A59DCB2-8989-5326-A1BB-7D212A564B2D} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{9B26E23E-6790-5AA6-9063-56A40CE0D0FB} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{D42F5158-7C65-59DC-8497-8E4B7C128546} = {9B26E23E-6790-5AA6-9063-56A40CE0D0FB}
+		{CAEB2001-BBA9-570A-8307-1DC1259CFCE4} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{5C9851A0-9F5A-5648-8E4E-7D792E718520} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{51D8816A-9C5C-5057-9D36-EDA1EB8F72A5} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{93BAB183-2D0A-5B76-930B-744F68B3EB4D} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{7BC0DA63-94DD-5AA2-9885-D89982B48F0A} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{48DB18BA-2EAC-501D-8D2F-43798003F131} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{50F7C2D6-D21C-5930-AE5E-389DBC2D4EB2} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{02FA5CD3-1F05-504B-B9A2-02EA6212AD89} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{7AED16D7-B7A5-5E5A-89BE-F9D51420270D} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{51985096-1D12-5871-83E5-D12426FD64FA} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{44BE9979-05C5-5759-8F0F-33F337ED3CA0} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{C3AA86F8-63DA-5571-94EA-4E07C1562C3F} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{E3306C54-CABC-568E-9CBB-640C2036DA5C} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{98F86DF5-DFB0-58F4-B548-2A46A574BF54} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{00A73BE0-F250-5211-A578-DFD328055818} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{4BD1939E-6231-5548-B1BB-9C3190106C01} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{EF26CEF0-3F6B-5DA4-BB3D-C2D19D2F26CE} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{BE5D4848-055B-5CB2-89F8-6CBE016D01AF} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{C4E89A03-07D2-5353-A7A5-BE59F3A0454B} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{DBF65A11-D80B-561E-B7BA-B9389CDF7572} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{C18D19FD-5C7A-5260-9F57-ADC33D562422} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{0BB0CE6B-791B-5EF7-AB40-AB25C818A158} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{B36E2E5B-6C21-5F5C-8CDF-37D10286E198} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{E4485892-5D93-5E70-931F-03DA5B7003FA} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{27D45359-59CF-5C5B-9D7F-6D341D2A08B3} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{4C867D40-9ABB-55CB-9496-10680AFB89AD} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{47DE85A3-2245-56F6-B0BC-C57E296BE7E3} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{8CEA27A9-ED83-5C50-99E1-BDF54F6D0384} = {532962B1-B12B-50F0-BEB4-0F6063E82329}
+		{F3A0188F-0489-53E8-B15C-1A4A49B2C983} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{4FACA6C9-1744-5F7B-AD47-EEA8BB2917BE} = {F3A0188F-0489-53E8-B15C-1A4A49B2C983}
+		{0FB6ED41-E817-5CEF-8383-91E6B6F767CD} = {F3A0188F-0489-53E8-B15C-1A4A49B2C983}
+		{298B3A2A-3909-544C-9B59-A2C018157E50} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{834AFB88-1DF2-5365-9665-64A39CD49648} = {298B3A2A-3909-544C-9B59-A2C018157E50}
+		{6ECEDB78-ADA7-5D7F-A35E-F9154D749B87} = {7A8DBAD3-2DF4-50B8-A10F-F3A14A8489FB}
+		{1993952E-42A7-5375-905A-27860AEFA031} = {6ECEDB78-ADA7-5D7F-A35E-F9154D749B87}
+		{F9FB8F97-3404-5991-AF61-08860953790D} = {6ECEDB78-ADA7-5D7F-A35E-F9154D749B87}
+		{81A97BC6-2FDC-50EB-993C-1BA086C57379} = {6ECEDB78-ADA7-5D7F-A35E-F9154D749B87}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6BF0BD3-FB17-4EDB-AFBF-08A34BD2E2B6}
