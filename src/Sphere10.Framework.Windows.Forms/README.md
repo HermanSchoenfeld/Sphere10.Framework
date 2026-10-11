@@ -17,20 +17,20 @@ dotnet add package Sphere10.Framework.Windows.Forms
 Await modal operations from UI event handlers or methods returning `Task`:
 
 ```csharp
-private async void EditButton_Click(object Sender, EventArgs Args) {
-	var (Accepted, UserInput) = await EnterTextDialog.ShowAsync(this, "Edit name", "Name", "Current name");
-	if (Accepted)
-		await DialogEx.ShowAsync(this, SystemIconType.Information, "Saved", UserInput, "OK");
+private async void EditButton_Click(object sender, EventArgs args) {
+	var (accepted, userInput) = await EnterTextDialog.ShowAsync(this, "Edit name", "Name", "Current name");
+	if (accepted)
+		await DialogEx.ShowAsync(this, SystemIconType.Information, "Saved", userInput, "OK");
 }
 ```
 
 Use `ShowAsync` on `DialogEx`, `ExceptionDialog`, `EnterTextDialog`, `PasswordDialog`, `LogonDialog`, and `CrudDialog`; use `GenericEditorForm.ShowFormAsync` and `QuestionDialogSession.AskQuestionAsync`. Password input returns `(DialogResult Result, string Password)`; text input returns `(bool Accepted, string UserInput)`. These helpers dispose the dialogs they create after completion. When calling native `Form.ShowDialogAsync` on your own form, keep it in a `using` scope across the `await`.
 
-Custom forms use .NET WinForms directly: `using var Dialog = new MyDialog(); var Result = await Dialog.ShowDialogAsync(this);`. The old generic modal extension and the fallback that posted synchronous `ShowDialog` calls have been removed. `InvokeAsyncEx` remains a UI dispatch convenience over native `Control.InvokeAsync`, propagating completion, exceptions, and cancellation; it does not implement a modal loop.
+Custom forms use .NET WinForms directly: `using var dialog = new MyDialog(); var result = await dialog.ShowDialogAsync(this);`. `InvokeAsyncEx` remains a UI dispatch convenience over native `Control.InvokeAsync`, propagating completion, exceptions, and cancellation; it does not implement a modal loop.
 
 `IApplicationDialog` declares the native `ShowDialogAsync` overloads, implemented directly by the inherited `Form` methods. There is no legacy synchronous fallback. The caller retains ownership of an existing dialog. CRUD create, edit, and delete methods return `Task`; SourceGrid deletion uses `DeleteSelectedRowsAsync`. Custom `DialogEx` button behavior overrides `OnProcessButtonAsync`.
 
-`Wizard.Start(owner)` also awaits native `Form.ShowDialogAsync`, keeping its owner disabled until completion or cancellation and disposing the wizard dialog afterward.
+`await wizard.Start(owner)` on `IWinFormsWizard<TModel>` also awaits native `Form.ShowDialogAsync`, keeping its owner disabled until completion or cancellation and disposing the wizard dialog afterward.
 
 Wizard screens receive their `Wizard` and `Model` before `Initialize`, including screens added with `InjectScreen`. Navigation calls `Validate` before `OnNext`; commit accepted input in `OnNext` when invalid input must not change the model. Set `UpdateModelOnStateChanged = false` for this pattern. The default `OnPresent` calls `CopyModelToUI`, so input and summary screens can refresh their controls each time they are shown.
 
@@ -38,25 +38,48 @@ WinForms closing and validation events still require cancellation and handled fl
 
 Run the STA regression tests with `dotnet test tests/Sphere10.Framework.Windows.Forms.Tests/Sphere10.Framework.Windows.Forms.Tests.csproj` on Windows. They exercise actual forms with a message loop and close their dialogs automatically.
 
-File > Exit and the close button use an asynchronous confirmation backed by native WinForms modality. The initial close is cancelled before awaiting confirmation, and an accepted request closes the form after screen and application veto checks. Framework shutdown occurs after `Application.Run` returns, allowing normal window disposal to finish first.
+Call `await application.ExitAsync()` to request shutdown and receive whether the main window actually closed. File > Exit and the close button delegate to that same application workflow. It owns one asynchronous native confirmation, the retained screens' close guards, the active screen's block and the selected block's `CanExitAsync(application)` permissions, and existing application-exit observers. Each distinct block is checked once. Repeated requests share the pending decision. A native `FormClosing` observer can still decline normal exit, and another request can retry. Window close continues to hide or minimize forms configured for those actions; explicit application exit closes the window. `application.Exit()` provides the synchronous counterpart, using the same pending decision and native message pumping on the UI thread. `IsExiting` identifies a pending request; `HasExited` identifies completed closure.
+
+`await application.ExitAsync(force: true)` and `application.Exit(force: true)` skip confirmation and permission vetoes, including native `FormClosing` vetoes, while completing normal WinForms closure. Force also upgrades a pending normal request and dismisses its default confirmation dialog. Cancellation during confirmation dismisses that dialog and leaves the application available for another request. Once shutdown is committed, finalizers and resource cleanup finish even if a caller stops waiting. Exit dispatches onto the UI thread even when requested from a worker. Session-ending messages use forced graceful closure. A standalone main form retains its existing closing behavior and confirmation override. Once exit is approved, application and framework shutdown tasks complete before the main window closes; service-provider disposal follows after `Application.Run` returns.
+
+## Application lifecycle and splash
+
+Declare `WithName(...)` before calling `RegisterInitializer` or `RegisterFinalizer`. Both type and factory overloads throw `InvalidOperationException` immediately when the plugin has no name.
+
+`IApplication` exposes `Initialize()` / `InitializeAsync(...)`, `Finalize()` / `FinalizeAsync(...)`, `Exit(...)` / `ExitAsync(...)`, `Logger`, `Disposables`, lifecycle events and `Progress`. Initializing an application runs its tasks once; concurrent calls await the same operation. Merely building a plugin, resolving the application or reading its properties does not run its tasks. Finalization waits for attempted initialization, runs shutdown tasks once and releases application-owned resources; disposing the application also completes that cleanup. Finalization alone does not close the main window: request closure through `ExitAsync`. Task collections remain protected implementation details of `ApplicationBase`.
+
+`WinFormsApplicationPluginBuilder` inherits `RegisterInitializer<T>()` and `RegisterFinalizer<T>()` from the shared plugin builder. Their factory overloads accept `Func<IServiceProvider, T>`. These helpers register transient lifecycle tasks keyed by the built plugin's `Name`; duplicate names are rejected at load, and custom plugin names must remain stable. Different plugins can register the same task type without sharing its instance. The application resolves and caches tasks for its successful `LoadedPlugins` through its own provider. Host registrations using `services.AddInitializer<T>(typeof(IApplication))` and `services.AddFinalizer<T>(typeof(IApplication))` remain supported for application-owned tasks. The combined inventory starts with host-owned registrations in registration order, followed by plugins in `LoadedPlugins` order and each plugin's tasks in declaration order. Initializer priorities apply across this inventory within the existing sequential and parallelizable phases; finalizers execute in combined inventory order. Existing unkeyed framework tasks retain their process startup and shutdown behavior. Use `ConfigureServices` for other plugin dependencies.
+
+Derive synchronous tasks from `SyncApplicationInitializerBase` or `SyncApplicationFinalizerBase` and override only their synchronous method; the base supplies the worker-task async bridge. Derive asynchronous tasks from `AsyncApplicationInitializerBase` or `AsyncApplicationFinalizerBase` and override only their asynchronous method; the base supplies the synchronous bridge. The common `ApplicationInitializerBase` and `ApplicationFinalizerBase` leave both methods abstract. Tasks requiring native UI affinity can implement both contracts there and dispatch to their owning UI thread.
+
+`WinFormsApplication` derives from `AsyncApplicationBase`: its asynchronous readiness hook installs blocks on the owning UI thread before awaiting application tasks. Worker lifecycle requests start through `InvokeAsyncEx`; synchronous native lifecycle and disposal calls pump UI messages while waiting for the same asynchronous operation. This preserves UI continuations without sending block registration to a worker. Pending lifecycle work still follows the shared coalescing, cancellation and disposal guards.
+
+`StartWinFormsApplication` starts the framework first, preserving `Framework.Initialized` configuration. With the native message loop running, it installs blocks and awaits `application.InitializeAsync()` before showing the main window. A vetoed block installation can retry without running application tasks. Approved exit awaits application finalization and then runs framework finalizers while the main window remains open with interaction disabled. The window closes after these tasks; the runner waits for the root's exit result before ending the message loop and disposing the service provider. Cleanup still proceeds when a finalizer fails. `Disposables` holds resources owned by the application, independently of the borrowed form and screen host.
+
+Enable the startup and shutdown splash with `.UseSplashScreen()` or `.UseSplashScreen(image)` on the `BuildWinFormsApplication()` chain. It retains its framework events and global information logger, and subscribes to application lifecycle and progress before initialization. After exit confirmation and all closing permissions succeed, a fresh splash displays application and framework shutdown tasks while the main window remains behind it. Closing the main window is the last step after those tasks. The splash then fades out during resource cleanup. A failed initialization reuses its still-visible splash for cleanup. Updates from worker tasks queue onto the UI thread. Existing fade-in and fade-out behavior remains in place. Application tasks touching native controls must run on the UI thread; reserve parallelizable tasks for work that does not access controls directly.
+
+The root's `Logger` is the framework `Sphere10.Framework.ILogger`, resolved from its provider with `SystemLog.Logger` as the fallback. Lifecycle tasks can inject `IApplication`; hosted screens can reach the same logger through `Block.Parent.Logger`. Add only application-owned resources to `application.Disposables`; services, the form and the host keep their existing disposal owners. The adapter does not call plugin `Unload()` during shutdown.
 
 ## Application screen hosting
 
-`IApplicationScreenHost` in `Sphere10.Framework.Application.UI` owns available and registered blocks, active navigation, the active screen, UI services, view mode, unsaved changes and lifecycle guards. `ISingleApplicationScreenHost` adds operations on the current screen; `IMultiApplicationScreenHost` adds retained/open collections, ordering and instance operations. The native host implements both interfaces and can switch modes through the guarded `ScreenMode` setter or `TrySetScreenModeAsync`. `IUserInterfaceServices` owns dialogs, status, UI dispatch and command execution. Read them from `application.ScreenHost.UserInterfaceServices`; application aggregates expose plugins, the host and application commands.
+`IApplicationScreenHost` in `Sphere10.Framework.Application.UI` owns available and registered blocks, active navigation, the active screen, UI services, view mode, unsaved changes and lifecycle guards. `ISingleApplicationScreenHost` adds operations on the current screen; `IMultiApplicationScreenHost` adds retained/open collections, ordering and instance operations. The native host implements both interfaces and can switch modes through the guarded `ScreenMode` setter or `TrySetScreenModeAsync`. `IUserInterfaceServices` owns dialogs, status, UI dispatch and command execution. Read them from `application.ScreenHost.UserInterfaceServices`. The application exposes live `Blocks`, successful startup `LoadedPlugins`, its host and application commands; `ScreenHost.ActiveBlock` owns the selected block.
 
 `AddMainForm<TForm>()` registers shared, typed and native hosting interfaces against the existing host of a `MainForm`; it does not create another workspace. UI services resolve the form. Inject the common host for navigation and lifecycle operations:
 
 ```csharp
+using System.Threading.Tasks;
 using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Application;
 
 public class WorkspaceNavigation {
 	private readonly IApplicationScreenHost _host;
 
 	public WorkspaceNavigation(IApplicationScreenHost host) => _host = host;
 
-	public Task<IApplicationScreen> OpenEditorAsync(IApplicationBlock block, IScreenMenuItem item) =>
-		_host.ActivateScreenAsync(block, item);
+	public Task<bool> ExecuteAsync(IApplicationMenuItem item) =>
+		_host.UserInterfaceServices.ExecuteMenuItemAsync(item);
+
+	public Task<IApplicationScreen> OpenEditorAsync(IApplicationBlock block, ApplicationScreenDefinition definition) =>
+		_host.OpenScreenAsync(block, definition);
 
 	public Task<bool> CloseActiveEditorAsync() => _host.ActiveScreen == null
 		? Task.FromResult(true)
@@ -72,9 +95,12 @@ The native adapter composes the common logical host and performs native presenta
 
 `OpenScreenAsync(block, definition)` accepts a registered block and an exact definition reference from its `ScreenDefinitions`. Blocks own immutable definitions independently of menus, so a screen can open without a navigation item. A menu item references `ScreenDefinition`, and the block's `DefaultScreenDefinition` references the desired startup definition. Use `RegisterBlockAsync` and `UnregisterBlockAsync` for application membership; guarded removal closes its native controls and updates the same host registry.
 
-Menu items expose their declaring menu through `Parent`, and menus expose their block through `Parent`. Adding and removing items and menus through their containers maintains these references. A screen definition's `Activators` array is a snapshot of the commands attached to menus that reference it; replacing a command's definition or removing the command updates that reverse membership. Application-level menus have no block parent. Rendering merged menus preserves each command's original parent. Screen commands outside menus resolve their owning block through the host's registered definition inventory.
+Menu items expose their declaring menu through `Parent`, and menus expose their block through `Parent`. Adding and removing items and menus through their containers maintains these references. A screen definition's `Activators` array is a snapshot of the commands attached to menus that reference it; replacing a command's definition or removing the command updates that reverse membership. Application-level menus have no block parent. Rendering merged menus preserves each command's original parent. Screen commands, including toolbar commands, require their declaring menu's block through `item.Parent.Parent`. Ordinary application actions can run without a block or menu parent.
 
 A registered block's `Parent` references the running application. That link follows live host membership and clears when the block is removed or the application adapter is disposed. `Source` records the plugin that successfully contributed the captured block; standalone blocks have no source plugin. Removing and registering a contributed block again preserves its source, independently of its current application membership. Native and shared interfaces expose the same references.
+
+Execute the actual menu item supplied by the registered block, and pass the actual block, definition or screen to host operations. Ownership comes from these references; command dispatch does not search blocks for matching captions or IDs. The typed WinForms contracts specialize `Parent`, `Source`, `Host` and `Block`, with inline bridges to the shared interfaces under `#region Base Interface Bridges`.
+
 ## ⚡ 10-Second Example
 
 ```csharp
@@ -296,7 +322,7 @@ Cursor rawCursor = WinForms.LoadRawCursor(cursorBytes);
 ### Other
 | Component | Description |
 |-----------|-------------|
-| `Wizard` | Multi-step wizard framework |
+| `WinFormsActionWizard<TModel>` | Multi-step wizard with native presentation |
 | `SourceGrid` | Advanced data grid |
 | `LoadingCircle` | Loading animation |
 | `ExplorerBar` | Explorer-style navigation bar |
@@ -333,35 +359,29 @@ serviceCollection
 
 // Or create a reusable builder method
 public class MyApplicationBlock {
-    public static WinFormsApplicationBlock Build() {
-        return new WinFormsApplicationBlockBuilder()
+	public static WinFormsApplicationBlock Build() {
+		return new WinFormsApplicationBlockBuilder()
 			.WithName("My Application")
 			.WithDefaultScreen<DashboardScreen>()
 			.ConfigureMenu(mb => mb
 				.WithText("Main Menu")
 				.AddScreenItem<Screen1>("Option 1")
 				.AddScreenItem<Screen2>("Option 2")
-				.AddActionItem("Custom Action", async () => {
-                    // Custom action logic
-                    await DoSomethingAsync();
-                })
+				.AddActionItem("Custom Action", () => DoSomething())
 			)
 			.Build();
-    }
+	}
 }
 
 // Register in ModuleConfiguration
 serviceCollection.AddApplicationBlock(MyApplicationBlock.Build());
 ```
 
-Owner-aware actions receive the executing `IUserInterfaceServices`, including actions marked `executeOnLoad`. Cast `PrimaryUIController` to `Form` (or `IWin32Window`) to supply the modal parent:
+Owner-aware actions receive the executing `IUserInterfaceServices`, including actions marked `executeOnLoad`:
 
 ```csharp
 menu
-	.AddActionItem("Open dialog", async userInterface => {
-		using var dialog = new MyDialog();
-		await dialog.ShowDialogAsync((Form)userInterface.PrimaryUIController);
-	})
+	.AddActionItem("Ready", userInterface => userInterface.Status = "Ready")
 	.ConfigureItem(item => item
 		.AsActionItem()
 		.WithText("Report status")
@@ -369,7 +389,7 @@ menu
 	);
 ```
 
-The parameterless `Action` overload remains available. `AddItem(existingItem)` registers an existing item; `ConfigureItem(item => ...)` configures a child builder and adds its built item. `AddScreenItem` and `AddActionItem` construct their definitions directly without invoking a child builder.
+The parameterless `Action` overload remains available. Native action items take synchronous delegates; an `async` lambda supplied to one becomes `async void`, and command dispatch cannot await its completion. Await asynchronous dialogs and other work from a `Task`-returning method or a native async event handler as shown above. `PrimaryUIController` supplies the form when a callback needs its native owner. `AddItem(existingItem)` registers an existing item; `ConfigureItem(item => ...)` configures a child builder and adds its built item. `AddScreenItem` and `AddActionItem` construct their definitions directly without invoking a child builder.
 
 The builder pattern supports:
 - **Screen items**: Navigate to specific forms/screens
@@ -386,11 +406,15 @@ In your existing module's `RegisterComponents(IServiceCollection serviceCollecti
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 
 serviceCollection
 	.AddWinFormsApplicationPlugin(plugin => plugin
 		.WithName("Administration")
+		.RegisterInitializer<AdministrationInitializer>()
+		.RegisterFinalizer<AdministrationFinalizer>()
 		.ConfigureServices(services => services.AddSingleton<AdministrationService>())
 		.ConfigureBlock(block => block
 			.WithName("Administration")
@@ -403,11 +427,45 @@ serviceCollection
 	);
 ```
 
-`AdministrationService`, `DashboardScreen` and `SettingsScreen` are application types; screens derive from `WinFormsApplicationScreen`. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `ConfigureBlock(block => ...)` builds a nested block; `AddBlock(block)` registers an existing `IWinFormsApplicationBlock`.
+`AdministrationService`, `DashboardScreen` and `SettingsScreen` are application types; screens derive from `WinFormsApplicationScreen`. The lifecycle types can use the root's logger and application-owned dependencies:
+
+```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
+
+public sealed class AdministrationInitializer : AsyncApplicationInitializerBase {
+	private readonly IApplication _application;
+
+	public AdministrationInitializer(IApplication application) => _application = application;
+
+	public override Task InitializeAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		_application.Logger.Info("Administration components are ready.");
+		return Task.CompletedTask;
+	}
+}
+
+public sealed class AdministrationFinalizer : AsyncApplicationFinalizerBase {
+	private readonly IApplication _application;
+
+	public AdministrationFinalizer(IApplication application) => _application = application;
+
+	public override Task FinalizeAsync(CancellationToken cancellationToken = default) {
+		_application.Logger.Info("Administration components are finalized.");
+		return Task.CompletedTask;
+	}
+}
+```
+
+Replace these demonstration messages with the plugin's actual startup and cleanup work. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `ConfigureBlock(block => ...)` builds a nested block; `AddBlock(block)` registers an existing `IWinFormsApplicationBlock`.
 
 Registration invokes `Load(IServiceCollection)` once, validates the completed contribution, and supplies its blocks to the existing `AddApplicationBlock` startup path. Only after those registrations succeed does it publish an `ApplicationPluginRegistration<IWinFormsApplicationPlugin>` receipt containing the original plugin and a defensive copy of its contributed block membership. The application factory reads these receipts; manually registering an unloaded plugin in DI does not add it to `LoadedPlugins`. Failed loading or contribution validation does not publish a receipt. Later changes to a plugin's block getter do not change the captured startup contribution.
 
-The same plugin instance remains available through native and shared DI contracts. `WinFormsApplication.Initialize()` registers each native block once, retaining position ordering, default screens and `ExecuteOnLoad` behavior. Startup selection follows receipt and block declaration order, while `Position` orders the navigation icons. Resolving or disposing an application adapter does not load, unload or dispose plugin definitions. Block objects, menu parent links, images and disposal ownership remain with the existing native code.
+Registration rejects both duplicate successful plugin names and recursive attempts to load the same name. A failed registration discards newly added lifecycle task descriptors under the attempted name, preventing a later successful plugin with that name from inheriting abandoned tasks. Ordinary `ConfigureServices` side effects retain their existing behavior.
+
+The same plugin instance remains available through native and shared DI contracts. `WinFormsApplication.Initialize()` and `await WinFormsApplication.InitializeAsync()` register each native block once, retaining position ordering, default screens and `ExecuteOnLoad` behavior. Startup selection follows receipt and block declaration order, while `Position` orders the navigation icons. Resolving or disposing an application adapter does not load, unload or dispose plugin definitions. Block objects, menu parent links, images and disposal ownership remain with the existing native code.
 
 `WinFormsApplicationPlugin` uses `ApplicationPluginBase<IWinFormsApplicationBlock>` and retains compatibility with `ApplicationPlugin`, including typed virtual `Blocks` overrides. Shared screen-host projections live in the generic interfaces. Native hosts and decorators inherit the shared mutable `ScreenMode` contract; virtual overrides dispatch through both shared and native views.
 
@@ -420,6 +478,9 @@ Existing `AddApplicationBlock` calls and the `WinFormsApplication(form, blocks)`
 Enable automatic per-user window settings at application startup:
 
 ```csharp
+using Sphere10.Framework;
+using Sphere10.Framework.Windows.Forms;
+
 Sphere10Framework.Instance
 	.BuildWinFormsApplication()
 	.UseMainForm<BlockMainForm>()
@@ -427,7 +488,7 @@ Sphere10Framework.Instance
 	.StartWinFormsApplication();
 ```
 
-`UseMainFormSettings()` restores the main window's normal bounds, monitor and maximized state, captures its placement on accepted closure, and writes it once through a framework shutdown task before settings providers are disposed. Moving, resizing, and dragging the menu divider do not write settings. Cancelled exit requests do not queue a save. A minimized window reopens in its last normal or maximized state. Missing monitors and changed working areas or DPI are handled by fitting the window onto an available display. Without saved settings, the configured initial size is used.
+`UseMainFormSettings()` restores the main window's normal bounds, monitor and maximized state, captures placement after all exit permissions approve shutdown, and writes it once through a framework shutdown task before the window closes and settings providers are disposed. The later `FormClosed` event does not queue another save. Moving, resizing, and dragging the menu divider do not write settings. Cancelled exit requests do not queue a save. A minimized window reopens in its last normal or maximized state. Missing monitors and changed working areas or DPI are handled by fitting the window onto an available display. Without saved settings, the configured initial size is used.
 
 `BlockMainForm` also saves the left navigation pane's width in the same `FormWindowSettings`, including its last expanded width while collapsed or temporarily hidden. The restored width scales with DPI and is clamped to the current navigation limits. With no saved width, the wider default applies.
 
@@ -437,9 +498,9 @@ Other forms can keep `Tools.WinForms.AutoPersistWindowSettings(Form, SettingsID)
 
 ### Shared presentation contracts
 
-The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts with typed collections and native presentation options. Custom blocks supply `ScreenDefinitions` and `DefaultScreenDefinition`; custom screen items supply a canonical `ScreenDefinition` reference. Shared metadata has no string IDs. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` derive from abstract `ApplicationBlockBase` and `ApplicationMenuBase<TItem>`. `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` are abstract native intermediates above the concrete screen and action items. Native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit common metadata, screen policies and child-builder composition from typed shared bases, then create WinForms products on the first `Build()`. Plugin `ConfigureBlock`, block `ConfigureMenu`, menu `ConfigureItem`, their corresponding `Add` methods and common setters live in `Sphere10.Framework.Application`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same product and incorporate additional canonical definitions. Later name, position, default and menu configuration updates the existing native product, preserving one owner for menus, items and images.
+The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts with typed collections and native presentation options. Custom blocks supply `ScreenDefinitions` and `DefaultScreenDefinition`; custom screen items supply a canonical `ScreenDefinition` reference. Shared metadata has no string IDs. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` derive from abstract `ApplicationBlockBase` and `ApplicationMenuBase<TItem>`. `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` are abstract native intermediates above the concrete screen and action items. Native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit common metadata, screen policies and child-builder composition from typed shared bases, then create WinForms products on the first `Build()`. Plugin `ConfigureBlock`, block `ConfigureMenu`, menu `ConfigureItem`, their corresponding `Add` methods and common setters live in `Sphere10.Framework.Application.UI`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same product and incorporate additional canonical definitions. Later name, position, default and menu configuration updates the existing native product, preserving one owner for menus, items and images.
 
-`IWinFormsApplicationScreen` extends the shared `IApplicationScreen` contract with synchronous native hooks. `WinFormsApplicationScreen` maps those hooks to its existing display and cancelable hide events on the calling UI thread. Shared `CanDeactivateAsync` invokes the native hide guard; `OnDeactivatedAsync` does not emit the hide notification again. Cancellation is checked before invoking a native hook. The WinForms host remains synchronous and continues to manage controls, tabs, docking and screen disposal.
+`IWinFormsApplicationScreen` extends the shared `IApplicationScreen` contract with synchronous native hooks. `WinFormsApplicationScreen` maps those hooks to its existing display and cancelable hide events on the calling UI thread. Shared `CanDeactivateAsync` invokes the native hide guard; `OnDeactivatedAsync` does not emit the hide notification again. Cancellation is checked before invoking a native hook. The native presentation hooks remain synchronous; the host also exposes the shared asynchronous operations for controls, tabs, docking and screen disposal.
 
 Screen definitions carry activation modes for both UI hosts. The host resolves declarations and captures a constructor's mode in a definition when no mode was declared, then validates subsequent instances against that metadata. The native adapter uses the shared `ScreenActivationMode` enum directly; an unspecified menu mode still leaves the initial choice to the screen constructor. Help metadata remains available through the shared screen contract.
 
@@ -454,20 +515,18 @@ Screen definitions carry activation modes for both UI hosts. The host resolves d
 `MainForm.ScreenMode` defaults to `ScreenMode.SingleView`, which shows one screen without a tab bar. Set it to `ScreenMode.MultiView` to keep multiple screens open in titled tabs. `BlockMainForm` inherits this property and hosts the tabs in its main content panel.
 
 ```csharp
-Sphere10Framework.Instance
-	.BuildWinFormsApplication()
-	.UseMainForm<BlockMainForm>(Form => Form.ScreenMode = ScreenMode.MultiView)
-	// Register the application's modules here.
-	.StartWinFormsApplication();
+using Sphere10.Framework;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Windows.Forms;
 
-var Block = new WinFormsApplicationBlockBuilder()
+var block = new WinFormsApplicationBlockBuilder()
 	.WithName("Workspace")
 	.WithDefaultScreen<DashboardScreen>(title: "Dashboard")
-	.ConfigureMenu(Menu => Menu
+	.ConfigureMenu(menu => menu
 		.WithText("Views")
 		.AddScreenItem<DashboardScreen>("Dashboard")
 		.AddScreenItem<EditorScreen>("New editor", title: "Editor")
-		.ConfigureItem(Item => Item
+		.ConfigureItem(item => item
 			.AsScreenItem()
 			.WithText("New report")
 			.WithScreen<ReportScreen>()
@@ -477,12 +536,21 @@ var Block = new WinFormsApplicationBlockBuilder()
 	)
 	.Build();
 
+Sphere10Framework.Instance
+	.BuildWinFormsApplication()
+	.UseMainForm<BlockMainForm>(form => form.ScreenMode = ScreenMode.MultiView)
+	.ConfigureServices(services => services.AddApplicationBlock(block))
+	.StartWinFormsApplication();
+
 public class DashboardScreen : WinFormsApplicationScreen {
 	public DashboardScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
 }
 
 public class EditorScreen : WinFormsApplicationScreen {
 	public EditorScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
+}
+
+public class ReportScreen : WinFormsApplicationScreen {
 }
 ```
 
@@ -552,7 +620,7 @@ The existing `OnHide(ref bool CancelHide)` and `ScreenHidden` event can cancel n
 
 The reusable host follows `IWinFormsApplicationScreenHost` → `WinFormsApplicationScreenHostBase` → `WinFormsApplicationScreenHost`, with `WinFormsApplicationScreenHostDecorator` for extensions. `WinFormsApplicationScreenTabControl` supplies the tab interactions and `WinFormsApplicationScreenForm` hosts detached screens.
 
-The **WinForms Tester** registers its blocks through `AddWinFormsApplicationPlugin` and starts in MultiView and uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales its existing screen and dialog layouts. Its `WinFormsDemoPlugin.Configure` method groups the running demonstrations into Workspace, Notes, Controls, Data and collections, Integration, and Utilities using the fluent plugin/block builders. **Workspace > Screen hosting** explicitly declares **Settings** as single-instance; **New design** and ordinary component screens use the multi-instance default. Both screen modes are available, and the hidden Empty screen belongs to Workspace. These demos have independent notes, a counter, **Rename tab** actions, a lifecycle log, and a checkbox to exercise cancellation. **Plain screen (no bars)** exercises a screen with no menus or toolbar. See the [Tester instructions](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md). [SystemExpert](../../utils/SystemExpert/README.md) also uses MultiView; monitoring tools use the framework's default multi-instance policy unless they explicitly declare another lifetime.
+The **WinForms Tester** loads two plugins through `AddWinFormsApplicationPlugin`: `WinFormsDemoPlugin.Configure` contributes Workspace and Notes, while `WinFormsComponentDemoPlugin.Configure` contributes Controls, Data and collections, Integration, and Utilities. Each plugin registers its own initialization and finalization tasks from the tester's `Lifecycle` folder, alongside the existing framework startup tasks. It starts in MultiView and uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales its existing screen and dialog layouts. **Workspace > Screen hosting** explicitly declares **Settings** as single-instance; **New design** and ordinary component screens use the multi-instance default. Both screen modes are available, and the hidden Empty screen belongs to Workspace. These demos have independent notes, a counter, **Rename tab** actions, a lifecycle log, and a checkbox to exercise cancellation. **Plain screen (no bars)** exercises a screen with no menus or toolbar. See the [Tester instructions](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md). [SystemExpert](../../utils/SystemExpert/README.md) also uses MultiView; monitoring tools use the framework's default multi-instance policy unless they explicitly declare another lifetime.
 
 `Directory.Build.props` sets `ForceDesignerDPIUnaware=true` for the Visual Studio WinForms designer across the repository. This designer setting is separate from runtime DPI awareness. The library leaves runtime DPI policy to the application; Tester explicitly selects `HighDpiMode.DpiUnaware` before creating controls to preserve Windows bitmap scaling.
 
@@ -599,7 +667,7 @@ Code using the former low-level APIs should update these references:
 
 These low-level moves require recompilation and the listed source updates for consumers of the moved members. Rich-edit formatting, cursor hotspots, native struct sizes, and hook disposal have regression coverage in `WindowsInteropTests`. The cursor wrapper does not transfer native-handle ownership to `Cursor.Dispose`; direct native consumers should use `CreateCursorHandle` and release their handle explicitly.
 
-Custom closing behavior should override `OnFormClosing(FormClosingEventArgs)`. The framework forms use this supported lifecycle hook. Image attachment selection now returns the selected file or clipboard source instead of always reporting `None`.
+Ordinary custom forms can override `OnFormClosing(FormClosingEventArgs)`. `LiteMainForm` seals that workflow to coordinate `IApplication.ExitAsync`; application forms can veto normal exit through `OnApplicationExiting(CancelEventArgs)` or `ApplicationExitingEvent`. Image attachment selection returns the selected file or clipboard source instead of always reporting `None`.
 
 Legacy DES stream helpers retain their existing full-length input buffer and zero-filled tail at end of input; short reads are completed before encryption or decryption. The existing DES key, IV, and ciphertext format are preserved.
 

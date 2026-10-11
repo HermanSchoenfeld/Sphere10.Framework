@@ -134,8 +134,28 @@ Application lifecycle and configuration:
 - **Dependency Injection**: Integration with Microsoft.Extensions.DependencyInjection
 - **Settings Management**: Type-safe settings with persistence
 - **Command-Line Parsing**: Attribute-based CLI with validation
-- **Lifecycle Hooks**: Startup, configuration, and shutdown events
-- **Shared UI**: UI-independent block/menu contracts, metadata, builders, snapshots, catalog validation and activation policies, reused by the WinForms and Blazor adapters
+- **Application Root**: `IApplication` coordinates initialization, finalization, confirmed exit, logging and owned resources, with synchronous and asynchronous APIs
+- **Shared UI**: Application/block/menu ownership, screen definitions and activators, typed builders, command composition and screen-host guards, reused by WinForms and Blazor
+
+#### Application ownership and platform hosts
+
+```mermaid
+flowchart TD
+    Application --> Blocks
+    Blocks --> Menus
+    Menus --> MenuItems
+    Blocks --> ScreenDefinitions
+    Application --> ScreenHost
+    ScreenHost --> ScreenInstances
+    Application -. LoadedPlugins .-> Plugins
+    Plugins -. contribute .-> Blocks
+```
+
+`IApplication.Blocks` follows the host's live registered membership. `LoadedPlugins` records successful startup contributors, including service-only plugins; directly registered blocks require no synthetic plugin. A block's `Parent` identifies its application and `Source` preserves its contributing plugin. Menus and items have parent links, definitions expose their `Activators`, and screen instances expose `Host` and `Block`. Selection remains on the screen host. Commands execute through their actual runtime objects and parent links; Blazor route IDs are resolved at the URL boundary.
+
+Plugin builders require `WithName(...)` before `RegisterInitializer` or `RegisterFinalizer`. Their task services use the built plugin's unique name and the application's provider. The application keeps task inventories protected and exposes lifecycle events and progress. Application-owned host tasks can use `typeof(IApplication)` as their service key; unkeyed tasks retain their existing `Sphere10Framework` process lifetime. Tasks choose a synchronous or asynchronous implementation through the [directional bases](../guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies).
+
+WinForms establishes its UI on the owning thread and, when splash screens are enabled, reports startup/shutdown tasks through them. Approved exit completes application and process shutdown before closing the main form, then disposes the provider after the native message loop ends. Blazor initializes the application once per interactive circuit and finalizes on application exit or circuit closure. Prerendering and temporary reconnects do not replay tasks. Plugins remain startup contributors with the host's lifetime. See the [shared lifecycle](../../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown), [WinForms guide](../../src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) and [Blazor guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#applicationblock-architecture).
 
 ### Data Tier (Sphere10.Framework.Data.*)
 
@@ -306,7 +326,7 @@ Each provider implements the interface while exposing provider-specific features
 
 ### Cross-Platform Core
 
-`Sphere10.Framework` targets .NET 8.0+ and .NET Standard 2.0, running on:
+`Sphere10.Framework` targets .NET 10, running on:
 
 - Windows (x64, x86, ARM64)
 - Linux (x64, ARM64)

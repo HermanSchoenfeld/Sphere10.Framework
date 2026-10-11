@@ -82,6 +82,10 @@ Inside a class, order members as:
 
 Read [Patterns and Practices](../docs/guidelines/patterns-and-practices.md) when designing or changing a type hierarchy. A class supplied only as an inheritance foundation must be abstract and named `...Base`. Retain a concrete public implementation when it has a genuine direct consumer and usable behavior; test-only construction or a convenience name does not justify making inheritance scaffolding concrete.
 
+### Synchronous and Asynchronous Implementation Hierarchies
+
+Follow the [sync/async hierarchy guide](../docs/guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies), using `IRepository` and its bases as the architectural reference. Declare both execution primitives in the interface and neutral abstract base. `SyncFooBase` supplies async adapters to sync primitives; `AsyncFooBase` supplies blocking sync adapters to async primitives. Concrete implementations override their chosen direction. Keep shared state and notifications in the neutral base; do not choose execution through default interface members or a boolean mode. Adapters must preserve actual completion, errors, cancellation semantics, disposal direction and platform thread affinity. Inline covariant property projections remain valid default interface bridges.
+
 ### Tools Namespace (Maximal Use)
 Static utility/tool classes live in the **`Tools`** global namespace so consumers can discover them via `Tools.` intellisense. Always prefer `Tools.*` over raw BCL calls when a tool exists. Key tools include:
 - **`Tools.Array`** — array manipulation, sub-arrays, resizing.
@@ -140,6 +144,8 @@ The serialization framework provides binary serializers for efficient stream-bas
 - **`BulkFetchDataSource<T>`** — extends `FutureListDataSource<T>` with a `Reloadable` future. Call `Invalidate()` to force re-fetch on next access. Use for lazy/invalidatable data fetching.
 - **`ListDataSource<T>`** — wraps an existing `IExtendedList<T>` as a data source.
 - **`ProjectedDataSource<TFrom, TTo>`** — decorator that projects entities between types via `Func<TFrom, TTo>` / `Func<TTo, TFrom>` mappings.
+
+These describe the existing data-source implementations. Apply the [general sync/async adapter rules](../docs/guidelines/patterns-and-practices.md#adapter-completion-and-cancellation) when extending this hierarchy, and verify existing waiting helpers before relying on their completion or synchronization-context behavior.
 
 ### Collections (ExtendedList & Stream-Mapped)
 The framework provides `long`-indexed collection interfaces and implementations:

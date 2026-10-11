@@ -15,7 +15,7 @@ The Overview also has an **Activate the block's default screen** checkbox. It sw
 
 | Example | Source | Library foundations |
 | --- | --- | --- |
-| Plugin and block composition | [ShowcasePlugin.cs](ShowcasePlugin.cs) | ConfigurePlugin, ConfigureBlock, ConfigureMenu, screen registrations and scoped services |
+| Plugin and block composition | [ShowcasePlugin.cs](ShowcasePlugin.cs) | ConfigurePlugin, ConfigureBlock, ConfigureMenu, canonical screen definitions, scoped services and named initializer/finalizer registration |
 | Card/table catalogue | [CardsScreen.razor](Cards/CardsScreen.razor), [CollectionDataSource.cs](Cards/CollectionDataSource.cs) | BulkFetchDataSource, BlazorGridController, BlazorGrid, PageSizeSelector, ExpandsToFit |
 | Keyed editor | [CollectionDetailScreen.razor](Cards/CollectionDetailScreen.razor) | BlazorApplicationScreenActivation parameters and instance key; HasUnsavedChanges, CanDeactivateAsync, NotifyScreenChanged |
 | Native commands | [CommandsScreen.razor](Commands/CommandsScreen.razor) | Menus/ToolBarItems, merge by ID, WithChildren, EnabledWhen, WithVisibility and ViewService |
@@ -23,6 +23,10 @@ The Overview also has an **Activate the block's default screen** checkbox. It sw
 | Theme studio | [ThemeStudioScreen.razor](Themes/ThemeStudioScreen.razor) | ThemeCatalog, scoped IThemeService, ThemeProvider, semantic CSS tokens and themed dialogs |
 
 The cards are an application-specific view over the existing data-source/controller APIs; no parallel card data framework is introduced. SVG artwork is deterministic and theme-aware. Collection IDs are passed into retained screens rather than copying mutable catalogue entities into registration metadata. Catalogue read and write scopes return detached copies.
+
+`CardsScreen` opens the collection editor with its own `Host.OpenScreenAsync(Block, definition, activation)`, using the canonical definition from `Block.ScreenDefinitions`. Its entity ID and reuse key identify application data and retained sessions; command execution does not look up block/menu IDs. Menus and command items retain their `Parent` ownership, screens expose `Host` and `Block`, and `Block.Parent` gives access to the running application and its logger.
+
+Showcase declares `WithName("Application patterns")` before registering its startup and shutdown tasks. It is one of the [four lifecycle-enabled demo plugins](../README.md#plugin-initialization-and-shutdown). Initializing/finalizing the circuit's application executes those tasks once, while `LoadedPlugins` retains the shared startup plugin definition and `Application.Blocks` exposes the live runtime block.
 
 Command definitions are shared between the native menu and toolbar. Availability is checked by the host as well as presented by its renderers. Screen-specific Tools and File contributions follow the active screen, and the common application menus remain available.
 

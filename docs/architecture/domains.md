@@ -46,13 +46,15 @@ Application lifecycle, DI, configuration, plugin management, and UI-independent 
 
 | Domain | Purpose | Tools |
 |--------|---------|-------|
-| **Component Registry** | IoC container, dependency injection, service resolution | Tools.ComponentRegistry |
-| **Configuration** | Settings management, environment-aware configuration | Tools.Configuration |
-| **Plugin System** | Dynamic plugin loading, lifecycle management, plugin discovery | Tools.Plugins |
-| **Command-Line** | CLI argument parsing, command execution, help text generation | Tools.CommandLine |
-| **UI** | Shared block/menu models, builder state, snapshots, catalog validation and screen activation policies | Tools.UI |
+| **Dependency Injection** | Service registrations, scopes and provider resolution | Microsoft.Extensions.DependencyInjection |
+| **Configuration** | Settings management, environment-aware configuration | Tools.Config / SettingsObject |
+| **Plugin System** | Named startup contributors, block contributions and application lifecycle tasks | ApplicationPluginBuilderBase |
+| **Command-Line** | CLI argument parsing, command execution, help text generation | CommandLineParser |
+| **UI** | Application ownership, menus, definition-owned activation, screen hosts, lifecycle and guarded exit | Tools.UI / Tools.Application |
 
 The [shared UI framework](../../src/Sphere10.Framework.Application/README.md#shared-ui-framework) has no UI framework dependencies. WinForms and Blazor supply their control/component types, rendering, UI dispatch and resource ownership through platform adapters.
+
+The runtime root is `IApplication`, exposing live blocks and successful `LoadedPlugins`. Blocks own menus and screen definitions; host selection and retained screen instances stay on `ScreenHost`. Parent/source links identify ownership, and commands execute through their runtime objects. The root runs name-keyed plugin tasks, exposes `Logger` and `Disposables`, and coordinates confirmed exit. With splash screens enabled, WinForms uses native lifecycle splashes and closes its form after shutdown; Blazor runs tasks once per interactive circuit. See [application lifecycle](../../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown).
 
 ### Data Tier Domains (Sphere10.Framework.Data.*)
 
@@ -141,8 +143,8 @@ Consensus Tier (Sphere10.Framework.Consensus)
 |---------|-----------------|-------|
 | **Logging** | System.Logging domain | Tools.Logging |
 | **Caching** | System.Cache domain | Tools.Cache |
-| **Configuration** | Application.Configuration domain | Tools.Configuration |
-| **Dependency Injection** | Application.ComponentRegistry domain | Tools.ComponentRegistry |
+| **Configuration** | Application.Configuration domain | Tools.Config / SettingsObject |
+| **Dependency Injection** | Service registration and application scopes | Microsoft.Extensions.DependencyInjection |
 | **Persistence** | Data.ObjectSpaces domain | Tools.ObjectSpace |
 | **Cryptography** | System.Cryptography domain | Tools.Crypto |
 

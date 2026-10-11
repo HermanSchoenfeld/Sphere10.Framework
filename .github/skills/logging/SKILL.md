@@ -6,6 +6,7 @@ description: Log via ILogger/SystemLog with decorators and sinks — never Conso
 # Logging Skill
 
 ## Emit log messages
+- UI application code: use `IApplication.Logger`; screens can reach it through `Block.Parent.Logger`. Lifecycle tasks receive the same application logger. This is `Sphere10.Framework.ILogger`; distinguish it from `Microsoft.Extensions.Logging.ILogger` when both namespaces are imported.
 - Application-wide: `SystemLog.Info(...)`, `SystemLog.Error(...)`, etc. (backed by a `MulticastLogger`).
 - Never `Console.WriteLine` for logging.
 - Register sinks: `SystemLog.RegisterLogger(logger)`.

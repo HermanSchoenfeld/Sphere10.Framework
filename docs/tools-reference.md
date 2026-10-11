@@ -11,7 +11,7 @@ The **Tools namespace** is a central organizational feature of Sphere10 Framewor
 2. [Platform-Specific Tools](#platform-specific-tools)
 3. [Database Tools](#database-tools)
 4. [Usage Patterns](#usage-patterns)
-5. [Adding New Tools](#adding-new-tools)
+5. [Adding New Tools](#adding-new-tools-for-contributors)
 
 ---
 
@@ -441,12 +441,17 @@ var query = Tools.NHibernate.CreateQuery<T>(session);
 ## Application & Testing Tools
 
 ### **Tools.Config** (Sphere10.Framework.Application)
-Configuration and settings management.
+Reads `ConfigurationManager.AppSettings`; use the [settings providers](../src/Sphere10.Framework.Application/Settings/README.md) for persisted settings.
 ```csharp
-var value = Tools.Config.Get<T>(key);
-Tools.Config.Set(key, value);
-bool exists = Tools.Config.KeyExists(key);
+var endpoint = Tools.Config.GetAppSetting("Endpoint", "https://localhost");
+var retryCount = Tools.Config.GetAppSetting<int>("RetryCount", 3);
 ```
+
+### **Tools.Application** (Sphere10.Framework.Application)
+
+Runs supplied `IApplicationInitializer` and `IApplicationFinalizer` sequences through `ExecuteInitializers`, `ExecuteInitializersAsync`, `ExecuteFinalizers` and `ExecuteFinalizersAsync`. Initializers run in priority order before parallel initializers. Finalizers attempt every task and aggregate failures. These utilities execute borrowed task sequences; the caller retains ownership.
+
+UI application consumers should call `IApplication.InitializeAsync`, `FinalizeAsync` or `ExitAsync` so application state, task resolution, notifications and resource cleanup remain coordinated. Declare a plugin's name before using its builder's `RegisterInitializer` or `RegisterFinalizer`; do not obtain or execute its keyed tasks independently. See the [application lifecycle guide](../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown) and [sync/async pattern](guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies).
 
 ### **Tools.NUnit** (Sphere10.Framework.NUnit)
 NUnit testing utilities.

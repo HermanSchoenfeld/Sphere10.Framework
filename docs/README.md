@@ -111,6 +111,9 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | Editable Blazor grids | [Complete grid example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start) |
 | Custom grid editors and related records | [Editor, reference picker and action example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions) |
 | Blazor navigation workspace | [ApplicationBlock setup](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#register-a-workspace) |
+| Shared application ownership, plugins and lifecycle | [Application framework](../src/Sphere10.Framework.Application/README.md#shared-ui-framework) / [Initialization and shutdown](../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown) |
+| WinForms lifecycle, splash and exit | [Native application lifecycle](../src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) / [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) |
+| Blazor plugin startup and shutdown | [Demo lifecycle](../utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown) |
 | Run the web demos | [Blazor tester](../utils/Sphere10.Framework.Utils.BlazorTester/README.md) / [MVC tester](../utils/Sphere10.Framework.Utils.MvcTester/README.md) |
 | Mobile development | [iOS](../src/Sphere10.Framework.iOS/README.md) / [Android](../src/Sphere10.Framework.Android/README.md) |
 

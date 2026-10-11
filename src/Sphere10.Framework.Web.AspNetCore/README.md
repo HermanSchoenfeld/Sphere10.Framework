@@ -72,6 +72,8 @@ Open the address printed by the host, then visit `/visits` repeatedly in the sam
 
 `AddSphere10Framework` invokes the `Sphere10FrameworkBuilder` callback and registers modules in the host's service collection. `StartSphere10Framework` must follow `builder.Build()` and consume that pending configuration once. The library's initializer links host shutdown to framework finalization. See the [Application guide](../Sphere10.Framework.Application/README.md) for modules and framework services. `UseSphere10Framework(configure)` is the registration alternative for `IHostBuilder`; it does not replace the subsequent start call.
 
+These methods manage the process-level framework lifetime. A [Blazor application](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) built with `BuildBlazorApplication` has a separate scoped `IApplication` lifetime: its circuit handler awaits initialization and finalization, including tasks registered by named plugins. Static prerendering and temporary disconnects do not execute those tasks. Application exit shuts down that circuit's application; it does not stop the ASP.NET Core host. Use `IApplication.Logger` for application and screen diagnostics.
+
 ## Send host logging to a Sphere10 logger
 
 Add these imports and registration statements before `builder.Build()` in the example above:

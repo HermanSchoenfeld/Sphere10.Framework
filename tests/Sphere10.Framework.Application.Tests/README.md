@@ -2,7 +2,7 @@
 
 .NET 10 NUnit tests for the UI-independent application foundation in `Sphere10.Framework.Application.UI`. The project references only [Sphere10.Framework.Application](../../src/Sphere10.Framework.Application/README.md); it runs without a browser, ASP.NET Core host or Windows desktop runtime.
 
-The suite protects the contracts shared by the Blazor and WinForms application frameworks: plugins, blocks, menus, metadata snapshots, builders, activation policies, actions, application interactions, host-owned block navigation, actual screen identity and guarded transitions. Small neutral classes stand in for the screen contracts and product factories supplied by a UI adapter.
+The suite protects the contracts shared by the Blazor and WinForms application frameworks: plugins, blocks, menus, parent ownership, metadata snapshots, builders, definition-owned activation metadata, actions, application interactions, host-owned block navigation, actual screen identity and guarded transitions. It also covers the application root's initialization, finalization, exit, logger and owned resources separately from process framework tasks. Small neutral classes stand in for the screen contracts and product factories supplied by a UI adapter.
 
 ## Run the tests
 
@@ -37,9 +37,22 @@ Quote combined filter expressions so the shell does not interpret `|`. Use `--no
 
 | Fixture | What it protects |
 | --- | --- |
-| [UI/ApplicationPluginTests.cs](UI/ApplicationPluginTests.cs) | Startup callback/event ordering, plugin ownership validation, defensive arrays, typed initializer storage, independent builders, loaded-plugin provenance and live application blocks. |
+| [UI/ApplicationPluginTests.cs](UI/ApplicationPluginTests.cs) | Startup callback/event ordering, plugin ownership validation, defensive arrays, typed block storage through object initializers, independent builders, loaded-plugin provenance and live application blocks. |
 | [UI/ApplicationPluginRegistrationTests.cs](UI/ApplicationPluginRegistrationTests.cs) | Captured registration membership, original plugin/block identities, defensive receipt arrays, receipt validation and startup ordering without rereading mutable plugin blocks. |
+| [UI/ApplicationPluginLifecycleRegistrationTests.cs](UI/ApplicationPluginLifecycleRegistrationTests.cs) | Plugin name required before all task helper overloads, deferred type/factory registrations, built-product name keys, independent transient tasks, factory scope, repeated builds and declaration order. |
+| [UI/ApplicationLoadedPluginLifecycleTests.cs](UI/ApplicationLoadedPluginLifecycleTests.cs) | Cached task inventory from successful loaded plugins, application injection, independent scoped instances, host-owned versus plugin versus process registration, combined priority and finalizer order. |
 | [ApplicationAggregateTests.cs](ApplicationAggregateTests.cs) | Shared running-application contract, defensive command membership, notifications and decorator forwarding. |
+| [UI/ApplicationLifecycleTests.cs](UI/ApplicationLifecycleTests.cs) | Application task ownership, initialization and shutdown once, lazy keyed tasks with application injection, provider-disposal fallback, startup failure cleanup, owned resources, logger lifetime and decorator notifications. |
+| [UI/ApplicationAsyncLifecycleTests.cs](UI/ApplicationAsyncLifecycleTests.cs) | Awaited task and resource completion, paired sync/async dispatch, pending-call coalescing, startup and shutdown cancellation, readiness retry, async disposal, failure cleanup and protected task inventories. |
+| [UI/ApplicationLifecycleDirectionTests.cs](UI/ApplicationLifecycleDirectionTests.cs) | Abstract neutral lifecycle contracts, sync-first and async-first dispatch, blocking completion and original errors under a caller context, and direction-specific owned disposal. |
+| [UI/ApplicationExitTests.cs](UI/ApplicationExitTests.cs) | Awaited confirmation, all retained screen guards, active block permissions, runtime application context, force escalation, concurrent requests, cancellation, retries, lifecycle cleanup and decorator dispatch. |
+| [UI/ApplicationExitDirectionTests.cs](UI/ApplicationExitDirectionTests.cs) | Authoritative sync/async exit primitives and hooks, caller and worker contexts, awaited shutdown and owned cleanup, synchronous confirmation, and pending async-only guard veto, cancellation and forced override. |
+| [UI/ApplicationExitFinalizationTests.cs](UI/ApplicationExitFinalizationTests.cs) | Pending cleanup under a synchronous caller context, finalizer self-exit rejection, and retry after overridden finalization rejects work before owned cleanup begins. |
+| [Lifecycle/ApplicationTaskRunnerTests.cs](Lifecycle/ApplicationTaskRunnerTests.cs) | Existing initializer phases and finalizer order, task progress/logging, failure propagation and completing every shutdown task. |
+| [Lifecycle/ApplicationAsyncTaskRunnerTests.cs](Lifecycle/ApplicationAsyncTaskRunnerTests.cs) | Sync-task adapters, awaited priority and parallel phases, aggregate failures, finalizer order and progress after completion. |
+| [Lifecycle/ApplicationTaskBaseTests.cs](Lifecycle/ApplicationTaskBaseTests.cs) | Explicit dual task contracts, directional bases, worker execution, blocking awaited completion and errors, caller-context safety and the actual license initializer. |
+| [Lifecycle/FrameworkFinalizationTests.cs](Lifecycle/FrameworkFinalizationTests.cs) | Once-only process shutdown tasks before deferred service disposal, failure cleanup, borrowed providers, restart and reentrant shutdown protection. |
+| [Lifecycle/ApplicationTaskRegistrationTests.cs](Lifecycle/ApplicationTaskRegistrationTests.cs) | Keyed application tasks remaining separate from existing unkeyed process tasks and real framework startup/shutdown. |
 | [UI/ApplicationCommandMergeTests.cs](UI/ApplicationCommandMergeTests.cs) | Application-level command protection, contextual block-to-screen replacement, callback identity, owner selection, menu extension, stable ordering, Help placement and separator normalization. |
 | [UI/WizardTests.cs](UI/WizardTests.cs) | Navigation and branch updates, owned step arrays, cancellation, retry, concurrent terminal requests, completion-once and decorator forwarding. |
 | [UI/ApplicationMetadataTests.cs](UI/ApplicationMetadataTests.cs) | Abstract block storage through `IApplicationMenu`, defensive membership arrays, independent snapshot graphs with canonical definition references and activators, malformed factories and toolbar commands, reference-based selection, ordering, copied subscriptions and typed-screen validation. |
@@ -83,16 +96,18 @@ public class ExampleScreenTests {
 		Assert.That(await screen.CanDeactivateAsync(), Is.True);
 	}
 
-private sealed class ExampleScreen : IApplicationScreen {
-	public IApplicationScreenHost Host { get; set; }
-	public IApplicationBlock Block { get; set; }
-}
+	private sealed class ExampleScreen : IApplicationScreen {
+		public IApplicationScreenHost Host { get; set; }
+		public IApplicationBlock Block { get; set; }
+	}
 }
 ```
 
 This illustrates the pattern already covered by `ApplicationScreenContractTests`; add new scenarios for changed behavior rather than duplicating that case. Include the repository license header in new files and follow [the NUnit test guidance](../../.github/skills/unit-testing/SKILL.md).
 
 Use independent fixture state and controlled task completion for asynchronous behavior. Test invariants such as rejected definitions leaving the host's type index and retained screens unchanged, or a copied graph retaining its own parent and activator membership after the source changes. Keep actual component/control activation, UI dispatch, retained-screen rendering and platform disposal in the adapter test projects.
+
+For plugin lifecycle changes, cover all four helper overloads and verify that an unnamed builder throws immediately without adding a registration. Use the actual built plugin name as the key; identical task types under different plugin names must remain independent. Separate unkeyed process tasks, `typeof(IApplication)` host-owned tasks and successfully loaded plugin tasks. Keep task arrays protected and verify once-only startup/finalization, cleanup after failures, and direction-specific dispatch through `Sync...Base` or `Async...Base`. Exit coverage must include refusal, retained screen and block guards, forced override, and cleanup completion before platform closure.
 
 ## Dependency and adapter validation
 

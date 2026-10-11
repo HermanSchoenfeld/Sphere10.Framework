@@ -6,14 +6,14 @@ Welcome! This guide gets you oriented with Sphere10 Framework quickly.
 
 ## What is Sphere10 Framework?
 
-**Sphere10 Framework** is a comprehensive, production-ready .NET 8.0 framework providing:
+**Sphere10 Framework** is a comprehensive, production-ready .NET 10 framework providing:
 
 - **50+ collection types** — Lists, sets, dictionaries with advanced features (stream-backed, paged, merkle-aware)
 - **Advanced serialization** — Binary, JSON, XML with polymorphism and versioning support
 - **Data access abstraction** — Multi-database support (SQL Server, SQLite, Firebird, NHibernate)
 - **Cryptography** — Hashing, signatures, key derivation, post-quantum algorithms
 - **Networking** — TCP, UDP, WebSockets, JSON-RPC frameworks
-- **Cross-platform** — Windows, macOS, iOS, Android, .NET 8.0+
+- **Cross-platform** — .NET 10 libraries with platform-specific adapters
 - **Tools.* utilities** — Global IntelliSense-discoverable helpers
 - **Comprehensive testing** — 2000+ tests, NUnit utilities
 
@@ -103,6 +103,8 @@ string json = Tools.Json.Serialize(obj);
 | Networking & RPC | [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) |
 | Windows Desktop | [Sphere10.Framework.Windows](../src/Sphere10.Framework.Windows/README.md) |
 | Windows Forms UI | [Sphere10.Framework.Windows.Forms](../src/Sphere10.Framework.Windows.Forms/README.md) |
+| Shared application, plugins and lifecycle | [Sphere10.Framework.Application](../src/Sphere10.Framework.Application/README.md#shared-ui-framework) |
+| Blazor application and component demos | [Blazor guide](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) / [Blazor tester](../utils/Sphere10.Framework.Utils.BlazorTester/README.md) |
 | Web (ASP.NET Core) | [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
 | Graphics & Drawing | [Sphere10.Framework.Drawing](../src/Sphere10.Framework.Drawing/README.md) |
 | iOS Development | [Sphere10.Framework.iOS](../src/Sphere10.Framework.iOS/README.md) |
@@ -111,6 +113,14 @@ string json = Tools.Json.Serialize(obj);
 ---
 
 ## Key Concepts
+
+### Application runtime and lifecycle
+
+WinForms and Blazor use `IApplication` as their runtime root. It exposes live `Blocks`, successfully loaded startup `LoadedPlugins`, application commands, `ScreenHost`, `Logger` and `Disposables`. Blocks own menus and screen definitions; the host tracks selected blocks and retained screen instances. Use command objects and their parent links for execution. Route identifiers belong at the Blazor URL boundary.
+
+Plugins declare `WithName(...)` before registering initializers and finalizers. The application runs those tasks through `Initialize` / `InitializeAsync` and `Finalize` / `FinalizeAsync`; `Exit` / `ExitAsync` coordinates confirmation and screen/block permissions before shutdown. Task inventories are protected implementation details. Choose the existing `Sync...Base` or `Async...Base` for a task's implementation direction.
+
+Run the [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) to see plugin tasks alongside process tasks in startup and shutdown splashes, with the main form closing last. The [Blazor tester](../utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown) demonstrates tasks once per interactive circuit and cleanup on exit or circuit closure. Its prerender scope does not execute application tasks.
 
 ### Tools.* Namespace
 

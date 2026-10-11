@@ -24,9 +24,19 @@ An inheritance foundation is always abstract and named `FooBase`, even when it i
 ## 2. Intermediate "delegation" bases
 Insert an abstract base whose **single-item operations delegate to batch/range operations** so subclasses override only the range methods:
 - `RangedListBase<T>` — `Add`/`Read`/`Update`/`RemoveAt` call `*Range` counterparts.
-- `SyncBatchDataSourceBase<T>` / `AsyncBatchDataSourceBase<T>` — item methods delegate to `*Range`, and one direction (sync or async) wraps the other via `Task.Run` / `.ResultSafe()`.
+- `SyncBatchDataSourceBase<T>` / `AsyncBatchDataSourceBase<T>` — item methods delegate to `*Range`, and a directional base adapts the opposite sync/async API. Follow the execution-direction rules below for adapter completion and cancellation semantics.
 
 When you see a "single vs batch" duality, implement the primitive in terms of the batch and let one base bridge them.
+
+### Sync/async execution direction
+
+Follow the [directional implementation guide](../../../docs/guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies). The architectural reference is `IRepository` → `RepositoryBase` → `SyncRepositoryBase` / `AsyncRepositoryBase`.
+
+- The interface declares both APIs; the common abstract base leaves both execution primitives abstract and owns shared invariants, events and state.
+- `SyncFooBase` adapts async calls to the sync primitive; `AsyncFooBase` adapts sync calls to the async primitive. Concrete classes override their chosen primitive instead of repeating bridges.
+- Use the current application initializer/finalizer bases for completion-guaranteed adapter examples. An async-first blocking bridge starts the async factory outside the caller's synchronization context and waits for its completion. Verify existing waiting helpers' behavior before reusing them.
+- Preserve cancellation semantics, the chosen disposal direction and UI thread affinity. Do not use a boolean execution mode, mutual forwarding, `async void` or discarded operation tasks.
+- Default interface bridges are for inline base-contract projections under `#region Base Interface Bridges`; execution-direction adapters belong in the directional classes.
 
 ## 3. `long`-indexed, range-first APIs
 Collections are `long`-indexed (`IExtendedCollection<T>` / `IExtendedList<T>`) with `*Range` methods (`ReadRange`, `InsertRange`, `RemoveRange`, `UpdateRange`). Prefer `long` counts/indices and range operations over `int` and single-item loops. Legacy `int` members are kept only as shims that call the `long` equivalents.

@@ -28,7 +28,7 @@ Copyright © Herman Schoenfeld 2005 - Present
 - **Desktop UI Framework**: Full-featured Windows Forms component library with data binding, validation, and plugin support
 - **Web Integration**: ASP.NET Core hosting and MVC forms, plus a Blazor ApplicationBlock workspace and a CRUD grid with typed columns, validation and reference editors
 - **Cross-Platform**: Run applications on Windows, macOS, iOS, Android, or .NET Core/5+
-- **Plugin Architecture**: Dynamic plugin loading and lifecycle management for extensible applications
+- **Plugin Architecture**: Startup plugins contribute blocks, service registrations, and application initialization and shutdown tasks
 
 **Specialized Features**
 - **Memory Efficiency**: Advanced collections, paged data structures, and streaming for handling large datasets
@@ -44,6 +44,8 @@ Copyright © Herman Schoenfeld 2005 - Present
 - Two solution files available:
   - `src/Sphere10.Framework (CrossPlatform).sln` — Cross-platform projects only
   - `src/Sphere10.Framework (Win).sln` — All projects including Windows-specific
+
+Both solutions expose repository guides under **Documentation** and repository instructions and skills under **Agent Guidance**. These solution items open the original files in Visual Studio.
 
 ## :package: Installation
 
@@ -178,6 +180,8 @@ The Sphere10 Framework consists of **45+ projects** organized by category within
 For web development, start with the [Blazor host and complete CRUD grid example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start), the [custom editor and reference-picker example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions), or the [MVC quick start](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md). Run the [Blazor tester](utils/Sphere10.Framework.Utils.BlazorTester/README.md) to exercise the grid and ApplicationBlock workspace.
 
 WinForms and Blazor share the runtime hierarchy `IApplication` → `IApplicationBlock` → menus and screen definitions in `Sphere10.Framework.Application.UI`. Parent links identify the owning application, block and menu; blocks retain their startup plugin as `Source`, and hosted screens expose their `Host` and `Block`. Plugins contribute blocks during startup, and `LoadedPlugins` records successfully registered plugins. Shell navigation icons select blocks through the host. Their typed plugin builders reuse the shared registration and lifecycle model. The Blazor tester demonstrates the full application shell, merged menus/toolbars, single- and multi-instance tabs, permanent singleton screens, tabless empty-workspace screens, theme switching and a reusable claims-based identity control. See the [shared plugin guide](src/Sphere10.Framework.Application/README.md#application-plugins) and [Blazor component guide](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for configuration and extension examples.
+
+`IApplication` also coordinates initialization, shutdown, confirmed exit, logging and its owned disposable resources. Declare a plugin's name before `RegisterInitializer` or `RegisterFinalizer`; tasks resolve under that unique name through the application's provider. With splash screens enabled, WinForms shows application and existing process tasks through startup/shutdown splashes and closes the main form after shutdown. Blazor runs application tasks once per interactive circuit, retaining state across temporary reconnects and finalizing on exit or circuit closure. Both APIs support synchronous and asynchronous execution through the [directional base-class pattern](docs/guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies). See the [WinForms lifecycle guide](src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) and [Blazor demo lifecycle](utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown).
 
 ## :test_tube: Test Projects
 

@@ -1,5 +1,7 @@
 # Second-generation loader migration reference
 
-The second-generation loader was consolidated into [Sphere10.Framework.Utils.BlazorTester](../README.md). Its application shell is in `Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame`; its interactive demonstration is `../Modern/UI/Index.razor` at `/modern`.
+This directory contains inactive WebAssembly migration scaffolding. Use the root [Blazor tester](../README.md) and [current library guide](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for supported hosting and application APIs.
 
-The active host uses .NET 10 Interactive Server rendering and an in-memory grid source. The old hardcoded WebSocket transport was replaced by the framework's current `IDataSource<T>` API. The original theme, artwork and font assets are preserved in the tester's `wwwroot/modern` folder. Files remaining here are superseded WebAssembly scaffolding pending cleanup approval and are not active solution projects.
+The second-generation content was consolidated into the tester's [Modern/UI/Index.razor](../Modern/UI/Index.razor). `/modern` is a compatibility route to the registered Component gallery / CRUD grid screen inside `Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application.ApplicationShell`; it does not start the former loader shell.
+
+The active host uses .NET 10 Interactive Server rendering, named plugins with application-local lifecycle tasks, and an in-memory `IDataSource<T>` grid source. The former hardcoded WebSocket transport is inactive. The original theme, artwork and font assets are preserved in the tester's `wwwroot/modern` folder. Files remaining here are superseded scaffolding pending cleanup approval and are not active solution projects.

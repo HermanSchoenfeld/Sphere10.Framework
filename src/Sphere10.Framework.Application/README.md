@@ -18,8 +18,8 @@ dotnet add package Sphere10.Framework.Application
 
 | Shared responsibility | Types |
 |---|---|
-| Plugin definitions and lifecycle | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginDecorator`, `ApplicationPluginBuilder` |
-| Running application and commands | `IApplication`, `ApplicationBase`, `ApplicationDecorator`, `IApplicationCommandProvider` |
+| Plugin definitions and startup registration | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginDecorator`, `ApplicationPluginBuilder`, `ApplicationPluginRegistration<TPlugin>` |
+| Running application, lifecycle and commands | `IApplication`, `ApplicationBase`, `SyncApplicationBase`, `AsyncApplicationBase`, `ApplicationDecorator`, `IApplicationCommandProvider` |
 | Application interactions and command execution | `IUserInterfaceServices`, `ApplicationUserInterfaceServices`, `UserInterfaceServicesDecorator` |
 | Application command composition | `ApplicationCommandLevel`, `ApplicationCommandLayer`, `Tools.UI.GetCommandLayers`, `Tools.UI.MergeApplicationMenus`, `Tools.UI.MergeApplicationToolBarItems` |
 | General menu and toolbar merging | `Tools.UI.MergeMenus`, `Tools.UI.MergeMenuItems`, `IApplicationMenuSeparator` |
@@ -58,6 +58,15 @@ public sealed class UsersScreen : IApplicationScreen {
 
 `AddMenu` registers each screen command's definition on the block and assigns the menu's `Parent`. `AddItem` assigns the item's `Parent` and updates its definition's reverse activator membership. Removing membership clears that parent; transferring a menu or item requires removing it from its current owner first. Removing a menu leaves its block-owned screens available for direct activation. `IApplicationBlock.Parent` identifies the running application, while `Source` identifies its original startup plugin; standalone blocks have no source plugin. UI services activate a screen command through `item.Parent.Parent`.
 
+| Runtime relationship | Property |
+|---|---|
+| Item → owning menu → owning block → application | `item.Parent.Parent.Parent` |
+| Block → contributing startup plugin | `block.Source` |
+| Screen instance → host and owning block | `screen.Host`, `screen.Block` |
+| Screen definition → attached activating commands | `definition.Activators` |
+
+Use these object relationships when executing commands or accessing application services. Pass the registered command object to `ExecuteMenuItemAsync(item, cancellationToken)`; retained screens use their own `Host` and `Block`. A screen definition's `Activators` is reverse command membership, while a screen instance's ownership is maintained by its host.
+
 Block builders collect definitions introduced by child menu builders, explicit `AddScreenDefinition` calls and `WithDefaultScreen` configuration. Snapshot factories clone definition metadata once per source reference in each copied graph. Its default, commands and activators use the same canonical cloned objects; separate snapshots have independent parents and reverse membership. `WithTitle` and `WithActivationMode` create metadata variants with no copied activators. Blazor owns named IDs, reserved routing IDs, parameter copies and lookup validation; the shared models require none of these.
 
 `Menus`, `Items`, `ScreenDefinitions`, `Activators`, `Blocks` and `AvailableBlocks` return defensive arrays; modifying array slots cannot change stored membership. Copies preserve element references within their graph. Presentation command merging borrows the original command references and callbacks without changing their owning parents.
@@ -95,6 +104,8 @@ public class AdministrationSettings {
 
 Platform startup registrars publish an `ApplicationPluginRegistration<TPlugin>` only after loading the plugin, validating its finalized definitions and registering its blocks. They assign each registered block's `Source` to the original plugin. The immutable receipt retains that plugin and copies finalized block membership; constructing a receipt validates existing source ownership without changing it or invoking lifecycle methods. Application factories resolve this receipt inventory to supply `LoadedPlugins`; an unrelated plugin registered directly in DI does not become a loaded startup plugin. The framework does not currently connect plugin `Unload` to process shutdown, application disposal or Blazor circuit disposal.
 
+Startup registration rejects both duplicate successful plugin names and recursive attempts to load the same name. If registration fails, it discards newly added lifecycle task descriptors under the attempted name so a later successful plugin with that name cannot inherit abandoned tasks. Ordinary `ConfigureServices` side effects retain their existing behavior.
+
 `ApplicationPlugin` supports constructor configuration and init-only `Name`/`Blocks`; its arrays copy membership and retain block identity. Platform adapters can snapshot their own block metadata before forwarding it to shared storage. `ApplicationPluginBuilderBase<TBlock, TPlugin>` shares name validation, accumulated blocks, service callback composition and independent build inputs with typed platform builders. Empty applications and service-only plugins with no blocks are valid.
 
 Typed plugin implementations derive from `ApplicationPluginBase<TBlock>` to share storage and lifecycle while remaining assignable to the existing `ApplicationPlugin`. The generic interface supplies the neutral `Blocks` projection for direct interface implementations. Because an inherited class implementation takes precedence over an interface default, the typed base retains one compatibility hook that sends neutral class reads through the typed virtual getter. Platform plugins use this shared hook instead of repeating explicit interface adapters.
@@ -103,11 +114,13 @@ Typed plugin implementations derive from `ApplicationPluginBase<TBlock>` to shar
 
 ## Running application and command scopes
 
-`IApplication` represents the running application rather than service-container startup. It exposes array-valued `Blocks` and `LoadedPlugins`, `ScreenHost`, `HasUnsavedChanges` and a `Changed` event, alongside application menus and toolbar commands. `Blocks` reflects the host's current registered membership; `LoadedPlugins` preserves startup provenance, including service-only plugins with no blocks. Navigate through `ScreenHost`, inspect its `ActiveBlock` and `ActiveScreen`, and obtain interactions through `ScreenHost.UserInterfaceServices`. The application keeps no duplicate navigation state. `IBlazorApplication` and `IWinFormsApplication` specialize that contract. Resolving the shared interface returns the same platform application instance; disposing that adapter releases subscriptions without taking ownership of the host, its interaction services, screens or plugin registrations.
+`IApplication` represents the running application rather than service-container startup. It exposes array-valued `Blocks` and `LoadedPlugins`, `ScreenHost`, `HasUnsavedChanges` and a `Changed` event, alongside application menus and toolbar commands. `Blocks` reflects the host's current registered membership; `LoadedPlugins` preserves startup provenance, including service-only plugins with no blocks. Navigate through `ScreenHost`, inspect its `ActiveBlock` and `ActiveScreen`, and obtain interactions through `ScreenHost.UserInterfaceServices`. The application keeps no duplicate navigation state. `IBlazorApplication` and `IWinFormsApplication` specialize that contract. Resolving the shared interface returns the same platform application instance. Disposal finalizes application tasks and owned resources, then releases subscriptions without taking ownership of the host, its interaction services, screens or plugin registrations.
 
 `IApplication<TPlugin, THost>`, `IApplicationPlugin<TBlock>`, `IApplicationBlock<TMenu, TItem>`, `IApplicationMenu<TItem>` and `IApplicationCommandProvider<TMenu, TItem>` provide typed platform collections and a typed host while centrally projecting the same instances through their neutral contracts. Platform interfaces inherit these generic contracts instead of redeclaring common members. Consumers should inject the neutral contract for shared behavior and use a typed platform contract when they need platform presentation details.
 
-`ApplicationBase` shares command storage, notifications and live projections of the host's blocks and dirty state. Derived applications call `ObserveScreenHost()` after assigning their host; it maintains each registered block's `Parent`, clears it on unregistration or application disposal, and preserves startup `Source`. `IApplicationCommandProvider` supplies array-valued `Menus` and `ToolBarItems`. `Tools.UI.GetCommandLayers(application)` identifies the application, the active screen's owning block and the active screen. With no active screen, it uses the browsed navigation block. Application commands also work when no block is selected.
+Platform ownership properties specialize the shared object relationships and bridge them inline at interface level. Keep these projections together under `#region Base Interface Bridges`; execution-direction adapters belong in the directional base classes described below.
+
+`ApplicationBase` shares lifecycle tasks, owned resource cleanup, command storage, notifications and live projections of the host's blocks and dirty state. Derived applications call `ObserveScreenHost()` after assigning their host; it maintains each registered block's `Parent`, clears it on unregistration or application disposal, and preserves startup `Source`. `IApplicationCommandProvider` supplies array-valued `Menus` and `ToolBarItems`. `Tools.UI.GetCommandLayers(application)` identifies the application, the active screen's owning block and the active screen. With no active screen, it uses the browsed navigation block. Application commands also work when no block is selected.
 
 Use `MergeApplicationMenus` and `MergeApplicationToolBarItems` to compose those layers. Application contributions survive matching contextual captions or platform keys; within contextual contributions, a screen replaces a matching block command in its original position. Reusing the exact application command object in a screen replaces matching block context without duplicating that global command. Matching menus combine items and take the narrower menu's display metadata. Separators are normalized and Help remains last. The results retain original command references and callbacks. UI adapters distinguish application and contextual rendering keys when both use the same local command ID.
 
@@ -127,6 +140,70 @@ The convenience overloads use display captions; adapters can supply semantic key
 
 `ScreenMode.SingleView` and `ScreenMode.MultiView` live in this shared namespace alongside `ScreenActivationMode`. Their screen retention rules belong to the shared screen host; platform adapters own presentation and view disposal.
 
+## Application initialization and shutdown
+
+Call `WithName(...)` before `RegisterInitializer` or `RegisterFinalizer`, including their factory overloads. An unnamed plugin throws `InvalidOperationException` immediately without adding a deferred registration.
+
+`IApplication` provides synchronous `Initialize()`, `Finalize()` and `Exit()` operations alongside awaited `InitializeAsync()`, `FinalizeAsync()` and `ExitAsync()` counterparts. Following the repository hierarchy, the interface and neutral `ApplicationBase` require both directions. Choose `SyncApplicationBase` for synchronous lifecycle work or `AsyncApplicationBase` for awaited lifecycle work. The directional base supplies the opposite API and disposal direction; shared state, notifications, coalescing and ownership remain in `ApplicationBase`.
+
+Application task inventories are protected implementation details of `ApplicationBase`. `IApplicationInitializer` / `IApplicationFinalizer` and their neutral bases declare both execution methods without interface implementations. Derive synchronous tasks from `SyncApplicationInitializerBase` / `SyncApplicationFinalizerBase` and override only `Initialize()` / `Finalize()`. Derive asynchronous tasks from `AsyncApplicationInitializerBase` / `AsyncApplicationFinalizerBase` and override only `InitializeAsync()` / `FinalizeAsync()`. Sync-first async adapters run the synchronous primitive on a worker using `Task.Run`. Async-first sync adapters start the asynchronous primitive outside the caller's synchronization context and block until completion, propagating errors. Plugins declare their application tasks through `RegisterInitializer<T>()` and `RegisterFinalizer<T>()`; platform plugin builders inherit these helpers. Ordinary service registrations continue to use `ConfigureServices`. Unkeyed registrations keep their existing process-wide `Sphere10Framework` lifetime and are not replayed by the application:
+
+```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Sphere10.Framework;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
+
+var plugin = new ApplicationPluginBuilder()
+	.WithName("Workspace")
+	.RegisterInitializer<WorkspaceInitializer>()
+	.RegisterFinalizer<WorkspaceFinalizer>()
+	.Build();
+
+public sealed class WorkspaceInitializer : SyncApplicationInitializerBase {
+	private readonly IApplication _application;
+
+	public WorkspaceInitializer(IApplication application) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		_application = application;
+	}
+
+	public override void Initialize() => _application.Logger.Info("Preparing workspace...");
+}
+
+public sealed class WorkspaceFinalizer : AsyncApplicationFinalizerBase {
+	private readonly IApplication _application;
+
+	public WorkspaceFinalizer(IApplication application) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		_application = application;
+	}
+
+	public override Task FinalizeAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		_application.Logger.Info("Closing workspace...");
+		return Task.CompletedTask;
+	}
+}
+```
+
+The helpers register transient tasks keyed by the built plugin's `Name`. Loading rejects duplicate plugin names; custom plugins must keep their names stable throughout their lifetime. The same task type can be registered by different plugins under their respective names. `ApplicationBase` resolves tasks for successful `LoadedPlugins` through the application's own service provider and caches them after application construction, allowing tasks to inject their application. Host registrations using `services.AddInitializer<T>(typeof(IApplication))` and `services.AddFinalizer<T>(typeof(IApplication))` remain supported for application-owned tasks. The combined inventory starts with these host-owned registrations in registration order, followed by plugins in `LoadedPlugins` order and each plugin's tasks in declaration order. It captures shutdown tasks during startup so fallback disposal can execute them without querying an already disposed provider. Protected task properties return defensive membership arrays; protected `SetInitializers` and `SetFinalizers` configure derived applications before startup. Both initialization forms share one attempt, raise `Initializing` / `Initialized`, and set `IsInitialized` on success. Pending async calls coalesce. Failed initialization is not retried; shutdown can still release partial startup resources. The protected `OnInitialize()` readiness hook and its async counterpart may return false before task execution to permit a later readiness attempt. Initializer priorities apply across the combined inventory within the existing sequential and parallelizable phases: sequential initializers run by ascending priority before parallelizable initializers. Finalizers execute in combined inventory order. `Tools.Application` supplies synchronous and awaited runners with logging and `ProgressHandler` reporting. `Sphere10Framework` retains its existing process task execution.
+
+After startup has begun, both finalization forms raise `Finalizing` / `Finalized` and attempt every shutdown task. They release every resource in the application's existing `Disposables` bag even when a task or cleanup action fails. `SyncApplicationBase` uses synchronous task and disposal contracts; `AsyncApplicationBase` awaits task and asynchronous resource disposal. Each base adapts the opposite public API to that chosen direction. They share once-only cleanup and coalesce pending shutdown. Finalization waits for pending startup to finish. Cancelling an async-first finalization caller stops its wait while committed cleanup continues. A sync-first adapter can cancel before its worker begins; synchronous work already running completes normally. `DisposeAsync()` cancels pending startup and exit, completes the chosen shutdown direction and detaches application ownership. Synchronous disposal remains available; a pending async lifecycle operation on its synchronization context must be awaited before synchronous disposal. Errors are reported after cleanup. Repeated shutdown and disposal do not repeat tasks or owned cleanup. A lifecycle callback cannot dispose its own pending startup or finalization. Disposing an application that never began startup releases its bag and subscriptions without running shutdown tasks; this includes Blazor prerender scopes. Hosts await `FinalizeAsync()` before disposing their DI provider so shutdown tasks can still use scoped dependencies. Disposal is a fallback, not a guarantee that arbitrary DI-owned dependencies remain alive.
+
+`Logger` exposes the registered Sphere10 `ILogger`, with `SystemLog.Logger` as a fallback. Screens can use `Block.Parent.Logger`; plugin tasks can inject `IApplication` and use the same logger. This is the framework logger, separate from ASP.NET Core's `Microsoft.Extensions.Logging.ILogger<T>`. Derived applications can configure the logger; borrowed loggers and DI resources remain under their existing ownership. Add only resources owned by the application to `Disposables`.
+
+WinForms initializes the application after framework startup and block registration, while its enabled splash screen displays application task progress alongside existing framework logging and fades. Approved exit shows the shutdown splash and completes application and framework tasks before closing the main window. Service disposal follows the message loop. Blazor initializes on interactive circuit open and finalizes on circuit close. Temporary disconnects retain the application; prerendering does not execute circuit tasks. Plugins retain their existing startup registration and unload ownership.
+
+The [WinForms tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) loads two plugins with lifecycle tasks while retaining its process startup tasks. The [Blazor tester](../../utils/Sphere10.Framework.Utils.BlazorTester/README.md) loads four plugins with circuit-scoped startup and shutdown tasks. Both demonstrate the same plugin builder helpers through their actual startup paths.
+
+Use `await application.ExitAsync()` for coordinated shutdown, or the boolean `Exit()` counterpart at a synchronous platform boundary. The neutral application base leaves both forms and their paired work hooks abstract. `SyncApplicationBase` executes `ConfirmExit`, `CanExit` and `OnExit` synchronously, uses UI `AskYN`, and calls `Finalize()` for committed cleanup; its async public form adapts that same primitive. `AsyncApplicationBase` awaits `ConfirmExitAsync`, `CanExitAsync` and `OnExitAsync`, uses UI `AskYNAsync`, and awaits `FinalizeAsync()`; its synchronous form waits for that chosen primitive. Override the hooks in your application's chosen direction to customize the question, permissions or platform completion.
+
+Both directions reuse `ScreenHost.CanNavigateAsync()` to check every retained screen (including hidden and permanent screens), then ask the active screen's owning block and the selected navigation block for permission. These collaborators currently expose only async guards. The sync-first permission hook explicitly starts and waits for each collaborator outside the caller's synchronization context, with cancellation of its wait, while the application confirmation and completion stay synchronous. This boundary does not call the application's async exit primitive. A block implements `CanExitAsync(IApplication application, CancellationToken cancellationToken)`; both blocks receive the running application, and a shared block is checked only once. The application argument supplies circuit-local context when a platform copies startup definitions.
+
+Exit returns `false` on refusal and remains retryable. Concurrent requests share the pending exit; `ExitAsync(force: true)` bypasses confirmation and guards and supersedes a pending awaited question or collaborator guard wait. Forced exit still performs normal platform shutdown and finalization. `IsExiting` describes the pending operation and `HasExited` records successful completion; changes raise `Changed`. The initiating caller's cancellation token controls preparation, while cancelling a joining caller only cancels its wait. A genuinely synchronous confirmation or task already running follows its platform's blocking and cancellation behavior; `Task.Run` cannot interrupt that work. Once default logical shutdown begins, cleanup continues to terminal exit even if the initiating caller stops waiting; completed cleanup failures are logged. A refusal to begin or join cleanup, preparation failures and overridden platform completion failures remain retryable. A finalizer cannot start its own exit before cleanup completes. Exit hooks must not recursively await the same pending exit. WinForms finalizes the application before closing its main window; its runner also completes framework shutdown tasks under the splash before closure and disposes services after the message loop. Blazor completes logical application finalization and displays an exited workspace without terminating the server or unloading startup plugins.
+
 ## Shared application screen host
 
 Use `IApplicationScreenHost` for block navigation, current-screen hosting, view mode and unsaved-state checks. Use `ISingleApplicationScreenHost` to close the current screen, and `IMultiApplicationScreenHost` when working with retained collections, ordering or other tabs. Use `IUserInterfaceServices` for application interactions and menu-command execution. The Blazor and WinForms registrations expose their platform implementations through these neutral interfaces, preserving circuit or native application lifetimes. `IApplication.ScreenHost.UserInterfaceServices` exposes the host's interaction service. Resolve a platform interface when code needs component metadata, native controls or docking.
@@ -145,12 +222,14 @@ The host assigns a screen's `Host` and `Block` before activation and lifecycle h
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Sphere10.Framework;
 using Sphere10.Framework.Application.UI;
 
 public static class WorkspaceCommands {
-	public static Task<IApplicationScreen> OpenSettingsAsync(IApplicationScreenHost host) {
-		var settings = host.Blocks.Single(block => block.Name == "Settings");
-		return host.ActivateBlockAsync(settings);
+	public static Task<IApplicationScreen> OpenSettingsAsync(IApplicationBlock settingsBlock) {
+		Guard.ArgumentNotNull(settingsBlock, nameof(settingsBlock));
+		Guard.Argument(settingsBlock.Parent != null, nameof(settingsBlock), "The settings block must be registered with an application.");
+		return settingsBlock.Parent.ScreenHost.ActivateBlockAsync(settingsBlock);
 	}
 
 	public static Task<bool> CloseOtherTabsAsync(IMultiApplicationScreenHost host) {
@@ -182,7 +261,7 @@ The fluent methods live in this library. WinForms and Blazor inherit the same co
 | Shared base | Responsibility |
 |---|---|
 | `ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult>` | Application title, existing plugins, `ConfigurePlugin(builder => ...)`, deferred application callbacks and a terminal `Build`. The platform registers or creates its host without the base resolving services. |
-| `ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin>` | Plugin name, service callbacks, existing blocks and `ConfigureBlock(builder => ...)`. |
+| `ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin>` | Plugin name, service callbacks, `RegisterInitializer<T>()`, `RegisterFinalizer<T>()`, existing blocks and `ConfigureBlock(builder => ...)`. |
 | `ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>` | Block metadata, default screen policy, existing menus and `ConfigureMenu(builder => ...)`. |
 | `ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu>` | Menu metadata, existing items and `ConfigureItem(builder => ...)`. |
 | `ApplicationMenuItemBuilderBase<TSelf>` | Screen/action selection, screen captions and instance policies. Platform factories reject unsupported item kinds. |
@@ -246,7 +325,7 @@ var result = await wizard.FinishAsync();
 // wizard.State == WizardState.Finished; another FinishAsync does not repeat the callback.
 ```
 
-`MoveNextAsync` and `MovePreviousAsync` provide awaited navigation. `UpdateStepsAsync` and `RemoveStepAsync` let platform adapters update their displayed controls before returning. `WizardStepUpdateType` supports injecting steps, replacing the remaining branch, replacing all steps and removing subsequent steps. The workflow returns defensive `Steps` arrays while retaining step and model identities. Finish and Cancel share a [Stateless](https://www.nuget.org/packages/Stateless/5.20.1) lifecycle: concurrent terminal operations are rejected while busy; a declined or failed callback leaves a retryable workflow; successful completion runs once. Callbacks must not recursively finish or cancel the same wizard.
+`MoveNextAsync` and `MovePreviousAsync` provide awaited navigation. `UpdateStepsAsync` and `RemoveStepAsync` let platform adapters update their displayed controls before returning. `WizardStepUpdateType` supports injecting steps, replacing the remaining branch, replacing all steps and removing subsequent steps. The workflow returns defensive `Steps` arrays while retaining step and model identities. Finish and Cancel share an explicit lifecycle state and operation gate: concurrent terminal operations are rejected while busy; a declined or failed callback leaves a retryable workflow; successful completion runs once. Callbacks must not recursively finish or cancel the same wizard.
 
 `WizardBuilderBase<TSelf, TModel, TStep, TWizard>` centralizes the fluent setup methods, reset/start requirements, callbacks and build validation over its shared state base. The shared `IWizardBuilder<TSelf, TModel, TStep, TWizard>` also carries the fluent contract, so interface-returning chains retain the same capabilities. Platform builders supply their step validation and factories. Use `WinFormsWizardBuilder<TModel>` for native dialogs, or `BlazorWizardBuilder<TModel>` from the chosen Blazor wizard generation. Their adapters keep rendering, screen initialization and component validation in the UI libraries while consuming the same workflow. `WizardDecorator` forwards the common contract for behavior extensions.
 
@@ -286,85 +365,86 @@ static class Program {
 
 ## 🏗️ Core Architecture
 
-### The Framework Singleton
+### Process framework composition
 
-`Sphere10Framework.Instance` is the central orchestrator that:
-- Discovers and registers all `ModuleConfiguration` classes in your assemblies
-- Builds the DI container with all registered services
-- Executes initialization and finalization pipelines
-- Provides access to the `IServiceProvider`
+`Sphere10Framework.Instance` composes process services and modules. Its builder registers explicitly selected modules, builds or borrows a service provider, and executes module hooks plus unkeyed process tasks. `IApplication` owns the running UI application's blocks, initialization, shutdown and exit. A Blazor circuit has its own scoped application even when startup plugin definitions are shared.
 
 ```csharp
-// Access services anywhere in your application
-var settings = Sphere10Framework.Instance.ServiceProvider.GetService<IProductInformationProvider>();
-var controller = Sphere10Framework.Instance.ServiceProvider.GetService<IAutoMouseController>();
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
+
+Sphere10Framework.Instance
+	.Build()
+	.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
+	.UseModule<StartupTasksModule>()
+	.Start();
+
+var productInformation = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IProductInformationProvider>();
+// Call EndFramework() during process shutdown after the running application's finalization.
 ```
 
-### Framework Lifecycle
+Modules are explicitly selected with `UseModule<T>()` or `UseModule(instance)`. They are registered and initialized in descending module priority order. `Start()` owns the provider it builds. To use an external provider, register the builder's modules into its service collection with `RegisterModules(services)`, then call `Start(provider)`; that provider remains owned by its host. Platform startup builders compose these operations for their runtime.
+
+### Process and application lifecycle
 
 ```
-Sphere10Framework.Instance.StartFramework()
+Sphere10Framework.Instance.Build().UseModule<...>().Start()
     ↓
-    1. Discover ModuleConfiguration classes (via reflection)
-    2. Call RegisterComponents() on each module (priority order)
-    3. Build ServiceProvider
-    4. Call OnInitialize() on each module
-    5. Execute IApplicationInitializer instances
+    1. Apply ConfigureServices callbacks and module RegisterComponents()
+    2. Build ServiceProvider
+    3. Call module OnInitialize() hooks
+    4. Execute unkeyed IApplicationInitializer process tasks
+    ↓
+Platform starts IApplication.InitializeAsync()
+    ↓
+    Execute application-owned and successfully loaded plugin tasks
     ↓
 Application runs...
     ↓
+Approved IApplication.ExitAsync() / host application finalization
+    ↓
+    Complete application tasks and owned resources
+    ↓
 Sphere10Framework.Instance.EndFramework()
     ↓
-    1. Execute IApplicationFinalizer instances  
+    1. Execute unkeyed IApplicationFinalizer process tasks once
     2. Call OnFinalize() on each module
-    3. Dispose ServiceProvider (if owned)
+    3. Dispose the owned ServiceProvider and process resources
 ```
+
+The WinForms runner completes process shutdown tasks under the shutdown splash before closing the main window, then calls `EndFramework()` after the message loop to dispose services. Blazor circuit shutdown completes its application tasks; the ASP.NET Core host retains responsibility for process service lifetime.
 
 ## 🧩 ModuleConfiguration Pattern
 
-The `ModuleConfiguration` pattern is the **core architectural pattern** for organizing your application into cohesive, self-contained modules. Each module registers its services, initializers, and configuration.
+Use `ModuleConfiguration` for process service composition and framework hooks. Plugins use `ConfigureServices` for component registration and their named `RegisterInitializer` / `RegisterFinalizer` helpers for running application tasks. Unkeyed module task registrations belong to the process lifetime.
 
 ### Creating a Module
 
 ```csharp
+using System;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MyApp;
+public class StartupTasksModule : ModuleConfigurationBase {
+	public override void RegisterComponents(IServiceCollection services) {
+		services.AddInitializer<FirstRunInitializer>();
+		services.AddFinalizer<LogShutdownFinalizer>();
+	}
 
-public class ModuleConfiguration : ModuleConfigurationBase {
-    
-    public override void RegisterComponents(IServiceCollection services) {
-        // Register application services
-        services.AddTransient<ISoundMaker, DefaultSoundMaker>();
-        services.AddTransient<IMouseHook, WindowsMouseHook>();
-        services.AddTransient<IKeyboardHook, WindowsKeyboardHook>();
-        services.AddTransient<IAutoMouseController, WindowsAutoMouseController>();
-        
-        // Register help and UI services
-        services.AddTransient<IHelpServices, CHMHelpProvider>();
-        services.AddTransient<IAutoRunServices, StartupFolderAutoRunServicesProvider>();
-        
-        // Register initializers (run at startup)
-        services.AddInitializer<FirstTimeSetWindowsStartupTask>();
-        services.AddInitializer<DatabaseMigrationInitializer>();
-        
-        // Register control state providers for UI binding
-        services.AddControlStateEventProvider<ClickRadiusSelector, ClickRadiusSelector.StateEventProvider>();
-    }
-    
-    public override void OnInitialize(IServiceProvider serviceProvider) {
-        base.OnInitialize(serviceProvider);
-        // Custom initialization logic
-    }
-    
-    public override void OnFinalize(IServiceProvider serviceProvider) {
-        base.OnFinalize(serviceProvider);
-        // Custom cleanup logic
-    }
+	public override void OnInitialize(IServiceProvider serviceProvider) {
+		base.OnInitialize(serviceProvider);
+		// Process initialization before unkeyed startup tasks.
+	}
+
+	public override void OnFinalize(IServiceProvider serviceProvider) {
+		base.OnFinalize(serviceProvider);
+		// Process cleanup after unkeyed shutdown tasks.
+	}
 }
 ```
+
+The task classes are shown below. Register this module with `UseModule<StartupTasksModule>()` together with the application module that supplies product services.
 
 ### Module Priority
 
@@ -372,9 +452,8 @@ Modules are executed in priority order. Set `Priority` to control execution orde
 
 ```csharp
 public class ModuleConfiguration : ModuleConfigurationBase {
-    public override int Priority => int.MinValue;  // Execute last (lowest priority)
-    // or
-    public override int Priority => int.MaxValue;  // Execute first (highest priority)
+	public override int Priority => int.MinValue;  // Execute last (lowest priority)
+	// Use int.MaxValue to execute first.
 }
 ```
 
@@ -385,31 +464,29 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 Settings inherit from `SettingsObject` and use `[DefaultValue]` attributes:
 
 ```csharp
+using System;
 using System.ComponentModel;
 using Sphere10.Framework.Application;
 
 public class AutoMouseSettings : SettingsObject {
-    
-    [DefaultValue(true)]
-    public bool AutoStartProgram { get; set; }
-    
-    [DefaultValue(Key.LControlKey)]
-    public Key ScreenMouseActivationKey { get; set; }
-    
-    [DefaultValue(1000)]
-    public int ScreenMouseTimeoutMS { get; set; }
-    
-    // Computed property wrapping the stored value
-    public TimeSpan ScreenMouseTimeout {
-        get => TimeSpan.FromMilliseconds(ScreenMouseTimeoutMS);
-        set => ScreenMouseTimeoutMS = (int)value.TotalMilliseconds;
-    }
-    
-    [DefaultValue(true)]
-    public bool MakeClickSound { get; set; }
-    
-    [DefaultValue(50)]
-    public int ClickFreeZoneRadius { get; set; }
+
+	[DefaultValue(true)]
+	public bool AutoStartProgram { get; set; }
+
+	[DefaultValue(1000)]
+	public int ScreenMouseTimeoutMS { get; set; }
+
+	// Computed property wrapping the stored value
+	public TimeSpan ScreenMouseTimeout {
+		get => TimeSpan.FromMilliseconds(ScreenMouseTimeoutMS);
+		set => ScreenMouseTimeoutMS = (int)value.TotalMilliseconds;
+	}
+
+	[DefaultValue(true)]
+	public bool MakeClickSound { get; set; }
+
+	[DefaultValue(50)]
+	public int ClickFreeZoneRadius { get; set; }
 }
 ```
 
@@ -437,6 +514,8 @@ bool hasSettings = UserSettings.Has<AutoMouseSettings>();
 - **`UserSettings`**: Per-user settings stored in `{UserDataDir}/{ProductName}/`
 - **`GlobalSettings`**: System-wide settings stored in `{SystemDataDir}/{ProductName}/`
 
+These static facades use the process's operating-system user and configured providers. A Blazor circuit needing per-browser or per-account preferences should use scoped application services and appropriate storage. See the [settings guide](Settings/README.md) for provider registration, caching, encryption and lifetime details.
+
 ```csharp
 // User-specific settings
 var userPrefs = UserSettings.Get<UserPreferences>();
@@ -447,7 +526,7 @@ var globalConfig = GlobalSettings.Get<SystemConfiguration>();
 
 ### Settings in UI Controls
 
-Use the `[UseSettings]` attribute on controls to automatically bind settings:
+WinForms controls can use `[UseSettings]` with their existing `ApplicationControl` model/UI hooks. Copy accepted values into the provider-backed settings object and call `Save()`:
 
 ```csharp
 using Sphere10.Framework.Application;
@@ -455,86 +534,73 @@ using Sphere10.Framework.Windows.Forms;
 
 [UseSettings(typeof(AutoMouseSettings))]
 public partial class AutoMouseSettingsControl : ApplicationControl {
-    
-    public AutoMouseSettings Settings => UserSettings.Get<AutoMouseSettings>();
-    
-    protected override void CopyModelToUI() {
-        // Copy settings to UI controls
-        _autoStartCheckBox.Checked = Settings.AutoStartProgram;
-        _timeoutNumeric.Value = Settings.ScreenMouseTimeoutMS;
-        _soundCheckBox.Checked = Settings.MakeClickSound;
-    }
-    
-    protected override void CopyUIToModel() {
-        // Copy UI values back to settings
-        Settings.AutoStartProgram = _autoStartCheckBox.Checked;
-        Settings.ScreenMouseTimeoutMS = (int)_timeoutNumeric.Value;
-        Settings.MakeClickSound = _soundCheckBox.Checked;
-        Settings.Save();
-    }
+
+	public AutoMouseSettings Settings => UserSettings.Get<AutoMouseSettings>();
+
+	protected override void CopyModelToUI() {
+		// Copy settings to UI controls
+		_autoStartCheckBox.Checked = Settings.AutoStartProgram;
+		_timeoutNumeric.Value = Settings.ScreenMouseTimeoutMS;
+		_soundCheckBox.Checked = Settings.MakeClickSound;
+	}
+
+	protected override void CopyUIToModel() {
+		// Copy UI values back to settings
+		Settings.AutoStartProgram = _autoStartCheckBox.Checked;
+		Settings.ScreenMouseTimeoutMS = (int)_timeoutNumeric.Value;
+		Settings.MakeClickSound = _soundCheckBox.Checked;
+		Settings.Save();
+	}
 }
 ```
 
-## 🚀 Application Initializers
+## 🚀 Process initialization and finalization
 
-Initializers run automatically at framework startup. They're perfect for one-time setup tasks.
+Unkeyed initializers execute during `Sphere10FrameworkBuilder.Start()` after module initialization. Unkeyed finalizers execute during process shutdown before module finalization and provider disposal. Use plugin builder helpers for tasks belonging to a running application or Blazor circuit; those named registrations are described under [application initialization and shutdown](#application-initialization-and-shutdown).
 
-### Creating an Initializer
+### Creating process tasks
 
 ```csharp
+using Sphere10.Framework;
 using Sphere10.Framework.Application;
 
-public class FirstTimeSetWindowsStartupTask : ApplicationInitializerBase {
-    
-    public FirstTimeSetWindowsStartupTask(
-        IProductInformationProvider productInformationProvider,
-        IProductUsageServices productUsageServices,
-        IAutoRunServices autoRunServices) {
-        ProductInformationProvider = productInformationProvider;
-        ProductUsageServices = productUsageServices;
-        AutoRunServices = autoRunServices;
-    }
-    
-    public IProductInformationProvider ProductInformationProvider { get; }
-    public IProductUsageServices ProductUsageServices { get; }
-    public IAutoRunServices AutoRunServices { get; }
-    
-    public override void Initialize() {
-        // Only on first launch
-        if (ProductUsageServices.ProductUsageInformation.NumberOfUsesByUser == 1) {
-            // Set the app to autorun on Windows startup
-            AutoRunServices.SetAutoRun(
-                AutoRunType.CurrentUser,
-                ProductInformationProvider.ProductInformation.ProductName,
-                Application.ExecutablePath,
-                null);
-        }
-    }
+public sealed class FirstRunInitializer : SyncApplicationInitializerBase {
+	private readonly IProductUsageServices _usage;
+
+	public FirstRunInitializer(IProductUsageServices usage) {
+		Guard.ArgumentNotNull(usage, nameof(usage));
+		_usage = usage;
+	}
+
+	public override void Initialize() {
+		if (_usage.ProductUsageInformation.NumberOfUsesByUser == 1)
+			SystemLog.Info("Preparing the first application session...");
+	}
+}
+
+public sealed class LogShutdownFinalizer : SyncApplicationFinalizerBase {
+#pragma warning disable CS0465 // The existing task contract names its synchronous operation Finalize.
+	public override void Finalize() => SystemLog.Info("Completing process shutdown...");
+#pragma warning restore CS0465
 }
 ```
 
-### Registering Initializers
+`StartupTasksModule` registers these classes through `services.AddInitializer<FirstRunInitializer>()` and `services.AddFinalizer<LogShutdownFinalizer>()`. Both are synchronous tasks; their directional bases provide async adapters. For awaited work, derive from the corresponding `Async...Base` and override only the asynchronous primitive. Process tasks use process services and logging; plugin tasks can resolve their running `IApplication` and its scoped services.
+
+### Initializer priority and parallel execution
 
 ```csharp
-public override void RegisterComponents(IServiceCollection services) {
-    services.AddInitializer<FirstTimeSetWindowsStartupTask>();
-    services.AddInitializer<DatabaseMigrationInitializer>();
-    services.AddInitializer<CacheWarmupInitializer>();
+public class ParallelInitializer : SyncApplicationInitializerBase {
+	public override int Priority => 50;
+	public override bool Parallelizable => true;
+
+	public override void Initialize() {
+		// Independent initialization work.
+	}
 }
 ```
 
-### Initializer Options
-
-```csharp
-public class ParallelInitializer : ApplicationInitializerBase {
-    public override int Priority => 50;  // Lower = runs earlier
-    public override bool Parallelizable => true;  // Can run in parallel with others
-    
-    public override void Initialize() {
-        // Initialization logic
-    }
-}
-```
+Sequential initializers run first in ascending task priority order; parallelizable tasks run in the subsequent parallel phase. Task priority does not interleave those phases or change finalizer registration order. Keep dependencies between startup tasks sequential. These rules also apply to the combined application-owned and plugin-owned inventory run by `Tools.Application`.
 
 ## 📋 Product Information
 
@@ -544,6 +610,7 @@ Product information is extracted from assembly attributes:
 
 ```csharp
 // Properties/AssemblyInfo.cs
+using System.Reflection;
 using Sphere10.Framework.Application;
 
 [assembly: AssemblyCopyright("Copyright © Herman Schoenfeld 2008 - {CurrentYear}")]
@@ -559,24 +626,24 @@ using Sphere10.Framework.Application;
 ### Using Product Information
 
 ```csharp
-var productInfo = Sphere10Framework.Instance.ServiceProvider
-    .GetService<IProductInformationProvider>();
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework;
+using Sphere10.Framework.Application;
 
-Console.WriteLine($"Product: {productInfo.ProductInformation.ProductName}");
-Console.WriteLine($"Version: {productInfo.ProductInformation.ProductVersion}");
-Console.WriteLine($"Company: {productInfo.ProductInformation.CompanyName}");
+var productInfo = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IProductInformationProvider>();
+SystemLog.Info($"Product: {productInfo.ProductInformation.ProductName}");
+SystemLog.Info($"Version: {productInfo.ProductInformation.ProductVersion}");
+SystemLog.Info($"Company: {productInfo.ProductInformation.CompanyName}");
 ```
 
 ### Product Usage Tracking
 
 ```csharp
-var usageServices = Sphere10Framework.Instance.ServiceProvider
-    .GetService<IProductUsageServices>();
-
+var usageServices = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IProductUsageServices>();
 var usage = usageServices.ProductUsageInformation;
-Console.WriteLine($"Times launched: {usage.NumberOfUsesByUser}");
-Console.WriteLine($"First used: {usage.DateOfFirstUse}");
-Console.WriteLine($"Last used: {usage.DateOfLastUse}");
+SystemLog.Info($"Times launched: {usage.NumberOfUsesByUser}");
+SystemLog.Info($"First used (UTC): {usage.FirstUsedDateByUserUTC}");
+SystemLog.Info($"Days used: {usage.DaysUsedByUser}");
 ```
 
 ## 📝 Command-Line Parsing
@@ -589,17 +656,17 @@ Built-in command-line parser with attribute-based configuration:
 using Sphere10.Framework.Application;
 
 public class Options {
-    [Option('v', "verbose", HelpText = "Enable verbose output")]
-    public bool Verbose { get; set; }
-    
-    [Option('i', "input", Required = true, HelpText = "Input file path")]
-    public string InputFile { get; set; }
-    
-    [Option('o', "output", Default = "output.txt", HelpText = "Output file path")]
-    public string OutputFile { get; set; }
-    
-    [Option('n', "count", Default = 10, HelpText = "Number of items to process")]
-    public int Count { get; set; }
+	[Option('v', "verbose", HelpText = "Enable verbose output")]
+	public bool Verbose { get; set; }
+
+	[Option('i', "input", Required = true, HelpText = "Input file path")]
+	public string InputFile { get; set; }
+
+	[Option('o', "output", Default = "output.txt", HelpText = "Output file path")]
+	public string OutputFile { get; set; }
+
+	[Option('n', "count", Default = 10, HelpText = "Number of items to process")]
+	public int Count { get; set; }
 }
 ```
 
@@ -609,15 +676,15 @@ public class Options {
 var result = Parser.Default.ParseArguments<Options>(args);
 
 result.WithParsed(options => {
-    Console.WriteLine($"Input: {options.InputFile}");
-    Console.WriteLine($"Output: {options.OutputFile}");
-    Console.WriteLine($"Verbose: {options.Verbose}");
+	Console.WriteLine($"Input: {options.InputFile}");
+	Console.WriteLine($"Output: {options.OutputFile}");
+	Console.WriteLine($"Verbose: {options.Verbose}");
 });
 
 result.WithNotParsed(errors => {
-    foreach (var error in errors) {
-        Console.WriteLine($"Error: {error}");
-    }
+	foreach (var error in errors) {
+		Console.WriteLine($"Error: {error}");
+	}
 });
 ```
 
@@ -626,20 +693,20 @@ result.WithNotParsed(errors => {
 ```csharp
 [Verb("add", HelpText = "Add items to the list")]
 public class AddOptions {
-    [Value(0, Required = true, HelpText = "Item to add")]
-    public string Item { get; set; }
+	[Value(0, Required = true, HelpText = "Item to add")]
+	public string Item { get; set; }
 }
 
 [Verb("remove", HelpText = "Remove items from the list")]
 public class RemoveOptions {
-    [Value(0, Required = true, HelpText = "Item to remove")]
-    public string Item { get; set; }
+	[Value(0, Required = true, HelpText = "Item to remove")]
+	public string Item { get; set; }
 }
 
 // Parse with verbs
 Parser.Default.ParseArguments<AddOptions, RemoveOptions>(args)
-    .WithParsed<AddOptions>(opts => AddItem(opts.Item))
-    .WithParsed<RemoveOptions>(opts => RemoveItem(opts.Item));
+	.WithParsed<AddOptions>(opts => AddItem(opts.Item))
+	.WithParsed<RemoveOptions>(opts => RemoveItem(opts.Item));
 ```
 
 ## 🌐 Token Resolution
@@ -683,11 +750,11 @@ The framework registers these services by default:
 Configure framework behavior with options:
 
 ```csharp
-Sphere10Framework.Instance.StartFramework(
-    Sphere10FrameworkOptions.EnableDrm | 
-    Sphere10FrameworkOptions.BackgroundLicenseVerify |
-    Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible
-);
+Sphere10Framework.Instance
+	.Build()
+	.WithOptions(Sphere10FrameworkOptions.EnableDrm | Sphere10FrameworkOptions.BackgroundLicenseVerify | Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)
+	.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
+	.Start();
 ```
 
 | Option | Description |
@@ -700,24 +767,23 @@ Sphere10Framework.Instance.StartFramework(
 
 - [Sphere10.Framework](../Sphere10.Framework) - Core framework
 - [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - Windows Forms integration
+- [Sphere10.Framework.Web.AspNetCore.Blazor](../Sphere10.Framework.Web.AspNetCore.Blazor) - Blazor application integration
 - [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore) - ASP.NET Core integration
 - [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - RPC services with DI
 
-## 🌍 Real-World Example
+## 🌍 Demo applications
 
-See [AutoMouse](https://github.com/HermanSchoenfeld/AutoMouse) for a complete production application using this framework, demonstrating:
-- ModuleConfiguration for service registration
-- SettingsObject with complex settings
-- ApplicationInitializer for first-run tasks
-- Product attributes for app metadata
-- Windows Forms integration with LiteMainForm
+The repository testers exercise the current application root, plugin loading, multiple blocks, object-based commands, parent ownership and directional lifecycle tasks:
+
+- [WinForms tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md): two plugins, process and plugin lifecycle tasks, startup/shutdown splashes and coordinated main-window closure.
+- [Blazor tester](../../utils/Sphere10.Framework.Utils.BlazorTester/README.md): four plugins, circuit-scoped startup/shutdown tasks, application commands and retained screens.
 
 ## ✅ Status & Maturity
 
 - **Core Framework**: Production-tested, stable
 - **DI Integration**: Full support for Microsoft.Extensions.DependencyInjection
 - **.NET Target**: .NET 10 (`net10.0`)
-- **Thread Safety**: Application-wide; services should handle their own thread safety
+- **Thread Safety**: Application lifecycle operations coordinate their own state; services remain responsible for their own concurrency and platform thread affinity.
 
 ## ⚖️ License
 

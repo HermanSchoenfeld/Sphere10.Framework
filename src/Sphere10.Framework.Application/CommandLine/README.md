@@ -1,3 +1,5 @@
+This file preserves the upstream CommandLineParser documentation for the bundled parser. In Sphere10, the parser and its attributes live in `Sphere10.Framework.Application` and are supplied by the .NET 10 `Sphere10.Framework.Application` package. Use the [Application guide](../README.md#-command-line-parsing) for that integration; the package names, supported targets and badges below describe the upstream distribution.
+
 [![Build status](https://ci.appveyor.com/api/projects/status/p61dj8udxs2aocmo/branch/master?svg=true)](https://ci.appveyor.com/project/commandlineparser/commandline/branch/master)
 [![NuGet](https://img.shields.io/nuget/dt/commandlineparser.svg)](http://nuget.org/packages/commandlineparser)
 [![NuGet](https://img.shields.io/nuget/v/commandlineparser.svg)](https://www.nuget.org/packages/CommandLineParser/)

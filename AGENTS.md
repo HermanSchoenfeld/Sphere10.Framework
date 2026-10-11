@@ -20,6 +20,13 @@ instructions take precedence.
 Read [Patterns and Practices](docs/guidelines/patterns-and-practices.md) before
 designing or changing a hierarchy. Inheritance-only classes are abstract and
 named `...Base`; preserve concrete classes for genuine directly usable products.
+For paired sync/async APIs, follow the
+[directional implementation hierarchy](docs/guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies):
+declare both primitives in the interface and common abstract base; choose the
+primitive through `Sync...Base` or `Async...Base`, which adapts the opposite API.
+Keep execution-direction adapters out of default interface members and boolean
+mode switches. Default interface property projections remain inline bridges.
+
 Follow [Code Styling](docs/guidelines/code-styling.md#generic-constraints): put
 one generic `where` constraint on each aligned line and the opening brace at
 the end of the final constraint line.
