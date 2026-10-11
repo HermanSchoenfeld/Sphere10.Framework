@@ -485,7 +485,7 @@ public class ApplicationParentOwnershipTests {
 	private sealed class HostFacade(IApplicationScreenHost host) : ApplicationScreenHostDecorator(host) {
 	}
 
-	private sealed class OwnedApplication : ApplicationBase {
+	private sealed class OwnedApplication : SyncApplicationBase {
 		private readonly IApplicationPlugin[] _plugins;
 
 		public OwnedApplication(IApplicationScreenHost host, params IApplicationPlugin[] plugins) {

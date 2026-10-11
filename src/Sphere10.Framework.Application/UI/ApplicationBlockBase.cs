@@ -9,6 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
 
@@ -43,6 +45,12 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 
 	/// <summary>Facades override this to bind menus to the public block.</summary>
 	protected virtual IApplicationBlock MenuOwner => this;
+
+	public virtual Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(true);
+	}
 
 	public virtual void AddScreenDefinition(ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));

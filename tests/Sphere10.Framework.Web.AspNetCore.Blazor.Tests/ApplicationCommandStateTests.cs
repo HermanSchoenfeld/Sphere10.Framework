@@ -163,9 +163,8 @@ public class ApplicationCommandStateTests {
 		});
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public async Task DisabledLeafCannotExecuteThroughEitherHostEntryPoint(bool resolveById) {
+	[Test]
+	public async Task DisabledLeafCannotExecuteThroughHost() {
 		var enabled = false;
 		var calls = new List<string>();
 		var command = new BlazorApplicationMenuItemBuilder()
@@ -188,17 +187,16 @@ public class ApplicationCommandStateTests {
 		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
-		Task<bool> Execute() => resolveById ? hostUserInterface.ExecuteMenuItemAsync("projects", "save") : hostUserInterface.ExecuteMenuItemAsync(registered);
 
 		Assert.That(registered.IsEnabled, Is.False);
-		Assert.That(await Execute(), Is.False);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.False);
 		Assert.That(calls, Is.Empty);
 		enabled = true;
 		Assert.That(registered.IsEnabled, Is.True, "The registration snapshot preserves a live predicate.");
-		Assert.That(await Execute(), Is.True);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.True);
 		Assert.That(calls, Is.EqualTo(new[] { "action", "select" }));
 		enabled = false;
-		Assert.That(await Execute(), Is.False);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.False);
 		Assert.That(calls, Has.Count.EqualTo(2), "A later disabled state is checked again before executing.");
 	}
 

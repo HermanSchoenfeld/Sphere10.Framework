@@ -8,9 +8,11 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -95,6 +97,26 @@ public class BlazorDefaultInterfaceDispatchTests {
 			add { }
 			remove { }
 		}
+		public event EventHandlerEx Initializing {
+			add { }
+			remove { }
+		}
+		public event EventHandlerEx Initialized {
+			add { }
+			remove { }
+		}
+		public event EventHandlerEx Finalizing {
+			add { }
+			remove { }
+		}
+		public event EventHandlerEx Finalized {
+			add { }
+			remove { }
+		}
+		public event ProgressHandler Progress {
+			add { }
+			remove { }
+		}
 
 		private readonly IBlazorPlugin _plugin;
 
@@ -102,6 +124,16 @@ public class BlazorDefaultInterfaceDispatchTests {
 			ScreenHost = screenHost;
 			_plugin = plugin;
 		}
+
+		public ILogger Logger { get; } = new NoOpLogger();
+
+		public Disposables Disposables { get; } = new();
+
+		public bool IsInitialized => false;
+
+		public bool IsExiting => false;
+
+		public bool HasExited => false;
 
 		public IBlazorPlugin[] LoadedPlugins => new[] { _plugin };
 
@@ -114,6 +146,20 @@ public class BlazorDefaultInterfaceDispatchTests {
 		public IBlazorApplicationMenu[] Menus => Array.Empty<IBlazorApplicationMenu>();
 
 		public IBlazorApplicationMenuItem[] ToolBarItems => Array.Empty<IBlazorApplicationMenuItem>();
+
+		public void Initialize() {
+		}
+
+		public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+		public bool Exit(bool force = false, CancellationToken cancellationToken = default) => true;
+
+		public Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default) => Task.FromResult(true);
+
+		void IApplication.Finalize() {
+		}
+
+		public Task FinalizeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
 		public void Dispose() {
 		}

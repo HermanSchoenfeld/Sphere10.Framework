@@ -99,9 +99,6 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 		}, cancellationToken);
 	}
 
-	public virtual Task<bool> ExecuteMenuItemAsync(string blockId, string menuItemId, CancellationToken cancellationToken = default) =>
-		UserInterfaceServices.ExecuteMenuItemAsync(blockId, menuItemId, cancellationToken);
-
 	public virtual Task<bool> ExecuteMenuItemAsync(IApplicationMenuItem item, CancellationToken cancellationToken = default) =>
 		UserInterfaceServices.ExecuteMenuItemAsync(item, cancellationToken);
 

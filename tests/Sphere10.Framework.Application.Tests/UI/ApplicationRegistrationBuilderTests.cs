@@ -126,7 +126,7 @@ public class ApplicationRegistrationBuilderTests {
 		}
 	}
 
-	private sealed class ProbeApplication : ApplicationBase {
+	private sealed class ProbeApplication : SyncApplicationBase {
 		public ProbeApplication(string name) {
 			Name = name;
 		}

@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
@@ -16,13 +17,18 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
 public partial class ModalHost {
 	protected override ModalResult CanceledResult => ModalResult.Cancel;
 
-	public Task<ModalResult> ShowAsync<T>(ParameterView parameters, ModalOptions options = null) where T : ModalComponent {
+	public Task<ModalResult> ShowAsync<T>(ParameterView parameters, ModalOptions options = null)
+		where T : ModalComponent
+		=> ShowAsync<T>(parameters, options, CancellationToken.None);
+
+	public Task<ModalResult> ShowAsync<T>(ParameterView parameters, ModalOptions options, CancellationToken cancellationToken)
+		where T : ModalComponent {
 		var values = new Dictionary<string, object> {
 			[nameof(ModalComponent.Options)] = options ?? new ModalOptions()
 		};
 		foreach (var parameter in parameters)
 			values[parameter.Name] = parameter.Value;
-		return ShowCoreAsync<T>(values);
+		return ShowCoreAsync<T>(values, cancellationToken);
 	}
 
 	protected override Task WaitUntilRenderedAsync(ModalComponent component) => component.ModalRendered;

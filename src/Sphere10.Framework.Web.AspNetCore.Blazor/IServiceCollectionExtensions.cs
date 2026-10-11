@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
@@ -48,8 +49,9 @@ public static class IServiceCollectionExtensions {
 		services.TryAddScoped<IBlazorUserInterfaceServices>(provider => new BlazorUserInterfaceServices(provider.GetRequiredService<IBlazorApplicationScreenHost>(), provider));
 		services.TryAddScoped<IUserInterfaceServices>(provider => provider.GetRequiredService<IBlazorUserInterfaceServices>());
 		services.TryAddScoped<IBlazorApplication>(provider => new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
-			provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>()));
+			provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider));
 		services.TryAddScoped<IApplication>(provider => provider.GetRequiredService<IBlazorApplication>());
+		services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, BlazorApplicationCircuitHandler>());
 		services.TryAddScoped<IThemeService, ThemeService>();
 		return services;
 	}
@@ -61,7 +63,7 @@ public static class IServiceCollectionExtensions {
 		services.AddSphere10Blazor();
 		services.Replace(ServiceDescriptor.Scoped<IBlazorApplication>(provider => {
 			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
-				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>());
+				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider);
 			try {
 				configure(application);
 				return application;
@@ -99,6 +101,7 @@ public static class IServiceCollectionExtensions {
 	public static IServiceCollection AddSphere10BlazorPlugin(this IServiceCollection services, IBlazorPlugin plugin) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
+		using var registrationScope = new ApplicationPluginRegistrationScope(services, plugin);
 		GetValidatedPluginBlocks(services, plugin);
 		plugin.Load(services);
 		// Load hooks can finish definitions, attach menu subscribers, or add other block registrations.
@@ -112,6 +115,7 @@ public static class IServiceCollectionExtensions {
 		foreach (var block in blocks)
 			block.Source = plugin;
 		services.AddSingleton(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<IApplicationBlock>().ToArray()));
+		registrationScope.Commit();
 		return services;
 	}
 

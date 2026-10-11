@@ -6,6 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Application;
 
 public interface IApplicationFinalizer {
@@ -15,5 +18,7 @@ public interface IApplicationFinalizer {
 #pragma warning disable CS0465 // Preserve the existing public application lifecycle contract.
 	void Finalize();
 #pragma warning restore CS0465
+
+	Task FinalizeAsync(CancellationToken cancellationToken = default);
 }
 

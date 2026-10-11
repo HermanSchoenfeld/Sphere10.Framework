@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Sphere10.Framework.Web.AspNetCore;
 
-internal class AspNetCoreLifecycleMonitorInitializer : ApplicationInitializerBase {
+internal class AspNetCoreLifecycleMonitorInitializer : SyncApplicationInitializerBase {
 
 	public AspNetCoreLifecycleMonitorInitializer(IHostApplicationLifetime hostApplicationLifetime) {
 		HostApplicationLifetime = hostApplicationLifetime;

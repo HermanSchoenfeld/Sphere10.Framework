@@ -129,7 +129,7 @@ public class MainFormExitTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void StartupMessageLoopEndsAndFinalizesFrameworkAfterMainFormCloses(bool PersistWindowSettings) {
+	public void StartupSavesAcceptedPlacementBeforeWindowClosesAndDisposesServicesAfterwards(bool PersistWindowSettings) {
 		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
 		using var ProviderScope = UseTemporarySettings(out var Directory);
 		var SettingsProvider = new ShutdownProbeSettingsProvider(Directory);
@@ -139,10 +139,10 @@ public class MainFormExitTests {
 		var Finalized = false;
 		var Finalizing = false;
 		var SavedDuringShutdown = false;
-		var ClosedBeforeSave = false;
+		var windowAliveDuringSave = false;
 		SettingsProvider.Saving = () => {
 			SavedDuringShutdown = Finalizing;
-			ClosedBeforeSave = MainForm?.IsDisposed == true;
+			windowAliveDuringSave = MainForm?.IsDisposed == false;
 		};
 		void FrameworkFinalizing() => Finalizing = true;
 		void FrameworkFinalized() => Finalized = MainForm?.IsDisposed == true;
@@ -201,7 +201,7 @@ public class MainFormExitTests {
 		Assert.That(SettingsProvider.Disposed, Is.True);
 		Assert.That(SettingsProvider.SavedAfterDisposal, Is.False);
 		if (PersistWindowSettings) {
-			Assert.That(SavedDuringShutdown && ClosedBeforeSave, Is.True, "Placement must be written by framework finalization after the main form closes.");
+			Assert.That(SavedDuringShutdown && windowAliveDuringSave, Is.True, "Approved placement must be saved during shutdown before the main form closes.");
 			Assert.That(new DirectoryFileSettingsProvider(Directory).ContainsSetting(typeof(FormWindowSettings), "MainForm"), Is.True);
 		}
 	}

@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
@@ -133,13 +134,13 @@ public class WinFormsApplicationGraphTests {
 
 	[TestCase(1)]
 	[TestCase(2)]
-	public void HostDisposalClearsEveryOwnerAndCompletesNativeCleanupAfterDestructionFailures(int failureCount) {
+	public async Task HostDisposalClearsEveryOwnerAndCompletesNativeCleanupAfterDestructionFailures(int failureCount) {
 		using var form = new BlockMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		using var application = new WinFormsApplication(form, new[] { block });
+		await using var application = new WinFormsApplication(form, new[] { block });
 		using var borrowedMenu = new WinFormsApplicationMenu("Block commands");
 		block.AddMenu(borrowedMenu);
-		application.Initialize();
+		await application.InitializeAsync();
 		var host = (WinFormsApplicationScreenHost)application.ScreenHost;
 		host.ScreenMode = ScreenMode.MultiView;
 		var firstFailure = new InvalidOperationException("First destruction failure");
@@ -234,7 +235,7 @@ public class WinFormsApplicationGraphTests {
 	}
 
 	[Test]
-	public void StandaloneToolbarScreenCommandsUseTheRegisteredDefinitionOwner() {
+	public void StandaloneToolbarScreenCommandsRequireAnOwnedMenu() {
 		using var form = new MainForm();
 		using var item = new WinFormsScreenMenuItem("Editor", typeof(TrackedScreen));
 		using var block = new ToolbarBlock { Name = "Workspace", ToolBarItems = new[] { item } };
@@ -242,9 +243,33 @@ public class WinFormsApplicationGraphTests {
 		form.ScreenHost.RegisterScreenTypes(block);
 		Assert.That(item.Parent, Is.Null);
 		Assert.That(item.ScreenDefinition.Activators, Is.Empty);
+		Assert.That(() => form.ExecuteMenuItemAsync(item).GetAwaiter().GetResult(), Throws.ArgumentException
+			.With.Property(nameof(ArgumentException.ParamName)).EqualTo("item"));
+		Assert.That(form.ScreenHost.Screens, Is.Empty);
+		using var menu = new WinFormsApplicationMenu("Screens", new[] { item });
+		Assert.That(() => form.ExecuteMenuItemAsync(item).GetAwaiter().GetResult(), Throws.ArgumentException
+			.With.Property(nameof(ArgumentException.ParamName)).EqualTo("item"));
+		Assert.That(form.ScreenHost.Screens, Is.Empty);
+		block.AddMenu(menu);
 		Assert.That(form.ExecuteMenuItemAsync(item).GetAwaiter().GetResult(), Is.True);
 		Assert.That(form.ActiveScreen.Block, Is.SameAs(block));
 		Assert.That(form.ActiveScreen.Host, Is.SameAs(form.ScreenHost));
+	}
+
+	[Test]
+	public void ScreenCommandsUseTheirParentBlockWhenSeveralBlocksShareTheDefinition() {
+		using var form = new MainForm();
+		using var firstBlock = new WinFormsApplicationBlock { Name = "First" };
+		using var owner = new WinFormsApplicationBlock { Name = "Owner" };
+		using var item = new WinFormsScreenMenuItem("Editor", typeof(TrackedScreen));
+		using var menu = new WinFormsApplicationMenu("Screens", new[] { item });
+		owner.AddMenu(menu);
+		firstBlock.AddScreenDefinition(item.ScreenDefinition);
+		form.ScreenHost.RegisterScreenTypes(firstBlock);
+		form.ScreenHost.RegisterScreenTypes(owner);
+		Assert.That(form.ExecuteMenuItemAsync(item).GetAwaiter().GetResult(), Is.True);
+		Assert.That(form.ActiveScreen.Block, Is.SameAs(item.Parent.Parent));
+		Assert.That(form.ActiveScreen.Block, Is.SameAs(owner));
 	}
 
 	public sealed class TrackedScreen : WinFormsApplicationScreen {

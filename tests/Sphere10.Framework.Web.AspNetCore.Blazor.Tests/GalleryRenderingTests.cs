@@ -219,11 +219,11 @@ public class GalleryRenderingTests {
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var hostUserInterface = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var action = host.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.ActivateBlockAsync("workspace");
 			var rendered = await renderer.RenderComponentAsync<UI.Application.ApplicationScreenHostView>();
-			await hostUserInterface.ExecuteMenuItemAsync("workspace", "action");
+			await host.ExecuteMenuItemAsync(action);
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Scoped async action executions: 1"));
 		});
 	}

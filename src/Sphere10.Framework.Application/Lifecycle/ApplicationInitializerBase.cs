@@ -6,6 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Application;
 
 public abstract class ApplicationInitializerBase : IApplicationInitializer {
@@ -16,6 +19,8 @@ public abstract class ApplicationInitializerBase : IApplicationInitializer {
 	public virtual bool Parallelizable => false;
 
 	public abstract void Initialize();
+
+	public abstract Task InitializeAsync(CancellationToken cancellationToken = default);
 
 }
 

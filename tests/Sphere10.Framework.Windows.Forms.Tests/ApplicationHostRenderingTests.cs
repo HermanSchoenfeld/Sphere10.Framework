@@ -11,6 +11,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
@@ -96,10 +97,10 @@ public class ApplicationHostRenderingTests {
 	}
 
 	[Test]
-	public void ApplicationCommandsSurviveBlockAndScreenCaptionCollisions() {
+	public async Task ApplicationCommandsSurviveBlockAndScreenCaptionCollisions() {
 		using var form = new CountingMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace", ShowInMenuStrip = true };
-		using var application = new WinFormsApplication(form, new[] { block });
+		await using var application = new WinFormsApplication(form, new[] { block });
 		using var globalMenu = new WinFormsApplicationMenu("&File");
 		using var globalHelpMenu = new WinFormsApplicationMenu("&Help");
 		var globalRuns = 0;
@@ -120,7 +121,7 @@ public class ApplicationHostRenderingTests {
 		block.AddMenu(blockHelpMenu);
 		application.SetMenus(new[] { globalMenu, globalHelpMenu });
 		application.SetToolBarItems(new[] { global });
-		application.Initialize();
+		await application.InitializeAsync();
 		var legacyFile = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Text == "File");
 		var legacyExit = legacyFile.DropDownItems.Cast<ToolStripItem>().Single(item => item.Text == "E&xit");
 		var legacyHelp = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Text == "Help");
@@ -173,14 +174,14 @@ public class ApplicationHostRenderingTests {
 
 	[TestCase("&File")]
 	[TestCase("&Actions")]
-	public void NativeScreenMenusReuseExistingHeadersWithoutTakingCommandOwnership(string caption) {
+	public async Task NativeScreenMenusReuseExistingHeadersWithoutTakingCommandOwnership(string caption) {
 		using var form = new CountingMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		using var application = new WinFormsApplication(form, new[] { block });
+		await using var application = new WinFormsApplication(form, new[] { block });
 		using var globalMenu = new WinFormsApplicationMenu(caption);
 		globalMenu.AddItem(new WinFormsActionMenuItem("Keep", () => { }));
 		application.SetMenus(new[] { globalMenu });
-		application.Initialize();
+		await application.InitializeAsync();
 		var file = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Text == "File");
 		var legacyExit = file.DropDownItems.Cast<ToolStripItem>().Single(item => item.Text == "E&xit");
 		var screen = new NativeMenuScreen { ApplicationBlock = block, ApplicationMenuStripText = caption };

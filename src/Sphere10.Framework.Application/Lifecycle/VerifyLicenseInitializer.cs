@@ -7,10 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application;
 
-public class VerifyLicenseInitializer : ApplicationInitializerBase {
+public class VerifyLicenseInitializer : AsyncApplicationInitializerBase {
 	public VerifyLicenseInitializer(IBackgroundLicenseVerifier backgroundLicenseVerifier, IUserInterfaceServices userInterfaceServices) {
 		BackgroundLicenseVerifier = backgroundLicenseVerifier;
 		UserInterfaceServices = userInterfaceServices;
@@ -24,8 +25,9 @@ public class VerifyLicenseInitializer : ApplicationInitializerBase {
 
 	public override int Priority => int.MaxValue; // run last
 
-	public override async void Initialize() {
-		await BackgroundLicenseVerifier.VerifyLicense(CancellationToken.None);
+	public override Task InitializeAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return BackgroundLicenseVerifier.VerifyLicense(cancellationToken);
 	}
 
 }

@@ -271,7 +271,8 @@ public class ApplicationScreenHostTests {
 		var firstHost = firstScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var firstHostUserInterface = firstScope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var secondHost = secondScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
-		Assert.That(await firstHostUserInterface.ExecuteMenuItemAsync("actions", "run").WaitAsync(TimeSpan.FromSeconds(5)), Is.True);
+		var registered = firstHost.Blocks.Single().Menus.Single().Items[1];
+		Assert.That(await firstHostUserInterface.ExecuteMenuItemAsync(registered).WaitAsync(TimeSpan.FromSeconds(5)), Is.True);
 		Assert.That(firstScope.ServiceProvider.GetRequiredService<ActionState>().Calls, Is.EqualTo(1));
 		Assert.That(secondScope.ServiceProvider.GetRequiredService<ActionState>().Calls, Is.Zero);
 		Assert.That(firstHost.OpenScreens, Has.Length.EqualTo(1));
@@ -292,7 +293,8 @@ public class ApplicationScreenHostTests {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
-		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync("actions", "run"), Throws.InstanceOf<InvalidOperationException>().With.Message.EqualTo(failure.Message));
+		var registered = host.Blocks.Single().Menus.Single().Items.Single();
+		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync(registered), Throws.InstanceOf<InvalidOperationException>().With.Message.EqualTo(failure.Message));
 	}
 
 	[Test]

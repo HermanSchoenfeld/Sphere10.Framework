@@ -17,9 +17,6 @@ public interface IWinFormsApplication : IApplication<IWinFormsApplicationPlugin,
 
 	new IWinFormsApplicationBlock[] Blocks { get; }
 
-	/// <summary>Registers configured blocks through the existing form, including its default screens and load actions.</summary>
-	void Initialize();
-
 	#region Base Interface Bridges
 
 	IApplicationBlock[] IApplication.Blocks => Blocks;

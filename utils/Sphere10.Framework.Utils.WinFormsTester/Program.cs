@@ -54,6 +54,7 @@ static class Program {
 			}
 		};
 		SystemLog.RegisterLogger(new DebugLogger());
+		var freshEmptyWorkspace = Array.IndexOf(args, "--empty-multi") >= 0;
 
 		Sphere10Framework.Instance
 			.BuildWinFormsApplication()
@@ -63,6 +64,10 @@ static class Program {
 					(WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>());
 			})
 			.UseMainFormSettings()
+			.ConfigureServices(services => {
+				services.AddWinFormsApplicationPlugin(plugin => WinFormsDemoPlugin.Configure(plugin, freshEmptyWorkspace));
+				services.AddWinFormsApplicationPlugin(WinFormsComponentDemoPlugin.Configure);
+			})
 			.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
 			.UseModule<Sphere10.Framework.CryptoEx.ModuleConfiguration>()
 			.UseModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()

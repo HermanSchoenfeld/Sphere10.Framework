@@ -17,13 +17,22 @@ public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicati
 	where TBlock : class, IApplicationBlock
 	where TPlugin : IApplicationPlugin {
 	private readonly List<TBlock> _blocks = new();
-	private Action<IServiceCollection> _configureServices;
+	private Action<IServiceCollection, string> _configureServices;
 
 	protected string Name { get; private set; }
 
 	public virtual TPlugin Build() {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "A plugin name is required.");
-		return CreatePlugin(_blocks.ToArray(), _configureServices);
+		var configureServices = _configureServices;
+		string pluginName = null;
+		var plugin = CreatePlugin(_blocks.ToArray(), configureServices == null ? null : services => {
+			Guard.Ensure(pluginName != null, "A plugin must be built before configuring its services.");
+			configureServices(services, pluginName);
+		});
+		Guard.Ensure(plugin is not null, "A plugin definition is required.");
+		pluginName = plugin.Name;
+		Guard.Ensure(!string.IsNullOrWhiteSpace(pluginName), "A plugin name is required.");
+		return plugin;
 	}
 
 	protected void SetName(string name) {
@@ -37,6 +46,11 @@ public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicati
 	}
 
 	protected void AddServiceConfiguration(Action<IServiceCollection> configure) {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		_configureServices += (services, _) => configure(services);
+	}
+
+	protected void AddServiceConfiguration(Action<IServiceCollection, string> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		_configureServices += configure;
 	}
@@ -61,6 +75,44 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 
 	public TSelf ConfigureServices(Action<IServiceCollection> configure) {
 		AddServiceConfiguration(configure);
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Registers a transient startup task under the built plugin's name when the plugin loads.</summary>
+	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
+	public TSelf RegisterInitializer<T>()
+		where T : class, IApplicationInitializer {
+		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering an initializer.");
+		AddServiceConfiguration((services, pluginName) => services.AddInitializer<T>(pluginName));
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Creates a startup task through the executing application's service provider.</summary>
+	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
+	public TSelf RegisterInitializer<T>(Func<IServiceProvider, T> factory)
+		where T : class, IApplicationInitializer {
+		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering an initializer.");
+		Guard.ArgumentNotNull(factory, nameof(factory));
+		AddServiceConfiguration((services, pluginName) => services.AddKeyedTransient<IApplicationInitializer>(pluginName, (provider, _) => factory(provider)));
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Registers a transient shutdown task under the built plugin's name when the plugin loads.</summary>
+	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
+	public TSelf RegisterFinalizer<T>()
+		where T : class, IApplicationFinalizer {
+		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering a finalizer.");
+		AddServiceConfiguration((services, pluginName) => services.AddFinalizer<T>(pluginName));
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Creates a shutdown task through the executing application's service provider.</summary>
+	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
+	public TSelf RegisterFinalizer<T>(Func<IServiceProvider, T> factory)
+		where T : class, IApplicationFinalizer {
+		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering a finalizer.");
+		Guard.ArgumentNotNull(factory, nameof(factory));
+		AddServiceConfiguration((services, pluginName) => services.AddKeyedTransient<IApplicationFinalizer>(pluginName, (provider, _) => factory(provider)));
 		return (TSelf)(object)this;
 	}
 }

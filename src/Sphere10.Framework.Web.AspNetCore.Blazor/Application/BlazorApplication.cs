@@ -6,14 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Projects a circuit's live host and startup plugin definitions without loading or owning those plugins again.</summary>
-public class BlazorApplication : ApplicationBase, IBlazorApplication {
+public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 	private readonly IBlazorPlugin[] _loadedPlugins;
 
 	/// <summary>Projects plugins already loaded successfully during startup; construction does not load or unload plugins.</summary>
@@ -21,7 +23,8 @@ public class BlazorApplication : ApplicationBase, IBlazorApplication {
 		: this(screenHost, CaptureLoadedPlugins(loadedPlugins)) {
 	}
 
-	internal BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> pluginRegistrations) {
+	internal BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> pluginRegistrations, IServiceProvider services = null)
+		: base(services) {
 		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
 		var registrations = Tools.UI.ValidatePluginRegistrations(pluginRegistrations);
 		_loadedPlugins = registrations.Select(registration => registration.Plugin).ToArray();
@@ -49,18 +52,29 @@ public class BlazorApplication : ApplicationBase, IBlazorApplication {
 
 	public override IBlazorApplicationMenuItem[] ToolBarItems => base.ToolBarItems.Cast<IBlazorApplicationMenuItem>().ToArray();
 
+	/// <summary>Synchronous exit is available outside the renderer; interactive callbacks must await ExitAsync.</summary>
+	public override bool Exit(bool force = false, CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		if (HasExited)
+			return true;
+		Guard.Ensure(SynchronizationContext.Current == null, "Blazor renderer callbacks must await ExitAsync instead of blocking synchronous exit.");
+		return base.Exit(force, cancellationToken);
+	}
+
 	public override void SetMenus(IEnumerable<IApplicationMenu> menus) {
 		Guard.ArgumentNotNull(menus, nameof(menus));
 		var definitions = menus.ToArray();
 		Guard.Argument(definitions.All(menu => menu is IBlazorApplicationMenu), nameof(menus), "Blazor menu definitions are required.");
-		base.SetMenus(definitions.Cast<IBlazorApplicationMenu>().Select(BlazorApplicationBlockSnapshot.CreateMenu));
+		var projections = definitions.Cast<IBlazorApplicationMenu>().Select(BlazorApplicationBlockSnapshot.CreateApplicationMenu).ToArray();
+		base.SetMenus(projections);
 	}
 
 	public override void SetToolBarItems(IEnumerable<IApplicationMenuItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		var definitions = items.ToArray();
 		Guard.Argument(definitions.All(item => item is IBlazorApplicationMenuItem), nameof(items), "Blazor menu item definitions are required.");
-		base.SetToolBarItems(definitions.Cast<IBlazorApplicationMenuItem>().Select(BlazorApplicationBlockSnapshot.CreateItem));
+		var projections = definitions.Cast<IBlazorApplicationMenuItem>().Select(BlazorApplicationBlockSnapshot.CreateApplicationItem).ToArray();
+		base.SetToolBarItems(projections);
 	}
 
 	protected override void OnScreenHostChanged() => OnChanged();

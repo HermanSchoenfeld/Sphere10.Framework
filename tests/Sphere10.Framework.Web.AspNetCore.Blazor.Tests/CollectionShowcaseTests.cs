@@ -8,10 +8,15 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Cards;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
@@ -21,6 +26,64 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class CollectionShowcaseTests {
+	[Test]
+	public async Task CollectionNavigationUsesItsOwningBlockAndRetainsKeyedEditorsWithoutFixedNavigationIds() {
+		var services = new ServiceCollection().AddLogging().AddSphere10Blazor();
+		services.AddScoped<CollectionCatalogue>();
+		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
+		services.AddApplicationBlock(block => block
+			.WithId("recomposed-collections")
+			.WithName("Collections")
+			.WithDefaultScreen<CardsScreen>()
+			.ConfigureMenu(menu => menu
+				.WithText("Collections")
+				.AddScreenItem<CardsScreen>("gallery", "Collections", ScreenActivationMode.SingleInstance)
+				.AddScreenItem<CollectionDetailScreen>("editor", "Editor", ScreenActivationMode.MultiInstance)
+			)
+		);
+		await using var provider = services.BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var owner = host.Blocks.Single();
+		var catalogue = provider.GetRequiredService<CollectionCatalogue>();
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var gallery = await host.ActivateBlockAsync(owner);
+			var rendered = await renderer.RenderComponentAsync<UI.Application.ApplicationScreenHostView>();
+			var galleryComponent = (CardsScreen)gallery.Screen;
+			var open = typeof(CardsScreen).GetMethod("OpenAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+			var back = typeof(CollectionDetailScreen).GetMethod("BackToGalleryAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.That(galleryComponent.Host, Is.SameAs(host));
+			Assert.That(galleryComponent.Block, Is.SameAs(owner));
+
+			await (Task)open.Invoke(galleryComponent, new object[] { catalogue.Read("coastal-notes") });
+			await rendered.QuiescenceTask;
+			var first = host.ActiveScreen;
+			await WaitForAttachmentAsync(first);
+			var firstComponent = (CollectionDetailScreen)first.Screen;
+			Assert.That(first.Block, Is.SameAs(owner));
+			Assert.That(first.Parameters[nameof(CollectionDetailScreen.CollectionId)], Is.EqualTo("coastal-notes"));
+			Assert.That(first.InstanceKey, Is.EqualTo("coastal-notes"));
+			Assert.That(firstComponent.CollectionId, Is.EqualTo("coastal-notes"));
+			await (Task)back.Invoke(first.Screen, null);
+			await rendered.QuiescenceTask;
+			Assert.That(host.ActiveScreen, Is.SameAs(gallery));
+
+			await (Task)open.Invoke(galleryComponent, new object[] { catalogue.Read("field-guide") });
+			await rendered.QuiescenceTask;
+			var second = host.ActiveScreen;
+			await WaitForAttachmentAsync(second);
+			Assert.That(second, Is.Not.SameAs(first));
+			Assert.That(second.Parameters[nameof(CollectionDetailScreen.CollectionId)], Is.EqualTo("field-guide"));
+			await (Task)back.Invoke(second.Screen, null);
+			await rendered.QuiescenceTask;
+			await (Task)open.Invoke(galleryComponent, new object[] { catalogue.Read("coastal-notes") });
+			await rendered.QuiescenceTask;
+			Assert.That(host.ActiveScreen, Is.SameAs(first));
+			Assert.That(host.ActiveScreen.Screen, Is.SameAs(firstComponent));
+			Assert.That(host.Screens, Has.Length.EqualTo(3));
+		});
+	}
+
 	[Test]
 	public void CatalogueReadsDetachBothMembershipAndEditableValues() {
 		var catalogue = new CollectionCatalogue();
@@ -200,5 +263,17 @@ public class CollectionShowcaseTests {
 		var source = new CollectionDataSource(new CollectionCatalogue());
 
 		Assert.That(() => source.ReadRange(null, pageLength, 0, null, SortDirection.Ascending), Throws.InstanceOf<ArgumentException>());
+	}
+
+	private static async Task WaitForAttachmentAsync(BlazorApplicationScreenSession session) {
+		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		void Attached() {
+			if (session.Screen != null)
+				completion.TrySetResult();
+		}
+		session.Host.Changed += Attached;
+		using var subscription = Tools.Scope.ExecuteOnDispose(() => session.Host.Changed -= Attached);
+		Attached();
+		await completion.Task.WaitAsync(TimeSpan.FromSeconds(5));
 	}
 }

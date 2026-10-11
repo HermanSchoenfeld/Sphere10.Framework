@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -40,22 +41,22 @@ public class ApplicationAggregateTests {
 	}
 
 	[Test]
-	public void NativeStartupRegistrationUsesOneLiveSharedAggregateAndInitializesBlocksOnce() {
+	public async Task NativeStartupRegistrationUsesOneLiveSharedAggregateAndInitializesBlocksOnce() {
 		var services = new ServiceCollection();
 		services.AddMainForm<ProbeMainForm>();
 		using var later = new WinFormsApplicationBlock { Name = "Later", Position = 2 };
 		using var first = new WinFormsApplicationBlock { Name = "First", Position = 1 };
 		services.AddApplicationBlock(later);
 		services.AddApplicationBlock(first);
-		using var provider = services.BuildServiceProvider();
+		await using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IWinFormsApplication>();
 		var shared = provider.GetRequiredService<IApplication>();
 		Assert.That(shared, Is.SameAs(application));
 		Assert.That(application.BlockManager, Is.SameAs(provider.GetRequiredService<IBlockManager>()));
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(shared.Blocks, Is.Empty);
-		application.Initialize();
-		application.Initialize();
+		await application.InitializeAsync();
+		await application.InitializeAsync();
 		Assert.That(shared.ScreenHost.Blocks, Is.EqualTo(new[] { first, later }));
 		Assert.That(application.Blocks, Is.EqualTo(shared.ScreenHost.Blocks));
 		Assert.That(shared.Blocks, Is.EqualTo(application.Blocks));
@@ -68,7 +69,7 @@ public class ApplicationAggregateTests {
 		Assert.That(shared.ScreenHost.ActiveBlock, Is.SameAs(later));
 		Assert.That(shared.ScreenHost.ActiveScreen, Is.SameAs(screen));
 		Assert.That(notifications, Is.GreaterThan(0));
-		application.Dispose();
+		await application.DisposeAsync();
 		var countAfterDisposal = notifications;
 		application.ScreenHost.ActivateScreen(first, typeof(CleanScreen));
 		Assert.That(notifications, Is.EqualTo(countAfterDisposal));
@@ -76,11 +77,11 @@ public class ApplicationAggregateTests {
 	}
 
 	[Test]
-	public void HiddenRetainedScreensStillContributeUnsavedChanges() {
+	public async Task HiddenRetainedScreensStillContributeUnsavedChanges() {
 		using var form = new ProbeMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		using var application = new WinFormsApplication(form, new[] { block });
-		application.Initialize();
+		await using var application = new WinFormsApplication(form, new[] { block });
+		await application.InitializeAsync();
 		application.ScreenHost.ScreenMode = ScreenMode.SingleView;
 		var dirty = (DirtyScreen)application.ScreenHost.ActivateScreen(block, typeof(DirtyScreen));
 		dirty.HasUnsavedChanges = true;
@@ -119,11 +120,11 @@ public class ApplicationAggregateTests {
 	}
 
 	[Test]
-	public void ApplicationCommandsRenderAndExecuteThroughNativeChromeWithoutTakingDefinitionOwnership() {
+	public async Task ApplicationCommandsRenderAndExecuteThroughNativeChromeWithoutTakingDefinitionOwnership() {
 		using var form = new ProbeMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		using var application = new WinFormsApplication(form, new[] { block });
-		application.Initialize();
+		await using var application = new WinFormsApplication(form, new[] { block });
+		await application.InitializeAsync();
 		var executions = 0;
 		using var menu = new WinFormsApplicationMenu("Application commands");
 		var item = new TrackingAction("Run", () => executions++);

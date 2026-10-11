@@ -183,7 +183,7 @@ public class ApplicationUserInterfaceServicesTests {
 		public string Title { get; set; }
 	}
 
-	private sealed class NeutralApplication : ApplicationBase {
+	private sealed class NeutralApplication : SyncApplicationBase {
 		public NeutralApplication(IApplicationScreenHost host) {
 			ScreenHost = host;
 			ObserveScreenHost();

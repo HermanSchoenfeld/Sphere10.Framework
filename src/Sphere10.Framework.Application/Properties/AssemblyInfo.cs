@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("29c19a83-8956-417c-9b82-08a6ac8497f9")]
 [assembly: InternalsVisibleTo("Sphere10.Framework.Web.AspNetCore")]
+[assembly: InternalsVisibleTo("Sphere10.Framework.Web.AspNetCore.Blazor")]
 [assembly: InternalsVisibleTo("Sphere10.Framework.Windows.Forms")]
 [assembly: InternalsVisibleTo("Sphere10.Company.Website")]
 

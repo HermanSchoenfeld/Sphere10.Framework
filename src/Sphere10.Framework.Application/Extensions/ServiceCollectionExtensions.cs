@@ -22,9 +22,19 @@ public static class ServiceCollectionExtensions {
 		where T : class, IApplicationInitializer
 		=> serviceCollection.AddTransient<IApplicationInitializer, T>();
 
+	/// <summary>Registers initialization tasks for the specified owner without including them in the process task inventory.</summary>
+	public static IServiceCollection AddInitializer<T>(this IServiceCollection serviceCollection, object serviceKey)
+		where T : class, IApplicationInitializer
+		=> serviceCollection.AddKeyedTransient<IApplicationInitializer, T>(serviceKey);
+
 	public static IServiceCollection AddFinalizer<T>(this IServiceCollection serviceCollection)
 		where T : class, IApplicationFinalizer
 		=> serviceCollection.AddTransient<IApplicationFinalizer, T>();
+
+	/// <summary>Registers finalization tasks for the specified owner without including them in the process task inventory.</summary>
+	public static IServiceCollection AddFinalizer<T>(this IServiceCollection serviceCollection, object serviceKey)
+		where T : class, IApplicationFinalizer
+		=> serviceCollection.AddKeyedTransient<IApplicationFinalizer, T>(serviceKey);
 
 	//public static void AddProxy<TSource, TDest>(this IServiceCollection serviceCollection) {
 	//	var dest = serviceCollection.Where(x => x.ImplementationType == typeof(TDest)).SingleOrDefault();

@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
@@ -81,7 +82,7 @@ public class ScreenPolicyTests {
 	}
 
 	[Test]
-	public void StartupUsesPluginBlockAndMenuOrderAndOpensEachPermanentOnce() {
+	public async Task StartupUsesPluginBlockAndMenuOrderAndOpensEachPermanentOnce() {
 		using var form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
 		using var first = new WinFormsApplicationBlockBuilder()
 			.WithName("First")
@@ -122,15 +123,15 @@ public class ScreenPolicyTests {
 			.AddBlock(second)
 			.Build();
 		plugin.Load(new ServiceCollection());
-		using var application = new WinFormsApplication(form, new[] { second, first }, new[] { plugin });
-		application.Initialize();
+		await using var application = new WinFormsApplication(form, new[] { second, first }, new[] { plugin });
+		await application.InitializeAsync();
 		var active = form.ActiveScreen;
 		var permanent = form.ScreenHost.Screens.OfType<PermanentScreen>().Single();
 		Assert.That(application.ScreenHost.Blocks, Is.EqualTo(new[] { second, first }), "Position controls navigation, not startup selection.");
 		Assert.That(active, Is.TypeOf<RegularScreen>());
 		Assert.That(active.ApplicationBlock, Is.SameAs(first));
 		Assert.That(form.ScreenHost.OpenScreens, Has.Length.EqualTo(2));
-		application.Initialize();
+		await application.InitializeAsync();
 		Assert.That(form.ActiveScreen, Is.SameAs(active));
 		Assert.That(form.ScreenHost.Screens.OfType<PermanentScreen>().Single(), Is.SameAs(permanent));
 	}
@@ -322,12 +323,12 @@ public class ScreenPolicyTests {
 	}
 
 	[Test]
-	public void RemovingPermanentBlockIsGuardedAndSelectsRemainingEmptyDefinition() {
+	public async Task RemovingPermanentBlockIsGuardedAndSelectsRemainingEmptyDefinition() {
 		using var form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
 		using var permanentBlock = PermanentBlock();
 		using var emptyBlock = EmptyBlock();
-		using var application = new WinFormsApplication(form, new[] { emptyBlock, permanentBlock });
-		application.Initialize();
+		await using var application = new WinFormsApplication(form, new[] { emptyBlock, permanentBlock });
+		await application.InitializeAsync();
 		var permanent = (PermanentScreen)form.ActiveScreen;
 		Assert.That(form.ScreenHost.Screens.OfType<EmptyScreen>(), Is.Empty);
 		permanent.CancelHide = true;
@@ -346,14 +347,14 @@ public class ScreenPolicyTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void RemovingPermanentOwnerRecreatesTheSurvivingBlockDeclarationBeforeEmptyFallback(bool inheritPolicy) {
+	public async Task RemovingPermanentOwnerRecreatesTheSurvivingBlockDeclarationBeforeEmptyFallback(bool inheritPolicy) {
 		using var form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
 		using var first = PermanentBlock();
 		using var second = PermanentBlock(inheritPolicy);
 		second.Name = "Other permanent owner";
 		using var empty = EmptyBlock();
-		using var application = new WinFormsApplication(form, new[] { first, second, empty });
-		application.Initialize();
+		await using var application = new WinFormsApplication(form, new[] { first, second, empty });
+		await application.InitializeAsync();
 		var original = (PermanentScreen)form.ActiveScreen;
 		Assert.That(original.ApplicationBlock, Is.SameAs(first));
 		form.UnregisterBlock(first);

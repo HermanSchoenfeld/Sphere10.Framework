@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -26,8 +27,17 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	public event EventHandler<CancelEventArgs> ApplicationExitingEvent;
 
 	private bool _confirmingExit;
+	private bool _applicationExiting;
 	private bool _exitConfirmed;
+	private bool _forceExitConfirmed;
+	private bool _runningShutdown;
+	private bool _finalClose;
+	private bool _nativeCloseApproved;
+	private Func<Task> _approvedShutdownAsync;
+	private TaskCompletionSource<(bool Closed, Exception ShutdownError)> _approvedCloseCompletion;
+	private SynchronizationContext _approvedCloseContext;
 	private FormCloseAction? _closeActionBeforeExit;
+	private CancellationToken _exitConfirmationCancellationToken;
 
 	public LiteMainForm() {
 		System.Windows.Forms.Application.ThreadException += ApplicationOnThreadException;
@@ -37,6 +47,10 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	}
 
 	protected bool SuppressExitConfirmation { get; set; }
+
+	protected bool ScreenExitPermissionsChecked { get; private set; }
+
+	internal IApplication Application { get; set; }
 
 	#region Form Methods
 
@@ -85,15 +99,71 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	}
 
 	protected sealed override async void OnFormClosing(FormClosingEventArgs Args) {
-		base.OnFormClosing(Args);
+		// Native observers approved this close before asynchronous shutdown started.
+		if (_finalClose)
+			return;
+		if (_runningShutdown) {
+			Args.Cancel = true;
+			return;
+		}
+		if (Application != null && _confirmingExit && !_exitConfirmed) {
+			Args.Cancel = true;
+			return;
+		}
+		if (_exitConfirmed && _nativeCloseApproved)
+			_nativeCloseApproved = false;
+		else
+			base.OnFormClosing(Args);
+		if (_forceExitConfirmed)
+			Args.Cancel = false;
 		if (Args.Cancel) {
 			ApplicationExiting = false;
 			RestoreCloseAction();
+			_approvedCloseCompletion?.TrySetResult((false, null));
 			return;
 		}
-		if (_exitConfirmed)
+		if (_exitConfirmed) {
+			var shutdown = _approvedShutdownAsync;
+			if (shutdown == null)
+				return;
+			Args.Cancel = true;
+			_approvedShutdownAsync = null;
+			var completion = _approvedCloseCompletion;
+			var closeContext = _approvedCloseContext;
+			_runningShutdown = true;
+			var previouslyEnabled = Enabled;
+			using var restoreShutdown = Tools.Scope.ExecuteOnDispose(() => {
+				if (!IsDisposed)
+					Enabled = previouslyEnabled;
+				_runningShutdown = false;
+				_finalClose = false;
+			});
+			try {
+				Enabled = false;
+				// Let the cancelled native close unwind before requesting the final close, even for synchronous tasks.
+				await Task.Yield();
+				Exception shutdownError = null;
+				try {
+					await shutdown();
+				} catch (Exception error) {
+					shutdownError = error;
+				}
+				_finalClose = true;
+				Close();
+				// Closing the last window can uninstall its context; finish the approved exit inline before its message loop ends.
+				var completedContext = SynchronizationContext.Current;
+				using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(completedContext));
+				SynchronizationContext.SetSynchronizationContext(closeContext);
+				completion.TrySetResult((IsDisposed, shutdownError));
+			} catch (Exception error) {
+				var completedContext = SynchronizationContext.Current;
+				using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(completedContext));
+				SynchronizationContext.SetSynchronizationContext(closeContext);
+				completion.TrySetException(error);
+			}
 			return;
-		if (SuppressExitConfirmation) {
+		}
+		if (SuppressExitConfirmation && Application == null) {
 			ApplicationExiting = true;
 			FireApplicationExitingEvent(Args);
 			ApplicationExiting = !Args.Cancel;
@@ -108,6 +178,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		ApplicationExiting = true;
 		using var ConfirmationScope = Tools.Scope.ExecuteOnDispose(() => {
 			_confirmingExit = false;
+			_nativeCloseApproved = false;
 			if (!IsDisposed) {
 				_exitConfirmed = false;
 				ApplicationExiting = false;
@@ -115,7 +186,12 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 			}
 		});
 		try {
+			_nativeCloseApproved = Application != null;
 			await Task.Yield();
+			if (Application != null) {
+				await Application.ExitAsync(SuppressExitConfirmation);
+				return;
+			}
 			if (!await ConfirmExitAsync() || IsDisposed)
 				return;
 			var Cancellation = new CancelEventArgs();
@@ -124,13 +200,61 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				return;
 			_exitConfirmed = true;
 			Close();
+		} catch (OperationCanceledException) {
+			// Application disposal or cancellation can withdraw a pending exit request.
 		} catch (Exception Error) {
 			ReportError(Error);
 		}
 	}
 
 	protected virtual async Task<bool> ConfirmExitAsync()
-		=> await DialogEx.ShowAsync(this, SystemIconType.Question, "Confirm", "Are you sure you want to exit?", "&No", "&Yes") == DialogExResult.Button2;
+		=> await DialogEx.ShowAsync(this, SystemIconType.Question, "Confirm", "Are you sure you want to exit?", _exitConfirmationCancellationToken, "&No", "&Yes") == DialogExResult.Button2;
+
+	internal async Task<bool> ConfirmApplicationExitAsync(CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		var previousToken = _exitConfirmationCancellationToken;
+		_exitConfirmationCancellationToken = cancellationToken;
+		using var restoreToken = Tools.Scope.ExecuteOnDispose(() => _exitConfirmationCancellationToken = previousToken);
+		return await ConfirmExitAsync().WaitAsync(cancellationToken);
+	}
+
+	internal bool CanApplicationExit() {
+		var previouslyChecked = ScreenExitPermissionsChecked;
+		ScreenExitPermissionsChecked = true;
+		using var restorePermissions = Tools.Scope.ExecuteOnDispose(() => ScreenExitPermissionsChecked = previouslyChecked);
+		var cancellation = new CancelEventArgs();
+		FireApplicationExitingEvent(cancellation);
+		return !cancellation.Cancel;
+	}
+
+	internal async Task<(bool Closed, Exception ShutdownError)> CloseFromApplicationAsync(bool force, Func<Task> shutdown) {
+		if (IsDisposed)
+			return (true, null);
+		Guard.ArgumentNotNull(shutdown, nameof(shutdown));
+		// Continuations must complete before the final native close can end its message loop.
+		var completion = new TaskCompletionSource<(bool Closed, Exception ShutdownError)>();
+		_approvedCloseCompletion = completion;
+		_approvedCloseContext = SynchronizationContext.Current;
+		_approvedShutdownAsync = shutdown;
+		_exitConfirmed = true;
+		_forceExitConfirmed = force;
+		ApplicationExiting = true;
+		_closeActionBeforeExit ??= CloseAction;
+		CloseAction = FormCloseAction.Close;
+		using var restoreExit = Tools.Scope.ExecuteOnDispose(() => {
+			_approvedShutdownAsync = null;
+			_approvedCloseCompletion = null;
+			_approvedCloseContext = null;
+			_forceExitConfirmed = false;
+			if (!IsDisposed) {
+				_exitConfirmed = false;
+				ApplicationExiting = false;
+				RestoreCloseAction();
+			}
+		});
+		Close();
+		return await completion.Task;
+	}
 
 	protected virtual void OnApplicationExiting(CancelEventArgs cancelEventArgs) {
 	}
@@ -172,6 +296,12 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 			// CloseActions Hide | Minimize will hold up session shutdown, and SystemEvents doesn't get fired!
 			CloseAction = FormCloseAction.Close;
 			SuppressExitConfirmation = true;
+			if (Application != null) {
+				var exit = Application.ExitAsync(true);
+				m.Result = exit.IsCompletedSuccessfully && !exit.Result ? IntPtr.Zero : new IntPtr(1);
+				_ = ObserveApplicationExit(exit);
+				return;
+			}
 		}
 		base.WndProc(ref m);
 	}
@@ -179,6 +309,10 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	public virtual void Exit(bool force = false) {
 		if (IsDisposed)
 			return;
+		if (Application != null) {
+			_ = ObserveApplicationExit(Application.ExitAsync(force));
+			return;
+		}
 		if (force)
 			Sphere10Framework.Instance.TerminateApplication(0);
 		if (IsHandleCreated)
@@ -203,7 +337,23 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		}
 	}
 
-	public virtual bool ApplicationExiting { get; set; }
+	private async Task ObserveApplicationExit(Task<bool> exit) {
+		try {
+			await exit;
+		} catch (OperationCanceledException) {
+			// UI exit requests do not report expected cancellation as an application error.
+		} catch (Exception error) {
+			if (IsDisposed)
+				SystemLog.Exception(error);
+			else
+				ReportError(error);
+		}
+	}
+
+	public virtual bool ApplicationExiting {
+		get => _applicationExiting || _confirmingExit;
+		set => _applicationExiting = value;
+	}
 
 	public virtual string Status { get; set; }
 

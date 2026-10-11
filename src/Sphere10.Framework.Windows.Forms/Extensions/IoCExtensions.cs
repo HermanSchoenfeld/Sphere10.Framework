@@ -43,7 +43,7 @@ public static class IoCExtensions {
 		if (typeof(BlockMainForm).IsAssignableFrom(typeof(TMainForm))) {
 			serviceCollection.AddSingleton<IWinFormsApplication>(provider => new WinFormsApplication(
 				(BlockMainForm)provider.GetRequiredService<IMainForm>(), provider.GetServices<IWinFormsApplicationBlock>(),
-				provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>()));
+				provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>(), provider));
 			serviceCollection.AddSingleton<IApplication>(provider => provider.GetRequiredService<IWinFormsApplication>());
 		}
 	}
@@ -70,6 +70,7 @@ public static class IoCExtensions {
 	public static IServiceCollection AddWinFormsApplicationPlugin(this IServiceCollection services, IWinFormsApplicationPlugin plugin) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
+		using var registrationScope = new ApplicationPluginRegistrationScope(services, plugin);
 		var registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>();
 		var registration = new ApplicationPluginRegistration<IWinFormsApplicationPlugin>(plugin, plugin.Blocks);
@@ -88,6 +89,7 @@ public static class IoCExtensions {
 		services.AddSingleton<IWinFormsApplicationPlugin>(plugin);
 		services.AddSingleton<IApplicationPlugin>(plugin);
 		services.AddSingleton(registration);
+		registrationScope.Commit();
 		return services;
 	}
 

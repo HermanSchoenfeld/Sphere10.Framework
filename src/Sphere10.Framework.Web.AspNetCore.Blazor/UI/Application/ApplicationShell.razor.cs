@@ -97,6 +97,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	}
 
 	protected override async Task OnParametersSetAsync() {
+		if (Application?.IsExiting == true || Application?.HasExited == true)
+			return;
 		ResolveNavigationPath(NavigationPath, nameof(NavigationPath));
 		var request = (BlockId, ScreenId, InstanceId);
 		if (_lastRequest == request)
@@ -156,6 +158,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		}
 	}
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
+		if (Application?.IsExiting == true || Application?.HasExited == true)
+			return;
 		if (_synchronizeLocation) {
 			_synchronizeLocation = false;
 			SynchronizeLocation(_replaceSynchronizedLocation);
@@ -188,7 +192,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	}
 
 	private async Task SelectBlockAsync(IBlazorApplicationBlock block) {
-		if (_disposed)
+		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
 			return;
 		if (ActivateBlockOnSelection) {
 			await RunInteractionAsync(async token => {
@@ -232,8 +236,10 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 
 	private Task CloseScreensAsync(Guid[] ids) => RunInteractionAsync(token => ScreenHost.CloseScreensAsync(ids, token), true);
 
-	private async Task ReorderScreenAsync((Guid SessionId, int Index) request) =>
-		await ScreenHost.MoveScreenAsync(request.SessionId, request.Index, _lifetimeCancellation.Token);
+	private async Task ReorderScreenAsync((Guid SessionId, int Index) request) {
+		if (!_disposed && Application?.IsExiting != true && Application?.HasExited != true)
+			await ScreenHost.MoveScreenAsync(request.SessionId, request.Index, _lifetimeCancellation.Token);
+	}
 
 	private async Task ChangeScreenModeAsync(ChangeEventArgs args) {
 		var mode = string.Equals(args.Value?.ToString(), nameof(ScreenMode.SingleView), StringComparison.Ordinal) ? ScreenMode.SingleView : ScreenMode.MultiView;
@@ -246,7 +252,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	private Task CloseScreenAsync(Guid id) => RunInteractionAsync(token => ScreenHost.CloseScreenAsync(id, token), true);
 
 	private async Task RunInteractionAsync(Func<CancellationToken, Task<bool>> action, bool replace) {
-		if (_disposed)
+		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
 			return;
 		_navigationOperations++;
 		using var operation = Tools.Scope.ExecuteOnDispose(() => _navigationOperations--);
@@ -264,7 +270,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		}
 	}
 	private void SynchronizeLocation(bool replace) {
-		if (_disposed)
+		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
 			return;
 		var session = ScreenHost.ActiveScreen;
 		var target = NavigationUriFactory == null
@@ -284,6 +290,12 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	}
 
 	private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context) {
+		if (Application?.HasExited == true)
+			return;
+		if (Application?.IsExiting == true) {
+			context.PreventNavigation();
+			return;
+		}
 		var destination = Navigation.ToAbsoluteUri(context.TargetLocation);
 		if (NavigationUriFactory != null) {
 			if (string.Equals(destination.AbsoluteUri, _synchronizedLocation, StringComparison.Ordinal))
@@ -318,6 +330,11 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 			_ = InvokeAsync(() => {
 				if (_disposed)
 					return;
+				if (Application?.IsExiting == true || Application?.HasExited == true) {
+					CancelRouteRequest();
+					StateHasChanged();
+					return;
+				}
 				// Programmatic activation also needs an entity URL. Route requests and shell interactions own their own synchronization.
 				if (NavigationUriFactory != null && _navigationOperations == 0 && _routeError == null) {
 					_synchronizeLocation = true;

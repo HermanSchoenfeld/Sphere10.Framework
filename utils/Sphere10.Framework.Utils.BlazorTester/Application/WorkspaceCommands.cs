@@ -19,14 +19,15 @@ namespace Sphere10.Framework.Utils.BlazorTester.Application;
 public static class WorkspaceCommands {
 	public static void Configure(BlazorApplication application) {
 		Guard.ArgumentNotNull(application, nameof(application));
+		var scratchpadDefinition = application.Blocks.SelectMany(block => block.ScreenDefinitions).SingleOrDefault(definition => definition.ScreenType == typeof(ScratchpadScreen));
+		var scratchpadCommand = scratchpadDefinition?.Activators.OfType<BlazorScreenMenuItem>().FirstOrDefault();
+		var workspace = scratchpadCommand?.Parent?.Parent ?? application.Blocks.SingleOrDefault(block => block.Name == "Workspace");
 		var newScratchpad = new BlazorApplicationMenuItemBuilder()
 			.WithId("new-scratchpad")
 			.WithText("New scratchpad")
 			.WithIcon("fas fa-plus")
-			.WithAction(async (provider, token) => {
-				var host = provider.GetRequiredService<IApplicationScreenHost>();
-				await host.ActivateScreenAsync(host.Blocks.Single(block => block.Name == "Workspace"), typeof(ScratchpadScreen), cancellationToken: token);
-			})
+			.EnabledWhen(() => scratchpadCommand?.IsEnabled ?? false)
+			.WithAction(async (_, token) => await application.ScreenHost.ExecuteMenuItemAsync(scratchpadCommand, token))
 			.Build();
 		var applicationAction = new BlazorApplicationMenuItemBuilder()
 			.WithId("save")
@@ -62,6 +63,14 @@ public static class WorkspaceCommands {
 						await host.CloseScreensAsync(host.Screens.Where(screen => !screen.IsPermanent && screen.ScreenKind == ScreenKind.Normal), token);
 					})
 				)
+				.AddItem(new BlazorMenuSeparator())
+				.ConfigureItem(item => item
+					.WithId("exit")
+					.WithText("Exit application")
+					.WithIcon("fas fa-sign-out-alt")
+					.WithAction(async (provider, token) =>
+						await provider.GetRequiredService<IApplication>().ExitAsync(cancellationToken: token))
+				)
 				.Build(),
 			new BlazorApplicationMenuBuilder()
 				.WithId("view")
@@ -88,10 +97,8 @@ public static class WorkspaceCommands {
 					.WithId("workspace-help")
 					.WithText("Application guide")
 					.WithIcon("fas fa-question-circle")
-					.WithAction(async (provider, token) => {
-						var host = provider.GetRequiredService<IApplicationScreenHost>();
-						await host.ActivateBlockAsync(host.Blocks.Single(block => block.Name == "Workspace"), token);
-					})
+					.EnabledWhen(() => workspace != null)
+					.WithAction(async (_, token) => await application.ScreenHost.ActivateBlockAsync(workspace, token))
 				)
 				.ConfigureItem(item => item
 					.WithId("about")

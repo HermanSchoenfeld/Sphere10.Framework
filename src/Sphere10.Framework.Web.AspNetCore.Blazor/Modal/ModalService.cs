@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
@@ -35,11 +36,12 @@ public class ModalService {
 	/// <param name="options"> options to supply to the modal component.</param>
 	/// <returns> modal result</returns>
 	public async Task<ModalResult> ShowAsync<T>(ParameterView? parameters = default, ModalOptions options = null)
-		where T : ModalComponent {
-		if (ModalInstance is null) {
-			throw new InvalidOperationException("Modal service is not initialized, no modal component");
-		}
+		where T : ModalComponent
+		=> await ShowAsync<T>(parameters, options, CancellationToken.None);
 
-		return await ModalInstance.ShowAsync<T>(parameters ?? ParameterView.Empty, options ?? new ModalOptions());
+	public async Task<ModalResult> ShowAsync<T>(ParameterView? parameters, ModalOptions options, CancellationToken cancellationToken)
+		where T : ModalComponent {
+		Guard.Ensure(ModalInstance != null, "Modal service is not initialized, no modal component");
+		return await ModalInstance.ShowAsync<T>(parameters ?? ParameterView.Empty, options ?? new ModalOptions(), cancellationToken);
 	}
 }

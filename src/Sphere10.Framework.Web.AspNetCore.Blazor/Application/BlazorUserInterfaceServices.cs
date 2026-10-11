@@ -7,8 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,25 +30,16 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 
 	public override object PrimaryUIController => _controller;
 
-	/// <summary>Legacy browser commands can resolve local IDs; portable commands use their owned definition references.</summary>
-	public override Task<bool> ExecuteMenuItemAsync(IApplicationMenuItem item, CancellationToken cancellationToken = default) {
-		Guard.ArgumentNotNull(item, nameof(item));
-		var host = (IBlazorApplicationScreenHost)ScreenHost;
-		if (item is BlazorScreenMenuItem supplied && !host.Blocks.Any(block => ReferenceEquals(block, supplied.Parent?.Parent))) {
-			if (!supplied.IsEnabled)
-				return Task.FromResult(false);
-			var owner = supplied.Parent?.Parent is { } sourceBlock
-				? host.Blocks.FirstOrDefault(block => block.Id == sourceBlock.Id)
-				: host.ActiveScreen?.Block ?? host.ActiveBlock;
-			var blocks = owner == null ? host.Blocks : new[] { owner };
-			var candidates = blocks.SelectMany(block => BlazorApplicationBlockSnapshot.EnumerateItems(block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems)))
-				.OfType<BlazorScreenMenuItem>().Where(command => command.Id == supplied.Id && command.ScreenType == supplied.ScreenType
-					&& command.ActivationMode == supplied.ActivationMode && command.ScreenKind == supplied.ScreenKind).ToArray();
-			Guard.Argument(candidates.Length == 1, nameof(item), "The browser screen command does not identify a registered command unambiguously.");
-			item = candidates[0];
+	public override bool ApplicationExiting {
+		get {
+			var application = Services.GetService<IApplication>();
+			return base.ApplicationExiting || application?.IsExiting == true || application?.HasExited == true;
 		}
-		return base.ExecuteMenuItemAsync(item, cancellationToken);
+		set => base.ApplicationExiting = value;
 	}
+
+	/// <summary>Legacy exit commands are observed asynchronously; callers requiring the result await IApplication.ExitAsync.</summary>
+	public override void Exit(bool force = false) => ObserveInteraction(Services.GetRequiredService<IApplication>().ExitAsync(force));
 
 	public IDisposable AttachController(object controller, Func<Func<Task>, Task> dispatcher) {
 		Guard.ArgumentNotNull(controller, nameof(controller));
@@ -93,7 +82,8 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 
 	public override async Task<bool> AskYNAsync(string question, CancellationToken cancellationToken = default) {
 		var answer = false;
-		await ExecuteInUIFriendlyContextAsync(async () => answer = await Services.GetRequiredService<Modal.ViewService>().ConfirmDialogAsync("Confirm", question, "Yes"), cancellationToken);
+		await ExecuteInUIFriendlyContextAsync(async () => answer = await Services.GetRequiredService<Modal.ViewService>()
+			.ConfirmDialogAsync("Confirm", question, "Yes", cancellationToken), cancellationToken);
 		return answer;
 	}
 
@@ -114,13 +104,6 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 
 	protected override Task ExecuteActionAsync(IApplicationMenuItem item, CancellationToken cancellationToken) =>
 		Guard.ArgumentCast<BlazorActionMenuItem>(item, nameof(item)).ExecuteAsync(Services, cancellationToken);
-
-	public virtual Task<bool> ExecuteMenuItemAsync(string blockId, string menuItemId, CancellationToken cancellationToken = default) {
-		Guard.ArgumentNotNullOrEmpty(blockId, nameof(blockId));
-		var block = ((IBlazorApplicationScreenHost)ScreenHost).Blocks.FirstOrDefault(candidate => candidate.Id == blockId);
-		Guard.Argument(block != null, nameof(blockId), $"Unknown block '{blockId}'.");
-		return ExecuteMenuItemAsync(BlazorApplicationBlockSnapshot.ResolveMenuItem(block, menuItemId), cancellationToken);
-	}
 
 	private void ObserveInteraction(Task interaction) => _ = ObserveInteractionAsync(interaction);
 

@@ -6,6 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework.Application;
 
 public abstract class ApplicationFinalizerBase : IApplicationFinalizer {
@@ -18,5 +21,7 @@ public abstract class ApplicationFinalizerBase : IApplicationFinalizer {
 #pragma warning disable CS0465 // Preserve the existing public application lifecycle contract.
 	public abstract void Finalize();
 #pragma warning restore CS0465
+
+	public abstract Task FinalizeAsync(CancellationToken cancellationToken = default);
 }
 

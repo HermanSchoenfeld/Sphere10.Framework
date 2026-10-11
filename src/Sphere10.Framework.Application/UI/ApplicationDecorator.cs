@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
@@ -17,6 +18,31 @@ public abstract class ApplicationDecorator<TConcrete> : IApplication
 		remove => InternalApplication.Changed -= value;
 	}
 
+	public virtual event EventHandlerEx Initializing {
+		add => InternalApplication.Initializing += value;
+		remove => InternalApplication.Initializing -= value;
+	}
+
+	public virtual event EventHandlerEx Initialized {
+		add => InternalApplication.Initialized += value;
+		remove => InternalApplication.Initialized -= value;
+	}
+
+	public virtual event EventHandlerEx Finalizing {
+		add => InternalApplication.Finalizing += value;
+		remove => InternalApplication.Finalizing -= value;
+	}
+
+	public virtual event EventHandlerEx Finalized {
+		add => InternalApplication.Finalized += value;
+		remove => InternalApplication.Finalized -= value;
+	}
+
+	public virtual event ProgressHandler Progress {
+		add => InternalApplication.Progress += value;
+		remove => InternalApplication.Progress -= value;
+	}
+
 	protected readonly TConcrete InternalApplication;
 
 	protected ApplicationDecorator(TConcrete application) {
@@ -25,6 +51,16 @@ public abstract class ApplicationDecorator<TConcrete> : IApplication
 	}
 
 	public virtual IApplicationPlugin[] LoadedPlugins => InternalApplication.LoadedPlugins;
+
+	public virtual ILogger Logger => InternalApplication.Logger;
+
+	public virtual Disposables Disposables => InternalApplication.Disposables;
+
+	public virtual bool IsInitialized => InternalApplication.IsInitialized;
+
+	public virtual bool IsExiting => InternalApplication.IsExiting;
+
+	public virtual bool HasExited => InternalApplication.HasExited;
 
 	public virtual IApplicationBlock[] Blocks => InternalApplication.Blocks;
 
@@ -35,6 +71,20 @@ public abstract class ApplicationDecorator<TConcrete> : IApplication
 	public virtual IApplicationMenu[] Menus => InternalApplication.Menus;
 
 	public virtual IApplicationMenuItem[] ToolBarItems => InternalApplication.ToolBarItems;
+
+	public virtual void Initialize() => InternalApplication.Initialize();
+
+	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) => InternalApplication.InitializeAsync(cancellationToken);
+
+	public virtual bool Exit(bool force = false, CancellationToken cancellationToken = default) => InternalApplication.Exit(force, cancellationToken);
+
+	public virtual Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default) => InternalApplication.ExitAsync(force, cancellationToken);
+
+	public virtual Task FinalizeAsync(CancellationToken cancellationToken = default) => InternalApplication.FinalizeAsync(cancellationToken);
+
+#pragma warning disable CS0465 // Preserve the existing synchronous application lifecycle method name.
+	public virtual void Finalize() => InternalApplication.Finalize();
+#pragma warning restore CS0465
 
 	public virtual void Dispose() => InternalApplication.Dispose();
 

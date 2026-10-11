@@ -9,6 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -128,6 +130,13 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 			return _definition.DefaultScreenDefinition;
 		}
 		init => _definition.DefaultScreenDefinition = value;
+	}
+
+	/// <summary>Allows a block to veto exit using the running application's circuit context.</summary>
+	public virtual Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(true);
 	}
 
 	internal BlazorScreenMenuItem GetGeneratedScreenCommand(ApplicationScreenDefinition definition, string id, BlazorScreenMenuItem matching = null, bool isDefault = false) {

@@ -22,7 +22,10 @@ public static partial class WinForms {
 	public static IDisposable AutoPersistWindowSettings(Form Window, string SettingsID = "MainForm")
 		=> TrackWindowSettings(Window, SettingsID, Settings => Settings.Save());
 
-	internal static IDisposable TrackWindowSettings(Form Window, string SettingsID, Action<FormWindowSettings> OnAcceptedClose) {
+	internal static IDisposable TrackWindowSettings(Form Window, string SettingsID, Action<FormWindowSettings> OnAcceptedClose)
+		=> TrackWindowSettings(Window, SettingsID, OnAcceptedClose, out _);
+
+	internal static IDisposable TrackWindowSettings(Form Window, string SettingsID, Action<FormWindowSettings> OnAcceptedClose, out Action captureAcceptedClose) {
 		Guard.ArgumentNotNull(Window, nameof(Window));
 		Guard.ArgumentNotNullOrEmpty(SettingsID, nameof(SettingsID));
 		Guard.ArgumentNotNull(OnAcceptedClose, nameof(OnAcceptedClose));
@@ -32,6 +35,8 @@ public static partial class WinForms {
 		var LastVisibleState = FormWindowState.Normal;
 		FormWindowSettings? Settings = null;
 		var Loaded = false;
+		var captured = false;
+		var detached = false;
 
 		void Load(object? Sender, EventArgs Args) {
 			if (Loaded || Tools.Runtime.IsDesignMode)
@@ -56,11 +61,12 @@ public static partial class WinForms {
 			LastVisibleDpi = Window.DeviceDpi;
 		}
 
-		void CaptureOnClose(object? Sender, FormClosedEventArgs Args) {
-			if (!Loaded || Tools.Runtime.IsDesignMode)
+		void CaptureAcceptedClose() {
+			if (captured || detached || !Loaded || Tools.Runtime.IsDesignMode)
 				return;
+			captured = true;
 			try {
-				// Replace unreadable preferences after a successful close, so the next launch can recover.
+				// Replace unreadable preferences after shutdown is approved, so the next launch can recover.
 				Settings ??= (FormWindowSettings)UserSettings.Provider.NewSetting(typeof(FormWindowSettings), SettingsID);
 				FormWindowSettings? LastVisiblePlacement = null;
 				if (Window.WindowState == FormWindowState.Minimized && LastVisibleBounds.Width > 0 && LastVisibleBounds.Height > 0) {
@@ -83,13 +89,17 @@ public static partial class WinForms {
 			}
 		}
 
+		void CaptureOnClose(object? Sender, FormClosedEventArgs Args) => CaptureAcceptedClose();
+
 		Window.Load += Load;
 		Window.Resize += RememberPlacement;
 		Window.Move += RememberPlacement;
 		Window.FormClosed += CaptureOnClose;
 		if (Window.Visible)
 			Load(Window, EventArgs.Empty);
+		captureAcceptedClose = CaptureAcceptedClose;
 		return Tools.Scope.ExecuteOnDispose(() => {
+			detached = true;
 			Window.Load -= Load;
 			Window.Resize -= RememberPlacement;
 			Window.Move -= RememberPlacement;

@@ -136,7 +136,7 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 
 	protected override void OnApplicationExiting(CancelEventArgs Args) {
 		base.OnApplicationExiting(Args);
-		if (!Args.Cancel)
+		if (!Args.Cancel && !ScreenExitPermissionsChecked)
 			Args.Cancel = !ScreenHost.CanCloseScreens(ScreenHost.Screens);
 	}
 
@@ -191,8 +191,8 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 		cancellationToken.ThrowIfCancellationRequested();
 		var nativeItem = Guard.ArgumentCast<IWinFormsApplicationMenuItem>(item, nameof(item));
 		if (nativeItem is IWinFormsScreenMenuItem screenItem) {
-			var block = screenItem.Parent?.Parent ?? ScreenHost.GetDefinitionOwner(screenItem.ScreenDefinition);
-			Guard.Argument(block != null && ScreenHost.Blocks.Contains(block, ReferenceEqualityComparer.Instance), nameof(item), "The screen command's block is not registered.");
+			var block = screenItem.Parent?.Parent;
+			Guard.Argument(block != null, nameof(item), "The screen command must belong to a block's menu.");
 			if (await ScreenHost.ActivateScreenAsync(block, screenItem, cancellationToken) == null)
 				return false;
 		}

@@ -232,7 +232,8 @@
 
 	private async Task OpenAsync(CreativeCollection item) {
 		_selectedId = item.Id;
-		await ScreenHost.ActivateScreenAsync("patterns", "collection-detail",
+		var definition = Block.ScreenDefinitions.Single(definition => definition.ScreenType == typeof(CollectionDetailScreen));
+		await Host.OpenScreenAsync(Block, definition,
 			new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(CollectionDetailScreen.CollectionId)] = item.Id }, item.Id));
 	}
 }

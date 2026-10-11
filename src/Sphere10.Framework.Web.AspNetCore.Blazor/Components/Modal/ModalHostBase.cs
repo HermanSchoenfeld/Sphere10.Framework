@@ -57,11 +57,19 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 		}
 	}
 
-	protected async Task<TResult> ShowCoreAsync<T>(IDictionary<string, object> parameters) where T : TComponent {
+	protected Task<TResult> ShowCoreAsync<T>(IDictionary<string, object> parameters)
+		where T : TComponent
+		=> ShowCoreAsync<T>(parameters, CancellationToken.None);
+
+	protected async Task<TResult> ShowCoreAsync<T>(IDictionary<string, object> parameters, CancellationToken callerCancellationToken)
+		where T : TComponent {
 		Guard.Ensure(!_disposed, "The modal host has been disposed.");
 		Guard.Ensure(!_showing, "The modal host is already showing a dialog.");
+		callerCancellationToken.ThrowIfCancellationRequested();
 		_showing = true;
-		var cancellationToken = _lifetimeCancellation.Token;
+		var lifetimeCancellationToken = _lifetimeCancellation.Token;
+		using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellationToken, callerCancellationToken);
+		var cancellationToken = cancellation.Token;
 		IJSObjectReference module = null;
 		await using var contentCleanup = Tools.Scope.ExecuteOnDisposeAsync(async () => {
 			_activeContent = null;
@@ -73,7 +81,7 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 			try {
 				if (module != null && !_disposed)
 					await module.InvokeVoidAsync("Hide", ModalElement);
-			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+			} catch (OperationCanceledException) when (lifetimeCancellationToken.IsCancellationRequested || callerCancellationToken.IsCancellationRequested) {
 				// Teardown can interrupt an in-flight hide request.
 			} catch (JSDisconnectedException) {
 				// A disconnected circuit cannot perform browser cleanup.
@@ -85,7 +93,7 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 				return true;
 			try {
 				return await RequestCloseAsync(await rendered.Task.WaitAsync(cancellationToken));
-			} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+			} catch (OperationCanceledException) when (lifetimeCancellationToken.IsCancellationRequested || callerCancellationToken.IsCancellationRequested) {
 				return true;
 			}
 		}
@@ -105,12 +113,12 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 			await InvokeAsync(StateHasChanged);
 			var component = await rendered.Task.WaitAsync(cancellationToken);
 			await WaitUntilRenderedAsync(component).WaitAsync(cancellationToken);
-			_moduleTask ??= JsRuntime.InvokeAsync<IJSObjectReference>("import", cancellationToken, "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/js/modal.js").AsTask();
+			_moduleTask ??= JsRuntime.InvokeAsync<IJSObjectReference>("import", lifetimeCancellationToken, "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/js/modal.js").AsTask();
 			module = await _moduleTask.WaitAsync(cancellationToken);
 			await module.InvokeVoidAsync("Show", cancellationToken, ModalElement);
 			return await GetResultAsync(component).WaitAsync(cancellationToken);
-		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
-			// Host removal is ordinary dismissal, not a failed Blazor event callback.
+		} catch (OperationCanceledException) when (lifetimeCancellationToken.IsCancellationRequested || callerCancellationToken.IsCancellationRequested) {
+			// Host removal or caller cancellation dismisses the dialog and releases its content.
 			return CanceledResult;
 		}
 	}

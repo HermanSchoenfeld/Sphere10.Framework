@@ -33,10 +33,11 @@ public class ApplicationMenuEventTests {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(blocks, provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
+		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 		item.Select -= selected;
 		item.Select += () => lateSelections++;
 
-		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("block", "screen"), Is.True);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.True);
 		Assert.That(selections, Is.EqualTo(1));
 		await host.ActivateScreenAsync("block", "screen");
 		Assert.That(selections, Is.EqualTo(2));
@@ -77,11 +78,12 @@ public class ApplicationMenuEventTests {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
+		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 		var session = await host.ActivateScreenAsync("block", "screen");
 		var component = new TestScreen { AllowDeactivation = false };
 		await host.AttachScreenAsync(session.Id, component);
 
-		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("block", "screen"), Is.False);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.False);
 		Assert.That(selections, Is.EqualTo(1));
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
@@ -103,7 +105,8 @@ public class ApplicationMenuEventTests {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
-		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("block", "action"), Is.True);
+		var registered = host.Blocks.Single().Menus.Single().Items.Single();
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.True);
 		Assert.That(calls, Is.EqualTo(new[] { "action", "select" }));
 	}
 
@@ -118,7 +121,8 @@ public class ApplicationMenuEventTests {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
-		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync("block", "action"), Throws.InstanceOf<InvalidOperationException>());
+		var registered = host.Blocks.Single().Menus.Single().Items.Single();
+		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync(registered), Throws.InstanceOf<InvalidOperationException>());
 		Assert.That(selections, Is.Zero);
 	}
 

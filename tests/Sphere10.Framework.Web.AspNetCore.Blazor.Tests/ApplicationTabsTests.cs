@@ -98,7 +98,7 @@ public class ApplicationTabsTests {
 	}
 
 	[Test]
-	public async Task ExplicitScreenCommandUsesActiveBlockAndCanonicalParameters() {
+	public async Task OwnedScreenCommandUsesItsParentBlockAndCanonicalParametersWhileAnotherBlockIsActive() {
 		using var services = new ServiceCollection().BuildServiceProvider();
 		var firstBlock = new BlazorApplicationBlockBuilder()
 			.WithId("first")
@@ -119,15 +119,68 @@ public class ApplicationTabsTests {
 			.Build();
 		using var host = new BlazorApplicationScreenHost(new[] { firstBlock, secondBlock }, services);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
-		await host.ActivateBlockAsync("second");
-		var supplied = new BlazorScreenMenuItem { Id = "same", Title = "Forged", ScreenType = typeof(Probe), ActivationMode = ScreenActivationMode.MultiInstance };
-		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(supplied), Is.True);
+		var secondOwner = host.Blocks.Single(block => block.Id == "second");
+		var canonicalSecond = secondOwner.Menus.Single().Items.Single();
+		Assert.That(canonicalSecond.Parent.Parent, Is.SameAs(secondOwner));
+		await host.ActivateBlockAsync("first");
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(canonicalSecond), Is.True);
 		Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("second"));
 		Assert.That(host.ActiveScreen.Title, Is.EqualTo("Second"));
 		Assert.That(host.ActiveScreen.Parameters["Caption"], Is.EqualTo("Canonical"));
 		var canonicalFirst = host.Blocks.Single(block => block.Id == "first").Menus.Single().Items.Single();
 		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(canonicalFirst), Is.True);
 		Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("first"), "A canonical command retains its owning block even when another block is active.");
+	}
+
+	[Test]
+	public async Task DetachedScreenCommandCannotSelectARegisteredCommandWithMatchingMetadata() {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		var current = await host.ActivateScreenAsync("block", "single");
+		var selections = 0;
+		var supplied = new BlazorScreenMenuItem {
+			Id = "single", Title = "Forged", ScreenType = typeof(Probe), ActivationMode = ScreenActivationMode.SingleInstance
+		};
+		supplied.Select += () => selections++;
+		Assert.That(supplied.Parent, Is.Null);
+		Assert.That(async () => await host.UserInterfaceServices.ExecuteMenuItemAsync(supplied), Throws.ArgumentException);
+		Assert.That(host.ActiveScreen, Is.SameAs(current));
+		Assert.That(host.Screens, Is.EqualTo(new[] { current }));
+		Assert.That(selections, Is.Zero);
+	}
+
+	[Test]
+	public async Task ScreenCommandOwnedByAnotherCircuitCannotBeRemappedByMatchingIds() {
+		var services = new ServiceCollection()
+			.AddApplicationBlock(block => block
+				.WithId("work")
+				.WithName("Work")
+				.ConfigureMenu(menu => menu
+					.WithText("Screens")
+					.AddScreenItem<Probe>("screen", "Record", ScreenActivationMode.MultiInstance)
+				)
+			);
+		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		await using var firstScope = provider.CreateAsyncScope();
+		await using var secondScope = provider.CreateAsyncScope();
+		var firstHost = firstScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var secondHost = secondScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstOwner = firstHost.Blocks.Single();
+		var secondOwner = secondHost.Blocks.Single();
+		var firstCommand = firstOwner.Menus.Single().Items.Single();
+		var secondCommand = secondOwner.Menus.Single().Items.Single();
+		Assert.That(firstOwner.Id, Is.EqualTo(secondOwner.Id));
+		Assert.That(firstCommand.Id, Is.EqualTo(secondCommand.Id));
+		Assert.That(firstCommand.Parent.Parent, Is.SameAs(firstOwner));
+		Assert.That(secondCommand.Parent.Parent, Is.SameAs(secondOwner));
+		var current = await secondHost.ActivateScreenAsync("work", "screen");
+		Assert.That(async () => await secondHost.UserInterfaceServices.ExecuteMenuItemAsync(firstCommand), Throws.ArgumentException);
+		Assert.That(firstHost.ActiveScreen, Is.Null);
+		Assert.That(secondHost.ActiveScreen, Is.SameAs(current));
+		Assert.That(secondHost.Screens, Is.EqualTo(new[] { current }));
+		Assert.That(await secondHost.UserInterfaceServices.ExecuteMenuItemAsync(secondCommand), Is.True);
+		Assert.That(secondHost.ActiveScreen.Block, Is.SameAs(secondOwner));
+		Assert.That(secondHost.Screens, Has.Length.EqualTo(2));
 	}
 
 	[Test]

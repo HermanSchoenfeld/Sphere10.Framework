@@ -15,7 +15,7 @@ using Sphere10.Framework.Application;
 namespace Sphere10.Framework.NET;
 
 [SupportedOSPlatform("windows")]
-public class EnsureSystemDataDirGloballyAccessibleInitializer : ApplicationInitializerBase {
+public class EnsureSystemDataDirGloballyAccessibleInitializer : SyncApplicationInitializerBase {
 
 	public override int Priority => -1;
 

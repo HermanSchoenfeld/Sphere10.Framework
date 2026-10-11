@@ -18,7 +18,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// 
 /// C:\Program Files (x86)\Microsoft Corporation\Logo Testing Tools for Windows\Restart Manager\x86>rmtool.exe -p PIDHERE -S
 /// </summary>
-public class SessionEndingHandlerInitializer : ApplicationInitializerBase {
+public class SessionEndingHandlerInitializer : SyncApplicationInitializerBase {
 
 	public SessionEndingHandlerInitializer(IServiceProvider serviceProvider) {
 		ServiceProvider = serviceProvider;

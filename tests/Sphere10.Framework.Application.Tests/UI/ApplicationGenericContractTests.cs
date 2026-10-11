@@ -146,10 +146,32 @@ public class ApplicationGenericContractTests {
 	private sealed class ExplicitApplication(ExplicitPlugin plugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen> host)
 		: IApplication<ExplicitPlugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen>> {
 		public event EventHandlerEx Changed { add { } remove { } }
+		public event EventHandlerEx Initializing { add { } remove { } }
+		public event EventHandlerEx Initialized { add { } remove { } }
+		public event EventHandlerEx Finalizing { add { } remove { } }
+		public event EventHandlerEx Finalized { add { } remove { } }
+		public event ProgressHandler Progress { add { } remove { } }
+		public ILogger Logger => SystemLog.Logger;
+		public Disposables Disposables { get; } = new();
+		public bool IsInitialized => false;
+		public bool IsExiting => false;
+		public bool HasExited { get; private set; }
 		ExplicitPlugin[] IApplication<ExplicitPlugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen>>.LoadedPlugins => new[] { plugin };
 		ApplicationScreenHost<ExplicitBlock, ProbeScreen> IApplication<ExplicitPlugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen>>.ScreenHost => host;
 		public IApplicationBlock[] Blocks => host.Blocks;
 		public bool HasUnsavedChanges => host.HasUnsavedChanges;
+		public void Initialize() { }
+		public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+		public bool Exit(bool force = false, CancellationToken cancellationToken = default) => ExitAsync(force, cancellationToken).GetAwaiter().GetResult();
+		public Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			HasExited = true;
+			return Task.FromResult(true);
+		}
+#pragma warning disable CS0465
+		public void Finalize() { }
+#pragma warning restore CS0465
+		public Task FinalizeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 		public void Dispose() { }
 		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	}

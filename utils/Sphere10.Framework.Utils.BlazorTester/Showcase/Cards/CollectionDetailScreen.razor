@@ -168,5 +168,5 @@
 		NotifyScreenChanged();
 	}
 
-	private async Task BackToGalleryAsync() => await ScreenHost.ActivateScreenAsync("patterns", "cards-gallery");
+	private async Task BackToGalleryAsync() => await Host.OpenScreenAsync(Block, Block.DefaultScreenDefinition);
 }

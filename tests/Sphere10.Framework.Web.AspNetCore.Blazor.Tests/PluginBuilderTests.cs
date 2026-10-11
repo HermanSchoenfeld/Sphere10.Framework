@@ -202,8 +202,10 @@ public class PluginBuilderTests {
 		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin);
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();
+		var userInterface = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
+		var command = userInterface.ScreenHost.Blocks.Single().Menus.Single().Items.Single();
 
-		await scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>().ExecuteMenuItemAsync("work", "run");
+		await userInterface.ExecuteMenuItemAsync(command);
 
 		Assert.That(executed, Is.EqualTo(1));
 		Assert.That(selected, Is.EqualTo(1));
@@ -264,13 +266,16 @@ public class PluginBuilderTests {
 		services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Workspace")
+				.RegisterInitializer<IncrementUsageByOneInitializer>()
 			);
 		Assert.That(() => services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Workspace")
+				.RegisterInitializer<IncrementUsageByOneInitializer>()
 				.ConfigureServices(_ => configured++)
 			), Throws.InstanceOf<ArgumentException>());
 		Assert.That(configured, Is.Zero);
+		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IApplicationInitializer) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Workspace")), Is.EqualTo(1));
 	}
 
 	[Test]
@@ -348,9 +353,11 @@ public class PluginBuilderTests {
 		var secondHostUserInterface = secondScope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var firstScreen = await firstHost.ActivateBlockAsync("work");
 		var secondScreen = await secondHost.ActivateBlockAsync("work");
-		await firstHostUserInterface.ExecuteMenuItemAsync("work", "increment");
-		await firstHostUserInterface.ExecuteMenuItemAsync("work", "increment");
-		await secondHostUserInterface.ExecuteMenuItemAsync("work", "increment");
+		var firstCommand = firstHost.Blocks.Single().Menus.Single().Items.Single();
+		var secondCommand = secondHost.Blocks.Single().Menus.Single().Items.Single();
+		await firstHostUserInterface.ExecuteMenuItemAsync(firstCommand);
+		await firstHostUserInterface.ExecuteMenuItemAsync(firstCommand);
+		await secondHostUserInterface.ExecuteMenuItemAsync(secondCommand);
 
 		Assert.That(firstScope.ServiceProvider.GetRequiredService<ScopedCounter>().Count, Is.EqualTo(2));
 		Assert.That(secondScope.ServiceProvider.GetRequiredService<ScopedCounter>().Count, Is.EqualTo(1));

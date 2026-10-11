@@ -12,15 +12,21 @@ using System.Drawing.Drawing2D;
 using System.Threading;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class SplashScreen : Form {
 	private SplashLogger _logger;
+	private IApplication _application;
+	private int _applicationDisplayVersion;
 
 	public SplashScreen() {
 		InitializeComponent();
-
+		Disposed += (_, _) => {
+			DetachFromApplication();
+			DetachFromFramework();
+		};
 	}
 
 	
@@ -39,17 +45,9 @@ public partial class SplashScreen : Form {
 		set => _pictureBox.Image = value;
 	}
 
-	public void UpdateTitle(string text) {
-		_titleLabel.Text = text;
-		Update();
-		System.Windows.Forms.Application.DoEvents();
-	}
+	public void UpdateTitle(string text) => UpdateDisplay(() => _titleLabel.Text = text);
 
-	public void UpdateSubTitle(string text) {
-		_subTitleLabel.Text = text;
-		Update();
-		System.Windows.Forms.Application.DoEvents();
-	}
+	public void UpdateSubTitle(string text) => UpdateDisplay(() => _subTitleLabel.Text = text);
 
 	public void FadeIn(int durationMs = 500) {
 		Opacity = 0;
@@ -96,7 +94,31 @@ public partial class SplashScreen : Form {
 		}
 	}
 
+	public void AttachToApplication(IApplication application) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		DetachFromApplication();
+		_application = application;
+		_application.Initializing += OnApplicationInitializing;
+		_application.Initialized += OnApplicationInitialized;
+		_application.Finalizing += OnApplicationFinalizing;
+		_application.Finalized += OnApplicationFinalized;
+		_application.Progress += OnApplicationProgress;
+	}
+
+	public void DetachFromApplication() {
+		Interlocked.Increment(ref _applicationDisplayVersion);
+		if (_application == null)
+			return;
+		_application.Initializing -= OnApplicationInitializing;
+		_application.Initialized -= OnApplicationInitialized;
+		_application.Finalizing -= OnApplicationFinalizing;
+		_application.Finalized -= OnApplicationFinalized;
+		_application.Progress -= OnApplicationProgress;
+		_application = null;
+	}
+
 	protected override void OnFormClosing(FormClosingEventArgs e) {
+		DetachFromApplication();
 		DetachFromFramework();
 		base.OnFormClosing(e);
 	}
@@ -107,7 +129,36 @@ public partial class SplashScreen : Form {
 
 	private void OnFrameworkFinalizing() => UpdateTitle("Shutting Down...");
 
+	private void OnApplicationInitializing() => UpdateApplicationTitle("Initializing Application...");
 
+	private void OnApplicationInitialized() => UpdateApplicationTitle("Application Ready");
+
+	private void OnApplicationFinalizing() => UpdateApplicationTitle("Finalizing Application...");
+
+	private void OnApplicationFinalized() => UpdateApplicationTitle("Application Finalized");
+
+	private void OnApplicationProgress(string title, string message, int? itemsToComplete, int? totalItemsToComplete, decimal percentComplete)
+		=> UpdateDisplay(() => {
+			_titleLabel.Text = title;
+			_subTitleLabel.Text = message;
+		}, Volatile.Read(ref _applicationDisplayVersion));
+
+	private void UpdateApplicationTitle(string title) {
+		var version = Interlocked.Increment(ref _applicationDisplayVersion);
+		UpdateDisplay(() => _titleLabel.Text = title, version);
+	}
+
+	private void UpdateDisplay(Action update, int? applicationVersion = null) {
+		if (IsDisposed || Disposing || applicationVersion.HasValue && applicationVersion.Value != Volatile.Read(ref _applicationDisplayVersion))
+			return;
+		if (InvokeRequired) {
+			Tools.Exceptions.ExecuteIgnoringException(() => this.BeginInvokeEx(() => UpdateDisplay(update, applicationVersion)));
+			return;
+		}
+		update();
+		Update();
+		System.Windows.Forms.Application.DoEvents();
+	}
 
 	private class SplashLogger : LoggerBase {
 		private readonly SplashScreen _splash;

@@ -7,10 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,48 +72,158 @@ public static class Sphere10FrameworkExtensions {
 	}
 
 	public static void StartWinFormsApplication(this Sphere10FrameworkBuilder builder) {
-		// Show splash with fade-in before framework loads (if configured)
-		SplashScreen Splash = null;
-		if (_splashEnabled) {
-			if (_splashImage == null)
-				_splashImage = GenerateDefaultSplashImage(600, 400);
-			Splash = new SplashScreen(_splashImage);
-			Splash.AttachToFramework();
-			Splash.FadeIn();
+		SplashScreen splash = null;
+		SplashScreen completedStartupSplash = null;
+		IWinFormsApplication application = null;
+		WinFormsApplication nativeApplication = null;
+		MainFormSettingsFinalizer settingsFinalizer = null;
+		Form mainForm = null;
+		IDisposable windowSettings = null;
+		Func<Task> previousShutdown = null;
+		Task shutdown = null;
+		var completing = false;
+		var stopping = false;
+		var errors = new List<Exception>();
+		using var context = new ApplicationContext();
+		async Task CaptureAsync(Func<Task> action) {
+			try {
+				await action();
+			} catch (Exception error) {
+				errors.Add(error);
+			}
 		}
-
-		// Start the framework (splash title/subtitle update during this via events)
-		builder.Start();
-		using var FrameworkLifetime = Tools.Scope.ExecuteOnDispose(() => {
+		Task ShutdownAsync() {
+			if (shutdown != null)
+				return shutdown;
+			var completion = new TaskCompletionSource();
+			shutdown = completion.Task;
+			_ = RunShutdownAsync(completion);
+			return shutdown;
+		}
+		async Task RunShutdownAsync(TaskCompletionSource completion) {
+			using var complete = Tools.Scope.ExecuteOnDispose(() => completion.TrySetResult());
+			if (settingsFinalizer != null)
+				Tools.Exceptions.ExecuteCapturingException(settingsFinalizer.CaptureAcceptedClose, errors);
+			if (_splashEnabled && application != null)
+				Tools.Exceptions.ExecuteCapturingException(() => {
+					if (splash == null || splash.IsDisposed) {
+						splash = new SplashScreen(_splashImage);
+						splash.AttachToFramework();
+					}
+					splash.AttachToApplication(application);
+					if (!splash.Visible)
+						splash.FadeIn();
+				}, errors);
+			if (application != null)
+				await CaptureAsync(() => application.FinalizeAsync());
 			if (builder.Framework.IsStarted)
-				builder.Framework.EndFramework();
-		});
-
-		var MainForm = Sphere10Framework.Instance.ServiceProvider.GetService<IMainForm>();
-		if (MainForm is not Form)
-			throw new SoftwareException("Registered IMainForm is not a WinForms Form");
-		var application = Sphere10Framework.Instance.ServiceProvider.GetService<IWinFormsApplication>();
-		if (application != null) {
-			application.Initialize();
-		} else if (MainForm is IBlockManager BlockManager) {
-			var Blocks = Sphere10Framework.Instance.ServiceProvider.GetServices<IWinFormsApplicationBlock>().OrderBy(b => b.Position);
-			Blocks.ForEach(BlockManager.RegisterBlock);
+				Tools.Exceptions.ExecuteCapturingException(builder.Framework.FinalizeFramework, errors);
 		}
-		if (_size != null)
-			((Form)MainForm).Size = _size.Value;
-
-		var SettingsOptions = builder.Framework.ServiceProvider.GetService<MainFormSettingsOptions>();
-		using var WindowSettingsScope = SettingsOptions?.AutoPersist == true
-			? builder.Framework.ServiceProvider.GetRequiredService<MainFormSettingsFinalizer>().Attach((Form)MainForm, SettingsOptions.SettingsID)
-			: null;
-
-		// Show main form, then fade out splash
-		if (Splash != null) {
-			((Form)MainForm).Show();
-			Splash.FadeOut();
+		async void Complete(object sender, EventArgs args) {
+			if (completing)
+				return;
+			completing = true;
+			stopping = true;
+			await ShutdownAsync();
+			// Keep the native pump alive until the root has recorded completion of the approved exit.
+			if (application?.IsExiting == true)
+				await CaptureAsync(() => application.ExitAsync());
+			context.ExitThread();
 		}
-
-		System.Windows.Forms.Application.Run(MainForm as Form);
+		EventHandler start = null;
+		start = async (_, _) => {
+			System.Windows.Forms.Application.Idle -= start;
+			try {
+				// Framework registration and process tasks still precede application initialization.
+				if (_splashEnabled) {
+					if (_splashImage == null)
+						_splashImage = GenerateDefaultSplashImage(600, 400);
+					splash = new SplashScreen(_splashImage);
+					splash.AttachToFramework();
+					splash.FadeIn();
+				}
+				builder.Start();
+				mainForm = builder.Framework.ServiceProvider.GetService<IMainForm>() as Form;
+				Guard.Ensure(mainForm != null, "Registered IMainForm is not a WinForms Form.");
+				application = builder.Framework.ServiceProvider.GetService<IWinFormsApplication>();
+				if (application != null) {
+					splash?.AttachToApplication(application);
+					await application.InitializeAsync();
+				} else if (mainForm is IBlockManager blockManager) {
+					var blocks = builder.Framework.ServiceProvider.GetServices<IWinFormsApplicationBlock>().OrderBy(block => block.Position);
+					blocks.ForEach(blockManager.RegisterBlock);
+				}
+				if (stopping)
+					return;
+				if (_size != null)
+					mainForm.Size = _size.Value;
+				var settingsOptions = builder.Framework.ServiceProvider.GetService<MainFormSettingsOptions>();
+				settingsFinalizer = settingsOptions?.AutoPersist == true
+					? builder.Framework.ServiceProvider.GetRequiredService<MainFormSettingsFinalizer>()
+					: null;
+				windowSettings = settingsOptions?.AutoPersist == true
+					? settingsFinalizer.Attach(mainForm, settingsOptions.SettingsID)
+					: null;
+				if (application is WinFormsApplication runtimeApplication) {
+					nativeApplication = runtimeApplication;
+					previousShutdown = runtimeApplication.ShutdownAsync;
+					runtimeApplication.ShutdownAsync = ShutdownAsync;
+				}
+				mainForm.FormClosed += Complete;
+				mainForm.Disposed += Complete;
+				// Showing the main window can immediately request exit while the startup fade pumps messages.
+				completedStartupSplash = splash;
+				splash = null;
+				mainForm.Show();
+				completedStartupSplash?.FadeOut();
+			} catch (Exception error) {
+				errors.Add(error);
+				completing = true;
+				stopping = true;
+				await ShutdownAsync();
+				if (mainForm != null)
+					Tools.Exceptions.ExecuteCapturingException(mainForm.Dispose, errors);
+				context.ExitThread();
+			}
+		};
+		using (Tools.Scope.ExecuteOnDispose(() => {
+			System.Windows.Forms.Application.Idle -= start;
+			stopping = true;
+			// An externally stopped loop still completes application cleanup before disposing its services.
+			var pendingShutdown = ShutdownAsync();
+			while (!pendingShutdown.IsCompleted) {
+				System.Windows.Forms.Application.DoEvents();
+				if (!pendingShutdown.IsCompleted)
+					Thread.Sleep(1);
+			}
+			Tools.Exceptions.ExecuteCapturingException(() => pendingShutdown.GetAwaiter().GetResult(), errors);
+			if (mainForm != null) {
+				mainForm.FormClosed -= Complete;
+				mainForm.Disposed -= Complete;
+				if (!mainForm.IsDisposed)
+					Tools.Exceptions.ExecuteCapturingException(mainForm.Dispose, errors);
+			}
+			if (windowSettings != null)
+				Tools.Exceptions.ExecuteCapturingException(windowSettings.Dispose, errors);
+			if (builder.Framework.IsStarted)
+				Tools.Exceptions.ExecuteCapturingException(builder.Framework.EndFramework, errors);
+			foreach (var ownedSplash in new[] { completedStartupSplash, splash }.Where(ownedSplash => ownedSplash != null).Distinct()) {
+				if (!ownedSplash.IsDisposed)
+					Tools.Exceptions.ExecuteCapturingException(() => ownedSplash.FadeOut(), errors);
+				Tools.Exceptions.ExecuteCapturingException(ownedSplash.DetachFromApplication, errors);
+				Tools.Exceptions.ExecuteCapturingException(ownedSplash.DetachFromFramework, errors);
+				Tools.Exceptions.ExecuteCapturingException(ownedSplash.Dispose, errors);
+			}
+			if (nativeApplication != null)
+				nativeApplication.ShutdownAsync = previousShutdown;
+		})) {
+			System.Windows.Forms.Application.Idle += start;
+			Tools.Exceptions.ExecuteCapturingException(() => System.Windows.Forms.Application.Run(context), errors);
+		}
+		if (errors.Count == 1)
+			ExceptionDispatchInfo.Capture(errors[0]).Throw();
+		if (errors.Count > 1)
+			throw new AggregateException(errors);
 	}
 
 	public static Bitmap GenerateDefaultSplashImage(int width, int height) {

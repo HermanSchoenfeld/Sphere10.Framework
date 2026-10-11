@@ -14,7 +14,7 @@ public interface ISphere10FrameworkA {
 }
 
 
-public class Sphere10Initializer : ApplicationInitializerBase {
+public class Sphere10Initializer : SyncApplicationInitializerBase {
 
 	public override void Initialize() {
 		SystemLog.RegisterLogger(new TimestampLogger(new ConsoleLogger()));

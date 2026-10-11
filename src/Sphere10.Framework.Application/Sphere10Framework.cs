@@ -7,8 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +18,9 @@ namespace Sphere10.Framework.Application;
 
 public class Sphere10Framework {
 	private bool _frameworkOwnsServicesProvider;
+	private bool _finalizationAttempted;
+	private bool _finalizingFramework;
+	private bool _endingFramework;
 	private ICoreModuleConfiguration[] _moduleConfigurations;
 
 	public event EventHandlerEx Registering;
@@ -64,6 +69,7 @@ public class Sphere10Framework {
 		ServiceProvider = serviceProvider;
 		_moduleConfigurations = modules;
 		_frameworkOwnsServicesProvider = ownsProvider;
+		_finalizationAttempted = false;
 		Initializing?.Invoke();
 		InitializeModules(serviceProvider);
 		InitializeApplication();
@@ -73,15 +79,50 @@ public class Sphere10Framework {
 
 	public void EndFramework() {
 		CheckStarted();
-		Finalizing?.Invoke();
-		FinalizeApplication();
-		FinalizeModules(ServiceProvider);
-		if (_frameworkOwnsServicesProvider && ServiceProvider is IDisposable Disposable)
-			Tools.Exceptions.ExecuteIgnoringException(Disposable.Dispose);
-		IsStarted = false;
-		_moduleConfigurations = Array.Empty<ICoreModuleConfiguration>();
-		Disposables.Dispose();
-		Finalized?.Invoke();
+		Guard.Ensure(!_finalizingFramework && !_endingFramework, "Framework finalization is already running.");
+		_endingFramework = true;
+		using var ending = Tools.Scope.ExecuteOnDispose(() => _endingFramework = false);
+		var errors = new List<Exception>();
+		using (Tools.Scope.ExecuteOnDispose(() => {
+			// Keep the provider alive until shutdown tasks have finished and the native message loop has ended.
+			if (_frameworkOwnsServicesProvider && ServiceProvider is IDisposable disposable)
+				Tools.Exceptions.ExecuteCapturingException(disposable.Dispose, errors);
+			IsStarted = false;
+			_frameworkOwnsServicesProvider = false;
+			_moduleConfigurations = Array.Empty<ICoreModuleConfiguration>();
+			var resources = Disposables.ToArray();
+			Disposables.Clear();
+			foreach (var resource in resources)
+				Tools.Exceptions.ExecuteCapturingException(() => resource.Dispose(), errors);
+			foreach (var handler in Finalized?.GetInvocationList().Cast<EventHandlerEx>() ?? Array.Empty<EventHandlerEx>())
+				Tools.Exceptions.ExecuteCapturingException(handler.Invoke, errors);
+		})) {
+			Tools.Exceptions.ExecuteCapturingException(FinalizeFramework, errors);
+		}
+		if (errors.Count == 1)
+			ExceptionDispatchInfo.Capture(errors[0]).Throw();
+		if (errors.Count > 1)
+			throw new AggregateException(errors);
+	}
+
+	/// <summary>Runs process shutdown tasks once while keeping the service provider and owned resources available until EndFramework.</summary>
+	internal void FinalizeFramework() {
+		CheckStarted();
+		Guard.Ensure(!_finalizingFramework, "Framework finalization is already running.");
+		if (_finalizationAttempted)
+			return;
+		_finalizationAttempted = true;
+		_finalizingFramework = true;
+		using var finalizing = Tools.Scope.ExecuteOnDispose(() => _finalizingFramework = false);
+		var errors = new List<Exception>();
+		foreach (var handler in Finalizing?.GetInvocationList().Cast<EventHandlerEx>() ?? Array.Empty<EventHandlerEx>())
+			Tools.Exceptions.ExecuteCapturingException(handler.Invoke, errors);
+		Tools.Exceptions.ExecuteCapturingException(FinalizeApplication, errors);
+		Tools.Exceptions.ExecuteCapturingException(() => FinalizeModules(ServiceProvider), errors);
+		if (errors.Count == 1)
+			ExceptionDispatchInfo.Capture(errors[0]).Throw();
+		if (errors.Count > 1)
+			throw new AggregateException(errors);
 	}
 
 	public void TerminateApplication(int exitCode) {
@@ -111,13 +152,24 @@ public class Sphere10Framework {
 		);
 	}
 
-	internal void FinalizeModules(IServiceProvider serviceProvider)
-		=> _moduleConfigurations.Update(m => m.OnFinalize(serviceProvider));
+	internal void FinalizeModules(IServiceProvider serviceProvider) {
+		var errors = new List<Exception>();
+		foreach (var module in _moduleConfigurations)
+			Tools.Exceptions.ExecuteCapturingException(() => module.OnFinalize(serviceProvider), errors);
+		if (errors.Count == 1)
+			ExceptionDispatchInfo.Capture(errors[0]).Throw();
+		if (errors.Count > 1)
+			throw new AggregateException(errors);
+	}
 
 	private void FinalizeApplication() {
-		ServiceProvider
-			.GetServices<IApplicationFinalizer>()
-			.ForEach(f => f.Finalize());
+		var errors = new List<Exception>();
+		foreach (var finalizer in ServiceProvider.GetServices<IApplicationFinalizer>())
+			Tools.Exceptions.ExecuteCapturingException(finalizer.Finalize, errors);
+		if (errors.Count == 1)
+			ExceptionDispatchInfo.Capture(errors[0]).Throw();
+		if (errors.Count > 1)
+			throw new AggregateException(errors);
 	}
 
 	public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)

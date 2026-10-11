@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
@@ -48,8 +49,10 @@ public class ViewService {
 	/// <param name="message"></param>
 	/// <param name="confirmText"></param>
 	/// <returns>a value indicating whether the user confirmed or cancelled/closed dialog.</returns>
-	public async Task<bool>
-		ConfirmDialogAsync(string title, string message, string confirmText = "OK") {
+	public Task<bool> ConfirmDialogAsync(string title, string message, string confirmText = "OK")
+		=> ConfirmDialogAsync(title, message, confirmText, CancellationToken.None);
+
+	public async Task<bool> ConfirmDialogAsync(string title, string message, string confirmText, CancellationToken cancellationToken) {
 		Dictionary<string, object> parameters = new Dictionary<string, object> {
 			{ nameof(Confirm.Title), title },
 			{ nameof(Confirm.Message), message },
@@ -57,7 +60,7 @@ public class ViewService {
 		};
 
 		var result = await _modalService.ShowAsync<Confirm>(ParameterView.FromDictionary(parameters),
-			new ModalOptions { Size = ModalSize.Small });
+			new ModalOptions { Size = ModalSize.Small }, cancellationToken);
 
 		return result.ResultType == ModalResultType.Ok;
 	}

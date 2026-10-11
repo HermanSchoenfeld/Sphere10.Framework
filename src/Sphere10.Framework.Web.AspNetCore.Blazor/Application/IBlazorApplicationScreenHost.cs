@@ -27,7 +27,6 @@ public interface IBlazorApplicationScreenHost : ISingleApplicationScreenHost<IBl
 	Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, CancellationToken cancellationToken = default);
 	Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, BlazorApplicationScreenActivation activation, CancellationToken cancellationToken = default);
 	Task<BlazorApplicationScreenSession> OpenScreenAsync(IBlazorApplicationBlock block, ApplicationScreenDefinition definition, BlazorApplicationScreenActivation activation, CancellationToken cancellationToken = default);
-	Task<bool> ExecuteMenuItemAsync(string blockId, string menuItemId, CancellationToken cancellationToken = default);
 	Task<bool> ExecuteMenuItemAsync(IApplicationMenuItem item, CancellationToken cancellationToken = default);
 	Task<bool> UnregisterBlockAsync(string blockId, CancellationToken cancellationToken = default);
 	Task RegisterBlockAsync(string blockId, CancellationToken cancellationToken = default);

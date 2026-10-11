@@ -233,7 +233,7 @@ public class ApplicationCommandMergeTests {
 		public string Title { get; init; }
 	}
 
-	private sealed class CommandApplication : ApplicationBase {
+	private sealed class CommandApplication : SyncApplicationBase {
 		public CommandApplication(IApplicationScreenHost host) {
 			ScreenHost = host;
 			if (host != null)

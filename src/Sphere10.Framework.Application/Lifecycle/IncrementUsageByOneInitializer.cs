@@ -8,7 +8,7 @@
 
 namespace Sphere10.Framework.Application;
 
-public class IncrementUsageByOneInitializer : ApplicationInitializerBase {
+public class IncrementUsageByOneInitializer : SyncApplicationInitializerBase {
 
 	public IncrementUsageByOneInitializer(IProductUsageServices productUsageServices) {
 		ProductUsageServices = productUsageServices;

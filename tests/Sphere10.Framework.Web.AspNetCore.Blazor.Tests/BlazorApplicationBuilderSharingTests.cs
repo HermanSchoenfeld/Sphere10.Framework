@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
@@ -88,10 +89,11 @@ public class BlazorApplicationBuilderSharingTests {
 		await using var scope = provider.CreateAsyncScope();
 		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var hostUserInterface = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
+		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 
-		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync("Work", "run", new CancellationToken(true)), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync(registered, new CancellationToken(true)), Throws.InstanceOf<OperationCanceledException>());
 		Assert.That(calls, Is.Zero);
-		Assert.That(await hostUserInterface.ExecuteMenuItemAsync("Work", "run"), Is.True);
+		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.True);
 		Assert.That(calls, Is.EqualTo(1));
 	}
 

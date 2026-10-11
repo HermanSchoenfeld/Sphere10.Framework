@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
@@ -249,6 +250,54 @@ public class FormWindowSettingsTests {
 		Assert.That(Window.IsDisposed, Is.False);
 		Assert.That(Provider.SaveCount, Is.Zero);
 	});
+
+	[TestCase(FormWindowState.Normal, false)]
+	[TestCase(FormWindowState.Normal, true)]
+	[TestCase(FormWindowState.Maximized, false)]
+	[TestCase(FormWindowState.Maximized, true)]
+	public void ApprovedShutdownSavesLiveWindowPlacementOnceBeforeClosure(FormWindowState visibleState, bool minimized) => WithUserSettings(directory => {
+		var provider = new CountingSettingsProvider(directory);
+		UserSettings.Provider = provider;
+		using var window = NewWindow();
+		var finalizer = new MainFormSettingsFinalizer();
+		using var settingsScope = finalizer.Attach(window);
+		window.Show();
+		var expectedBounds = window.Bounds;
+		window.WindowState = visibleState;
+		if (minimized)
+			window.WindowState = FormWindowState.Minimized;
+		CaptureAcceptedClose(finalizer);
+		CaptureAcceptedClose(finalizer);
+		Assert.That(provider.SaveCount, Is.Zero, "Approved shutdown capture only queues placement in memory.");
+		finalizer.Finalize();
+		Assert.That(window.IsDisposed, Is.False, "Shutdown tasks save placement while the main window remains alive.");
+		Assert.That(provider.SaveCount, Is.EqualTo(1));
+		ISettingsProvider freshProvider = new DirectoryFileSettingsProvider(directory);
+		var saved = freshProvider.Get<FormWindowSettings>("MainForm");
+		Assert.That(saved.Bounds, Is.EqualTo(expectedBounds));
+		Assert.That(saved.WindowState, Is.EqualTo(visibleState));
+		window.Close();
+		finalizer.Finalize();
+		Assert.That(provider.SaveCount, Is.EqualTo(1), "FormClosed must not queue placement again after the approved shutdown save.");
+	});
+
+	[Test]
+	public void DetachingMainWindowSettingsPreventsExplicitCaptureAndClosureFromQueuingASave() => WithUserSettings(directory => {
+		var provider = new CountingSettingsProvider(directory);
+		UserSettings.Provider = provider;
+		using var window = NewWindow();
+		var finalizer = new MainFormSettingsFinalizer();
+		var settingsScope = finalizer.Attach(window);
+		window.Show();
+		settingsScope.Dispose();
+		CaptureAcceptedClose(finalizer);
+		window.Close();
+		finalizer.Finalize();
+		Assert.That(provider.SaveCount, Is.Zero);
+	});
+
+	private static void CaptureAcceptedClose(MainFormSettingsFinalizer finalizer)
+		=> typeof(MainFormSettingsFinalizer).GetMethod("CaptureAcceptedClose", BindingFlags.Instance | BindingFlags.NonPublic).CreateDelegate<Action>(finalizer)();
 
 	private static Form NewWindow() {
 		var WorkingArea = Screen.PrimaryScreen!.WorkingArea;

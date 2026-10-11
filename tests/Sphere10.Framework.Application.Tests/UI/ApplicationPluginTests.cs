@@ -258,7 +258,7 @@ public class ApplicationPluginTests {
 		}
 	}
 
-	private sealed class PluginApplication : ApplicationBase {
+	private sealed class PluginApplication : SyncApplicationBase {
 		private readonly IApplicationPlugin[] _loadedPlugins;
 
 		public PluginApplication(IEnumerable<IApplicationPlugin> loadedPlugins, IApplicationScreenHost host) {

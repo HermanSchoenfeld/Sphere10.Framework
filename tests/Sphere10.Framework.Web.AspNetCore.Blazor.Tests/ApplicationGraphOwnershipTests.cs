@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,6 +107,170 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(command.Parent, Is.SameAs(menu));
 		group.Parent = null;
 		Assert.That(command.Parent, Is.SameAs(menu));
+	}
+
+	[Test]
+	public async Task ApplicationMenusAndToolbarsBorrowScreenCommandsWhileFreezingOrdinaryActions() {
+		var source = new BlazorApplicationBlock {
+			Id = "work", Title = "Work",
+			Menus = new[] {
+				new BlazorApplicationMenu {
+					Id = "views", Text = "Views", Items = new[] {
+						new BlazorScreenMenuItem {
+							Id = "record", Title = "Record", ScreenType = typeof(ProbeScreen),
+							Parameters = new Dictionary<string, object> { ["Caption"] = "Canonical record" }
+						}
+					}
+				}
+			}
+		};
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(new[] { source }, services);
+		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		var owner = host.Blocks.Single();
+		var canonicalMenu = owner.Menus.Single();
+		var command = (BlazorScreenMenuItem)canonicalMenu.Items.Single();
+		var calls = 0;
+		var capturedSelections = 0;
+		var laterSelections = 0;
+		var ordinaryAction = new BlazorActionMenuItem { Id = "action", Title = "Action", Action = () => calls++ };
+		ordinaryAction.Select += () => capturedSelections++;
+		var menu = new BlazorApplicationMenu(ownsItems: false) {
+			Id = "application", Text = "Application", Parent = owner, Items = new IBlazorApplicationMenuItem[] { command, ordinaryAction }
+		};
+		application.SetMenus(new[] { menu });
+		application.SetToolBarItems(new IBlazorApplicationMenuItem[] { command, ordinaryAction });
+		var projectedMenu = application.Menus.Single();
+		var projectedCommand = (BlazorScreenMenuItem)projectedMenu.Items[0];
+		Assert.That(projectedMenu, Is.Not.SameAs(menu));
+		Assert.That(projectedMenu.Parent, Is.SameAs(owner));
+		Assert.That(projectedCommand, Is.SameAs(command));
+		Assert.That(application.ToolBarItems[0], Is.SameAs(command));
+		Assert.That(command.Parent, Is.SameAs(canonicalMenu));
+		Assert.That(projectedCommand.ScreenDefinition, Is.SameAs(owner.ScreenDefinitions.Single()));
+		Assert.That(projectedCommand.Parameters, Is.SameAs(command.Parameters));
+		Assert.That(projectedMenu.Items[1], Is.Not.SameAs(ordinaryAction));
+		Assert.That(projectedMenu.Items[1].Parent, Is.SameAs(projectedMenu));
+		Assert.That(application.ToolBarItems[1].Parent, Is.Null);
+		Assert.That(ordinaryAction.Parent, Is.Null);
+		var screenSelections = 0;
+		command.Select += () => screenSelections++;
+		ordinaryAction.Select += () => laterSelections++;
+		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(projectedCommand), Is.True);
+		Assert.That(host.ActiveScreen.Parameters["Caption"], Is.EqualTo("Canonical record"));
+		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(application.ToolBarItems[0]), Is.True);
+		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(projectedMenu.Items[1]), Is.True);
+		Assert.That(screenSelections, Is.EqualTo(2));
+		Assert.That(calls, Is.EqualTo(1));
+		Assert.That(capturedSelections, Is.EqualTo(1));
+		Assert.That(laterSelections, Is.Zero);
+		application.SetMenus(Array.Empty<IApplicationMenu>());
+		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
+		Assert.That(command.Parent, Is.SameAs(canonicalMenu));
+		Assert.That(command.ScreenDefinition.Activators, Is.EqualTo(new[] { command }));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task ApplicationToolbarPreservesGeneratedScreenCommandOwnership(bool defaultScreen) {
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithId("work")
+			.WithName("Work");
+		if (defaultScreen)
+			builder.WithDefaultScreen<ProbeScreen>();
+		else
+			builder.AddScreenDefinition(new ApplicationScreenDefinition(typeof(ProbeScreen), "Record"));
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(new[] { builder.Build() }, services);
+		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		var owner = host.Blocks.Single();
+		var session = defaultScreen
+			? await host.ActivateBlockAsync("work")
+			: await host.OpenScreenAsync(owner, owner.ScreenDefinitions.Single(), new BlazorApplicationScreenActivation(instanceKey: "record"));
+		var command = session.MenuItem;
+		var parent = command.Parent;
+		application.SetToolBarItems(new[] { command });
+		Assert.That(application.ToolBarItems.Single(), Is.SameAs(command));
+		Assert.That(command.Parent, Is.SameAs(parent));
+		Assert.That(command.Parent.Parent, Is.SameAs(owner));
+		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(application.ToolBarItems.Single()), Is.True);
+		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
+		Assert.That(command.Parent, Is.SameAs(parent));
+		Assert.That(command.ScreenDefinition.Activators, Is.EqualTo(new[] { command }));
+	}
+
+	[Test]
+	public async Task ApplicationGroupProjectionBorrowsNestedCommandsAndFreezesTheirUnownedSiblings() {
+		var calls = 0;
+		var block = new BlazorApplicationBlock {
+			Id = "work", Title = "Work", Menus = new[] {
+				new BlazorApplicationMenu { Text = "Actions", Items = new[] { new BlazorActionMenuItem { Id = "owned", Title = "Owned", Action = () => calls++ } } }
+			}
+		};
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(new[] { block }, services);
+		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		var command = host.Blocks.Single().Menus.Single().Items.Single();
+		var parent = command.Parent;
+		var sibling = new BlazorActionMenuItem { Id = "sibling", Title = "Sibling", Action = () => calls++ };
+		var nested = new BlazorApplicationMenuGroup { Id = "nested", Title = "Nested", Items = new[] { command, sibling } };
+		var group = new BlazorApplicationMenuGroup { Id = "group", Title = "Group", Items = new[] { nested } };
+		var menu = new BlazorApplicationMenu(ownsItems: false) { Text = "Application", Items = new[] { group } };
+		application.SetMenus(new[] { menu });
+		application.SetToolBarItems(new[] { group });
+		var projectedMenu = application.Menus.Single();
+		var projectedGroup = (BlazorApplicationMenuGroup)projectedMenu.Items.Single();
+		var projectedNested = (BlazorApplicationMenuGroup)projectedGroup.Items.Single();
+		var toolbarNested = (BlazorApplicationMenuGroup)((BlazorApplicationMenuGroup)application.ToolBarItems.Single()).Items.Single();
+		Assert.That(projectedGroup, Is.Not.SameAs(group));
+		Assert.That(projectedNested, Is.Not.SameAs(nested));
+		Assert.That(projectedNested.Items[0], Is.SameAs(command));
+		Assert.That(toolbarNested.Items[0], Is.SameAs(command));
+		Assert.That(projectedNested.Items[1], Is.Not.SameAs(sibling));
+		Assert.That(projectedNested.Parent, Is.SameAs(projectedMenu));
+		Assert.That(projectedNested.Items[1].Parent, Is.SameAs(projectedMenu));
+		Assert.That(toolbarNested.Items[1].Parent, Is.Null);
+		Assert.That(command.Parent, Is.SameAs(parent));
+		Assert.That(sibling.Parent, Is.Null);
+		var ownedSelections = 0;
+		var siblingSelections = 0;
+		command.Select += () => ownedSelections++;
+		sibling.Select += () => siblingSelections++;
+		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(projectedNested.Items[0]), Is.True);
+		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(projectedNested.Items[1]), Is.True);
+		Assert.That(calls, Is.EqualTo(2));
+		Assert.That(ownedSelections, Is.EqualTo(1));
+		Assert.That(siblingSelections, Is.Zero);
+		application.SetMenus(Array.Empty<IApplicationMenu>());
+		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
+		Assert.That(command.Parent, Is.SameAs(parent));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void DetachedScreenCommandsAreRejectedBeforeApplicationMembershipChanges(bool toolbar) {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = CreateHost(services);
+		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		var action = new BlazorActionMenuItem { Id = "original", Title = "Original", Action = () => { } };
+		application.SetMenus(new[] { new BlazorApplicationMenu { Text = "Original", Items = new[] { action } } });
+		application.SetToolBarItems(new[] { action });
+		var previousMenu = application.Menus.Single();
+		var previousToolbar = application.ToolBarItems.Single();
+		var detached = new BlazorScreenMenuItem { Id = "record", Title = "Record", ScreenType = typeof(ProbeScreen) };
+		var canonical = host.Blocks.Single().Menus.Single().Items.Single();
+		if (toolbar)
+			Assert.That(() => application.SetToolBarItems(new[] { canonical, detached }),
+				Throws.ArgumentException.With.Message.Contains("The screen command must belong to a block's menu."));
+		else
+			Assert.That(() => application.SetMenus(new[] {
+				new BlazorApplicationMenu(ownsItems: false) { Text = "Replacement", Items = new[] { canonical, action } },
+				new BlazorApplicationMenu(ownsItems: false) { Text = "Detached", Items = new[] { detached } }
+			}), Throws.ArgumentException.With.Message.Contains("The screen command must belong to a block's menu."));
+		Assert.That(application.Menus.Single(), Is.SameAs(previousMenu));
+		Assert.That(application.ToolBarItems.Single(), Is.SameAs(previousToolbar));
+		Assert.That(detached.Parent, Is.Null);
+		Assert.That(canonical.Parent.Parent, Is.SameAs(host.Blocks.Single()));
 	}
 
 	[Test]

@@ -47,6 +47,7 @@ public class DemoPluginRegistrationTests {
 		Assert.That(metadataHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace", "components", "patterns", "legacy", "empty-workspace" }));
 		Assert.That(application.Blocks, Is.EqualTo(metadataHost.Blocks));
 		Assert.That(application.Blocks, Has.Length.EqualTo(5));
+		Assert.That(application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "exit"), Is.TypeOf<BlazorActionMenuItem>());
 		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Select(registration => registration.Plugin), Is.EqualTo(plugins));
 		Assert.That(provider.GetService<IBlazorRoutedPluginLocator>(), Is.Null);
 		Assert.That(provider.GetService<IBlazorRoutedPluginManager>(), Is.Null);
@@ -89,20 +90,43 @@ public class DemoPluginRegistrationTests {
 		using var first = provider.CreateScope();
 		using var second = provider.CreateScope();
 		var firstHost = first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var firstHostUserInterface = first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var secondHost = second.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var secondHostUserInterface = second.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstAction = firstHost.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
+		var secondAction = secondHost.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
 		var firstState = first.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		var secondState = second.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 
-		await firstHostUserInterface.ExecuteMenuItemAsync("workspace", "action");
+		await firstHost.ExecuteMenuItemAsync(firstAction);
 		Assert.That(firstState.ActionCount, Is.EqualTo(1));
 		Assert.That(secondState.ActionCount, Is.Zero);
-		await secondHostUserInterface.ExecuteMenuItemAsync("workspace", "action");
-		await firstHostUserInterface.ExecuteMenuItemAsync("workspace", "action");
+		await secondHost.ExecuteMenuItemAsync(secondAction);
+		await firstHost.ExecuteMenuItemAsync(firstAction);
 		Assert.That(firstState.ActionCount, Is.EqualTo(2));
 		Assert.That(secondState.ActionCount, Is.EqualTo(1));
 		Assert.That(firstState, Is.Not.SameAs(secondState));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task WorkspaceCommandsSupportCompositionsWithoutScratchpads(bool includeWorkspace) {
+		var services = new ServiceCollection();
+		services.AddSphere10BlazorApplication(WorkspaceCommands.Configure);
+		if (includeWorkspace)
+			services.AddApplicationBlock(block => block
+				.WithName("Workspace")
+				.WithDefaultScreen<PluginBuilderTests.TestScreen>()
+			);
+		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		using var scope = provider.CreateScope();
+		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var scratchpad = application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "new-scratchpad");
+		var guide = application.Menus.Single(menu => menu.Id == "help").Items.Single(item => item.Id == "workspace-help");
+
+		Assert.That(scratchpad.IsEnabled, Is.False);
+		Assert.That(await application.ScreenHost.ExecuteMenuItemAsync(scratchpad), Is.False);
+		Assert.That(guide.IsEnabled, Is.EqualTo(includeWorkspace));
+		Assert.That(await application.ScreenHost.ExecuteMenuItemAsync(guide), Is.EqualTo(includeWorkspace));
+		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(application.Blocks.SingleOrDefault()));
 	}
 
 	[Test]

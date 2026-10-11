@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -131,10 +132,15 @@ public partial class DialogEx : FormEx {
 	}
 
 	/// <summary>Awaitably shows a <see cref="DialogEx"/> modally owned by <paramref name="owner"/>, returning the pressed button result.</summary>
-	public static async Task<DialogExResult> ShowAsync(IWin32Window owner, SystemIconType iconType, string title, string text, params string[] buttonNames) {
+	public static Task<DialogExResult> ShowAsync(IWin32Window owner, SystemIconType iconType, string title, string text, params string[] buttonNames)
+		=> ShowAsync(owner, iconType, title, text, CancellationToken.None, buttonNames);
+
+	/// <summary>Awaitably shows an owned modal dialog and disposes it if the request is cancelled.</summary>
+	public static async Task<DialogExResult> ShowAsync(IWin32Window owner, SystemIconType iconType, string title, string text, CancellationToken cancellationToken, params string[] buttonNames) {
+		cancellationToken.ThrowIfCancellationRequested();
 		using var dialog = new DialogEx(iconType, title, text, false, buttonNames);
 		dialog.StartPosition = FormStartPosition.CenterParent;
-		await dialog.ShowDialogAsync(owner);
+		await dialog.ShowDialogAsync(owner).WaitAsync(cancellationToken);
 		return dialog.DialogResult;
 	}
 

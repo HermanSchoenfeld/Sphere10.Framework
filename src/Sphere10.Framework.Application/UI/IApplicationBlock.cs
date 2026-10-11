@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
 
@@ -29,6 +31,14 @@ public interface IApplicationBlock : IApplicationCommandProvider {
 	ApplicationScreenDefinition[] ScreenDefinitions { get; }
 
 	ApplicationScreenDefinition DefaultScreenDefinition { get; }
+
+	/// <summary>Allows or vetoes application exit while this block supplies the active screen or navigation context.</summary>
+	/// <remarks>The application argument supplies runtime context even when a platform copies startup block definitions.</remarks>
+	Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(application, nameof(application));
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(true);
+	}
 }
 
 public interface IApplicationBlock<out TMenu, out TItem> : IApplicationBlock, IApplicationCommandProvider<TMenu, TItem>

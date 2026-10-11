@@ -76,8 +76,6 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	internal IWinFormsApplicationBlock[] StartupBlocks => _engine.RegistrationBlocks;
 
-	internal IWinFormsApplicationBlock GetDefinitionOwner(ApplicationScreenDefinition definition) => _engine.GetDefinitionOwner(definition);
-
 	internal IDisposable EnterPresentationScope() => EnterUpdateScope();
 
 	public override void SelectBlock(IWinFormsApplicationBlock block) {

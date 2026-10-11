@@ -77,7 +77,7 @@ public class ApplicationAggregateTests {
 		Assert.That(() => application.SetMenus(new[] { menu }), Throws.InvalidOperationException);
 	}
 
-	private sealed class ProbeApplication : ApplicationBase {
+	private sealed class ProbeApplication : SyncApplicationBase {
 		private readonly ApplicationPlugin _plugin;
 
 		public ProbeApplication(IApplicationScreenHost host = null) {
