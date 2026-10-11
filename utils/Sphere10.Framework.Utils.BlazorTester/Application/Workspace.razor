@@ -52,7 +52,11 @@
 		</div>
 	</ToolBarContent>
 	<SidebarHeader><SidebarBrand /></SidebarHeader>
-	<Footer>Sphere10 Framework · Local sample data · Changes stay in this browser session. <span data-application-command-count>Commands run: @Status.ActionCount</span></Footer>
+	<Footer>
+		Sphere10 Framework · Local sample data · Changes stay in this browser session.
+		<span data-application-command-count>Commands run: @Status.ActionCount</span>
+		<span data-plugin-initializer-count>Plugins initialized: @Status.InitializedPlugins.Length</span>
+	</Footer>
 </ApplicationShell>
 
 @code {

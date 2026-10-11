@@ -5,7 +5,10 @@
 // LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Application;
@@ -14,8 +17,11 @@ namespace Sphere10.Framework.Utils.BlazorTester.Application;
 public static class ScreenPoliciesPlugin {
 	public static void Configure(BlazorPluginBuilder plugin, bool permanentScreen, ScreenActivationMode emptyScreenLifetime) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
+		const string pluginName = "Screen policies";
 		plugin
-			.WithName("Screen policies")
+			.WithName(pluginName)
+			.RegisterInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.RegisterFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.ConfigureBlock(block => block
 				.WithId("empty-workspace")
 				.WithName("Empty workspace")

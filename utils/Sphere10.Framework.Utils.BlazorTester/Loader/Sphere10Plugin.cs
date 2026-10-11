@@ -8,11 +8,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.Loader.Services;
 using Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
+using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Loader;
 
@@ -20,8 +22,11 @@ namespace Sphere10.Framework.Utils.BlazorTester.Loader;
 public static class Sphere10Plugin {
 	public static void Configure(BlazorPluginBuilder plugin) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
+		const string pluginName = "Sphere10.Framework";
 		plugin
-			.WithName("Sphere10.Framework")
+			.WithName(pluginName)
+			.RegisterInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.RegisterFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.ConfigureServices(services => {
 				services.AddScoped<WorkspaceStatus>();
 				services.AddScoped<IEndpointManager, DefaultEndpointManager>();

@@ -8,9 +8,11 @@
 
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.Application.Legacy;
+using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Services;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Validators;
@@ -22,8 +24,11 @@ namespace Sphere10.Framework.Utils.BlazorTester.WidgetGallery;
 public static class WidgetGalleryPlugin {
 	public static void Configure(BlazorPluginBuilder plugin) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
+		const string pluginName = "Widget Gallery";
 		plugin
-			.WithName("Widget Gallery")
+			.WithName(pluginName)
+			.RegisterInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.RegisterFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.ConfigureServices(services => {
 				services.AddTransient<IRandomNumberService, RandomNumberService>();
 				services.AddTransient<IValidator<NewWidgetModel>, NewWidgetModelValidator>();

@@ -7,6 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Utils.BlazorTester.Application;
+using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Cards;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Commands;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Themes;
@@ -19,8 +22,11 @@ namespace Sphere10.Framework.Utils.BlazorTester.Showcase;
 public static class ShowcasePlugin {
 	public static void Configure(BlazorPluginBuilder plugin) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
+		const string pluginName = "Application patterns";
 		plugin
-			.WithName("Application patterns")
+			.WithName(pluginName)
+			.RegisterInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.RegisterFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.ConfigureServices(services => services.AddScoped<CollectionCatalogue>())
 			.ConfigureBlock(block => block
 				.WithId("patterns")
