@@ -1,12 +1,11 @@
 # Demo and Utility Instructions
 
-Follow [the repository instructions](../AGENTS.md), the matching repository
-skills, and [Patterns and Practices](../docs/guidelines/patterns-and-practices.md).
-Demos must consume the framework's current public APIs through their real
-registration and user-facing paths.
+These instructions apply to repository-root paths under `utils/**`. Read
+[the master entry point](../README.md) in full and follow its required workflow,
+skill and guideline reading sequence.
 
-Use abstract `...Base` classes for inheritance foundations and concrete types
-for directly usable demo products. Follow
-[Code Styling](../docs/guidelines/code-styling.md#generic-constraints): put one
-`where` constraint on each aligned line, and put the opening brace at the end
-of the final constraint line, including example code.
+Trace the demo's actual registration and user-facing paths. Read
+[Framework Reuse and Adoption](../../docs/guidelines/patterns/framework-reuse.md)
+and select the other relevant topics from the
+[Patterns and Practices index](../../docs/guidelines/patterns-and-practices.md).
+Follow [Code Styling](../../docs/guidelines/code-styling.md) for source and C# examples.

@@ -63,17 +63,17 @@ The mapping base contract is:
 ```csharp
 public abstract class BusinessEntityMap<T> : ClassMap<T>
 	where T : BusinessEntity {
-	protected BusinessEntityMap(bool ExplicitID = false) {
-		var PrimaryKey = Id(Entity => Entity.ID).Column("ID");
-		if (ExplicitID)
-			PrimaryKey.GeneratedBy.Assigned();
+	protected BusinessEntityMap(bool explicitID = false) {
+		var primaryKey = Id(entity => entity.ID).Column("ID");
+		if (explicitID)
+			primaryKey.GeneratedBy.Assigned();
 		else
-			PrimaryKey.GeneratedBy.Native("SEQ_" + typeof(T).Name);
+			primaryKey.GeneratedBy.Native("SEQ_" + typeof(T).Name);
 
 		MapEntity();
-		Map(Entity => Entity.Active);
-		Map(Entity => Entity.RowVersion);
-		Map(Entity => Entity.LastUpdatedOn);
+		Map(entity => entity.Active);
+		Map(entity => entity.RowVersion);
+		Map(entity => entity.LastUpdatedOn);
 	}
 
 	public abstract void MapEntity();
@@ -98,9 +98,9 @@ If entity equality is implemented, account for NH proxies and transient identiti
 |---|---|
 | `ISessionFactory ApplicationSessionFactory` | Initialized application factory; fail clearly if accessed before successful initialization. |
 | `bool HasRegisteredDatabase` | Whether the application has its database connection settings. |
-| `bool RegisterDatabase(DBMSType, string ConnectionString, out string ErrorMessage)` | Register the selected database and initialize it; preserve the app's settings behavior. |
-| `bool InitializeApplicationDatabase(out string ErrorMessage)` | Open the registered DB, publish its factory only after success. |
-| `bool CreateDatabase(DBMSType, string ConnectionString, bool IncludeDemoData, ..., out string ErrorMessage)` | Create schema plus chosen seed policy; `...` represents only domain-required seed inputs, such as an administrator hash. |
+| `bool RegisterDatabase(DBMSType, string connectionString, out string errorMessage)` | Register the selected database and initialize it; preserve the app's settings behavior. |
+| `bool InitializeApplicationDatabase(out string errorMessage)` | Open the registered DB, publish its factory only after success. |
+| `bool CreateDatabase(DBMSType, string connectionString, bool includeDemoData, ..., out string errorMessage)` | Create schema plus chosen seed policy; `...` represents only domain-required seed inputs, such as an administrator hash. |
 | `CreateDatabaseManager(DBMSType)` | Private provider selector returning `ProductDatabaseManagerBase`. |
 
 Dispose the previously owned factory when safely replacing it and the current factory at application shutdown; active units of work must finish before replacement. Failed initialization must not leave a new unusable factory published.
@@ -109,8 +109,8 @@ The application `DataScope` owns a session and transaction and retains:
 
 ```text
 DataScope()
-DataScope(ISession Session)
-DataScope(ISession Session, ITransaction Transaction)
+DataScope(ISession session)
+DataScope(ISession session, ITransaction transaction)
 ISession Session { get; }
 ITransaction Transaction { get; }
 static bool CurrentScopeExists { get; }
@@ -122,23 +122,23 @@ void Dispose()
 
 The default constructor opens a session from `DatabaseManager.ApplicationSessionFactory`; the session constructor starts a transaction. The two-resource overload accepts ownership of supplied resources unless an existing application explicitly defines otherwise. Default `FlushMode` is Commit. Dispose rolls back any still-active uncommitted transaction, disposes it and the session, and clears/restores ambient scope state even if cleanup fails. Follow available disposable-scope helpers for guaranteed cleanup.
 
-The inspected runtime implementation is synchronous, thread-local and rejects nested scopes. Preserve that contract for existing callers. A new application requiring async or nesting must implement those semantics deliberately behind the same `DataScope` surface and test them; do not carry a thread-local scope across `await`. Validate ambient-state conflicts before acquiring resources, and clean up partially acquired resources on construction failure. Do not copy global named-TLS-slot deletion as cleanup.
+The historical runtime reference is synchronous, thread-local and rejects nested scopes; these are application scaffold semantics, not a claim that Framework supplies this `DataScope`. Preserve that contract for existing callers. A new application requiring async or nesting must implement those semantics deliberately behind the same `DataScope` surface and test them; do not carry a thread-local scope across `await`. Validate ambient-state conflicts before acquiring resources, and clean up partially acquired resources on construction failure. Do not copy global named-TLS-slot deletion as cleanup.
 
 ## Product and provider managers
 
 `ProductDatabaseManagerBase : NHDatabaseManagerBase` has:
 
 ```text
-protected ProductDatabaseManagerBase(IDatabaseManager InternalDatabaseManager)
-    : base(InternalDatabaseManager)
-protected FluentConfiguration ApplyCommonConfiguration(FluentConfiguration Configuration)
+protected ProductDatabaseManagerBase(IDatabaseManager internalDatabaseManager)
+    : base(internalDatabaseManager)
+protected FluentConfiguration ApplyCommonConfiguration(FluentConfiguration configuration)
 protected override IDataGenerator CreateDataGenerator(
-    ISessionFactory SessionFactory, string DatabaseName, DatabaseGenerationDataPolicy Policy)
+    ISessionFactory sessionFactory, string databaseName, DatabaseGenerationDataPolicy policy)
 ```
 
 It holds only domain-required seed options and centralizes map assembly scanning, chosen conventions, optional `NHibernateListener.Instance`, `LoggingInterceptor`, and quoting. Use `LoggingInterceptor : EmptyInterceptor` with `OnPrepareStatement(SqlString)` returning the SQL unchanged, and `SqlLog` as the optional framework-logger facade. Do not enable verbose SQL logging of sensitive literals by default.
 
-Each `ProductDatabaseManagerMSSQL` / `ProductDatabaseManagerSqlite` / supported additional provider derives from the product base, has a parameterless constructor supplying `new MSSQLDatabaseManager()` / `new SqliteDatabaseManager()` / the matching real physical manager, and overrides `GetFluentConfig(string ConnectionString)`. It calls `ApplyCommonConfiguration` around the provider-specific Fluent configuration. Historical provider stubs, dialects, and deletion-only SQLite schema hooks are not a functional provider implementation.
+Each `ProductDatabaseManagerMSSQL` / `ProductDatabaseManagerSqlite` / supported additional provider derives from the product base, has a parameterless constructor supplying `new MSSQLDatabaseManager()` / `new SqliteDatabaseManager()` / the matching real physical manager, and overrides `GetFluentConfig(string connectionString)`. It calls `ApplyCommonConfiguration` around the provider-specific Fluent configuration. Historical provider stubs, dialects, and deletion-only SQLite schema hooks are not a functional provider implementation.
 
 ## Generator template methods
 

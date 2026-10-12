@@ -103,7 +103,7 @@ public class ExampleScreenTests {
 }
 ```
 
-This illustrates the pattern already covered by `ApplicationScreenContractTests`; add new scenarios for changed behavior rather than duplicating that case. Include the repository license header in new files and follow [the NUnit test guidance](../../.github/skills/unit-testing/SKILL.md).
+This illustrates the pattern already covered by `ApplicationScreenContractTests`; add new scenarios for changed behavior rather than duplicating that case. Include the repository license header in new files and follow [the NUnit test guidance](../../agents/skills/unit-testing/SKILL.md).
 
 Use independent fixture state and controlled task completion for asynchronous behavior. Test invariants such as rejected definitions leaving the host's type index and retained screens unchanged, or a copied graph retaining its own parent and activator membership after the source changes. Keep actual component/control activation, UI dispatch, retained-screen rendering and platform disposal in the adapter test projects.
 

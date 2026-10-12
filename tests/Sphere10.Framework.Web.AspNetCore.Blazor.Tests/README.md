@@ -123,7 +123,7 @@ Browser evidence is attached to the NUnit results under `ShowcaseBrowserTests` i
 
 ## Add a regression test
 
-Use NUnit constraint assertions (`Assert.That`) and a fixture focused on the behavior being changed. Follow [the repository test guidance](../../.github/skills/unit-testing/SKILL.md).
+Use NUnit constraint assertions (`Assert.That`) and a fixture focused on the behavior being changed. Follow [the repository test guidance](../../agents/skills/unit-testing/SKILL.md).
 
 - For data operations, use a small source derived from the framework's sync/async data-source hierarchy. Use controlled task completion for overlapping reads or writes, rather than sleeps.
 - For rendering, reuse the component-capture host pattern in `ComponentParameterLifecycleTests` and the service setup in `BlazorGridRenderingTests`. Render and invoke component APIs on the renderer dispatcher.

@@ -5,7 +5,7 @@ description: Baseline C# style for this repo — Egyptian braces, tabs, camelCas
 
 # Code Style Skill
 
-Apply these rules to every file you create or edit. Full rules live in [../../copilot-instructions.md](../../copilot-instructions.md); this is the working checklist.
+Apply this checklist to C# source and C# examples you create or edit. Read the [complete coding guide](../../../docs/guidelines/code-styling.md) and [repository instructions](../../../agents/instructions.md) for the authoritative rules. Preserve the format of other file types; a style task does not authorize architecture, dependency or license changes.
 
 ## Formatting
 - Opening braces at **end of line** (K&R / Egyptian), never on a new line.
@@ -31,7 +31,7 @@ Apply these rules to every file you create or edit. Full rules live in [../../co
 - camelCase for local variables and parameters, including lambda, loop, and catch variables.
 - `_camelCase` for private fields.
 - Self-describing names; no cryptic abbreviations.
-- Classes intended only for inheritance are abstract and use a `Base` suffix. Concrete classes must provide usable behavior for genuine direct consumers. See [Patterns and Practices](../../../docs/guidelines/patterns-and-practices.md#inheritance-foundations-and-concrete-products).
+- Classes intended only for inheritance are abstract and use a `Base` suffix. Concrete classes must provide usable behavior for genuine direct consumers. See [the type hierarchy guide](../../../docs/guidelines/patterns/type-hierarchies.md).
 
 ## Platform-specific extensions
 

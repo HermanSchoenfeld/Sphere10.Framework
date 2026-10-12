@@ -241,15 +241,21 @@ string content = Tools.FileSystem.ReadAllText(path);
 
 ## Documentation Map
 
+For agent-assisted repository work, start with [Agent Guidance](agent-guidance.md). It explains the master instruction store under `agents/`, the small client entrypoints and the local setup for shared skill and instruction aliases. Direct canonical reads work before setup. Framework consumers can continue with the project documentation for their chosen component.
+
 | Document | Purpose |
 |----------|---------|
 | [README.md](README.md) | Documentation home |
+| [Agent Guidance](agent-guidance.md) | Agent entry points, instruction precedence and required reading |
 | [Tools Reference](tools-reference.md) | Complete Tools.* namespace catalog |
 | [Real-World Examples](real-world-usage-examples.md) | Practical patterns from tests |
 | [Framework Architecture](architecture/sphere10-framework.md) | Design and architecture |
 | [Framework Domains](architecture/domains.md) | Catalog of 40+ domains |
 | [3-Tier Architecture](guidelines/3-tier-architecture.md) | Architectural patterns |
 | [Code Styling](guidelines/code-styling.md) | Coding standards |
+| [Patterns and Practices](guidelines/patterns-and-practices.md) | Task index for focused pattern guides |
+
+For structural changes, start with [type hierarchies](guidelines/patterns/type-hierarchies.md), [sync/async operations](guidelines/patterns/sync-async.md), [interface bridges](guidelines/patterns/interface-bridges.md) or [application ownership](guidelines/patterns/application-ownership.md), according to the change. Use the task index for the other pattern topics.
 
 ---
 

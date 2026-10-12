@@ -5,6 +5,8 @@ description: Build application message protocols with Sphere10 Framework Protoco
 
 # Application Protocols
 
+Read [fluent builder guidance](../../../docs/guidelines/patterns/fluent-builders.md) for protocol configuration and [serialization guidance](../../../docs/guidelines/patterns/serialization.md) when changing the wire contract.
+
 Use the existing framework protocol stack to separate an application's message contract from transport and connection state. Types live in `Sphere10.Framework.Communications`, including those implemented in the core `Sphere10.Framework` project.
 
 Before implementing an application against this checkout, read [current source limitations](references/current-source-limitations.md). The recipes express the intended architecture, but several paths in the present implementation are incomplete. Recheck the relevant source before adopting a workaround or assuming a limitation still exists.
@@ -28,8 +30,8 @@ Use a distinct DTO type per operation so handler lookup can distinguish messages
 
 - `AddCommand<TMessage>(Handler)` registers a one-way command. Handler overloads accept no arguments, the message, or `(ProtocolOrchestrator, TMessage)`.
 - `AddRequestResponse<TRequest, TResponse>(RequestHandler, ResponseHandler)` registers both sides of an exchange. The request handler returns the response; the response handler receives the original request and returned response. Orchestrator-aware overloads are available for both.
-- `ConfigureCommand<TMessage>(Builder => Builder.HandleWith(Handler))` offers a nested builder.
-- `ConfigureRequest<TRequest>(Builder => Builder.HandleRequestWith(RequestHandler).HandleResponseWith(ResponseHandler))` offers the request/response builder; use a request-taking handler overload for the typed response chain.
+- `ConfigureCommand<TMessage>(builder => builder.HandleWith(handler))` offers a nested builder.
+- `ConfigureRequest<TRequest>(builder => builder.HandleRequestWith(requestHandler).HandleResponseWith(responseHandler))` offers the request/response builder; use a request-taking handler overload for the typed response chain.
 - For service classes, use `ICommandHandler<TMessage>`, `IRequestHandler<TRequest, TResponse>`, and `IResponseHandler<TRequest, TResponse>` or their typed `*HandlerBase` classes. When deriving from a base, implement its type properties as well as `Execute`.
 
 This construction example uses already registered primitive types to demonstrate the current builder without custom serializer configuration:
@@ -38,12 +40,12 @@ This construction example uses already registered primitive types to demonstrate
 using Sphere10.Framework;
 using Sphere10.Framework.Communications;
 
-var ProtocolDefinition = new ProtocolBuilder()
+var protocolDefinition = new ProtocolBuilder()
 	.AddRequestResponse<string, int>(
-		Request => Request.Length,
-		(Request, Response) => SystemLog.Info($"Length of '{Request}': {Response}")
+		request => request.Length,
+		(request, response) => SystemLog.Info($"Length of '{request}': {response}")
 	)
-	.AddCommand<byte[]>(Message => SystemLog.Info($"Received {Message.Length} bytes"))
+	.AddCommand<byte[]>(message => SystemLog.Info($"Received {message.Length} bytes"))
 	.Build();
 ```
 
@@ -61,11 +63,11 @@ Both endpoints need matching type codes, member layouts, and endianness. Use a s
 
 Mode 0 is the initial application dispatch mode. The orchestrator distinguishes handshaking with its own state and remains in mode 0 after the handshake. Register mode 0 handlers before calling `SetMode(1)`; additional modes must be added consecutively. `SetMode(0)` is rejected by the builder despite mode 0 being its initial target.
 
-At runtime, change `Orchestrator.ActiveMode` only to an existing index (`0 <= Mode < Protocol.Modes.Length`). Modes are local handler selections: envelopes contain no mode number and there is no automatic peer negotiation. Coordinate changes explicitly on both ends, and complete pending exchanges first because responses resolve handlers in the mode active when they arrive.
+At runtime, change `orchestrator.ActiveMode` only to an existing index (`0 <= mode < protocol.Modes.Length`). Modes are local handler selections: envelopes contain no mode number and there is no automatic peer negotiation. Coordinate changes explicitly on both ends, and complete pending exchanges first because responses resolve handlers in the mode active when they arrive.
 
 ## Handshake and lifetime
 
-Leave `Protocol.Handshake.Type` as `None` when no handshake is needed. The intended fluent handshake is `ConfigureHandshake(Builder => Builder.UseTwoWay().InitiatedBy(CommunicationRole.Client).HandleWith<Sync, Ack>(Generate, Receive, Verify))`; `UseThreeWay()` adds a `Verack` message and acknowledgement callback. The initiator is selected by the channel's `LocalRole`.
+Leave `Protocol.Handshake.Type` as `None` when no handshake is needed. The intended fluent handshake is `ConfigureHandshake(builder => builder.UseTwoWay().InitiatedBy(CommunicationRole.Client).HandleWith<Sync, Ack>(Generate, Receive, Verify))`; `UseThreeWay()` adds a `Verack` message and acknowledgement callback. The initiator is selected by the channel's `LocalRole`.
 
 The delegate sequence is:
 
@@ -76,11 +78,13 @@ The delegate sequence is:
 
 Only `HandshakeOutcome.Accepted` advances successfully. Register the handshake message types in order: Sync, Ack, then Verack when used. A handshake is an application negotiation mechanism; put any required identity/version checks in these handlers. Recheck the three-way defects in the source-status reference before using it.
 
-Construct the channel, build the protocol, then construct `new ProtocolOrchestrator(Channel, ProtocolDefinition) { Logger = Logger }`. Attach `MessageError`, `StateChanged`, and any useful message diagnostics before startup. Queue failures and handler failures have different reporting paths; supply an `ILogger` as well as observing `MessageError`.
+Construct the channel, build the protocol, then construct `new ProtocolOrchestrator(channel, protocolDefinition) { Logger = logger }`. Attach `MessageError`, `StateChanged`, and any useful message diagnostics before startup. Queue failures and handler failures have different reporting paths; supply an `ILogger` as well as observing `MessageError`.
 
-Await `Start()` before sending application traffic. It opens the channel when necessary and waits for any configured handshake. Start both endpoints concurrently for a handshake; awaiting one side before starting the other can stall. Use `SendMessage(ProtocolDispatchType.Request, Request)` or `SendMessage(ProtocolDispatchType.Command, Command)`. Sending enqueues work and returns `void`; it neither awaits transmission nor returns a response task. Request handlers produce response envelopes automatically with the original request ID.
+Await `Start()` before sending application traffic. It opens the channel when necessary and waits for any configured handshake. Start both endpoints concurrently for a handshake; awaiting one side before starting the other can stall. Use `SendMessage(ProtocolDispatchType.Request, request)` or `SendMessage(ProtocolDispatchType.Command, command)`. Sending enqueues work and returns `void`; it neither awaits transmission nor returns a response task. Request handlers produce response envelopes automatically with the original request ID.
 
-Keep the connection alive until the application has observed the response/completion it needs, then call `Finish()`. Own the channel with a disposable scope (`using`/`await using` as appropriate to the concrete channel); the orchestrator itself is not disposable. `RunToEnd(CancellationToken)` waits for finish/closure and supports application cancellation, but UDP cannot detect a remote endpoint closing. Give UDP applications an explicit lifetime or shutdown condition. Recheck startup cancellation behavior in the source-status reference.
+Keep the connection alive until the application has observed the response/completion it needs, then await `Finish()`. Own the channel with a disposable scope (`using`/`await using` as appropriate to the concrete channel); the orchestrator itself is not disposable. `RunToEnd(CancellationToken)` waits for finish/closure and supports application cancellation, but UDP cannot detect a remote endpoint closing. Give UDP applications an explicit lifetime or shutdown condition. Recheck startup cancellation behavior in the source-status reference.
+
+Typed handler interfaces bridge their object-taking execution members inline under `Base Interface Bridges`. That does not supply `RequestType`, `ResponseType` or `MessageType` implementations on the handler bases: preserve the current explicit type metadata and implement it in derived handlers. Do not add helper classes or replace existing protocol orchestration solely to implement an interface projection.
 
 ## Verify the application path
 

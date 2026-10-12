@@ -45,7 +45,7 @@ Copyright © Herman Schoenfeld 2005 - Present
   - `src/Sphere10.Framework (CrossPlatform).sln` — Cross-platform projects only
   - `src/Sphere10.Framework (Win).sln` — All projects including Windows-specific
 
-Both solutions expose repository guides under **Documentation** and repository instructions and skills under **Agent Guidance**. These solution items open the original files in Visual Studio.
+Both solutions expose shared guides, repository instructions and skills under **Agent Guidance**. The root README appears once in **Misc**, with packaging scripts under **Misc → Scripts**. Project, test and demo READMEs remain in their real projects. Solution items open the original files in Visual Studio.
 
 ## :package: Installation
 
@@ -67,19 +67,20 @@ dotnet add package Sphere10.Framework.Communications
 
 Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.3.114`. Local builds allocate the next number from `LOCAL-BUILD-NUMBER` in the solution folder (gitignored); override with `-p:BuildRevision=1` for `3.1.3.1`. The NuGet version remains `3.1.3`, and assembly identity remains `3.1.3.0` across builds. For prerelease packages, pass `-p:Version=3.1.3-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
 
-Before release packaging, run [validate-packages.ps1](validate-packages.ps1). It packs every active public library under a unique local validation version, checks package metadata and internal dependencies, and restores external consumers from an isolated feed and package cache. It builds core, Application-only, database/testing/generator and Windows consumers, publishes a Blazor ApplicationBlock host, and verifies Razor assets. Files and logs remain in the reported temporary directory; nothing is published. See [package consumer validation](scripts/package-consumers/README.md) for details. `Sphere10.Framework.NUnit`, `Sphere10.Framework.NUnit.DB` and `Sphere10.Framework.Generators` are distributable packages; the runtime/compiler support project remains internal.
+Before release packaging, run [validate-packages.ps1](scripts/validate-packages.ps1). It packs every active public library under a unique local validation version, checks package metadata and internal dependencies, and restores external consumers from an isolated feed and package cache. It builds core, Application-only, database/testing/generator and Windows consumers, publishes a Blazor ApplicationBlock host, and verifies Razor assets. Files and logs remain in the reported temporary directory; nothing is published. See [package consumer validation](scripts/package-consumers/README.md) for details. `Sphere10.Framework.NUnit`, `Sphere10.Framework.NUnit.DB` and `Sphere10.Framework.Generators` are distributable packages; the runtime/compiler support project remains internal.
 
-From the repository root, run [pack.ps1](pack.ps1) to clean and pack the Windows solution in Release configuration. It builds into a staging directory, verifies matching package and symbol files, then replaces the framework packages in `nuget-packages`. Failed builds leave the previous packages intact; unrelated files and packages are preserved. Packing does not run tests. Use `-OutputDirectory` to select a different destination.
+From the Framework repository root, run [pack.ps1](scripts/pack.ps1) to clean and pack the Windows solution in Release configuration. It builds into a staging directory, verifies matching package and symbol files, then replaces the framework packages in `nuget-packages`. Failed builds leave the previous packages intact; unrelated files and packages are preserved. Packing does not run tests. Use `-OutputDirectory` to select a different destination.
 
 ```powershell
-.\pack.ps1
-.\publish.ps1 -IncludeSymbols -WhatIf
-.\publish.ps1 -IncludeSymbols
+./scripts/validate-packages.ps1
+./scripts/pack.ps1
+./scripts/publish.ps1 -IncludeSymbols -WhatIf
+./scripts/publish.ps1 -IncludeSymbols
 ```
 
-[publish.ps1](publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Independent packages such as `Sphere10.VisualRenderer` live under `Components/` and are packed separately. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
+[publish.ps1](scripts/publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Independent packages such as `Sphere10.VisualRenderer` live under `Components/` and are packed separately. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
 
-The publisher accepts `-ApiKey`, reads `NUGET_API_KEY`, or prompts with hidden input. Ordinary publication asks for PowerShell confirmation; use `-Confirm:$false` for an automated run with credentials supplied. `-Source`, `-SymbolSource`, and `-PackagesDirectory` override the default feeds and package directory. Both scripts support Windows PowerShell 5.1 and PowerShell 7 and resolve default paths relative to the script location.
+The publisher accepts `-ApiKey`, reads `NUGET_API_KEY`, or prompts with hidden input. Ordinary publication asks for PowerShell confirmation; use `-Confirm:$false` for an automated run with credentials supplied. `-Source`, `-SymbolSource`, and `-PackagesDirectory` override the default feeds and package directory. Both scripts support Windows PowerShell 5.1 and PowerShell 7 and keep their default paths rooted in the Framework repository.
 
 ## :mag: Tools.* Namespace — Global Utility Discovery
 
@@ -181,7 +182,7 @@ For web development, start with the [Blazor host and complete CRUD grid example]
 
 WinForms and Blazor share the runtime hierarchy `IApplication` → `IApplicationBlock` → menus and screen definitions in `Sphere10.Framework.Application.UI`. Parent links identify the owning application, block and menu; blocks retain their startup plugin as `Source`, and hosted screens expose their `Host` and `Block`. Plugins contribute blocks during startup, and `LoadedPlugins` records successfully registered plugins. Shell navigation icons select blocks through the host. Their typed plugin builders reuse the shared registration and lifecycle model. The Blazor tester demonstrates the full application shell, merged menus/toolbars, single- and multi-instance tabs, permanent singleton screens, tabless empty-workspace screens, theme switching and a reusable claims-based identity control. See the [shared plugin guide](src/Sphere10.Framework.Application/README.md#application-plugins) and [Blazor component guide](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for configuration and extension examples.
 
-`IApplication` also coordinates initialization, shutdown, confirmed exit, logging and its owned disposable resources. Declare a plugin's name before `RegisterInitializer` or `RegisterFinalizer`; tasks resolve under that unique name through the application's provider. With splash screens enabled, WinForms shows application and existing process tasks through startup/shutdown splashes and closes the main form after shutdown. Blazor runs application tasks once per interactive circuit, retaining state across temporary reconnects and finalizing on exit or circuit closure. Both APIs support synchronous and asynchronous execution through the [directional base-class pattern](docs/guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies). See the [WinForms lifecycle guide](src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) and [Blazor demo lifecycle](utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown).
+`IApplication` also coordinates initialization, shutdown, confirmed exit, logging and its owned disposable resources. Declare a plugin's name before `RegisterInitializer` or `RegisterFinalizer`; tasks resolve under that unique name through the application's provider. With splash screens enabled, WinForms shows application and existing process tasks through startup/shutdown splashes and closes the main form after shutdown. Blazor runs application tasks once per interactive circuit, retaining state across temporary reconnects and finalizing on exit or circuit closure. Both APIs support synchronous and asynchronous execution through the [directional base-class pattern](docs/guidelines/patterns/sync-async.md#synchronous-and-asynchronous-implementation-hierarchies). See the [WinForms lifecycle guide](src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) and [Blazor demo lifecycle](utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown).
 
 ## :test_tube: Test Projects
 
@@ -249,7 +250,21 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 
 ## :handshake: Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! After cloning the repository or creating a worktree,
+use PowerShell 7.2 or later to run these commands from the Framework repository root:
+
+```powershell
+pwsh -File ./scripts/setup-agent-skills.ps1
+pwsh -File ./scripts/setup-agent-skills.ps1 -Check
+```
+
+Git does not run this setup automatically on clone. It creates ignored local
+aliases so coding agents can discover the shared instructions and skills under
+`agents/`; `-Check` verifies the aliases without changing them. Rerun setup after
+moving the checkout or atomically replacing an `AGENTS.md` file. See
+[Agent Guidance](docs/agent-guidance.md#local-alias-setup) for platform details.
+
+To submit a change:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-feature`)

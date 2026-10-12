@@ -12,7 +12,7 @@
   - `ClassicAssert.AreEqual(expected, actual, msg)` → `Assert.That(actual, Is.EqualTo(expected), msg)`
   - `ClassicAssert.IsNotNull(x)` → `Assert.That(x, Is.Not.Null)`
   - `ClassicAssert.IsNull(x)` → `Assert.That(x, Is.Null)`
-  - etc. — see `.github/copilot-instructions.md` § Unit Testing for the full list.
+  - etc. — see [the testing guidance](../docs/guidelines/patterns/testing.md) for the assertion rules.
 - Remove `using NUnit.Framework.Legacy;` from every file once all `ClassicAssert` calls are replaced.
 - Also check `src/Sphere10.Framework.NUnit/AssertEx.cs` and `src/Sphere10.Framework.NUnit/NUnitTool.cs` — these utility files may use `ClassicAssert` internally.
 - Build and run affected tests to confirm no regressions.

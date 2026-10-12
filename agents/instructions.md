@@ -1,332 +1,133 @@
-# GitHub Copilot Instructions
+# Shared Coding Agent Instructions
 
-These are project-level instructions for GitHub Copilot when working in the Sphere10 Framework codebase.
+These are the authoritative workflow instructions for agents working in the
+Sphere10 Framework repository, including Codex, Claude Code and GitHub Copilot.
+Implementation rules belong in the referenced guidelines and topic files.
 
-## Workflow
-- **NEVER run `git commit`** (or any git command that creates commits) unless the user explicitly asks in the current message. This overrides any workflow/scenario/skill default — including upgrade-agent "commit after each task" strategies. Leave all changes uncommitted in the working tree. See [Committing](#committing) for commit rules when the user *does* ask.
-- When writing code, understand the ambient code pattern at the method, class, and library level, then re-evaluate your intentions to ensure you achieve your goals and blend perfectly into the existing codebase.
-- Load the task-specific skill from [skills/](skills/README.md) before starting work (e.g. `skills/builder-pattern` for fluent builders, `skills/tools-namespace` for `Tools.*` utilities, `skills/winforms-ui` for screens/wizards, `skills/unit-testing` for tests). These instructions remain authoritative if a skill conflicts.
-- Use dictionary-based storage keyed by entity ID for graph/tree structures. For example, `FinalizedBlockChain` uses `Dictionary<TBlockID, PotentialHead>` for both all-nodes and potential-heads tracking, with `IEqualityComparer` overloads for custom ID types.
+## Required guidance loading
 
-## Project Overview
+Before planning or changing files:
 
-Sphere10 Framework targets **.NET 10** (`net10.0` / `net10.0-windows`), with **.NET Standard 2.1** for HashLib4CSharp and **.NET Standard 2.0** for source generators. It provides foundational libraries for application development including data access, cryptography, communications, Windows utilities, and WinForms UI components.
+1. Read [the master entry point](README.md) and these instructions in full.
+2. Read the applicable scope: [source](scopes/source.md) for `src/**`,
+   [tests](scopes/tests.md) for `tests/**`, and [demos and utilities](scopes/utils.md)
+   for `utils/**`. These paths are relative to the Framework repository root.
+3. Read [the skill catalog](skills/README.md), then every matching `SKILL.md`
+   in full and the supporting references it selects. Native skill discovery
+   does not mean those bodies have already been read.
+4. For code changes and C# examples, read [code-style](skills/code-style/SKILL.md)
+   and [Code Styling](../docs/guidelines/code-styling.md). Read the
+   [Patterns and Practices index](../docs/guidelines/patterns-and-practices.md)
+   and every topic whose selection criteria apply to the task. Read
+   [3-Tier Architecture](../docs/guidelines/3-tier-architecture.md) when changing
+   architectural layers. Select additional topics as the scope changes.
+5. Read affected project READMEs and the relevant guides in the
+   [documentation index](../docs/README.md).
 
-## Code Style
+Read each source once unless it changes; a source already loaded in full does
+not need another read. Resolve links relative to the containing canonical file,
+not the shell's working directory or a client alias. Direct canonical reads work
+before local alias setup. For discovery and maintenance, read
+[the agent guidance structure](../docs/guidelines/patterns/agent-guidance.md).
 
-### Braces & Formatting
-- **Opening braces** go at the **end of the line** (K&R / Egyptian style), not on a new line.
-- Use **tabs** for code indentation (tab width 4). Use **spaces** for aligning comments.
-- Prefer `var` over explicit type declarations wherever possible.
-- Omit braces for **single-line scopes** (single-statement `if`, `foreach`, etc.).
-- Remove **redundant `else`** blocks after `return` or `throw`.
-- Do **not** wrap lines unless they exceed ~170 characters or wrapping significantly improves readability. Fluent builder invocations follow the configuration hierarchy below even when their lines are shorter.
-- When wrapping after `(`, place the closing `)` on its own line at the indentation of the originating line.
-- Put each generic `where` constraint on its own line, aligned one tab beneath the declaration. When the declaration has a body, put its opening brace at the end of the final constraint line. Apply this to types, methods and documentation examples even when the constraints would fit on one line.
+The user's explicit instructions take precedence. These workflow instructions
+remain authoritative over skills; coding and implementation rules live in their
+referenced guidelines. A skill does not expand the authorized task or authorize
+new dependencies. Keep client entrypoints as pointers or aliases to the central
+store.
 
-```csharp
-public abstract class ScreenHostBase<TBlock, TScreen>
-	where TBlock : class, IApplicationBlock
-	where TScreen : class, IApplicationScreen {
-}
-```
+## Investigate and implement
 
-### Naming Conventions
-- **PascalCase** for all types, methods, properties, and non-private fields.
-- **`_camelCase`** (underscore prefix) for private fields.
-- **camelCase** for local variables and parameters, including lambda, loop, and catch variables. Use `_camelCase` for private fields; keep types and public members PascalCase.
-- Use **self-describing names**; avoid short, cryptic, or abbreviated names.
+- Understand the existing method, class, library and real consumer paths before
+  changing them. Apply the selected practices and blend changes into the codebase.
+- Keep the user's requested scope and previously accepted constraints in view.
+  Identify callers, registrations, examples and documentation affected by the work.
+- Update affected consumers with the capability they use; check the real startup
+  and user-facing paths as well as the supporting abstraction.
+- Preserve unrelated working-tree changes. Keep a file's Git history when moving
+  it and update its callers, relative paths, references and solution items.
 
-### Platform-specific Extensions
+## Validate and document
 
-- Keep UI-independent application contracts and models in `Sphere10.Framework.Application.UI` with unprefixed names such as `IApplicationBlock` and `ApplicationBlockBase`.
-- Name platform extensions explicitly: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`, with corresponding `BlazorApplicationBlock` and `WinFormsApplicationBlock` classes. Apply the same convention to related menus, screens, hosts, builders and decorators.
-- Reuse shared contracts and value types directly when no platform extension is needed. Do not redeclare an identically named platform type or introduce a namespace alias to conceal an avoidable naming collision.
+- Run the checks appropriate to the actual change. For test work, read the
+  [testing practices](../docs/guidelines/patterns/testing.md) and
+  [unit-testing skill](skills/unit-testing/SKILL.md).
+- Report the checks actually executed and any material unresolved limitation.
+  Source inspection is not evidence that a test passed.
+- Update affected project READMEs when public API, behavior or usage changes.
+  Keep documentation examples aligned with the configuration and code that run.
+- Audit the complete change for stale references, omitted consumers, duplicate
+  guidance bodies and capabilities that were added but never adopted.
+- Keep both solutions' Agent Guidance and Misc items current when
+  tracked documentation, guidance or script files are added, moved or removed.
 
-### Namespaces
-- Use **file-scoped namespace declarations** (`namespace X;`).
-- Namespaces are **not** strictly tied to folder structure. They follow a logical `CompanyName.ProductName.Tier.Domain` pattern and should not be overly granular.
+## Maintain skills and patterns
 
-### Collection-valued Data Properties
+When adding, changing, renaming or retiring guidance, complete this workflow:
 
-- Sequence-valued properties on data objects and interfaces must use arrays (`T[]`), not `IEnumerable<T>`, read-only collection interfaces or list types. Keep implementations, base classes and decorators consistent.
-- Materialize sequences before exposing them; use `Array.Empty<T>()` for empty collections. Preserve ownership with defensive copies where callers must not change stored collection membership. Mutable lists may remain implementation details; keyed mappings may remain dictionaries.
-- This rule applies to data properties. Enumerable method parameters and methods that intentionally return sequences remain appropriate. See [the coding guide](../docs/guidelines/code-styling.md#collection-valued-data-properties).
+1. Read [the guidance structure](../docs/guidelines/patterns/agent-guidance.md),
+   [skill catalog](skills/README.md) and
+   [pattern index](../docs/guidelines/patterns-and-practices.md). Inspect the
+   existing skills and topics and their consumers; extend the existing owner
+   when it already covers the guidance.
+   Verify implementation rules and examples against current framework APIs and
+   actual consumer paths before making them authoritative.
+2. Put reusable implementation rules in a focused file under
+   `docs/guidelines/patterns/`. Keep `patterns-and-practices.md` as the task index.
+   Keep formatting, naming and source conventions in `code-styling.md`, and
+   workflow in this file. Maintain each rule body in one canonical location.
+3. Create repository skills only at `agents/skills/<skill-name>/SKILL.md`.
+   Use a lowercase hyphenated name matching the directory and valid YAML
+   frontmatter with `name` and a `description` that identifies when the skill
+   applies. Keep the skill's task procedure concise and link the relevant
+   pattern topics rather than copying their rule bodies. Store supporting
+   references, scripts and assets beside the skill only when they are needed.
+4. State when each topic or supporting reference must be read. Keep detailed
+   material in the selected topic or reference so agents load the parts their
+   task needs. Use portable relative links that work from the canonical store
+   and through the native skill aliases; do not use workstation-specific paths.
+5. Register skills in `agents/skills/README.md` with their selection criteria,
+   and pattern topics in `docs/guidelines/patterns-and-practices.md` with their
+   task criteria. Update affected skills, documentation and entrypoint links
+   so the new guidance is discoverable and superseded references are removed.
+6. Add or update the canonical files and supporting resources in both solutions'
+   Agent Guidance or Misc folders. Keep project READMEs in their real projects
+   and the root README only in Misc. Preserve file history and existing
+   rules and examples when extracting or moving guidance.
+   Keep client entrypoints as pointers and the local discovery paths as aliases;
+   never add copied skill trees or independently maintained client rule bodies.
+7. Before finishing, validate changed skill frontmatter and naming, local links,
+   anchors and path casing, topic/catalog coverage, and both solution files.
+   Check incoming references as well as outgoing links after moves or removals.
+   Run `pwsh -File ./scripts/setup-agent-skills.ps1 -Check` from the Framework
+   root; if aliases need repair, follow the existing setup procedure and rerun
+   the check. Verify aliases identify the canonical files and remain ignored by
+   Git. Run any new or changed supporting scripts with meaningful fixtures and
+   confirm the guidance can be reached from its intended entrypoint.
 
-### Member Ordering
-Inside a class, order members as:
-1. Events
-2. Private fields
-3. Protected fields
-4. Constructors (simple first, complex last), then finalizers
-5. Public properties
-6. Internal/protected/private properties
-7. Public methods
-8. Internal/protected/private methods
-9. Inner types
-
-### Comments & Vertical Spacing
-- Use code comments to describe **logical segments** within method bodies.
-- Use a **single blank line** to separate logical segments; no blank lines within a segment. A fluent builder invocation is one continuous segment: keep its configuration and nested child builders together without blank separator lines.
-- One blank line between members in a class.
-
-### Constructor Chaining
-- Base/sibling constructor calls (`: base(...)`, `: this(...)`) go on the **next line**, indented with a tab.
-
-## Build Settings
-- `LangVersion` is set to `latest`.
-- `Nullable` is set to `annotations` globally: existing nullable annotations remain supported, while nullable-reference analysis warnings are disabled. Declare reference types without `?` annotations and do not use postfix null-forgiving `!` operators. Configure nullable-reference warning suppression in the project instead. Nullable value types remain appropriate when required by the API.
-- `ImplicitUsings` is **disabled** — always add explicit `using` directives.
-
-## Architecture Patterns
-
-Read [Patterns and Practices](../docs/guidelines/patterns-and-practices.md) when designing or changing a type hierarchy. A class supplied only as an inheritance foundation must be abstract and named `...Base`. Retain a concrete public implementation when it has a genuine direct consumer and usable behavior; test-only construction or a convenience name does not justify making inheritance scaffolding concrete.
-
-### Synchronous and Asynchronous Implementation Hierarchies
-
-Follow the [sync/async hierarchy guide](../docs/guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies), using `IRepository` and its bases as the architectural reference. Declare both execution primitives in the interface and neutral abstract base. `SyncFooBase` supplies async adapters to sync primitives; `AsyncFooBase` supplies blocking sync adapters to async primitives. Concrete implementations override their chosen direction. Keep shared state and notifications in the neutral base; do not choose execution through default interface members or a boolean mode. Adapters must preserve actual completion, errors, cancellation semantics, disposal direction and platform thread affinity. Inline covariant property projections remain valid default interface bridges.
-
-### Tools Namespace (Maximal Use)
-Static utility/tool classes live in the **`Tools`** global namespace so consumers can discover them via `Tools.` intellisense. Always prefer `Tools.*` over raw BCL calls when a tool exists. Key tools include:
-- **`Tools.Array`** — array manipulation, sub-arrays, resizing.
-- **`Tools.Collection`** — filtering, mapping, flattening, `ResizeArray`.
-- **`Tools.Crypto`** — hashing (SHA-256, BLAKE2B), signing, key derivation.
-- **`Tools.Text`** — string manipulation, formatting, generation.
-- **`Tools.Enum`** — enum descriptions, values, parsing.
-- **`Tools.Values`** — futures (`Tools.Values.Future.Explicit(...)`, `Tools.Values.Future.Reloadable(...)`), clipping, comparison.
-- **`Tools.Lambda`** / **`Tools.Expression`** — expression tree helpers.
-- **`Tools.Reflection`** — type inspection, property access, activation.
-- **`Tools.Runtime`** — `IsDebugBuild`, framework version, OS detection.
-- **`Tools.FileSystem`** — temp files, read/write, directory management.
-- **`Tools.Streams`** — stream decorators, bounded streams, read/write all bytes.
-- **`Tools.Scope`** — transactional scope management.
-- **`Tools.Sqlite`** / **`Tools.MSSQL`** / **`Tools.Firebird`** — database helpers.
-- **`Tools.NUnit`** — test utilities (e.g., 2D array formatting).
-
-`Tools.Windows` is a **static facade** with `[ThreadStatic]` singleton properties (`Registry`, `Services`, `Security`, `Processes`, `Win32`) that return instance-based utility classes (e.g., `RegistryUtil`, `ServicesUtil`).
-
-To add a new tool, create a `static class` in the `Tools` namespace anywhere in the codebase — it becomes discoverable via `Tools.` intellisense automatically.
-
-### Builder Facade Pattern
-The codebase favors **fluent builder classes** for configuring complex objects. Builders accumulate state via chainable `With*`/`Add*`/`Configure*` methods and finalize with `.Build()`. Key examples:
-- **`SerializerBuilder`** — builds `IItemSerializer<T>` by specifying member serializers: `SerializerBuilder.For<T>().Serialize(x => x.Prop, serializer).Build()`. Also supports `.SerializeMembersAutomatically()` for convention-based assembly.
-- **`ProtocolBuilder`** — builds communication `Protocol` objects with handshake, request/response, and command handlers per mode.
-- **`WinFormsApplicationBlockBuilder`** — builds `WinFormsApplicationBlock` with screens and menus: `.WithName().WithDefaultScreen<T>().ConfigureMenu(mb => ...).Build()`.
-- **`WinFormsWizardBuilder<T>`** — builds multi-step wizard dialogs: `.WithTitle().WithModel().AddScreen().OnFinished().Build()`.
-
-When creating new complex configuration APIs, follow this pattern: create a `FooBuilder` class with chainable methods and a terminal `.Build()`. Format each builder invocation as a continuous indented block with no blank lines: one configuration call per line, child calls one tab deeper than their owning call, and multiline closing parentheses aligned with that call. Follow `ProtocolBuilder` for composition: `ConfigureX(Action<XBuilder>)` creates and builds a child, then registers its result through `AddX`. `AddX` registers an existing definition or constructs one directly from arguments; it must never create or invoke a child builder.
-
-### Serialization
-The serialization framework provides binary serializers for efficient stream-based I/O. Core types:
-- **`IItemSerializer<T>`** — serializes/deserializes `T` via `EndianBinaryWriter`/`EndianBinaryReader` with a `SerializationContext`. Extends `IItemSizer<T>` for size calculation.
-- **`ItemSerializerBase<T>`** — abstract base implementing `IItemSerializer<T>`.
-- **`SerializerFactory`** — registry of type→serializer mappings with auto-resolution for generics, enums, and composite types. `SerializerFactory.Default` is the global singleton with all primitive and common-type serializers pre-registered. Custom factories chain from it via `new SerializerFactory(baseFactory)`.
-- **`SerializerBuilder`** — fluent builder for composite serializers (see Builder pattern above).
-- **`CompositeSerializer`** — auto-serializes all readable/writable members of a type.
-- **`PolymorphicSerializer`** — dispatches to concrete-type serializers for abstract types.
-- Serializers are endian-aware (`EndianBitConverter`, `Endianness`).
-
-### ClusteredStreams
-`ClusteredStreams` is a virtual file-system that multiplexes many logical `Stream`s onto a single backing stream using a cluster-based allocation model (similar to FAT). Core types:
-- **`ClusteredStreams`** — manages a `ClusterMap` of fixed-size clusters, a stream descriptor list, and reserved streams. Supports `Add`, `OpenRead`, `OpenWrite`, `Remove`, `Insert`, `Swap`, `Clear`. Provides pluggable `IClusteredStreamsAttachment` for indexes and merkle trees.
-- **`ClusteredStream`** — a `StreamDecorator` representing a single logical stream backed by a cluster chain. Opened via `ClusteredStreams.Open*`.
-- **`ObjectStream<T>`** — stores typed objects in a `ClusteredStreams` using an `IItemSerializer<T>`. Acts like a "database table" with per-item stream storage.
-- **`ObjectSpace`** — an ORM-like layer built on `ClusteredStreams` + `ObjectStream` + `SerializerFactory` for persisting object graphs with indexes, merkle trees, and change tracking. Provides `Get<T>`, `Save<T>`, `Delete<T>`, `New<T>`.
-- **Stream-mapped collections** — `IStreamMappedList<T>`, `IStreamMappedDictionary<TKey, TValue>`, `IStreamMappedHashSet<T>` all build on `ObjectStream` for persistent, list/dict/set semantics with full CRUD, serialization, and optional merkle-tree integrity.
-
-### DataSource Pattern (Sync/Async Hierarchy)
-`IDataSource<T>` defines a **full dual sync/async interface** with both item-level and batch-level CRUD. The abstract implementation hierarchy avoids duplication:
-- **`IDataSource<T>`** — declares all methods: `Create`, `Read`, `Update`, `Delete`, `Validate` (item), `CreateRange`, `ReadRange`, `UpdateRange`, `DeleteRange`, `ValidateRange` (batch), plus `*Async` counterparts. **Batch methods use the `Range` suffix** before `Async` (e.g., `CreateRange`, `CreateRangeAsync`).
-- **`DataSourceBase<T>`** — abstract class declaring all methods as `abstract`.
-- **`SyncBatchDataSourceBase<T>`** — for sync-first implementations. Override only the sync batch methods (`CreateRange`, `ReadRange`, etc.). Item methods delegate to batch, async methods wrap sync via `Task.Run`.
-- **`AsyncBatchDataSourceBase<T>`** — for async-first implementations. Override only the async batch methods. Item methods delegate to batch, sync methods wrap async via `.ResultSafe()`/`.WaitSafe()`.
-- **`FutureListDataSource<T>`** — extends `SyncBatchDataSourceBase<T>`, backed by an `IFuture<IExtendedList<T>>`. Provides default CRUD over the future list.
-- **`BulkFetchDataSource<T>`** — extends `FutureListDataSource<T>` with a `Reloadable` future. Call `Invalidate()` to force re-fetch on next access. Use for lazy/invalidatable data fetching.
-- **`ListDataSource<T>`** — wraps an existing `IExtendedList<T>` as a data source.
-- **`ProjectedDataSource<TFrom, TTo>`** — decorator that projects entities between types via `Func<TFrom, TTo>` / `Func<TTo, TFrom>` mappings.
-
-These describe the existing data-source implementations. Apply the [general sync/async adapter rules](../docs/guidelines/patterns-and-practices.md#adapter-completion-and-cancellation) when extending this hierarchy, and verify existing waiting helpers before relying on their completion or synchronization-context behavior.
-
-### Collections (ExtendedList & Stream-Mapped)
-The framework provides `long`-indexed collection interfaces and implementations:
-- **`IExtendedCollection<T>`** — extends `ICollection<T>` with `long Count` and range operations.
-- **`IExtendedList<T>`** — extends `IExtendedCollection<T>` with `long` indexing, `InsertRange`, `RemoveRange`, `UpdateRange`, `ReadRange`, `AddRange`, `IndexOfRange`.
-- **`RangedListBase<T>`** — abstract base where single-item operations (`Add`, `Read`, `Update`, `Remove`) delegate to their `*Range` counterparts. Subclass and override only the range methods.
-- **`ExtendedList<T>`** — resizable array-backed list with configurable capacity, growth size, and max capacity.
-- **`StreamMappedList<T>`** / **`StreamMappedRecyclableList<T>`** — persistent lists backed by `ObjectStream<T>` and `ClusteredStreams`. Support recyclable (soft-delete/reuse) semantics.
-- **`StreamMappedDictionary<TKey, TValue>`** / **`StreamMappedHashSet<T>`** — persistent dictionary/set backed by clustered streams with index lookups.
-- **Observable**, **Synchronized**, **Transactional**, and **Merkle** decorator variants exist for most collection types.
-
-### Logging
-Logging uses a simple `ILogger` interface with `Debug`, `Info`, `Warning`, `Error`, `Exception` methods controlled by `LogOptions` flags. Core types:
-- **`ILogger`** — interface with level methods and `Options` property.
-- **`LoggerBase`** — abstract base that filters by `LogOptions` and delegates to `Log(LogLevel, string)`.
-- **`SystemLog`** — static application-wide logger backed by a `MulticastLogger`. Call `SystemLog.Info(...)`, `SystemLog.Error(...)`, etc. Register sinks via `SystemLog.RegisterLogger(logger)`.
-- **Decorator loggers** — `TimestampLogger`, `ThreadIdLogger`, `PrefixLogger`, `SynchronizedLogger`, `AsyncLogger` wrap an inner `ILogger` to add behavior.
-- **Sink loggers** — `ConsoleLogger`, `DebugLogger`, `FileAppendLogger`, `RollingFileLogger`, `TextWriterLogger`, `EventLogLogger` (Windows), `TextBoxLogger` (WinForms).
-- Default options: `VerboseProfile` in debug builds, `StandardProfile` otherwise (set via `Tools.Runtime.IsDebugBuild`).
-
-### WinForms UI Pattern
-- `WinFormsApplicationBlock` + `WinFormsApplicationBlockBuilder` for navigation registration (`.WithDefaultScreen<T>()`, `.ConfigureMenu(mb => mb.AddScreenItem<T>())`).
-- `WinFormsApplicationScreen` base class for screens within a block.
-- `CrudGrid` for data-bound grid screens backed by `IDataSource<T>`.
-
-### Guard Pattern (Argument & Invariant Checking)
-**Never** write `if (condition) throw new ArgumentException(...)` or similar inline throw patterns. Always use the `Guard` static class from `Sphere10.Framework`:
-
-- **`Guard.ArgumentNotNull(value, nameof(value))`** — throws `ArgumentNullException`.
-- **`Guard.Argument(condition, nameof(param), "message")`** — throws `ArgumentException` when `condition` is false.
-- **`Guard.ArgumentNot(condition, nameof(param), "message")`** — throws when `condition` is true.
-- **`Guard.ArgumentNotNullOrEmpty(str, nameof(str))`** — for strings and enumerables.
-- **`Guard.ArgumentInRange(value, min, max, nameof(value))`** — throws `ArgumentOutOfRangeException`.
-- **`Guard.ArgumentGTE / ArgumentLTE / ArgumentGT / ArgumentLT`** — relational argument checks.
-- **`Guard.ArgumentEquals(value, expected, nameof(value))`** — exact value match.
-- **`Guard.ArgumentCast<T>(obj, nameof(obj))`** — safe cast or throw.
-- **`Guard.Ensure(condition, "message")`** — throws `InvalidOperationException` for internal invariants (not argument validation).
-- **`Guard.Against(condition, "message")`** — inverse of `Ensure`, throws when condition is true.
-- **`Guard.CheckIndex / Guard.CheckRange`** — collection bounds validation.
-- **`Guard.FileExists / Guard.DirectoryExists`** — file-system pre-conditions.
-
-```csharp
-// ✅ Correct
-Guard.ArgumentNotNull(buffer, nameof(buffer));
-Guard.Argument(buffer.Length >= MinSize, nameof(buffer), "Buffer too small");
-Guard.Ensure(!IsDisposed, "Object has been disposed");
-
-// ❌ Wrong — do not use inline throws
-if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-if (buffer.Length < MinSize) throw new ArgumentException("Buffer too small");
-```
-
-### Endian-Aware Bit Conversion
-**Never** use `System.BitConverter`. Always use the framework's endian-aware equivalents:
-
-- **`EndianBitConverter`** — abstract base with `LittleEndianBitConverter` and `BigEndianBitConverter` implementations. Use `EndianBitConverter.Little` / `EndianBitConverter.Big` static singletons.
-- **`EndianBinaryWriter`** / **`EndianBinaryReader`** — endian-aware stream readers/writers used throughout serialization.
-- All serialization infrastructure (`IItemSerializer<T>`, `ClusteredStreams`, `ObjectStream`) is endianness-aware. When writing new serializers or stream code, always propagate `Endianness` from the parent context.
-
-### Cryptography
-The framework provides its own crypto infrastructure in `Sphere10.Framework` (core) and `Sphere10.Framework.CryptoEx` (extended). **Prefer framework crypto over raw BCL crypto.**
-
-- **Hashing** — use `Hashers.Hash(CHF.SHA2_256, data)` or other `CHF` enum values. The `Hashers` class is a thread-safe static registry of `IHashFunction` implementations. Never use `System.Security.Cryptography.SHA256.Create()` directly.
-- **`CHF` enum** — canonical hash function identifiers: `SHA2_256`, `SHA2_512`, `BLAKE2B_256`, `BLAKE2B_128`, `SHA3_256`, etc.
-- **`Tools.Crypto`** — static tool for random bytes (`GenerateCryptographicallyRandomBytes`), password hashing, AES encryption, secure erase (`SecureErase`).
-- **Digital signatures** — `IDigitalSignatureScheme` / `StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey>` in `Sphere10.Framework.CryptoEx`. Implementations: `Schnorr`, `ECDSA` (various curves), etc.
-- **Key derivation** — `GeneratePrivateKey(ReadOnlySpan<byte> seed)` must be deterministic (same seed → same key). Use `DigestRandomGenerator` seeded exclusively with the provided seed. The parameterless overload uses system entropy.
-- **IES** — `IIESAlgorithm` for integrated encryption schemes, accessed via `scheme.IES`.
-
-### Comparers & Equality
-The framework provides a `ComparerFactory` registry — **not** ad-hoc `IEqualityComparer<T>` implementations:
-
-- **`ComparerFactory`** — registry of `IEqualityComparer<T>` and `IComparer<T>` by type. `ComparerFactory.Default` has all primitives and common types pre-registered.
-- **`ByteArrayEqualityComparer`** — use for `byte[]` equality (not `SequenceEqual` in hot paths).
-- **`ReferenceEqualityComparer`** — identity comparison by reference.
-- **`TypeEquivalenceComparer`** — for `Type` equality that respects type forwarding.
-- Chain custom factories: `new ComparerFactory(ComparerFactory.Default)` then register domain-specific comparers.
-- When `ObjectSpace` or `StreamMappedCollection` needs comparers, they come from the injected `ComparerFactory`.
-
-### Scope-Based Patterns
-The framework uses **disposable scope objects** (`using` blocks) extensively for resource management, synchronization, and state transitions. **Always follow this pattern**:
-
-- **Thread synchronization** — `SynchronizedObject` provides `EnterReadScope()` / `EnterWriteScope()` returning `IDisposable`. All reads/writes to synchronized collections must be enclosed in the appropriate scope:
-  ```csharp
-  using (collection.EnterWriteScope()) {
-      collection.Add(item);
-  }
-  ```
-- **Access scopes** — `ICriticalObject.EnterAccessScope()` used by `ObjectSpace`, `ClusteredStreams`, and stream-mapped collections.
-- **`Tools.Scope`** — utility for ad-hoc cleanup scopes:
-  - `Tools.Scope.ExecuteOnDispose(action)` — runs `action` when the scope is disposed.
-  - `Tools.Scope.DeleteFileOnDispose(path)` — auto-cleanup temp files.
-- **Transactional scopes** — `TransactionalScopeBase` for commit/rollback semantics. Database DACs and `ClusteredStreams` use transactional scopes internally.
-- **`ActionScope` / `TaskScope`** — lightweight `IDisposable`/`IAsyncDisposable` that execute a delegate on disposal.
-
-The general principle: if an operation acquires a resource, enters a state, or needs guaranteed cleanup, wrap it in a scope. Never use bare `try/finally` when a scope object exists.
-
-### Job Scheduler
-The framework includes a built-in `Scheduler<TJob, TJobSchedule>` for recurring or one-shot background jobs:
-
-- **`IJob`** — interface with `Execute()`, `Name`, `Status`, `Policy`, `Schedules`.
-- **`BaseJob`** — abstract base with schedule management and serializable surrogates.
-- **`ActionJob`** — wraps a plain `Action` as a job.
-- **`JobBuilder<T>`** / **`JobBuilder`** — fluent builder: `JobBuilder.For(action).Called("name").Repeat.OnInterval(TimeSpan).Build()`.
-- **`Scheduler<TJob, TJobSchedule>`** — manages a timeline heap, auto-reschedules based on `ReschedulePolicy`, supports sync/async via `JobPolicy`, emits `JobStatusChanged` / `StatusChanged` events.
-- The scheduler accepts an `ILogger` for diagnostics.
-
-### Dog-Fooding (Prefer Framework Over BCL)
-**Always prefer Sphere10 Framework utilities over raw System/BCL equivalents** when a framework tool exists:
-
-| Instead of (BCL) | Use (Framework) |
-|---|---|
-| `System.BitConverter` | `EndianBitConverter.Little` / `.Big` |
-| `SHA256.Create().ComputeHash(...)` | `Hashers.Hash(CHF.SHA2_256, data)` |
-| `new Random()` / `RandomNumberGenerator` | `Tools.Crypto.GenerateCryptographicallyRandomBytes(n)` |
-| `File.ReadAllBytes` / `File.WriteAllBytes` | `Tools.FileSystem.*` |
-| `Array.Copy` / `Buffer.BlockCopy` | `Tools.Array.*` |
-| `string.Join`, `string.Format` (complex) | `Tools.Text.*` |
-| `Enum.GetValues`, `Enum.Parse` | `Tools.Enum.*` |
-| `Activator.CreateInstance` (complex) | `Tools.Reflection.ActivateWithCompatibleArgs` |
-| `Console.WriteLine` (logging) | `SystemLog.Info(...)` |
-| inline `if/throw` for args | `Guard.*` |
-| ad-hoc `EqualityComparer<T>` | `ComparerFactory.Default.GetEqualityComparer<T>()` |
-
-### Documentation
-- Update **README.md** files in affected projects when changes alter public API, behavior, or usage patterns.
-- Each project (`Sphere10.Framework`, `Sphere10.Framework.CryptoEx`, `Sphere10.Framework.Data`, etc.) may have its own README. Keep them current.
-
-## License Header
-
-All new source files must include the copyright header:
-```csharp
-// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Herman Schoenfeld
-//
-// Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit https://opensource.org/license/mit.
-//
-// This notice must not be removed when duplicating this file or its contents, in whole or in part.
-```
-
-## Unit Testing
-
-### Framework & Conventions
-- Use **NUnit** as the test framework.
-- **Do not** use `ClassicAssert` or any legacy NUnit assertion style (`Assert.IsTrue`, `Assert.AreEqual`, `ClassicAssert.IsTrue`, etc.).
-- **Always** use the modern **constraint-model assertions** via `Assert.That(...)`:
-  ```csharp
-  // ✅ Correct
-  Assert.That(result, Is.EqualTo(expected));
-  Assert.That(flag, Is.True);
-  Assert.That(collection, Is.Not.Empty);
-  Assert.That(() => Foo(), Throws.InstanceOf<InvalidOperationException>());
-
-  // ❌ Wrong — do not use
-  ClassicAssert.AreEqual(expected, result);
-  ClassicAssert.IsTrue(flag);
-  Assert.IsTrue(flag);
-  ```
-- Include a descriptive failure message where it aids diagnosis: `Assert.That(result, Is.True, "Signature must verify against the correct public key");`
-- Use `[TestFixture]`, `[Test]`, `[TestCase(...)]`, `[Values(...)]`, `[Repeat(n)]` attributes as appropriate.
-- Use `[Parallelizable(ParallelScope.Children)]` on test fixtures unless tests share mutable state.
+Changing guidance does not expand the task's scope, add authorization or change
+the user's explicit preferences. Report the maintenance checks actually run.
 
 ## Committing
-- Prefer **granular commits per logical task** rather than bulk commits. This does not mean one commit per file — group related changes across files into a single commit when they serve the same logical purpose.
-- Write commit messages in **imperative mood** using a **title + detail** format:
-  ```
+
+**NEVER run `git commit` or another command that creates commits unless the user
+explicitly asks in the current message.** This overrides workflow, scenario and
+skill defaults, including upgrade-agent strategies. Leave changes uncommitted
+until that request.
+
+When committing is requested:
+
+- Prefer granular commits per logical task. Group related files that serve the
+  same purpose; do not use one commit per file mechanically.
+- Stage only files relevant to that logical change and preserve unrelated work.
+- Commit separate logical changes in dependency order.
+- Use imperative titles and a detail body describing the concrete changes:
+
+  ```text
   Short summarative title of overall change
 
   - specific logical change 1
   - specific logical change 2
-  - specific logical change N
   ```
-  The first line is the title shown in log views; the body (after a blank line) lists individual logical changes. Example:
-  ```
-  Harden RNG and fix deterministic key generation
 
-  - Remove public Seed property from HashRandom
-  - Fix GeneratePrivateKey to use seeded DigestRandomGenerator
-  - Add SeedGenerator with environment entropy collection
-  ```
-- Do **not** amend or force-push unless explicitly asked to.
-- Stage only the files relevant to the logical change — do not include unrelated modifications.
-- When multiple logical changes are ready, commit them **separately** in dependency order.
+- Do not amend or force-push unless explicitly asked to.

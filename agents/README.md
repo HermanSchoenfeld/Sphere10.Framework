@@ -1,58 +1,37 @@
-# Repository Instructions
+# Repository Agent Guidance
 
-Before doing substantive work in this repository:
+This is the master entry point for coding agents. Repository paths such as
+`src/**`, `tests/**` and `utils/**` are relative to the Framework repository root.
 
-1. Read `.github/copilot-instructions.md` in full and follow it as the
-   authoritative repository guidance.
-2. Read `.github/skills/README.md` and identify every skill whose stated use
-   matches the task.
-3. Read each matching skill's `SKILL.md` in full before planning or making
-   changes. For every code change, always load
-   `.github/skills/code-style/SKILL.md` in addition to any task-specific skills.
-4. Follow any references, scripts, assets, or supporting instructions selected
-   by those skills when they are relevant to the task.
-5. Re-evaluate the skill selection whenever the task's scope changes.
+Before substantive work:
 
-Do not treat the Copilot instructions or matching skills as optional. If a
-skill conflicts with `.github/copilot-instructions.md`, the Copilot
-instructions take precedence.
+1. Read [the shared workflow instructions](instructions.md) in full.
+2. Read the applicable [source](scopes/source.md), [test](scopes/tests.md) or
+   [demo and utility](scopes/utils.md) scope in full, even when your client does
+   not load nested instructions automatically.
+3. Read [the skill catalog](skills/README.md), then each matching `SKILL.md` in
+   full and the supporting sources it selects.
+4. For code changes and C# examples, read
+   [code-style](skills/code-style/SKILL.md),
+   [Code Styling](../docs/guidelines/code-styling.md) and the
+   [Patterns and Practices index](../docs/guidelines/patterns-and-practices.md).
+   Read every topic selected by the actual task, including
+   [Framework Reuse and Adoption](../docs/guidelines/patterns/framework-reuse.md)
+   for framework implementation or changes to its consumers. Read
+   [3-Tier Architecture](../docs/guidelines/3-tier-architecture.md) when changing layers.
+5. Read affected project READMEs and the relevant
+   [documentation guides](../docs/README.md). Re-evaluate the topic and skill
+   selection as the scope changes.
 
-Read [Patterns and Practices](docs/guidelines/patterns-and-practices.md) before
-designing or changing a hierarchy. Inheritance-only classes are abstract and
-named `...Base`; preserve concrete classes for genuine directly usable products.
-For paired sync/async APIs, follow the
-[directional implementation hierarchy](docs/guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies):
-declare both primitives in the interface and common abstract base; choose the
-primitive through `Sync...Base` or `Async...Base`, which adapts the opposite API.
-Keep execution-direction adapters out of default interface members and boolean
-mode switches. Default interface property projections remain inline bridges.
+Read each required source once unless it changes. Resolve Markdown links from
+the canonical file containing them. Instructions already loaded in full do not
+need another read. Required guidance and matching skills are not optional.
 
-Follow [Code Styling](docs/guidelines/code-styling.md#generic-constraints): put
-one generic `where` constraint on each aligned line and the opening brace at
-the end of the final constraint line.
+The user's explicit instructions take precedence. Shared workflow instructions
+remain authoritative over skills; implementation rules live in the referenced
+coding guide and pattern topics. Selecting a skill does not expand the task or
+authorize new dependencies.
 
-## Eat your own dog food
-
-This applies to all development in this repository. The purpose of the
-framework is to provide reusable code, patterns and architecture, and its own
-development must prefer those foundations.
-
-- Before implementing anything, find and understand the existing code,
-  abstractions, utilities, patterns and architecture that address the problem.
-  Reuse them rather than creating parallel implementations or local substitutes.
-- Extend or compose the existing framework where it falls short. Add a new
-  abstraction only when the existing architecture cannot reasonably support the
-  requirement; explain that gap and keep the addition consistent with the framework.
-- When adding or improving a capability, adopt it in the relevant repository
-  consumers in the same change. Supporting code alone is not a completed
-  implementation.
-- Trace the real startup, registration and user-facing execution paths. Update
-  existing applications, demos and examples to consume the new APIs.
-- Replace the superseded manual configuration or duplicated logic in those
-  consumers. Do not leave the old path active alongside an unused replacement.
-- Keep compatibility code only where it has an identified consumer or purpose,
-  and clearly distinguish it from the recommended, actively demonstrated path.
-- Verify the integration through the actual consumer's configuration and
-  behavior, in addition to testing the supporting API in isolation.
-- Update documentation to match the code that runs. Before claiming completion,
-  audit the whole change for new capabilities that were added but never adopted.
+Read [Agent Guidance Structure](../docs/guidelines/patterns/agent-guidance.md) when
+changing instructions, skills, aliases or discovery. Client entrypoints lead to
+this master store; maintain the canonical sources and their links.

@@ -5,11 +5,13 @@ description: Configure or extend WinForms CrudGrid, CRUD entity editors, and CRU
 
 # CRUD Grid
 
-Use `CrudGrid` with `IDataSource<TEntity>` in a `WinFormsApplicationScreen`. Follow [winforms-ui](../winforms-ui/SKILL.md) for screen registration and [data-source](../data-source/SKILL.md) when implementing the source. Inspect [CrudTestScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/CrudTestScreen.cs) for a working example; its **CRUD Grid** entry opens a new screen instance each time.
+Read [data-source guidance](../../../docs/guidelines/patterns/data-sources.md) when changing the grid's CRUD or paging contract.
+
+Use `CrudGrid` with `IDataSource<TEntity>` in a hosted `WinFormsApplicationScreen` or an ordinary native control. The grid, columns and reference bindings are in `Sphere10.Framework.Windows.Forms`; `CrudComboBox` is in `Sphere10.Framework.Windows.Forms.Crud`, and `IDataSource<T>` is in `Sphere10.Framework`. Follow [winforms-ui](../winforms-ui/SKILL.md) for screen registration and [data-source](../data-source/SKILL.md) when implementing the source. Inspect [CrudTestScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/CrudTestScreen.cs) for a working example; its **CRUD Grid** entry opens a new screen instance each time. See the [WinForms CRUD documentation](../../../src/Sphere10.Framework.Windows.Forms/README.md#crudgrid) for complete usage.
 
 ## Bind the source and columns
 
-Assign `GridBindings` using `CrudGridColumn<TEntity>`, then await `SetDataSource(Source, AllowedCapabilities)` and `RefreshGrid()` on the UI thread. `SetDataSource` intersects the supplied mask with the source's advertised capabilities; assigning `Capabilities` later directly replaces that mask. Preserve this intersection when changing allowed operations at runtime. Capability flags configure UI behavior; the data source/service must enforce application permissions and validation too.
+Assign `GridBindings` using `CrudGridColumn<TEntity>`, then await `SetDataSource(dataSource, allowedCapabilities)` and `RefreshGrid()` on the UI thread. These existing APIs return `Task` despite having no `Async` suffix; `SetDataSource` configures the source but does not replace the explicit refresh. `CreateNewRecord`, `EditEntity` and `DeleteSelectedRecord` are also task-returning operations. `SetDataSource` intersects the supplied mask with the source's advertised capabilities; assigning `Capabilities` later directly replaces that mask. Preserve this intersection when changing allowed operations at runtime. `CrudComboBox.SetCrudParameters` also assigns its supplied mask after binding, so supply a mask already constrained to the source capabilities there. Capability flags configure UI behavior; the data source/service must enforce application permissions and validation too.
 
 Choose the existing sync/async data-source base rather than implementing both hierarchies independently. Reads return the requested page, its actual zero-based `Page`, and the filtered `TotalCount`. Implement application searching/sorting in the source: the base `ListDataSource` read only pages its stored list. `VisibleEntities` contains the current page, not all selectable records.
 
@@ -28,6 +30,8 @@ Column configuration has separate responsibilities:
 For an editable projection such as `Address.Street`, expose a string value and update that owned object in the setter, creating it when null if the model allows. Do not set `PropertyHasValue` to false for a null object that the user should be able to create by editing; unavailable cells cannot edit.
 
 `AllowCellEditing`, `CanUpdate`, `CanEditCell`, and the row's value availability must all permit inline editing. Use `SetEntityEditor<TEntity>(typeof(Editor))` for a custom `ICrudEntityEditor<TEntity>`; the default is the property-grid editor. Create/delete controls follow their capability flags, and delete remains hidden without a selected visible row.
+
+Column `ButtonAction` and value setters are synchronous delegates. An async lambda becomes `async void` and cannot be awaited by the grid. Use an existing task-returning edit operation or an async native event handler with error handling for awaited work; do not imply that a column button offers an asynchronous callback contract.
 
 ## Selection and paging
 
@@ -57,7 +61,7 @@ Keep popup grids' `MinimumSize` compatible with their hosts; an oversized child 
 
 ## Lifetime and verification
 
-Screens own their control subscriptions, timers, and popup lifetime. Stop callbacks and detach handlers when closing/disposal ends that lifetime; asynchronous reads may finish afterward, so check disposal before touching controls. Do not marshal through a control without a usable handle. Respect ownership of any shared data source.
+Screens own their control subscriptions, timers, and popup lifetime. Stop callbacks and detach handlers when actual removal/disposal ends that lifetime; hiding a retained singleton does not dispose it. Asynchronous reads may finish afterward, so check disposal before touching controls. Do not marshal through a control without a usable handle. Respect ownership of any shared data source, and use the hosted screen's `Block.Parent.Logger` for diagnostics when that ownership is available.
 
 Use [unit-testing](../unit-testing/SKILL.md) for meaningful NUnit checks. UI tests use STA and run without concurrent native popup tests. Exercise the affected capabilities, actual edit commit/undo, selection gestures, complete-row paging, and disposal during delayed reads. For layout changes, verify the grid and every ancestor fit the host, fixed popup bounds remain stable across different result sets, and only configured columns absorb width changes. Inspect native PropertyGrid/SourceGrid hosts when their behavior changes.
 

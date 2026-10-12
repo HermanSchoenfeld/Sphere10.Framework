@@ -1,6 +1,20 @@
 # Local build counter (solution folder; not source-controlled)
 /LOCAL-BUILD-NUMBER
 
+# Local agent aliases (created by scripts/setup-agent-skills.ps1)
+/.github/skills
+/.claude/skills
+/.agents/skills
+/CLAUDE.md
+/GEMINI.md
+/src/CLAUDE.md
+/src/GEMINI.md
+/tests/CLAUDE.md
+/tests/GEMINI.md
+/utils/CLAUDE.md
+/utils/GEMINI.md
+/agents/.local-alias-state.json
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

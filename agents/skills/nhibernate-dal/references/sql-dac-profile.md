@@ -50,13 +50,13 @@ Replace `<Product>` with the application's namespace/product prefix and `<Entity
 
 Use `public static class <Product>Database` as the creation facade in `<Product>.DataAccess`. Its naming contract is:
 
-- `ApplicationDAC NewDAC(DBMSType DBMS, string ConnectionString, ILogger? Logger = null)` selects the low-level provider, then delegates to the next overload.
-- `ApplicationDAC NewDAC(IDAC DAC, ILogger? Logger = null)` wraps an existing provider and selects any vendor strategy.
-- `IDatabaseManager NewDatabaseManager(DBMSType DBMS)` resolves the application's matching schema/database manager from its composition root.
+- `ApplicationDAC NewDAC(DBMSType dbms, string connectionString, ILogger logger = null)` selects the low-level provider, then delegates to the next overload.
+- `ApplicationDAC NewDAC(IDAC dac, ILogger logger = null)` wraps an existing provider and selects any vendor strategy.
+- `IDatabaseManager NewDatabaseManager(DBMSType dbms)` resolves the application's matching schema/database manager from its composition root.
 
 Use `MSSQLDAC` or `SqliteDAC` for supported providers; do not add unsupported DBMS branches. Preserve an existing application's factory name when extending it. `ApplicationDAC` is an instance wrapper, not a static session accessor named `DAL`.
 
-The core constructor is `internal ApplicationDAC(IDAC DecoratedDAC, IDBVendorSpecificImplementation VendorSpecificImplementation) : base(DecoratedDAC)` when a strategy is needed. Omit the strategy dependency if there are no provider-specific operations. Reuse [DACDecorator](../../../../src/Sphere10.Framework.Data/DAC/DACDecorator.cs), its protected `DecoratedDAC` field, and existing `IDAC` behavior.
+The core constructor is `internal ApplicationDAC(IDAC decoratedDAC, IDBVendorSpecificImplementation vendorSpecificImplementation) : base(decoratedDAC)` when a strategy is needed. Omit the strategy dependency if there are no provider-specific operations. Reuse [DACDecorator](../../../../src/Sphere10.Framework.Data/DAC/DACDecorator.cs), its protected `DecoratedDAC` field, and existing `IDAC` behavior. Put the initializer on its own indented line in an actual C# declaration, following the code-style skill.
 
 Keep `IDBVendorSpecificImplementation` and `DBVendorSpecificImplementationBase` for provider-sensitive queries, maintenance, or optimizations. Concrete names are `MSSQLVendorSpecificImplementation` and, for genuinely optional behavior, `NoOpVendorSpecificImplementation`. A no-op must not hide an unsupported operation required for correctness. Follow the application's logger ownership; a facade overload must not silently discard a supplied logger.
 
@@ -66,7 +66,7 @@ Use `<Product>DatabaseManagerMSSQL : NHDatabaseManagerBase` with a parameterless
 
 `ModuleConfiguration : ModuleConfigurationBase` overrides `RegisterComponents(IServiceCollection)` and registers managers using `AddNamedTransient<IDatabaseManager, TManager>(DBMSType.SQLServer.ToString())` or the corresponding provider key. The creation facade resolves the same keys. Use the target's existing composition mechanism when it differs.
 
-For this generator variant, `PrimingDataGenerator : NHDataGeneratorBase` has constructor `(ISessionFactory SessionFactory, string DatabaseName) : base(SessionFactory)` and a `protected readonly string DatabaseName` field when the seed process needs it. Its `protected sealed override IEnumerable<object> CreateData()` concatenates required seed sequences and finishes with `CreateNonPrimingData()`.
+For this generator variant, `PrimingDataGenerator : NHDataGeneratorBase` has constructor `(ISessionFactory sessionFactory, string databaseName) : base(sessionFactory)` and a `protected readonly string DatabaseName` field when the seed process needs it. Its `protected sealed override IEnumerable<object> CreateData()` concatenates required seed sequences and finishes with `CreateNonPrimingData()`.
 
 Declare `protected virtual IEnumerable<object> CreateNonPrimingData()` returning an empty sequence in the priming generator. `DemoDataGenerator : PrimingDataGenerator` uses the same constructor and overrides **`CreateNonPrimingData()`**, preserving mandatory priming data. Merely creating a demo generator does not wire it into `CreateDataGenerator`: add the explicit `DemoData` policy branch only when the application supports it. Do not inherit historical unsupported-policy branches or destructive SQLite creation stubs as conventions.
 
@@ -76,7 +76,7 @@ For lookup tables, choose one model family. Older scaffolds used `Table<Enum> : 
 
 An application can expose a `BizLogicScope : SyncContextScope` in its processing/business layer, with `Current`, `DAC`, `CreateDAC()`, and optional `EnterDatabaseFreeScope()`. An optional `BizComponent : IBizComponent` can capture that context and expose `CustomDAC` plus `DAC => CustomDAC ?? Scope.DAC`. These are application scaffold types, not Framework classes. Add them only when the application uses ambient business context.
 
-In this variant the business-scope constructor accepts `(DBMSType DBMS, string ConnectionString, ILogger? Logger = null)` and uses `ContextScopePolicy.MustBeRoot` with a context key based on its type. `Current` requires an active context; database access fails in a database-free context. `CreateDAC()` delegates to the product database factory. Preserve these semantics if adopting this scaffold rather than silently allowing nested business roots.
+In this variant the business-scope constructor accepts `(DBMSType dbms, string connectionString, ILogger logger = null)` and uses `ContextScopePolicy.MustBeRoot` with a context key based on its type. `Current` requires an active context; database access fails in a database-free context. `CreateDAC()` delegates to the product database factory. Preserve these semantics if adopting this scaffold rather than silently allowing nested business roots.
 
 A business context supplies dependencies; it does **not** automatically open a database transaction. Declare the transaction at the coordinating operation: `DAC.BeginScope()`, then `BeginTransaction()`, perform all related work, and `Commit()`. Dispose every scope. Reads can use a connection scope without a transaction when the consistency requirement permits it.
 

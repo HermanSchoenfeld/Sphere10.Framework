@@ -1,6 +1,6 @@
 # Current source limitations
 
-These observations describe the source inspected when this skill was extracted. Recheck the named methods in the target checkout; they are implementation defects or missing guarantees, not the intended design. Do not copy a recipe and claim that its network exchange works without testing it. Repair only the paths needed by the authorized task.
+These observations were rechecked against the current checkout during the skill audit. Recheck the named methods whenever the source changes; they are implementation defects or missing guarantees, not the intended design. Do not copy a recipe and claim that its network exchange works without testing it. Repair only the paths needed by the authorized task.
 
 All source paths below are relative to the repository root.
 
@@ -11,20 +11,20 @@ In `src/Sphere10.Framework/Protocol/Builder/ProtocolBuilder.cs`, the constructor
 When factory wiring cannot be changed in the current task, direct construction is an available API-level alternative:
 
 ```csharp
-var ProtocolDefinition = new Protocol();
-ProtocolDefinition.Factory.RegisterAutoBuild<RequestStatus>();
-ProtocolDefinition.Factory.RegisterAutoBuild<StatusResult>();
-ProtocolDefinition.Modes[0].RequestHandlers.Add(
+var protocolDefinition = new Protocol();
+protocolDefinition.Factory.RegisterAutoBuild<RequestStatus>();
+protocolDefinition.Factory.RegisterAutoBuild<StatusResult>();
+protocolDefinition.Modes[0].RequestHandlers.Add(
 	typeof(RequestStatus),
 	new ActionRequestHandler<RequestStatus, StatusResult>(HandleRequest)
 );
-ProtocolDefinition.Modes[0].ResponseHandlers.Add(
+protocolDefinition.Modes[0].ResponseHandlers.Add(
 	typeof(RequestStatus),
 	typeof(StatusResult),
 	new ActionResponseHandler<RequestStatus, StatusResult>(HandleResponse)
 );
-var Validation = ProtocolDefinition.Validate();
-Guard.Ensure(Validation.IsSuccess, "Invalid application protocol");
+var validation = protocolDefinition.Validate();
+Guard.Ensure(validation.IsSuccess, "Invalid application protocol");
 ```
 
 `RequestStatus`, `StatusResult`, and the handler methods are application-defined. Include `using Sphere10.Framework;` and `using Sphere10.Framework.Communications;`. This bypasses builder factory wiring; it does not fix the transport/envelope issues below.
