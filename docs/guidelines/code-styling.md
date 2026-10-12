@@ -1,6 +1,6 @@
 ﻿# Code Styling Guidelines
 
-Sphere 10 Software employs it's own code-styling approach which all contributions must adhere to. This document provides styling guidelines for common situations. To help contributors, Visual Studio and Resharper code-styling definitions are also provided and which can be adopted quickly by simply copying the `.editorconfig` file to the solution folder. However, the guidelines in this document go beyond what can be auto-formatted and contributors are required to read, understand and apply these guidelines. 
+Sphere 10 Software employs its own code-styling approach, which all contributions must follow. This document provides the formatting and naming rules. The repository's `.editorconfig` assists Visual Studio and ReSharper, but does not enforce every rule or replace this guide. Preserve the written conventions when legacy code or editor defaults differ.
 
 [Visual Studio & Resharper Editor Config](../../src/.editorconfig)
 
@@ -8,24 +8,47 @@ Sphere 10 Software employs it's own code-styling approach which all contribution
 
 **NOTE:** If a styling element / aspect is not addressed by this document (or editor config) then the contributor has artistic license by default.
 
+### Language and source conventions
+
+- `LangVersion` is `latest`.
+- `Nullable` is `annotations`: existing nullable annotations remain supported,
+  while nullable-reference analysis warnings are disabled. Declare reference types
+  without `?` annotations and do not use postfix null-forgiving `!` operators.
+  Configure nullable-reference warning suppression in the project. Nullable value
+  types remain appropriate when required by the API.
+- `ImplicitUsings` is disabled; add explicit `using` directives.
+
+These shared settings come from [Directory.Build.props](../../Directory.Build.props); projects can declare their target and required platform settings separately. The [core project](../../src/Sphere10.Framework/Sphere10.Framework.csproj) and [WinForms project](../../src/Sphere10.Framework.Windows.Forms/Sphere10.Framework.Windows.Forms.csproj) illustrate the ordinary and Windows targets. The examples below illustrate formatting; member fragments assume their enclosing types and collaborators.
+
+All new source files must include the copyright header:
+
+```csharp
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+```
+
 ### Braces at end-of-line
 
 Braces should begin at end of line and finish at beginning of line (with corresponding tab offsets)
 
 ```csharp
 public class SomeClass {
-    
-   public void SomeMethod() {
-        if (condition) {
-            if (condition1) {
-                foo1();
-                foo2();
-            } else {
-                foo3();
-                foo4();
-            }
-        }
-    }   
+	public void SomeMethod(bool condition, bool nestedCondition) {
+		if (condition) {
+			if (nestedCondition) {
+				FirstOperation();
+				SecondOperation();
+			} else {
+				ThirdOperation();
+				FourthOperation();
+			}
+		}
+	}
 }
 ```
 
@@ -36,11 +59,13 @@ public class SomeClass {
 Place each generic `where` constraint on its own line, aligned one tab beneath the type or method declaration. Keep the opening brace at the end of the final constraint line. Use this structure even when the constraints would fit within the ordinary line-length limit; apply it to source, tests, demos and documentation examples.
 
 ```csharp
-public abstract class ApplicationScreenHostBase<TBlock, TScreen> : IApplicationScreenHost<TBlock, TScreen>
+using Sphere10.Framework.Application.UI;
+
+public abstract class ScreenFactoryBase<TBlock, TScreen>
 	where TBlock : class, IApplicationBlock
 	where TScreen : class, IApplicationScreen {
 	protected TScreen CreateScreen<TConcrete>()
-		where TConcrete : class, TScreen, new() {
+		where TConcrete : TScreen, new() {
 		return new TConcrete();
 	}
 }
@@ -57,21 +82,23 @@ The naming conventions should follow the default C# conventions as suggested by 
 And most importantly
 3. Members are named using "self-describing" names so that the code is a "living documentation". This means **generally** avoiding short, cryptic and abbreviated names.
 
-Classes intended only as inheritance foundations must be abstract and named `...Base`. Concrete classes provide usable behavior for genuine direct consumers. See [Patterns and Practices](patterns-and-practices.md#inheritance-foundations-and-concrete-products) for deciding which layer a type belongs to.
+See [Type Hierarchies](patterns/type-hierarchies.md) for deciding which layer a type belongs to and when to use a `...Base` name.
 
 **Example:**
 
 ```csharp
 
-public class PascalCasedClassName { 
-    private int _privateFieldName;          // private fields start with underscore
-    protected int NonPrivateFieldName;      // non-private fields start with capitals
+public class PascalCasedClassName {
+	private int _privateFieldName;             // Private fields start with underscore.
+	protected int NonPrivateFieldName;         // Non-private fields start with capitals.
 
-    public PascalCasedClassname() { }       // Pascal-cased constructor
-    
-    public int PrivateMethodName() { }      // Pascal-cased private methods
-    
-    public int PublicMethodName() { }       // Pascal-cased public methods
+	public PascalCasedClassName(int initialValue) {
+		_privateFieldName = initialValue;
+	}
+
+	public int PublicMethodName() => _privateFieldName;
+
+	private int PrivateMethodName() => NonPrivateFieldName;
 }
 
 ```
@@ -105,27 +132,25 @@ Class members should be ordered according to the following guide
 ```csharp
 
 public class SomeClass {
-    
-    // 1. Event declarations
-    
-    // 2. Private field declarations
-    
-    // 3. Protected field declarations 
-    
-    // 4. Constructors (basic constructors first, complex constructors last)
-    
-    // 4b. Finalizers, if any
-    
-    // 5. Public properties
-    
-    // 6. Internal/protected/private properties
-    
-    // 7. Public methods
-    
-    // 8. Internal/protected/private methods
-    
-    // 9. Inner class/type declarations
-    
+	// 1. Event declarations
+
+	// 2. Private field declarations
+
+	// 3. Protected field declarations
+
+	// 4. Constructors (basic constructors first, complex constructors last)
+
+	// 4b. Finalizers, if any
+
+	// 5. Public properties
+
+	// 6. Internal/protected/private properties
+
+	// 7. Public methods
+
+	// 8. Internal/protected/private methods
+
+	// 9. Inner class/type declarations
 }
 
 ```
@@ -134,16 +159,18 @@ public class SomeClass {
 
 ### Namespaces
 
-Namespaces are **NOT** necessarily organized by the strict `ProjectName.folder.subfolder.subsubfolder` convention suggested by Visual Studio and Resharper.  Care must be taken by the developer to ensure the namespaces are logically thought out and not overly granular. Expecting framework consumers to know the namespaces can be unrealistic and the preference is to employ more granular namespaces.
+Use file-scoped namespace declarations (`namespace X;`).
 
-For example, the `Sphere10 Framework` module contains a myriad of system-tier domains which are all encumbered within a single `Sphere10 Framework` namespace (this may change in future).
+Namespaces are **NOT** required to mirror `ProjectName.folder.subfolder` directories. Group related APIs logically and avoid unnecessary namespace fragmentation. Consumers should not need to discover an extra namespace for every implementation folder.
 
-For system-tier modules that is acceptable, however for other tiers the namespaces should be decomposed into a logical structuring that matches the `CompanyName.ProductName.Tier.Domain` pattern. If a domain is decomposed into sub-folders then it does **NOT** automatically mean the namespace should also be decomposed that way. It's up to developers discretion. Please refer to Sphere 10's [3-tier architecture guidelines](3-tier-Architecture.md) for understanding how tiers, domains and modules are structured according to the Sphere 10 Software Engineering methodology.
+For example, the core library groups many public domains in `Sphere10.Framework`; utility facades use the separate global `Tools` namespace.
+
+For system-tier modules that is acceptable, however for other tiers the namespaces should be decomposed into a logical structuring that matches the `CompanyName.ProductName.Tier.Domain` pattern. If a domain is decomposed into sub-folders then it does **NOT** automatically mean the namespace should also be decomposed that way. It's up to developers discretion. Please refer to Sphere 10's [3-tier architecture guidelines](3-tier-architecture.md) for understanding how tiers, domains and modules are structured according to the Sphere 10 Software Engineering methodology.
 
 **Example**
 
 ```
-Sphere10 Framework
+Sphere10.Framework
 Sphere10.Framework.Application
 Sphere10.Framework.Communications
 Sphere10.Framework.Data
@@ -154,9 +181,9 @@ Sphere10.Framework.Web.AspNetCore
 
 ### Tool Pattern
 
-Sphere10 Framework Framework employs a syntactic naming convention for providing "tool" classes to framework consumers.  Tools are static classes that provide functionality in a specific domain. What makes them different is that tool classes are always defined in the  `global::Tools` namespace and never imported directly. 
+Sphere10 Framework uses static tool classes for utility functions in a specific domain. Define them in the global `Tools` namespace so consumers call them through `Tools.` without importing individual tool classes. Follow [Framework Utilities](patterns/framework-utilities.md) when selecting or extending one.
 
-The reason it is done this way is to that framework consumers can always pull up tools by simply relying on intellisense and by typing `Tools.`. Since "Tools" is a global namespace, all classes defined in Tools will appear. This makes it very easy for a developer to pull up the toolbox whenever it is needed. Sphere 10 and Sphere10 Framework framework Since knowing and remembering all tools is an unrealistic thing, tools can **always** be brought up by intellisense.
+Typing `Tools.` exposes the referenced utility classes through IntelliSense. A namespace alone does not add an assembly or package reference; the owning library must still be referenced.
 
 To use tools, simply ensure the assembly is referenced and type `Tools.` in the code editor:
 
@@ -167,17 +194,22 @@ To use tools, simply ensure the assembly is referenced and type `Tools.` in the 
 To create a tool, simply create a static class anywhere in the module and ensure it's namespace is simply `Tools`. Example:
 
 ```csharp
-namespace Tools {
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-	public static class Enums {
+namespace Tools;
 
-		public static IEnumerable<T> GetValues<T>() {
-			return Enum.GetValues(typeof(T)).Cast<T>();
-		}
+public static class Enums {
+	public static IEnumerable<T> GetValues<T>() {
+		return Enum.GetValues(typeof(T)).Cast<T>();
+	}
 
-		/// add more static methods here
+	// Add other enum utilities here.
 }
 ```
+
+This excerpt follows the existing [Enums tool](../../src/Sphere10.Framework/Values/EnumTool.cs); extend that class rather than adding a second `Tools.Enums`.
 
 
 
@@ -185,17 +217,19 @@ namespace Tools {
 
 ### Constructors calls
 
-Invocation of base or sibling constructor should always be on the next line
+Base and sibling constructor calls (`: base(...)`, `: this(...)`) go on the next line, indented with a tab.
 
 ```csharp
-public Constructor(int arg1, string arg2) : base(arg1, arg2, "newArgValue")
+public Widget(int count, string text) : base(count, text, "Default") {
+}
 ```
 
 becomes
 
 ```csharp
-public Constructor(int arg1, string arg2) 
-	: base(arg1, arg2, "newArgValue")
+public Widget(int count, string text)
+	: base(count, text, "Default") {
+}
 ```
 
 
@@ -208,8 +242,8 @@ Explicit type declarations should be avoided where possible in preference of `va
 
 ```csharp
 IEnumerable<ISomeInterface<string>> sequence = GetSequence();
-foreach(ISomeInterface<string> item in sequence) {
-    //...
+foreach (ISomeInterface<string> item in sequence) {
+	// Use the item.
 }
 ```
 
@@ -217,8 +251,8 @@ becomes
 
 ```csharp
 var sequence = GetSequence();
-foreach(var item in sequence) {
-    //...
+foreach (var item in sequence) {
+	// Use the item.
 }
 ```
 
@@ -230,8 +264,8 @@ Single-line scopes should avoid using begin/end braces.
 
 ```csharp
 if (condition) {
-	foreach (TItem item in items) {
-		Serializer.Serialize(item, Writer);
+	foreach (var item in items) {
+		serializer.Serialize(item, writer);
 	}
 }	
 ```
@@ -239,9 +273,9 @@ if (condition) {
 becomes
 
 ```csharp
-if (condition) 
-	foreach (TItem item in items) 
-		Serializer.Serialize(item, Writer);
+if (condition)
+	foreach (var item in items)
+		serializer.Serialize(item, writer);
 ```
 
 
@@ -252,7 +286,7 @@ Redundant else's should always be removed.
 
 ```csharp
 if (condition) {
-    //...
+	// Perform the operation.
 	return true;   // this could also be a throw
 } else {
 	_includeListHeader = value;
@@ -262,8 +296,8 @@ becomes
 
 ```csharp
 if (condition) {
-    // ...
-    return true;   // this could also be a throw
+	// Perform the operation.
+	return true;   // This could also be a throw.
 }
 _includeListHeader = value;
 ```
@@ -284,20 +318,19 @@ A line of code should not be wrapped unless doing so **significantly** improves 
 3. Many arguments
 
 ```csharp
-        public Method(int arg1,
-			string arg2,
-			string arg3,
-            IList<int> arg4
-            .
-            .
-            .
-         )
+public void Process(int count,
+	string name,
+	string value,
+	IList<int> items
+) {
+}
 ```
 
 should be
 
 ```csharp
-        public Method(int arg1, string arg2, string arg3, IList<int> arg4, ...)
+public void Process(int count, string name, string value, IList<int> items) {
+}
 ```
 
 **unless** the argument count was gratuitously long then it can be 1-arg per line.
@@ -351,7 +384,7 @@ When wrapping a line after an open-parenthesis `(` ensure the close-parenthesis 
 if (condition) {
 	SomeComplexMethod(
 		SomeArgument1,
-        SomeOtherMethod(
+		SomeOtherMethod(
 			SomeArgument2, 
 			SomeArgument3));            
 }
@@ -363,7 +396,7 @@ becomes
 if (condition) {
 	SomeComplexMethod(
 		SomeArgument1,
-        SomeOtherMethod(
+		SomeOtherMethod(
 			SomeArgument2, 
 			SomeArgument3
 		)
@@ -375,7 +408,7 @@ if (condition) {
 
 ### Indentation & Horizonal Spaces
 
-Indentation for code should be tab-based with 4-character length whereas indentation for comments should be space-basee **not** tab-based.
+Use tabs at width 4 for structural indentation. Use spaces to align columns and comments after code.
 
 **Example**
 
@@ -396,61 +429,57 @@ Developers should add code-comments inside their code so as to assist auditors o
 **Example:**
 
 ```csharp
-public void Foo() {
-  var x = 10;
-    
-  var y = GetSomeValue(x);
-  
-  System.Console.WriteLine(y);
-    
-  var obj = new SomeObject {
-      Prop1 = x + y,
-      Prop2 = 11
-  }
-    
-  var z = CallMethod(obj);
-    
-  return z;
+public int Calculate() {
+	var initialValue = 10;
+
+	var adjustedValue = GetAdjustedValue(initialValue);
+
+	ValidateValue(adjustedValue);
+
+	var options = new CalculationOptions {
+		FirstValue = initialValue + adjustedValue,
+		SecondValue = 11
+	};
+
+	var result = CalculateValue(options);
+
+	return result;
 }
 ```
 
 should be
 
 ```csharp
-public void Foo() {
-  // Comment for logical segment 1 of code block
-  var x = 10;
-  var y = GetSomeValue(x);
-  System.Console.WriteLine(y);
+public int Calculate() {
+	// Prepare and validate the input.
+	var initialValue = 10;
+	var adjustedValue = GetAdjustedValue(initialValue);
+	ValidateValue(adjustedValue);
 
-  // Comment for logical segment 2of code block
-  var obj = new SomeObject {
-      Prop1 = x + y,
-      Prop2 = 11
-  }
-  var z = CallMethod(obj);
-    
-  return z;           // note: the space before return denotes it is separate from both segments
+	// Configure and perform the computation.
+	var options = new CalculationOptions {
+		FirstValue = initialValue + adjustedValue,
+		SecondValue = 11
+	};
+	var result = CalculateValue(options);
+
+	return result;
 }
 ```
 
 This rule also applies to class declarations, methods, etc. Only 1 single line of space between
 
 ```csharp
-namespace SomeNamespace {
-                                   // Notice line (OPTIONAL)
-    public class SomeClass() {
-                                   // Notice line   
-        public Method1() { 
-            /// ...
-        }
-                                   // Notice line
-        public Method2() { 
-            /// ...
-        }
-                                   // Notice line  
-    }
-                                   // Notice line (OPTIONAL)                     
+namespace Example.Product.Processing;
+
+public class MemberSpacingExample {
+	public void FirstMethod() {
+		// First operation.
+	}
+
+	public void SecondMethod() {
+		// Second operation.
+	}
 }
 
 ```

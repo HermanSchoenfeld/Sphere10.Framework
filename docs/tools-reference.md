@@ -1,582 +1,295 @@
 # 🛠️ Tools.* Namespace Reference
 
-**Status**: Complete reference for Sphere10 Framework v3.0.0  
-**Last Updated**: December 31, 2025
+**Scope:** Source-audited utility catalog for the current Framework repository.
+**Last source audit:** October 12, 2026.
 
-The **Tools namespace** is a central organizational feature of Sphere10 Framework, providing a unified, IntelliSense-discoverable collection of static utility methods across all framework projects. This document catalogs all Tools classes and their primary operations.
+Type `Tools.` in IntelliSense to discover the utilities exposed by the assemblies
+your project references. Most facades are in the global `Tools` namespace; web
+helpers use `Tools.Web`. A filename such as `StreamTool.cs` does not establish a
+`Tools.Stream` type: use the declaring class and its actual signature.
+
+The tables list the public utility facades and representative existing members.
+Follow each source link for overloads, defaults and ownership behavior. Package
+and platform references remain necessary; importing `Sphere10.Framework` does
+not add another assembly or introduce a missing helper.
 
 ## Table of Contents
 
 1. [Core Framework Tools](#core-framework-tools)
 2. [Platform-Specific Tools](#platform-specific-tools)
 3. [Database Tools](#database-tools)
-4. [Usage Patterns](#usage-patterns)
-5. [Adding New Tools](#adding-new-tools-for-contributors)
-
----
+4. [Application & Testing Tools](#application--testing-tools)
+5. [Usage Patterns](#usage-patterns)
+6. [Adding New Tools](#adding-new-tools-for-contributors)
 
 ## Core Framework Tools
 
-Located in `Sphere10.Framework` and organized by domain:
+These facades are declared in `Sphere10.Framework`, including
+`Tools.Web.Downloader`.
 
 ### Collection & Data Structure Tools
 
-#### **Tools.Array**
-Array manipulation, bounds checking, copying, resizing.
-```csharp
-var subarray = Tools.Array.SubArray(data, startIndex, length);
-var resized = Tools.Array.Resize(array, newSize);
-bool contains = Tools.Array.Contains(array, value);
-```
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.Array` | `Clone`, `Concat`, `Fill`, `Gen`, `Transpose`, `GetReversedCopy` | [ArrayTool.cs](../src/Sphere10.Framework/Collections/Arrays/ArrayTool.cs) |
+| `Tools.Collection` | `GenerateArray`, `Repeat`, `Partition`, `BinarySearch`, `RangeL`, `ResizeArray` | [CollectionTool.cs](../src/Sphere10.Framework/Collections/CollectionTool.cs) |
+| `Tools.Streams` | `ReadByteArray`, `RouteStream`, `WriteStreamToFile`, GZip compression and encryption helpers | [StreamTool.cs](../src/Sphere10.Framework/Streams/StreamTool.cs) |
+| `Tools.Spans` | `Empty<T>()` | [SpanTool.cs](../src/Sphere10.Framework/Spans/SpanTool.cs) |
 
-#### **Tools.Collection**
-Collection operations: filtering, mapping, iteration, flattening.
-```csharp
-var filtered = Tools.Collection.Where(items, predicate);
-var transformed = Tools.Collection.Select(items, mapper);
-var flattened = Tools.Collection.Flatten(nestedList);
-var grouped = Tools.Collection.GroupBy(items, keySelector);
-```
+`Tools.Array.Gen(size, value)` repeats one value; indexed generation belongs to
+`Tools.Collection.GenerateArray(count, generator)`. Array resizing belongs to
+`Tools.Collection.ResizeArray(ref array, length)`. Filtering and projection can
+use the existing sequence extensions or LINQ; `Tools.Collection` does not provide
+`Where`, `Select`, `Flatten` or `GroupBy` methods.
 
-#### **Tools.Stream**
-Stream decorators, readers, writers, bounded access.
-```csharp
-var bounded = Tools.Stream.CreateBoundedStream(source, maxBytes);
-byte[] data = Tools.Stream.ReadAllBytes(stream);
-Tools.Stream.WriteAllBytes(stream, data);
-var decorated = Tools.Stream.WrapWithCompression(stream);
-```
+`ReadByteArray` defaults `closeStream` to `true`, and `WriteStreamToFile` defaults
+`closeReadStream` to `true`. Pass `false` when borrowing a caller-owned stream.
+Stream decorators and bounded streams are separate framework types, rather
+than factory methods on a `Tools.Stream` facade.
 
 ### Cryptography Tools
 
-#### **Tools.Crypto**
-Hashing, signatures, key derivation, cryptographic operations.
-```csharp
-byte[] hash = Tools.Crypto.SHA256(data);
-byte[] hash256 = Tools.Crypto.BLAKE2B(data);
-byte[] signature = Tools.Crypto.Sign(privateKey, message);
-bool valid = Tools.Crypto.VerifySignature(publicKey, message, signature);
-byte[] derived = Tools.Crypto.DeriveKey(password, salt, iterations);
-```
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.Crypto` | `GenerateCryptographicallyRandomBytes`, `NewCryptographicGuid`, `PasswordHash`, `ValidatePassword`, `EncryptStringAES`, `DecryptStringAES`, `SecureErase` | [CryptoTool.cs](../src/Sphere10.Framework/Crypto/CryptoTool.cs) |
 
-### String & Text Tools
+Hash algorithms are accessed through
+[Hashers](../src/Sphere10.Framework/Crypto/Hashing/Hashers.cs), for example
+`Hashers.Hash(CHF.SHA2_256, payload)`. `Tools.Crypto` has no `SHA256`,
+`BLAKE2B`, `Sign` or `VerifySignature` methods. Signature operations belong to
+the selected [signature scheme](../src/Sphere10.Framework/Crypto/IDigitalSignatureScheme.cs).
+Register the required algorithms before hashing; availability depends on the
+referenced module and registry configuration. See
+[cryptographic utility guidance](guidelines/patterns/framework-utilities.md#cryptography).
 
-#### **Tools.Text**
-String manipulation, formatting, validation, generation.
-```csharp
-string trimmed = Tools.Text.RemoveWhitespace(text);
-string truncated = Tools.Text.Truncate(text, 100);
-string pascal = Tools.Text.ToPascalCase(text);
-string random = Tools.Text.GenerateRandomString(length);
-string padded = Tools.Text.PadLeft(text, totalWidth, paddingChar);
-bool isEmail = Tools.Text.IsValidEmail(email);
-```
+### Text, Values & Time
 
-#### **Tools.Parse**
-String parsing, numeric conversion, safe type conversion.
-```csharp
-int parsed = Tools.Parse.ToInt32(text, defaultValue);
-decimal decimal = Tools.Parse.ToDecimal(text);
-Guid guid = Tools.Parse.ToGuid(guidString);
-var typed = Tools.Parse.TryParse<T>(text, out var result);
-```
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.Text` | `ToCasing`, `FormatEx`, `GenerateRandomString`, text/base encoders and compression | [TextTool.cs](../src/Sphere10.Framework/Text/TextTool.cs) |
+| `Tools.Parser` | `Parse<T>`, `TryParse<T>`, `SafeParse<T>` and runtime-type overloads | [ParseTool.cs](../src/Sphere10.Framework/Text/ParseTool.cs) |
+| `Tools.Enums` | `GetValues<T>`, `GetDescription`, `GetHumanReadableName`, `ParseEnum<T>` | [EnumTool.cs](../src/Sphere10.Framework/Values/EnumTool.cs) |
+| `Tools.Values` | `ClipValue`, `Swap`, numeric formatting and nested `Future` factories | [ValueTool.cs](../src/Sphere10.Framework/Values/ValueTool.cs) |
+| `Tools.Time` | `FromUnixTime`, `CalculateNextDayOfWeek`, `CalculateNextDayOfMonth`, `Min`, `Max` | [DateTimeTool.cs](../src/Sphere10.Framework/Values/DateTimeTool.cs) |
 
-### Type & Reflection Tools
+The future factories are `Tools.Values.Future.Explicit`, `LazyLoad`,
+`Reloadable`, `AlwaysLoad`, `BackgroundFetched` and `Projection`.
+Object cloning belongs to `Tools.Object`, rather than a `Tools.Value` facade.
 
-#### **Tools.Reflection**
-Type inspection, member discovery, attribute analysis.
-```csharp
-var properties = Tools.Reflection.GetProperties(type);
-var methods = Tools.Reflection.GetMethods(type);
-bool hasAttribute = Tools.Reflection.HasAttribute<MyAttribute>(type);
-var attribute = Tools.Reflection.GetAttribute<MyAttribute>(type);
-object instance = Tools.Reflection.CreateInstance(type, args);
-```
+### Numeric & Memory Tools
 
-#### **Tools.Enum**
-Enumeration utilities, descriptions, conversion.
-```csharp
-string description = Tools.Enum.GetDescription(enumValue);
-int value = Tools.Enum.ToInt32(enumValue);
-MyEnum parsed = Tools.Enum.Parse<MyEnum>(text);
-var values = Tools.Enum.GetValues<MyEnum>();
-```
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.Maths` | `Abs`, `EpsilonClip`, `Rotate2D`, `NextInt`, distances and index permutations | [MathTool.cs](../src/Sphere10.Framework/Maths/MathTool.cs) |
+| `Tools.MathPlus` | `Integrate`, `SafeIntegrate`, `Derivative`, `ArcLength` | [MathPlusTool.cs](../src/Sphere10.Framework/Maths/MathPlusTool.cs) |
+| `Tools.Memory` | `GetBytesReadable`, `ConvertMemoryMetric`, `SizeOfPrimitive` | [MemoryTool.cs](../src/Sphere10.Framework/Memory/MemoryTool.cs) |
 
-#### **Tools.Value**
-Value type utilities, conversions, comparisons.
-```csharp
-bool equals = Tools.Value.Equals(obj1, obj2);
-int hashCode = Tools.Value.GetHashCode(obj);
-object clone = Tools.Value.Clone(obj);
-```
+`MathPlus` is a numerical calculus helper, not a prime/GCD utility.
+`Memory` provides metrics and primitive sizing, not buffer allocation or clearing.
 
-### Numeric & Math Tools
+### Type, Reflection & Object Tools
 
-#### **Tools.Math**
-Basic mathematical operations, RNG, calculations.
-```csharp
-double sqrt = Tools.Math.Sqrt(value);
-double pow = Tools.Math.Power(base, exponent);
-int random = Tools.Math.Random.Next(min, max);
-byte[] randomBytes = Tools.Math.Random.NextBytes(count);
-```
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.Reflection` | `GetPropertyValue`, `SetPropertyValue`, `GetFieldValue`, `SetFieldValue`, `InvokeMethod` | [ReflectionTool.cs](../src/Sphere10.Framework/Introspection/ReflectionTool.cs) |
+| `Tools.Mapping` | `GetMember`, `GetAccessor` from model expressions | [ReflectionHelper.cs](../src/Sphere10.Framework/Mapping/ReflectionHelper.cs) |
+| `Tools.Object` | `Create`, `ResolveType`, `ChangeType`, `Clone`, `CopyMembers` | [ObjectTool.cs](../src/Sphere10.Framework/Objects/ObjectTool.cs) |
 
-#### **Tools.MathPlus**
-Advanced mathematics, specialized algorithms.
-```csharp
-var gcd = Tools.MathPlus.GreatestCommonDivisor(a, b);
-var lcm = Tools.MathPlus.LeastCommonMultiple(a, b);
-bool isPrime = Tools.MathPlus.IsPrime(number);
-```
+General type activation is also supplied by
+[TypeActivator](../src/Sphere10.Framework/Types/TypeActivator.cs) and
+the framework's `Type` extensions. `Tools.Reflection.CreateInstance` is not
+an existing activation API.
 
-### Memory & Buffer Tools
+### I/O & Network Tools
 
-#### **Tools.Memory**
-Buffer operations, memory allocation, size formatting.
-```csharp
-string readable = Tools.Memory.GetBytesReadable(bytes);  // "1.5 MB"
-byte[] allocated = Tools.Memory.AllocateBuffer(size);
-Tools.Memory.ClearBuffer(buffer);
-byte[] copy = Tools.Memory.CopyBuffer(source);
-```
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.FileSystem` | `GenerateTempFilename`, `CopyFile`, `DeleteFile`, `GetFiles`, `WriteAllBytes` | [FileSystemTool.cs](../src/Sphere10.Framework/IO/FileSystemTool.cs) |
+| `Tools.Network` | `GetMimeType`, `GetNetworkAddress`, `GetMacAddresses` | [NetworkTool.cs](../src/Sphere10.Framework/Network/NetworkTool.cs) |
+| `Tools.Url` | `EncodeUrl`, `DecodeUrl`, `ToUrlSlug`, `ParseQueryString`, `ToQueryString` | [UrlTool.cs](../src/Sphere10.Framework/Network/UrlTool.cs) |
+| `Tools.Mail` | `IsValidEmail`, `ParseEmailsFromCommaSeparatedList`, SMTP send helpers | [MailTool.cs](../src/Sphere10.Framework/Network/MailTool.cs) |
+| `Tools.Web.Downloader` | `DownloadFile`, `DownloadFileAsync`, filename parsing | [Downloader.cs](../src/Sphere10.Framework/Network/Downloader.cs) |
 
-### Temporal Tools
+`Tools.FileSystem` has no `ReadAllBytes`, `ReadAllText` or `WriteAllText`
+method. Do not infer a wrapper exists from a BCL method's name. Network and mail
+helpers also expose their specific transport and argument contracts; the old
+connectivity/download shorthand is not a general `IsInternetAvailable` or
+`Download(url)` API.
 
-#### **Tools.DateTime**
-Date/time parsing, formatting, calculations.
-```csharp
-DateTime parsed = Tools.DateTime.Parse(dateString);
-string formatted = Tools.DateTime.FormatISO8601(dateTime);
-TimeSpan elapsed = Tools.DateTime.GetElapsedTime(startTime);
-bool isLeapYear = Tools.DateTime.IsLeapYear(year);
-```
+### Functional, Threading & Runtime Tools
 
-### I/O & File System Tools
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.Lambda` | `ActionWithRetry`, `ActionWithFailOver`, `CreateSetterExpression`, `NoOp` | [LambdaTool.cs](../src/Sphere10.Framework/Functional/LambdaTool.cs) |
+| `Tools.Expressions` | Unary/binary `CreateExpression` factories | [ExpressionTool.cs](../src/Sphere10.Framework/Functional/ExpressionTool.cs) |
+| `Tools.OperatorTool` | Generic `Add`, `Subtract`, `Multiply`, `Divide` and comparison operations | [OperatorTool.cs](../src/Sphere10.Framework/Functional/OperatorTool.cs) |
+| `Tools.Threads` | `QueueAction`, `ExecuteConcurrently`, `EnterLockScope`, `MeasureDuration` | [ThreadTool.cs](../src/Sphere10.Framework/Threading/ThreadTool.cs) |
+| `Tools.Runtime` | `IsDebugBuild`, `GetExecutablePath`, `GetEntryAssembly`, design-mode checks | [RuntimeTool.cs](../src/Sphere10.Framework/Environment/RuntimeTool.cs) |
+| `Tools.Debugger` | Shared diagnostic counters/objects/messages and `AddMessage` | [Debugger.cs](../src/Sphere10.Framework/Environment/Debugger.cs) |
+| `Tools.CodeAccessSecurity` | `HasUnrestrictedFeatureSet` compatibility property | [CodeAccessSecurityTool.cs](../src/Sphere10.Framework/Environment/CodeAccessSecurityTool.cs) |
 
-#### **Tools.FileSystem**
-File operations, directory management, temp files.
-```csharp
-string tempFile = Tools.FileSystem.GenerateTempFilename();
-string tempDir = Tools.FileSystem.GetTempDirectory();
-Tools.FileSystem.WriteAllText(path, content);
-string content = Tools.FileSystem.ReadAllText(path);
-Tools.FileSystem.DeleteFile(path);
-var files = Tools.FileSystem.GetFiles(directory, pattern);
-```
+`Tools.Expressions` has no `BuildPredicate` or `CombinePredicates`.
+The current `Tools.Runtime.IsWebApp` returns `false`; these helpers do not
+provide general framework-version or OS inspection. `Tools.Debugger` is not a
+wrapper for `System.Diagnostics.Debugger.Break` or logging sinks.
 
-### Network Tools
-
-#### **Tools.Network**
-Network utilities, IP operations, connectivity.
-```csharp
-bool online = Tools.Network.IsInternetAvailable();
-string publicIP = Tools.Network.GetPublicIPAddress();
-bool reachable = Tools.Network.IsPingable(host);
-var addresses = Tools.Network.GetLocalIPAddresses();
-```
-
-#### **Tools.Url**
-URL parsing, encoding, manipulation.
-```csharp
-string encoded = Tools.Url.EncodeUrl(url);
-string decoded = Tools.Url.DecodeUrl(encoded);
-string query = Tools.Url.BuildQueryString(parameters);
-var uri = Tools.Url.ParseUrl(urlString);
-```
-
-#### **Tools.Mail**
-Email utilities, composition, validation.
-```csharp
-bool isValid = Tools.Mail.IsValidEmail(email);
-Tools.Mail.SendEmail(to, subject, body);
-var message = Tools.Mail.CreateMessage(from, to, subject, body);
-```
-
-### Functional & Expression Tools
-
-#### **Tools.Lambda**
-Lambda expression utilities and manipulation.
-```csharp
-var property = Tools.Lambda.GetPropertyName(() => obj.Property);
-var method = Tools.Lambda.GetMethodName(() => obj.Method());
-```
-
-#### **Tools.Expression**
-LINQ expression building and manipulation.
-```csharp
-var predicate = Tools.Expression.BuildPredicate<T>(field, value);
-var combined = Tools.Expression.CombinePredicates(expr1, expr2);
-```
-
-#### **Tools.Operator**
-Generic operator invocation without reflection overhead.
-```csharp
-var sum = Tools.Operator.Add(a, b);
-var product = Tools.Operator.Multiply(x, y);
-bool less = Tools.Operator.LessThan(a, b);
-```
-
-### Data Format Tools
-
-#### **Tools.Json**
-JSON serialization, parsing, transformation.
-```csharp
-string json = Tools.Json.Serialize(obj);
-var deserialized = Tools.Json.Deserialize<MyType>(json);
-var pretty = Tools.Json.PrettyPrint(json);
-```
-
-#### **Tools.Xml**
-XML parsing, serialization, transformation.
-```csharp
-string xml = Tools.Xml.Serialize(obj);
-var deserialized = Tools.Xml.Deserialize<MyType>(xml);
-var document = Tools.Xml.ParseXml(xmlString);
-```
-
-### Threading & Concurrency Tools
-
-#### **Tools.Thread**
-Threading utilities, synchronization, async helpers.
-```csharp
-Tools.Thread.Sleep(milliseconds);
-Tools.Thread.RunOnThreadPool(action);
-var task = Tools.Thread.RunAsync(asyncFunc);
-Tools.Thread.WaitAll(tasks);
-```
-
-### Environment & Runtime Tools
-
-#### **Tools.Runtime**
-Runtime environment, version detection, diagnostics.
-```csharp
-string version = Tools.Runtime.GetFrameworkVersion();
-bool is64Bit = Tools.Runtime.Is64BitProcess();
-string osName = Tools.Runtime.GetOperatingSystem();
-var processorCount = Tools.Runtime.GetProcessorCount();
-```
-
-#### **Tools.Debugger**
-Debug-time utilities and diagnostics.
-```csharp
-bool attached = Tools.Debugger.IsDebuggerAttached();
-Tools.Debugger.Break();
-Tools.Debugger.Log(message);
-```
+Some legacy thread helpers return no completion task.
+`Tools.Threads.CreateAwaitTask` constructs an unstarted task whose body uses
+the current `WaitSafe` helper; it is not an automatically started, awaited
+replacement for an async operation. Follow the
+[sync/async completion rules](guidelines/patterns/sync-async.md#adapter-completion-and-cancellation)
+when the caller needs completion and failure propagation.
 
 ### Exception & Scope Tools
 
-#### **Tools.Exception**
-Exception handling, formatting, analysis.
-```csharp
-string message = Tools.Exception.FormatException(ex);
-var innerMost = Tools.Exception.GetInnerMostException(ex);
-Tools.Exception.LogException(ex);
-```
+| Facade | Existing entrypoints | Implementation |
+|---|---|---|
+| `Tools.Exceptions` | `ExecuteCapturingException`, `ExecuteIgnoringException`, `TryOrDefault` | [ExceptionTool.cs](../src/Sphere10.Framework/Exceptions/ExceptionTool.cs) |
+| `Tools.Scope` | `ExecuteOnDispose`, `ExecuteOnDisposeAsync`, file/directory cleanup scopes | [ScopeTool.cs](../src/Sphere10.Framework/Scopes/ScopeTool.cs) |
 
-#### **Tools.Scope**
-Transactional scope management and lifecycle.
-```csharp
-using var scope = Tools.Scope.CreateScope() {
-    // transactional operations
-    scope.Commit();
-}
-```
-
-### Other Framework Tools
-
-#### **Tools.Object**
-Object operations, cloning, copying, inspection.
-```csharp
-object clone = Tools.Object.Clone(source);
-Tools.Object.CopyProperties(source, target);
-string description = Tools.Object.ToDebugString(obj);
-```
-
-#### **Tools.Span**
-Span and memory utilities for high-performance code.
-```csharp
-Span<byte> data = Tools.Span.AllocateSpan(size);
-Tools.Span.CopySpan(source, destination);
-```
-
----
+`Tools.Scope` supplies cleanup factories. Transaction begin/commit/rollback
+belongs to the relevant [transactional scope](guidelines/patterns/resource-scopes.md),
+not `Tools.Scope.CreateScope()`.
 
 ## Platform-Specific Tools
 
-### Windows Platform
+Reference the declaring project and meet its platform requirements.
 
-#### **Tools.WinTool** (Sphere10.Framework.Windows)
-Windows-specific operations: registry, services, events, privileges.
-```csharp
-// Registry operations
-bool exists = Tools.WinTool.KeyExists(hostname, keyPath);
-var key = Tools.WinTool.OpenKey(hostname, keyPath);
-var subkeys = Tools.WinTool.GetSubKeys(hostname, keyPath);
+| Facade | Project | Existing entrypoints and source |
+|---|---|---|
+| `Tools.Windows` | Sphere10.Framework.Windows | Thread-static `Registry`, `Services`, `Security`, `Processes`, `Win32` and `Shell` utility instances: [WindowsTool.cs](../src/Sphere10.Framework.Windows/WindowsTool.cs) |
+| `Tools.WinForms` | Sphere10.Framework.Windows.Forms | Cursor helpers in [Tool.cs](../src/Sphere10.Framework.Windows.Forms/Tool.cs) and window capture/restore/automatic persistence in [WindowSettingsTool.cs](../src/Sphere10.Framework.Windows.Forms/WindowSettingsTool.cs) |
+| `Tools.Web.Html` | Sphere10.Framework.Web | `Percent`, `Beautify` and animation classes: [HtmlTool.cs](../src/Sphere10.Framework.Web/HtmlTool.cs) |
+| `Tools.Web.AspNetCore` | Sphere10.Framework.Web.AspNetCore | `ParseNetwork`: [AspNetCoreTool.cs](../src/Sphere10.Framework.Web.AspNetCore/AspNetCoreTool.cs) |
+| `Tools.Web.Mvc` | Sphere10.Framework.Web.AspNetCore.MVC | `ToSelectList` enum helpers: [MvcTool.cs](../src/Sphere10.Framework.Web.AspNetCore.MVC/MvcTool.cs) |
+| `Tools.BlazorGrid` | Sphere10.Framework.Web.AspNetCore.Blazor | Supported types, input selection, `FormatValue` and `ParseValue`: [GridTool.cs](../src/Sphere10.Framework.Web.AspNetCore.Blazor/Grids/GridTool.cs) |
+| `Tools.iOSTool` | Sphere10.Framework.iOS | Native controller, keyboard and image helpers: [iOSTool.cs](../src/Sphere10.Framework.iOS/iOSTool.cs) |
 
-// Service management
-bool running = Tools.WinTool.IsServiceRunning(serviceName);
-Tools.WinTool.StartService(serviceName);
-Tools.WinTool.StopService(serviceName);
-var status = Tools.WinTool.GetServiceStatus(serviceName);
-
-// Privileges and security
-bool modified = Tools.WinTool.ModifyState(tokenHandle, "SeRestorePrivilege", true);
-
-// Bit operations
-ushort hiword = Tools.WinTool.HIWORD(data);
-ushort loword = Tools.WinTool.LOWORD(data);
-int wheelDelta = Tools.WinTool.GET_WHEEL_DELTA_WPARAM(data);
-
-// Virtual key mapping
-Key key = Tools.WinTool.VirtualKeyToKey(virtualKeyCode);
-```
-
-#### **Tools.WindowsTool** (Sphere10.Framework.Windows)
-Advanced Windows shell operations.
-```csharp
-// ShortCut creation
-Tools.WinShell.CreateShortcutForApplication(
-    executable, 
-    shortcutPath, 
-    arguments
-);
-string shortcutPath = Tools.WinShell.DetermineStartupShortcutFilename(appName);
-```
-
-#### **Tools** (Sphere10.Framework.Windows.Forms)
-WinForms-specific utilities.
-```csharp
-// Drawing utilities
-Color lightDark = Tools.DrawingTool.CalculateLightDarkColor(baseColor, factor);
-```
-
-### Web Platform
-
-#### **Tools.Web.Html** (Sphere10.Framework.Web)
-HTML presentation formatting and Animate.css class names, independent of ASP.NET Core.
-```csharp
-var percentage = Tools.Web.Html.Percent(0.25m);
-var animationClass = Tools.Web.Html.AnimationClass(Sphere10.Framework.Web.AnimateCss.Animation.fadeIn);
-```
-
-#### **Tools.Web.AspNetCore** (Sphere10.Framework.Web.AspNetCore)
-Shared ASP.NET Core utilities, including network parsing.
-```csharp
-var network = Tools.Web.AspNetCore.ParseNetwork("192.168.1.0/24");
-```
-
-#### **Tools.Web.Mvc** (Sphere10.Framework.Web.AspNetCore.MVC)
-MVC select-list helpers, moved from `Tools.Web.AspNetCore`.
-```csharp
-var options = Tools.Web.Mvc.ToSelectList<DayOfWeek>();
-```
-
-#### **Tools.Web.Downloader** (Sphere10.Framework)
-HTTP downloads and streaming.
-```csharp
-byte[] data = Tools.Web.Downloader.Download(url);
-Tools.Web.Downloader.DownloadToFile(url, filePath);
-```
-
-### Mobile Platforms
-
-#### **Tools.iOSTool** (Sphere10.Framework.iOS)
-iOS-specific utilities.
-```csharp
-UIViewController topMost = Tools.iOSTool.GetTopMostController();
-nfloat keyboardHeight = Tools.iOSTool.GetKeyboardHeight(view, notification);
-UIImage image = Tools.iOSTool.EmbeddedImage(imageName);
-```
-
-#### **Tools.AndroidTool** (Sphere10.Framework.Android)
-Android-specific utilities (as available).
-```csharp
-// Android-specific operations
-```
-
----
+`Tools.Windows` properties return the utility instances that implement Windows
+operations; there is no `Tools.WinTool`, `Tools.WindowsTool` or `Tools.WinShell`
+facade. `Tools.Drawing` is supplied by the separate Drawing project below.
+The iOS project retains its legacy Xamarin target; consult its
+[project guide](../src/Sphere10.Framework.iOS/README.md) before selecting that integration.
+The Android project does not define a `Tools.AndroidTool` facade.
 
 ## Database Tools
 
-Organized by database provider:
+| Facade | Project | Existing entrypoints and source |
+|---|---|---|
+| `Tools.Data` | Sphere10.Framework.Data | `ReadCsv`, `CreateDataTable`, `CreateDataTableForType`: [DataTool.cs](../src/Sphere10.Framework.Data/DataTool.cs) |
+| `Tools.Json` | Sphere10.Framework.Data | `WriteToString`, `ReadFromString` and file/reader/writer overloads: [JsonTool.cs](../src/Sphere10.Framework.Data/JSON/JsonTool.cs) |
+| `Tools.Xml` | Sphere10.Framework.Data | `WriteToString`, `ReadFromString` and XML serializer helpers: [XmlTool.cs](../src/Sphere10.Framework.Data/XML/XmlTool.cs) |
+| `Tools.Sqlite` | Sphere10.Framework.Data.Sqlite | `Open`, `Create`, `Drop`, `ExistsByPath`, `ExistsByConnectionString` and connection strings: [SqliteTool.cs](../src/Sphere10.Framework.Data.Sqlite/SqliteTool.cs) |
+| `Tools.MSSQL` | Sphere10.Framework.Data.MSSQL | `Open`, `Exists`, `TestConnectionString`, database creation/removal and connection strings: [MSSQLTool.cs](../src/Sphere10.Framework.Data.MSSQL/MSSQLTool.cs) |
+| `Tools.MySQL` | Sphere10.Framework.Data.MySQL | `Open`, `Exists`, `TestConnectionString` and connection strings: [MySQLTool.cs](../src/Sphere10.Framework.Data.MySQL/MySQLTool.cs) |
+| `Tools.Oracle` | Sphere10.Framework.Data.Oracle | `Open`, `TestConnectionString` and connection strings: [OracleTool.cs](../src/Sphere10.Framework.Data.Oracle/OracleTool.cs) |
+| `Tools.PostgreSQL` | Sphere10.Framework.Data.PostgreSQL | `Open`, `Exists`, `TestConnectionString` and connection strings: [PostgreSQLTool.cs](../src/Sphere10.Framework.Data.PostgreSQL/PostgreSQLTool.cs) |
+| `Tools.NHibernate` | Sphere10.Framework.Data.NHibernate | `NVarCharMaxValue` compatibility value: [NHibernate.cs](../src/Sphere10.Framework.Data.NHibernate/NHibernate.cs) |
 
-### **Tools.Data** (Sphere10.Framework.Data)
-Generic database operations.
-```csharp
-var connection = Tools.Data.CreateConnection(connectionString);
-var adapter = Tools.Data.CreateDataAdapter(connection);
-```
+JSON and XML are Data utilities, not Core facades, and use the names in this
+table rather than `Serialize`/`Deserialize` shorthand. NHibernate sessions and
+queries belong to that framework's session APIs; `Tools.NHibernate` does not
+supply `CreateSession` or `CreateQuery`.
 
-### **Tools.Sqlite** (Sphere10.Framework.Data.Sqlite)
-SQLite-specific utilities.
-```csharp
-var connection = Tools.Sqlite.Create(connectionString, pageSize);
-Tools.Sqlite.Drop(Tools.Sqlite.GetFilePathFromConnectionString(connStr));
-bool exists = Tools.Sqlite.Exists(connectionString);
-```
-
-### **Tools.MSSQL** (Sphere10.Framework.Data.MSSQL)
-SQL Server-specific utilities.
-```csharp
-var adapter = Tools.MSSQL.CreateAdapter(connectionString);
-var connection = Tools.MSSQL.CreateConnection(connectionString);
-```
-
-### **Tools.Firebird** (Sphere10.Framework.Data.Firebird)
-Firebird database utilities.
-```csharp
-var connection = Tools.Firebird.CreateConnection(connectionString);
-```
-
-### **Tools.NHibernate** (Sphere10.Framework.Data.NHibernate)
-NHibernate ORM integration.
-```csharp
-var session = Tools.NHibernate.CreateSession(configuration);
-var query = Tools.NHibernate.CreateQuery<T>(session);
-```
-
----
+The Firebird provider exposes
+[FirebirdDAC](../src/Sphere10.Framework.Data.Firebird/FirebirdDAC.cs), not a
+`Tools.Firebird` facade.
 
 ## Application & Testing Tools
 
-### **Tools.Config** (Sphere10.Framework.Application)
-Reads `ConfigurationManager.AppSettings`; use the [settings providers](../src/Sphere10.Framework.Application/Settings/README.md) for persisted settings.
-```csharp
-var endpoint = Tools.Config.GetAppSetting("Endpoint", "https://localhost");
-var retryCount = Tools.Config.GetAppSetting<int>("RetryCount", 3);
-```
+| Facade | Project | Existing entrypoints and source |
+|---|---|---|
+| `Tools.Config` | Sphere10.Framework.Application | `GetAppSetting` over `ConfigurationManager.AppSettings`: [ConfigTool.cs](../src/Sphere10.Framework.Application/Settings/ConfigTool.cs) |
+| `Tools.Application` | Sphere10.Framework.Application | `ExecuteInitializers`/`ExecuteFinalizers` and their async forms: [ApplicationTool.cs](../src/Sphere10.Framework.Application/Lifecycle/ApplicationTool.cs) |
+| `Tools.UI` | Sphere10.Framework.Application | Definition validation, `GetCommandLayers`, `MergeApplicationMenus` and `MergeApplicationToolBarItems`: [UITool.cs](../src/Sphere10.Framework.Application/UI/UITool.cs) |
+| `Tools.NUnit` | Sphere10.Framework.NUnit | `Convert2DArrayToString` and test diagnostics: [NUnitTool.cs](../src/Sphere10.Framework.NUnit/NUnitTool.cs) |
+| `Tools.Drawing` | Sphere10.Framework.Drawing | Color conversion/gradients, image encoding and disabled images: [DrawingTool.cs](../src/Sphere10.Framework.Drawing/DrawingTool.cs) |
 
-### **Tools.Application** (Sphere10.Framework.Application)
-
-Runs supplied `IApplicationInitializer` and `IApplicationFinalizer` sequences through `ExecuteInitializers`, `ExecuteInitializersAsync`, `ExecuteFinalizers` and `ExecuteFinalizersAsync`. Initializers run in priority order before parallel initializers. Finalizers attempt every task and aggregate failures. These utilities execute borrowed task sequences; the caller retains ownership.
-
-UI application consumers should call `IApplication.InitializeAsync`, `FinalizeAsync` or `ExitAsync` so application state, task resolution, notifications and resource cleanup remain coordinated. Declare a plugin's name before using its builder's `RegisterInitializer` or `RegisterFinalizer`; do not obtain or execute its keyed tasks independently. See the [application lifecycle guide](../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown) and [sync/async pattern](guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies).
-
-### **Tools.NUnit** (Sphere10.Framework.NUnit)
-NUnit testing utilities.
-```csharp
-string grid = Tools.NUnit.Convert2DArrayToString(name, array);
-```
-
-### **Tools.Drawing** (Sphere10.Framework.Drawing)
-Graphics and drawing operations.
-```csharp
-Color lighter = Tools.DrawingTool.CalculateLightDarkColor(baseColor, 0.1f);
-var resized = Tools.DrawingTool.Resize(image, newWidth, newHeight);
-```
-
----
+`Config` reads application configuration; the
+[settings providers](../src/Sphere10.Framework.Application/Settings/README.md)
+handle persisted settings. `Tools.Application` executes supplied, borrowed task
+sequences. UI consumers use `IApplication.InitializeAsync`, `FinalizeAsync` and
+`ExitAsync` to preserve application state, notifications, keyed task resolution
+and owned cleanup. Initializers have sequential/parallelizable phases; finalizers
+attempt every supplied task and aggregate failures. See the
+[application lifecycle guide](../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown).
 
 ## Usage Patterns
 
-### Discovery Pattern
-```csharp
-using Sphere10.Framework;  // Import framework namespace to access Tools
+These complete fragments demonstrate existing Core signatures. They can be
+compiled as a class library; they do not require network, database or UI setup.
 
-// Start typing Tools. and IntelliSense shows all available operations
-Tools.Crypto.
-Tools.Text.
-Tools.FileSystem.
-Tools.Collection.
-```
-
-### Chaining Operations
 ```csharp
-var result = Tools.Collection
-    .Where(items, x => x.IsActive)
-    .Select(x => x.Name)
-    .OrderBy(x => x)
-    .ToList();
-```
+using System;
+using System.Linq.Expressions;
+using Sphere10.Framework;
 
-### Platform-Conditional Usage
-```csharp
-#if WINDOWS
-    Tools.WinTool.StartService("MyService");
-#elif IOS
-    var topmost = Tools.iOSTool.GetTopMostController();
-#endif
-```
+namespace Examples;
 
-### Error Handling with Tools
-```csharp
-try {
-    var result = Tools.Parse.ToInt32(input);
-} catch (Exception ex) {
-    string formatted = Tools.Exception.FormatException(ex);
-    Tools.Debugger.Log(formatted);
+public static class CoreToolExamples {
+	public static int[] CreateSequence(int count) {
+		Guard.ArgumentGTE(count, 0, nameof(count));
+		return Tools.Collection.GenerateArray(count, index => index + 1);
+	}
+
+	public static DayOfWeek ParseDay(string text)
+		=> Tools.Enums.ParseEnum<DayOfWeek>(text, ignoreValueCase: true);
+
+	public static Func<int, int, int> CreateAdder()
+		=> Tools.Expressions.CreateExpression<int, int, int>(Expression.Add);
+
+	public static byte[] HashPayload(byte[] payload) {
+		Guard.ArgumentNotNull(payload, nameof(payload));
+		return Hashers.Hash(CHF.SHA2_256, payload);
+	}
 }
 ```
 
----
+This stream helper leaves the caller's input open:
+
+```csharp
+using System.IO;
+using Sphere10.Framework;
+
+namespace Examples;
+
+public static class BorrowedStreamExample {
+	public static byte[] Read(Stream source) {
+		Guard.ArgumentNotNull(source, nameof(source));
+		return Tools.Streams.ReadByteArray(source, closeStream: false);
+	}
+}
+```
 
 ## Using the Tools Namespace
 
-To use the Tools namespace in your project:
-
-1. **Add a reference** to the appropriate Sphere10 Framework package (e.g., `Sphere10.Framework`, `Sphere10.Framework.Data`, etc.)
-2. **Add the namespace** to your code:
-   ```csharp
-   using Sphere10.Framework;
-   // or for specific domains:
-   using Sphere10.Framework.Data;
-   ```
-3. **Use IntelliSense discovery** - type `Tools.` and browse available tools via autocomplete
-
-```csharp
-// Example: After adding 'using Sphere10.Framework;'
-Tools.Crypto.SHA256(data);      // Cryptography tools
-Tools.Text.ToTitleCase(str);    // Text manipulation
-Tools.Collection.Shuffle(list); // Collection utilities
-```
-
----
+1. Reference the project or package that declares the required facade.
+2. Type `Tools.` and inspect its actual overloads. Types such as `CHF`, `Guard`
+   and `IApplication` need their respective `Sphere10.Framework` namespace imports;
+   those imports do not change the globally qualified `Tools` path.
+3. Follow the [utility guidance](guidelines/patterns/framework-utilities.md) for
+   framework reuse, exact facade names and ownership. Use domain contracts such as
+   `Hashers` or `TypeActivator` when that is where the operation belongs.
 
 ## Adding New Tools (For Contributors)
 
-When extending Sphere10 Framework with new tools:
+Read the [tools-namespace skill](../agents/skills/tools-namespace/SKILL.md) and
+[Code Styling](guidelines/code-styling.md) before changing a utility.
 
-### Naming Convention
-- **File**: `[Feature]Tool.cs` (e.g., `MyFeatureTool.cs`)
-- **Class**: `[Feature]Tool` (e.g., `MyFeatureTool`)
-- **Namespace**: `Tools` or `Tools.[Domain]` (e.g., `Tools.Web`, `Tools.Database`)
-
-### Template
-```csharp
-// File: MyFeatureTool.cs
-namespace Tools;
-
-/// <summary>
-/// Tools for [Feature Description]
-/// </summary>
-public static class MyFeatureTool {
-    /// <summary>
-    /// [Operation description]
-    /// </summary>
-    public static TResult MyOperation<T, TResult>(T input) {
-        // Implementation
-    }
-    
-    /// <summary>
-    /// [Another operation]
-    /// </summary>
-    public static void AnotherOperation(string parameter) {
-        // Implementation
-    }
-}
-```
-
----
+- Inspect the existing facade and its consumers first; extend it when it already
+  owns the responsibility.
+- Give a new facade a discoverable domain name and put its static implementation
+  in the global `Tools` namespace. Extend `Tools.Web` for the existing web family.
+  A conventional source filename is `DomainTool.cs`; the public class name is the
+  API consumers actually discover.
+- Reuse framework validation, ownership and utility contracts. Preserve existing
+  public names, including historical names such as `OperatorTool` and `iOSTool`.
+- Keep examples aligned with current signatures, reference the actual owning
+  project, and add or update this catalog when a facade changes.
 
 ## Related Documentation
 
-- [Sphere10.Framework README](../src/Sphere10.Framework/README.md) – Architecture and project overview
-- [Code Styling Guide](guidelines/code-styling.md) – Conventions for Tools implementations
-- Individual project READMEs – Domain-specific tool documentation
-
----
-
-**Version**: 3.0.0  
-**Last Updated**: December 31, 2025  
-**Framework**: Sphere10 Framework
+- [Sphere10.Framework README](../src/Sphere10.Framework/README.md) — Core architecture and consumers.
+- [Framework Utilities](guidelines/patterns/framework-utilities.md) — Selection, hashing and ownership rules.
+- [Application ownership](guidelines/patterns/application-ownership.md) — Plugins, tasks, commands and runtime roots.
+- [Code Styling](guidelines/code-styling.md) — Source conventions.

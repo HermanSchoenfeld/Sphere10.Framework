@@ -153,7 +153,7 @@ flowchart TD
 
 `IApplication.Blocks` follows the host's live registered membership. `LoadedPlugins` records successful startup contributors, including service-only plugins; directly registered blocks require no synthetic plugin. A block's `Parent` identifies its application and `Source` preserves its contributing plugin. Menus and items have parent links, definitions expose their `Activators`, and screen instances expose `Host` and `Block`. Selection remains on the screen host. Commands execute through their actual runtime objects and parent links; Blazor route IDs are resolved at the URL boundary.
 
-Plugin builders require `WithName(...)` before `RegisterInitializer` or `RegisterFinalizer`. Their task services use the built plugin's unique name and the application's provider. The application keeps task inventories protected and exposes lifecycle events and progress. Application-owned host tasks can use `typeof(IApplication)` as their service key; unkeyed tasks retain their existing `Sphere10Framework` process lifetime. Tasks choose a synchronous or asynchronous implementation through the [directional bases](../guidelines/patterns-and-practices.md#synchronous-and-asynchronous-implementation-hierarchies).
+Plugin builders require `WithName(...)` before `RegisterInitializer` or `RegisterFinalizer`. Their task services use the built plugin's unique name and the application's provider. The application keeps task inventories protected and exposes lifecycle events and progress. Application-owned host tasks can use `typeof(IApplication)` as their service key; unkeyed tasks retain their existing `Sphere10Framework` process lifetime. Tasks choose a synchronous or asynchronous implementation through the [directional bases](../guidelines/patterns/sync-async.md#synchronous-and-asynchronous-implementation-hierarchies).
 
 WinForms establishes its UI on the owning thread and, when splash screens are enabled, reports startup/shutdown tasks through them. Approved exit completes application and process shutdown before closing the main form, then disposes the provider after the native message loop ends. Blazor initializes the application once per interactive circuit and finalizes on application exit or circuit closure. Prerendering and temporary reconnects do not replay tasks. Plugins remain startup contributors with the host's lifetime. See the [shared lifecycle](../../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown), [WinForms guide](../../src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) and [Blazor guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#applicationblock-architecture).
 
@@ -283,8 +283,8 @@ The Data Access Context (DAC) wraps `IDbConnection` with enhanced functionality:
 ```csharp
 // Same code works across all providers
 IDAC dac = Tools.Sqlite.Open("local.db");
-// or: IDAC dac = Tools.MSSQL.Open(connectionString);
-// or: IDAC dac = Tools.Firebird.Open(connectionString);
+// or: IDAC dac = new MSSQLDAC(connectionString);
+// or: IDAC dac = new FirebirdDAC(connectionString);
 
 // Parameterized queries (SQL injection safe)
 var count = dac.ExecuteScalar<int>(

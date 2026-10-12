@@ -66,7 +66,7 @@ Multi-database abstraction layer with support for SQL Server, SQLite, Firebird, 
 | **Query Building** | Fluent SQL query construction, parameter binding | Tools.Query |
 | **SQL Server Provider** | Microsoft SQL Server-specific implementations | Tools.MSSQL |
 | **SQLite Provider** | Embedded SQLite implementations | Tools.Sqlite |
-| **Firebird Provider** | Firebird database-specific features | Tools.Firebird |
+| **Firebird Provider** | Firebird database-specific features | FirebirdDAC |
 | **NHibernate Provider** | NHibernate ORM integration layer | Tools.NHibernate |
 | **CSV Support** | CSV file reading/writing with type conversion | Tools.CSV |
 | **Object Spaces** | Stream-mapped persistent collections with auto-tracking | Tools.ObjectSpace |

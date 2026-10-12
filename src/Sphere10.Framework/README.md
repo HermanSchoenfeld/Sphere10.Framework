@@ -80,105 +80,85 @@ The **Tools namespace** is a defining feature of Sphere10 Framework, providing a
 ### Core Tools Classes
 
 **Framework-Wide Utilities**
-- **Tools.Array** – Array manipulation, copying, resizing, searching
-- **Tools.Collection** – Collection operations, iteration, filtering, transformation
-- **Tools.Crypto** – Hashing, signatures, cryptographic operations
-- **Tools.DateTime** – Date/time parsing, formatting, calculations
-- **Tools.Enum** – Enumeration utilities, descriptions, conversion
-- **Tools.Exception** – Exception handling, formatting, analysis
-- **Tools.Expression** – LINQ expression building and manipulation
+- **Tools.Array** – Array concatenation, cloning, filling and transposition
+- **Tools.Collection** – Generation, repetition, partitioning, searching and array resizing
+- **Tools.Crypto** – Secure random bytes, password hashing, AES helpers and secure erase
+- **Tools.Time** – Unix-time conversion and date calculations
+- **Tools.Enums** – Enumeration utilities, descriptions, conversion
+- **Tools.Exceptions** – Exception handling, formatting, analysis
+- **Tools.Expressions** – Compiled unary and binary operation factories
 - **Tools.FileSystem** – File I/O, directory operations, temp file management
-- **Tools.Json** – JSON serialization, parsing, transformation
-- **Tools.Lambda** – Lambda expression utilities and manipulation
+- **Tools.Lambda** – Delegate wrappers and setter expressions
 - **Tools.Mail** – Email composition and sending utilities
-- **Tools.Math** / **Tools.MathPlus** – Mathematical operations, RNG, advanced calculations
-- **Tools.Memory** – Buffer operations, memory allocation, byte formatting
+- **Tools.Maths** / **Tools.MathPlus** – Mathematical operations and numeric calculations
+- **Tools.Memory** – Memory metrics, primitive sizing and byte formatting
 - **Tools.Network** – Network utilities, IP operations, connectivity
 - **Tools.Object** – Object cloning, copying, inspection
-- **Tools.Operator** – Generic operator invocation (Add, Subtract, etc.)
-- **Tools.Parse** – String parsing, type conversion
-- **Tools.Reflection** – Reflection utilities, type analysis, member inspection
-- **Tools.Runtime** – Runtime environment, version detection, diagnostics
-- **Tools.Scope** – Transactional scope management
-- **Tools.Span** – Span and memory utilities
-- **Tools.Stream** – Stream operations, decoration, reading/writing
+- **Tools.OperatorTool** – Generic operator invocation (Add, Subtract, etc.)
+- **Tools.Parser** – String parsing, type conversion
+- **Tools.Reflection** – Reflection member access and invocation
+- **Tools.Runtime** – Build flags, executable paths, entry-assembly access and design-mode checks
+- **Tools.Scope** – Cleanup delegates and file/directory lifetime scopes
+- **Tools.Spans** – Span and memory utilities
+- **Tools.Streams** – Stream operations, routing, reading/writing and transformations
 - **Tools.Text** – String manipulation, formatting, generation
-- **Tools.Thread** – Threading utilities, synchronization, async helpers
+- **Tools.Threads** – Threading utilities, synchronization, async helpers
 - **Tools.Url** – URL parsing, encoding, manipulation
-- **Tools.Value** – Value type utilities and conversions
-- **Tools.Xml** – XML serialization, parsing, transformation
+- **Tools.Values** – Value utilities, comparisons, clipping and futures
 
 ### Platform-Specific Tools
 
 **Windows Integration**
-- **Tools.WinTool** – Windows registry, services, events, privileges
-- **Tools.WindowsTool** – Advanced Windows operations
-- **Tools.Tool** (WinForms) – WinForms-specific utilities
+- **Tools.Windows** – Registry, services, security, processes, Win32 and shell facade (`Sphere10.Framework.Windows`)
+- **Tools.WinForms** – Cursor and window-settings utilities (`Sphere10.Framework.Windows.Forms`)
 
 **Web & Networking**
-- **Tools.Web.Html** – HTML generation, parsing, manipulation
-- **Tools.Web.AspNetCore** – ASP.NET Core integration
-- **Tools.Web.Downloader** – HTTP downloads and streaming
+- **Tools.Web.Html** – HTML helpers (`Sphere10.Framework.Web`)
+- **Tools.Web.AspNetCore** – ASP.NET Core helpers (`Sphere10.Framework.Web.AspNetCore`)
+- **Tools.Web.Downloader** – HTTP downloads (core `Sphere10.Framework`)
 
 **Database Access**
-- **Tools.Data** – Generic database operations
-- **Tools.Sqlite** – SQLite-specific utilities
-- **Tools.MSSql** – SQL Server-specific utilities
-- **Tools.NHibernate** – NHibernate ORM integration
-- **Tools.Xml** – XML data handling
-- **Tools.Json** – JSON data handling
+- **Tools.Data** – Generic database helpers (`Sphere10.Framework.Data`)
+- **Tools.Sqlite** – SQLite utilities (`Sphere10.Framework.Data.Sqlite`)
+- **Tools.MSSQL** – SQL Server utilities (`Sphere10.Framework.Data.MSSQL`)
+- **Tools.NHibernate** – String-mapping compatibility constant (`Sphere10.Framework.Data.NHibernate`)
+- **Tools.Xml** – XML data helpers (`Sphere10.Framework.Data`)
+- **Tools.Json** – JSON data helpers (`Sphere10.Framework.Data`)
 
 **Mobile Platforms**
-- **Tools.iOSTool** – iOS-specific utilities
-- **Tools.AndroidTool** – Android-specific utilities (as available)
+- **Tools.iOSTool** – iOS-specific utilities (`Sphere10.Framework.iOS`)
 
 **Application Framework**
-- **Tools.Config** – Configuration and settings management
-- **Tools.NUnit** – NUnit testing utilities
-- **Tools.Drawing** – Graphics and drawing operations
-- **Tools.Debugger** – Debug-time utilities
+- **Tools.Config** – Application-setting reads (`Sphere10.Framework.Application`)
+- **Tools.NUnit** – NUnit test helpers (`Sphere10.Framework.NUnit`)
+- **Tools.Drawing** – Graphics and drawing helpers (`Sphere10.Framework.Drawing`)
+- **Tools.Debugger** – Debug-time utilities (core `Sphere10.Framework`)
 
 ### Usage Pattern
 
 ```csharp
-using Sphere10.Framework;  // Import the framework namespace to access Tools
+using System.Linq.Expressions;
+using Sphere10.Framework;
 
-// String operations
-string sanitized = Tools.Text.RemoveWhitespace(userInput);
-string truncated = Tools.Text.Truncate(longString, 100);
+public static class ToolsUsageExample {
+	public static int[] GenerateAndGrow(int count) {
+		Guard.Argument(count >= 0, nameof(count), "Count must be nonnegative.");
+		var values = Tools.Collection.GenerateArray(count, index => index);
+		Tools.Collection.ResizeArray(ref values, checked((long)count + 1));
+		return values;
+	}
 
-// Collection operations
-var filtered = Tools.Collection.Where(items, x => x.IsActive);
-var flattened = Tools.Collection.Flatten(nestedList);
+	public static int Add(int left, int right)
+		=> Tools.Expressions.CreateExpression<int, int, int>(Expression.Add)(left, right);
 
-// Cryptographic operations
-byte[] hash = Tools.Crypto.SHA256(data);
-bool isValid = Tools.Crypto.VerifySignature(data, signature);
-
-// JSON serialization
-string json = Tools.Json.Serialize(obj);
-var deserialized = Tools.Json.Deserialize<MyType>(json);
-
-// File operations
-string tempFile = Tools.FileSystem.GenerateTempFilename();
-Tools.FileSystem.WriteAllText(path, content);
-
-// Database access
-var dbConnection = Tools.Sqlite.Create(connectionString);
-var dataAdapter = Tools.MSSql.CreateAdapter(connectionString);
-
-// Network utilities
-bool isOnline = Tools.Network.IsInternetAvailable();
-string publicIP = Tools.Network.GetPublicIPAddress();
-
-// Windows-specific (Windows platform only)
-bool serviceRunning = Tools.WinTool.IsServiceRunning("MyService");
-Tools.WinTool.StartService("MyService");
-
-// Web utilities (ASP.NET Core context)
-string sanitized = Tools.Web.Html.SanitizeHtml(userHtml);
-var actionResult = Tools.Web.AspNetCore.CreateResponse(data);
+	public static byte[] HashData(byte[] data) {
+		Guard.ArgumentNotNull(data, nameof(data));
+		return Hashers.Hash(CHF.SHA2_256, data);
+	}
+}
 ```
+
+`Tools` is a global namespace. Select the existing facade and its owning project; importing `Sphere10.Framework` supplies contracts such as `Guard` and `Hashers`. Follow the [utility practices](../../docs/guidelines/patterns/framework-utilities.md) and [Tools Reference](../../docs/tools-reference.md) for the concrete API and ownership rules.
 
 ### Design Philosophy
 
@@ -186,40 +166,14 @@ The Tools namespace embodies several key principles:
 
 1. **Discovery-First**: Type `Tools.` to explore all available operations in IntelliSense
 2. **Consistency**: Related operations grouped under consistent tool names
-3. **Extensibility**: Projects extend with their own Tools.* classes (e.g., `Tools.WinTool`, `Tools.iOSTool`)
+3. **Extensibility**: Projects extend with their own Tools.* classes (e.g., `Tools.Windows` and `Tools.WinForms`)
 4. **Composability**: Tools methods work together seamlessly for complex operations
 5. **Performance**: Methods optimized for production use, with zero-allocation variants where possible
 6. **Type Safety**: Generic methods preserve type information, avoiding casts
 
 ### Extending with Custom Tools
 
-New projects in the framework define their own tool classes:
-
-```csharp
-// In Sphere10.Framework.Windows
-namespace Tools;
-
-public static class WinTool {
-    public static bool IsServiceRunning(string serviceName) { /* ... */ }
-    public static void StartService(string serviceName) { /* ... */ }
-}
-
-// In Sphere10.Framework.Data.MSSQL
-namespace Tools;
-
-public static class MSSqlTool {
-    public static IDataAccessCommand CreateAdapter(string connectionString) { /* ... */ }
-}
-
-// In Sphere10.Framework.Web.AspNetCore
-namespace Tools.Web;
-
-public static class AspNetCoreTool {
-    public static IActionResult CreateResponse<T>(T data) { /* ... */ }
-}
-```
-
-When a new domain adds its own tool class, it automatically becomes discoverable alongside all other tools.
+Extend the existing facade when it already owns the operation. A new domain can add a static class in `namespace Tools;`, following the framework's source headers, guards and naming conventions. See [ArrayTool.cs](Collections/Arrays/ArrayTool.cs) for the declaring pattern and the [Tools Reference](../../docs/tools-reference.md) for contributor guidance. The class becomes discoverable through `Tools.` when its owning project or package is referenced.
 
 ## 🚀 Quick Navigation
 
@@ -440,9 +394,9 @@ The framework integrates deeply with the library's collections and storage primi
 
 ### ⚙️ Transactions
 
-The transactional subsystem provides ACID guarantees for in-memory and file-backed data structures:
+The transactional subsystem provides commit/rollback primitives for configured file-backed collections and custom backends:
 
-- **Transactional Scopes**: `ITransactionalScope` defines a protocol for commit/rollback operations. Context-aware scopes allow nested transactions and isolation.
+- **Transactional Scopes**: `ITransactionalScope` defines begin/commit/rollback operations. Context-aware scopes coordinate nesting and ownership; the concrete backend determines isolation and participation.
 - **Transactional Collections**: `TransactionalList<T>`, `TransactionalDictionary<TKey, TValue>`, and `TransactionalHashSet<T>` provide ACID semantics over persistent storage.
 - **Transactional Streams**: `TransactionalStream` wraps a stream with commit/rollback capabilities, enabling atomic multi-operation updates.
 - **File Transactions**: `FileTransaction` and `FileTransactionScope` coordinate file-system operations within a transactional boundary.
@@ -805,13 +759,15 @@ Stream-mapped collections persist their data to streams using serializers and cl
 
 ### Transactional Scopes
 
-`ITransactionalScope` defines a protocol for ACID transactions:
+`ITransactionalScope` defines the lifecycle of a backend transaction:
 
 - `BeginTransaction()`: Start a new transaction.
-- `CommitTransaction()`: Persist changes.
-- `RollbackTransaction()`: Discard changes.
+- `Commit()`: Commit through the owning scope, respecting nested rollback votes.
+- `Rollback()`: Roll back through the owning scope, or record a nested rollback vote.
 
-Context-aware scopes (subclasses of `ContextScope`) track active transactions within the call context, enabling nested transactions and isolation semantics. Transactional collections and streams implement `ITransactionalObject` to participate in these scopes.
+The corresponding asynchronous methods are `BeginTransactionAsync()`, `CommitAsync()` and `RollbackAsync()`. `BeginTransaction()` returns `void`; the scope itself is consumed with `using` or `await using`.
+
+`TransactionalScopeBase<TTransaction>` extends `ContextScope` and coordinates transaction ownership and nesting within a logical call context. Isolation and which operations participate are determined by the concrete backend; sharing a context does not automatically enlist every `ITransactionalObject`. Disposal closes an owned transaction, but the common base does not automatically call `Rollback()`. See [resource scopes](../../docs/guidelines/patterns/resource-scopes.md) for ownership and cleanup rules.
 
 ### Merkle Coordinates and Proofs
 
@@ -856,13 +812,13 @@ Sphere10 Framework's architecture is organized into largely independent subsyste
 
 3. **Serialization Framework**: A registry-based system (`SerializerFactory`) maps types to serializers. Serializers compose via decorators for features like null-handling, polymorphism, and reference-tracking.
 
-4. **Transactional Framework**: Transactional scopes coordinate commit/rollback across multiple objects. Collections, streams, and object spaces implement `ITransactionalObject` to participate.
+4. **Transactional Framework**: Transactional scopes coordinate commit/rollback for the transaction they own and its enlisted operations. Transactional collections, streams and object spaces expose `ITransactionalObject`; that contract alone does not enlist them in an unrelated scope.
 
 5. **Merkle Trees**: Separate implementations provide different tradeoffs. Merkle-aware collections integrate tree maintenance into their mutation operations.
 
 6. **Utilities and Extensions**: Comparers, operators, logging, threading, and I/O utilities provide cross-cutting functionality without coupling to core abstractions.
 
-Data typically flows from application code through collections or object spaces, which delegate to object streams for persistence. Object streams use clustered streams for storage and serializers for encoding. Transactional scopes coordinate mutations, and merkle trees provide integrity proofs where enabled.
+Data typically flows from application code through collections or object spaces, which delegate to object streams for persistence. Object streams use clustered streams for storage and serializers for encoding. Transactional backends coordinate their participating mutations, and merkle trees provide integrity proofs where enabled.
 
 ## 🚀 Getting Started
 
@@ -890,19 +846,21 @@ Or reference compiled assemblies directly in your project.
 ```csharp
 using Sphere10.Framework;
 using System.IO;
+using System.Text;
 
-// BinarySerializer: Efficient binary serialization
-var serializer = new BinarySerializer<string>();
-var stream = new MemoryStream();
-var context = new SerializationContext();
-serializer.Serialize(context, "Hello World", stream);
+// BinarySerializer: Object serialization with type registrations
+var serializer = new BinarySerializer();
+using var stream = new MemoryStream();
+serializer.Serialize(stream, "Hello World");
+stream.Position = 0;
+var restored = (string)serializer.Deserialize(stream);
 
-// StreamMappedList: Disk-backed collection (no memory limit)
+// StreamMappedList: List over a caller-owned backing stream
 using var fileStream = new FileStream("data.bin", FileMode.Create, FileAccess.ReadWrite);
-var list = new StreamMappedList<string>(fileStream, new StringSerializer(Encoding.UTF8));
+using var list = StreamMappedFactory.CreateList<string>(fileStream, 4096, StringSerializer.UTF8, autoLoad: true);
 list.Add("Persisted Item 1");
 list.Add("Persisted Item 2");
-list.Save();
+fileStream.Flush();
 
 // FlatMerkleTree: Cryptographic proof of integrity
 var tree = new FlatMerkleTree(CHF.SHA2_256);
@@ -916,98 +874,90 @@ syncList.Add(42);  // Automatically locked during mutation
 
 ### 💻 Core Examples
 
-**BinarySerializer: Efficient Binary Serialization**
+**BinarySerializer and Fixed-Size Item Serialization**
 
 ```csharp
 using Sphere10.Framework;
 using System.IO;
 
-// Serialize primitive types
-var binarySerializer = new BinarySerializer<int>();
-var stream = new MemoryStream();
-var context = new SerializationContext();
+public static class BinarySerializationExamples {
+	public static object RoundTripObject(object value) {
+		var serializer = new BinarySerializer();
+		using var stream = new MemoryStream();
+		serializer.Serialize(stream, value);
+		stream.Position = 0;
+		return serializer.Deserialize(stream);
+	}
 
-// Write an integer
-binarySerializer.Serialize(context, 42, stream);
-
-// Read it back
-stream.Position = 0;
-var value = binarySerializer.Deserialize(context, stream);
-Console.WriteLine(value);  // 42
-
-// For custom objects, use ItemSerializer
-class Product {
-    public int Id { get; set; }
-    public string Name { get; set; }
+	public static int ReadIndexedInteger(int[] values, int index) {
+		Guard.ArgumentNotNull(values, nameof(values));
+		Guard.Argument(index >= 0 && index < values.Length, nameof(index), "Index must identify an input value.");
+		var serializer = PrimitiveSerializer<int>.Instance;
+		using var stream = new MemoryStream();
+		using (var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream.AsNonClosing())) {
+			foreach (var value in values)
+				serializer.Serialize(value, writer);
+		}
+		stream.Position = checked(index * serializer.ConstantSize);
+		using var reader = new EndianBinaryReader(EndianBitConverter.Little, stream.AsNonClosing());
+		return serializer.Deserialize(reader);
+	}
 }
-
-var productStream = new MemoryStream();
-var prodContext = new SerializationContext();
-var productBytes = new Product { Id = 1, Name = "Widget" };
-
-// BinarySerializer compresses data efficiently
-// Best used with constant-size serializers for indexed access
-var constSizeSerializer = new BinarySerializer<int>();
-var offsets = new List<long>();
-for (int i = 0; i < 1000; i++) {
-    offsets.Add(productStream.Position);
-    constSizeSerializer.Serialize(prodContext, i, productStream);
-}
-// Now you can seek directly to any index without scanning
-productStream.Seek(offsets[500], SeekOrigin.Begin);
 ```
+
+`BinarySerializer` is non-generic: its stream overloads write and read objects, including type-registration metadata and configured reference handling. It does not perform compression or promise a fixed byte size. The indexed example instead uses the constant-size `PrimitiveSerializer<int>` and an explicit endian reader/writer; `AsNonClosing()` lets those wrappers be disposed while the example retains ownership of its memory stream.
 
 **StreamMappedList: Disk-Backed Collections**
 
+Construct stream-mapped lists through `StreamMappedFactory.CreateList<T>()`. The `Product` model and `CustomProductSerializer` definitions appear below:
+
 ```csharp
+using System;
+using System.Linq;
 using Sphere10.Framework;
 using System.IO;
 
-// Create a collection that persists to disk
-using var fileStream = new FileStream("inventory.dat", FileMode.Create, FileAccess.ReadWrite);
+static class StreamMappedListExample {
+	public static void CreateInventory(string filePath) {
+		using var stream = new FileStream(filePath, FileMode.Create, FileAccess.ReadWrite);
+		using (var inventory = StreamMappedFactory.CreateList<Product>(stream, 4096, new CustomProductSerializer(), autoLoad: true)) {
+			inventory.Add(new Product { Id = 1, Name = "Widget", Price = 9.99m });
+			inventory.AddRange(new[] {
+				new Product { Id = 2, Name = "Gadget", Price = 19.99m },
+				new Product { Id = 3, Name = "Doohickey", Price = 14.99m }
+			});
+		}
+		stream.Flush();
+	}
 
-// StreamMappedList supports massive collections (limited only by disk space)
-var inventory = new StreamMappedList<Product>(
-    fileStream,
-    new CustomProductSerializer(),  // Your serializer
-    autoLoad: false
-);
+	public static Product[] ReadBatch(string filePath, long index, long count) {
+		using var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite);
+		using var inventory = StreamMappedFactory.CreateList<Product>(stream, 4096, new CustomProductSerializer(), autoLoad: true);
+		return inventory.ReadRange(index, count).ToArray();
+	}
 
-// Add items (written to disk immediately)
-inventory.Add(new Product { Id = 1, Name = "Widget", Price = 9.99m });
-inventory.Add(new Product { Id = 2, Name = "Gadget", Price = 19.99m });
-inventory.Add(new Product { Id = 3, Name = "Doohickey", Price = 14.99m });
-
-// Efficient batch operations
-inventory.AddRange(new[] {
-    new Product { Id = 4, Name = "Thingamajig", Price = 24.99m },
-    new Product { Id = 5, Name = "Whatsit", Price = 12.99m }
-});
-
-// Save index to disk
-inventory.Save();
-
-// Later, reload from disk (only index is loaded into memory)
-using var reloadStream = new FileStream("inventory.dat", FileMode.Open, FileAccess.Read);
-var reloaded = new StreamMappedList<Product>(reloadStream, new CustomProductSerializer(), autoLoad: true);
-
-// Access items (loaded from disk as needed)
-var firstItem = reloaded[0];  // Reads from disk
-var batch = reloaded.ReadRange(1, 3);  // Batch read is more efficient
-
-// StreamMappedList with checksums for integrity
-using var checkedStream = new FileStream("checked.dat", FileMode.Create, FileAccess.ReadWrite);
-var checkedList = new StreamMappedList<string>(
-    checkedStream,
-    new StringSerializer(Encoding.UTF8),
-    itemChecksummer: new ObjectHashCodeChecksummer<string>(),
-    reservedStreams: 1,
-    policy: ClusteredStreamsPolicy.Default
-);
-checkedList.Add("Important data");
-checkedList.Save();
-// Checksums verify data wasn't corrupted on disk
+	public static long CreateTextLookup(string filePath) {
+		using var stream = new FileStream(filePath, FileMode.Create, FileAccess.ReadWrite);
+		var serializer = SerializerFactory.Default.GetSerializer<string>();
+		using var list = StreamMappedFactory.CreateList<string>(
+			stream,
+			4096,
+			serializer,
+			itemComparer: StringComparer.Ordinal,
+			itemChecksummer: new ItemDigestor<string>(CHF.Blake2b_128, serializer, Endianness.LittleEndian),
+			reservedStreams: 2,
+			optionalItemChecksumIndexName: "TextChecksum",
+			autoLoad: true
+		);
+		list.Add("Important data");
+		return list.IndexOfL("Important data");
+	}
+}
 ```
+
+`autoLoad: true` initializes or loads the container before use. Collection mutations update the backing stream; there is no list `Save()` method. The factory owns the list's object/cluster containers, while these examples retain ownership of their `FileStream` and dispose it after the list. Reopening must use the same serializers, cluster layout, endianness and attachment configuration. `ReadRange` reads the selected items; materializing the result before disposal keeps the returned values usable. Metadata, indexes, selected items and runtime limits still require memory.
+
+The checksum example registers a named lookup attachment and reserves streams for its forward and reverse stores. Checksums narrow lookup candidates; equality comparisons resolve collisions. This is not automatic payload-corruption verification. See [StreamMappedFactory](Collections/StreamMapped/StreamMappedFactory.cs) and [collections/storage guidance](../../docs/guidelines/patterns/collections-and-storage.md).
 
 **StreamPagedList: Memory-Paged Disk Collections**
 
@@ -1213,15 +1163,39 @@ Product FetchProductFromDatabase(int id) {
     return new Product { Id = id, Name = $"Product {id}", Price = 9.99m };
 }
 
-class CustomProductSerializer : IItemSerializer<Product> {
-    public void Serialize(ISerializationContext context, Product item, Stream stream) {
-        // Custom serialization logic
-    }
+class CustomProductSerializer : ItemSerializerBase<Product> {
+	private readonly IItemSerializer<int> _idSerializer;
+	private readonly IItemSerializer<string> _nameSerializer;
+	private readonly IItemSerializer<decimal> _priceSerializer;
 
-    public Product Deserialize(ISerializationContext context, Stream stream) {
-        // Custom deserialization logic
-        return new Product();
-    }
+	public CustomProductSerializer()
+		: this(SerializerFactory.Default) {
+	}
+
+	public CustomProductSerializer(SerializerFactory factory) {
+		Guard.ArgumentNotNull(factory, nameof(factory));
+		_idSerializer = factory.GetSerializer<int>();
+		_nameSerializer = factory.GetSerializer<string>();
+		_priceSerializer = factory.GetSerializer<decimal>();
+	}
+
+	public override long CalculateSize(SerializationContext context, Product item)
+		=> _idSerializer.CalculateSize(context, item.Id)
+			+ _nameSerializer.CalculateSize(context, item.Name)
+			+ _priceSerializer.CalculateSize(context, item.Price);
+
+	public override void Serialize(Product item, EndianBinaryWriter writer, SerializationContext context) {
+		_idSerializer.Serialize(item.Id, writer, context);
+		_nameSerializer.Serialize(item.Name, writer, context);
+		_priceSerializer.Serialize(item.Price, writer, context);
+	}
+
+	public override Product Deserialize(EndianBinaryReader reader, SerializationContext context)
+		=> new Product {
+			Id = _idSerializer.Deserialize(reader, context),
+			Name = _nameSerializer.Deserialize(reader, context),
+			Price = _priceSerializer.Deserialize(reader, context)
+		};
 }
 ```
 
@@ -1231,46 +1205,55 @@ class CustomProductSerializer : IItemSerializer<Product> {
 
 The StreamMappedList shown above demonstrates the core disk-backed storage pattern. For additional persistence options:
 
-- Use `itemChecksummer` to verify data integrity (detects corruption)
-- Use `reservedStreams` to attach additional metadata streams
+- Use `itemChecksummer` together with `optionalItemChecksumIndexName` for an item lookup index; the checksum alone does not enable an index or verify payload integrity.
+- Allocate `reservedStreams` for the configured index/metadata attachments and preserve that layout when reopening.
 - Configure `ClusteredStreamsPolicy` to control cluster allocation
 
 **Transactional Scopes:**
 
-```csharp
-// Transactional boundaries for ACID operations
-var dict = new TransactionalDictionary<string, Account>();
+`TransactionalDictionary<TKey, TValue>` wraps stream-mapped storage and an `ITransactionalObject`. Construct its file backend with a `Sphere10FrameworkFileDescriptor`, load it, and explicitly call `Commit()` or `Rollback()`. It has no parameterless constructor or `BeginScope()` method:
 
-using (var scope = dict.BeginScope()) {
-    using (var txn = scope.BeginTransaction()) {
-        dict["acc1"] = new Account { Balance = 1000 };
-        dict["acc2"] = new Account { Balance = 500 };
-        // Auto-rollback if exception occurs
-        txn.Commit();  // Explicit commit for atomicity
-    }
+```csharp
+using System;
+using Sphere10.Framework;
+
+public static class TransactionalDictionaryExample {
+	public static void UpdateBalances(string dataFile, string pagesDirectory) {
+		using var dictionary = Open(dataFile, pagesDirectory, FileAccessMode.OpenOrCreate);
+		dictionary.Load();
+		try {
+			dictionary["acc001"] = 1000m;
+			dictionary["acc002"] = 500m;
+			dictionary.Commit();
+		} catch (Exception operationError) {
+			try {
+				dictionary.Rollback();
+			} catch (Exception rollbackError) {
+				throw new AggregateException(operationError, rollbackError);
+			}
+			throw;
+		}
+	}
+
+	public static decimal ReadBalance(string dataFile, string pagesDirectory, string accountID) {
+		using var dictionary = Open(dataFile, pagesDirectory, FileAccessMode.Read);
+		dictionary.Load();
+		return dictionary[accountID];
+	}
+
+	private static TransactionalDictionary<string, decimal> Open(string dataFile, string pagesDirectory, FileAccessMode accessMode)
+		=> new(
+			Sphere10FrameworkFileDescriptor.From(dataFile, pagesDirectory),
+			SerializerFactory.Default.GetSerializer<string>(),
+			PrimitiveSerializer<decimal>.Instance,
+			keyChecksum: new ItemDigestor<string>(CHF.Blake2b_128, SerializerFactory.Default.GetSerializer<string>(), Endianness.LittleEndian),
+			reservedStreamCount: 3,
+			accessMode: accessMode
+		);
 }
 ```
-```csharp
-// Transactional dictionary backed by file
-var persistedDict = new TransactionalDictionary<string, Account>();
 
-using (var scope = persistedDict.BeginScope()) {
-    using (var txn = scope.BeginTransaction()) {
-        persistedDict["acc001"] = new Account { Balance = 1000 };
-        persistedDict["acc002"] = new Account { Balance = 500 };
-        txn.Commit();  // Atomic commit to disk
-    }
-    // If exception occurs, automatic rollback
-}
-
-// Verify persistence
-using (var scope2 = persistedDict.BeginScope()) {
-    using (var txn2 = scope2.BeginTransaction()) {
-        var acc1 = persistedDict["acc001"];  // Data persisted
-        Console.WriteLine(acc1.Balance);    // 1000
-    }
-}
-```
+The caller supplies existing data/page directories; `UpdateBalances` commits before its dictionary is disposed, and `ReadBalance` opens the same backing file to read committed state. The variable-size string keys need the configured key checksummer for automatic dictionary layout selection; both opens use the same configuration. For transaction scopes that coordinate enlisted files, reuse `FileTransactionScope` and call `BeginTransaction()` on the scope itself; see [custom transactional scopes](#custom-transactional-scopes). Scope disposal closes the owned transaction and does not imply automatic rollback by the common base. These are distinct transaction owners: a dictionary is not automatically enlisted in an unrelated scope.
 
 ### 📦 Advanced Serialization Patterns
 
@@ -1285,7 +1268,7 @@ using System.Security.Cryptography;
 // Create a merkle-aware list with SHA-256
 var hasher = new HashAlgorithmAdapter(SHA256.Create());
 var merkleList = new FlatMerkleList<string>(
-    ItemSerializer.Default<string>(),
+    ItemSerializer<string>.Default,
     hasher
 );
 
@@ -1330,115 +1313,162 @@ var multiProof = merkleDictionary.MerkleTree.GenerateMultiProof(new[] { 0, 1 });
 ```csharp
 using Sphere10.Framework;
 
-// Simple type serialization
-var intSerializer = ItemSerializer<int>.Default;
-byte[] bytes = intSerializer.Serialize(42);
-int restored = intSerializer.Deserialize(bytes);
+public static class BuiltInSerializationExamples {
+	public static int RoundTripInt(int value) {
+		var serializer = SerializerFactory.Default.GetSerializer<int>();
+		var bytes = serializer.SerializeToBytes(value, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
 
-// Supports complex types automatically
-var listSerializer = ItemSerializer<ExtendedList<string>>.Default;
-var list = new ExtendedList<string> { "a", "b", "c" };
-var serialized = listSerializer.Serialize(list);
-var deserialized = listSerializer.Deserialize(serialized);
+	public static ExtendedList<string> RoundTripList(ExtendedList<string> values) {
+		var serializer = SerializerFactory.Default.GetSerializer<ExtendedList<string>>();
+		var bytes = serializer.SerializeToBytes(values, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
+}
 ```
+
+Default registrations include the primitive and `ExtendedList<T>` serializers used here. For application types that need automatic assembly, use `SerializerBuilder.FactoryAssemble<T>(factory)` or retain their registrations with `factory.RegisterAutoBuild<T>()`.
 
 **Custom Serializer Factory with Type Registration:**
 
+This deliberately starts with an empty factory to choose the string encoding and size descriptor. Register each required member serializer before registering the application's pure composite serializer:
+
 ```csharp
-var factory = new SerializerFactory();
+using System.Text;
+using Sphere10.Framework;
 
-// Register primitives with specific strategies
-factory.Register(
-    typeof(string),
-    new StringSerializer(SizeDescriptorStrategy.UseVarInt)
-);
+public sealed class FactoryMessage {
+	public string Text { get; set; }
+}
 
-// Register custom type
-factory.Register(
-    typeof(MyObject),
-    new MyObjectSerializer(factory)
-);
-
-// Retrieve and use
-var serializer = factory.GetSerializer(typeof(MyObject));
-var data = serializer.Serialize(myObj);
+public static class CustomFactoryExample {
+	public static FactoryMessage RoundTrip(FactoryMessage message) {
+		var factory = new SerializerFactory();
+		factory.Register<string>(new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseVarInt));
+		var pureSerializer = SerializerBuilder
+			.For<FactoryMessage>()
+			.Serialize(item => item.Text, factory.GetSerializer<string>())
+			.Build();
+		factory.Register<FactoryMessage>(pureSerializer);
+		var serializer = factory.GetSerializer<FactoryMessage>();
+		var bytes = serializer.SerializeToBytes(message, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
+}
 ```
+
+Usually, use `new SerializerFactory(SerializerFactory.Default)` to copy built-in registrations before adding new application types. Registrations cannot replace an existing type's mapping; do not re-register `string` in that copied factory. Register pure serializers, then obtain configured null/reference handling through `GetSerializer<T>()`. Applications exchanging these bytes must agree on registrations, layout and endianness.
 
 **Polymorphic Serialization (Inheritance Support):**
 
 ```csharp
-// Animal is abstract; Dog and Cat inherit from it
-// Mark subtypes with [KnownSubType]
+using Sphere10.Framework;
+
 [KnownSubType(typeof(Dog))]
 [KnownSubType(typeof(Cat))]
-public abstract class Animal { /* ... */ }
+public abstract class Animal {
+	public string Name { get; set; }
+}
 
-// Default serializer automatically handles polymorphism
-var animalSerializer = ItemSerializer<Animal>.Default;
-var animals = new ExtendedList<Animal> { 
-    new Dog("Fido"), 
-    new Cat("Mittens") 
-};
+public sealed class Dog : Animal {
+	public bool IsWorkingDog { get; set; }
+}
 
-byte[] bytes = animalSerializer.Serialize(animals);
-var restored = animalSerializer.Deserialize(bytes);
-Console.WriteLine(restored[0].GetType());  // Dog ✓
-Console.WriteLine(restored[1].GetType());  // Cat ✓
+public sealed class Cat : Animal {
+	public int LivesRemaining { get; set; }
+}
+
+public static class PolymorphicSerializationExample {
+	public static Animal RoundTrip(Animal animal) {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		var serializer = SerializerBuilder.FactoryAssemble<Animal>(factory);
+		var bytes = serializer.SerializeToBytes(animal, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
+}
 ```
+
+The builder scans the `[KnownSubType]` declarations, assembles concrete serializers and uses a polymorphic serializer for the abstract `Animal` contract. Passing a `Dog` or `Cat` preserves its concrete type and public writable properties. Serialize collections with a collection serializer rather than passing a list to an `IItemSerializer<Animal>`.
 
 **Reference-Tracked Serialization (Graph Preservation):**
 
-```csharp
-// When serializing object graphs with repeated references
-// or cycles, use reference serializers to preserve identity
+Automatic assembly supplies composite instance activation and reference handling together, so members can refer back to an object that is still being populated:
 
-class Node { 
-    public string Value { get; set; }
-    public Node Next { get; set; }
+```csharp
+using System;
+using Sphere10.Framework;
+
+public sealed class Node {
+	public string Value { get; set; }
+	public Node Next { get; set; }
 }
 
-var factory = new SerializerFactory();
-var refSerializer = new NodeSerializer().AsReferenceSerializer();
-factory.Register(typeof(Node), refSerializer);
-
-// Circular linked list: A -> B -> A
-var a = new Node { Value = "A" };
-var b = new Node { Value = "B", Next = a };
-a.Next = b;
-
-byte[] data = refSerializer.Serialize(a);
-var restored = refSerializer.Deserialize(data);
-// Identity preserved: restored.Next.Next == restored ✓
+public static class GraphSerializationExample {
+	public static Node RoundTripCycle() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<Node>();
+		var serializer = factory.GetSerializer<Node>();
+		var first = new Node { Value = "A" };
+		var second = new Node { Value = "B", Next = first };
+		first.Next = second;
+		var bytes = serializer.SerializeToBytes(first, Endianness.LittleEndian);
+		var restored = serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+		if (!ReferenceEquals(restored.Next.Next, restored))
+			throw new InvalidOperationException("The cycle was not preserved.");
+		return restored;
+	}
+}
 ```
+
+`AsReferenceSerializer()` is also a public extension for wrapping a pure serializer, but `SerializerFactory` rejects registration of a `ReferenceSerializer<T>` wrapper. Register the pure serializer and let factory lookup apply the wrapper. A custom cyclic graph serializer must implement the early activation contract; the reference wrapper alone cannot supply it.
 
 **Compact Integer Encoding (VarInt/CVarInt):**
 
+`VarInt` and `CVarInt` encode unsigned 64-bit values. `VarInt` uses a size prefix for larger values; `300` occupies three bytes. `CVarInt` uses its compact variable-length encoding, with `10000` occupying two bytes. The custom `int` serializer below accepts non-negative values and rejects encoded values beyond `int.MaxValue` when reading:
+
 ```csharp
+using System.IO;
 using Sphere10.Framework;
 
-// VarInt: Variable-length signed integers (more compact for small numbers)
-using (var ms = new MemoryStream()) {
-    VarInt.Write(ms, 300);
-    ms.Position = 0;
-    int v = VarInt.Read(ms);  // 300
-    // 300 encoded as 3 bytes instead of 4
+public sealed class CompactSerializer : ItemSerializerBase<int> {
+	public override long CalculateSize(SerializationContext context, int item)
+		=> CVarInt.SizeOf(ToUnsigned(item));
+
+	public override void Serialize(int item, EndianBinaryWriter writer, SerializationContext context)
+		=> CVarInt.Write(ToUnsigned(item), writer.BaseStream);
+
+	public override int Deserialize(EndianBinaryReader reader, SerializationContext context)
+		=> checked((int)CVarInt.Read(reader.BaseStream));
+
+	private static ulong ToUnsigned(int item) {
+		Guard.Argument(item >= 0, nameof(item), "CompactSerializer requires a non-negative integer.");
+		return (ulong)item;
+	}
 }
 
-// CVarInt: Compact unsigned, extreme compression for typical ranges
-var bytes = CVarInt.ToBytes(10000);  // Few bytes only
-var value = CVarInt.From(bytes);
+public static class CompactIntegerExamples {
+	public static ulong RoundTripVarInt(ulong value) {
+		using var stream = new MemoryStream();
+		VarInt.Write(value, stream);
+		stream.Position = 0;
+		return VarInt.Read(stream);
+	}
 
-// Typical usage in custom serializers
-class CompactSerializer : ItemSerializerBase<int> {
-    public override void Serialize(ISerializationContext context, int item) {
-        CVarInt.Write(context.Writer, (ulong)item);
-    }
-    
-    public override int Deserialize(IDeserializationContext context) {
-        return (int)CVarInt.Read(context.Reader);
-    }
+	public static ulong RoundTripCVarInt(ulong value) {
+		var bytes = new CVarInt(value).ToBytes();
+		return CVarInt.Read(bytes);
+	}
+
+	public static int RoundTripNonNegativeInt(int value) {
+		var serializer = new CompactSerializer();
+		var bytes = serializer.SerializeToBytes(value, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
 }
 ```
+
+These compact encodings define their own byte layout; using them does not turn signed values into an unsigned encoding automatically. `CVarIntSerializer.Instance` and `VarIntSerializer.Instance` already serialize the corresponding framework value types.
 
 **Cryptographic Hashing:**
 
@@ -1544,52 +1574,82 @@ The library's design encourages extending core abstractions rather than modifyin
 
 ### Custom Serializers
 
-Implement `IItemSerializer<T>` (or inherit `ItemSerializerBase<T>`) to define custom serialization logic:
+Derive from `ItemSerializerBase<T>` to implement the `IItemSerializer<T>` contract. Implement sizing alongside serialization, and pass the supplied context and reader/writer to member serializers:
 
 ```csharp
-public class UserSerializer : ItemSerializerBase<User> {
-    private readonly IItemSerializer<string> _stringSerializer;
-    private readonly IItemSerializer<int> _intSerializer;
-    
-    public UserSerializer(SerializerFactory factory) {
-        _stringSerializer = factory.GetSerializer<string>();
-        _intSerializer = factory.GetSerializer<int>();
-    }
-    
-    public override void Serialize(ISerializationContext context, User user) {
-        _stringSerializer.Serialize(context, user.Name);
-        _intSerializer.Serialize(context, user.Age);
-    }
-    
-    public override User Deserialize(IDeserializationContext context) {
-        var name = _stringSerializer.Deserialize(context);
-        var age = _intSerializer.Deserialize(context);
-        return new User { Name = name, Age = age };
-    }
+using Sphere10.Framework;
+
+public class User {
+	public string Name { get; set; }
+	public int Age { get; set; }
 }
 
-// Register and use
-var factory = new SerializerFactory();
-factory.Register(typeof(User), new UserSerializer(factory));
-var serialized = factory.GetSerializer<User>().Serialize(user);
+public class UserSerializer : ItemSerializerBase<User> {
+	private readonly IItemSerializer<string> _stringSerializer;
+	private readonly IItemSerializer<int> _intSerializer;
+
+	public UserSerializer(SerializerFactory factory) {
+		Guard.ArgumentNotNull(factory, nameof(factory));
+		_stringSerializer = factory.GetSerializer<string>();
+		_intSerializer = factory.GetSerializer<int>();
+	}
+
+	public override long CalculateSize(SerializationContext context, User item)
+		=> _stringSerializer.CalculateSize(context, item.Name) + _intSerializer.CalculateSize(context, item.Age);
+
+	public override void Serialize(User item, EndianBinaryWriter writer, SerializationContext context) {
+		_stringSerializer.Serialize(item.Name, writer, context);
+		_intSerializer.Serialize(item.Age, writer, context);
+	}
+
+	public override User Deserialize(EndianBinaryReader reader, SerializationContext context)
+		=> new User {
+			Name = _stringSerializer.Deserialize(reader, context),
+			Age = _intSerializer.Deserialize(reader, context)
+		};
+}
+
+public static class UserSerializationExample {
+	public static User RoundTrip(User user) {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.Register<User>(new UserSerializer(factory));
+		var serializer = factory.GetSerializer<User>();
+		var bytes = serializer.SerializeToBytes(user, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
+}
 ```
+
+The copied default factory supplies the string and integer serializers while keeping the custom registration local. This pure serializer expects a non-null `User`; factory lookup supplies the configured null/reference wrapper. Endianness belongs to the reader/writer, and the byte-array helpers accept it explicitly. See [serialization guidance](../../docs/guidelines/patterns/serialization.md) for factory registration, reference handling and stable wire formats.
 
 ### Serializer Decorators
 
-Wrap serializers to add cross-cutting concerns (null-handling, encryption, compression, etc.):
+Use the public wrappers for nullable values and reference handling. `ItemSerializerDecorator<T>` is the reusable base for custom serializer decorators:
 
 ```csharp
-// Add null-substitution
-var baseSerializer = ItemSerializer<int>.Default;
-var nullableSerializer = new WithNullSubstitutionSerializer<int>(
-    baseSerializer, 
-    defaultValue: -1  // Use -1 when null
-);
+using Sphere10.Framework;
 
-// Chain decorators
-var encrypted = new EncryptedSerializer<MyType>(nullableSerializer, encryptionKey);
-var compressed = new CompressedSerializer<MyType>(encrypted);
+public static class SerializerDecoratorExamples {
+	public static int? RoundTripNullable(int? value) {
+		IItemSerializer<int?> serializer = new NullableSerializer<int>(PrimitiveSerializer<int>.Instance);
+		var bytes = serializer.SerializeToBytes(value, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
+
+	public static string RoundTripString(string value) {
+		IItemSerializer<string> serializer = new ReferenceSerializer<string>(
+			StringSerializer.UTF8,
+			ReferenceSerializerMode.SupportNull | ReferenceSerializerMode.SupportContextReferences
+		);
+		var bytes = serializer.SerializeToBytes(value, Endianness.LittleEndian);
+		return serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
+	}
+}
 ```
+
+`SerializerFactory.GetSerializer<T>()` applies its configured reference/null handling; do not wrap an already reference-wrapped serializer in another `ReferenceSerializer<T>`. A graph serializer must support instance activation before reading members if cyclic references need to point back to the instance being constructed; wrapping a serializer alone does not add that activation contract.
+
+Compression and encryption can be composed at the stream layer: supply an `EndianBinaryWriter` over the chosen transforming stream to `Serialize`, and use the matching inverse stream composition with an `EndianBinaryReader` for `Deserialize`. There are no public `EncryptedSerializer<T>` or `CompressedSerializer<T>` wrappers in this library. For `EncryptedStream`, follow its [key, counter, authentication and ownership requirements](#length-preserving-encrypted-streams).
 
 ### Custom Indexes on Object Streams
 
@@ -1624,39 +1684,56 @@ var person = objectStream[personIndex.Value];
 
 ### Custom Transactional Scopes
 
-Subclass `TransactionalScopeBase` to implement custom transaction semantics:
+`TransactionalScopeBase<TTransaction>` coordinates ownership and lifecycle. For a synchronous backend, derive from `SyncTransactionalScope<TTransaction>` and implement its four synchronous transaction hooks. An asynchronous backend uses `AsyncTransactionalScope<TTransaction>` and the corresponding async hooks; concrete types do not implement one public direction by calling the other.
+
+This complete example wraps a provider's `DbTransaction`. The caller supplies an already-open `DbConnection` and a context name; this scope requires that it be the root for that name:
 
 ```csharp
-public class FileBackedTransactionalScope : TransactionalScopeBase {
-    private readonly FileStream _logFile;
-    private List<Operation> _operations = new();
-    
-    protected override void OnBeginTransaction() {
-        _operations.Clear();
-        // Write transaction start marker to log
-    }
-    
-    protected override void OnCommitTransaction() {
-        // Flush all operations to file atomically
-        _logFile.Write(Encoding.UTF8.GetBytes("[COMMIT]"));
-        _logFile.Flush();
-    }
-    
-    protected override void OnRollbackTransaction() {
-        _operations.Clear();
-        // Discard pending operations
-    }
+using System;
+using System.Data.Common;
+using Sphere10.Framework;
+
+public sealed class DatabaseTransactionScope : SyncTransactionalScope<DbTransaction> {
+	private readonly DbConnection _connection;
+
+	public DatabaseTransactionScope(DbConnection connection, string contextID)
+		: base(ContextScopePolicy.MustBeRoot, contextID) {
+		Guard.ArgumentNotNull(connection, nameof(connection));
+		_connection = connection;
+	}
+
+	protected override DbTransaction BeginTransactionInternal() => _connection.BeginTransaction();
+
+	protected override void CloseTransactionInternal(DbTransaction transaction) => transaction.Dispose();
+
+	protected override void CommitInternal(DbTransaction transaction) => transaction.Commit();
+
+	protected override void RollbackInternal(DbTransaction transaction) => transaction.Rollback();
 }
 
-// Use in transactional collections
-var dict = new TransactionalDictionary<string, int>();
-using (var scope = new FileBackedTransactionalScope()) {
-    using (var txn = scope.BeginTransaction()) {
-        dict["key"] = 42;
-        txn.Commit();
-    }
+public static class DatabaseTransactionExample {
+	public static void Execute(DbConnection connection, string contextID, Action<DbTransaction> operation) {
+		Guard.ArgumentNotNull(operation, nameof(operation));
+		using var scope = new DatabaseTransactionScope(connection, contextID);
+		scope.BeginTransaction();
+		try {
+			operation(scope.Transaction);
+			scope.Commit();
+		} catch (Exception operationError) {
+			if (scope.ParticipatesWithinTransaction) {
+				try {
+					scope.Rollback();
+				} catch (Exception rollbackError) {
+					throw new AggregateException(operationError, rollbackError);
+				}
+			}
+			throw;
+		}
+	}
 }
 ```
+
+The operation must attach its database commands to the supplied transaction. The scope disposes that transaction; the caller retains ownership of the connection. Reuse existing backend scopes such as `FileTransactionScope` before introducing a custom scope. See [directional sync/async hierarchies](../../docs/guidelines/patterns/sync-async.md#synchronous-and-asynchronous-implementation-hierarchies) and [transaction ownership](../../docs/guidelines/patterns/resource-scopes.md).
 
 ### Extending Collections
 
@@ -1693,7 +1770,7 @@ logged.Add(42);  // "Adding 42" logged
 ### Thread Safety
 
 - **Most collections are NOT thread-safe by default.** Use `SynchronizedList<T>`, `SynchronizedDictionary<TKey, TValue>`, `SynchronizedExtendedList<T>`, or wrap with `ConcurrentStream` where concurrent access is required.
-- **Transactional scopes are single-threaded.** Transactions are isolated per call context; concurrent transactions require separate scope instances.
+- **Transactional scopes require serialized use.** Nested scopes can share transaction ownership through the logical call context; creating another scope instance does not by itself guarantee an independent transaction. Follow the concrete backend's isolation and concurrency contract.
 - **Caches**: Thread-safety depends on implementation. `SynchronizedRepository<T>` and `SynchronizedLogger` provide synchronized wrappers.
 - **ProducerConsumerQueue<T>**: Fully thread-safe for concurrent producers and consumers.
 
