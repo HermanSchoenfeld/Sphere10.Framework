@@ -9,13 +9,13 @@ from nuget.org. Keeps packages, consumer projects and logs for inspection; does 
 publish packages or remove existing files. Requires the .NET 10 SDK. The default
 Windows solution also requires the Windows desktop targeting pack.
 .EXAMPLE
-.\validate-packages.ps1
+.\scripts\validate-packages.ps1
 .EXAMPLE
-.\validate-packages.ps1 -solutionPath 'src/Sphere10.Framework (CrossPlatform).sln'
+.\scripts\validate-packages.ps1 -solutionPath 'src/Sphere10.Framework (CrossPlatform).sln'
 #>
 [CmdletBinding()]
 param(
-	[string]$solutionPath = (Join-Path $PSScriptRoot 'src/Sphere10.Framework (Win).sln'),
+	[string]$solutionPath = (Join-Path (Split-Path -Parent $PSScriptRoot) 'src/Sphere10.Framework (Win).sln'),
 	[ValidateSet('Debug', 'Release')]
 	[string]$configuration = 'Release'
 )
@@ -58,7 +58,7 @@ function New-Consumer {
 	param([string]$name, [string[]]$packageIds, [string]$sdk = 'Microsoft.NET.Sdk', [string]$targetFramework = 'net10.0')
 	$directory = Join-Path $workspace $name
 	New-Item -ItemType Directory -Path $directory | Out-Null
-	Copy-Item -Path (Join-Path $PSScriptRoot "scripts/package-consumers/$name/*") -Destination $directory
+	Copy-Item -Path (Join-Path $PSScriptRoot "package-consumers/$name/*") -Destination $directory
 	$references = foreach ($id in $packageIds) {
 		$privateAssets = if ($id -eq 'Sphere10.Framework.Generators') { ' PrivateAssets="all"' } else { '' }
 		"`t`t<PackageReference Include=`"$id`" Version=`"[$version]`"$privateAssets />"

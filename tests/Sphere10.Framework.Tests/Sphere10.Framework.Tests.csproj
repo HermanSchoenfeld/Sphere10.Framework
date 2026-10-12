@@ -36,7 +36,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="../../pack.ps1" Link="Packaging/pack.ps1" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="../../publish.ps1" Link="Packaging/publish.ps1" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="../../scripts/pack.ps1" Link="Packaging/pack.ps1" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="../../scripts/publish.ps1" Link="Packaging/publish.ps1" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 </Project>

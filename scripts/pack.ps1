@@ -3,7 +3,7 @@
 .SYNOPSIS
 Cleans and packs Sphere10 Framework for NuGet distribution.
 .EXAMPLE
-.\pack.ps1
+.\scripts\pack.ps1
 #>
 [CmdletBinding()]
 param(
@@ -14,22 +14,23 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
 
 if (-not $PSBoundParameters.ContainsKey('outputDirectory')) {
-	$outputDirectory = Join-Path $PSScriptRoot 'nuget-packages'
+	$outputDirectory = Join-Path $repositoryRoot 'nuget-packages'
 }
 
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
 	throw 'dotnet SDK not found on PATH. Install the .NET SDK and try again.'
 }
 
-$solutionPath = Join-Path $PSScriptRoot 'src/Sphere10.Framework (Win).sln'
+$solutionPath = Join-Path $repositoryRoot 'src/Sphere10.Framework (Win).sln'
 if (-not (Test-Path -LiteralPath $solutionPath -PathType Leaf)) {
 	throw "Solution not found: $solutionPath"
 }
 
 $outputRoot = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($outputDirectory)
-$stageRoot = Join-Path $PSScriptRoot 'publish/.staging'
+$stageRoot = Join-Path $repositoryRoot 'publish/.staging'
 $stageDirectory = Join-Path $stageRoot "framework-$([guid]::NewGuid().ToString('N'))"
 $packageNamePattern = '^(?:Sphere10\.Framework(?:\.[A-Za-z][A-Za-z0-9_-]*)*|Sphere10\.HashLib4CSharp)\.[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?\.(?:nupkg|snupkg)$'
 $pathComparison = if ([IO.Path]::DirectorySeparatorChar -eq '\') { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
@@ -58,7 +59,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Keep the last successful packages until the complete new package set is built.
 New-Item -ItemType Directory -Path $stageRoot -Force | Out-Null
-foreach ($directoryPath in @((Join-Path $PSScriptRoot 'publish'), $stageRoot)) {
+foreach ($directoryPath in @((Join-Path $repositoryRoot 'publish'), $stageRoot)) {
 	if ((Get-Item -LiteralPath $directoryPath).Attributes -band [IO.FileAttributes]::ReparsePoint) {
 		throw "The package staging path must not be a symbolic link or junction: $directoryPath"
 	}

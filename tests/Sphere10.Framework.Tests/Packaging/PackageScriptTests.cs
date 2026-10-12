@@ -288,12 +288,15 @@ public class PackageScriptTests {
 		var scriptPath = Path.Combine(AppContext.BaseDirectory, "Packaging", scriptName);
 		if (!File.Exists(scriptPath)) {
 			var repository = new DirectoryInfo(AppContext.BaseDirectory);
-			while (repository != null && !File.Exists(Path.Combine(repository.FullName, scriptName)))
+			while (repository != null && !File.Exists(Path.Combine(repository.FullName, "scripts", scriptName)))
 				repository = repository.Parent;
 			Guard.Ensure(repository != null, "Packaging scripts must be deployed beside the tests or available in the source checkout.");
-			scriptPath = Path.Combine(repository.FullName, scriptName);
+			scriptPath = Path.Combine(repository.FullName, "scripts", scriptName);
 		}
-		File.Copy(scriptPath, Path.Combine(_directory, scriptName));
+		var scriptsDirectory = Path.Combine(_directory, "scripts");
+		Tools.FileSystem.CreateDirectory(scriptsDirectory);
+		var deployedScriptPath = Path.Combine(scriptsDirectory, scriptName);
+		File.Copy(scriptPath, deployedScriptPath);
 		var wrapper = Path.Combine(_directory, "invoke-script.ps1");
 		File.WriteAllText(wrapper, """
 			$ErrorActionPreference = 'Stop'
@@ -352,7 +355,7 @@ public class PackageScriptTests {
 		};
 		foreach (var argument in new[] { "-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", wrapper })
 			startInfo.ArgumentList.Add(argument);
-		startInfo.Environment["PACKAGE_TEST_SCRIPT"] = Path.Combine(_directory, scriptName);
+		startInfo.Environment["PACKAGE_TEST_SCRIPT"] = deployedScriptPath;
 		startInfo.Environment["PACKAGE_TEST_PARAMETERS"] = parametersPath;
 		startInfo.Environment["PACKAGE_TEST_COMMANDS"] = commandsPath;
 		startInfo.Environment["PACKAGE_TEST_PROMPTS"] = promptsPath;

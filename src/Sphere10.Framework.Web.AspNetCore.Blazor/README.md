@@ -1076,7 +1076,7 @@ dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framew
 
 The [test project README](../../tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/README.md) lists the grid fixtures and focused test commands. The [Blazor tester guide](../../utils/Sphere10.Framework.Utils.BlazorTester/README.md) explains the full-window application demo. `/` and `/application` enter the same shell; component and legacy URLs select registered screens and resolve to the canonical `/application?block=...&screen=...` address. The old `/components/grid` and `/modern` URLs both open the CRUD grid tab. Theme, endpoint selection, commands and retained screen state belong to the same running host.
 
-For isolated package-consumer verification, run [validate-packages.ps1](../../validate-packages.ps1) from the repository root. It packs the public framework graph, builds external consumers and checks a published Blazor host and its Razor assets. It does not publish packages to a registry.
+For isolated package-consumer verification, run `./scripts/validate-packages.ps1` from the Framework repository root. The [validation script](../../scripts/validate-packages.ps1) packs the public framework graph, builds external consumers and checks a published Blazor host and its Razor assets. It does not publish packages to a registry.
 
 ## Troubleshooting
 

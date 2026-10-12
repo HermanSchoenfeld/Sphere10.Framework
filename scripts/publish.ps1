@@ -7,9 +7,9 @@ Uses -ApiKey, NUGET_API_KEY, or a hidden prompt. Validates package identities, v
 matching symbols before publishing. Use -WhatIf to validate and preview without an API
 key or network access. Use -Confirm:$false for an explicitly authorized CI run.
 .EXAMPLE
-.\publish.ps1 -IncludeSymbols -WhatIf
+.\scripts\publish.ps1 -IncludeSymbols -WhatIf
 .EXAMPLE
-.\publish.ps1 -IncludeSymbols
+.\scripts\publish.ps1 -IncludeSymbols
 #>
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
 param(
@@ -26,9 +26,10 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
 
 if (-not $PSBoundParameters.ContainsKey('packagesDirectory')) {
-	$packagesDirectory = Join-Path $PSScriptRoot 'nuget-packages'
+	$packagesDirectory = Join-Path $repositoryRoot 'nuget-packages'
 }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
@@ -113,13 +114,13 @@ function Get-PackageMetadata {
 }
 
 if (-not (Test-Path -LiteralPath $packagesDirectory -PathType Container)) {
-	throw "Package folder not found: $packagesDirectory. Run pack.ps1 first."
+	throw "Package folder not found: $packagesDirectory. Run scripts/pack.ps1 first."
 }
 $packagesRoot = (Resolve-Path -LiteralPath $packagesDirectory).ProviderPath
 $packages = @(Get-ChildItem -LiteralPath $packagesRoot -File -Filter '*.nupkg' |
 	Where-Object { $_.Name -match '^(?:Sphere10\.Framework(?:\.|$)|Sphere10\.HashLib4CSharp\.)' } | Sort-Object Name)
 if ($packages.Count -eq 0) {
-	throw "No Sphere10 Framework packages found in $packagesRoot. Run pack.ps1 first."
+	throw "No Sphere10 Framework packages found in $packagesRoot. Run scripts/pack.ps1 first."
 }
 
 # Validate the entire batch before requesting credentials or publishing its first package.
@@ -131,13 +132,13 @@ foreach ($package in $packages) {
 		throw "Package filename does not match its identity and version: $($package.Name)"
 	}
 	if ($packageIds.ContainsKey($metadata.Id)) {
-		throw "Multiple versions of $($metadata.Id) found in $packagesRoot. Run pack.ps1 to replace stale framework versions."
+		throw "Multiple versions of $($metadata.Id) found in $packagesRoot. Run scripts/pack.ps1 to replace stale framework versions."
 	}
 	$packageIds[$metadata.Id] = $metadata.Version
 	if ($includeSymbols) {
 		$symbolPackagePath = [IO.Path]::ChangeExtension($package.FullName, '.snupkg')
 		if (-not (Test-Path -LiteralPath $symbolPackagePath -PathType Leaf)) {
-			throw "Matching symbol package not found: $symbolPackagePath. Run pack.ps1 first."
+			throw "Matching symbol package not found: $symbolPackagePath. Run scripts/pack.ps1 first."
 		}
 		$symbolMetadata = Get-PackageMetadata $symbolPackagePath
 		if ($symbolMetadata.Id -ine $metadata.Id -or $symbolMetadata.Version -ine $metadata.Version) {

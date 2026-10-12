@@ -27,7 +27,7 @@ public partial class Person {
 
 The generator injects the `AutoDirtyAttribute` declaration into the compilation. Keep the containing class and each generated property `partial`, and provide a writable Boolean dirty property. Assigning the same value leaves the flag unchanged; assigning a different value sets it to `true`.
 
-Run `validate-packages.ps1` from the repository root to compile an external consumer of the packed analyzer along with the framework packages.
+Run `./scripts/validate-packages.ps1` from the Framework repository root to compile an external consumer of the packed analyzer along with the framework packages.
 
 ## License
 
