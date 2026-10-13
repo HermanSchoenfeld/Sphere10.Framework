@@ -33,7 +33,8 @@ public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
 	/// <param name="staleValuePolicy">Determines how stale entries are detected.</param>
 	/// <param name="stalenessChecker">Optional predicate to detect stale entries when <paramref name="staleValuePolicy"/> requests it.</param>
 	/// <param name="keyComparer">Equality comparer for keys.</param>
-	/// <param name="reaper">Optional shared reaper; defaults to <see cref="IsolatedCacheReaper"/>.</param>
+	/// <param name="reaper">Optional shared capacity reaper; otherwise the cache owns its capacity budget.</param>
+	/// <param name="reapLevel">Fraction of admission capacity targeted for release when full; strictly between zero and one.</param>
 	public ActionCache(
 		Func<TKey, TValue> valueFetcher,
 		Func<TValue, long> sizeEstimator = null,
@@ -45,9 +46,9 @@ public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
 		StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale,
 		Func<TKey, CachedItem<TValue>, bool> stalenessChecker = null,
 		IEqualityComparer<TKey> keyComparer = null,
-		ICacheReaper reaper = null)
-		: base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, reaper) {
-		Guard.ArgumentNotNull(valueFetcher, nameof(valueFetcher));
+		ICacheReaper reaper = null,
+		double reapLevel = Sphere10FrameworkDefaults.CacheReapLevel)
+		: base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, ValidateFetcher(valueFetcher, reaper), reapLevel) {
 		_fetchFunc = valueFetcher;
 		_estimateSizeFunc = sizeEstimator;
 		_stalenessChecker = stalenessChecker;
@@ -60,5 +61,11 @@ public sealed class ActionCache<TKey, TValue> : CacheBase<TKey, TValue> {
 
 	protected override long EstimateSize(TValue value)
 		=> _estimateSizeFunc?.Invoke(value) ?? 0;
+
+	private static ICacheReaper ValidateFetcher(Func<TKey, TValue> valueFetcher, ICacheReaper reaper) {
+		// Reject invalid construction before the base registers a borrowed reaper membership.
+		Guard.ArgumentNotNull(valueFetcher, nameof(valueFetcher));
+		return reaper;
+	}
 }
 

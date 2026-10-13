@@ -28,6 +28,9 @@ public static class Sphere10FrameworkDefaults {
 	public const int SmallestRecommendedClusterSize = 256;
 	public const int LargestRecommendedClusterSize = 8192;
 	public const long RecordCacheSize = 1048576; // 1mb
+
+	/// <summary>Default fraction of capacity targeted for release during cache admission pressure.</summary>
+	public const double CacheReapLevel = 0.25;
 	public const ClusteredStreamsPolicy ContainerPolicy = ClusteredStreamsPolicy.Default;
 
 	// Serialization

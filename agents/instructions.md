@@ -63,6 +63,18 @@ store.
 
 ## Maintain skills and patterns
 
+As you learn verified Sphere10 Framework idioms, patterns and practices, document
+the reusable findings for future work. Inspect their current implementations
+and real consumers before recording them; distinguish the intended idiom from
+older defects, limitations or task-specific choices. Link concrete source
+examples and state when the guidance applies.
+
+Extend the existing canonical topic or skill that owns the finding. Add a
+focused topic only when needed, and make it discoverable through the task index
+and relevant skill references. Keep implementation guidance out of workflow
+instructions and client entrypoints; follow the maintenance steps below rather
+than creating duplicate rule bodies.
+
 When adding, changing, renaming or retiring guidance, complete this workflow:
 
 1. Read [the guidance structure](../docs/guidelines/patterns/agent-guidance.md),

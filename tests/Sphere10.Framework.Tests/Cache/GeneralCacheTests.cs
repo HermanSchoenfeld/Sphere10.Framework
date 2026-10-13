@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+
 namespace Sphere10.Framework.Tests.Cache;
 
 [TestFixture]
@@ -108,7 +108,7 @@ public class GeneralCacheTests {
 		val = "second";
 		Assert.That(cache[1], Is.EqualTo("first"));
 		Assert.That(cache[1], Is.EqualTo("first"));
-		Thread.Sleep(111);
+		cache.Get(1).FetchedOn = DateTime.Now - TimeSpan.FromSeconds(1);
 		Assert.That(cache[1], Is.EqualTo("second"));
 		Assert.That(cache[1], Is.EqualTo("second"));
 		Assert.That(cache[1], Is.EqualTo("second"));
@@ -158,7 +158,7 @@ public class GeneralCacheTests {
 		Assert.That(cache.ContainsCachedItem(1), Is.False);
 		var val = cache[1];
 		Assert.That(cache.ContainsCachedItem(1), Is.True);
-		Thread.Sleep(111);
+		cache.Get(1).FetchedOn = DateTime.Now - TimeSpan.FromSeconds(1);
 		Assert.That(cache.ContainsCachedItem(1), Is.False);
 	}
 

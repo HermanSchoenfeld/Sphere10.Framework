@@ -54,8 +54,8 @@ implementations retain their original contract.
 
 `IObjectSpaceDimensionBuilder<TBuilder>` preserves fluent return types while
 providing the non-generic builder view. `ITransactionalScope<TRootScope>` retains
-the root's concrete type. `ICache<TKey, TValue>` can project typed operations over
-an implementation of the object-based cache contract, and `IJobSchedule`
+the root's concrete type. Typed caches use an explicit `ObjectCacheProjection` adapter
+when object access is required, and `IJobSchedule`
 supplies its chronological comparison.
 
 `IStreamMappedDictionary<TKey, TValue>` also inherits
@@ -412,7 +412,9 @@ The caching subsystem offers flexible, policy-driven caching mechanisms:
 - **Action Caches**: Populate cache entries on-demand using delegates.
 - **Bulk-Fetch Caches**: Refresh all entries in a single operation when any entry becomes stale.
 - **Session Caches**: Expire entries based on last-access time, suitable for session-style semantics.
-- **Reaping Policies**: Both isolated and pooled reaper implementations manage capacity constraints across single or multiple cache instances.
+- **Reaping Policies**: The typed cache engine selects victims and frees fractional headroom under capacity pressure. `PooledCacheReaper` coordinates a shared budget across differently typed caches through the key/value-free `ICacheBase` contract.
+
+The generic engine stores keys and values directly; nongeneric `CacheBase` specializes it for objects. `ReapLevel` is a finite fraction strictly between zero and one (initial default 0.25), measured against capacity in the estimator's units. Read the [cache guide](Cache/README.md) for pinning, replacement accounting, shared pools and ownership.
 
 ### 📡 Protocol and Communication
 
@@ -1773,7 +1775,7 @@ logged.Add(42);  // "Adding 42" logged
 
 - **Most collections are NOT thread-safe by default.** Use `SynchronizedList<T>`, `SynchronizedDictionary<TKey, TValue>`, `SynchronizedExtendedList<T>`, or wrap with `ConcurrentStream` where concurrent access is required.
 - **Transactional scopes require serialized use.** Nested scopes can share transaction ownership through the logical call context; creating another scope instance does not by itself guarantee an independent transaction. Follow the concrete backend's isolation and concurrency contract.
-- **Caches**: Thread-safety depends on implementation. `SynchronizedRepository<T>` and `SynchronizedLogger` provide synchronized wrappers.
+- **Caches**: `CacheBase<TKey, TValue>` synchronizes access and returns a membership snapshot. Multi-step pinning and borrowed-value lifetime still require the caller's scope/lifetime discipline; see the [cache guide](Cache/README.md). `SynchronizedRepository<T>` and `SynchronizedLogger` provide their respective synchronized wrappers.
 - **ProducerConsumerQueue<T>**: Fully thread-safe for concurrent producers and consumers.
 
 ### Performance Considerations

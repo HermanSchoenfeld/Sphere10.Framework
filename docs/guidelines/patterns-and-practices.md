@@ -14,13 +14,14 @@ instructions take precedence; these topic files hold the implementation rules.
 |---|---|
 | Any framework implementation or change to its consumers | [Framework reuse and adoption](patterns/framework-reuse.md) |
 | Choosing interfaces, abstract bases, concrete products or decorators | [Type hierarchies](patterns/type-hierarchies.md) |
+| Adapting typed serializers, collections, data sources, caches or comparers to another representation | [Projection adapters](patterns/projections.md) |
 | Paired synchronous/asynchronous APIs, adapters or disposal | [Sync/async implementation hierarchies](patterns/sync-async.md) |
 | Specialized interfaces projecting base properties | [Inline interface bridges](patterns/interface-bridges.md) |
 | Application/plugin registration, ownership graphs, screens or contextual commands | [Application ownership and platform extensions](patterns/application-ownership.md) |
 | Fluent configuration and nested builders | [Fluent builders](patterns/fluent-builders.md) |
 | Selecting utilities, guards or cryptographic infrastructure | [Framework utilities](patterns/framework-utilities.md) |
 | Serialization, binary layouts or endian-aware I/O | [Serialization](patterns/serialization.md) |
-| Graph storage, collections, clustered streams or comparers | [Collections and storage](patterns/collections-and-storage.md) |
+| Graph storage, collections, caches, clustered streams or comparers | [Collections and storage](patterns/collections-and-storage.md) |
 | ObjectSpace schemas, identity, indexed CRUD, file transactions or configuration profiling | [Object spaces](patterns/object-spaces.md) |
 | Data-source CRUD, paging or batch/single operations | [Data sources](patterns/data-sources.md) |
 | Application logging, sinks or logger decorators | [Logging](patterns/logging.md) |

@@ -2,6 +2,10 @@
 
 The [core project guide](../../../src/Sphere10.Framework/README.md) describes the collection and persistence families. Use existing implementations and decorators; see [framework reuse](framework-reuse.md), [serialization](serialization.md) and [resource scopes](resource-scopes.md).
 
+## Typed caches and capacity
+
+Use the typed cache contract and engine for typed keys and values. The nongeneric cache is an object specialization above the typed contract; typed caches do not implement it automatically. Use `ProjectedCache` for alternate key/value representations, following the [projection pattern](projections.md); use `ObjectCacheProjection` or `AsObjectCache()` for an object view. Entry views must forward live metadata so pinning, accounting and callbacks remain consistent. Reapers share the key/value-free `ICacheBase` contract, allowing differently typed caches to share capacity without object conversion. Follow the [cache guide](../../../src/Sphere10.Framework/Cache/README.md) for estimator units, normalized fractional reaping, actual admission deficits and `PooledCacheReaper`. Preserve dirty-page save/unload callbacks and pinned entries when changing a cache consumer. A cache budget is estimated retained size, not a whole-process memory ceiling.
+
 ## Graph and tree identity
 
 Use dictionary-based storage keyed by entity ID for graph/tree structures. Keep node storage and candidate-head storage keyed by the same identity contract, and supply the appropriate `IEqualityComparer<TId>` for custom ID types. Choose reference identity only when the abstraction operates on actual object instances; see [application ownership](application-ownership.md#ownership-and-platform-extensions).

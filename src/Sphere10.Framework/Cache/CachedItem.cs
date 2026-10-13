@@ -10,74 +10,40 @@ using System;
 
 namespace Sphere10.Framework;
 
-/// <summary>
-/// Represents a cached entry with metadata used for expiration and reaping decisions.
-/// </summary>
-public abstract class CachedItem : IDisposable {
+/// <summary>Object-valued specialization of a typed cached entry.</summary>
+public class CachedItem : CachedItem<object> {
+}
 
-	protected CachedItem() {
-		Traits = CachedItemTraits.Default;
-	}
+/// <summary>Typed cached value and live expiration, access and reaping metadata.</summary>
+public class CachedItem<T> : IDisposable {
+	public virtual T Value { get; internal set; }
 
-	/// <summary>
-	/// Cached value.
-	/// </summary>
-	public object Value { get; internal set; }
+	public virtual CachedItemTraits Traits { get; internal set; } = CachedItemTraits.Default;
 
-	/// <summary>
-	/// Trait flags describing cache state and permissions.
-	/// </summary>
-	public CachedItemTraits Traits { get; internal set; }
+	public virtual DateTime FetchedOn { get; internal set; }
 
-	/// <summary>
-	/// Time the value was originally fetched.
-	/// </summary>
-	public DateTime FetchedOn { get; internal set; }
+	public virtual DateTime LastAccessedOn { get; internal set; }
 
-	/// <summary>
-	/// Last time the value was accessed.
-	/// </summary>
-	public DateTime LastAccessedOn { get; internal set; }
+	public virtual uint AccessedCount { get; internal set; }
 
-	/// <summary>
-	/// Number of times the value has been accessed.
-	/// </summary>
-	public uint AccessedCount { get; internal set; }
+	public virtual long Size { get; internal set; }
 
-	/// <summary>
-	/// Estimated size contribution used for capacity calculations.
-	/// </summary>
-	public long Size { get; internal set; }
+	internal virtual long InsertionOrder { get; set; }
 
-	/// <summary>
-	/// Indicates whether the cache is permitted to evict this item.
-	/// </summary>
+	internal virtual long AccessOrder { get; set; }
+
+	/// <summary>Whether the cache may evict this entry under capacity pressure.</summary>
 	public bool CanPurge {
 		get => Traits.HasFlag(CachedItemTraits.CanPurge);
 		set => Traits = Traits.CopyAndSetFlags(CachedItemTraits.CanPurge, value);
 	}
 
-	/// <summary>
-	/// Disposes the cached value when it implements <see cref="IDisposable"/>.
-	/// </summary>
+	/// <summary>Explicitly disposes the value. Cache eviction itself does not own or dispose cached payloads.</summary>
 	public virtual void Dispose() {
 		if (Value is IDisposable disposable) {
 			disposable.Dispose();
+			// Preserve a disposable value type's state after its interface invocation boxes it.
+			Value = (T)disposable;
 		}
 	}
 }
-
-
-/// <summary>
-/// Strongly-typed cached entry wrapper.
-/// </summary>
-public class CachedItem<T> : CachedItem {
-	/// <summary>
-	/// Cached value strongly typed to <typeparamref name="T"/>.
-	/// </summary>
-	public new T Value {
-		get => (T)base.Value;
-		internal set => base.Value = value;
-	}
-}
-

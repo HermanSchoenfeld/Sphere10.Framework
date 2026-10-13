@@ -11,17 +11,18 @@ using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+
 namespace Sphere10.Framework.Tests.Cache;
 
 [TestFixture]
+[Parallelizable(ParallelScope.Children)]
 public class PooledCacheTests {
 
 	[Test]
 	public void DisallowInconsistentMaxSize() {
 		var pool = new PooledCacheReaper(10);
 		using var cache1 = new ActionCache<int, int>(x => x, sizeEstimator: x => x, maxCapacity: 10, reapStrategy: CacheReapPolicy.LeastUsed, reaper: pool);
-		ICache cache2;
-		Assert.Throws<ArgumentException>(() => cache2 = new ActionCache<string, string>(x => x, sizeEstimator: x => x.Length, maxCapacity: 11, reapStrategy: CacheReapPolicy.Smallest, reaper: pool));
+		Assert.That(() => new ActionCache<string, string>(x => x, sizeEstimator: x => x.Length, maxCapacity: 11, reapStrategy: CacheReapPolicy.Smallest, reaper: pool), Throws.ArgumentException);
 	}
 
 
@@ -33,7 +34,7 @@ public class PooledCacheTests {
 
 		var _1 = cache1.Get(9); // allocated 9 bytes, total 9
 		var _2 = cache2.Get("0"); // allocated 1 bytes, total 10 (pool exhausted now)
-		Assert.Throws<InvalidOperationException>(() => cache1.Get(11)); // allocated 11 bytes, too much
+		Assert.That(() => cache1.Get(11), Throws.InvalidOperationException); // allocated 11 bytes, too much
 		Assert.That(_1.Traits.HasFlag(CachedItemTraits.Purged), Is.False);
 		Assert.That(_2.Traits.HasFlag(CachedItemTraits.Purged), Is.False);
 	}
@@ -47,7 +48,7 @@ public class PooledCacheTests {
 		var _1 = cache1.Get(9); // allocated 9 bytes, total 9
 		var _2 = cache2.Get("0"); // allocated 1 bytes, total 10 (pool exhausted now)
 		_2.CanPurge = false;
-		Assert.Throws<InvalidOperationException>(() => cache1.Get(10)); // allocated 10 bytes, but can't purge _2 
+		Assert.That(() => cache1.Get(10), Throws.InvalidOperationException); // allocated 10 bytes, but can't purge _2
 		Assert.That(_1.Traits.HasFlag(CachedItemTraits.Purged), Is.True); // purged this one whilst trying to free space
 		Assert.That(_2.Traits.HasFlag(CachedItemTraits.Purged), Is.False); // didn't purge this one, then failed and threw
 	}
@@ -107,29 +108,33 @@ public class PooledCacheTests {
 	public void Integration([Values(10, 100)] int numCaches, [Values(100, 1000, 1000000)] int maxCapacity, [Values(1000)] int numIterations) {
 		var pool = new PooledCacheReaper(maxCapacity);
 
-		var caches = new ICache<int, int>[numCaches];
-		var maxSizeEver = 0;
-		var maxItemCountEver = 0;
+		var caches = new ActionCache<int, int>[numCaches];
+		var maxSizeEver = 0L;
+		var maxItemCountEver = 0L;
 		var removes = 0;
 		for (var i = 0; i < numCaches; i++) {
 			caches[i] = new ActionCache<int, int>(x => x, sizeEstimator: x => x, maxCapacity: maxCapacity, reapStrategy: CacheReapPolicy.LeastUsed, reaper: pool);
-			caches[i].ItemRemoved += (key, cachedValue) => {
-				Interlocked.Increment(ref removes);
-				maxSizeEver = (int)Math.Max(maxSizeEver, pool.CurrentSize);
-				maxItemCountEver = (int)Math.Max(maxItemCountEver, pool.TotalItemCount);
+			caches[i].ItemRemoved += (key, cachedValue) => Interlocked.Increment(ref removes);
+			caches[i].ItemFetched += (key, cachedValue) => {
+				maxSizeEver = Math.Max(maxSizeEver, pool.CurrentSize);
+				maxItemCountEver = Math.Max(maxItemCountEver, pool.TotalItemCount);
 			};
 		}
-		var tasks = caches.Select((c, i) => Task.Run(() => CacheLoop(c, i))).ToArray();
+		try {
+			var tasks = caches.Select((cache, index) => Task.Run(() => CacheLoop(cache))).ToArray();
+			Task.WaitAll(tasks);
+			Assert.That(maxSizeEver, Is.LessThanOrEqualTo(maxCapacity));
+			Assert.That(pool.CurrentSize, Is.EqualTo(caches.Sum(cache => cache.CurrentSize)));
+			Assert.That(pool.TotalItemCount, Is.EqualTo(caches.Sum(cache => (long)cache.ItemCount)));
+			TestContext.WriteLine($"Max Size Reached: {maxSizeEver}, Total Removes: {removes}, Max Item Count Reached: {maxItemCountEver}");
+		} finally {
+			foreach (var cache in caches)
+				cache.Dispose();
+		}
 
-		Task.WaitAll(tasks);
-
-		Assert.That(maxSizeEver, Is.LessThanOrEqualTo(maxCapacity));
-		System.Console.WriteLine($"Max Size Reached: {maxSizeEver}, Total Removes: {removes}, Max Item Count Reached: {maxItemCountEver}");
-
-		void CacheLoop(ICache<int, int> c, int index) {
-			var rng = new Random(31337 * index);
+		void CacheLoop(ICache<int, int> cache) {
 			for (var i = 0; i < numIterations; i++) {
-				var x = c[i % maxCapacity];
+				var value = cache[i % maxCapacity];
 			}
 		}
 	}
