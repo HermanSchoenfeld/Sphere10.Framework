@@ -8,6 +8,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
@@ -33,7 +34,10 @@ public abstract partial class BlazorWizardStep<TModel> {
 /// <summary>
 /// Non generic wizard step component base.
 /// </summary>
-public abstract class BlazorWizardStepBase : ComponentBase {
+public abstract class BlazorWizardStepBase : ComponentBase, IWizardStep {
+	/// <summary>Gets the shared navigation traits for this rendered step.</summary>
+	public virtual WizardStepTraits Traits => WizardStepTraits.None;
+
 	/// <summary>
 	/// Gets or sets the title of the wizard step.
 	/// </summary>

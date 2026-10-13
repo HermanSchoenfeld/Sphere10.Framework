@@ -1105,4 +1105,12 @@ Distributed under the MIT License; see [LICENSE](../../LICENSE).
 
 ### Conditional wizard screens
 
-The modern wizard host observes the shared wizard's Changed event, so a step can insert a temporary screen with UpdateSteps and navigate to it through Next. Both Next and Back invoke the current step's validation callback. If that callback explicitly navigates the wizard (for example an Import step applying its preview and returning to the route screen with Previous), the host renders that destination without advancing a second time. Pending Back validation blocks competing navigation and cancellation; failed validation preserves the current screen.
+Both wizard generations observe the shared wizard's `Changed` event, so a step can insert a temporary screen with `UpdateSteps` and navigate to it through Next. A step that creates its successor during validation should override the shared trait:
+
+```csharp
+public override WizardStepTraits Traits => WizardStepTraits.AssumeHasNext;
+```
+
+Import `Sphere10.Framework.Application.UI` for `WizardStepTraits`. Both Blazor step bases implement the shared `IWizardStep` contract. Hosts read traits from the actual rendered component through `StepTraitsResolver`; they do not construct extra components to inspect metadata. The flag makes `wizard.HasNext` true and presents Next before another step has been registered. Successful `OnNextAsync` validation must register the successor before navigation. If it does not, the wizard reports a navigation error and remains on the current step; the flag cannot advance beyond the registered steps or finish the wizard. An ordinary final step keeps `WizardStepTraits.None` and presents Finish. Traits can depend on the model and are read live. Replacing a wizard or disposing its host restores its preceding traits resolver.
+
+The modern host invokes the current step's validation callback for both Next and Back. If that callback explicitly navigates the wizard (for example an Import step applying its preview and returning to the route screen with Previous), the host renders that destination without advancing a second time. Pending Back validation blocks competing navigation and cancellation; failed validation preserves the current screen.

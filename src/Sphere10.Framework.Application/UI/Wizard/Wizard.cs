@@ -25,6 +25,7 @@ public class Wizard<TModel, TStep> : WizardBase<TModel, TStep> {
 	private WizardState _state = WizardState.Active;
 	private int _operation;
 	private int _currentStepIndex;
+	private Func<TStep, WizardStepTraits> _stepTraitsResolver;
 
 	public Wizard(string title, TModel model, IEnumerable<TStep> steps,
 		Func<TModel, Task<Result<bool>>> finish = null, Func<TModel, Task<Result<bool>>> cancel = null,
@@ -47,16 +48,27 @@ public class Wizard<TModel, TStep> : WizardBase<TModel, TStep> {
 	public override TStep[] Steps => _steps.ToArray();
 	public override TStep CurrentStep => _steps[_currentStepIndex];
 	public override int CurrentStepIndex => _currentStepIndex;
-	public override bool HasNext => _currentStepIndex < _steps.Count - 1;
+	public override Func<TStep, WizardStepTraits> StepTraitsResolver {
+		get => _stepTraitsResolver;
+		set {
+			if (ReferenceEquals(_stepTraitsResolver, value))
+				return;
+			_stepTraitsResolver = value;
+			OnChanged();
+		}
+	}
+	public override bool HasNext => _currentStepIndex < _steps.Count - 1 || (CurrentStepTraits & WizardStepTraits.AssumeHasNext) != 0;
 	public override bool HasPrevious => _currentStepIndex > 0;
 	public override bool IsCancellable { get; set; } = true;
 	public override bool IsBusy => Volatile.Read(ref _operation) != 0;
 	public override WizardState State => _state;
 
+	private WizardStepTraits CurrentStepTraits => StepTraitsResolver?.Invoke(CurrentStep) ?? (CurrentStep is IWizardStep step ? step.Traits : WizardStepTraits.None);
+
 	public Result<bool> MoveNext() {
 		if (IsBusy || State != WizardState.Active)
 			return false;
-		if (!HasNext)
+		if (_currentStepIndex >= _steps.Count - 1)
 			return Result<bool>.Error("No next step.");
 		_currentStepIndex++;
 		OnChanged();
@@ -154,6 +166,8 @@ public class Wizard<TModel, TStep> : WizardBase<TModel, TStep> {
 		});
 		if (State != WizardState.Active)
 			return State == (cancel ? WizardState.Cancelled : WizardState.Finished);
+		if (!cancel && (CurrentStepTraits & WizardStepTraits.AssumeHasNext) != 0)
+			return Result<bool>.Error("The current wizard step expects a next step and cannot finish.");
 		if (cancel && (!IsCancellable || canCancel?.Invoke() == false))
 			return false;
 		OnChanged();

@@ -254,6 +254,8 @@ In **New Wallet**, enter a name and choose Standard for the password branch or R
 
 Both platform adapters now share the navigation and completion workflow in `Sphere10.Framework.Application.UI`. Blazor owns the rendered step validation and dialog presentation; its `BlazorWizardBuilder<TModel>` reuses the common builder state.
 
+The workspace Details/Settings, wallet Type and widget Details steps declare `WizardStepTraits.AssumeHasNext` because their validation composes the remaining route. They continue to show Next if that route has not been registered yet. Only ordinary review/summary steps show Finish. A successful validation that fails to register its promised successor reports an error and keeps the wizard active. See the [library's conditional wizard guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#conditional-wizard-screens) for the shared metadata and rendered-host behavior.
+
 The launcher code lives in [WizardsViewModel.cs](WidgetGallery/Widgets/ViewModels/WizardsViewModel.cs) and [WizardsDemo.razor](Demos/WizardsDemo.razor). Their step components are in `WidgetGallery/Widgets/Components` and `Modern/UI/Wizard/Examples/NewWallet`. Both builder generations accept this configuration:
 
 ```csharp

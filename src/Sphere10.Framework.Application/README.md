@@ -23,7 +23,7 @@ dotnet add package Sphere10.Framework.Application
 | Application interactions and command execution | `IUserInterfaceServices`, `ApplicationUserInterfaceServices`, `UserInterfaceServicesDecorator` |
 | Application command composition | `ApplicationCommandLevel`, `ApplicationCommandLayer`, `Tools.UI.GetCommandLayers`, `Tools.UI.MergeApplicationMenus`, `Tools.UI.MergeApplicationToolBarItems` |
 | General menu and toolbar merging | `Tools.UI.MergeMenus`, `Tools.UI.MergeMenuItems`, `IApplicationMenuSeparator` |
-| Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `IWizardBuilder`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
+| Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `IWizardStep`, `WizardStepTraits`, `IWizardBuilder`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
 | Block, menu and item contracts | `IApplicationBlock`, `IApplicationMenu`, `IApplicationMenuItem`, `IScreenMenuItem` |
 | Mutable metadata and notification handlers | `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, `ApplicationMenuItemBase` |
 | Fluent builder composition and validation | `IApplicationUIBuilder<TProduct>`, `ApplicationBuilderBase`, `ApplicationPluginBuilderBase`, `ApplicationBlockBuilderBase`, `ApplicationMenuBuilderBase`, `ApplicationMenuItemBuilderBase` |
@@ -326,6 +326,8 @@ var result = await wizard.FinishAsync();
 ```
 
 `MoveNextAsync` and `MovePreviousAsync` provide awaited navigation. `UpdateStepsAsync` and `RemoveStepAsync` let platform adapters update their displayed controls before returning. `WizardStepUpdateType` supports injecting steps, replacing the remaining branch, replacing all steps and removing subsequent steps. The workflow returns defensive `Steps` arrays while retaining step and model identities. Finish and Cancel share an explicit lifecycle state and operation gate: concurrent terminal operations are rejected while busy; a declined or failed callback leaves a retryable workflow; successful completion runs once. Callbacks must not recursively finish or cancel the same wizard.
+
+Dynamic steps implement `IWizardStep` and expose `Traits = WizardStepTraits.AssumeHasNext` when their navigation callback creates the next step. `HasNext` then advertises Next before a successor is registered. The callback must register a real successor before navigation; a missing successor returns an error without changing the current index or finishing. An assumed-next step cannot finish directly. Ordinary terminal steps use `WizardStepTraits.None`. Hosts rendering definitions such as component `Type` values bind the live instance's traits through `StepTraitsResolver`; they restore the previous resolver when detaching. `WizardDecorator` forwards this resolver and its change notification.
 
 `WizardBuilderBase<TSelf, TModel, TStep, TWizard>` centralizes the fluent setup methods, reset/start requirements, callbacks and build validation over its shared state base. The shared `IWizardBuilder<TSelf, TModel, TStep, TWizard>` also carries the fluent contract, so interface-returning chains retain the same capabilities. Platform builders supply their step validation and factories. Use `WinFormsWizardBuilder<TModel>` for native dialogs, or `BlazorWizardBuilder<TModel>` from the chosen Blazor wizard generation. Their adapters keep rendering, screen initialization and component validation in the UI libraries while consuming the same workflow. `WizardDecorator` forwards the common contract for behavior extensions.
 

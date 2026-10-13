@@ -31,6 +31,10 @@ public abstract class WizardDecorator<TModel, TStep, TConcrete> : IWizard<TModel
 	public virtual TStep[] Steps => InternalWizard.Steps;
 	public virtual TStep CurrentStep => InternalWizard.CurrentStep;
 	public virtual int CurrentStepIndex => InternalWizard.CurrentStepIndex;
+	public virtual Func<TStep, WizardStepTraits> StepTraitsResolver {
+		get => InternalWizard.StepTraitsResolver;
+		set => InternalWizard.StepTraitsResolver = value;
+	}
 	public virtual bool HasNext => InternalWizard.HasNext;
 	public virtual bool HasPrevious => InternalWizard.HasPrevious;
 	public virtual bool IsCancellable => InternalWizard.IsCancellable;

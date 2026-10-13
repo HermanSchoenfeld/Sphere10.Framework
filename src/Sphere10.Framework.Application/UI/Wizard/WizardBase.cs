@@ -20,6 +20,7 @@ public abstract class WizardBase<TModel, TStep> : IWizard<TModel, TStep> {
 	public abstract TStep[] Steps { get; }
 	public abstract TStep CurrentStep { get; }
 	public abstract int CurrentStepIndex { get; }
+	public abstract Func<TStep, WizardStepTraits> StepTraitsResolver { get; set; }
 	public abstract bool HasNext { get; }
 	public abstract bool HasPrevious { get; }
 	public abstract bool IsCancellable { get; set; }

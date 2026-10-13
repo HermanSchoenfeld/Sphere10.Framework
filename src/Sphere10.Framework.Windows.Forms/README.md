@@ -34,6 +34,8 @@ Custom forms use .NET WinForms directly: `using var dialog = new MyDialog(); var
 
 Wizard screens receive their `Wizard` and `Model` before `Initialize`, including screens added with `InjectScreen`. Navigation calls `Validate` before `OnNext`; commit accepted input in `OnNext` when invalid input must not change the model. Set `UpdateModelOnStateChanged = false` for this pattern. The default `OnPresent` calls `CopyModelToUI`, so input and summary screens can refresh their controls each time they are shown.
 
+Override a branching screen's `Traits` with `WizardStepTraits.AssumeHasNext` when `OnNext` injects its successor. The shared orchestrator displays Next immediately, even for a lone registered screen. If the callback does not supply a real successor, navigation reports an error and keeps the current screen rather than completing. Final screens retain `WizardStepTraits.None`.
+
 WinForms closing and validation events still require cancellation and handled flags to be set before the first `await`. Synchronous grid queries and model construction can only schedule asynchronous error reporting; they cannot await a modal result. `IWindowsFormsEditorService.ShowDialog`, common file/folder/color dialogs, and the synchronous `LiteMainForm.AskYN` contract retain synchronous modal calls. `AskYN` uses a native message box; blocking `ShowDialogAsync` with `.Result` or `.GetAwaiter().GetResult()` on the UI thread would deadlock.
 
 Run the STA regression tests with `dotnet test tests/Sphere10.Framework.Windows.Forms.Tests/Sphere10.Framework.Windows.Forms.Tests.csproj` on Windows. They exercise actual forms with a message loop and close their dialogs automatically.

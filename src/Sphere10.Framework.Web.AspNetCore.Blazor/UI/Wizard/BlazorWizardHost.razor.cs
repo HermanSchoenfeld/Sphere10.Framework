@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard;
@@ -26,6 +27,8 @@ public partial class BlazorWizardHost : IDisposable {
 	private bool _disposed;
 	private Type _renderedStepType;
 	private int _renderedStepIndex = -1;
+	private Func<Type, WizardStepTraits> _previousStepTraitsResolver;
+	private Func<Type, WizardStepTraits> _stepTraitsResolver;
 
 	[CascadingParameter(Name = "OnFinished")]
 	public EventCallback OnFinished { get; set; }
@@ -51,6 +54,8 @@ public partial class BlazorWizardHost : IDisposable {
 		get => _currentStepInstance;
 		set {
 			_currentStepInstance = value;
+			_stepTraitsResolver ??= ResolveStepTraits;
+			Wizard.StepTraitsResolver = _stepTraitsResolver;
 			Title = $"{Wizard.Title} -> {value?.Title}";
 			StateHasChanged();
 			OnStepChange.InvokeAsync();
@@ -123,9 +128,12 @@ public partial class BlazorWizardHost : IDisposable {
 		Guard.Ensure(Wizard != null, "Wizard parameter is required.");
 		if (ReferenceEquals(_renderedWizard, Wizard))
 			return;
-		if (_renderedWizard != null)
+		if (_renderedWizard != null) {
 			_renderedWizard.Changed -= WizardChanged;
+			RestoreStepTraitsResolver();
+		}
 		_renderedWizard = Wizard;
+		_previousStepTraitsResolver = Wizard.StepTraitsResolver;
 		_renderedWizard.Changed += WizardChanged;
 		_renderedStepType = null;
 		_renderedStepIndex = -1;
@@ -191,6 +199,22 @@ public partial class BlazorWizardHost : IDisposable {
 		_disposed = true;
 		if (_renderedWizard != null)
 			_renderedWizard.Changed -= WizardChanged;
+		RestoreStepTraitsResolver();
+		_currentStepInstance = null;
+		_renderedWizard = null;
+	}
+
+	private WizardStepTraits ResolveStepTraits(Type stepType) {
+		var traits = _previousStepTraitsResolver?.Invoke(stepType) ?? WizardStepTraits.None;
+		if (_currentStepInstance != null && ReferenceEquals(_renderedWizard, Wizard) && _renderedStepType == stepType && _renderedStepIndex == Wizard.CurrentStepIndex)
+			traits |= _currentStepInstance.Traits;
+		return traits;
+	}
+
+	private void RestoreStepTraitsResolver() {
+		if (_renderedWizard != null && ReferenceEquals(_renderedWizard.StepTraitsResolver, _stepTraitsResolver))
+			_renderedWizard.StepTraitsResolver = _previousStepTraitsResolver;
+		_previousStepTraitsResolver = null;
 	}
 
 	private void WizardChanged() {
@@ -209,6 +233,7 @@ public partial class BlazorWizardHost : IDisposable {
 			return;
 		_renderedStepType = Wizard.CurrentStep;
 		_renderedStepIndex = Wizard.CurrentStepIndex;
+		_currentStepInstance = null;
 		CurrentStep = CreateStepFragment(_renderedStepType);
 	}
 

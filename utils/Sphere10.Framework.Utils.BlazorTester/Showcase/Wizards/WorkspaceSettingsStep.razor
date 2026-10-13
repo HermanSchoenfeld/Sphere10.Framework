@@ -8,6 +8,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Application.UI
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Wizard
 @inherits BlazorWizardStep<WorkspaceSetupDraft>
 
@@ -38,6 +39,8 @@
 	private readonly string _accessId = $"workspace-access-{Guid.NewGuid():N}";
 
 	public override string Title => "Workspace settings";
+
+	public override WizardStepTraits Traits => WizardStepTraits.AssumeHasNext;
 
 	public override Task<Result> OnNextAsync() {
 		if (Model.Capacity is < 1 or > 100)
