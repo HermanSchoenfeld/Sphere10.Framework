@@ -8,7 +8,9 @@ Logging uses a simple `ILogger` interface with `Debug`, `Info`, `Warning`, `Erro
 
 - **`ILogger`** — interface with level methods and `Options` property.
 - **`LoggerBase`** — abstract base that filters by `LogOptions` and delegates to `Log(LogLevel, string)`.
-- **`IApplication.Logger`** — use the runtime root logger in UI applications; screens reach it through `Block.Parent.Logger`, and lifecycle tasks can inject `IApplication`.
+- **`IApplication.Logger`** — use the runtime root logger in UI applications; screens reach it through `Block.Parent.Logger`, and application/plugin lifecycle tasks can inject `IApplication`.
+- **Global WinForms initializers** — native startup selects the single root's exact `IApplication.Logger` after module setup, before process tasks, block registration or screen creation. Tasks can inject that application and use its logger. `Sphere10Framework.Progress` supplies splash task progress independently of the chosen logger.
+- **Portable process initializers** — default and ASP.NET Core startup run their diagnostics through the registered Sphere10 `ILogger`, falling back to `SystemLog.Logger`. A singleton logger shares the same instance with `ApplicationBase.Logger`; inject it into process tasks with their own messages. Do not resolve a scoped UI application during process startup merely to obtain a logger.
 - **`SystemLog`** — static process-wide logger backed by a `MulticastLogger`. Call `SystemLog.Info(...)`, `SystemLog.Error(...)`, etc. Register sinks via `SystemLog.RegisterLogger(logger)`.
 - **Decorator loggers** — `TimestampLogger`, `ThreadIdLogger`, `PrefixLogger`, `SynchronizedLogger`, `AsyncLogger` wrap an inner `ILogger` to add behavior.
 - **Sink loggers** — `ConsoleLogger`, `DebugLogger`, `FileAppendLogger`, `RollingFileLogger`, `TextWriterLogger`, `EventLogLogger` (Windows), `TextBoxLogger` (WinForms).

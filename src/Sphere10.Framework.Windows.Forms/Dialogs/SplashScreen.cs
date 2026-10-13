@@ -79,6 +79,7 @@ public partial class SplashScreen : Form {
 		Framework.Registering += OnFrameworkRegistering;
 		Framework.Initializing += OnFrameworkInitializing;
 		Framework.Finalizing += OnFrameworkFinalizing;
+		Framework.Progress += OnApplicationProgress;
 		_logger = new SplashLogger(this);
 		SystemLog.RegisterLogger(_logger);
 	}
@@ -88,6 +89,7 @@ public partial class SplashScreen : Form {
 		Framework.Registering -= OnFrameworkRegistering;
 		Framework.Initializing -= OnFrameworkInitializing;
 		Framework.Finalizing -= OnFrameworkFinalizing;
+		Framework.Progress -= OnApplicationProgress;
 		if (_logger != null) {
 			SystemLog.DeregisterLogger(_logger);
 			_logger = null;

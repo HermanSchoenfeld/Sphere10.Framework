@@ -558,7 +558,11 @@ public partial class AutoMouseSettingsControl : ApplicationControl {
 
 ## 🚀 Process initialization and finalization
 
-Unkeyed initializers execute during `Sphere10FrameworkBuilder.Start()` after module initialization. Unkeyed finalizers execute during process shutdown before module finalization and provider disposal. Use plugin builder helpers for tasks belonging to a running application or Blazor circuit; those named registrations are described under [application initialization and shutdown](#application-initialization-and-shutdown).
+Unkeyed initializers execute during `Sphere10FrameworkBuilder.Start()` after module initialization, through the same `Tools.Application` runner used by runtime applications. `StartWinFormsApplication` constructs its single application after the module hooks and uses that exact `IApplication.Logger` for global initializer diagnostics before registering blocks or creating screens. Native process tasks can inject this application and log through `application.Logger`. Task progress also raises `Sphere10Framework.Progress`, so a startup splash works with a custom logger.
+
+Default and ASP.NET Core startup use the registered Sphere10 `ILogger`, with `SystemLog.Logger` as fallback, without constructing a UI application: a browser circuit's application does not exist at this stage. Register that logger as a singleton to share it with `ApplicationBase.Logger` and inject it into portable process tasks that emit their own diagnostics. Unkeyed finalizers execute during process shutdown before module finalization and provider disposal. Use plugin builder helpers for tasks belonging to a running application or Blazor circuit; those named registrations are described under [application initialization and shutdown](#application-initialization-and-shutdown).
+
+If startup fails, a provider created by the builder disposes its constructed services without running process finalizers for the incomplete startup. A native root that has not begun application initialization releases its owned bag without running application tasks. An externally supplied provider retains its external owner.
 
 ### Creating process tasks
 
@@ -568,26 +572,36 @@ using Sphere10.Framework.Application;
 
 public sealed class FirstRunInitializer : SyncApplicationInitializerBase {
 	private readonly IProductUsageServices _usage;
+	private readonly ILogger _logger;
 
-	public FirstRunInitializer(IProductUsageServices usage) {
+	public FirstRunInitializer(IProductUsageServices usage, ILogger logger) {
 		Guard.ArgumentNotNull(usage, nameof(usage));
+		Guard.ArgumentNotNull(logger, nameof(logger));
 		_usage = usage;
+		_logger = logger;
 	}
 
 	public override void Initialize() {
 		if (_usage.ProductUsageInformation.NumberOfUsesByUser == 1)
-			SystemLog.Info("Preparing the first application session...");
+			_logger.Info("Preparing the first application session...");
 	}
 }
 
 public sealed class LogShutdownFinalizer : SyncApplicationFinalizerBase {
+	private readonly ILogger _logger;
+
+	public LogShutdownFinalizer(ILogger logger) {
+		Guard.ArgumentNotNull(logger, nameof(logger));
+		_logger = logger;
+	}
+
 #pragma warning disable CS0465 // The existing task contract names its synchronous operation Finalize.
-	public override void Finalize() => SystemLog.Info("Completing process shutdown...");
+	public override void Finalize() => _logger.Info("Completing process shutdown...");
 #pragma warning restore CS0465
 }
 ```
 
-`StartupTasksModule` registers these classes through `services.AddInitializer<FirstRunInitializer>()` and `services.AddFinalizer<LogShutdownFinalizer>()`. Both are synchronous tasks; their directional bases provide async adapters. For awaited work, derive from the corresponding `Async...Base` and override only the asynchronous primitive. Process tasks use process services and logging; plugin tasks can resolve their running `IApplication` and its scoped services.
+`StartupTasksModule` registers these classes through `services.AddInitializer<FirstRunInitializer>()` and `services.AddFinalizer<LogShutdownFinalizer>()`, alongside `services.AddSingleton<ILogger>(new ConsoleLogger())`. Both are synchronous tasks; their directional bases provide async adapters. For awaited work, derive from the corresponding `Async...Base` and override only the asynchronous primitive. Process tasks use process services and the configured logger; plugin tasks can resolve their running `IApplication` and its scoped services and should log through `application.Logger`.
 
 ### Initializer priority and parallel execution
 
