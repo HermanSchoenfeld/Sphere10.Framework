@@ -7,11 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -36,6 +38,142 @@ public class WinFormsApplicationLifecycleTests {
 
 	[TearDown]
 	public void DisposeDispatcher() => _dispatcher.Dispose();
+
+	[TestCase(false)]
+	[TestCase(true)]
+	[NUnit.Framework.Category("Integration")]
+	public void RunnerUsesExactApplicationLoggerForProcessTasksAfterModulesBeforeScreens(bool showSplash) {
+		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
+		var previousContext = SynchronizationContext.Current;
+		using var uiContext = new WindowsFormsSynchronizationContext();
+		using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(previousContext));
+		SynchronizationContext.SetSynchronizationContext(uiContext);
+		var rootLogger = new RecordingLogger();
+		var processLogger = new RecordingLogger();
+		var modulesInitialized = false;
+		var screenCreations = 0;
+		LifecycleMainForm form = null;
+		WinFormsApplication application = null;
+		Exception watchdogFailure = null;
+		LoggingScreen.InstanceCreated = () => screenCreations++;
+		using var resetScreen = Tools.Scope.ExecuteOnDispose(() => LoggingScreen.InstanceCreated = null);
+		using var block = new WinFormsApplicationBlockBuilder().WithName("Logging block")
+			.WithDefaultScreen<LoggingScreen>("Logging screen", ScreenActivationMode.PermanentSingleton).Build();
+		using var bitmap = new Bitmap(32, 32);
+		var splashEnabledField = typeof(Sphere10FrameworkExtensions).GetField("_splashEnabled", BindingFlags.Static | BindingFlags.NonPublic);
+		var splashImageField = typeof(Sphere10FrameworkExtensions).GetField("_splashImage", BindingFlags.Static | BindingFlags.NonPublic);
+		var originalSplashEnabled = splashEnabledField.GetValue(null);
+		var originalSplashImage = splashImageField.GetValue(null);
+		splashEnabledField.SetValue(null, false);
+		using var restoreSplash = Tools.Scope.ExecuteOnDispose(() => {
+			splashEnabledField.SetValue(null, originalSplashEnabled);
+			splashImageField.SetValue(null, originalSplashImage);
+		});
+		using var lifetime = Tools.Scope.ExecuteOnDispose(() => {
+			if (Sphere10Framework.Instance.IsStarted)
+				Sphere10Framework.Instance.EndFramework();
+		});
+		using var closeWindow = new System.Windows.Forms.Timer { Interval = 25 };
+		closeWindow.Tick += (_, _) => {
+			if (form?.Visible != true || System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>().Any(splash => splash.Visible))
+				return;
+			closeWindow.Stop();
+			form.Close();
+		};
+		using var watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
+		watchdog.Tick += (_, _) => {
+			watchdogFailure = new AssertionException("The logger startup test's native loop did not finish.");
+			form?.Dispose();
+			System.Windows.Forms.Application.ExitThread();
+		};
+		var builder = Sphere10Framework.Instance.BuildWinFormsApplication()
+			.UseMainForm<LifecycleMainForm>(mainForm => form = mainForm)
+			.UseModule(new CallbackModule(() => modulesInitialized = true))
+			.ConfigureServices(services => {
+				services.AddSingleton<ILogger>(processLogger);
+				services.AddApplicationBlock(block);
+				services.AddSingleton<IWinFormsApplication>(provider => {
+					Assert.That(modulesInitialized, Is.True, "Modules must configure process services before root construction.");
+					application = new WinFormsApplication((BlockMainForm)provider.GetRequiredService<IMainForm>(), new[] { block }) { Logger = rootLogger };
+					return application;
+				});
+				services.AddTransient<IApplicationInitializer>(provider => new CallbackInitializer(() => {
+					var root = provider.GetRequiredService<IApplication>();
+					Assert.That(root, Is.SameAs(application));
+					Assert.That(root.Logger, Is.SameAs(rootLogger));
+					Assert.That(root.IsInitialized, Is.False);
+					Assert.That(root.Blocks, Is.Empty);
+					Assert.That(screenCreations, Is.Zero, "Selecting a root logger must not initialize screens before global tasks.");
+					if (showSplash) {
+						var splash = System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>().Single(candidate => candidate.Visible);
+						Assert.That(GetLabel(splash, "_titleLabel").Text, Is.EqualTo("Initializing"));
+						Assert.That(GetLabel(splash, "_subTitleLabel").Text, Is.EqualTo(typeof(CallbackInitializer).ToStringCS()));
+					}
+					root.Logger.Info("Global task uses the executing application logger");
+				}));
+			});
+		if (showSplash)
+			builder.UseSplashScreen(bitmap);
+		closeWindow.Start();
+		watchdog.Start();
+		Tools.Exceptions.ExecuteCapturingException(builder.StartWinFormsApplication, out var failure);
+		Assert.That(failure, Is.Null, failure?.ToString());
+		Assert.That(watchdogFailure, Is.Null);
+		Assert.That(processLogger.Messages, Is.Empty, "The root override must take precedence over the process service logger.");
+		var taskName = typeof(CallbackInitializer).ToStringCS();
+		Assert.That(rootLogger.Messages, Is.EqualTo(new[] {
+			$"Initializing {taskName}...", "Global task uses the executing application logger", $"Initialized {taskName}."
+		}));
+		Assert.That(screenCreations, Is.EqualTo(1));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	[NUnit.Framework.Category("Integration")]
+	public void FailedEarlyNativeStartupDisposesRootAndProviderWithoutRunningUnstartedFinalizers(bool failConstruction) => RunOnDedicatedStaThread(() => {
+		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
+		var previousContext = SynchronizationContext.Current;
+		using var uiContext = new WindowsFormsSynchronizationContext();
+		using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(previousContext));
+		SynchronizationContext.SetSynchronizationContext(uiContext);
+		var expectedFailure = new InvalidOperationException("Native startup failed.");
+		var finalizations = 0;
+		var ownedDisposals = 0;
+		var providerDisposals = 0;
+		LifecycleMainForm form = null;
+		WinFormsApplication application = null;
+		var splashEnabledField = typeof(Sphere10FrameworkExtensions).GetField("_splashEnabled", BindingFlags.Static | BindingFlags.NonPublic);
+		var originalSplashEnabled = splashEnabledField.GetValue(null);
+		splashEnabledField.SetValue(null, false);
+		using var restoreSplash = Tools.Scope.ExecuteOnDispose(() => splashEnabledField.SetValue(null, originalSplashEnabled));
+		var builder = Sphere10Framework.Instance.BuildWinFormsApplication()
+			.UseMainForm<LifecycleMainForm>(mainForm => form = mainForm)
+			.ConfigureServices(services => {
+				services.AddSingleton(_ => new ProviderResource(() => providerDisposals++));
+				services.AddSingleton<IWinFormsApplication>(provider => {
+					provider.GetRequiredService<ProviderResource>();
+					if (failConstruction)
+						throw expectedFailure;
+					var runtime = new ConfigurableApplication((BlockMainForm)provider.GetRequiredService<IMainForm>(), Array.Empty<IWinFormsApplicationBlock>());
+					runtime.ConfigureFinalizers(new[] { new CallbackFinalizer(() => finalizations++) });
+					application = runtime;
+					application.Disposables.Add(Tools.Scope.ExecuteOnDispose(() => ownedDisposals++));
+					return application;
+				});
+				services.AddSingleton<IApplicationInitializer>(new CallbackInitializer(() => throw expectedFailure));
+				services.AddSingleton<IApplicationFinalizer>(new CallbackFinalizer(() => finalizations++));
+				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(IApplication), new CallbackFinalizer(() => finalizations++));
+			});
+		Tools.Exceptions.ExecuteCapturingException(builder.StartWinFormsApplication, out var failure);
+		Assert.That(failure, Is.SameAs(expectedFailure), failure?.ToString());
+		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
+		Assert.That(form.IsDisposed, Is.True);
+		Assert.That(finalizations, Is.Zero);
+		Assert.That(providerDisposals, Is.EqualTo(1));
+		Assert.That(ownedDisposals, Is.EqualTo(failConstruction ? 0 : 1));
+		if (application != null)
+			Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.InstanceOf<InvalidOperationException>());
+	});
 
 	[TestCase(false)]
 	[TestCase(true)]
@@ -378,6 +516,7 @@ public class WinFormsApplicationLifecycleTests {
 					if (showSplash) {
 						shutdownSplash = System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>().Single(splash => splash.Visible && !ReferenceEquals(splash, startupSplash));
 						Assert.That(shutdownSplash, Is.Not.SameAs(startupSplash), "Completed startup closes its splash; shutdown requires a fresh visible instance.");
+						Assert.That(shutdownSplash.Opacity, Is.EqualTo(1), "The shutdown splash appears immediately at full opacity.");
 						Assert.That(GetLabel(shutdownSplash, "_titleLabel").Text, Is.EqualTo("Finalizing"));
 						SystemLog.Info("Visible shutdown task");
 						Assert.That(GetLabel(shutdownSplash, "_subTitleLabel").Text, Is.EqualTo("Visible shutdown task"));
@@ -507,6 +646,22 @@ public class WinFormsApplicationLifecycleTests {
 		Assert.That(GetLabel(splash, "_titleLabel").Text, Is.EqualTo("Application Ready"));
 	}
 
+	private static void RunOnDedicatedStaThread(Action test) {
+		ExceptionDispatchInfo failure = null;
+		var thread = new Thread(() => {
+			try {
+				test();
+			} catch (Exception error) {
+				failure = ExceptionDispatchInfo.Capture(error);
+			}
+		}) { IsBackground = true };
+		// An Idle-triggered exit can leave WM_QUIT queued; each startup-failure case needs its own native thread.
+		thread.SetApartmentState(ApartmentState.STA);
+		thread.Start();
+		Assert.That(thread.Join(TimeSpan.FromSeconds(30)), Is.True, "The isolated native startup scenario must finish.");
+		failure?.Throw();
+	}
+
 	private static void RunWithMessageLoop(Func<Task> test) {
 		var previousContext = SynchronizationContext.Current;
 		using var uiContext = new WindowsFormsSynchronizationContext();
@@ -556,6 +711,24 @@ public class WinFormsApplicationLifecycleTests {
 	}
 
 	public class PermanentScreen : WinFormsApplicationScreen { }
+
+	public class LoggingScreen : WinFormsApplicationScreen {
+		public static Action InstanceCreated { get; set; }
+
+		public LoggingScreen() => InstanceCreated?.Invoke();
+	}
+
+	private sealed class CallbackModule(Action initialize) : ModuleConfigurationBase {
+		public override void OnInitialize(IServiceProvider serviceProvider) => initialize();
+	}
+
+	private sealed class RecordingLogger : LoggerBase {
+		public RecordingLogger() => Options = LogOptions.VerboseProfile;
+
+		public ConcurrentQueue<string> Messages { get; } = new();
+
+		protected override void Log(LogLevel logLevel, string message) => Messages.Enqueue(message);
+	}
 
 	private sealed class ProgressApplication : SyncApplicationBase {
 		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();

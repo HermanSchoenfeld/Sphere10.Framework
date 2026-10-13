@@ -111,8 +111,10 @@ public static class Sphere10FrameworkExtensions {
 						splash.AttachToFramework();
 					}
 					splash.AttachToApplication(application);
+					splash.Opacity = 1;
 					if (!splash.Visible)
-						splash.FadeIn();
+						splash.Show();
+					splash.Update();
 				}, errors);
 			if (application != null)
 				await CaptureAsync(() => application.FinalizeAsync());
@@ -142,12 +144,16 @@ public static class Sphere10FrameworkExtensions {
 					splash.AttachToFramework();
 					splash.FadeIn();
 				}
-				builder.Start();
-				mainForm = builder.Framework.ServiceProvider.GetService<IMainForm>() as Form;
-				Guard.Ensure(mainForm != null, "Registered IMainForm is not a WinForms Form.");
-				application = builder.Framework.ServiceProvider.GetService<IWinFormsApplication>();
+				builder.Start(provider => {
+					// Module setup must finish before constructing the root; its logger then owns process task diagnostics too.
+					mainForm = provider.GetService<IMainForm>() as Form;
+					Guard.Ensure(mainForm != null, "Registered IMainForm is not a WinForms Form.");
+					application = provider.GetService<IWinFormsApplication>();
+					if (application != null)
+						splash?.AttachToApplication(application);
+					return application?.Logger ?? provider.GetService<ILogger>() ?? SystemLog.Logger;
+				});
 				if (application != null) {
-					splash?.AttachToApplication(application);
 					await application.InitializeAsync();
 				} else if (mainForm is IBlockManager blockManager) {
 					var blocks = builder.Framework.ServiceProvider.GetServices<IWinFormsApplicationBlock>().OrderBy(block => block.Position);

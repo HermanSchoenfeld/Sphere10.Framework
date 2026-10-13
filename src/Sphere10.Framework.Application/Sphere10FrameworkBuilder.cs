@@ -57,12 +57,24 @@ public class Sphere10FrameworkBuilder {
 			Module.RegisterComponents(serviceCollection);
 	}
 
-	public void Start() {
+	public void Start() => Start(loggerSelector: null);
+
+	/// <summary>Allows a platform to select its runtime logger after module initialization and before process initializers run.</summary>
+	internal void Start(Func<IServiceProvider, ILogger> loggerSelector) {
 		var ServiceCollection = new ServiceCollection();
 		_framework.FireRegistering();
 		RegisterModules(ServiceCollection);
 		var ServiceProvider = ServiceCollection.BuildServiceProvider();
-		_framework.StartInternal(ServiceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: true);
+		try {
+			_framework.StartInternal(ServiceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: true, loggerSelector: loggerSelector);
+		} catch (Exception failure) {
+			// Startup did not complete, so dispose constructed services without invoking process finalizers.
+			var errors = new List<Exception> { failure };
+			Tools.Exceptions.ExecuteCapturingException(ServiceProvider.Dispose, errors);
+			if (errors.Count > 1)
+				throw new AggregateException("Framework startup and service cleanup failed.", errors);
+			throw;
+		}
 	}
 
 	public void Start(IServiceProvider serviceProvider) {

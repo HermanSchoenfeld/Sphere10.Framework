@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Application;
@@ -28,6 +27,7 @@ public class Sphere10Framework {
 	public event EventHandlerEx Initialized;
 	public event EventHandlerEx Finalizing;
 	public event EventHandlerEx Finalized;
+	public event ProgressHandler Progress;
 
 	public event EventHandlerEx<ProductInformation, ProductInformation> VersionChangeDetected;
 
@@ -64,7 +64,8 @@ public class Sphere10Framework {
 	protected virtual void OnVersionChangeDetected(ProductInformation previousVersion, ProductInformation currentVersion)
 		=> VersionChangeDetected?.Invoke(previousVersion, currentVersion);
 
-	internal void StartInternal(IServiceProvider serviceProvider, ICoreModuleConfiguration[] modules, bool ownsProvider) {
+	internal void StartInternal(IServiceProvider serviceProvider, ICoreModuleConfiguration[] modules, bool ownsProvider,
+		Func<IServiceProvider, ILogger> loggerSelector = null) {
 		CheckNotStarted();
 		ServiceProvider = serviceProvider;
 		_moduleConfigurations = modules;
@@ -72,7 +73,8 @@ public class Sphere10Framework {
 		_finalizationAttempted = false;
 		Initializing?.Invoke();
 		InitializeModules(serviceProvider);
-		InitializeApplication();
+		var logger = loggerSelector?.Invoke(serviceProvider) ?? serviceProvider.GetService<ILogger>() ?? SystemLog.Logger;
+		InitializeApplication(logger);
 		Initialized?.Invoke();
 		IsStarted = true;
 	}
@@ -134,23 +136,9 @@ public class Sphere10Framework {
 	private void InitializeModules(IServiceProvider serviceProvider)
 		=> _moduleConfigurations.ForEach(m => m.OnInitialize(serviceProvider));
 
-	private void InitializeApplication() {
-		var Initializers = ServiceProvider.GetServices<IApplicationInitializer>().ToArray();
-
-		// Execute non-parallelizable initializers in sequence first
-		Initializers
-			.Where(x => !x.Parallelizable)
-			.OrderBy(x => x.Priority)
-			.ForEach(x => x.Initialize());
-
-		// Parallel execute all parallelizable initializers
-		Parallel.ForEach(
-			Initializers
-				.Where(x => x.Parallelizable)
-				.OrderBy(x => x.Priority),
-			x => x.Initialize()
-		);
-	}
+	private void InitializeApplication(ILogger logger)
+		=> Tools.Application.ExecuteInitializers(ServiceProvider.GetServices<IApplicationInitializer>(), logger,
+			(title, message, completed, total, percent) => Progress?.Invoke(title, message, completed, total, percent));
 
 	internal void FinalizeModules(IServiceProvider serviceProvider) {
 		var errors = new List<Exception>();
