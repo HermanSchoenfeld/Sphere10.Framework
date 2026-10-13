@@ -1,11 +1,38 @@
 # Profiler tests
 
-NUnit coverage for the general profiler command, ObjectSpace and B-tree workloads,
+NUnit coverage for the general profiler command, ObjectSpace, B-tree and cache workloads,
 parameter-study contracts and retained measurement evidence.
 
 `ProfilerCommandTests` verifies help/explicit domain selection, unknown-domain
 rejection, configuration inspection and the requirement for a benchmark filter
 before output artifacts are created.
+
+`Caches/CacheProfilerTests` verifies typed/object/preboxed hot-key access and
+capacity pressure against an independent LRU/FIFO linked-list oracle. It covers
+minimal/quarter/half reap levels, unit/weighted estimator sizes, actual fetch and
+victim sequences, capacity accounting, deterministic resets, simulated fetch
+work, retained metrics and invalid controls. These are correctness fixtures;
+they do not run BenchmarkDotNet or assert a timing threshold. Read the
+[cache profiling guide](../../utils/Sphere10.Framework.Utils.Profiler/Caches/README.md)
+for the measured batch and refill boundaries.
+
+`Caches/RecordedCacheMetricsTests` reads retained cache measurements and prints
+verified fetches, reaps, victims and final occupancy in Test Explorer output.
+It checks the exact profile, estimator-size accounting and deterministic
+checksums across independent workers. Read its output alongside
+`RecordedBenchmarkDotNetConfirmations` for timings and allocation measurements;
+cache-metrics files do not assign batches to BenchmarkDotNet sample stages.
+The [current cache results](Results/cache-projection-performance-summary.md)
+summarize 19 measured cases from the canonical typed core and explicit object
+projection. Their three `projection-bdn` phases contain 38 successful workers
+and 380 actual timing samples. The [earlier implicit-object results](Results/cache-performance-summary.md)
+and their original worker evidence remain separately retained.
+
+New benchmark campaign folders under `Results/` are ignored local output.
+Existing checked-in evidence and top-level reports remain versioned. The cache
+evidence fixture skips when no local cache captures are available; the workload
+correctness tests run normally. Keep original reports and worker identities
+together locally when inspecting a capture.
 
 `BTrees/BTreeProfilerTests` verifies B-tree, B+ tree and multimap lookup behavior
 across managed nodes, MemoryStream, FileStream, framework paged files, true OS

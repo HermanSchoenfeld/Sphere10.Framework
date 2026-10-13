@@ -23,7 +23,7 @@ public class ProfilerCommandTests {
 		using var error = new StringWriter();
 		var args = requestHelp ? new[] { "--help" } : Array.Empty<string>();
 		Assert.That(Program.Run(args, output, error), Is.Zero);
-		Assert.That(output.ToString(), Does.Contain("Available domains:").And.Contain("object-spaces"));
+		Assert.That(output.ToString(), Does.Contain("Available domains:").And.Contain("object-spaces").And.Contain("caches"));
 		Assert.That(error.ToString(), Is.Empty);
 	}
 
@@ -37,12 +37,13 @@ public class ProfilerCommandTests {
 		Assert.That(output.ToString(), Is.Empty);
 	}
 
-	[Test]
-	public void DomainHelpDescribesItsOwnControlsWithoutStartingBenchmarks() {
+	[TestCase("object-spaces", "--records")]
+	[TestCase("caches", "--capacity")]
+	public void DomainHelpDescribesItsOwnControlsWithoutStartingBenchmarks(string domain, string control) {
 		using var output = new StringWriter();
 		using var error = new StringWriter();
-		Assert.That(Program.Run(new[] { "object-spaces", "--help" }, output, error), Is.Zero);
-		Assert.That(output.ToString(), Does.Contain("--suite").And.Contain("--records").And.Contain("--show-config"));
+		Assert.That(Program.Run(new[] { domain, "--help" }, output, error), Is.Zero);
+		Assert.That(output.ToString(), Does.Contain("--suite").And.Contain(control).And.Contain("--show-config"));
 		Assert.That(error.ToString(), Is.Empty);
 	}
 
@@ -61,12 +62,28 @@ public class ProfilerCommandTests {
 		Assert.That(error.ToString(), Is.Empty);
 	}
 
-	[Test]
-	public void DomainExecutionWithoutAnExplicitFilterDoesNotCreateArtifacts() {
+	[TestCase("object-spaces")]
+	[TestCase("caches")]
+	public void DomainExecutionWithoutAnExplicitFilterDoesNotCreateArtifacts(string domain) {
 		using var output = new StringWriter();
 		using var error = new StringWriter();
 		var directory = Path.Combine(Path.GetTempPath(), $"Sphere10ProfilerCommandTests-{Guid.NewGuid():N}");
-		Assert.That(() => Program.Run(new[] { "object-spaces", "--output", directory }, output, error), Throws.ArgumentException.With.Message.Contains("--filter"));
+		Assert.That(() => Program.Run(new[] { domain, "--output", directory }, output, error), Throws.ArgumentException.With.Message.Contains("--filter"));
 		Assert.That(Directory.Exists(directory), Is.False);
+	}
+
+	[Test]
+	public void CacheConfigurationInspectionDoesNotCreateArtifacts() {
+		using var output = new StringWriter();
+		using var error = new StringWriter();
+		var directory = Path.Combine(Path.GetTempPath(), $"Sphere10CacheProfilerCommandTests-{Guid.NewGuid():N}");
+		Assert.That(Program.Run(new[] { "caches", "--suite", "reaping", "--capacity", "64", "--sizes", "Weighted", "--output", directory, "--show-config" }, output, error), Is.Zero);
+		var configuration = JsonNode.Parse(output.ToString());
+		Assert.That(configuration["Profiles"].AsArray().Count, Is.EqualTo(6));
+		Assert.That(configuration["Profiles"][0]["Capacity"].GetValue<int>(), Is.EqualTo(64));
+		Assert.That(configuration["Profiles"][0]["ReapLevel"].GetValue<double>(), Is.EqualTo(1.0 / 64));
+		Assert.That(configuration["Profiles"][0]["SizePattern"].GetValue<string>(), Is.EqualTo("Weighted"));
+		Assert.That(Directory.Exists(directory), Is.False);
+		Assert.That(error.ToString(), Is.Empty);
 	}
 }

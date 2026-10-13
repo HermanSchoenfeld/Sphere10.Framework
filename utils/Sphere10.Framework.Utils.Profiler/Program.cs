@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using Sphere10.Framework.Utils.Profiler.ObjectSpaces;
 using Sphere10.Framework.Utils.Profiler.BTrees;
+using Sphere10.Framework.Utils.Profiler.Caches;
 using Sphere10.Framework.Utils.Profiler.Studies;
 
 namespace Sphere10.Framework.Utils.Profiler;
@@ -33,6 +34,8 @@ public static class Program {
 				return ObjectSpaceProfiler.Run(args.Skip(1).ToArray(), output);
 			case "btrees":
 				return BTreeProfiler.Run(args.Skip(1).ToArray(), output);
+			case "caches":
+				return CacheProfiler.Run(args.Skip(1).ToArray(), output);
 			case "study":
 				return PerformanceStudy.Run(args.Skip(1).ToArray(), output);
 			default:
@@ -50,6 +53,7 @@ public static class Program {
 		Available domains:
 		  object-spaces  ObjectSpace storage, indexing, allocation and transaction benchmarks
 		  btrees        B-tree, B+ tree and lookup benchmarks over six storage backends
+		  caches        Typed/object key access, LRU/FIFO eviction batches and refill costs
 		  study         Retained-sample parameter screening, reports and replayable plans
 
 		Use <domain> --help for workload and configuration options.

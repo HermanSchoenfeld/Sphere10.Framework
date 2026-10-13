@@ -117,7 +117,7 @@ public static class RetainedPerformanceReports {
 				output.WriteLine(FormattableString.Invariant($"BDN reported interval ({level}): [{lower / 1000000:F4}, {upper / 1000000:F4}] ms/batch (one invocation)."));
 			}
 			foreach (var property in settings.EnumerateObject().Where(property => property.Name is "RecordCount" or "OperationCount" or "PayloadBytes" or "PayloadPattern"
-				or "LookupPattern" or "HotSetPercent" or "KeyShape" or "CategoryCount" or "HotCategoryPercent" or "WorkloadMix" or "Mix" or "GroupSize" or "ShuffledInsertion"))
+				or "LookupPattern" or "HotSetPercent" or "HotAccessPercent" or "FetchWork" or "KeyShape" or "CategoryCount" or "HotCategoryPercent" or "WorkloadMix" or "Mix" or "GroupSize" or "ShuffledInsertion"))
 				output.WriteLine($"{property.Name}: {property.Value.GetRawText()}");
 			output.WriteLine($"Selected exact profile '{profileName}': {matches[0].GetRawText()}");
 			output.WriteLine("Raw nanoseconds per invocation: " + string.Join(", ", samples.Select(value => value.ToString("R", CultureInfo.InvariantCulture))));
