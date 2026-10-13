@@ -40,6 +40,8 @@
 
 	public override string Title => "Workspace details";
 
+	public override WizardStepTraits Traits => WizardStepTraits.AssumeHasNext;
+
 	public override Task<Result> OnNextAsync() {
 		if (string.IsNullOrWhiteSpace(Model.Name))
 			return Task.FromResult(Result.Error("Enter a workspace name before continuing."));

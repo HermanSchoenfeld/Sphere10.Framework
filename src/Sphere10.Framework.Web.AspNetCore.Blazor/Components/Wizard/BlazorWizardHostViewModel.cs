@@ -10,12 +10,19 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Wizard;
 
-public class BlazorWizardHostViewModel : ComponentViewModelBase {
+public class BlazorWizardHostViewModel : ComponentViewModelBase, IDisposable {
 	private BlazorWizardStepBase _currentStepInstance;
+	private IBlazorWizard _boundWizard;
+	private Type _renderedStepType;
+	private int _renderedStepIndex = -1;
+	private Func<Type, WizardStepTraits> _previousStepTraitsResolver;
+	private Func<Type, WizardStepTraits> _stepTraitsResolver;
+	private bool _disposed;
 	private bool _finishing;
 	private bool _cancelling;
 	private bool _finished;
@@ -59,6 +66,10 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase {
 		get => _currentStepInstance;
 		private set {
 			_currentStepInstance = value;
+			if (value != null) {
+				_stepTraitsResolver ??= ResolveStepTraits;
+				Wizard.StepTraitsResolver = _stepTraitsResolver;
+			}
 			Title = $"{Wizard.Title} -> {_currentStepInstance?.Title}";
 			StateHasChangedDelegate?.Invoke();
 			OnStepChange.InvokeAsync();
@@ -94,7 +105,7 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase {
 		ErrorMessages = Array.Empty<string>();
 
 		if (prev) {
-			CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
+			SynchronizeCurrentStep();
 		} else {
 			ErrorMessages = prev.ErrorMessages.ToArray();
 		}
@@ -131,7 +142,7 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase {
 		if (wizard.HasNext) {
 			var navigation = wizard.Next();
 			if (navigation.IsSuccess && navigation.Value)
-				CurrentStep = CreateStepBaseFragment(wizard.CurrentStep);
+				SynchronizeCurrentStep();
 			else
 				ErrorMessages = navigation.ErrorMessages.ToArray();
 			return;
@@ -177,21 +188,75 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase {
 
 	public void SetWizard(IBlazorWizard wizard) {
 		Guard.ArgumentNotNull(wizard, nameof(wizard));
-		if (ReferenceEquals(Wizard, wizard))
+		if (ReferenceEquals(_boundWizard, wizard))
 			return;
+		if (_boundWizard != null) {
+			_boundWizard.Changed -= WizardChanged;
+			RestoreStepTraitsResolver();
+		}
 		Wizard = wizard;
+		_boundWizard = wizard;
+		_previousStepTraitsResolver = wizard.StepTraitsResolver;
+		wizard.Changed += WizardChanged;
+		_renderedStepType = null;
+		_renderedStepIndex = -1;
 		_finished = false;
 		_cancelled = false;
 		CurrentStepInstance = null;
 		ErrorMessages = Array.Empty<string>();
 		if (IsInitialized)
-			CurrentStep = CreateStepBaseFragment(wizard.CurrentStep);
+			SynchronizeCurrentStep();
+	}
+
+	public void Dispose() {
+		_disposed = true;
+		if (_boundWizard != null)
+			_boundWizard.Changed -= WizardChanged;
+		RestoreStepTraitsResolver();
+		_currentStepInstance = null;
+		CurrentStep = null;
+		Wizard = null;
+		_boundWizard = null;
 	}
 
 	/// <inheritdoc />
 	protected override Task InitCoreAsync() {
-		CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
+		SetWizard(Wizard);
+		SynchronizeCurrentStep();
 		return base.InitCoreAsync();
+	}
+
+	private WizardStepTraits ResolveStepTraits(Type stepType) {
+		var traits = _previousStepTraitsResolver?.Invoke(stepType) ?? WizardStepTraits.None;
+		if (_currentStepInstance != null && ReferenceEquals(_boundWizard, Wizard) && _renderedStepType == stepType && _renderedStepIndex == Wizard.CurrentStepIndex)
+			traits |= _currentStepInstance.Traits;
+		return traits;
+	}
+
+	private void RestoreStepTraitsResolver() {
+		if (_boundWizard != null && ReferenceEquals(_boundWizard.StepTraitsResolver, _stepTraitsResolver))
+			_boundWizard.StepTraitsResolver = _previousStepTraitsResolver;
+		_previousStepTraitsResolver = null;
+	}
+
+	private void WizardChanged() {
+		if (_disposed)
+			return;
+		_ = InvokeAsync(() => {
+			if (_disposed)
+				return;
+			SynchronizeCurrentStep();
+			StateHasChangedDelegate?.Invoke();
+		});
+	}
+
+	private void SynchronizeCurrentStep() {
+		if (_renderedStepType == Wizard.CurrentStep && _renderedStepIndex == Wizard.CurrentStepIndex)
+			return;
+		_renderedStepType = Wizard.CurrentStep;
+		_renderedStepIndex = Wizard.CurrentStepIndex;
+		_currentStepInstance = null;
+		CurrentStep = CreateStepBaseFragment(_renderedStepType);
 	}
 
 	/// <summary>
@@ -200,11 +265,10 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase {
 	/// <param name="componentType"> type of step</param>
 	/// <returns></returns>
 	private RenderFragment CreateStepBaseFragment(Type componentType) {
+		var stepIndex = _renderedStepIndex;
 		return builder => {
-			
-
 			builder.OpenComponent(0, componentType);
-			builder.SetKey(Wizard);
+			builder.SetKey((Wizard, stepIndex));
 			builder.AddAttribute(1, nameof(Wizard), Wizard);
 			builder.AddComponentReferenceCapture(2, o => CurrentStepInstance = (BlazorWizardStepBase)o);
 			builder.CloseComponent();

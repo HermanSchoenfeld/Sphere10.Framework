@@ -58,6 +58,13 @@ public abstract class WinFormsWizardBase<T> : SyncDisposable, IWinFormsWizard<T>
 	public WinFormsWizardScreen<T>[] Steps => Workflow.Steps;
 	public WinFormsWizardScreen<T> CurrentStep => Workflow.CurrentStep;
 	public int CurrentStepIndex => Workflow.CurrentStepIndex;
+	public Func<WinFormsWizardScreen<T>, WizardStepTraits> StepTraitsResolver {
+		get => Workflow.StepTraitsResolver;
+		set {
+			Workflow.StepTraitsResolver = value;
+			RefreshNavigationButtons();
+		}
+	}
 	public bool IsBusy => _navigating || Workflow.IsBusy;
 	public WizardState State => Workflow.State;
 	public bool IsCancellable { get; set; } = true;

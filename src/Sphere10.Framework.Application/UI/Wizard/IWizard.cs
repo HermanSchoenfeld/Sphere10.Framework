@@ -20,6 +20,8 @@ public interface IWizard<TStep> {
 	TStep[] Steps { get; }
 	TStep CurrentStep { get; }
 	int CurrentStepIndex { get; }
+	/// <summary>Resolves live step metadata when registered definitions differ from rendered instances; null uses IWizardStep.</summary>
+	Func<TStep, WizardStepTraits> StepTraitsResolver { get; set; }
 	bool HasNext { get; }
 	bool HasPrevious { get; }
 	bool IsCancellable { get; }

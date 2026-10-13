@@ -72,6 +72,7 @@ var result = await wizard.Start(owner);
 ```
 - `Build()` requires a title, at least one screen, and a finish function (enforced via `Guard.Ensure`).
 - Steps derive from `WinFormsWizardScreen<MyModel>`. Their `Wizard` and `Model` are assigned before `Initialize`, including injected steps. `Validate` runs before `OnNext`; commit accepted input there when validation must precede model mutation. Set `UpdateModelOnStateChanged = false` for that pattern; default `OnPresent` copies the model to the UI.
+- For steps that create their successors during navigation, read the shared [dynamic step metadata](../../../src/Sphere10.Framework.Application/README.md#shared-wizard-workflow) and adopt its traits in the real consumer. Verify the first displayed button and missing-successor behavior through the native host.
 - `OnFinished` accepts `Func<T, Task<Result>>` or `Func<T, Task<Result<bool>>>`; cancellation supports the task-returning outcome or a synchronous `Result` callback. Async callbacks are awaited through `FinishAsync` / `CancelAsync`; do not route an asynchronous cancel callback through `CancelRequested()`. `Start(owner)` awaits the native modal dialog and disposes that dialog when it completes.
 - Follow the [builder-pattern](../builder-pattern/SKILL.md) skill when extending wizard configuration.
 

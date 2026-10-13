@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Threading.Tasks;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -14,6 +15,8 @@ public class WinFormsWizardScreen<T> : UserControlEx, IWinFormsWizardScreen<T> {
 	public IWinFormsWizard<T> Wizard { get; internal set; }
 
 	public T Model => Wizard.Model;
+
+	public virtual WizardStepTraits Traits { get; set; }
 
 	public virtual async Task Initialize() {
 	}

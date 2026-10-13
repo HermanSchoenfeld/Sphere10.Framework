@@ -18,6 +18,58 @@ namespace Sphere10.Framework.Application.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class WizardTests {
 	[Test]
+	public async Task AssumedNextRequiresARegisteredSuccessorAndCannotFinishPrematurely() {
+		var first = new DynamicStep { Traits = WizardStepTraits.AssumeHasNext };
+		var finishes = 0;
+		var wizard = new Wizard<object, DynamicStep>("Setup", new object(), new[] { first }, _ => {
+			finishes++;
+			return Task.FromResult<Result<bool>>(true);
+		});
+		Assert.That(wizard.HasNext, Is.True);
+		Assert.That(wizard.MoveNext().IsFailure, Is.True);
+		Assert.That((await wizard.MoveNextAsync()).IsFailure, Is.True);
+		Assert.That(wizard.CurrentStepIndex, Is.Zero);
+		Assert.That(wizard.CurrentStep, Is.SameAs(first));
+		Assert.That((await wizard.FinishAsync()).IsFailure, Is.True);
+		Assert.That(finishes, Is.Zero);
+		Assert.That(wizard.State, Is.EqualTo(WizardState.Active));
+		Assert.That(wizard.IsBusy, Is.False);
+		Assert.That((await wizard.CancelAsync()).Value, Is.True);
+	}
+
+	[Test]
+	public async Task DynamicStepCanInjectItsSuccessorAndCompleteOnlyAtTheTerminalStep() {
+		var first = new DynamicStep { Traits = WizardStepTraits.AssumeHasNext };
+		var final = new DynamicStep();
+		var wizard = new Wizard<object, DynamicStep>("Setup", new object(), new[] { first });
+		await wizard.UpdateStepsAsync(WizardStepUpdateType.Inject, new[] { final });
+		Assert.That((await wizard.MoveNextAsync()).Value, Is.True);
+		Assert.That(wizard.CurrentStep, Is.SameAs(final));
+		Assert.That(wizard.HasNext, Is.False);
+		Assert.That((await wizard.FinishAsync()).Value, Is.True);
+		Assert.That(wizard.State, Is.EqualTo(WizardState.Finished));
+	}
+
+	[Test]
+	public void ResolverReadsLiveMetadataAndDecoratorsForwardItsReplacement() {
+		var wizard = new Wizard<object, string>("Setup", new object(), new[] { "dynamic" });
+		var decorator = new ProbeDecorator(wizard);
+		var traits = WizardStepTraits.AssumeHasNext;
+		var notifications = 0;
+		decorator.Changed += () => notifications++;
+		decorator.StepTraitsResolver = step => step == "dynamic" ? traits : WizardStepTraits.None;
+		Assert.That(wizard.HasNext, Is.True);
+		Assert.That(notifications, Is.EqualTo(1));
+		traits = WizardStepTraits.None;
+		Assert.That(decorator.HasNext, Is.False);
+		traits = WizardStepTraits.AssumeHasNext;
+		Assert.That(wizard.HasNext, Is.True);
+		decorator.StepTraitsResolver = null;
+		Assert.That(wizard.HasNext, Is.False);
+		Assert.That(notifications, Is.EqualTo(2));
+	}
+
+	[Test]
 	public void StepMembershipIsCopiedWithoutCloningStepObjects() {
 		var first = new object();
 		var second = new object();
@@ -169,6 +221,10 @@ public class WizardTests {
 
 	private class WizardProbeDecorator : WizardDecorator<object, int> {
 		public WizardProbeDecorator(IWizard<object, int> wizard) : base(wizard) { }
+	}
+
+	private sealed class DynamicStep : IWizardStep {
+		public WizardStepTraits Traits { get; set; }
 	}
 
 	private class ProbeBuilder : WizardBuilderBase<object, string, Wizard<object, string>> {

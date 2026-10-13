@@ -31,6 +31,7 @@
 @code {
 	public override string Title { get; } = "Wallet Type";
 
+	public override WizardStepTraits Traits => WizardStepTraits.AssumeHasNext;
 
 	public override Task<Result> OnNextAsync() {
 		if (Model.Type is WalletType.Standard) {

@@ -8,6 +8,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
+@using Sphere10.Framework.Application.UI
 @inherits BlazorWizardStep<NewWidgetModel, NewWidgetWizardStepViewModel>
 
 <EditForm Model="ViewModel.Model">
@@ -35,4 +36,6 @@
 
 @code {
 	public override string Title { get; } = "Details";
+
+	public override WizardStepTraits Traits => WizardStepTraits.AssumeHasNext;
 }

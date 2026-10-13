@@ -20,6 +20,7 @@ The project references both the framework and the [WinForms tester](../../utils/
 | `WinFormsApplicationExitTests` | Application-owned native confirmation, repeated close requests, retained screen and distinct block permissions, retry after native or application vetoes, awaited finalization with a live disabled window and one native permission check, synchronous and asynchronous exit, reentrant close protection, graceful forced close, modal cancellation/escalation, worker/UI-thread dispatch and completion after the real main-window loop, hide-on-close compatibility and session-ending messages. |
 | `FormWindowSettingsTests` and `MainFormExitTests` | Accepted placement capture and one shutdown save before window closure, minimized/maximized state, native vetoes, detached tracking, standalone persistence and settings-provider lifetime. |
 | `WizardDemoTests` | Actual demo wizard input validation, model updates, back navigation and completion. |
+| `WinFormsWizardAdapterTests` | Shared native metadata, step ownership and terminal callbacks; real message-loop navigation for dynamic `AssumeHasNext` branches, Next before a successor is registered, Finish on the terminal step, rejected validation and safe retry after a missing successor. |
 
 Run the consumer configuration checks by themselves:
 
