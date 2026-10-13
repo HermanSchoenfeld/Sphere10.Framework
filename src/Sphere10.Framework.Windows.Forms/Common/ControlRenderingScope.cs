@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -22,6 +23,7 @@ namespace Sphere10.Framework.Windows.Forms;
 public class ControlRenderingScope : ScopeBase {
 	private const int SetRedrawMessage = 0x000B;
 	private static readonly ConditionalWeakTable<Control, RenderingState> _states = new();
+	private static readonly PropertyDescriptor _visibleProperty = TypeDescriptor.GetProperties(typeof(Control))[nameof(Control.Visible)];
 	private readonly Control _control;
 	private readonly int _threadId;
 	private readonly List<RenderingState> _participants = new();
@@ -153,9 +155,10 @@ public class ControlRenderingScope : ScopeBase {
 			if (_control.IsDisposed || _control.Disposing)
 				return;
 			if (_suppressedHandle != IntPtr.Zero && _control.IsHandleCreated && _control.Handle == _suppressedHandle) {
-				var visible = _control.Visible;
+				// The base designer descriptor observes the control's own visibility request, including under a hidden parent.
+				var visible = !_visibleProperty.ShouldSerializeValue(_control);
 				Tools.Windows.Win32.SendMessage(new HandleRef(_control, _suppressedHandle), SetRedrawMessage, 1, 0);
-				// WM_SETREDRAW enables WS_VISIBLE. Preserve controls intentionally hidden during the transition.
+				// WM_SETREDRAW enables WS_VISIBLE. Preserve an explicit Hide without hiding children of a retained tab.
 				if (!visible)
 					USER32.ShowWindow(_suppressedHandle, USER32.ShowWindowCommands.Hide);
 			}

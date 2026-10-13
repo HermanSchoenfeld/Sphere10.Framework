@@ -49,6 +49,8 @@ Native `AddActionItem` and native action-item builders require synchronous `Acti
 
 Use the existing `ShowAsync` dialog helpers or `await dialog.ShowDialogAsync(owner)` on .NET 10. Keep an owned custom form in a `using` scope across the await. `InvokeAsyncEx` dispatches to the UI; it is not a modal-loop replacement. Set closing/validation cancellation and handled flags before the first await. See [async modal dialogs](../../../src/Sphere10.Framework.Windows.Forms/README.md#async-modal-dialogs-net-10) for the supported helpers and synchronous native boundaries.
 
+Use `EnterRenderingScope()` on the UI thread for native tree updates. Preserve controls' own requested visibility when ancestors hide; effective `Control.Visible` is insufficient for restoring redraw. Check native visibility after retained-view transitions as well as managed bounds, and verify real search/dropdown controls. See [native rendering guidance](../../../src/Sphere10.Framework.Windows.Forms/README.md#native-helper-migration).
+
 ## Wizards
 Use [WinFormsWizardBuilder<T>](../../../src/Sphere10.Framework.Windows.Forms/Wizard/WinFormsWizardBuilder.cs), which derives from the shared `WizardBuilderBase` and builds `WinFormsActionWizard<T>`. This fragment assumes an existing `model` and native owner form:
 ```csharp
