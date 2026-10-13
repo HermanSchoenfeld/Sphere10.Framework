@@ -21,7 +21,10 @@ instructions take precedence; these topic files hold the implementation rules.
 | Fluent configuration and nested builders | [Fluent builders](patterns/fluent-builders.md) |
 | Selecting utilities, guards or cryptographic infrastructure | [Framework utilities](patterns/framework-utilities.md) |
 | Serialization, binary layouts or endian-aware I/O | [Serialization](patterns/serialization.md) |
-| Graph storage, collections, caches, clustered streams or comparers | [Collections and storage](patterns/collections-and-storage.md) |
+| Selecting extended lists, dictionaries, bidirectional maps, sets or collection decorators | [Collection selection and composition](patterns/collections.md) |
+| Shared state, read/write locks, compound operations or synchronized enumeration | [Synchronization with read/write scopes](patterns/synchronization.md) |
+| Repository CRUD, loading/saving, persistable state or transactional backends | [Repositories, persistence and transactions](patterns/persistence-and-transactions.md) |
+| Graph storage, caches, clustered streams or storage comparers | [Collections and storage](patterns/collections-and-storage.md) |
 | ObjectSpace schemas, identity, indexed CRUD, file transactions or configuration profiling | [Object spaces](patterns/object-spaces.md) |
 | Data-source CRUD, paging or batch/single operations | [Data sources](patterns/data-sources.md) |
 | Application logging, sinks or logger decorators | [Logging](patterns/logging.md) |

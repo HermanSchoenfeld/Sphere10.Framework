@@ -6,23 +6,24 @@ Read the [disposable-scopes skill](../../../agents/skills/disposable-scopes/SKIL
 
 The framework uses **disposable scope objects** (`using` blocks) extensively for resource management, synchronization, and state transitions. **Always follow this pattern**:
 
-- **Thread synchronization** — [SynchronizedObject](../../../src/Sphere10.Framework/Threading/SynchronizedObject.cs) provides `EnterReadScope()` / `EnterWriteScope()` returning `IDisposable`. All reads/writes to synchronized collections must be enclosed in the appropriate scope.
+- **Thread synchronization** — [SynchronizedObject](../../../src/Sphere10.Framework/Threading/SynchronizedObject.cs) provides `EnterReadScope()` / `EnterWriteScope()` returning `IDisposable`. Many synchronized collection members self-lock; use outer scopes for compound operations, deferred reads and borrowed views. Some families require explicit scopes. Read [synchronization](synchronization.md) for the actual family behavior, shared parents and thread-affinity limits.
 - **Access scopes** — [ICriticalObject.EnterAccessScope()](../../../src/Sphere10.Framework/Threading/ICriticalObject.cs) is used by `ObjectSpace`, `ClusteredStreams` and stream-mapped storage; [CriticalObject](../../../src/Sphere10.Framework/Threading/CriticalObject.cs) supplies monitor-backed access scopes.
 - **[Tools.Scope](../../../src/Sphere10.Framework/Scopes/ScopeTool.cs)** — utility for ad-hoc cleanup scopes:
   - `Tools.Scope.ExecuteOnDispose(action)` — runs `action` when the scope is disposed.
   - `Tools.Scope.DeleteFileOnDispose(path)` — auto-cleanup temp files.
-- **Transactional scopes** — [TransactionalScopeBase<TTransaction>](../../../src/Sphere10.Framework/Transactions/TransactionalScopeBase.cs) centralizes transaction ownership, nesting, commit/rollback coordination and close hooks. Use a concrete backend scope; the common base is abstract and does not create a backend transaction by itself.
+- **Transactional scopes** — [TransactionalScopeBase<TTransaction>](../../../src/Sphere10.Framework/Transactions/TransactionalScopeBase.cs) centralizes transaction ownership, nesting, commit/rollback coordination and close hooks. Use a concrete backend scope; the common base is abstract and does not create a backend transaction by itself. Read [persistence and transactions](persistence-and-transactions.md) for capability selection, nested participants, backend completion and disposal.
 - **[ActionScope](../../../src/Sphere10.Framework/Scopes/ActionScope.cs)** / **[TaskScope](../../../src/Sphere10.Framework/Scopes/TaskScope.cs)** — delegate-backed scopes through `SyncScope` / `AsyncScope`. Their generic variants also carry an `Item`.
 
 ```csharp
 using (collection.EnterWriteScope()) {
-	collection.Add(item);
+	if (!collection.Contains(item))
+		collection.Add(item);
 }
 ```
 
 If an operation acquires a resource, enters a state, or needs guaranteed cleanup, wrap it in the existing scope that expresses that acquire/release contract. Do not reproduce its machinery with a bare `try/finally`. Exception handling and multi-step lifecycle coordination can still require `try`/`catch`/`finally`; preserve their ownership and failure behavior, as described in the disposable-scopes skill.
 
-The example assumes an existing synchronized collection. [IScope](../../../src/Sphere10.Framework/Scopes/IScope.cs) exposes both disposal forms and `ScopeEnd`; [ScopeBase](../../../src/Sphere10.Framework/Scopes/ScopeBase.cs) runs its end hook before the notification. Its async notification uses `Task.Run`, so the generic scope contract does not promise the acquiring thread.
+The example assumes an existing synchronized collection with the default recursion policy. The outer write scope keeps the membership check and addition atomic even when each member self-locks. [IScope](../../../src/Sphere10.Framework/Scopes/IScope.cs) exposes both disposal forms and `ScopeEnd`; [ScopeBase](../../../src/Sphere10.Framework/Scopes/ScopeBase.cs) runs its end hook before the notification. Its async notification uses `Task.Run`, so the generic scope contract does not promise the acquiring thread.
 
 Use `using` for synchronous cleanup and `await using` for asynchronous cleanup. Reader/writer and monitor-backed scopes are thread-affine: dispose them on the acquiring thread and do not retain them across asynchronous suspension that can change threads. An async disposal member on a generic scope does not make lock release safe on a worker.
 

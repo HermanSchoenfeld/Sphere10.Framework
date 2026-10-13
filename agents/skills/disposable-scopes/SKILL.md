@@ -48,19 +48,9 @@ Available: `ExecuteOnDispose(Action)`, `ExecuteOnDisposeAsync(Func<Task>)`, pref
 
 ## 3. Thread synchronization — `SynchronizedObject` (`Threading/SynchronizedObject.cs`)
 
-Wraps a `ReaderWriterLockSlim`. **Never call `EnterReadLock`/`Monitor.Enter` directly** on a `SynchronizedObject`; use the scopes:
+For read/write locking, read [synchronization](../../../docs/guidelines/patterns/synchronization.md). Inspect whether the selected member self-locks, then choose the outer scope needed for compound operations, deferred ranges or borrowed views. Configure shared parents before use and keep lock acquisition and disposal on the same thread.
 
-```csharp
-using (collection.EnterReadScope()) { /* reads */ }
-using (collection.EnterWriteScope()) { collection.Add(item); }
-```
-
-- `EnterReadScope()` / `EnterWriteScope()` return `IDisposable` that exits the lock on dispose.
-- Subclass hooks: `OnReadScopeOpen/Closed`, `OnWriteScopeOpen/Closed`.
-- `EnsureReadable()` / `EnsureWritable()` throw `SoftwareException` if a member is accessed outside the correct scope — use them at the top of synchronized members.
-- `ParentSyncObject` lets child objects share a parent's lock. Generic variant `SynchronizedObject<TReadScope, TWriteScope>` yields typed `IScope` instances.
-- Related primitives: `FastLock`, `NonReentrantLock`, `Tools.Threads` helpers.
-- Reader/writer scopes are thread-affine. Dispose them on the acquiring thread and do not hold them across an `await` that can change threads; the generic `IScope` shape does not make these locks safe for async disposal.
+For exclusive access, use the actual resource's `ICriticalObject.EnterAccessScope()` contract described below. A generic scope's async disposal surface does not change the underlying lock's thread affinity.
 
 ## 4. Mutually-exclusive access — `ICriticalObject` / `CriticalObject` (`Threading/`)
 
@@ -85,20 +75,9 @@ Scopes that are **aware of other scopes active in the same logical call context*
 
 ## 6. Transactions — `TransactionalScopeBase<TTransaction>` (`Transactions/`)
 
-[TransactionalScopeBase<TTransaction>](../../../src/Sphere10.Framework/Transactions/TransactionalScopeBase.cs) centralizes transaction ownership, nested rollback voting, notifications and close hooks. Use a concrete backend scope or derive from the appropriate directional foundation; `SyncTransactionalScope<TTransaction>` and `AsyncTransactionalScope<TTransaction>` are abstract. For example, [FileTransactionScope](../../../src/Sphere10.Framework/IO/FileTransactionScope.cs) is directly constructible:
+For transactional work, read [persistence and transactions](../../../docs/guidelines/patterns/persistence-and-transactions.md). Select the existing concrete backend scope or its directional extension base, identify the transaction owner, and verify begin/commit/rollback and close behavior before consuming it. Inspect nested rollback voting and backend disposal rather than assuming a scope supplies automatic rollback or durability.
 
-```csharp
-using (var scope = new FileTransactionScope(transactionDirectory)) {
-	scope.BeginTransaction();
-	// Enlist files and perform the required writes.
-	scope.Commit();
-}
-```
-
-- Events: `Committing`, `Committed`, `RollingBack`, `RolledBack`.
-- Nested scopes can participate in the transaction shared through `RootScope`. Only its owner performs the underlying commit/rollback; a nested rollback records a rollback vote for that owner.
-- `BeginTransaction`/`Commit`/`Rollback` and their async forms coordinate transactions explicitly. Disposal invokes the close hook; **the common base does not call `Rollback` automatically**. Inspect the concrete backend's close behavior, and explicitly roll back abandoned work when required by that contract.
-- `ActionTransactionalScope<TTransaction>` and `TaskTransactionalScope<TTransaction>` are concrete delegate-backed forms. `TransactionalScopeDecorator` forwards an existing transaction scope; it does not introduce transaction ownership.
+Use the [persistence skill](../persistence/SKILL.md) when repository or load/save lifecycle contracts also participate. A collection's own transactional backend is a separate owner from an unrelated transaction scope.
 
 ## 7. Owned resource bags
 

@@ -22,16 +22,13 @@ Use dictionary-based storage keyed by entity ID for graph/tree structures. Keep 
 
 ## Collections (ExtendedList & Stream-Mapped)
 
-The framework provides `long`-indexed collection interfaces and implementations:
-
-- **[IExtendedCollection<T>](../../../src/Sphere10.Framework/Collections/Collections/IExtendedCollection.cs)** — extends `ICollection<T>` with `long Count` and range operations. Its base collection bridges use checked conversion back to `int`.
-- **[IExtendedList<T>](../../../src/Sphere10.Framework/Collections/Lists/IExtendedList.cs)** — adds long indexing over the inherited [read contract](../../../src/Sphere10.Framework/Collections/Lists/IReadOnlyExtendedList.cs) and [write contract](../../../src/Sphere10.Framework/Collections/Lists/IWriteOnlyExtendedList.cs). `ReadRange(long index, long count)` returns `IEnumerable<T>`; `IndexOfRange` returns `long[]`. Base `IList<T>` indexing remains `int`.
-- **[RangedListBase<T>](../../../src/Sphere10.Framework/Collections/Lists/RangedListBase.cs)** — implements single-item operations through range operations. Supply the range primitives and remaining inherited properties. Its current value-based `RemoveRange(IEnumerable<T>)` fallback throws for more than one item; inspect the concrete implementation before assuming all range forms work.
-- **[ExtendedList<T>](../../../src/Sphere10.Framework/Collections/Lists/ExtendedList.cs)** — resizable contiguous array-backed list with configurable capacity, growth size and maximum capacity. Long signatures do not remove the underlying array/runtime limits.
-- **[StreamMappedList<T>](../../../src/Sphere10.Framework/Collections/StreamMapped/StreamMappedList.cs)** — ordered persistent list backed by `ObjectStream<T>` and clustered streams.
-- **[StreamMappedRecyclableList<T>](../../../src/Sphere10.Framework/Collections/StreamMapped/StreamMappedRecyclableList.cs)** — retains physical slots for recycling/reuse. Its [recyclable base](../../../src/Sphere10.Framework/Collections/Lists/RecyclableListBase.cs) distinguishes live `Count` from `ListCount` and `RecycledCount`.
-- **[StreamMappedDictionary<TKey, TValue>](../../../src/Sphere10.Framework/Collections/StreamMapped/StreamMappedDictionary.cs)** / **[StreamMappedHashSet<T>](../../../src/Sphere10.Framework/Collections/StreamMapped/StreamMappedHashSet.cs)** — persistent dictionary/set with index lookups. Their standard dictionary/set contracts keep their existing count types; physical stream positions use `long`.
-- Observable, synchronized, transactional and merkle-aware variants are existing collection families; choose the implementation/decorator actually supplied for the required abstraction.
+Read [Collection selection and composition](collections.md) when choosing a
+collection contract, implementation, adapter or decorator. It covers extended
+long-index/range APIs, dictionaries and bijections, multi-key/grouped lookups,
+ordering, synchronized/observable/read-only/projected views, paging, recycled
+slots and stream-mapped/transactional storage. It also records concrete storage
+limits, live-view/enumeration behavior and layered ownership. This topic retains
+the cache, comparer, clustered-stream and B-tree layout practices below.
 
 ## Comparers & Equality
 

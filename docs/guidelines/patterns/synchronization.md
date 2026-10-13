@@ -1,0 +1,213 @@
+# Synchronization with Read/Write Scopes
+
+Read this topic when protecting shared state, selecting a synchronized collection,
+or coordinating several objects under one lock. Read [resource scopes](resource-scopes.md)
+for cleanup and ownership, and the [collection guide](collections.md)
+for the collection and storage families.
+
+## Contract and lock lifetime
+
+[ISynchronizedObject](../../../src/Sphere10.Framework/Threading/ISynchronizedObject.cs)
+exposes `EnterReadScope()`, `EnterWriteScope()`, `ThreadLock` and
+`ParentSyncObject`. [SynchronizedObject](../../../src/Sphere10.Framework/Threading/SynchronizedObject.cs)
+implements the scopes with a `ReaderWriterLockSlim`: a read scope permits concurrent
+readers, while a write scope excludes other readers and writers. Acquire through
+the scope methods and release through `using`; do not duplicate their enter/exit
+machinery with raw lock calls.
+
+```csharp
+using Sphere10.Framework;
+
+var values = new SynchronizedDictionary<string, int>();
+values["jobs"] = 1;
+
+// Keep the read-modify-write operation under one write scope.
+using (values.EnterWriteScope()) {
+	values.TryGetValue("jobs", out var count);
+	values["jobs"] = count + 1;
+}
+```
+
+Choose the scope for the entire operation before acquiring it. Two individually
+locked calls are not one atomic operation: checking membership then adding, or
+reading a list's count then indexing it, can race between calls. Use an outer
+write scope for compound mutations and an outer read scope for a consistent
+multi-call read. The default recursion policy is `SupportsRecursion`, allowing
+self-locking members to run inside the appropriate outer scope. A supplied
+parent's lock policy is the effective policy; do not assume recursion when
+using `NoRecursion`.
+
+A read scope cannot be upgraded by entering a write scope. This remains true
+with `SupportsRecursion`. There is no `EnterUpgradeableReadScope` method on the
+framework contract. If the operation may write, enter a write scope initially,
+or leave the read scope and recheck the condition after acquiring a write scope.
+Do not mutate a collection from its read-locked enumeration.
+
+## Self-locking members and borrowed results
+
+The collection decorators generally acquire their own scope for each operation.
+Consumers do not need an additional outer scope for every single `Add`, lookup
+or indexer call that already self-locks. An outer scope extends protection across
+several calls, deferred enumeration or a borrowed view. It does not make bypasses
+through the original wrapped collection safe; all users of that storage must
+participate in the same synchronization protocol.
+
+| Family | Current scope behavior |
+|---|---|
+| [SynchronizedCollection](../../../src/Sphere10.Framework/Collections/Synchronized/SynchronizedCollection.cs), [SynchronizedList](../../../src/Sphere10.Framework/Collections/Synchronized/SynchronizedList.cs) and [SynchronizedDictionary](../../../src/Sphere10.Framework/Collections/Synchronized/SynchronizedDictionary.cs) | Ordinary reads and writes self-lock. `GetEnumerator()` holds a read scope until the enumerator is disposed. |
+| [SynchronizedExtendedList](../../../src/Sphere10.Framework/Collections/Synchronized/SynchronizedExtendedList.cs) | Extended reads and writes self-lock, including range calls. Its enumerator retains a read scope, but a returned `ReadRange` or `ContainsRange` sequence can remain deferred depending on the wrapped implementation. Consume it under an outer scope. |
+| [SynchronizedQueue](../../../src/Sphere10.Framework/Collections/Synchronized/SynchronizedQueue.cs) and [SynchronizedHeap](../../../src/Sphere10.Framework/Collections/Synchronized/SynchronizedHeap.cs) | Collection operations inherit the synchronized decorator; queue enqueue/dequeue and heap pop take write scopes, while peek takes a read scope. |
+| [SynchronizedSet](../../../src/Sphere10.Framework/Collections/Synchronized/SynchronizedSet.cs) | Exposes scopes and locks its enumerator, but its current ordinary set methods and properties forward without acquiring a scope. Explicitly scope reads and writes; its name alone does not guarantee self-locking. |
+| [Synchronized<T>](../../../src/Sphere10.Framework/Threading/Synchronized.cs) | The `Value` getter/setter self-lock. A mutable referenced value remains borrowed after the getter returns; protect mutations and compound operations with an outer scope. |
+
+`SynchronizedDictionary.Keys` and `Values` return the inner dictionary's
+collections after the getter's scope ends. Their live-view or snapshot behavior
+comes from that source: a BCL dictionary returns live views, while a B-tree can
+materialize lists. The wrapper does not retain a lock for later consumption.
+Materialize live views while an outer read scope remains active:
+
+```csharp
+using System.Linq;
+using Sphere10.Framework;
+
+var values = new SynchronizedDictionary<string, int>();
+string[] keys;
+using (values.EnterReadScope())
+	keys = values.Keys.ToArray();
+
+// The array can now be consumed without retaining the dictionary lock.
+foreach (var key in keys) {
+	// Use the copied key.
+}
+```
+
+Dispose manual enumerators with `using`; `foreach` disposes them automatically.
+Abandoning an enumerator can leave its read lock held. Do not pass a locked
+enumerator to another thread or hold it across an `await`. For slow processing,
+copy the required membership under a read scope and process the copy after
+releasing the scope. A membership snapshot does not make mutable elements
+immutable or thread safe.
+
+## Sharing a synchronization root
+
+`ParentSyncObject` makes a child use its parent's `ThreadLock`. This allows
+different collection or cache types to protect an invariant under one shared
+lock instead of acquiring independent locks in competing orders.
+
+```csharp
+using Sphere10.Framework;
+
+var root = new SynchronizedObject();
+var amounts = new SynchronizedDictionary<string, int> { ParentSyncObject = root };
+var changedKeys = new SynchronizedList<string> { ParentSyncObject = root };
+
+// Both child updates participate in the same write scope.
+using (root.EnterWriteScope()) {
+	amounts["jobs"] = 2;
+	changedKeys.Add("jobs");
+}
+```
+
+Configure the parent before publishing or using the child. Keep the parent
+chain acyclic and its identity stable while scopes can be open or waiting.
+The current `SynchronizedObject` exit delegate resolves `ThreadLock` again;
+changing the parent can make it exit a different lock from the one entered.
+Taking a scope on the old lock is insufficient to safely reparent active users.
+
+[PooledCacheReaper](../../../src/Sphere10.Framework/Cache/PooledCacheReaper.cs)
+is a concrete consumer: it parents differently typed caches to itself before
+use and retains that parent when deregistering a member. In
+[PooledCacheReaperTests](../../../tests/Sphere10.Framework.Tests/Cache/PooledCacheReaperTests.cs),
+`MemberDisposal_RemovesCapacityAndPreservesOpenScopeLockIdentity` checks that
+disposal inside an outstanding member scope preserves the lock used for exit.
+`Registration_RejectsCachesThatHaveAlreadyBeenUsedOrParented` checks the setup
+boundary.
+
+A scope owns a lock acquisition, not the synchronized object's payload or its
+parent. Disposing a scope releases its acquisition; it does not dispose the
+collection, cached values or shared root. `SynchronizedObject` itself is not
+`IDisposable`. If an owner explicitly disposes a `ReaderWriterLockSlim`, it must
+first stop all users and wait for outstanding scopes; a child must not dispose
+the parent's borrowed lock. Do not dispose `ThreadLock` merely because a child
+has finished one operation.
+
+## Implementing synchronized members
+
+Derive from `SynchronizedObject` when synchronization is intrinsic to a type,
+or delegate to one when a decorator already has another base. Use
+`OnReadScopeOpen/Closed` and `OnWriteScopeOpen/Closed` only for the additional
+scope behavior the type needs. Keep open hooks and typed scope construction
+exception-safe: the current base acquires the lock before invoking them and
+does not unwind acquisition if they throw.
+
+`EnsureReadable()` and `EnsureWritable()` verify the current thread's held
+lock; they do not acquire one. In the current base, `EnsureReadable()` checks
+read or upgradeable-read ownership, while `EnsureWritable()` checks write
+ownership. **A write lock alone does not satisfy `EnsureReadable()`.** Account
+for that concrete behavior when designing guarded members instead of assuming
+that the helper accepts every state that is logically safe to read.
+
+[SynchronizedResource](../../../src/Sphere10.Framework/Threading/SynchronizedResource.cs)
+adds resource initialization/finalization around tracked scopes. It is a
+separate abstract lifecycle foundation, not a prerequisite for a synchronized
+collection or a drop-in replacement for the simple lock owner.
+
+The generic `SynchronizedObject<TReadScope, TWriteScope>` creates typed `IScope`
+objects and releases the lock through `ScopeEnd`. Its typed parent must use
+compatible scope types; the inline base-interface bridge preserves that
+requirement. [TypedSynchronizedObjectAdapterTests](../../../tests/Sphere10.Framework.Tests/Threading/TypedSynchronizedObjectAdapterTests.cs)
+cover typed/base dispatch, parent compatibility, and synchronous scope lifetime.
+
+## Thread affinity and asynchronous work
+
+Reader/writer and monitor acquisitions belong to the acquiring thread. Keep
+these scope blocks synchronous and dispose on that thread. The typed scope's
+`IAsyncDisposable` shape does not remove this requirement:
+[ScopeBase](../../../src/Sphere10.Framework/Scopes/ScopeBase.cs) raises async
+`ScopeEnd` via `Task.Run`, so `await using` on the typed synchronized scope can
+attempt lock release from a worker thread. Use synchronous `using` for these
+lock scopes.
+
+For async work, take a short synchronous scope to capture or update state,
+release it before awaiting, then acquire a new scope and revalidate any state
+that may have changed. If an operation must serialize an entire asynchronous
+workflow, use its established async coordination mechanism rather than wrapping
+it in a thread-affine read/write scope. For example,
+[ApplicationScreenHost](../../../src/Sphere10.Framework.Application/UI/ApplicationScreenHost.cs)
+coordinates transitions with `SemaphoreSlim.WaitAsync` and releases through
+`Tools.Scope.ExecuteOnDispose`.
+
+[SynchronizedRepository](../../../src/Sphere10.Framework/Repository/SynchronizedRepository.cs)
+has existing async adapters that call `ContinueOnSameThread` inside these
+scopes. The [task extension](../../../src/Sphere10.Framework/Extensions/TaskExtensions.cs)
+uses [SameThreadSynchronizationContext](../../../src/Sphere10.Framework/Threading/SameThreadSynchronizationContext.cs)
+to block and pump the calling thread until the wrapped task completes. That
+context is installed without restoring the previous one. This is an existing
+compatibility path with blocking/context effects, not a general pattern for
+nonblocking async locking.
+
+## Choosing other existing scope primitives
+
+- [ICriticalObject](../../../src/Sphere10.Framework/Threading/ICriticalObject.cs)
+  and [CriticalObject](../../../src/Sphere10.Framework/Threading/CriticalObject.cs)
+  supply monitor-backed exclusive `EnterAccessScope()` and shared
+  `ParentCriticalObject`. ObjectSpace and clustered streams use this access
+  contract rather than reader/writer scopes.
+- [FastLock](../../../src/Sphere10.Framework/Threading/FastLock.cs) supplies a
+  recursive exclusive `EnterLockScope()` backed by a reader/writer write lock.
+- [NonReentrantLock](../../../src/Sphere10.Framework/Threading/NonReentrantLock.cs)
+  supplies exclusive `EnterLockScope()` and rejects reentry by the owning
+  thread. Although backed by `SemaphoreSlim`, its public acquire/release
+  contract is synchronous and thread-affine.
+
+Choose the contract used by the actual resource. A synchronization scope only
+coordinates access; it does not make a mutation transactional or durable. See
+[persistence and transactions](persistence-and-transactions.md) for transaction
+ownership, and [resource scopes](resource-scopes.md) for cleanup.
+
+[ParallelClusteredStreamsTests](../../../tests/Sphere10.Framework.Tests/ClusteredStreams/ParallelClusteredStreamsTests.cs)
+show actual parallel use of synchronized dictionaries/lists beside the storage
+access protocol, and `OpenedStreamKeepsLockAfterAccessScopeClosed` demonstrates
+that an opened clustered stream can retain its own acquisition after the outer
+access scope ends. Resource lifetime can therefore be longer than the nearest
+visible scope; dispose the returned resource according to its own contract.
