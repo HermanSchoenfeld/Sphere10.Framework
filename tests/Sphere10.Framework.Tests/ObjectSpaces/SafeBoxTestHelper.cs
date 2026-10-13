@@ -33,7 +33,7 @@ public static class SafeBoxTestHelper {
 		MemoryStream memoryStream = activationArgs.TryGetValue("stream", out  var stream) ? (MemoryStream)stream : new MemoryStream();
 		disposables.Add(memoryStream);
 
-		var builder = new ObjectSpaceBuilder();
+		var builder = new ObjectSpaceBuilder().WithIndexBTreeOrder(Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder);
 		builder
 			.AutoLoad()
 			// Identity hierarchy — each concrete type gets its own dimension.

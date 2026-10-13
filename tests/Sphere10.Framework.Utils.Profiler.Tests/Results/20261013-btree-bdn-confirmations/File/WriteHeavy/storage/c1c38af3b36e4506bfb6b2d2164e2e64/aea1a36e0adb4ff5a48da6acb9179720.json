@@ -1,0 +1,27 @@
+{
+  "Profile": "FilePaged-BTreePlus-robust-shared-contender-2048",
+  "RunId": "c1c38af3b36e4506bfb6b2d2164e2e64",
+  "Storage": "FilePaged",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 2048,
+  "MaximumLeafEntries": 2047,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 49177,
+  "LogicalTreeBytes": 344271,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 344271,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 7,
+    "TotalLeaves": 6,
+    "LeafEntries": 8192,
+    "MeanLeafOccupancy": 0.6669923465233676,
+    "PhysicalSlots": 7
+  },
+  "AppliedPageSize": 262144,
+  "AppliedCacheBytes": 2147483647,
+  "AppliedFileBufferBytes": null
+}

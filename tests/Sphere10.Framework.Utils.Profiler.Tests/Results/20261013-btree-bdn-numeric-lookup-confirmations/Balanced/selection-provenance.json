@@ -1,0 +1,207 @@
+{
+  "Profiles": [
+    {
+      "Profile": {
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "Name": "FilePaged-Lookup-numeric-current-core-1024"
+      },
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup\\results.json",
+          "CaseId": "tree-FilePaged-Lookup-balanced-current-core-order-1024",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Final serialized numeric lookup default pair. Exact completed contemporary source, same dataset, group, key, insertion, paging, cache, buffer, endian and completion; Order1024/2048 changes only within each backend pair. Other numeric mixes/backends remain screening-only."
+    },
+    {
+      "Profile": {
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "Name": "FilePaged-Lookup-numeric-current-core-2048"
+      },
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup\\results.json",
+          "CaseId": "tree-FilePaged-Lookup-balanced-current-core-order-2048",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Final serialized numeric lookup default pair. Exact completed contemporary source, same dataset, group, key, insertion, paging, cache, buffer, endian and completion; Order1024/2048 changes only within each backend pair. Other numeric mixes/backends remain screening-only."
+    },
+    {
+      "Profile": {
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "Name": "TransactionalFile-Lookup-numeric-current-core-1024"
+      },
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup\\results.json",
+          "CaseId": "tree-TransactionalFile-Lookup-balanced-current-core-order-1024",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Final serialized numeric lookup default pair. Exact completed contemporary source, same dataset, group, key, insertion, paging, cache, buffer, endian and completion; Order1024/2048 changes only within each backend pair. Other numeric mixes/backends remain screening-only."
+    },
+    {
+      "Profile": {
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "Name": "TransactionalFile-Lookup-numeric-current-core-2048"
+      },
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup\\results.json",
+          "CaseId": "tree-TransactionalFile-Lookup-balanced-current-core-order-2048",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Final serialized numeric lookup default pair. Exact completed contemporary source, same dataset, group, key, insertion, paging, cache, buffer, endian and completion; Order1024/2048 changes only within each backend pair. Other numeric mixes/backends remain screening-only."
+    }
+  ],
+  "Protocol": [
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ],
+  "ProposedField": "Sphere10FrameworkDefaults.StreamMappedBTreeLookupOrder"
+}

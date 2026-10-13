@@ -1,0 +1,20 @@
+{
+  "Profile": "upper-order-4096",
+  "RunId": "ed2231134e7c45c59ba7b68fe90bdff1",
+  "Storage": "ManagedNodes",
+  "Family": "Lookup",
+  "KeyShape": "Int32",
+  "Order": 4096,
+  "MaximumLeafEntries": 4095,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 32768,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

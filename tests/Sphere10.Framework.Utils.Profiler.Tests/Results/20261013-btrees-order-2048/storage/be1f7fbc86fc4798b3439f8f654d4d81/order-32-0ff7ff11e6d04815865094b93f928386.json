@@ -1,0 +1,27 @@
+{
+  "Profile": "order-32",
+  "RunId": "be1f7fbc86fc4798b3439f8f654d4d81",
+  "Storage": "StreamMemory",
+  "Family": "BTree",
+  "KeyShape": "Int64",
+  "Order": 32,
+  "MaximumLeafEntries": 31,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 785,
+  "LogicalTreeBytes": 76962,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 2048,
+  "PhysicalStorageBytes": 0,
+  "Geometry": {
+    "Height": 3,
+    "ActiveNodes": 97,
+    "TotalLeaves": 92,
+    "LeafEntries": 1957,
+    "MeanLeafOccupancy": 0.6861851332398317,
+    "PhysicalSlots": 98
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

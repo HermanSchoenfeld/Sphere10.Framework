@@ -1,0 +1,16 @@
+[
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage",
+    "WinnerId": "os-File-page-1048576-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+    "IndistinguishableIds": [
+      "os-File-page-1048576-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "os-File-page-1048576-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "os-File-page-262144-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+      "os-File-page-262144-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "os-File-page-262144-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "os-File-page-65536-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "os-File-page-65536-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "os-File-page-262144-cache-4194304-Mixed-Balanced-cache-pressure-4096"
+    ]
+  }
+]

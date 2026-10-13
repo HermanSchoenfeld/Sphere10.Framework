@@ -373,7 +373,10 @@ public class RehydrationTests {
             objectSpaceBytes = objectSpace.Streams.RootStream.ToArray();
         }
 
-        using (var rehydrated = TestsHelper.CreateObjectSpace(testTraits, new Dictionary<string, object> { ["stream"] = new MemoryStream(objectSpaceBytes) }, IndexNullPolicy.IgnoreNull)) {
+        using var rehydrationStream = new MemoryStream();
+        rehydrationStream.Write(objectSpaceBytes);
+        rehydrationStream.Position = 0;
+        using (var rehydrated = TestsHelper.CreateObjectSpace(testTraits, new Dictionary<string, object> { ["stream"] = rehydrationStream }, IndexNullPolicy.IgnoreNull)) {
             var account2 = TestsHelper.CreateAccount(rng);
             account2.Name = null;
             Assert.That(() => rehydrated.Save(account2), Throws.Nothing);

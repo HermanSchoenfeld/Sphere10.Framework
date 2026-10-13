@@ -1,0 +1,38 @@
+{
+  "ObservedAtUtc": "2026-10-12T17:05:04.454232Z",
+  "Meaning": "File cache-pressure screening:4096records,16KiBfixed payload,100operations,Balanced; pages64KiB/256KiB/1MiB with4/16/64MiB/int.MaxValue cache bounds, order169, plus actual Core-default order64/page256KiB/int.MaxValue control. Cache is lazy, not preallocated; compare measured storage/allocation and keep uncertainty.",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Storage": {
+    "FriendlyName": "Samsung SSD 850 EVO 2TB",
+    "BusType": "SATA",
+    "PartitionStyle": "MBR",
+    "Size": 2000398934016
+  },
+  "Volume": {
+    "DriveLetter": "D",
+    "FileSystem": "NTFS",
+    "Size": 2000396742656,
+    "SizeRemaining": 10933624832
+  },
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "ActivitySnapshot": {
+    "PercentProcessorTime": 16
+  },
+  "MemorySnapshotKiB": {
+    "TotalVisibleMemorySize": 33469520,
+    "FreePhysicalMemory": 11979364
+  },
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Hash": "30C9660F326F4A8DE39CE07F3DCB3AE80EDFDE9DFC19527BFFB55F10B697E51F",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Hash": "65BE97E5B78751A7D9B16DE37CA5AFE4FF1AAB5B4F3ED887EDC6AA21192658EF",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "ConcurrentActivity": "User applications remain running. This is a point snapshot, not a guarantee of exclusive hardware or stable activity."
+}

@@ -1,0 +1,27 @@
+{
+  "Profile": "Digest32-contender-order-2048",
+  "RunId": "3ad7463d391345f69d76163b9863b9a1",
+  "Storage": "FileStream",
+  "Family": "Lookup",
+  "KeyShape": "Digest32",
+  "Order": 2048,
+  "MaximumLeafEntries": 2047,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 36,
+  "NodeRecordBytes": 106521,
+  "LogicalTreeBytes": 319595,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 319595,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 3,
+    "TotalLeaves": 2,
+    "LeafEntries": 3000,
+    "MeanLeafOccupancy": 0.7327796775769418,
+    "PhysicalSlots": 3
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": 4096
+}

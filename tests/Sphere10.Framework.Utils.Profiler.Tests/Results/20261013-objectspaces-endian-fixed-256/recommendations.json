@@ -1,0 +1,50 @@
+[
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-Memory-Endianness-big-endian-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Endianness-big-endian-Mixed-Balanced",
+      "os-Memory-Endianness-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-Memory-Endianness-big-endian-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Endianness-big-endian-Mixed-ReadHeavy",
+      "os-Memory-Endianness-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-Memory-Endianness-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Endianness-baseline-Mixed-WriteHeavy",
+      "os-Memory-Endianness-big-endian-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-File-Endianness-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Endianness-baseline-Mixed-Balanced",
+      "os-File-Endianness-big-endian-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-File-Endianness-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Endianness-baseline-Mixed-ReadHeavy",
+      "os-File-Endianness-big-endian-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-File-Endianness-big-endian-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Endianness-big-endian-Mixed-WriteHeavy",
+      "os-File-Endianness-baseline-Mixed-WriteHeavy"
+    ]
+  }
+]

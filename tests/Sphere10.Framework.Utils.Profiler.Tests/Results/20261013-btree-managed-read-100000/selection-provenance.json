@@ -1,0 +1,291 @@
+{
+  "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+  "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+  "Cases": [
+    {
+      "CaseId": "tree-ManagedNodes-BTree-order-64-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTree-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 64,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTree-order-128-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTree-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 128,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTree-order-256-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTree-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 256,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTree-order-512-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTree-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 512,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTree-order-1024-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTree-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 1024,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-order-64-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTreePlus-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 64,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-order-128-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTreePlus-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 128,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-order-256-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTreePlus-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 256,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-order-512-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTreePlus-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 512,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-order-1024-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-BTreePlus-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 1024,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-order-64-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-Lookup-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 64,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-order-128-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-Lookup-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 128,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-order-256-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-Lookup-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 256,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-order-512-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-Lookup-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 512,
+        "Workload": "Read"
+      }
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-order-1024-Read-balanced-records-100000-ops-100000",
+      "CopiedSourceCaseId": "tree-ManagedNodes-Lookup-order-64-Mixed-balanced",
+      "SourceRunPlan": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\run-plan.json",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+      "SourceBaseDataset": {
+        "RecordCount": 2048,
+        "OperationCount": 512,
+        "GroupSize": 8,
+        "ShuffledInsertion": true
+      },
+      "Changes": {
+        "Storage": "ManagedNodes",
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "Order": 1024,
+        "Workload": "Read"
+      }
+    }
+  ]
+}

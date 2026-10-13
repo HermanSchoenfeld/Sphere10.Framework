@@ -1,0 +1,29 @@
+[
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity",
+    "WinnerId": "tree-FilePaged-BTree-balanced-current-core-order-128",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-balanced-current-core-order-128",
+      "tree-FilePaged-BTree-balanced-current-core-order-256",
+      "tree-FilePaged-BTree-balanced-current-core-order-64"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity",
+    "WinnerId": "tree-FilePaged-BTree-read-heavy-current-core-order-128",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-read-heavy-current-core-order-128",
+      "tree-FilePaged-BTree-read-heavy-current-core-order-256",
+      "tree-FilePaged-BTree-read-heavy-current-core-order-64"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity",
+    "WinnerId": "tree-FilePaged-BTree-write-heavy-current-core-order-128",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-write-heavy-current-core-order-128",
+      "tree-FilePaged-BTree-write-heavy-current-core-order-256",
+      "tree-FilePaged-BTree-write-heavy-current-core-order-64"
+    ]
+  }
+]

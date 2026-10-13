@@ -1,0 +1,184 @@
+{
+  "Cases": [
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-boundary-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 2048,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-boundary-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 4096,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-boundary-order-8192",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 8192,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-boundary-order-8193",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 8193,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-boundary-order-16384",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 16384,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-read-heavy-boundary-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-read-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 2048,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-read-heavy-boundary-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-read-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 4096,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-read-heavy-boundary-order-8192",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-read-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 8192,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-read-heavy-boundary-order-8193",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-read-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 8193,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-read-heavy-boundary-order-16384",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-read-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 16384,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-write-heavy-boundary-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-write-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 2048,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-write-heavy-boundary-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-write-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 4096,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-write-heavy-boundary-order-8192",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-write-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 8192,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-write-heavy-boundary-order-8193",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-write-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 8193,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-write-heavy-boundary-order-16384",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-write-heavy-upper-order-2048",
+      "SourceOrder": 2048,
+      "AppliedOrder": 16384,
+      "Dataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "Interpretation": "8193canhold8192entriesinoneleaf; diagnostic boundary probe not a general optimum. Requires coordinated profiler max-order rebuild; Core algorithm/defaults unchanged."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "Profile": "Digest32-legacy64-order-64",
+  "RunId": "2c58e42226e24542961068e55bb8185c",
+  "Storage": "OSMemoryMapped",
+  "Family": "Lookup",
+  "KeyShape": "Digest32",
+  "Order": 64,
+  "MaximumLeafEntries": 63,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 36,
+  "NodeRecordBytes": 3353,
+  "LogicalTreeBytes": 234742,
+  "ProvisionedMappedCapacity": 754457,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 754457,
+  "Geometry": {
+    "Height": 3,
+    "ActiveNodes": 70,
+    "TotalLeaves": 67,
+    "LeafEntries": 3000,
+    "MeanLeafOccupancy": 0.7107320540156361,
+    "PhysicalSlots": 70
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

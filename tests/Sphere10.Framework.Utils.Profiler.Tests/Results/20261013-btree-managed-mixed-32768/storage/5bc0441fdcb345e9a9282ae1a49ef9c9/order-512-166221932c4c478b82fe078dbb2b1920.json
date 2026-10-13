@@ -1,0 +1,20 @@
+{
+  "Profile": "order-512",
+  "RunId": "5bc0441fdcb345e9a9282ae1a49ef9c9",
+  "Storage": "ManagedNodes",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 512,
+  "MaximumLeafEntries": 511,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 32768,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

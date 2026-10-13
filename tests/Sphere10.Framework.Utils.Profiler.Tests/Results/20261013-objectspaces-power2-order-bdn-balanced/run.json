@@ -1,0 +1,133 @@
+{
+  "StartedAtUtc": "2026-10-13T00:00:35.3747734Z",
+  "Machine": "WS-HERMAN",
+  "OperatingSystem": "Microsoft Windows 10.0.19045",
+  "Runtime": ".NET 10.0.12",
+  "Architecture": "X64",
+  "LogicalProcessorCount": 20,
+  "FrameworkVersion": "3.1.3.0",
+  "ProfilerVersion": "3.1.3.0",
+  "BenchmarkArguments": [
+    "--filter",
+    "*MixedReadWriteAndPersist*",
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ],
+  "Settings": {
+    "RecordCount": 1024,
+    "RunId": "6fc7ee0ea71e428aa4bc9fcbb8e8df17",
+    "PayloadBytes": 128,
+    "OperationCount": 200,
+    "ShuffledInsertion": true,
+    "LookupPattern": "Shuffled",
+    "HotSetPercent": 10,
+    "PayloadPattern": "Fixed",
+    "CategoryCount": 1024,
+    "HotCategoryPercent": 0,
+    "WorkloadMix": "Balanced",
+    "MixedReadPercentage": 50,
+    "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-power2-order-bdn-balanced",
+    "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+    "Trace": false,
+    "Profiles": [
+      {
+        "Name": "memory-default-layout-order-128",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "Memory",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 128,
+          "ClusterSize": 1024,
+          "AverageRecordSizeBytes": 1024,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "CacheClusterHeaders, IntegrityChecks",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "memory-default-layout-order-256",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "Memory",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 256,
+          "ClusterSize": 1024,
+          "AverageRecordSizeBytes": 1024,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "CacheClusterHeaders, IntegrityChecks",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "file-default-layout-order-128",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "File",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 128,
+          "ClusterSize": 4096,
+          "AverageRecordSizeBytes": 256,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "Default",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "file-default-layout-order-256",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "File",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 256,
+          "ClusterSize": 4096,
+          "AverageRecordSizeBytes": 256,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "Default",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+      }
+    ]
+  },
+  "MeasurementUnit": "One benchmark invocation is a batch; lookup/mutation count is OperationCount, insert/scan count is RecordCount, reopen/commit/rollback count is one.",
+  "Caveats": [
+    "First-touch means a fresh ObjectSpace identity tracker and file page cache; the operating-system disk cache is not flushed.",
+    "Memory flush and file commit have different durability guarantees; compare storage backends separately.",
+    "Page cache budget excludes retained object instances and other allocations.",
+    "Rankings are descriptive per-workload means; sample uncertainty and memory/storage/safety constraints must be considered.",
+    "Trace jobs diagnose hotspots separately from timing ranks; garbage-collection traits are excluded from this lab."
+  ]
+}

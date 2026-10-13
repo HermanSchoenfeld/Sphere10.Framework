@@ -1,0 +1,27 @@
+{
+  "Profile": "order-16",
+  "RunId": "8d9ca9b43b6842b0a4b1ba5d9938fab9",
+  "Storage": "OSMemoryMapped",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 16,
+  "MaximumLeafEntries": 15,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 409,
+  "LogicalTreeBytes": 89194,
+  "ProvisionedMappedCapacity": 252385,
+  "EntryCount": 2048,
+  "PhysicalStorageBytes": 252385,
+  "Geometry": {
+    "Height": 4,
+    "ActiveNodes": 218,
+    "TotalLeaves": 197,
+    "LeafEntries": 2048,
+    "MeanLeafOccupancy": 0.6930626057529611,
+    "PhysicalSlots": 218
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

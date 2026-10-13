@@ -1,0 +1,565 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 2,
+  "SampleCount": 5,
+  "RandomSeed": 713,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "tree-ManagedNodes-BTree-order-64-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "a76ce04118ea43dd9c86f22e1f250c1d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-64",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1553
+          }
+        ]
+      },
+      "Profile": "order-64",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTree-order-128-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ad44f1db0e384cfe8bfb95038b4d6b0b",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-128",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "order-128",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTree-order-256-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "99e487a2db3242249dbd3a000dc8b0cd",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTree-order-512-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "fa2fe16344d4441aa8627277dd8936e4",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12305
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTree-order-1024-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "0d3beb56cbfa46bab3a2a6dbf91e5ab7",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24593
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTreePlus-order-64-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "553b1c3c426649f9885094c03e5d7b49",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-64",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1561
+          }
+        ]
+      },
+      "Profile": "order-64",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTreePlus-order-128-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ea7dae166edc41b6b31b4a364bc1827f",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-128",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "order-128",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTreePlus-order-256-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "9da36aadb1404609b57f24ae4faee482",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTreePlus-order-512-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "eabd486b71d74518af0e652b39a9c644",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-BTreePlus-order-1024-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ccb77c19a98a4bf791b9120f9e53603d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-Lookup-order-64-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "13702d69b8c941c9854bfc4aa107680e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-64",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1561
+          }
+        ]
+      },
+      "Profile": "order-64",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-Lookup-order-128-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "c5de40d3eea44a549283990987e716a5",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-128",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "order-128",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-Lookup-order-256-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "0c0a8a6c8674473c8718b21a3b84448e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-Lookup-order-512-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "effa5073c4784765b4fdf1a5ff9e22e8",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-ManagedNodes-Lookup-order-1024-Read-balanced-records-100000-ops-100000",
+      "Domain": "btrees",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 100000,
+        "OperationCount": 100000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "098d04b7f84d4f05a75a82772adbd0b4",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "n/a",
+      "Operations": 100000,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-100000/ops-100000/group-8/shuffled-True"
+    }
+  ]
+}

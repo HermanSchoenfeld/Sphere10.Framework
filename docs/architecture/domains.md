@@ -30,7 +30,7 @@ Core utilities usable across any .NET application (desktop, web, mobile, server,
 | **Memory** | Buffer operations, memory allocation, unit conversion | Tools.Memory |
 | **Networking** | URL parsing, MIME types, socket utilities, P2P abstractions | Tools.Network |
 | **Objects** | Clone, compare, merge, introspection tools | Tools.Objects |
-| **ObjectSpaces** | Stream-mapped persistent collections with merkle tree tracking | Tools.ObjectSpace |
+| **ObjectSpaces** | Typed dimensions, tracked identity, indexes and transactional file storage | ObjectSpaceBuilder |
 | **Serialization** | Object serialization across binary, JSON, XML formats | Tools.Serialization |
 | **Streams** | Bit streams, blocking streams, bounded streams, stream pipelines | Tools.Streams |
 | **Text** | String parsers, inflectors, regex builders, HTML utilities | Tools.Text |
@@ -69,7 +69,7 @@ Multi-database abstraction layer with support for SQL Server, SQLite, Firebird, 
 | **Firebird Provider** | Firebird database-specific features | FirebirdDAC |
 | **NHibernate Provider** | NHibernate ORM integration layer | Tools.NHibernate |
 | **CSV Support** | CSV file reading/writing with type conversion | Tools.CSV |
-| **Object Spaces** | Stream-mapped persistent collections with auto-tracking | Tools.ObjectSpace |
+| **Object Spaces** | Typed object storage with explicit save or dirty-flag autosave | ObjectSpaceBuilder |
 
 ### Presentation Tier Domains
 
@@ -145,7 +145,7 @@ Consensus Tier (Sphere10.Framework.Consensus)
 | **Caching** | System.Cache domain | Tools.Cache |
 | **Configuration** | Application.Configuration domain | Tools.Config / SettingsObject |
 | **Dependency Injection** | Service registration and application scopes | Microsoft.Extensions.DependencyInjection |
-| **Persistence** | Data.ObjectSpaces domain | Tools.ObjectSpace |
+| **Persistence** | Core Sphere10.Framework.ObjectSpaces namespace | ObjectSpaceBuilder |
 | **Cryptography** | System.Cryptography domain | Tools.Crypto |
 
 ---

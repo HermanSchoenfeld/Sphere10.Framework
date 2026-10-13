@@ -1,0 +1,98 @@
+[
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-Memory-combined-candidate-Mixed-Balanced-transfer-variable-128-hot60",
+    "IndistinguishableIds": [
+      "os-Memory-combined-candidate-Mixed-Balanced-transfer-variable-128-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-Memory-combined-candidate-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "IndistinguishableIds": [
+      "os-Memory-combined-candidate-Mixed-ReadHeavy-transfer-variable-128-hot60",
+      "os-Memory-order-only-Mixed-ReadHeavy-transfer-variable-128-hot60",
+      "os-Memory-baseline-64-Mixed-ReadHeavy-transfer-variable-128-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-Memory-baseline-64-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "IndistinguishableIds": [
+      "os-Memory-baseline-64-Mixed-WriteHeavy-transfer-variable-128-hot60",
+      "os-Memory-order-only-Mixed-WriteHeavy-transfer-variable-128-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-File-combined-candidate-Mixed-Balanced-transfer-variable-128-hot60",
+    "IndistinguishableIds": [
+      "os-File-combined-candidate-Mixed-Balanced-transfer-variable-128-hot60",
+      "os-File-order-only-Mixed-Balanced-transfer-variable-128-hot60",
+      "os-File-baseline-64-Mixed-Balanced-transfer-variable-128-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-File-baseline-64-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "IndistinguishableIds": [
+      "os-File-baseline-64-Mixed-ReadHeavy-transfer-variable-128-hot60",
+      "os-File-order-only-Mixed-ReadHeavy-transfer-variable-128-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-File-order-only-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "IndistinguishableIds": [
+      "os-File-order-only-Mixed-WriteHeavy-transfer-variable-128-hot60",
+      "os-File-combined-candidate-Mixed-WriteHeavy-transfer-variable-128-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-1024-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-Memory-combined-candidate-Mixed-Balanced-transfer-variable-1024-hot60",
+    "IndistinguishableIds": [
+      "os-Memory-combined-candidate-Mixed-Balanced-transfer-variable-1024-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-1024-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-Memory-combined-candidate-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "IndistinguishableIds": [
+      "os-Memory-combined-candidate-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+      "os-Memory-baseline-64-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+      "os-Memory-order-only-Mixed-ReadHeavy-transfer-variable-1024-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-1024-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-Memory-order-only-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "IndistinguishableIds": [
+      "os-Memory-order-only-Mixed-WriteHeavy-transfer-variable-1024-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-1024-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-File-order-only-Mixed-Balanced-transfer-variable-1024-hot60",
+    "IndistinguishableIds": [
+      "os-File-order-only-Mixed-Balanced-transfer-variable-1024-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-1024-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-File-baseline-64-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "IndistinguishableIds": [
+      "os-File-baseline-64-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+      "os-File-order-only-Mixed-ReadHeavy-transfer-variable-1024-hot60"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-1024-Variable/categories-16-60/lookup-HotSet-10/shuffled-True/factor-DatasetTransfer",
+    "WinnerId": "os-File-order-only-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "IndistinguishableIds": [
+      "os-File-order-only-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+      "os-File-combined-candidate-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+      "os-File-baseline-64-Mixed-WriteHeavy-transfer-variable-1024-hot60"
+    ]
+  }
+]

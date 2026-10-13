@@ -1,0 +1,101 @@
+{
+  "FormatVersion": 1,
+  "CapturedAtUtc": "2026-10-12T23:54:13.2444603Z",
+  "CapturedAfterRun": true,
+  "CapturedAfterWorkersExited": true,
+  "Origin": "capturedafterrunfromretainedworkerbuild",
+  "CaptureDetail": "Original console Execute paths cross-checked with generated build OutDir, captured after domain exit before subsequent folder reuse.",
+  "OriginalConsolePath": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-post-default-bdn-balanced\\console.log",
+  "OriginalConsoleSha256": "83E8E392E29A7E5AB83AA5F750A3B21C5BD53AB93A324AC0A4497D126C7A1BCD",
+  "ArchiveRoot": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-post-default-confirmation\\worker-archives\\12834731818e4e63ad4916382ff9fa6c",
+  "ArchiveScope": "Local ignored BenchmarkDotNet.Artifacts only; DLL archives are never force-added or required on a fresh clone.",
+  "Workers": [
+    {
+      "Directory": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+      "OriginalConsoleCommands": [
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 648 640 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"file-historical-baseline-64\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 0 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 5704 3268 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"file-historical-baseline-64\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 0 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 5716 3256 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"file-selected-defaults-169\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 1 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 3280 1384 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"file-selected-defaults-169\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 1 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 1280 7408 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"memory-historical-baseline-64\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 2 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 3544 19460 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"memory-historical-baseline-64\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 2 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 5704 8912 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"memory-selected-defaults-169\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 3 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 19212 7432 --benchmarkName \"Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks.MixedReadWriteAndPersist(Profile: \\\"memory-selected-defaults-169\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 3 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0"
+      ],
+      "Executions": 8,
+      "Assemblies": [
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+          "Sha256": "B3758EA289B238A165348BD47895A684DB6F26E40605B5EA6E4AFBF82CDE504C",
+          "Length": 2054656,
+          "LastWriteTimeUtc": "2026-10-12T23:52:21.1621164Z",
+          "ModuleVersionId": "4bd1626c-2084-4a2a-b876-b1b43558c31f",
+          "AssemblyVersion": "3.1.3.0",
+          "FileVersion": "3.1.3.74",
+          "InformationalVersion": "3.1.3.74",
+          "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version.",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-post-default-confirmation\\worker-archives\\12834731818e4e63ad4916382ff9fa6c\\worker-c18b21ef18f944c7880a0a94f55a44a1\\Sphere10.Framework.dll",
+          "ArchivedSha256": "B3758EA289B238A165348BD47895A684DB6F26E40605B5EA6E4AFBF82CDE504C"
+        },
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+          "Sha256": "331D50FDFAF8DEF47E0CA5319AD2AEB680B919BB102DC488678F0BA9CEEB5D6C",
+          "Length": 207360,
+          "LastWriteTimeUtc": "2026-10-12T23:52:23.0883288Z",
+          "ModuleVersionId": "89a407b8-9a90-4946-a3ad-524cb1bce2dd",
+          "AssemblyVersion": "3.1.3.0",
+          "FileVersion": "3.1.3.74",
+          "InformationalVersion": "3.1.3.74",
+          "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version.",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-post-default-confirmation\\worker-archives\\12834731818e4e63ad4916382ff9fa6c\\worker-c18b21ef18f944c7880a0a94f55a44a1\\Sphere10.Framework.Utils.Profiler.dll",
+          "ArchivedSha256": "331D50FDFAF8DEF47E0CA5319AD2AEB680B919BB102DC488678F0BA9CEEB5D6C"
+        },
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1.dll",
+          "Sha256": "A91504CD67CA225A38AC12370605DE73B9FADA4247BE4D519910A7DCF070FD9D",
+          "Length": 28672,
+          "LastWriteTimeUtc": "2026-10-12T23:52:24.7112405Z",
+          "ModuleVersionId": "91b2c7ab-cc40-46bd-bab8-8b21090b7397",
+          "AssemblyVersion": "3.1.3.0",
+          "FileVersion": "3.1.3.0",
+          "InformationalVersion": "3.1.3.0",
+          "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version.",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-post-default-confirmation\\worker-archives\\12834731818e4e63ad4916382ff9fa6c\\worker-c18b21ef18f944c7880a0a94f55a44a1\\Sphere10.Framework.Utils.Profiler-1.dll",
+          "ArchivedSha256": "A91504CD67CA225A38AC12370605DE73B9FADA4247BE4D519910A7DCF070FD9D"
+        }
+      ],
+      "ArchiveDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-post-default-confirmation\\worker-archives\\12834731818e4e63ad4916382ff9fa6c\\worker-c18b21ef18f944c7880a0a94f55a44a1",
+      "GeneratedProjectFiles": [
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\BenchmarkDotNet.Autogenerated.csproj",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-post-default-confirmation\\worker-archives\\12834731818e4e63ad4916382ff9fa6c\\worker-c18b21ef18f944c7880a0a94f55a44a1\\BenchmarkDotNet.Autogenerated.csproj",
+          "Length": 2594,
+          "Sha256": "5CE93BDBA37B8EFB8601A3AE4149EF5BC7C5D4841CA5CF7616976B506B0FC937",
+          "ArchivedSha256": "5CE93BDBA37B8EFB8601A3AE4149EF5BC7C5D4841CA5CF7616976B506B0FC937",
+          "LastWriteTimeUtc": "2026-10-12T23:52:13.6600833Z"
+        },
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\Sphere10.Framework.Utils.Profiler-1.notcs",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-post-default-confirmation\\worker-archives\\12834731818e4e63ad4916382ff9fa6c\\worker-c18b21ef18f944c7880a0a94f55a44a1\\Sphere10.Framework.Utils.Profiler-1.notcs",
+          "Length": 50839,
+          "Sha256": "23C762D38F96BD050D4B21CCE585D40B2F67BEDB9F89F5779617CFF4ED0F6734",
+          "ArchivedSha256": "23C762D38F96BD050D4B21CCE585D40B2F67BEDB9F89F5779617CFF4ED0F6734",
+          "LastWriteTimeUtc": "2026-10-12T23:52:12.8069263Z"
+        }
+      ],
+      "MatchingOriginalBuildCommands": [
+        "// start dotnet  build -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath=\"D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1/\" /p:OutDir=\"D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0/\" /p:OutputPath=\"D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0/\" /p:PublishDir=\"D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\publish/\" --output \"D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0/\" in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1"
+      ],
+      "ConsoleExecutionLineNumbers": [
+        21,
+        66,
+        122,
+        167,
+        223,
+        268,
+        324,
+        369
+      ]
+    }
+  ]
+}

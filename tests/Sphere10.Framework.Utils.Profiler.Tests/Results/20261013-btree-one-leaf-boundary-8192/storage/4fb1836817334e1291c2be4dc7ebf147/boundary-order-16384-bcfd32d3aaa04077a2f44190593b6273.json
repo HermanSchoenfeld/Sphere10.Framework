@@ -1,0 +1,27 @@
+{
+  "Profile": "boundary-order-16384",
+  "RunId": "4fb1836817334e1291c2be4dc7ebf147",
+  "Storage": "FileStream",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 16384,
+  "MaximumLeafEntries": 16383,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 393241,
+  "LogicalTreeBytes": 393273,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 393273,
+  "Geometry": {
+    "Height": 1,
+    "ActiveNodes": 1,
+    "TotalLeaves": 1,
+    "LeafEntries": 8192,
+    "MeanLeafOccupancy": 0.5000305194408838,
+    "PhysicalSlots": 1
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": 4096
+}

@@ -1,0 +1,313 @@
+# Parameter study: measured screening candidates
+
+Means and approximate 95% Student-t intervals are per reset batch. Intervals assume independent samples; rounds share one process, so confirmation is required.
+Candidates with overlapping intervals are not resolved winners. These results apply only to the retained dataset, mix, capabilities, disk and host.
+Allocation is owner-thread managed allocation, not resident or peak memory. No outliers were removed. File completion does not establish equivalent power-loss durability.
+
+Potential temporal drift is flagged when the medians of the first and last measured halves differ by more than 1.5 times. A flagged mean remains a provisional screening candidate; confirm it after sufficient warmup.
+
+## btrees/FileStream/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 2.0268 | 1.3641 | 2.5109 | 3 | lowest measured mean |
+| baseline-default | 2.2957 | 0.1205 | 2.4735 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 1.2979 | 0.9490 | 1.9691 | 3 | lowest measured mean |
+| baseline-default | 1.4570 | 0.2384 | 1.9823 | 3 | interval overlaps fastest |
+| refined-selected-buffer | 1.5225 | 0.0493 | 1.9691 | 3 | interval overlaps fastest |
+| baseline-selected-buffer | 2.0778 | 0.1347 | 1.9823 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| baseline-default | 2.5310 | 0.2854 | 3.0512 | 3 | lowest measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 5.2807 | 2.8218 | 7.1776 | 3 | lowest measured mean |
+| refined-selected-buffer | 5.5613 | 2.2131 | 7.1797 | 3 | interval overlaps fastest |
+| baseline-default | 10.4265 | 0.2529 | 5.0918 | 3 | slower measured mean |
+| baseline-selected-buffer | 11.5733 | 0.4965 | 5.0918 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 2.0546 | 0.0880 | 2.3763 | 3 | lowest measured mean |
+| refined-selected-buffer | 2.0707 | 0.0307 | 2.3763 | 3 | interval overlaps fastest |
+| baseline-default | 2.8709 | 0.1572 | 2.2395 | 3 | slower measured mean |
+| baseline-selected-buffer | 3.8237 | 0.4061 | 2.2395 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-selected-buffer | 7.4809 | 1.2171 | 19.6686 | 3 | lowest measured mean |
+| refined-default | 7.8052 | 4.8023 | 19.6742 | 3 | interval overlaps fastest |
+| baseline-default | 17.8740 | 2.1948 | 7.9476 | 3 | slower measured mean |
+| baseline-selected-buffer | 20.5141 | 1.4723 | 7.9476 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 53.2893 | 9.5565 | 57.5287 | 3 | lowest measured mean |
+| refined-selected-buffer | 58.5533 | 5.0138 | 57.5287 | 3 | interval overlaps fastest |
+| baseline-default | 101.6118 | 4.7639 | 57.1698 | 3 | slower measured mean |
+| baseline-selected-buffer | 145.1504 | 4.3060 | 57.1698 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 14.3540 | 0.3129 | 16.9451 | 3 | lowest measured mean |
+| refined-selected-buffer | 16.2970 | 8.0939 | 16.9451 | 3 | interval overlaps fastest |
+| baseline-default | 22.1281 | 0.9429 | 16.3428 | 3 | slower measured mean |
+| baseline-selected-buffer | 32.8109 | 8.6691 | 16.3428 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 86.7405 | 0.6822 | 94.3089 | 3 | lowest measured mean |
+| refined-selected-buffer | 98.7872 | 11.1976 | 94.3089 | 3 | slower measured mean |
+| baseline-default | 171.9062 | 4.3280 | 93.7045 | 3 | slower measured mean |
+| baseline-selected-buffer | 248.4436 | 8.2184 | 93.7045 | 3 | slower measured mean |
+
+## btrees/FilePaged/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-combined | 7.9202 | 0.7943 | 21.9451 | 3 | lowest measured mean |
+| baseline-default | 8.4413 | 1.3332 | 23.1862 | 3 | interval overlaps fastest |
+| baseline-combined | 8.5873 | 1.0809 | 23.1838 | 3 | interval overlaps fastest |
+| refined-core-paging | 8.6339 | 3.9826 | 21.9453 | 3 | interval overlaps fastest |
+| baseline-selected-page | 8.9427 | 3.8603 | 23.1838 | 3 | interval overlaps fastest |
+| baseline-selected-cache | 9.0221 | 3.0580 | 23.1859 | 3 | interval overlaps fastest |
+| refined-default | 9.1395 | 5.3169 | 21.9371 | 3 | interval overlaps fastest |
+| current-framework-control | 9.9089 | 5.6807 | 23.1836 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-core-paging | 6.9369 | 1.2932 | 16.7319 | 3 | lowest measured mean |
+| refined-combined | 7.1477 | 1.9332 | 16.7834 | 3 | interval overlaps fastest |
+| current-framework-control | 7.2844 | 0.8360 | 18.4923 | 3 | interval overlaps fastest |
+| baseline-default | 7.3045 | 1.8907 | 17.4756 | 3 | interval overlaps fastest |
+| baseline-combined | 7.3561 | 0.3537 | 17.6672 | 3 | interval overlaps fastest |
+| refined-default | 7.3996 | 4.1410 | 16.7346 | 3 | interval overlaps fastest |
+| baseline-selected-page | 7.7818 | 1.3644 | 17.6668 | 3 | interval overlaps fastest |
+| baseline-selected-cache | 7.9520 | 5.7927 | 17.4756 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-core-paging | 8.9066 | 0.2775 | 24.9249 | 3 | lowest measured mean |
+| baseline-selected-page | 9.1088 | 1.4082 | 24.9240 | 3 | interval overlaps fastest |
+| current-framework-control | 10.5930 | 2.8925 | 27.8278 | 3 | interval overlaps fastest |
+| baseline-default | 10.6078 | 5.4951 | 24.9296 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 11.0601 | 1.7589 | 35.5685 | 3 | lowest measured mean |
+| refined-combined | 11.1689 | 3.6848 | 34.5246 | 3 | interval overlaps fastest |
+| refined-core-paging | 12.2728 | 3.7581 | 34.8066 | 3 | interval overlaps fastest |
+| baseline-selected-page | 14.5899 | 0.7297 | 49.9018 | 3 | slower measured mean |
+| baseline-combined | 16.2441 | 3.1059 | 49.9018 | 3 | slower measured mean |
+| baseline-selected-cache | 16.5850 | 2.3897 | 49.8753 | 3 | slower measured mean |
+| baseline-default | 16.7315 | 4.6434 | 49.8753 | 3 | interval overlaps fastest |
+| upper-4096-core-paging | 31.1668 | 23.3481 | 38.2540 | 3 | interval overlaps fastest |
+| current-framework-control | 56.6186 | 15.4961 | 194.4428 | 3 | slower measured mean |
+
+## btrees/FilePaged/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-default | 6.9042 | 0.2178 | 19.2472 | 3 | lowest measured mean |
+| refined-core-paging | 7.7439 | 0.6037 | 19.0743 | 3 | slower measured mean |
+| baseline-selected-page | 7.8408 | 0.4222 | 21.0552 | 3 | slower measured mean |
+| refined-combined | 8.1198 | 4.1152 | 19.0743 | 3 | interval overlaps fastest |
+| upper-4096-core-paging | 8.6755 | 6.2091 | 20.1276 | 3 | interval overlaps fastest |
+| baseline-default | 10.0712 | 5.2401 | 21.0508 | 3 | interval overlaps fastest |
+| current-framework-control | 15.9350 | 2.6503 | 49.6959 | 3 | slower measured mean |
+
+## btrees/FilePaged/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-combined | 13.1231 | 0.7869 | 50.0849 | 3 | lowest measured mean |
+| refined-default | 13.3099 | 1.3689 | 51.9929 | 3 | interval overlaps fastest |
+| refined-core-paging | 16.3210 | 2.7911 | 50.5923 | 3 | interval overlaps fastest |
+| baseline-selected-page | 22.4297 | 1.3243 | 78.7757 | 3 | slower measured mean |
+| baseline-default | 23.4952 | 3.9508 | 78.7447 | 3 | slower measured mean |
+| baseline-selected-cache | 25.1509 | 1.5105 | 78.7447 | 3 | slower measured mean |
+| baseline-combined | 26.8651 | 6.0754 | 78.7757 | 3 | slower measured mean |
+| upper-4096-core-paging | 57.3045 | 28.0421 | 56.4339 | 3 | slower measured mean |
+| current-framework-control | 91.9573 | 11.8789 | 338.9809 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-combined | 91.8725 | 5.1081 | 416.9969 | 3 | lowest measured mean |
+| refined-core-paging | 92.4877 | 3.1689 | 419.4192 | 3 | interval overlaps fastest |
+| refined-default | 95.6792 | 5.4615 | 426.3142 | 3 | interval overlaps fastest |
+| baseline-combined | 135.3064 | 5.1570 | 554.6147 | 3 | slower measured mean |
+| baseline-selected-cache | 136.2329 | 5.1895 | 554.4634 | 3 | slower measured mean |
+| baseline-default | 138.2474 | 6.8138 | 554.4639 | 3 | slower measured mean |
+| baseline-selected-page | 138.3723 | 2.4333 | 554.6152 | 3 | slower measured mean |
+| upper-4096-core-paging | 303.1644 | 48.2793 | 456.1214 | 3 | slower measured mean |
+| current-framework-control | 471.9103 | 9.5042 | 1853.0527 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-core-paging | 32.3577 | 0.5847 | 134.4606 | 3 | lowest measured mean |
+| refined-default | 32.6623 | 0.9563 | 136.4312 | 3 | interval overlaps fastest |
+| refined-combined | 34.8020 | 6.8571 | 134.4598 | 3 | interval overlaps fastest |
+| baseline-selected-page | 40.0909 | 3.7226 | 154.6087 | 3 | slower measured mean |
+| baseline-default | 41.6789 | 5.0395 | 154.5657 | 3 | slower measured mean |
+| upper-4096-core-paging | 82.9867 | 43.4287 | 143.2569 | 3 | slower measured mean |
+| current-framework-control | 99.6385 | 3.4024 | 386.0634 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-core-paging | 147.0428 | 6.0757 | 678.0978 | 3 | lowest measured mean |
+| refined-combined | 148.4000 | 11.0722 | 678.0978 | 3 | interval overlaps fastest |
+| refined-default | 150.1520 | 9.1981 | 688.6816 | 3 | interval overlaps fastest |
+| baseline-selected-page | 224.7230 | 8.7784 | 912.2561 | 3 | slower measured mean |
+| baseline-combined | 225.2120 | 2.3088 | 912.2558 | 3 | slower measured mean |
+| baseline-default | 228.5784 | 14.4798 | 911.8661 | 3 | slower measured mean |
+| baseline-selected-cache | 242.7107 | 79.3163 | 911.8663 | 3 | slower measured mean |
+| upper-4096-core-paging | 637.3721 | 131.5615 | 739.2546 | 3 | slower measured mean |
+| current-framework-control | 796.2757 | 4.2258 | 3140.7335 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-combined | 10.6929 | 2.2263 | 20.8600 | 3 | lowest measured mean |
+| baseline-combined | 10.8988 | 0.8617 | 23.2099 | 3 | interval overlaps fastest |
+| refined-core-paging | 10.9271 | 0.6925 | 20.8827 | 3 | interval overlaps fastest |
+| baseline-selected-page | 11.2340 | 1.0559 | 23.2095 | 3 | interval overlaps fastest |
+| current-framework-control | 11.5081 | 0.7334 | 23.2328 | 3 | interval overlaps fastest |
+| refined-default | 13.3474 | 1.4377 | 20.9517 | 3 | interval overlaps fastest |
+| baseline-default | 14.1242 | 1.8105 | 23.3015 | 3 | interval overlaps fastest |
+| baseline-selected-cache | 19.3446 | 1.1750 | 24.6198 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| baseline-selected-page | 9.2058 | 0.7084 | 17.0637 | 3 | lowest measured mean |
+| refined-core-paging | 10.2196 | 4.3881 | 16.7765 | 3 | interval overlaps fastest |
+| current-framework-control | 10.6393 | 1.1841 | 18.5413 | 3 | interval overlaps fastest |
+| baseline-selected-cache | 11.2603 | 0.3825 | 18.0436 | 3 | slower measured mean |
+| refined-default | 11.4648 | 1.9313 | 16.8421 | 3 | interval overlaps fastest |
+| baseline-default | 12.8865 | 2.5419 | 17.1289 | 3 | slower measured mean |
+| baseline-combined | 14.9601 | 14.2428 | 22.1241 | 3 | interval overlaps fastest |
+| refined-combined | 19.0655 | 19.0879 | 19.3081 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| baseline-combined | 13.3360 | 3.3032 | 24.9736 | 3 | lowest measured mean |
+| current-framework-control | 13.3769 | 0.9791 | 27.8768 | 3 | interval overlaps fastest |
+| refined-combined | 13.9878 | 3.8277 | 27.8770 | 3 | interval overlaps fastest |
+| baseline-selected-page | 14.4242 | 5.4598 | 24.9737 | 3 | interval overlaps fastest |
+| baseline-default | 15.3759 | 1.0804 | 25.0453 | 3 | interval overlaps fastest |
+| baseline-selected-cache | 16.4235 | 6.0743 | 25.0455 | 3 | interval overlaps fastest |
+| refined-default | 18.4921 | 11.6701 | 27.9451 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-combined | 14.8883 | 5.0068 | 34.8553 | 3 | lowest measured mean |
+| refined-core-paging | 15.6967 | 3.6320 | 34.8556 | 3 | interval overlaps fastest |
+| refined-default | 19.0694 | 4.4582 | 35.7056 | 3 | interval overlaps fastest |
+| baseline-selected-page | 23.0449 | 5.6282 | 49.9464 | 3 | interval overlaps fastest |
+| baseline-combined | 23.8263 | 4.3233 | 49.9463 | 3 | interval overlaps fastest |
+| baseline-default | 24.6696 | 9.9339 | 49.9905 | 3 | interval overlaps fastest |
+| baseline-selected-cache | 25.2695 | 5.3378 | 49.9910 | 3 | slower measured mean |
+| upper-4096-core-paging | 35.4082 | 6.7232 | 38.3049 | 3 | slower measured mean |
+| current-framework-control | 67.2761 | 5.7514 | 194.4915 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-combined | 9.8368 | 1.6184 | 19.0438 | 3 | lowest measured mean |
+| refined-core-paging | 11.3435 | 4.4746 | 19.1228 | 3 | interval overlaps fastest |
+| baseline-selected-page | 11.7289 | 4.0549 | 21.0811 | 3 | interval overlaps fastest |
+| baseline-default | 14.2790 | 1.4098 | 21.1660 | 3 | slower measured mean |
+| upper-4096-core-paging | 15.0623 | 16.2428 | 20.1777 | 3 | interval overlaps fastest |
+| refined-default | 15.5177 | 6.2944 | 19.3803 | 3 | interval overlaps fastest |
+| current-framework-control | 22.3644 | 4.5578 | 49.7449 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-combined | 18.4557 | 3.8131 | 50.6410 | 3 | lowest measured mean |
+| refined-core-paging | 18.6430 | 7.7007 | 50.6411 | 3 | interval overlaps fastest |
+| refined-default | 21.0401 | 1.7440 | 52.1302 | 3 | interval overlaps fastest |
+| baseline-selected-page | 28.0821 | 0.9716 | 78.8203 | 3 | slower measured mean |
+| baseline-default | 33.5442 | 8.5458 | 78.8599 | 3 | slower measured mean |
+| upper-4096-core-paging | 81.6911 | 14.4690 | 56.4859 | 3 | slower measured mean |
+| current-framework-control | 118.5367 | 14.6425 | 339.0299 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-core-paging | 104.6082 | 3.2590 | 419.4680 | 3 | lowest measured mean |
+| refined-combined | 105.4743 | 4.2326 | 417.0239 | 3 | interval overlaps fastest |
+| refined-default | 112.2555 | 5.3272 | 426.4618 | 3 | interval overlaps fastest |
+| baseline-selected-page | 158.8390 | 3.2028 | 554.6413 | 3 | slower measured mean |
+| baseline-default | 162.6801 | 9.4612 | 554.5792 | 3 | slower measured mean |
+| upper-4096-core-paging | 355.7143 | 64.0972 | 456.1742 | 3 | slower measured mean |
+| current-framework-control | 539.8636 | 6.9015 | 1853.1017 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-core-paging | 40.5226 | 6.3839 | 134.5091 | 3 | lowest measured mean |
+| refined-combined | 43.3582 | 1.9369 | 136.5683 | 3 | interval overlaps fastest |
+| refined-default | 44.6323 | 5.3479 | 136.5787 | 3 | interval overlaps fastest |
+| baseline-selected-cache | 50.5452 | 5.0134 | 154.6814 | 3 | interval overlaps fastest |
+| baseline-default | 54.2400 | 3.2628 | 154.6809 | 3 | slower measured mean |
+| upper-4096-core-paging | 87.0974 | 24.8114 | 143.3116 | 3 | slower measured mean |
+| current-framework-control | 118.2927 | 10.8673 | 386.1128 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| refined-core-paging | 167.4278 | 11.0715 | 678.1466 | 3 | lowest measured mean |
+| refined-default | 172.3221 | 5.5211 | 688.8395 | 3 | interval overlaps fastest |
+| baseline-selected-page | 252.4400 | 0.8255 | 912.3047 | 3 | slower measured mean |
+| baseline-default | 265.0137 | 12.4674 | 911.9818 | 3 | slower measured mean |
+| baseline-selected-cache | 582.5598 | 12.8117 | 1232.9057 | 3 | slower measured mean |
+| upper-4096-core-paging | 630.4479 | 143.2794 | 739.3186 | 3 | slower measured mean |
+| refined-combined | 747.7280 | 32.0689 | 1589.7985 | 3 | slower measured mean |
+| current-framework-control | 952.2176 | 64.1457 | 3140.7825 | 3 | slower measured mean |
+| baseline-combined | 1015.8612 | 63.7355 | 2257.6874 | 3 | slower measured mean |
+

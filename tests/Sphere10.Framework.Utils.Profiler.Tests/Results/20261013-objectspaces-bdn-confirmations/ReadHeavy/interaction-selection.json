@@ -1,0 +1,62 @@
+[
+  {
+    "Storage": "Memory",
+    "Mix": "ReadHeavy",
+    "LowestInteractionMean": "combined-candidate",
+    "UnresolvedCandidates": [
+      "combined-candidate",
+      "order-only"
+    ],
+    "AllCandidatesConfirmed": [
+      {
+        "CaseId": "os-Memory-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+        "Profile": "combined-candidate",
+        "MeanNanoseconds": 49484928.571428575,
+        "ConfidenceHalfWidth": 2493091.658508414
+      },
+      {
+        "CaseId": "os-Memory-order-only-Mixed-ReadHeavy-interaction-1024",
+        "Profile": "order-only",
+        "MeanNanoseconds": 53681785.71428572,
+        "ConfidenceHalfWidth": 2511092.706629828
+      },
+      {
+        "CaseId": "os-Memory-baseline-64-Mixed-ReadHeavy-interaction-1024",
+        "Profile": "baseline-64",
+        "MeanNanoseconds": 62676214.28571428,
+        "ConfidenceHalfWidth": 3804900.4283392876
+      }
+    ],
+    "Meaning": "Screening candidates and overlapping intervals; BenchmarkDotNet independently confirms all three competing configurations."
+  },
+  {
+    "Storage": "File",
+    "Mix": "ReadHeavy",
+    "LowestInteractionMean": "order-only",
+    "UnresolvedCandidates": [
+      "order-only",
+      "baseline-64"
+    ],
+    "AllCandidatesConfirmed": [
+      {
+        "CaseId": "os-File-order-only-Mixed-ReadHeavy-interaction-1024",
+        "Profile": "order-only",
+        "MeanNanoseconds": 114624014.28571428,
+        "ConfidenceHalfWidth": 9142454.802615633
+      },
+      {
+        "CaseId": "os-File-baseline-64-Mixed-ReadHeavy-interaction-1024",
+        "Profile": "baseline-64",
+        "MeanNanoseconds": 128451585.71428572,
+        "ConfidenceHalfWidth": 6868114.933883357
+      },
+      {
+        "CaseId": "os-File-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+        "Profile": "combined-candidate",
+        "MeanNanoseconds": 141581814.2857143,
+        "ConfidenceHalfWidth": 8031649.144328825
+      }
+    ],
+    "Meaning": "Screening candidates and overlapping intervals; BenchmarkDotNet independently confirms all three competing configurations."
+  }
+]

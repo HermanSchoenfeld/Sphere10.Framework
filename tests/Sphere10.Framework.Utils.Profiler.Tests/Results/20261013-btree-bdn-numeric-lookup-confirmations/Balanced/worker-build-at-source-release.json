@@ -1,0 +1,26 @@
+{
+  "RecordedAtUtc": "2026-10-12T19:44:44.0361746Z",
+  "Origin": "Read-only fixed generated worker identity snapshot at source-freeze release; parent may change source files but no remaining build/test or DLL mutation is authorized.",
+  "OriginalConsoleCommand": "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 15072 15076 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"FilePaged-Lookup-numeric-current-core-2048\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 1 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+  "Directory": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Sha256": "FDFFB995944577D0DB3D0938B5FCBEF5922FB0EEB679C72475EF8B52F1555066",
+      "Length": 2043392,
+      "LastWriteTimeUtc": "2026-10-12T19:39:13.5345526Z"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Sha256": "B5FFDC5486A726F2F2E600FBF2E2D85F266D1772AF65191822F9E9DAD532F85F",
+      "Length": 197632,
+      "LastWriteTimeUtc": "2026-10-12T19:39:15.3899017Z"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1.dll",
+      "Sha256": "1B0EEB579C66D89487C0D6CA30FB05793362114962A27832C662A674A1955A2D",
+      "Length": 28672,
+      "LastWriteTimeUtc": "2026-10-12T19:39:16.9743196Z"
+    }
+  ]
+}

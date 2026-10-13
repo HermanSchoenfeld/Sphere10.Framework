@@ -1,0 +1,79 @@
+{
+  "CapturedAtUtc": "2026-10-12T19:50:29.4252167Z",
+  "CapturedAfterWorkersExited": true,
+  "Origin": "Generated worker paths from original console Execute lines; captured after domain completion before the next phase could reuse their folders.",
+  "Workers": [
+    {
+      "Directory": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+      "OriginalConsoleCommands": [
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 640 632 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"FilePaged-Lookup-numeric-current-core-1024\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 0 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 1652 17888 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"FilePaged-Lookup-numeric-current-core-1024\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 0 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 4156 4160 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"FilePaged-Lookup-numeric-current-core-2048\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 1 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 15072 15076 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"FilePaged-Lookup-numeric-current-core-2048\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 1 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 17844 17848 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"TransactionalFile-Lookup-numeric-current-core-1024\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 2 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 17940 4196 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"TransactionalFile-Lookup-numeric-current-core-1024\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 2 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 19252 19248 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"TransactionalFile-Lookup-numeric-current-core-2048\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 3 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0",
+        "// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 19276 19272 --benchmarkName \"Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \\\"TransactionalFile-Lookup-numeric-current-core-2048\\\")\" --job \"OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5\" --benchmarkId 3 in D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0"
+      ],
+      "Executions": 8,
+      "Assemblies": [
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+          "Sha256": "FDFFB995944577D0DB3D0938B5FCBEF5922FB0EEB679C72475EF8B52F1555066",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced\\worker-build-43ef8845183d465786a43a8b98714375\\Sphere10.Framework.dll",
+          "Length": 2043392,
+          "LastWriteTimeUtc": "2026-10-12T19:39:13.5345526Z",
+          "ModuleVersionId": "d88fe9c8-a79b-4c89-b6e9-121c4e6c3bf2",
+          "ModuleVersionIdUnavailableReason": null,
+          "AssemblyVersion": "3.1.3.0",
+          "FileVersion": "3.1.3.73",
+          "InformationalVersion": "3.1.3.73",
+          "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version."
+        },
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+          "Sha256": "B5FFDC5486A726F2F2E600FBF2E2D85F266D1772AF65191822F9E9DAD532F85F",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced\\worker-build-43ef8845183d465786a43a8b98714375\\Sphere10.Framework.Utils.Profiler.dll",
+          "Length": 197632,
+          "LastWriteTimeUtc": "2026-10-12T19:39:15.3899017Z",
+          "ModuleVersionId": "2a09f049-e629-4bc6-92da-eaeabd4b82bd",
+          "ModuleVersionIdUnavailableReason": null,
+          "AssemblyVersion": "3.1.3.0",
+          "FileVersion": "3.1.3.73",
+          "InformationalVersion": "3.1.3.73",
+          "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version."
+        },
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1.dll",
+          "Sha256": "1B0EEB579C66D89487C0D6CA30FB05793362114962A27832C662A674A1955A2D",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced\\worker-build-43ef8845183d465786a43a8b98714375\\Sphere10.Framework.Utils.Profiler-1.dll",
+          "Length": 28672,
+          "LastWriteTimeUtc": "2026-10-12T19:39:16.9743196Z",
+          "ModuleVersionId": "4022bbb2-d85c-48aa-8a0b-8d66d44531cd",
+          "ModuleVersionIdUnavailableReason": null,
+          "AssemblyVersion": "3.1.3.0",
+          "FileVersion": "3.1.3.0",
+          "InformationalVersion": "3.1.3.0",
+          "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version."
+        }
+      ],
+      "ArchiveDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced\\worker-build-43ef8845183d465786a43a8b98714375",
+      "GeneratedProjectFiles": [
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\BenchmarkDotNet.Autogenerated.csproj",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced\\worker-build-43ef8845183d465786a43a8b98714375\\BenchmarkDotNet.Autogenerated.csproj",
+          "Length": 2594,
+          "Sha256": "5CE93BDBA37B8EFB8601A3AE4149EF5BC7C5D4841CA5CF7616976B506B0FC937",
+          "LastWriteTimeUtc": "2026-10-12T19:39:06.5031379Z"
+        },
+        {
+          "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler-1\\Sphere10.Framework.Utils.Profiler-1.notcs",
+          "ArchivedPath": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced\\worker-build-43ef8845183d465786a43a8b98714375\\Sphere10.Framework.Utils.Profiler-1.notcs",
+          "Length": 47413,
+          "Sha256": "011D7EF046241CEE6904E390DAC5F3D58A8138F67FA9AE1411012061DD65B39F",
+          "LastWriteTimeUtc": "2026-10-12T19:39:06.0231324Z"
+        }
+      ]
+    }
+  ]
+}

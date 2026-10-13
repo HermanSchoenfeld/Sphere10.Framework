@@ -1,0 +1,402 @@
+{
+  "Profiles": [
+    {
+      "Profile": {
+        "Name": "FilePaged-BTreePlus-Digest32-explicit-wide-1024",
+        "Storage": "FilePaged",
+        "Family": "BTreePlus",
+        "KeyShape": "Digest32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "explicit-wide-1024-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-FilePaged-BTreePlus-Digest32-wide-key-1024-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "FilePaged",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    },
+    {
+      "Profile": {
+        "Name": "FilePaged-BTreePlus-Digest32-explicit-wide-2048",
+        "Storage": "FilePaged",
+        "Family": "BTreePlus",
+        "KeyShape": "Digest32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "numeric-order2048-transfer-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-FilePaged-BTreePlus-Digest32-contender-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "FilePaged",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    },
+    {
+      "Profile": {
+        "Name": "FilePaged-Lookup-Digest32-explicit-wide-1024",
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Digest32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "explicit-wide-1024-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-FilePaged-Lookup-Digest32-wide-key-1024-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    },
+    {
+      "Profile": {
+        "Name": "FilePaged-Lookup-Digest32-explicit-wide-2048",
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Digest32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "numeric-order2048-transfer-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-FilePaged-Lookup-Digest32-contender-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    },
+    {
+      "Profile": {
+        "Name": "TransactionalFile-BTreePlus-Digest32-explicit-wide-1024",
+        "Storage": "TransactionalFile",
+        "Family": "BTreePlus",
+        "KeyShape": "Digest32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "explicit-wide-1024-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-TransactionalFile-BTreePlus-Digest32-wide-key-1024-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    },
+    {
+      "Profile": {
+        "Name": "TransactionalFile-BTreePlus-Digest32-explicit-wide-2048",
+        "Storage": "TransactionalFile",
+        "Family": "BTreePlus",
+        "KeyShape": "Digest32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "numeric-order2048-transfer-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-TransactionalFile-BTreePlus-Digest32-contender-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    },
+    {
+      "Profile": {
+        "Name": "TransactionalFile-Lookup-Digest32-explicit-wide-1024",
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Digest32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "explicit-wide-1024-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-TransactionalFile-Lookup-Digest32-wide-key-1024-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    },
+    {
+      "Profile": {
+        "Name": "TransactionalFile-Lookup-Digest32-explicit-wide-2048",
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Digest32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "numeric-order2048-transfer-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000\\results.json",
+          "CaseId": "tree-TransactionalFile-Lookup-Digest32-contender-Mixed",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 3000,
+            "OperationCount": 100,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          }
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Interpretation": "Same width-source dataset and paging; onlyOrder changes within each backend/family pair. Explicit32-byte-key tuning, separate from numeric shared defaults; no serializer-size heuristic."
+    }
+  ],
+  "Protocol": [
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ],
+  "ProposedFields": [
+    "Sphere10FrameworkDefaults.StreamMappedWideKeyBTreePlusOrder",
+    "Sphere10FrameworkDefaults.StreamMappedWideKeyBTreeLookupOrder"
+  ]
+}

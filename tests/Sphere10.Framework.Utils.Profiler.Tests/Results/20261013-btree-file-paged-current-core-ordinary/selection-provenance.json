@@ -1,0 +1,229 @@
+{
+  "Cases": [
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-current-core-order-64",
+      "Profile": {
+        "Name": "current-core-order-64",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-balanced-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-balanced-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-current-core-order-128",
+      "Profile": {
+        "Name": "current-core-order-128",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 128,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-balanced-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-balanced-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-current-core-order-256",
+      "Profile": {
+        "Name": "current-core-order-256",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 256,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-balanced-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-balanced-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-read-heavy-current-core-order-64",
+      "Profile": {
+        "Name": "current-core-order-64",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-read-heavy-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-read-heavy-current-core-order-128",
+      "Profile": {
+        "Name": "current-core-order-128",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 128,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-read-heavy-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-read-heavy-current-core-order-256",
+      "Profile": {
+        "Name": "current-core-order-256",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 256,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-read-heavy-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-write-heavy-current-core-order-64",
+      "Profile": {
+        "Name": "current-core-order-64",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-write-heavy-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-write-heavy-current-core-order-128",
+      "Profile": {
+        "Name": "current-core-order-128",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 128,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-write-heavy-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000"
+        }
+      ]
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-write-heavy-current-core-order-256",
+      "Profile": {
+        "Name": "current-core-order-256",
+        "Storage": "FilePaged",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 256,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Contemporaneous matched64/128/256 ordinary FilePaged cohort verifies shared-stream128 under unchanged current-Core paging; no cross-cohort mean pooling.",
+      "Sources": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-write-heavy-current-framework-control"
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+          "CaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000"
+        }
+      ]
+    }
+  ]
+}

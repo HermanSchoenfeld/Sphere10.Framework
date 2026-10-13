@@ -1,0 +1,31 @@
+{
+  "Profile": "balanced-memory-candidate",
+  "Configuration": {
+    "SchemaProfile": "PayloadOnly",
+    "Storage": "Memory",
+    "IndexProfile": "Full",
+    "IndexBTreeOrder": 169,
+    "ClusterSize": 1024,
+    "AverageRecordSizeBytes": 1024,
+    "PageSize": 262144,
+    "MaxMemory": 16777216,
+    "Policy": "CacheClusterHeaders, IntegrityChecks",
+    "Endianness": "LittleEndian",
+    "Merkleized": false,
+    "HashFunction": "SHA2_256",
+    "AutoSave": false
+  },
+  "RecordCount": 4096,
+  "PayloadBytes": 128,
+  "ShuffledInsertion": true,
+  "LookupPattern": "Shuffled",
+  "HotSetPercent": 10,
+  "PayloadPattern": "Fixed",
+  "CategoryCount": 4096,
+  "HotCategoryPercent": 0,
+  "WorkloadMix": "WriteHeavy",
+  "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle",
+  "BaselineStorageBytes": 4942924,
+  "LongIdentifierNodeBytes": 4073,
+  "Note": "Storage bytes exclude configuration manifests and transient transaction pages; page cache budget excludes tracked object instances."
+}

@@ -1,0 +1,208 @@
+[
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FileStream-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+      "tree-FileStream-BTree-order-256-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FileStream-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FileStream-BTree-order-256-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FileStream-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FileStream-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FileStream-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FileStream-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FileStream-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FileStream-BTreePlus-order-512-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FileStream-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-OSMemoryMapped-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTree-order-64-Mixed-balanced-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTree-order-256-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-OSMemoryMapped-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTree-order-256-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTree-order-64-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-OSMemoryMapped-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTree-order-64-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTree-order-256-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-768-Mixed-balanced-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-512-Mixed-balanced-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-256-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-512-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-1024-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-OSMemoryMapped-BTreePlus-order-512-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-TransactionalFile-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+      "tree-TransactionalFile-BTree-order-64-Mixed-balanced-records-8192-ops-1000",
+      "tree-TransactionalFile-BTree-order-256-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-TransactionalFile-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-TransactionalFile-BTree-order-64-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-TransactionalFile-BTree-order-64-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-order-64-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-TransactionalFile-BTree-order-256-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "tree-TransactionalFile-BTreePlus-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-TransactionalFile-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FilePaged-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+      "tree-FilePaged-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+      "tree-FilePaged-BTree-order-64-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FilePaged-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FilePaged-BTree-order-256-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-FilePaged-BTree-order-256-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-FilePaged-BTree-order-64-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FilePaged-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "tree-FilePaged-BTreePlus-order-768-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FilePaged-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FilePaged-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FilePaged-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-FilePaged-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  }
+]

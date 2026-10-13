@@ -1,0 +1,254 @@
+{
+  "Stage": "Independent BenchmarkDotNet powers-of-two ObjectSpace order comparison",
+  "ExecuteOnlyAfter": "Root owns the exclusive serial execution slot; current final Release code is used with explicit 128/256 profiles before changing the shared ObjectSpace order constant.",
+  "ExpectedMeasuredCases": 4,
+  "ExpectedIndependentWorkers": 8,
+  "ExpectedSamplesPerCase": 20,
+  "Settings": {
+    "RecordCount": 1024,
+    "OperationCount": 200,
+    "PayloadBytes": 128,
+    "PayloadPattern": "Fixed",
+    "CategoryCount": 1024,
+    "HotCategoryPercent": 0,
+    "LookupPattern": "Shuffled",
+    "HotSetPercent": 10,
+    "ShuffledInsertion": true,
+    "WorkloadMix": "Balanced",
+    "Profiles": [
+      {
+        "Name": "memory-default-layout-order-128",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "Memory",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 128,
+          "ClusterSize": 1024,
+          "AverageRecordSizeBytes": 1024,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "CacheClusterHeaders, IntegrityChecks",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "memory-default-layout-order-256",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "Memory",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 256,
+          "ClusterSize": 1024,
+          "AverageRecordSizeBytes": 1024,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "CacheClusterHeaders, IntegrityChecks",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "file-default-layout-order-128",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "File",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 128,
+          "ClusterSize": 4096,
+          "AverageRecordSizeBytes": 256,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "Default",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "file-default-layout-order-256",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "File",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 256,
+          "ClusterSize": 4096,
+          "AverageRecordSizeBytes": 256,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "Default",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+      }
+    ]
+  },
+  "BenchmarkArguments": [
+    "--filter",
+    "*MixedReadWriteAndPersist*",
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ],
+  "EvidenceRelativeDirectory": "tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261013-objectspaces-power2-order-bdn-balanced",
+  "DataRelativeDirectory": "BenchmarkDotNet.Artifacts/study-data",
+  "ProfileFile": "profiles.json",
+  "Provenance": [
+    {
+      "Profile": "memory-default-layout-order-128",
+      "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+      "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "OriginalExactProfile": "memory-selected-defaults-169",
+      "OriginalConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "Memory",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 1024,
+        "AverageRecordSizeBytes": 1024,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "CacheClusterHeaders, IntegrityChecks",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "OnlyChangedConfigurationField": "IndexBTreeOrder",
+      "OriginalOrder": 169,
+      "CandidateOrder": 128,
+      "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+    },
+    {
+      "Profile": "memory-default-layout-order-256",
+      "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+      "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "OriginalExactProfile": "memory-selected-defaults-169",
+      "OriginalConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "Memory",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 1024,
+        "AverageRecordSizeBytes": 1024,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "CacheClusterHeaders, IntegrityChecks",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "OnlyChangedConfigurationField": "IndexBTreeOrder",
+      "OriginalOrder": 169,
+      "CandidateOrder": 256,
+      "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+    },
+    {
+      "Profile": "file-default-layout-order-128",
+      "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+      "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "OriginalExactProfile": "file-selected-defaults-169",
+      "OriginalConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "OnlyChangedConfigurationField": "IndexBTreeOrder",
+      "OriginalOrder": 169,
+      "CandidateOrder": 128,
+      "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+    },
+    {
+      "Profile": "file-default-layout-order-256",
+      "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+      "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "OriginalExactProfile": "file-selected-defaults-169",
+      "OriginalConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "OnlyChangedConfigurationField": "IndexBTreeOrder",
+      "OriginalOrder": 169,
+      "CandidateOrder": 256,
+      "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+    }
+  ],
+  "OriginalRunSha256": "FDED3593F475DA5E026FEFB78C77D0CE9BA56985653BD9411D76ED72403DC839",
+  "OriginalProfileFileSha256": "A1DAAF16DCE875276B8B470E89FC6BC5F90FC0BEB539134F29E0EDCD26BC7027",
+  "Interpretation": [
+    "Only index order differs. Memory retains outer/dimension1024/1024 with header caching plus integrity; File retains4096/256/Default with256KiB pages/16MiB budget.",
+    "This comparison tests the user's new powers-of-two constraint. Historical169 evidence is retained as historical evidence, not overwritten or treated as a current power-of-two candidate.",
+    "A shared ObjectSpace order must account for both backend comparisons and uncertainty; do not infer a universal optimum from either isolated mean."
+  ],
+  "RequiredAttachments": [
+    "profiles.json",
+    "selection.json",
+    "plan.json",
+    "run.json",
+    "command-arguments.json",
+    "console.log",
+    "execution-host.json",
+    "execution-result.json",
+    "worker-binary-fingerprints.json",
+    "execution-validation.json",
+    "results/*-report-full.json",
+    "storage/*"
+  ],
+  "WorkerFingerprintCapture": {
+    "Origin": "capturedafterrunfromretainedworkerbuild",
+    "CapturedAfterRun": true,
+    "CaptureBefore": "Another phase, rebuild, cleanup or reuse of the generated worker folder.",
+    "RequiredBinaries": [
+      "Sphere10.Framework.dll",
+      "Sphere10.Framework.Utils.Profiler.dll",
+      "generated application DLL from the original Execute command"
+    ],
+    "Archive": "Unique ignored BenchmarkDotNet.Artifacts/objectspace-power2-order-confirmation/worker-archives folder; retain identities in JSON without force-adding DLLs."
+  }
+}

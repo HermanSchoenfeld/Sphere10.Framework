@@ -1,0 +1,133 @@
+{
+  "StartedAtUtc": "2026-10-13T00:00:34.9916924Z",
+  "Executable": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.exe",
+  "Arguments": [
+    "object-spaces",
+    "--config",
+    "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-power2-order-bdn-balanced\\profiles.json",
+    "--records",
+    "1024",
+    "--operations",
+    "200",
+    "--payload",
+    "128",
+    "--categories",
+    "1024",
+    "--hot-category-percent",
+    "0",
+    "--lookup",
+    "Shuffled",
+    "--hot-set-percent",
+    "10",
+    "--payload-mode",
+    "Fixed",
+    "--insertion",
+    "shuffled",
+    "--mix",
+    "Balanced",
+    "--filter",
+    "*MixedReadWriteAndPersist*",
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles",
+    "--output",
+    "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-power2-order-bdn-balanced",
+    "--data-root",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data"
+  ],
+  "Plan": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspace-power2-order-confirmation\\plan.json",
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Sha256": "CADA996C4A0A9181917CF5670BD05B32D1D8E1F83DF8F6431030AA0ACA834D75",
+      "Length": 207360,
+      "LastWriteTimeUtc": "2026-10-12T23:56:09.7126266Z",
+      "ModuleVersionId": "b415706c-23f9-438b-a472-a2b2fe7be05b",
+      "AssemblyVersion": "3.1.3.0",
+      "FileVersion": "3.1.3.0",
+      "InformationalVersion": "3.1.3.0",
+      "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version."
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Sha256": "783DB38360DE110A7C45886DB438A805DD8EC34EDB221B18F5DF66AF0B5FDB18",
+      "Length": 2054144,
+      "LastWriteTimeUtc": "2026-10-12T23:56:09.3686256Z",
+      "ModuleVersionId": "c9e5911a-a6b2-479b-acc3-4070c1b723b6",
+      "AssemblyVersion": "3.1.3.0",
+      "FileVersion": "3.1.3.0",
+      "InformationalVersion": "3.1.3.0",
+      "InformationalVersionSource": "PE ProductVersion populated by SDK assembly informational version."
+    }
+  ],
+  "CaptureScriptHashes": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-power2-order-bdn-balanced\\capture-launcher.ps1",
+      "Hash": "6505C6B018E91A246656731A36C401F855BF5EB69287DF7DE393BE6CF1A29705",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-power2-order-bdn-balanced\\capture-workers.ps1",
+      "Hash": "D09508776BB30F923F66966520EEC51CD8F1D0A08B00BED4F778BE8A6ABCD216",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "Resources": {
+    "DataRoot": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+    "LogicalDisk": {
+      "DeviceID": "D:",
+      "DriveType": 3,
+      "FileSystem": "NTFS",
+      "Size": 2000396742656,
+      "FreeSpace": 10187853824,
+      "VolumeName": "AppData"
+    },
+    "DataDiskMapping": [
+      {
+        "Index": 1,
+        "Model": "Samsung SSD 850 EVO 2TB",
+        "InterfaceType": "IDE",
+        "Size": 2000396321280
+      }
+    ],
+    "PhysicalDisks": [
+      {
+        "Index": 2,
+        "Model": "WD Blue SN570 500GB",
+        "InterfaceType": "SCSI",
+        "Size": 500105249280
+      },
+      {
+        "Index": 1,
+        "Model": "Samsung SSD 850 EVO 2TB",
+        "InterfaceType": "IDE",
+        "Size": 2000396321280
+      },
+      {
+        "Index": 0,
+        "Model": "WDC WDS240G2G0A-00JH30",
+        "InterfaceType": "IDE",
+        "Size": 240063022080
+      }
+    ],
+    "MemoryKilobytes": {
+      "TotalVisibleMemorySize": 33469520,
+      "FreePhysicalMemory": 8944292
+    }
+  },
+  "Controls": "Two independent launches, ten actual iterations, five warmups, Monitoring, invocation/unroll1, no removed outliers, no forced GC, keep generated worker files, unchanged power plan."
+}

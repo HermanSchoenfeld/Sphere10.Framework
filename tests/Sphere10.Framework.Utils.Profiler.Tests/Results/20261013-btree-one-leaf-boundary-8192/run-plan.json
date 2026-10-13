@@ -1,0 +1,565 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 713,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-boundary-order-2048",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "2591df97b5224141bea0103db84967e3",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-2048",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "boundary-order-2048",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-boundary-order-4096",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ee708bfac8e94406b57c010327de4d0f",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-4096",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 4096,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "boundary-order-4096",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-boundary-order-8192",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "075491eb1c9a434e8509ad04c3d135e6",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-8192",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8192,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196633
+          }
+        ]
+      },
+      "Profile": "boundary-order-8192",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-boundary-order-8193",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "a6096591273d44cab511ab4e4b2f45a1",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-8193",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8193,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196657
+          }
+        ]
+      },
+      "Profile": "boundary-order-8193",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-boundary-order-16384",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "17b9e3d80a034b75a3a7429ce02f8c2c",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-16384",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 16384,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 393241
+          }
+        ]
+      },
+      "Profile": "boundary-order-16384",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-read-heavy-boundary-order-2048",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "42b5009f888440068f894e7c9e1e3165",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-2048",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "boundary-order-2048",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-read-heavy-boundary-order-4096",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "9264f1f3ab174dbba770826013b22e81",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-4096",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 4096,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "boundary-order-4096",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-read-heavy-boundary-order-8192",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "36863d7f4d7948668188049ed704f0a4",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-8192",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8192,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196633
+          }
+        ]
+      },
+      "Profile": "boundary-order-8192",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-read-heavy-boundary-order-8193",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "262e7ff5440c467caef80c54e91b09f3",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-8193",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8193,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196657
+          }
+        ]
+      },
+      "Profile": "boundary-order-8193",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-read-heavy-boundary-order-16384",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "577b5a71a62d4e209891faaa068fcced",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-16384",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 16384,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 393241
+          }
+        ]
+      },
+      "Profile": "boundary-order-16384",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-write-heavy-boundary-order-2048",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "aef27bce307c4a88b1caf786b4c47a25",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-2048",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "boundary-order-2048",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-write-heavy-boundary-order-4096",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "691c95177eca4fd2b7943ca7a0ad91f3",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-4096",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 4096,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "boundary-order-4096",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-write-heavy-boundary-order-8192",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "2de38425ae474710a10ece9339e63ab1",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-8192",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8192,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196633
+          }
+        ]
+      },
+      "Profile": "boundary-order-8192",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-write-heavy-boundary-order-8193",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "24d2b9b4823d45cf8d29311c60fbba63",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-8193",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8193,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196657
+          }
+        ]
+      },
+      "Profile": "boundary-order-8193",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-write-heavy-boundary-order-16384",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "OneLeafBoundary",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "4fb1836817334e1291c2be4dc7ebf147",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-one-leaf-boundary-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "boundary-order-16384",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 16384,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 393241
+          }
+        ]
+      },
+      "Profile": "boundary-order-16384",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True/factor-OneLeafBoundary"
+    }
+  ]
+}

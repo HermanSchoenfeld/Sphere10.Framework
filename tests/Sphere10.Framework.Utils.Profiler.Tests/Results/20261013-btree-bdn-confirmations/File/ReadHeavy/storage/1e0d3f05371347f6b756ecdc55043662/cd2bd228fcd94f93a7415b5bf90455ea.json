@@ -1,0 +1,27 @@
+{
+  "Profile": "FileStream-BTreePlus-file-stream-additional-contender-4096",
+  "RunId": "1e0d3f05371347f6b756ecdc55043662",
+  "Storage": "FileStream",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 4096,
+  "MaximumLeafEntries": 4095,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 98329,
+  "LogicalTreeBytes": 393348,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 393348,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 4,
+    "TotalLeaves": 3,
+    "LeafEntries": 8192,
+    "MeanLeafOccupancy": 0.6668294668294669,
+    "PhysicalSlots": 4
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": 4096
+}

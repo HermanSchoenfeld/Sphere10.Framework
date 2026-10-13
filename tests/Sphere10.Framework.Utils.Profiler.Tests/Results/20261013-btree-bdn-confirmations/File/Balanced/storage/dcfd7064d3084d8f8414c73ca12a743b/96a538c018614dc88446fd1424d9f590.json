@@ -1,0 +1,27 @@
+{
+  "Profile": "FileStream-BTree-robust-shared-contender-128",
+  "RunId": "dcfd7064d3084d8f8414c73ca12a743b",
+  "Storage": "FileStream",
+  "Family": "BTree",
+  "KeyShape": "Int64",
+  "Order": 128,
+  "MaximumLeafEntries": 127,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 3089,
+  "LogicalTreeBytes": 290398,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 290398,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 93,
+    "TotalLeaves": 92,
+    "LeafEntries": 8101,
+    "MeanLeafOccupancy": 0.6933413214652516,
+    "PhysicalSlots": 94
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": 4096
+}

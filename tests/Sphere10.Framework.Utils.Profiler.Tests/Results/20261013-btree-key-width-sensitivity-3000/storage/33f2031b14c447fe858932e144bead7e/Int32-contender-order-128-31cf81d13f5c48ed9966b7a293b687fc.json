@@ -1,0 +1,27 @@
+{
+  "Profile": "Int32-contender-order-128",
+  "RunId": "33f2031b14c447fe858932e144bead7e",
+  "Storage": "StreamMemory",
+  "Family": "BTree",
+  "KeyShape": "Int32",
+  "Order": 128,
+  "MaximumLeafEntries": 127,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 4,
+  "NodeRecordBytes": 2577,
+  "LogicalTreeBytes": 90227,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 0,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 34,
+    "TotalLeaves": 33,
+    "LeafEntries": 2968,
+    "MeanLeafOccupancy": 0.7081842042471964,
+    "PhysicalSlots": 35
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

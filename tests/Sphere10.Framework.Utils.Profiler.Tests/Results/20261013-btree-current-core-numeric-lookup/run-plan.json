@@ -1,0 +1,158 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 713,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "tree-FilePaged-Lookup-balanced-current-core-order-1024",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreNumericLookup",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "9fb2cc9b696a4ab6ba52ef2db9ad5548",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-CurrentCoreNumericLookup"
+    },
+    {
+      "Id": "tree-FilePaged-Lookup-balanced-current-core-order-2048",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreNumericLookup",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "d8fbeab9bdae4269bfee595329562ffe",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-CurrentCoreNumericLookup"
+    },
+    {
+      "Id": "tree-TransactionalFile-Lookup-balanced-current-core-order-1024",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreNumericLookup",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "4253f1f88b8846878c3bcd5c46c24648",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-CurrentCoreNumericLookup"
+    },
+    {
+      "Id": "tree-TransactionalFile-Lookup-balanced-current-core-order-2048",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreNumericLookup",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "55e446251487424c9e3007743c0fd2c7",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True/factor-CurrentCoreNumericLookup"
+    }
+  ]
+}

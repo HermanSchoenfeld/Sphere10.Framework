@@ -1,0 +1,27 @@
+{
+  "Profile": "Digest32-legacy64-order-64",
+  "RunId": "6ec8c16c7f424efc818ad00e9be8216f",
+  "Storage": "FilePaged",
+  "Family": "BTreePlus",
+  "KeyShape": "Digest32",
+  "Order": 64,
+  "MaximumLeafEntries": 63,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 32,
+  "NodeRecordBytes": 3097,
+  "LogicalTreeBytes": 219919,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 219919,
+  "Geometry": {
+    "Height": 3,
+    "ActiveNodes": 71,
+    "TotalLeaves": 68,
+    "LeafEntries": 3000,
+    "MeanLeafOccupancy": 0.7002801120448179,
+    "PhysicalSlots": 71
+  },
+  "AppliedPageSize": 262144,
+  "AppliedCacheBytes": 2147483647,
+  "AppliedFileBufferBytes": null
+}

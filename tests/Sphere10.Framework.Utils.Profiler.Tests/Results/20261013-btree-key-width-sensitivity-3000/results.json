@@ -1,0 +1,5690 @@
+[
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTree-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "83ea8520557c4f01a97553a225b3078d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 1015,
+        "Nanoseconds": 101500,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 1014,
+        "Nanoseconds": 101400,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 998,
+        "Nanoseconds": 99800,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTree-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "82584051fb0b401f90fc615626e58a4b",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-128",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 956,
+        "Nanoseconds": 95600,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 960,
+        "Nanoseconds": 96000,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 953,
+        "Nanoseconds": 95300,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTree-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "332d15055e344ea98370c66aaac6af97",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1297
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 620,
+        "Nanoseconds": 62000,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 591,
+        "Nanoseconds": 59100,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 589,
+        "Nanoseconds": 58900,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTree-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "a79379a61ba347628511f722a357f5d7",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-128",
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 2577
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 557,
+        "Nanoseconds": 55700,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 575,
+        "Nanoseconds": 57500,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 541,
+        "Nanoseconds": 54100,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTreePlus-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "f7c3a082ae9d48efa5c492d54ec45601",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 3093,
+        "Nanoseconds": 309300,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 3071,
+        "Nanoseconds": 307100,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 3406,
+        "Nanoseconds": 340600,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTreePlus-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "507da568310e408cb9b61dba78226711",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 1176,
+        "Nanoseconds": 117600,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 1248,
+        "Nanoseconds": 124800,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 1150,
+        "Nanoseconds": 115000,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "bfb43dbfa4ec42f789777a8fcb2ea106",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 1154,
+        "Nanoseconds": 115400,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 1182,
+        "Nanoseconds": 118200,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 1172,
+        "Nanoseconds": 117200,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTreePlus-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "50afdd37a9234de79ef5ab83397abb54",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1305
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 2526,
+        "Nanoseconds": 252600,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 2493,
+        "Nanoseconds": 249300,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 2660,
+        "Nanoseconds": 266000,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-BTreePlus-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "5d678b0c3a664235a8e8bcc4ca19d6e4",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-2048",
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 40985
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 696,
+        "Nanoseconds": 69600,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 712,
+        "Nanoseconds": 71200,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 701,
+        "Nanoseconds": 70100,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-Lookup-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "7033910a6e504e3998ec261cbf8d373b",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 3353
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 37894,
+        "Nanoseconds": 3789400,
+        "AllocatedBytes": 1696,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 24130,
+        "Nanoseconds": 2413000,
+        "AllocatedBytes": 1696,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 21217,
+        "Nanoseconds": 2121700,
+        "AllocatedBytes": 1696,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-Lookup-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "e5c209b90df640e9abaae32df0ff44ee",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 106521
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 16711,
+        "Nanoseconds": 1671100,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 5694,
+        "Nanoseconds": 569400,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5805,
+        "Nanoseconds": 580500,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-ManagedNodes-Lookup-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ccc9502c63664cdf9b5a044b97e93478",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 53273
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/ManagedNodes/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 16540,
+        "Nanoseconds": 1654000,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 5589,
+        "Nanoseconds": 558900,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5771,
+        "Nanoseconds": 577100,
+        "AllocatedBytes": 0,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTree-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "bbdadfbfbc7b4348be90c5994b2e7742",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 16298,
+        "Nanoseconds": 1629800,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 6062,
+        "Nanoseconds": 606200,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5568,
+        "Nanoseconds": 556800,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTree-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "e9ed36fd3a884dd58cdfa6a4386dde23",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-128",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 16894,
+        "Nanoseconds": 1689400,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 16884,
+        "Nanoseconds": 1688400,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5549,
+        "Nanoseconds": 554900,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTree-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "830e863459b94d4f83241761525d25bb",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1297
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 6236,
+        "Nanoseconds": 623600,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 4947,
+        "Nanoseconds": 494700,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5219,
+        "Nanoseconds": 521900,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTree-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "33f2031b14c447fe858932e144bead7e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-128",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 2577
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 5415,
+        "Nanoseconds": 541500,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 4609,
+        "Nanoseconds": 460900,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5008,
+        "Nanoseconds": 500800,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTreePlus-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "a6a0808060bc4d9b956c3414e287ee61",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 17770,
+        "Nanoseconds": 1777000,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 16591,
+        "Nanoseconds": 1659100,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 17462,
+        "Nanoseconds": 1746200,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTreePlus-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "df8c14ea6fdd4a4c82b14d6fabfba0ac",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 11398,
+        "Nanoseconds": 1139800,
+        "AllocatedBytes": 7279384,
+        "Collections": [
+          1,
+          1,
+          1
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 16359,
+        "Nanoseconds": 1635900,
+        "AllocatedBytes": 7279440,
+        "Collections": [
+          1,
+          1,
+          1
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 102767,
+        "Nanoseconds": 10276700,
+        "AllocatedBytes": 7279392,
+        "Collections": [
+          1,
+          1,
+          1
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "82343ac0ffc54510b33b3f907fc608a6",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 7065,
+        "Nanoseconds": 706500,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 7747,
+        "Nanoseconds": 774700,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 7418,
+        "Nanoseconds": 741800,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTreePlus-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "f9349d08f2264a97a6d92d06c6570957",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1305
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 22301,
+        "Nanoseconds": 2230100,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 22086,
+        "Nanoseconds": 2208600,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 22929,
+        "Nanoseconds": 2292900,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-BTreePlus-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "21e400cb45e94e65af9f8ad6444733f6",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-2048",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 40985
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 8351,
+        "Nanoseconds": 835100,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 7960,
+        "Nanoseconds": 796000,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 7554,
+        "Nanoseconds": 755400,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-Lookup-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "9763579b40e949d6b50623f3ed87837b",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 3353
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 222078,
+        "Nanoseconds": 22207800,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 153786,
+        "Nanoseconds": 15378600,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 176220,
+        "Nanoseconds": 17622000,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          8,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-Lookup-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "3354412952904bac97aa44f50a9feb11",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 106521
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 1546387,
+        "Nanoseconds": 154638700,
+        "AllocatedBytes": 83887272,
+        "Collections": [
+          14,
+          10,
+          10
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 1251594,
+        "Nanoseconds": 125159400,
+        "AllocatedBytes": 83916328,
+        "Collections": [
+          14,
+          10,
+          10
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 1115902,
+        "Nanoseconds": 111590200,
+        "AllocatedBytes": 83892968,
+        "Collections": [
+          13,
+          10,
+          10
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-StreamMemory-Lookup-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "95ba34c3480c455193686a6d12596b01",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 53273
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 97777,
+        "Nanoseconds": 9777700,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          6,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 82549,
+        "Nanoseconds": 8254900,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          6,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 83854,
+        "Nanoseconds": 8385400,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          6,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTree-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "817fc1ddfdc14e228f59513e902bb494",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "FileStream",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 32696,
+        "Nanoseconds": 3269600,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 25047,
+        "Nanoseconds": 2504700,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 22581,
+        "Nanoseconds": 2258100,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTree-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "1818caa0529f49398e6d13f575e70c3d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-128",
+            "Storage": "FileStream",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 23435,
+        "Nanoseconds": 2343500,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 22567,
+        "Nanoseconds": 2256700,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 21082,
+        "Nanoseconds": 2108200,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTree-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "b6786f69b79b469799ef5c284e55307a",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "FileStream",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1297
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 22337,
+        "Nanoseconds": 2233700,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 21717,
+        "Nanoseconds": 2171700,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 22160,
+        "Nanoseconds": 2216000,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTree-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "2c133e56628b454d9f163685949502af",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-128",
+            "Storage": "FileStream",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 2577
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 16919,
+        "Nanoseconds": 1691900,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 17530,
+        "Nanoseconds": 1753000,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 18662,
+        "Nanoseconds": 1866200,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTreePlus-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "d88a7d8d8ed0415f947924dfbc82bdf8",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 245495,
+        "Nanoseconds": 24549500,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 220243,
+        "Nanoseconds": 22024300,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 225553,
+        "Nanoseconds": 22555300,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTreePlus-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "9df0fc726af749fca7796c1cfb3280d5",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 67632,
+        "Nanoseconds": 6763200,
+        "AllocatedBytes": 7279384,
+        "Collections": [
+          1,
+          1,
+          1
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 68563,
+        "Nanoseconds": 6856300,
+        "AllocatedBytes": 7279384,
+        "Collections": [
+          2,
+          1,
+          1
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 70355,
+        "Nanoseconds": 7035500,
+        "AllocatedBytes": 7279384,
+        "Collections": [
+          3,
+          2,
+          2
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ac21f04517044fc78cb9d45cf1ecd547",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 63341,
+        "Nanoseconds": 6334100,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 41024,
+        "Nanoseconds": 4102400,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 40384,
+        "Nanoseconds": 4038400,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTreePlus-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "bb1f8ddd25e1425c873f0afc971654ef",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1305
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 254892,
+        "Nanoseconds": 25489200,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 216169,
+        "Nanoseconds": 21616900,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 220199,
+        "Nanoseconds": 22019900,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-BTreePlus-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "a41a8e4625c94729962e5ee1239fb650",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-2048",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 40985
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 31619,
+        "Nanoseconds": 3161900,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 30653,
+        "Nanoseconds": 3065300,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 32107,
+        "Nanoseconds": 3210700,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-Lookup-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "efe16958885446bdbdc570e01c599a05",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "FileStream",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 3353
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 2435130,
+        "Nanoseconds": 243513000,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 2414122,
+        "Nanoseconds": 241412200,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 2210313,
+        "Nanoseconds": 221031300,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-Lookup-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "3ad7463d391345f69d76163b9863b9a1",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "FileStream",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 106521
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 789726,
+        "Nanoseconds": 78972600,
+        "AllocatedBytes": 83882024,
+        "Collections": [
+          15,
+          15,
+          15
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 816910,
+        "Nanoseconds": 81691000,
+        "AllocatedBytes": 83882024,
+        "Collections": [
+          16,
+          16,
+          16
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 829042,
+        "Nanoseconds": 82904200,
+        "AllocatedBytes": 83882024,
+        "Collections": [
+          16,
+          16,
+          16
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FileStream-Lookup-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "0927ef4251e94010b7c9f93b23ca24b5",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "FileStream",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 53273
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 469638,
+        "Nanoseconds": 46963800,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          5,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 482644,
+        "Nanoseconds": 48264400,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          5,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 461373,
+        "Nanoseconds": 46137300,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          6,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTree-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "b1a105398ef747cb8c34038f52730918",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 75095,
+        "Nanoseconds": 7509500,
+        "AllocatedBytes": 22438712,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 74052,
+        "Nanoseconds": 7405200,
+        "AllocatedBytes": 22438712,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 75762,
+        "Nanoseconds": 7576200,
+        "AllocatedBytes": 22438712,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTree-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ebf11946dcf7457996ea52dffbbcaa73",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-256",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 256,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 12305
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-256",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 112605,
+        "Nanoseconds": 11260500,
+        "AllocatedBytes": 22175784,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 71064,
+        "Nanoseconds": 7106400,
+        "AllocatedBytes": 22175784,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 75656,
+        "Nanoseconds": 7565600,
+        "AllocatedBytes": 22175784,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTree-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "0d8d5ec4ac164ea0bbb0f4ceaf40088b",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1297
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 80420,
+        "Nanoseconds": 8042000,
+        "AllocatedBytes": 22104456,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 81809,
+        "Nanoseconds": 8180900,
+        "AllocatedBytes": 22104360,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 68344,
+        "Nanoseconds": 6834400,
+        "AllocatedBytes": 22104360,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTree-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "6c710785814b4f6aaea1633e1ace161e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-256",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 256,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 5137
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-256",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 67325,
+        "Nanoseconds": 6732500,
+        "AllocatedBytes": 20951400,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 71387,
+        "Nanoseconds": 7138700,
+        "AllocatedBytes": 20951400,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 66889,
+        "Nanoseconds": 6688900,
+        "AllocatedBytes": 20951400,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTreePlus-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "6ec8c16c7f424efc818ad00e9be8216f",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "FilePaged",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 250436,
+        "Nanoseconds": 25043600,
+        "AllocatedBytes": 95787336,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 265769,
+        "Nanoseconds": 26576900,
+        "AllocatedBytes": 95787336,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 251900,
+        "Nanoseconds": 25190000,
+        "AllocatedBytes": 95787296,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTreePlus-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "23db53335be44779a7fbb436c5814ce2",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "FilePaged",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 713918,
+        "Nanoseconds": 71391800,
+        "AllocatedBytes": 37031720,
+        "Collections": [
+          6,
+          4,
+          4
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 628472,
+        "Nanoseconds": 62847200,
+        "AllocatedBytes": 37040656,
+        "Collections": [
+          6,
+          4,
+          4
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 244767,
+        "Nanoseconds": 24476700,
+        "AllocatedBytes": 37037496,
+        "Collections": [
+          6,
+          4,
+          4
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "4235af4bc9474fc0a052d5c5f63c0160",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "FilePaged",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 93188,
+        "Nanoseconds": 9318800,
+        "AllocatedBytes": 31903880,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 93516,
+        "Nanoseconds": 9351600,
+        "AllocatedBytes": 31903880,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 98622,
+        "Nanoseconds": 9862200,
+        "AllocatedBytes": 31903840,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTreePlus-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "6ccfe87b09614e2dafa876de0a705237",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "FilePaged",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1305
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 271414,
+        "Nanoseconds": 27141400,
+        "AllocatedBytes": 95110896,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 256078,
+        "Nanoseconds": 25607800,
+        "AllocatedBytes": 95110896,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 248638,
+        "Nanoseconds": 24863800,
+        "AllocatedBytes": 95110896,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-BTreePlus-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "a73aa0cad557461a9368c655181cf642",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-2048",
+            "Storage": "FilePaged",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 40985
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 79579,
+        "Nanoseconds": 7957900,
+        "AllocatedBytes": 28273656,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 86594,
+        "Nanoseconds": 8659400,
+        "AllocatedBytes": 28273656,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 77326,
+        "Nanoseconds": 7732600,
+        "AllocatedBytes": 28273656,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-Lookup-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "14f553f326764987a084486b3da80b69",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 3353
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 2420875,
+        "Nanoseconds": 242087500,
+        "AllocatedBytes": 991845280,
+        "Collections": [
+          95,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 2380695,
+        "Nanoseconds": 238069500,
+        "AllocatedBytes": 991844496,
+        "Collections": [
+          94,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 2410570,
+        "Nanoseconds": 241057000,
+        "AllocatedBytes": 991844496,
+        "Collections": [
+          94,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-Lookup-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "8b29d47dd75d49278de92e3d7552736d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 106521
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 6235785,
+        "Nanoseconds": 623578500,
+        "AllocatedBytes": 461413032,
+        "Collections": [
+          70,
+          40,
+          40
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 5749035,
+        "Nanoseconds": 574903500,
+        "AllocatedBytes": 461430072,
+        "Collections": [
+          67,
+          38,
+          38
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5823172,
+        "Nanoseconds": 582317200,
+        "AllocatedBytes": 461425336,
+        "Collections": [
+          68,
+          39,
+          39
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-FilePaged-Lookup-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "1c0efbb2f7334e8fae372a758d665740",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "FilePaged",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 53273
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 880599,
+        "Nanoseconds": 88059900,
+        "AllocatedBytes": 401517536,
+        "Collections": [
+          38,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 850776,
+        "Nanoseconds": 85077600,
+        "AllocatedBytes": 401517536,
+        "Collections": [
+          38,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 943264,
+        "Nanoseconds": 94326400,
+        "AllocatedBytes": 401517536,
+        "Collections": [
+          38,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTree-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "42eeb61373e449a2b967b36064f64709",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 20056,
+        "Nanoseconds": 2005600,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 19778,
+        "Nanoseconds": 1977800,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 15548,
+        "Nanoseconds": 1554800,
+        "AllocatedBytes": 2505088,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTree-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "6596d734427142f98bf65217ef6bb021",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-128",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 14998,
+        "Nanoseconds": 1499800,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 16458,
+        "Nanoseconds": 1645800,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 14155,
+        "Nanoseconds": 1415500,
+        "AllocatedBytes": 2691568,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTree-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "34fd9e81ef3a4040a55e7a42c3d53025",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1297
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 9202,
+        "Nanoseconds": 920200,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 8320,
+        "Nanoseconds": 832000,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 9542,
+        "Nanoseconds": 954200,
+        "AllocatedBytes": 2297856,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTree-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "9d778e16d8174d7481f319215fd982dd",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-128",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 2577
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 9316,
+        "Nanoseconds": 931600,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 9133,
+        "Nanoseconds": 913300,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 7882,
+        "Nanoseconds": 788200,
+        "AllocatedBytes": 2396128,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTreePlus-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "fdb7503280404f0fad89e36ec91cb935",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 31939,
+        "Nanoseconds": 3193900,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 28766,
+        "Nanoseconds": 2876600,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 29205,
+        "Nanoseconds": 2920500,
+        "AllocatedBytes": 8375400,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTreePlus-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "8c7ce6d8117b4b11b4ace492f71da78a",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 32888,
+        "Nanoseconds": 3288800,
+        "AllocatedBytes": 7279384,
+        "Collections": [
+          2,
+          1,
+          1
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 46454,
+        "Nanoseconds": 4645400,
+        "AllocatedBytes": 7279384,
+        "Collections": [
+          3,
+          2,
+          2
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 58480,
+        "Nanoseconds": 5848000,
+        "AllocatedBytes": 7279384,
+        "Collections": [
+          2,
+          2,
+          2
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "bbf2bf7ecc514623b26c8afee448b42b",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 13896,
+        "Nanoseconds": 1389600,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 14951,
+        "Nanoseconds": 1495100,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 15187,
+        "Nanoseconds": 1518700,
+        "AllocatedBytes": 5008832,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTreePlus-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "75433b0ae9e842f6b317b0a2ebd89953",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1305
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 22118,
+        "Nanoseconds": 2211800,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 21456,
+        "Nanoseconds": 2145600,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 21972,
+        "Nanoseconds": 2197200,
+        "AllocatedBytes": 7894800,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-BTreePlus-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "2dae977e848e420b9d695444eadc5e32",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-2048",
+            "Storage": "OSMemoryMapped",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 40985
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 9256,
+        "Nanoseconds": 925600,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 9760,
+        "Nanoseconds": 976000,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          1,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 9534,
+        "Nanoseconds": 953400,
+        "AllocatedBytes": 4294264,
+        "Collections": [
+          0,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-Lookup-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "2c58e42226e24542961068e55bb8185c",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "OSMemoryMapped",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 3353
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 329651,
+        "Nanoseconds": 32965100,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 217096,
+        "Nanoseconds": 21709600,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 212960,
+        "Nanoseconds": 21296000,
+        "AllocatedBytes": 88188216,
+        "Collections": [
+          8,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-Lookup-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "72b83ba1ae7b4557a7f80b7536a92bea",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "OSMemoryMapped",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 106521
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 499813,
+        "Nanoseconds": 49981300,
+        "AllocatedBytes": 83882024,
+        "Collections": [
+          16,
+          16,
+          16
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 447142,
+        "Nanoseconds": 44714200,
+        "AllocatedBytes": 83882024,
+        "Collections": [
+          15,
+          15,
+          15
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 414691,
+        "Nanoseconds": 41469100,
+        "AllocatedBytes": 83882024,
+        "Collections": [
+          15,
+          15,
+          15
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-OSMemoryMapped-Lookup-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ebbbc52f37854f0b81ab36cdc9296424",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "OSMemoryMapped",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 53273
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 125826,
+        "Nanoseconds": 12582600,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          6,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 104363,
+        "Nanoseconds": 10436300,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          6,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 106153,
+        "Nanoseconds": 10615300,
+        "AllocatedBytes": 59833440,
+        "Collections": [
+          5,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTree-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "f619c7ad3b63458dbb56444b38e53a06",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "TransactionalFile",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 111666,
+        "Nanoseconds": 11166600,
+        "AllocatedBytes": 22466664,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 101996,
+        "Nanoseconds": 10199600,
+        "AllocatedBytes": 22466664,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 132262,
+        "Nanoseconds": 13226200,
+        "AllocatedBytes": 22466664,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTree-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "96587c2115884c77a5e418a946a79577",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-128",
+            "Storage": "TransactionalFile",
+            "Family": "BTree",
+            "KeyShape": "Digest32",
+            "Order": 128,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 98084,
+        "Nanoseconds": 9808400,
+        "AllocatedBytes": 21462328,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 105672,
+        "Nanoseconds": 10567200,
+        "AllocatedBytes": 21462328,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 99362,
+        "Nanoseconds": 9936200,
+        "AllocatedBytes": 21462328,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTree-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "fa5847df4da94ca0817fa4c09a51d030",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "TransactionalFile",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1297
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 116391,
+        "Nanoseconds": 11639100,
+        "AllocatedBytes": 22132352,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 93852,
+        "Nanoseconds": 9385200,
+        "AllocatedBytes": 22132352,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 93969,
+        "Nanoseconds": 9396900,
+        "AllocatedBytes": 22132352,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTree-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "496163abf67047a7b7adc5a84a47161c",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-128",
+            "Storage": "TransactionalFile",
+            "Family": "BTree",
+            "KeyShape": "Int32",
+            "Order": 128,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 2577
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 96235,
+        "Nanoseconds": 9623500,
+        "AllocatedBytes": 20233880,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 94977,
+        "Nanoseconds": 9497700,
+        "AllocatedBytes": 20233880,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 87527,
+        "Nanoseconds": 8752700,
+        "AllocatedBytes": 20233880,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTreePlus-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "57dba9d73b574129aff42ac10b414e47",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 3097
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 450770,
+        "Nanoseconds": 45077000,
+        "AllocatedBytes": 95816200,
+        "Collections": [
+          10,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 306472,
+        "Nanoseconds": 30647200,
+        "AllocatedBytes": 95815416,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 362279,
+        "Nanoseconds": 36227900,
+        "AllocatedBytes": 95815344,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTreePlus-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "b067f29762f346d3b60675237c77458c",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 460670,
+        "Nanoseconds": 46067000,
+        "AllocatedBytes": 37080968,
+        "Collections": [
+          6,
+          4,
+          4
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 700123,
+        "Nanoseconds": 70012300,
+        "AllocatedBytes": 37092504,
+        "Collections": [
+          6,
+          4,
+          4
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 559741,
+        "Nanoseconds": 55974100,
+        "AllocatedBytes": 37082464,
+        "Collections": [
+          5,
+          3,
+          3
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "0899d299adb54318a81cfc3b66629d19",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 32,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 117887,
+        "Nanoseconds": 11788700,
+        "AllocatedBytes": 31932152,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 112320,
+        "Nanoseconds": 11232000,
+        "AllocatedBytes": 31932152,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 115021,
+        "Nanoseconds": 11502100,
+        "AllocatedBytes": 31932152,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTreePlus-Int32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "c4d1113b306c4836b8f891459dc62950",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-legacy64-order-64",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 1305
+          }
+        ]
+      },
+      "Profile": "Int32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 300028,
+        "Nanoseconds": 30002800,
+        "AllocatedBytes": 95138888,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 304841,
+        "Nanoseconds": 30484100,
+        "AllocatedBytes": 95138864,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 291840,
+        "Nanoseconds": 29184000,
+        "AllocatedBytes": 95138864,
+        "Collections": [
+          9,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-BTreePlus-Int32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "79dd6a09b183432f9b15987cb010b601",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Int32-contender-order-2048",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 4,
+            "NodeRecordBytes": 40985
+          }
+        ]
+      },
+      "Profile": "Int32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 131406,
+        "Nanoseconds": 13140600,
+        "AllocatedBytes": 28301680,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 101151,
+        "Nanoseconds": 10115100,
+        "AllocatedBytes": 28301680,
+        "Collections": [
+          3,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 101695,
+        "Nanoseconds": 10169500,
+        "AllocatedBytes": 28300896,
+        "Collections": [
+          2,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-Lookup-Digest32-legacy64-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "dc5227c91f1b4ca7973d5ed1aa0a4bdf",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-legacy64-order-64",
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 3353
+          }
+        ]
+      },
+      "Profile": "Digest32-legacy64-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 2750165,
+        "Nanoseconds": 275016500,
+        "AllocatedBytes": 991873304,
+        "Collections": [
+          95,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 2698963,
+        "Nanoseconds": 269896300,
+        "AllocatedBytes": 991873304,
+        "Collections": [
+          95,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 2742611,
+        "Nanoseconds": 274261100,
+        "AllocatedBytes": 991873304,
+        "Collections": [
+          95,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-Lookup-Digest32-contender-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "cbaecf2c595c4dbe91e2864e6ab0cd85",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-contender-order-2048",
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 106521
+          }
+        ]
+      },
+      "Profile": "Digest32-contender-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 5947853,
+        "Nanoseconds": 594785300,
+        "AllocatedBytes": 461473496,
+        "Collections": [
+          67,
+          38,
+          38
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 4911976,
+        "Nanoseconds": 491197600,
+        "AllocatedBytes": 461460560,
+        "Collections": [
+          67,
+          38,
+          38
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 5326895,
+        "Nanoseconds": 532689500,
+        "AllocatedBytes": 461479920,
+        "Collections": [
+          69,
+          39,
+          39
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  },
+  {
+    "Case": {
+      "Id": "tree-TransactionalFile-Lookup-Digest32-wide-key-1024-Mixed",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "KeyWidthSensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 3000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "551f6424bd8d4d7ab3dd668f93b6dace",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-key-width-sensitivity-3000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "Digest32-wide-key-1024-order-1024",
+            "Storage": "TransactionalFile",
+            "Family": "Lookup",
+            "KeyShape": "Digest32",
+            "Order": 1024,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 32,
+            "StoredKeyBytes": 36,
+            "NodeRecordBytes": 53273
+          }
+        ]
+      },
+      "Profile": "Digest32-wide-key-1024-order-1024",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity"
+    },
+    "Samples": [
+      {
+        "Round": 0,
+        "ElapsedTicks": 949039,
+        "Nanoseconds": 94903900,
+        "AllocatedBytes": 401570088,
+        "Collections": [
+          39,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 1,
+        "ElapsedTicks": 972506,
+        "Nanoseconds": 97250600,
+        "AllocatedBytes": 401569304,
+        "Collections": [
+          38,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      },
+      {
+        "Round": 2,
+        "ElapsedTicks": 926958,
+        "Nanoseconds": 92695800,
+        "AllocatedBytes": 401570088,
+        "Collections": [
+          39,
+          0,
+          0
+        ],
+        "Checksum": "1229168"
+      }
+    ],
+    "Error": null,
+    "Verified": true
+  }
+]

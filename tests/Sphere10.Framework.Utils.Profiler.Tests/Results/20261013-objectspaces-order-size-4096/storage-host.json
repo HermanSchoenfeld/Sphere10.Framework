@@ -1,0 +1,34 @@
+{
+  "ObservedAtUtc": "2026-10-12T17:01:19.2372915Z",
+  "Meaning": "Larger-store order transfer screening:4096records/categories,100operations,64/169/512,Memory/File,three mixes; one warmup/three samples. Store remains below16MiBcache, so this does not resolve cache-budget optimum.",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Storage": {
+    "FriendlyName": "Samsung SSD 850 EVO 2TB",
+    "BusType": "SATA",
+    "PartitionStyle": "MBR",
+    "Size": 2000398934016
+  },
+  "Volume": {
+    "DriveLetter": "D",
+    "FileSystem": "NTFS",
+    "Size": 2000396742656,
+    "SizeRemaining": 10935046144
+  },
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "ActivitySnapshot": {
+    "PercentProcessorTime": 23
+  },
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Hash": "30C9660F326F4A8DE39CE07F3DCB3AE80EDFDE9DFC19527BFFB55F10B697E51F",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Hash": "65BE97E5B78751A7D9B16DE37CA5AFE4FF1AAB5B4F3ED887EDC6AA21192658EF",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "ConcurrentActivity": "User applications remain running. This is a point snapshot, not a guarantee of exclusive hardware or stable activity."
+}

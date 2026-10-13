@@ -16,6 +16,10 @@ namespace Sphere10.Framework;
 public class InMemoryBTreePlus<K, V> : BTreePlus<K, V, InMemoryBTreePlus<K, V>.Node> {
 	private Node _root;
 
+	public InMemoryBTreePlus(IComparer<K> keyComparer = null)
+		: this(Sphere10FrameworkDefaults.BTreePlusOrder, keyComparer) {
+	}
+
 	public InMemoryBTreePlus(int order, IComparer<K> keyComparer = null)
 		: base(order, keyComparer) {
 	}

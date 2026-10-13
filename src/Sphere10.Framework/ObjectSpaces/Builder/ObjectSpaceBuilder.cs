@@ -29,6 +29,17 @@ public class ObjectSpaceBuilder {
 	private long _maxMemory;
 	private long _pageSize;
 	private int _clusterSize;
+	private int _indexBTreeOrder;
+	private bool _indexBTreeOrderSpecified;
+	private bool _clusterSizeSpecified;
+	private bool _clusteredStreamsPolicySpecified;
+	private ObjectSpaceType? _boundType;
+	private ObjectSpaceDefinition _boundDefinition;
+	private Sphere10FrameworkFileDescriptor _boundFileDescriptor;
+	private MemoryStream _boundMemoryStream;
+	private Dictionary<Type, int> _boundDimensionClusterSizes = new(TypeEquivalenceComparer.Instance);
+	private int _boundClusterSize;
+	private ClusteredStreamsPolicy _boundPolicy;
 	private bool _merkleized;
 	private CHF _hashFunction;
 	private ClusteredStreamsPolicy _clusteredStreamsPolicy;
@@ -49,9 +60,10 @@ public class ObjectSpaceBuilder {
 		_filepath = null;
 		_memoryStream = null;
 		_pagesPath = Sphere10FrameworkDefaults.TransactionalPageFolder;
-		_maxMemory = Sphere10FrameworkDefaults.MaxMemoryPerCollection;
-		_pageSize = Sphere10FrameworkDefaults.TransactionalPageSize;
+		_maxMemory = Sphere10FrameworkDefaults.ObjectSpaceMaxMemory;
+		_pageSize = Sphere10FrameworkDefaults.ObjectSpacePageSize;
 		_clusterSize = Sphere10FrameworkDefaults.ClusterSize;
+		_indexBTreeOrder = Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder;
 		_merkleized = false;
 		_hashFunction = Sphere10FrameworkDefaults.HashFunction;
 		_clusteredStreamsPolicy = Sphere10FrameworkDefaults.ContainerPolicy;
@@ -74,17 +86,23 @@ public class ObjectSpaceBuilder {
 	public ObjectSpaceBuilder UseFile(string filePath) {
 		_type = ObjectSpaceType.FileMapped;
 		_filepath = filePath;
+		if (!MatchesBoundStorage())
+			ResetBoundConfiguration();
 		return this;
 	}
 
 	public ObjectSpaceBuilder UseMemoryStream(MemoryStream stream = null) {
 		_type = ObjectSpaceType.MemoryMapped;
 		_memoryStream = stream;
+		if (!MatchesBoundStorage())
+			ResetBoundConfiguration();
 		return this;
 	}
 
 	public ObjectSpaceBuilder KeepUncommittedPagesAt(string folder) {
 		_pagesPath = folder;
+		if (!MatchesBoundStorage())
+			ResetBoundConfiguration();
 		return this;
 	}
 
@@ -117,11 +135,21 @@ public class ObjectSpaceBuilder {
 
 	public ObjectSpaceBuilder WithClusterSize(int bytes) {
 		_clusterSize = bytes;
+		_clusterSizeSpecified = true;
 		return this;
 	}	
 
 	public ObjectSpaceBuilder WithClusteredStreamsPolicy(ClusteredStreamsPolicy clusteredStreamsPolicy) {
 		_clusteredStreamsPolicy = clusteredStreamsPolicy;
+		_clusteredStreamsPolicySpecified = true;
+		return this;
+	}
+
+	/// <summary>Sets the B-tree order for all member indexes. Existing storage must be reopened with the same order.</summary>
+	public ObjectSpaceBuilder WithIndexBTreeOrder(int order) {
+		Guard.ArgumentGTE(order, 3, nameof(order));
+		_indexBTreeOrder = order;
+		_indexBTreeOrderSpecified = true;
 		return this;
 	}
 
@@ -156,6 +184,7 @@ public class ObjectSpaceBuilder {
 	public ObjectSpaceBuilder UsingSerializerFactory(SerializerFactory factory) {
 		Guard.ArgumentNotNull(factory, nameof(factory));
 		Guard.Against(_specifiedCustomSerializer, ErrMsgUseSerializerFactory);
+		_serializerFactory = factory;
 		_usingCustomSerializerFactory = true;
 		return this;
 	}
@@ -190,6 +219,7 @@ public class ObjectSpaceBuilder {
 	public ObjectSpaceBuilder UsingComparerFactory(ComparerFactory factory) {
 		Guard.ArgumentNotNull(factory, nameof(factory));
 		Guard.Against(_specifiedCustomComparer, ErrMsgUseComparerFactory);
+		_comparerFactory = factory;
 		_usingCustomComparerFactory = true;
 		return this;
 	}
@@ -279,6 +309,15 @@ public class ObjectSpaceBuilder {
 			HashFunction = _hashFunction,
 			Dimensions = _dimensions.Select(x => x.BuildDefinition()).ToArray()
 		};
+		if (_indexBTreeOrderSpecified)
+			definition.IndexBTreeOrder = _indexBTreeOrder;
+		else if (MatchesBoundStorage())
+			definition.IndexBTreeOrder = _boundDefinition.IndexBTreeOrder;
+		if (MatchesBoundStorage()) {
+			foreach (var dimension in definition.Dimensions)
+				if (!dimension.AverageObjectSizeBytes.HasValue && _boundDimensionClusterSizes.TryGetValue(dimension.ObjectType, out var boundSize))
+					dimension.AverageObjectSizeBytes = boundSize;
+		}
 		// Wire in the GarbageCollect trait if enabled via the builder
 		if (_garbageCollect)
 			definition.Traits |= ObjectSpaceTraits.GarbageCollect;
@@ -287,20 +326,86 @@ public class ObjectSpaceBuilder {
 	}
 
 	public ObjectSpace Build() {
+		Guard.Ensure(_type.HasValue, "Object Space type has not been specified (file or memory mapped).");
+		var selectedType = _type.Value;
 		var definition = BuildDefinition();
-		var fileDescriptor = Sphere10FrameworkFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, _clusterSize, _clusteredStreamsPolicy, _endianness);
-		switch(_type) {
+		var retained = MatchesBoundStorage();
+		var clusterSize = _clusterSizeSpecified ? _clusterSize : retained ? _boundClusterSize
+			: selectedType == ObjectSpaceType.MemoryMapped ? Sphere10FrameworkDefaults.MemoryObjectSpaceClusterSize : Sphere10FrameworkDefaults.FileObjectSpaceClusterSize;
+		var policy = _clusteredStreamsPolicySpecified ? _clusteredStreamsPolicy : retained ? _boundPolicy
+			: selectedType == ObjectSpaceType.MemoryMapped ? Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy : Sphere10FrameworkDefaults.FileObjectSpaceContainerPolicy;
+		ObjectSpace space;
+		switch (selectedType) {
 			case ObjectSpaceType.FileMapped:
-				return new FileObjectSpace(fileDescriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
+				var descriptor = Sphere10FrameworkFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, clusterSize, policy, _endianness);
+				space = new FileObjectSpace(descriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
+				break;
 			case ObjectSpaceType.MemoryMapped:
-				return _memoryStream is null ? 
-					new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, _clusterSize, _clusteredStreamsPolicy,  _endianness) : 
-					new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, _clusterSize, _clusteredStreamsPolicy,  _endianness);
-			case null:
-				throw new InvalidOperationException("Object Space type has not been specified (file or memory mapped)");
-				
+				if (_clusterSizeSpecified || retained) {
+					space = _memoryStream is null
+						? new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, clusterSize, policy, _endianness)
+						: new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, clusterSize, policy, _endianness);
+				} else {
+					space = _memoryStream is null
+						? new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, policy, _endianness)
+						: new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, policy, _endianness);
+				}
+				break;
 			default:
 				throw new ArgumentOutOfRangeException();
+		}
+		if (space.RequiresLoad) {
+			EventHandlerEx<object> onLoaded = null;
+			onLoaded = _ => {
+				CaptureBoundConfiguration(space, selectedType);
+				space.Loaded -= onLoaded;
+			};
+			space.Loaded += onLoaded;
+		} else {
+			CaptureBoundConfiguration(space, selectedType);
+		}
+		return space;
+	}
+
+	private bool MatchesBoundStorage() {
+		if (_boundType != _type || _boundDefinition is not { HasBoundIndexBTreeOrder: true })
+			return false;
+		if (_type == ObjectSpaceType.MemoryMapped)
+			return _memoryStream != null && ReferenceEquals(_memoryStream, _boundMemoryStream);
+		if (_type != ObjectSpaceType.FileMapped || _boundFileDescriptor == null || string.IsNullOrWhiteSpace(_filepath))
+			return false;
+		var selected = TransactionalFileDescriptor.From(_filepath, _pagesPath);
+		// Transaction marker IDs are based on the exact full path; case changes conservatively require declared settings.
+		return string.Equals(Path.GetFullPath(_filepath), _boundFileDescriptor.CaseCorrectPath, StringComparison.Ordinal)
+			&& string.Equals(TransactionalFileMappedListBase<byte>.GetPagesDirectoryPath(selected),
+				TransactionalFileMappedListBase<byte>.GetPagesDirectoryPath(_boundFileDescriptor), StringComparison.Ordinal);
+	}
+
+	private void ResetBoundConfiguration() {
+		_boundType = null;
+		_boundDefinition = null;
+		_boundFileDescriptor = null;
+		_boundMemoryStream = null;
+		_boundDimensionClusterSizes.Clear();
+	}
+
+	private void CaptureBoundConfiguration(ObjectSpace space, ObjectSpaceType selectedType) {
+		if (space.RequiresLoad || !space.Definition.HasBoundIndexBTreeOrder)
+			return;
+		if (selectedType == ObjectSpaceType.MemoryMapped && _memoryStream == null)
+			return;
+		_boundType = selectedType;
+		_boundDefinition = space.Definition;
+		_boundClusterSize = space.Streams.Header.ClusterSize;
+		_boundPolicy = space.Streams.Policy;
+		_boundDimensionClusterSizes = space.Dimensions.ToDictionary(dimension => dimension.Definition.ObjectType,
+			dimension => dimension.Container.ObjectStream.Streams.Header.ClusterSize, TypeEquivalenceComparer.Instance);
+		if (space is FileObjectSpace file) {
+			_boundFileDescriptor = file.File;
+			_boundMemoryStream = null;
+		} else {
+			_boundMemoryStream = ((MemoryObjectSpace)space).Stream;
+			_boundFileDescriptor = null;
 		}
 	}
 

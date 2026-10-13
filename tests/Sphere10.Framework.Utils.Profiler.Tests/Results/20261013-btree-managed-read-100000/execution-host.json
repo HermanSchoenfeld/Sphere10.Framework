@@ -1,0 +1,71 @@
+{
+  "StartedAtUtc": "2026-10-12T17:41:43.7114418Z",
+  "Executable": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.exe",
+  "Arguments": [
+    "study",
+    "--plan",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-managed-read-100000-plan.json",
+    "--output",
+    "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-read-100000",
+    "--data-root",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data"
+  ],
+  "Recipe": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-managed-read-100000-recipe.json",
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Hash": "30C9660F326F4A8DE39CE07F3DCB3AE80EDFDE9DFC19527BFFB55F10B697E51F",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Hash": "65BE97E5B78751A7D9B16DE37CA5AFE4FF1AAB5B4F3ED887EDC6AA21192658EF",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "Resources": {
+    "DataRoot": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+    "LogicalDisk": {
+      "DeviceID": "D:",
+      "DriveType": 3,
+      "FileSystem": "NTFS",
+      "Size": 2000396742656,
+      "FreeSpace": 10925375488,
+      "VolumeName": "AppData"
+    },
+    "DataDiskMapping": [
+      {
+        "Index": 1,
+        "Model": "Samsung SSD 850 EVO 2TB",
+        "InterfaceType": "IDE",
+        "Size": 2000396321280
+      }
+    ],
+    "PhysicalDisks": [
+      {
+        "Index": 2,
+        "Model": "WD Blue SN570 500GB",
+        "InterfaceType": "SCSI",
+        "Size": 500105249280
+      },
+      {
+        "Index": 1,
+        "Model": "Samsung SSD 850 EVO 2TB",
+        "InterfaceType": "IDE",
+        "Size": 2000396321280
+      },
+      {
+        "Index": 0,
+        "Model": "WDC WDS240G2G0A-00JH30",
+        "InterfaceType": "IDE",
+        "Size": 240063022080
+      }
+    ],
+    "MemoryKilobytes": {
+      "TotalVisibleMemorySize": 33469520,
+      "FreePhysicalMemory": 11843236
+    }
+  },
+  "Controls": "Direct retained Screening: 2 warmups, 5 actual batches, deterministic round shuffle, pristine baseline outside timing, no forced GC/outlier removal, current power plan, frozen binaries."
+}

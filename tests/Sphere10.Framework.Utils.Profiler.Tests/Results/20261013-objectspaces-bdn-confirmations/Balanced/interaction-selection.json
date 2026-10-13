@@ -1,0 +1,61 @@
+[
+  {
+    "Storage": "Memory",
+    "Mix": "Balanced",
+    "LowestInteractionMean": "combined-candidate",
+    "UnresolvedCandidates": [
+      "combined-candidate",
+      "order-only"
+    ],
+    "AllCandidatesConfirmed": [
+      {
+        "CaseId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+        "Profile": "combined-candidate",
+        "MeanNanoseconds": 158599985.7142857,
+        "ConfidenceHalfWidth": 4963620.2365569165
+      },
+      {
+        "CaseId": "os-Memory-order-only-Mixed-Balanced-interaction-1024",
+        "Profile": "order-only",
+        "MeanNanoseconds": 174549128.57142857,
+        "ConfidenceHalfWidth": 18161423.48794538
+      },
+      {
+        "CaseId": "os-Memory-baseline-64-Mixed-Balanced-interaction-1024",
+        "Profile": "baseline-64",
+        "MeanNanoseconds": 208665285.7142857,
+        "ConfidenceHalfWidth": 7930496.59687295
+      }
+    ],
+    "Meaning": "Screening candidates and overlapping intervals; BenchmarkDotNet independently confirms all three competing configurations."
+  },
+  {
+    "Storage": "File",
+    "Mix": "Balanced",
+    "LowestInteractionMean": "order-only",
+    "UnresolvedCandidates": [
+      "order-only"
+    ],
+    "AllCandidatesConfirmed": [
+      {
+        "CaseId": "os-File-order-only-Mixed-Balanced-interaction-1024",
+        "Profile": "order-only",
+        "MeanNanoseconds": 393887428.5714286,
+        "ConfidenceHalfWidth": 11533861.861781899
+      },
+      {
+        "CaseId": "os-File-baseline-64-Mixed-Balanced-interaction-1024",
+        "Profile": "baseline-64",
+        "MeanNanoseconds": 474289985.71428573,
+        "ConfidenceHalfWidth": 17571553.101037122
+      },
+      {
+        "CaseId": "os-File-combined-candidate-Mixed-Balanced-interaction-1024",
+        "Profile": "combined-candidate",
+        "MeanNanoseconds": 569226328.5714285,
+        "ConfidenceHalfWidth": 16401983.25451506
+      }
+    ],
+    "Meaning": "Screening candidates and overlapping intervals; BenchmarkDotNet independently confirms all three competing configurations."
+  }
+]

@@ -1,0 +1,1480 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 997,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "os-Memory-baseline64-Read-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "f79d3949106f4502bbe848a72844846d",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Read/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-baseline64-Miss-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Miss",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "02a1fc69bafe41db819c5d3e43ad7888",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Miss/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-baseline64-Scan-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Scan",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "2c03b44c93694fc1884f3aad30bdfbd0",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Scan/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-baseline64-Insert-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Insert",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "9cf818da81f2466db0b1751547f76f8f",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Insert/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-baseline64-Update-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Update",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "cc01be0196a146d4a65bcb59ca2189a8",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Update/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-baseline64-Recycle-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Recycle",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "6afe283512f7485b875d17672ef058cf",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Recycle/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-baseline64-Reopen-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Reopen",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "bed3f7c5cb814fd2a22c0d9f15678252",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 1,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Reopen/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-balanced-candidate-Read-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "6eeecec39bae427f9aee11dd7339a160",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "combined-candidate",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 1024,
+              "AverageRecordSizeBytes": 1024,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "CacheClusterHeaders, IntegrityChecks",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "combined-candidate",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Read/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-balanced-candidate-Miss-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Miss",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "19121d1db2704642a2545998bd0bbd8e",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "combined-candidate",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 1024,
+              "AverageRecordSizeBytes": 1024,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "CacheClusterHeaders, IntegrityChecks",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "combined-candidate",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Miss/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-balanced-candidate-Scan-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Scan",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "9146bc70bd6e4b7ab5dabaafd93593a3",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "combined-candidate",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 1024,
+              "AverageRecordSizeBytes": 1024,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "CacheClusterHeaders, IntegrityChecks",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "combined-candidate",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Scan/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-balanced-candidate-Insert-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Insert",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "32e65cacbf1f45cd83107fe959477647",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "combined-candidate",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 1024,
+              "AverageRecordSizeBytes": 1024,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "CacheClusterHeaders, IntegrityChecks",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "combined-candidate",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Insert/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-balanced-candidate-Update-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Update",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "bbd9a931a9ac4f00bf5a6210031d9021",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "combined-candidate",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 1024,
+              "AverageRecordSizeBytes": 1024,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "CacheClusterHeaders, IntegrityChecks",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "combined-candidate",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Update/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-balanced-candidate-Recycle-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Recycle",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "ff4f6f13fbcf40738854e73e0c4be3ea",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "combined-candidate",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 1024,
+              "AverageRecordSizeBytes": 1024,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "CacheClusterHeaders, IntegrityChecks",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "combined-candidate",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Recycle/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-Memory-balanced-candidate-Reopen-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Reopen",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "8ae79bf620234aa1abc88c8c082c52cf",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "combined-candidate",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 1024,
+              "AverageRecordSizeBytes": 1024,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "CacheClusterHeaders, IntegrityChecks",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "combined-candidate",
+      "Mix": "n/a",
+      "Operations": 1,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Reopen/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Read-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "f5e11f86c33f40beb947a44887c6abc9",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Read/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Miss-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Miss",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "11551a86e8144420ab1fac586d5eed04",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Miss/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Scan-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Scan",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "6c25a264c7fd43078f03b7e89ff927b6",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Scan/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Insert-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Insert",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "e58de4f6af1a4732bf51b3ecb9042de0",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Insert/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Update-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Update",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "da11c83356a54f06a48eb44c499e88c9",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Update/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Recycle-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Recycle",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "8fcaca9fe9a848b3ab7b6796bbd96d90",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Recycle/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Reopen-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Reopen",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "8ed9b4b07b87414c814fcaa8c972c34d",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 1,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Reopen/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-baseline64-Rollback-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Rollback",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "a1708ff0033147688782ff6433ebe670",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline-64",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline-64",
+      "Mix": "n/a",
+      "Operations": 1,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Rollback/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Read-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Read",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "b053c6a86e8b4b47a7a666a1a4f784e1",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Read/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Miss-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Miss",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "d519bb3d8a3344c4bab436bd28ac9c47",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Miss/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Scan-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Scan",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "855a525c0ece40af9c5bc5d1c7802e6a",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Scan/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Insert-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Insert",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "148aa08165e04d32990b14b014e7c23d",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 1024,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Insert/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Update-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Update",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "beabd3b3c26445099d2afa7eda9c33bd",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Update/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Recycle-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Recycle",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "c3befa3c5068495e92a7e5924aa2eb99",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 200,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Recycle/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Reopen-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Reopen",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "a3598db9c1b340c79a8931dbc98b9686",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 1,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Reopen/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    },
+    {
+      "Id": "os-File-balanced-candidate-Rollback-diagnostics-1024",
+      "Domain": "object-spaces",
+      "Workload": "Rollback",
+      "Factor": null,
+      "ObjectSpaces": {
+        "RecordCount": 1024,
+        "RunId": "685ad0906c3c4d45aedeb35572281643",
+        "PayloadBytes": 128,
+        "OperationCount": 200,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 1024,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-diagnostics-1024",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "order-only",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "order-only",
+      "Mix": "n/a",
+      "Operations": 1,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Rollback/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "Profile": "FilePaged-Lookup-Digest32-explicit-wide-1024",
+  "RunId": "afac10cf79654d27b406dc7fecded17d",
+  "Storage": "FilePaged",
+  "Family": "Lookup",
+  "KeyShape": "Digest32",
+  "Order": 1024,
+  "MaximumLeafEntries": 1023,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 36,
+  "NodeRecordBytes": 53273,
+  "LogicalTreeBytes": 266397,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 266397,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 5,
+    "TotalLeaves": 4,
+    "LeafEntries": 3000,
+    "MeanLeafOccupancy": 0.7331378299120235,
+    "PhysicalSlots": 5
+  },
+  "AppliedPageSize": 262144,
+  "AppliedCacheBytes": 2147483647,
+  "AppliedFileBufferBytes": null
+}

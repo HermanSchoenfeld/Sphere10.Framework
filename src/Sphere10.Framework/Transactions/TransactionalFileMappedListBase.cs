@@ -27,13 +27,9 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		: base(fileDescriptor, accessMode.WithoutAutoLoad()) {
 		Guard.ArgumentNotNullOrEmpty(FileDescriptor.PagesDirectoryPath, nameof(FileDescriptor.PagesDirectoryPath));
 
-		var pagesPath = FileDescriptor.PagesDirectoryPath;
-		var ownsPagesPath = !string.IsNullOrWhiteSpace(FileDescriptor.PagesDirectoryPath) && !Path.IsPathFullyQualified(FileDescriptor.PagesDirectoryPath);
-		if (ownsPagesPath) {
-			pagesPath = Path.Combine(Tools.FileSystem.GetParentDirectoryPath(FileDescriptor.Path), pagesPath);
-		} else if (!Directory.Exists(pagesPath)) {
+		var pagesPath = ResolvePagesDirectoryPath(FileDescriptor, out var ownsPagesPath);
+		if (!ownsPagesPath && !Directory.Exists(pagesPath))
 			throw new DirectoryNotFoundException($"Directory not found: {pagesPath}");
-		}
 		FileID = ComputeFileID(FileDescriptor.CaseCorrectPath);
 		PageMarkerRepo = new MarkerRepository(pagesPath, FileID, ownsPagesPath);
 		// Empty files with uncommitted pages still require load (marked not by base constructor). 
@@ -224,6 +220,30 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		// FileID is a first 16 bytes of the case-correct path converted into a guid
 		Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
 		return new Guid(Hashers.Hash(CHF.Blake2b_128, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
+	}
+
+	internal static bool HasPersistedState(TransactionalFileDescriptor descriptor) {
+		Guard.ArgumentNotNull(descriptor, nameof(descriptor));
+		return File.Exists(descriptor.Path) && new FileInfo(descriptor.Path).Length > 0 || HasPendingState(descriptor);
+	}
+
+	private static bool HasPendingState(TransactionalFileDescriptor descriptor) {
+		Guard.ArgumentNotNull(descriptor, nameof(descriptor));
+		var pagesPath = ResolvePagesDirectoryPath(descriptor, out _);
+		if (!Directory.Exists(pagesPath))
+			return false;
+		var fileID = ComputeFileID(descriptor.CaseCorrectPath);
+		MarkerRepository.ScanPersistedFileMarkers(pagesPath, fileID, out var pageMarkers, out var fileMarkers);
+		return pageMarkers.Any() || fileMarkers.Any()
+			|| Tools.Enums.GetValues<FileMarkerType>().Any(marker => File.Exists(MarkerRepository.GenerateFileMarkerFileName(pagesPath, fileID, marker)));
+	}
+
+	internal static string GetPagesDirectoryPath(TransactionalFileDescriptor descriptor)
+		=> Path.GetFullPath(ResolvePagesDirectoryPath(descriptor, out _));
+
+	private static string ResolvePagesDirectoryPath(TransactionalFileDescriptor descriptor, out bool ownsPagesPath) {
+		ownsPagesPath = !string.IsNullOrWhiteSpace(descriptor.PagesDirectoryPath) && !Path.IsPathFullyQualified(descriptor.PagesDirectoryPath);
+		return ownsPagesPath ? Path.Combine(Tools.FileSystem.GetParentDirectoryPath(descriptor.Path), descriptor.PagesDirectoryPath) : descriptor.PagesDirectoryPath;
 	}
 
 	private void CheckScopeInStatusIfExists(FileTransactionState status) {

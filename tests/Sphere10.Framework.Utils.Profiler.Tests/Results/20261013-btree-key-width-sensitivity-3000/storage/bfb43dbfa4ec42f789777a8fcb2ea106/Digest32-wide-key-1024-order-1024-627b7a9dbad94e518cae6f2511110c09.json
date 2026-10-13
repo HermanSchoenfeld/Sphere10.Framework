@@ -1,0 +1,20 @@
+{
+  "Profile": "Digest32-wide-key-1024-order-1024",
+  "RunId": "bfb43dbfa4ec42f789777a8fcb2ea106",
+  "Storage": "ManagedNodes",
+  "Family": "BTreePlus",
+  "KeyShape": "Digest32",
+  "Order": 1024,
+  "MaximumLeafEntries": 1023,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 32,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

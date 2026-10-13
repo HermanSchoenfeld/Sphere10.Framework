@@ -1,0 +1,20 @@
+{
+  "Profile": "Digest32-wide-key-1024-order-1024",
+  "RunId": "ccc9502c63664cdf9b5a044b97e93478",
+  "Storage": "ManagedNodes",
+  "Family": "Lookup",
+  "KeyShape": "Digest32",
+  "Order": 1024,
+  "MaximumLeafEntries": 1023,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 36,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

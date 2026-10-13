@@ -1,0 +1,27 @@
+{
+  "Profile": "refined-core-paging",
+  "RunId": "a90f6d24f69441049711467266d134c9",
+  "Storage": "TransactionalFile",
+  "Family": "BTree",
+  "KeyShape": "Int64",
+  "Order": 128,
+  "MaximumLeafEntries": 127,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 3089,
+  "LogicalTreeBytes": 290398,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 290398,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 93,
+    "TotalLeaves": 92,
+    "LeafEntries": 8101,
+    "MeanLeafOccupancy": 0.6933413214652516,
+    "PhysicalSlots": 94
+  },
+  "AppliedPageSize": 262144,
+  "AppliedCacheBytes": 2147483647,
+  "AppliedFileBufferBytes": null
+}

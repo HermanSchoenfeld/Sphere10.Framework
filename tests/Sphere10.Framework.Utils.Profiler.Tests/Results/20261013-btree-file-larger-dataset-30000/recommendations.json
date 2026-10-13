@@ -1,0 +1,20 @@
+[
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer",
+    "WinnerId": "tree-FileStream-BTreePlus-balanced-larger-order-8192",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-balanced-larger-order-8192",
+      "tree-FileStream-BTreePlus-balanced-larger-order-4096",
+      "tree-FileStream-BTreePlus-balanced-larger-order-2048"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-balanced-larger-order-2048",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-balanced-larger-order-2048",
+      "tree-TransactionalFile-BTreePlus-balanced-larger-order-4096",
+      "tree-TransactionalFile-BTreePlus-balanced-larger-order-16384"
+    ]
+  }
+]

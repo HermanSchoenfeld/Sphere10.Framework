@@ -1,0 +1,1166 @@
+{
+  "Cases": [
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-BTreePlus-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-BTreePlus-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-BTreePlus-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-BTreePlus-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-BTreePlus-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-BTreePlus-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-upper-order-256",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 256,
+      "AppliedOrder": 256,
+      "PreviousLowestMeanOrder": 256,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-upper-order-512",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 256,
+      "AppliedOrder": 512,
+      "PreviousLowestMeanOrder": 256,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-upper-order-1024",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 256,
+      "AppliedOrder": 1024,
+      "PreviousLowestMeanOrder": 256,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 256,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 256,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 256,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 256,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 768,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 768,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FileStream-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-Lookup-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-Lookup-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-Lookup-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-Lookup-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-Lookup-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-OSMemoryMapped-Lookup-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-OSMemoryMapped-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-lookup-refinement-8192\\results.json",
+      "SourceCaseId": "tree-FilePaged-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-balanced-upper-order-1024",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-balanced-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 1024,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-balanced-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-balanced-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-read-heavy-upper-order-1024",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 1024,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-write-heavy-upper-order-1024",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 1024,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-BTreePlus-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-balanced-upper-order-1024",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-512-Mixed-balanced-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 1024,
+      "PreviousLowestMeanOrder": 512,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-512-Mixed-balanced-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 512,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-512-Mixed-balanced-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 512,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-read-heavy-upper-order-1024",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 1024,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-write-heavy-upper-order-1024",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 1024,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-ManagedNodes-Lookup-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+      "SourceCaseId": "tree-ManagedNodes-Lookup-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 32768,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 1024,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-BTreePlus-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-BTreePlus-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-BTreePlus-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-BTreePlus-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-BTreePlus-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-BTreePlus-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-BTreePlus-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-BTreePlus-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-Lookup-balanced-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-Lookup-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-Lookup-balanced-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-Lookup-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 1024,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-Lookup-read-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-Lookup-read-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-Lookup-write-heavy-upper-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 2048,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    },
+    {
+      "CaseId": "tree-StreamMemory-Lookup-write-heavy-upper-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+      "SourceCaseId": "tree-StreamMemory-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "PreviousTestedCeiling": 2048,
+      "AppliedOrder": 4096,
+      "PreviousLowestMeanOrder": 2048,
+      "Reason": "Conservative B+/lookup ceiling probe, or ordinary-tree ceiling with lowest screening mean. Exact same-dataset ceiling control is remeasured; intervals/runtime drift remain unresolved.",
+      "HardProfilerOrderCeiling": 4096
+    }
+  ]
+}

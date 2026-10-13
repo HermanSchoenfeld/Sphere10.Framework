@@ -1,0 +1,79 @@
+[
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Mixed/balanced/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTree-order-128-Mixed-balanced-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-order-128-Mixed-balanced-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-512-Mixed-balanced-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-1024-Mixed-balanced-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-64-Mixed-balanced-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Mixed/read-heavy/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTree-order-512-Mixed-read-heavy-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-order-512-Mixed-read-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-128-Mixed-read-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-64-Mixed-read-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-1024-Mixed-read-heavy-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Mixed/write-heavy/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTree-order-64-Mixed-write-heavy-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-order-64-Mixed-write-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-128-Mixed-write-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-512-Mixed-write-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTree-order-1024-Mixed-write-heavy-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Mixed/balanced/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-balanced-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-order-1024-Mixed-balanced-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Mixed/read-heavy/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTreePlus-order-512-Mixed-read-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTreePlus-order-64-Mixed-read-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTreePlus-order-128-Mixed-read-heavy-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Mixed/write-heavy/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+      "tree-ManagedNodes-BTreePlus-order-512-Mixed-write-heavy-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Mixed/balanced/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-Lookup-order-512-Mixed-balanced-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-order-512-Mixed-balanced-records-32768-ops-1000",
+      "tree-ManagedNodes-Lookup-order-1024-Mixed-balanced-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Mixed/read-heavy/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-Lookup-order-1024-Mixed-read-heavy-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-order-1024-Mixed-read-heavy-records-32768-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Mixed/write-heavy/records-32768/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-Lookup-order-1024-Mixed-write-heavy-records-32768-ops-1000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-order-1024-Mixed-write-heavy-records-32768-ops-1000"
+    ]
+  }
+]

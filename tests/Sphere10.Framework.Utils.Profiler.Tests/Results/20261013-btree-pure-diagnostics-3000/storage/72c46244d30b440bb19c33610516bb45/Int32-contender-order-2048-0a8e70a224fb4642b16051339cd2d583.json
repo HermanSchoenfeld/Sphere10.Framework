@@ -1,0 +1,27 @@
+{
+  "Profile": "Int32-contender-order-2048",
+  "RunId": "72c46244d30b440bb19c33610516bb45",
+  "Storage": "FileStream",
+  "Family": "Lookup",
+  "KeyShape": "Int32",
+  "Order": 2048,
+  "MaximumLeafEntries": 2047,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 49177,
+  "LogicalTreeBytes": 147563,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 147563,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 3,
+    "TotalLeaves": 2,
+    "LeafEntries": 3000,
+    "MeanLeafOccupancy": 0.7327796775769418,
+    "PhysicalSlots": 3
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": 4096
+}

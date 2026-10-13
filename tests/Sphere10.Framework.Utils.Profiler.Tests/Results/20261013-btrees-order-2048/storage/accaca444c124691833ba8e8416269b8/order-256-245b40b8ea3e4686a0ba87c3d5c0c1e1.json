@@ -1,0 +1,27 @@
+{
+  "Profile": "order-256",
+  "RunId": "accaca444c124691833ba8e8416269b8",
+  "Storage": "TransactionalFile",
+  "Family": "Lookup",
+  "KeyShape": "Int32",
+  "Order": 256,
+  "MaximumLeafEntries": 255,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 6169,
+  "LogicalTreeBytes": 80229,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 2048,
+  "PhysicalStorageBytes": 80229,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 13,
+    "TotalLeaves": 12,
+    "LeafEntries": 2048,
+    "MeanLeafOccupancy": 0.6692810457516339,
+    "PhysicalSlots": 13
+  },
+  "AppliedPageSize": 65536,
+  "AppliedCacheBytes": 16777216,
+  "AppliedFileBufferBytes": null
+}

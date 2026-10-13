@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2026-10-13-05-05-05</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 10 (10.0.19045.7725/22H2/2022Update)
+Intel Core i9-10900K CPU 3.70GHz, 1 CPU, 20 logical and 10 physical cores
+.NET SDK 10.0.401
+  [Host]     : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+  Job-YYAKRU : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>OutlierMode=DontRemove  PowerPlanMode=00000000-0000-0000-0000-000000000000  Force=False  
+InvocationCount=1  IterationCount=10  LaunchCount=2  
+RunStrategy=Monitoring  UnrollFactor=1  WarmupCount=5  
+</code></pre>
+
+<table>
+<thead><tr><th>Type                   </th><th>Method   </th><th>Profile       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>Manag(...)ol-64 [42]</td><td>3.421 ms</td><td>0.6734 ms</td><td>0.7755 ms</td><td>2096 B</td>
+</tr><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>Manag(...)r-128 [46]</td><td>2.745 ms</td><td>0.0559 ms</td><td>0.0643 ms</td><td>2072 B</td>
+</tr><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>Manag(...)ol-64 [46]</td><td>8.208 ms</td><td>0.8046 ms</td><td>0.9266 ms</td><td>4704 B</td>
+</tr><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>Manag(...)-2048 [51]</td><td>6.277 ms</td><td>2.6986 ms</td><td>3.1077 ms</td><td>-</td>
+</tr><tr><td>BTreeLookupMutationBenchmarks</td><td>MixedAndPersist</td><td>Manag(...)ol-64 [43]</td><td>59.201 ms</td><td>3.0824 ms</td><td>3.5497 ms</td><td>34104 B</td>
+</tr><tr><td>BTreeLookupMutationBenchmarks</td><td>MixedAndPersist</td><td>Manag(...)-2048 [48]</td><td>17.538 ms</td><td>0.1915 ms</td><td>0.2205 ms</td><td>32920 B</td>
+</tr></tbody></table>
+</body>
+</html>

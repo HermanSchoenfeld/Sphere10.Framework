@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2026-10-13-05-28-21</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 10 (10.0.19045.7725/22H2/2022Update)
+Intel Core i9-10900K CPU 3.70GHz, 1 CPU, 20 logical and 10 physical cores
+.NET SDK 10.0.401
+  [Host]     : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+  Job-YYAKRU : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>OutlierMode=DontRemove  PowerPlanMode=00000000-0000-0000-0000-000000000000  Force=False  
+InvocationCount=1  IterationCount=10  LaunchCount=2  
+RunStrategy=Monitoring  UnrollFactor=1  WarmupCount=5  
+</code></pre>
+
+<table>
+<thead><tr><th>Method   </th><th>Profile       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0 </th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>MixedAndPersist</td><td>FileP(...)ol-64 [43]</td><td>815.42 ms</td><td>9.191 ms</td><td>10.584 ms</td><td>339000.0000</td><td>4000.0000</td><td>-</td><td>3385.19 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>FileP(...)-2048 [48]</td><td>99.46 ms</td><td>7.201 ms</td><td>8.293 ms</td><td>50000.0000</td><td>4000.0000</td><td>-</td><td>505.18 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>FileS(...)ol-64 [40]</td><td>32.53 ms</td><td>5.478 ms</td><td>6.309 ms</td><td>2000.0000</td><td>-</td><td>-</td><td>29.45 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>FileS(...)r-128 [44]</td><td>27.10 ms</td><td>6.257 ms</td><td>7.206 ms</td><td>3000.0000</td><td>-</td><td>-</td><td>30.73 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>FileS(...)-4096 [58]</td><td>101.30 ms</td><td>6.435 ms</td><td>7.411 ms</td><td>28000.0000</td><td>28000.0000</td><td>28000.0000</td><td>115.3 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>FileS(...)ol-64 [44]</td><td>930.72 ms</td><td>19.880 ms</td><td>22.894 ms</td><td>26000.0000</td><td>-</td><td>-</td><td>266.52 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>FileS(...)-2048 [49]</td><td>76.44 ms</td><td>5.322 ms</td><td>6.129 ms</td><td>7000.0000</td><td>-</td><td>-</td><td>78.29 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>OSMem(...)ol-64 [48]</td><td>64.22 ms</td><td>4.266 ms</td><td>4.912 ms</td><td>26000.0000</td><td>-</td><td>-</td><td>266.52 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>OSMem(...)-2048 [53]</td><td>16.07 ms</td><td>4.378 ms</td><td>5.041 ms</td><td>7000.0000</td><td>-</td><td>-</td><td>78.29 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>Trans(...)ol-64 [51]</td><td>812.72 ms</td><td>15.872 ms</td><td>18.278 ms</td><td>339000.0000</td><td>4000.0000</td><td>-</td><td>3385.24 MB</td>
+</tr><tr><td>MixedAndPersist</td><td>Trans(...)-2048 [56]</td><td>102.89 ms</td><td>6.260 ms</td><td>7.209 ms</td><td>50000.0000</td><td>4000.0000</td><td>-</td><td>505.23 MB</td>
+</tr></tbody></table>
+</body>
+</html>

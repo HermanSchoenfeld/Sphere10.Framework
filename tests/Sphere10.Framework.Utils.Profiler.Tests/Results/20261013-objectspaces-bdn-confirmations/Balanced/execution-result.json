@@ -1,0 +1,60 @@
+{
+  "RecordedAtUtc": "2026-10-12T17:14:01.836240+00:00",
+  "DomainExitCode": 0,
+  "PipelineExitCode": 0,
+  "CapturedAfterRun": true,
+  "Origin": "Derived after execution from the observed successful three-mix launcher exit0; that original launcher guarded each domain LASTEXITCODE and reached its final completion only when every domain exited0. The status was not emitted inside the original run. Original console independently records all12 worker exits0.",
+  "OriginalLauncherSha256": "056287980977CDD3B4B8B3654108BDE28CD9041CB8BD4DCAFC6899A9D3D9B76D",
+  "OriginalLauncher": "../original-launcher.ps1",
+  "Console": "console.log",
+  "ObservedWorkerExits": [
+    {
+      "ProcessId": 24016,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 27376,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 36404,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 37508,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 33144,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 42192,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 40780,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 42028,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 44284,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 7288,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 22464,
+      "ExitCode": 0
+    },
+    {
+      "ProcessId": 43280,
+      "ExitCode": 0
+    }
+  ]
+}

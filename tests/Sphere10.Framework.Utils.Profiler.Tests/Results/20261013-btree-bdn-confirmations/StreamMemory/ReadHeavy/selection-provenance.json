@@ -1,0 +1,290 @@
+{
+  "Profiles": [
+    {
+      "Profile": {
+        "Name": "StreamMemory-BTree-legacy-order-control-64",
+        "Storage": "StreamMemory",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "legacy-order-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+          "CaseId": "tree-StreamMemory-BTree-order-64-Mixed-read-heavy-records-8192-ops-1000",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "read-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+          "CaseId": "tree-StreamMemory-BTree-order-64-Mixed-read-heavy",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 7,
+          "ActualSourceInputs": {
+            "RecordCount": 2048,
+            "OperationCount": 512,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "read-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 7
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 8000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "StreamMemory-BTree-robust-shared-contender-128",
+        "Storage": "StreamMemory",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 128,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "robust-shared-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+          "CaseId": "tree-StreamMemory-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "read-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+          "CaseId": "tree-StreamMemory-BTree-order-128-Mixed-read-heavy",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 7,
+          "ActualSourceInputs": {
+            "RecordCount": 2048,
+            "OperationCount": 512,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "read-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 7
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 8000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "StreamMemory-BTreePlus-legacy-order-control-64",
+        "Storage": "StreamMemory",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "legacy-order-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+          "CaseId": "tree-StreamMemory-BTreePlus-order-64-Mixed-read-heavy",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 7,
+          "ActualSourceInputs": {
+            "RecordCount": 2048,
+            "OperationCount": 512,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "read-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 7
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 8000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "StreamMemory-BTreePlus-robust-shared-contender-2048",
+        "Storage": "StreamMemory",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 2048,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "robust-shared-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+          "CaseId": "tree-StreamMemory-BTreePlus-read-heavy-upper-order-2048",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "read-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192\\results.json",
+          "CaseId": "tree-StreamMemory-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 8192,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "read-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 8192,
+        "OperationCount": 8000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    }
+  ],
+  "Protocol": [
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ]
+}

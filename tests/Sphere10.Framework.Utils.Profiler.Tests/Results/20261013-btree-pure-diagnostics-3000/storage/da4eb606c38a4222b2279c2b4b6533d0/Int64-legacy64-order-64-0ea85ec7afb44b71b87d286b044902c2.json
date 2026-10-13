@@ -1,0 +1,20 @@
+{
+  "Profile": "Int64-legacy64-order-64",
+  "RunId": "da4eb606c38a4222b2279c2b4b6533d0",
+  "Storage": "ManagedNodes",
+  "Family": "BTree",
+  "KeyShape": "Int64",
+  "Order": 64,
+  "MaximumLeafEntries": 63,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

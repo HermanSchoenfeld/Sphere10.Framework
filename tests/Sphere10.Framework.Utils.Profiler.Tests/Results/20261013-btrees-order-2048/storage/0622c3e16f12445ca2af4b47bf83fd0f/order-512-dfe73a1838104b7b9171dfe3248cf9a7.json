@@ -1,0 +1,27 @@
+{
+  "Profile": "order-512",
+  "RunId": "0622c3e16f12445ca2af4b47bf83fd0f",
+  "Storage": "TransactionalFile",
+  "Family": "BTree",
+  "KeyShape": "Int64",
+  "Order": 512,
+  "MaximumLeafEntries": 511,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 12305,
+  "LogicalTreeBytes": 98472,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 2048,
+  "PhysicalStorageBytes": 98472,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 7,
+    "TotalLeaves": 6,
+    "LeafEntries": 2043,
+    "MeanLeafOccupancy": 0.6663405088062623,
+    "PhysicalSlots": 8
+  },
+  "AppliedPageSize": 65536,
+  "AppliedCacheBytes": 16777216,
+  "AppliedFileBufferBytes": null
+}

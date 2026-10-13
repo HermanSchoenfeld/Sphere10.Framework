@@ -1,0 +1,452 @@
+[
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-BTree-FileBuffer-baseline-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-FileBuffer-baseline-Mixed-balanced",
+      "tree-FileStream-BTree-FileBuffer-buffer-65536-Mixed-balanced",
+      "tree-FileStream-BTree-FileBuffer-buffer-16384-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-BTree-FileBuffer-buffer-65536-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-FileBuffer-buffer-65536-Mixed-read-heavy",
+      "tree-FileStream-BTree-FileBuffer-buffer-16384-Mixed-read-heavy",
+      "tree-FileStream-BTree-FileBuffer-baseline-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-BTree-FileBuffer-baseline-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-FileBuffer-baseline-Mixed-write-heavy",
+      "tree-FileStream-BTree-FileBuffer-buffer-16384-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-balanced",
+      "tree-FileStream-BTreePlus-FileBuffer-buffer-65536-Mixed-balanced",
+      "tree-FileStream-BTreePlus-FileBuffer-baseline-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-BTreePlus-FileBuffer-buffer-65536-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-FileBuffer-buffer-65536-Mixed-read-heavy",
+      "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-read-heavy",
+      "tree-FileStream-BTreePlus-FileBuffer-baseline-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-write-heavy",
+      "tree-FileStream-BTreePlus-FileBuffer-baseline-Mixed-write-heavy",
+      "tree-FileStream-BTreePlus-FileBuffer-buffer-65536-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-balanced",
+      "tree-FileStream-Lookup-FileBuffer-buffer-16384-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-read-heavy",
+      "tree-FileStream-Lookup-FileBuffer-buffer-16384-Mixed-read-heavy",
+      "tree-FileStream-Lookup-FileBuffer-baseline-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileBuffer",
+    "WinnerId": "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-write-heavy",
+      "tree-FileStream-Lookup-FileBuffer-buffer-16384-Mixed-write-heavy",
+      "tree-FileStream-Lookup-FileBuffer-baseline-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-BTree-FilePage-page-262144-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-FilePage-page-262144-Mixed-balanced",
+      "tree-FilePaged-BTree-FilePage-page-1048576-Mixed-balanced",
+      "tree-FilePaged-BTree-FilePage-page-16384-Mixed-balanced",
+      "tree-FilePaged-BTree-FilePage-baseline-Mixed-balanced",
+      "tree-FilePaged-BTree-FilePage-page-4096-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-BTree-FilePage-page-4096-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-FilePage-page-4096-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FilePage-page-16384-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FilePage-baseline-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FilePage-page-262144-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FilePage-page-1048576-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-BTree-FilePage-page-1048576-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-FilePage-page-1048576-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FilePage-page-16384-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FilePage-page-4096-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FilePage-page-262144-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FilePage-baseline-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-BTree-FileCache-cache-4194304-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-FileCache-cache-4194304-Mixed-balanced",
+      "tree-FilePaged-BTree-FileCache-cache-262144-Mixed-balanced",
+      "tree-FilePaged-BTree-FileCache-baseline-Mixed-balanced",
+      "tree-FilePaged-BTree-FileCache-cache-65536-Mixed-balanced",
+      "tree-FilePaged-BTree-FileCache-cache-1048576-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-BTree-FileCache-cache-1048576-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-FileCache-cache-1048576-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FileCache-cache-4194304-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FileCache-cache-262144-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FileCache-baseline-Mixed-read-heavy",
+      "tree-FilePaged-BTree-FileCache-cache-65536-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-BTree-FileCache-baseline-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-FileCache-baseline-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FileCache-cache-4194304-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FileCache-cache-1048576-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FileCache-cache-262144-Mixed-write-heavy",
+      "tree-FilePaged-BTree-FileCache-cache-65536-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FilePage-page-16384-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FilePage-page-262144-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FilePage-page-4096-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FilePage-baseline-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-BTreePlus-FilePage-page-262144-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-FilePage-page-262144-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-baseline-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-page-16384-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-page-4096-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-write-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-page-4096-Mixed-write-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-page-16384-Mixed-write-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-page-262144-Mixed-write-heavy",
+      "tree-FilePaged-BTreePlus-FilePage-baseline-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FileCache-cache-4194304-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FileCache-cache-262144-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FileCache-baseline-Mixed-balanced",
+      "tree-FilePaged-BTreePlus-FileCache-cache-65536-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-BTreePlus-FileCache-baseline-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-FileCache-baseline-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FileCache-cache-4194304-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FileCache-cache-262144-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-read-heavy",
+      "tree-FilePaged-BTreePlus-FileCache-cache-65536-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-write-heavy",
+      "tree-FilePaged-BTreePlus-FileCache-cache-262144-Mixed-write-heavy",
+      "tree-FilePaged-BTreePlus-FileCache-baseline-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-Lookup-FilePage-page-1048576-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-FilePage-page-1048576-Mixed-balanced",
+      "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-balanced",
+      "tree-FilePaged-Lookup-FilePage-baseline-Mixed-balanced",
+      "tree-FilePaged-Lookup-FilePage-page-4096-Mixed-balanced",
+      "tree-FilePaged-Lookup-FilePage-page-16384-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FilePage-page-1048576-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FilePage-page-4096-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FilePage-page-16384-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FilePage-baseline-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-write-heavy",
+      "tree-FilePaged-Lookup-FilePage-page-1048576-Mixed-write-heavy",
+      "tree-FilePaged-Lookup-FilePage-baseline-Mixed-write-heavy",
+      "tree-FilePaged-Lookup-FilePage-page-16384-Mixed-write-heavy",
+      "tree-FilePaged-Lookup-FilePage-page-4096-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-balanced",
+      "tree-FilePaged-Lookup-FileCache-cache-1048576-Mixed-balanced",
+      "tree-FilePaged-Lookup-FileCache-cache-262144-Mixed-balanced",
+      "tree-FilePaged-Lookup-FileCache-baseline-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-Lookup-FileCache-baseline-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-FileCache-baseline-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FileCache-cache-262144-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FileCache-cache-1048576-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-read-heavy",
+      "tree-FilePaged-Lookup-FileCache-cache-65536-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-write-heavy",
+      "tree-FilePaged-Lookup-FileCache-cache-262144-Mixed-write-heavy",
+      "tree-FilePaged-Lookup-FileCache-baseline-Mixed-write-heavy",
+      "tree-FilePaged-Lookup-FileCache-cache-1048576-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-BTree-FilePage-page-1048576-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-FilePage-page-1048576-Mixed-balanced",
+      "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-balanced",
+      "tree-TransactionalFile-BTree-FilePage-baseline-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-read-heavy",
+      "tree-TransactionalFile-BTree-FilePage-page-1048576-Mixed-read-heavy",
+      "tree-TransactionalFile-BTree-FilePage-baseline-Mixed-read-heavy",
+      "tree-TransactionalFile-BTree-FilePage-page-16384-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-write-heavy",
+      "tree-TransactionalFile-BTree-FilePage-page-1048576-Mixed-write-heavy",
+      "tree-TransactionalFile-BTree-FilePage-baseline-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-balanced",
+      "tree-TransactionalFile-BTree-FileCache-cache-1048576-Mixed-balanced",
+      "tree-TransactionalFile-BTree-FileCache-cache-4194304-Mixed-balanced",
+      "tree-TransactionalFile-BTree-FileCache-baseline-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-read-heavy",
+      "tree-TransactionalFile-BTree-FileCache-cache-4194304-Mixed-read-heavy",
+      "tree-TransactionalFile-BTree-FileCache-baseline-Mixed-read-heavy",
+      "tree-TransactionalFile-BTree-FileCache-cache-1048576-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-BTree-FileCache-cache-4194304-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-FileCache-cache-4194304-Mixed-write-heavy",
+      "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-write-heavy",
+      "tree-TransactionalFile-BTree-FileCache-baseline-Mixed-write-heavy",
+      "tree-TransactionalFile-BTree-FileCache-cache-1048576-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-balanced",
+      "tree-TransactionalFile-BTreePlus-FilePage-page-1048576-Mixed-balanced",
+      "tree-TransactionalFile-BTreePlus-FilePage-baseline-Mixed-balanced",
+      "tree-TransactionalFile-BTreePlus-FilePage-page-16384-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-FilePage-page-1048576-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-FilePage-page-1048576-Mixed-read-heavy",
+      "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-read-heavy",
+      "tree-TransactionalFile-BTreePlus-FilePage-baseline-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-write-heavy",
+      "tree-TransactionalFile-BTreePlus-FilePage-baseline-Mixed-write-heavy",
+      "tree-TransactionalFile-BTreePlus-FilePage-page-1048576-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-FileCache-cache-1048576-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-1048576-Mixed-balanced",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-4194304-Mixed-balanced",
+      "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-balanced",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-262144-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-read-heavy",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-1048576-Mixed-read-heavy",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-4194304-Mixed-read-heavy",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-262144-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-write-heavy",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-1048576-Mixed-write-heavy",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-262144-Mixed-write-heavy",
+      "tree-TransactionalFile-BTreePlus-FileCache-cache-4194304-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-Lookup-FilePage-page-1048576-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-FilePage-page-1048576-Mixed-balanced",
+      "tree-TransactionalFile-Lookup-FilePage-page-262144-Mixed-balanced",
+      "tree-TransactionalFile-Lookup-FilePage-page-16384-Mixed-balanced",
+      "tree-TransactionalFile-Lookup-FilePage-baseline-Mixed-balanced",
+      "tree-TransactionalFile-Lookup-FilePage-page-4096-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-Lookup-FilePage-baseline-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-FilePage-baseline-Mixed-read-heavy",
+      "tree-TransactionalFile-Lookup-FilePage-page-1048576-Mixed-read-heavy",
+      "tree-TransactionalFile-Lookup-FilePage-page-262144-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FilePage",
+    "WinnerId": "tree-TransactionalFile-Lookup-FilePage-page-262144-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-FilePage-page-262144-Mixed-write-heavy",
+      "tree-TransactionalFile-Lookup-FilePage-page-1048576-Mixed-write-heavy",
+      "tree-TransactionalFile-Lookup-FilePage-baseline-Mixed-write-heavy",
+      "tree-TransactionalFile-Lookup-FilePage-page-4096-Mixed-write-heavy",
+      "tree-TransactionalFile-Lookup-FilePage-page-16384-Mixed-write-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/balanced/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-Lookup-FileCache-baseline-Mixed-balanced",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-FileCache-baseline-Mixed-balanced",
+      "tree-TransactionalFile-Lookup-FileCache-cache-1048576-Mixed-balanced",
+      "tree-TransactionalFile-Lookup-FileCache-cache-262144-Mixed-balanced",
+      "tree-TransactionalFile-Lookup-FileCache-cache-4194304-Mixed-balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/read-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-Lookup-FileCache-cache-4194304-Mixed-read-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-FileCache-cache-4194304-Mixed-read-heavy",
+      "tree-TransactionalFile-Lookup-FileCache-baseline-Mixed-read-heavy",
+      "tree-TransactionalFile-Lookup-FileCache-cache-262144-Mixed-read-heavy",
+      "tree-TransactionalFile-Lookup-FileCache-cache-1048576-Mixed-read-heavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/write-heavy/records-2048/ops-100/group-8/shuffled-True/factor-FileCache",
+    "WinnerId": "tree-TransactionalFile-Lookup-FileCache-cache-262144-Mixed-write-heavy",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-FileCache-cache-262144-Mixed-write-heavy",
+      "tree-TransactionalFile-Lookup-FileCache-baseline-Mixed-write-heavy",
+      "tree-TransactionalFile-Lookup-FileCache-cache-4194304-Mixed-write-heavy",
+      "tree-TransactionalFile-Lookup-FileCache-cache-1048576-Mixed-write-heavy"
+    ]
+  }
+]

@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.4.11620.152
@@ -74,6 +74,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AA4A8AEA-0640-4FFF-922B-AEBFC799DB85}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
+		..\.gitattributes = ..\.gitattributes
 		..\Directory.Build.props = ..\Directory.Build.props
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
@@ -340,6 +341,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "patterns", "patterns", "{AF
 		..\docs\guidelines\patterns\sync-async.md = ..\docs\guidelines\patterns\sync-async.md
 		..\docs\guidelines\patterns\testing.md = ..\docs\guidelines\patterns\testing.md
 		..\docs\guidelines\patterns\type-hierarchies.md = ..\docs\guidelines\patterns\type-hierarchies.md
+		..\docs\guidelines\patterns\object-spaces.md = ..\docs\guidelines\patterns\object-spaces.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source Notes", "Source Notes", "{532962B1-B12B-50F0-BEB4-0F6063E82329}"
@@ -376,6 +378,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "package-consumers", "package-consumers", "{834AFB88-1DF2-5365-9665-64A39CD49648}"
 	ProjectSection(SolutionItems) = preProject
 		..\scripts\package-consumers\README.md = ..\scripts\package-consumers\README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Utils.Profiler", "..\utils\Sphere10.Framework.Utils.Profiler\Sphere10.Framework.Utils.Profiler.csproj", "{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Utils.Profiler.Tests", "..\tests\Sphere10.Framework.Utils.Profiler.Tests\Sphere10.Framework.Utils.Profiler.Tests.csproj", "{188CD063-994C-4216-AEB6-0978BC49763B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "object-spaces", "object-spaces", "{9E54A774-508D-4DCE-88BA-1C0B00C0C1CC}"
+	ProjectSection(SolutionItems) = preProject
+		..\agents\skills\object-spaces\SKILL.md = ..\agents\skills\object-spaces\SKILL.md
 	EndProjectSection
 EndProject
 Global
@@ -1012,6 +1023,30 @@ Global
 		{01B5A748-205F-4ADB-BA95-E470FCE851C9}.Release|x64.Build.0 = Release|Any CPU
 		{01B5A748-205F-4ADB-BA95-E470FCE851C9}.Release|x86.ActiveCfg = Release|Any CPU
 		{01B5A748-205F-4ADB-BA95-E470FCE851C9}.Release|x86.Build.0 = Release|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Debug|x64.Build.0 = Debug|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Debug|x86.Build.0 = Debug|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Release|x64.ActiveCfg = Release|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Release|x64.Build.0 = Release|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Release|x86.ActiveCfg = Release|Any CPU
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A}.Release|x86.Build.0 = Release|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Debug|x64.Build.0 = Debug|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Debug|x86.Build.0 = Debug|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Release|x64.ActiveCfg = Release|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Release|x64.Build.0 = Release|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Release|x86.ActiveCfg = Release|Any CPU
+		{188CD063-994C-4216-AEB6-0978BC49763B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1083,6 +1118,9 @@ Global
 		{9085BF67-DB78-41ED-A064-FD47F8F7BD40} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
 		{B617D45C-A422-4B54-920E-30DDF19F93F0} = {10671148-26EC-4BB5-B43C-4074AA083281}
 		{AF8787FD-BDA3-4D39-8576-D17F9C718AF6} = {D5126186-FF36-5522-815D-A630ECE5ADAA}
+		{9E54A774-508D-4DCE-88BA-1C0B00C0C1CC} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{F0E9C253-9F07-4C0F-B4F9-2B9FF607341A} = {9EA2842C-7248-4410-B9DB-16E3E32E2026}
+		{188CD063-994C-4216-AEB6-0978BC49763B} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6BF0BD3-FB17-4EDB-AFBF-08A34BD2E2B6}

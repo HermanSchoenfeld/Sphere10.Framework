@@ -1,0 +1,59 @@
+{
+  "CreatedAtUtc": "2026-10-12T16:37:40.500781+00:00",
+  "SelectedWorkload": "Balanced MixedReadWriteAndPersist",
+  "SamplesPerSourceCase": 7,
+  "Selections": [
+    {
+      "Storage": "Memory",
+      "SourceStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "ChosenCaseId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+      "BaselineCaseId": "os-Memory-baseline-64-Mixed-Balanced-interaction-1024",
+      "Reason": "Lowest verified mean among the three actual Balanced interaction candidates. This selection does not imply pure-workload optimality.",
+      "MeanNanoseconds": 158599985.7142857,
+      "ChosenConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "Memory",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 1024,
+        "AverageRecordSizeBytes": 1024,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "CacheClusterHeaders, IntegrityChecks",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Storage": "File",
+      "SourceStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "ChosenCaseId": "os-File-order-only-Mixed-Balanced-interaction-1024",
+      "BaselineCaseId": "os-File-baseline-64-Mixed-Balanced-interaction-1024",
+      "Reason": "Lowest verified mean among the three actual Balanced interaction candidates. This selection does not imply pure-workload optimality.",
+      "MeanNanoseconds": 393887428.5714286,
+      "ChosenConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    }
+  ],
+  "DiagnosticLimits": [
+    "Warm read and scan batches prehydrate records before measurement.",
+    "Reopen clears framework caches while OS disk cache remains warm.",
+    "Update changes secondary indexed fields; file persistence is one Commit per batch.",
+    "Diagnostics compare two Balanced candidates, not a full pure-workload parameter sweep."
+  ]
+}

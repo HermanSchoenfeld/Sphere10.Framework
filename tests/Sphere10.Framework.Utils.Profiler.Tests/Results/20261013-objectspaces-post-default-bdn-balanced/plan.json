@@ -1,0 +1,210 @@
+{
+  "Stage": "BenchmarkDotNet post-default confirmation",
+  "ExecuteOnlyAfter": "Root completes default integration and correctness tests, the BTree campaign ends, and Root explicitly owns the exclusive serial execution slot.",
+  "ExpectedMeasuredCases": 4,
+  "ExpectedIndependentWorkers": 8,
+  "ExpectedSamplesPerCase": 20,
+  "Settings": {
+    "RecordCount": 1024,
+    "OperationCount": 200,
+    "PayloadBytes": 128,
+    "PayloadPattern": "Fixed",
+    "CategoryCount": 1024,
+    "HotCategoryPercent": 0,
+    "LookupPattern": "Shuffled",
+    "ShuffledInsertion": true,
+    "WorkloadMix": "Balanced",
+    "Profiles": [
+      {
+        "Name": "memory-historical-baseline-64",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "Memory",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 64,
+          "ClusterSize": 4096,
+          "AverageRecordSizeBytes": 256,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "Default",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "memory-selected-defaults-169",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "Memory",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 169,
+          "ClusterSize": 1024,
+          "AverageRecordSizeBytes": 1024,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "CacheClusterHeaders, IntegrityChecks",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "file-historical-baseline-64",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "File",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 64,
+          "ClusterSize": 4096,
+          "AverageRecordSizeBytes": 256,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "Default",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+      },
+      {
+        "Name": "file-selected-defaults-169",
+        "Configuration": {
+          "SchemaProfile": "PayloadOnly",
+          "Storage": "File",
+          "IndexProfile": "Full",
+          "IndexBTreeOrder": 169,
+          "ClusterSize": 4096,
+          "AverageRecordSizeBytes": 256,
+          "PageSize": 262144,
+          "MaxMemory": 16777216,
+          "Policy": "Default",
+          "Endianness": "LittleEndian",
+          "Merkleized": false,
+          "HashFunction": "SHA2_256",
+          "AutoSave": false
+        },
+        "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+      }
+    ]
+  },
+  "BenchmarkArguments": [
+    "--filter",
+    "*MixedReadWriteAndPersist*",
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ],
+  "EvidenceRelativeDirectory": "tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261013-objectspaces-post-default-bdn-balanced",
+  "DataRelativeDirectory": "BenchmarkDotNet.Artifacts/study-data",
+  "ProfileFile": "profiles.json",
+  "Provenance": [
+    {
+      "Profile": "memory-historical-baseline-64",
+      "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+      "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "HistoricalExactProfile": "memory-baseline-64",
+      "ConfigurationCopiedWithoutChanges": true,
+      "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+    },
+    {
+      "Profile": "memory-selected-defaults-169",
+      "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+      "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "HistoricalExactProfile": "memory-combined-candidate",
+      "ConfigurationCopiedWithoutChanges": true,
+      "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+    },
+    {
+      "Profile": "file-historical-baseline-64",
+      "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+      "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "HistoricalExactProfile": "file-baseline-64",
+      "ConfigurationCopiedWithoutChanges": true,
+      "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+    },
+    {
+      "Profile": "file-selected-defaults-169",
+      "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+      "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+      "HistoricalExactProfile": "file-order-only",
+      "ConfigurationCopiedWithoutChanges": true,
+      "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+    }
+  ],
+  "OriginalRunSha256": "2A769200745CF7963B6CCBBD0A19AF3DB3453A8DAA0E7381691F01BD6594147A",
+  "OriginalProfileFileSha256": "5FC38079956D781CE716A8517A51E417A00A52E8EB0A8EB3B36BCC882262FE0D",
+  "Interpretation": [
+    "Historical File baseline matches the original profiler's 16 MiB budget. It is not the old generic Core int.MaxValue cache control; that separate pressure-test control remains retained.",
+    "This additional Balanced-only run establishes final-build timing and actual generated-worker identities. The earlier 18 mixed cases remain raw timing evidence with their explicitly recorded unavailable worker-binary identities.",
+    "No workload-independent optimum or timing threshold is implied. Print raw samples, BDN intervals, cumulative allocation and encoded logical storage alongside the exact settings."
+  ],
+  "RequiredAttachments": [
+    "profiles.json",
+    "selection.json",
+    "plan.json",
+    "run.json",
+    "command.ps1",
+    "command-arguments.json",
+    "console.log",
+    "execution-host.json",
+    "execution-result.json",
+    "worker-binary-fingerprints.json",
+    "results/*-report-full.json",
+    "results/*-report.csv",
+    "configuration-ranks.csv",
+    "configuration-ranks.md",
+    "metadata/*"
+  ],
+  "WorkerFingerprintCapture": {
+    "Origin": "capturedafterrunfromretainedworkerbuild",
+    "CapturedAfterRun": true,
+    "MapOutputFrom": "Each exact // Execute: dotnet ... in <directory> line in the original console, cross-checked against its generated build command.",
+    "CaptureBefore": "Any subsequent phase, rebuild, cleanup or reuse of the same generated output directory.",
+    "RequiredBinaries": [
+      "Sphere10.Framework.dll",
+      "Sphere10.Framework.Utils.Profiler.dll",
+      "actual generated application named by the Execute command"
+    ],
+    "RequiredFields": [
+      "Path",
+      "Sha256",
+      "Length",
+      "FileVersion",
+      "InformationalVersion",
+      "ModuleVersionId",
+      "LastWriteTimeUtc"
+    ],
+    "KeepSeparateFrom": "Launcher assembly identities in execution-host.json; neither set substitutes for the other.",
+    "Archive": "Copy the three worker binaries and generated project into a uniquely phase-owned retained directory and include their hashes in the capture manifest."
+  },
+  "RequiredChecks": [
+    "No concurrent profiler or test process; retain existing power plan and record it before and after.",
+    "Refuse an already populated evidence destination; never overwrite older raw results or fingerprints.",
+    "Record the actual domain LASTEXITCODE immediately before any other native command, even on failure.",
+    "Require exactly four actual MixedReadWriteAndPersist FullName cases matched to the four declared profiles.",
+    "Require two launches per case, five Workload Warmup batches and ten Workload Actual batches per launch, and all eight worker exit codes zero.",
+    "Reconcile each of twenty Statistics OriginalValues/N/Mean against Actual and Result measurements; retain all outliers and any attributed failure.",
+    "Retain checksum/oracle-backed fixture verification and exact metadata rather than treating process exit zero alone as correctness proof.",
+    "Capture and verify actual generated worker binary identities, distinct from the pre-build launcher identities."
+  ],
+  "KeepFilesPrimarySource": "https://raw.githubusercontent.com/dotnet/BenchmarkDotNet/v0.15.8/src/BenchmarkDotNet/ConsoleArguments/CommandLineOptions.cs"
+}

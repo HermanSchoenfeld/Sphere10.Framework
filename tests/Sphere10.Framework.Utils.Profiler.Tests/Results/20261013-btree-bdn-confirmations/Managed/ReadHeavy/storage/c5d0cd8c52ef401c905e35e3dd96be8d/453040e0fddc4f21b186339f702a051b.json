@@ -1,0 +1,20 @@
+{
+  "Profile": "ManagedNodes-Lookup-legacy-order-control-64",
+  "RunId": "c5d0cd8c52ef401c905e35e3dd96be8d",
+  "Storage": "ManagedNodes",
+  "Family": "Lookup",
+  "KeyShape": "Int32",
+  "Order": 64,
+  "MaximumLeafEntries": 63,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 32768,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

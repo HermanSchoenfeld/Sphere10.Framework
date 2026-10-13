@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32203.90
@@ -81,6 +81,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Applicat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AA4A8AEA-0640-4FFF-922B-AEBFC799DB85}"
 	ProjectSection(SolutionItems) = preProject
+		..\.gitattributes = ..\.gitattributes
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
@@ -303,6 +304,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "patterns", "patterns", "{AF
 		..\docs\guidelines\patterns\sync-async.md = ..\docs\guidelines\patterns\sync-async.md
 		..\docs\guidelines\patterns\testing.md = ..\docs\guidelines\patterns\testing.md
 		..\docs\guidelines\patterns\type-hierarchies.md = ..\docs\guidelines\patterns\type-hierarchies.md
+		..\docs\guidelines\patterns\object-spaces.md = ..\docs\guidelines\patterns\object-spaces.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source Notes", "Source Notes", "{532962B1-B12B-50F0-BEB4-0F6063E82329}"
@@ -339,6 +341,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "package-consumers", "package-consumers", "{834AFB88-1DF2-5365-9665-64A39CD49648}"
 	ProjectSection(SolutionItems) = preProject
 		..\scripts\package-consumers\README.md = ..\scripts\package-consumers\README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Utils.Profiler", "..\utils\Sphere10.Framework.Utils.Profiler\Sphere10.Framework.Utils.Profiler.csproj", "{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Utils.Profiler.Tests", "..\tests\Sphere10.Framework.Utils.Profiler.Tests\Sphere10.Framework.Utils.Profiler.Tests.csproj", "{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "object-spaces", "object-spaces", "{9E54A774-508D-4DCE-88BA-1C0B00C0C1CC}"
+	ProjectSection(SolutionItems) = preProject
+		..\agents\skills\object-spaces\SKILL.md = ..\agents\skills\object-spaces\SKILL.md
 	EndProjectSection
 EndProject
 Global
@@ -771,6 +782,30 @@ Global
 		{F8CC830D-08D3-45C1-821C-75175A10CC3F}.Release|x86.Build.0 = Release|Any CPU
 		{F8CC830D-08D3-45C1-821C-75175A10CC3F}.Release|x64.ActiveCfg = Release|Any CPU
 		{F8CC830D-08D3-45C1-821C-75175A10CC3F}.Release|x64.Build.0 = Release|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Debug|x86.Build.0 = Debug|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Debug|x64.Build.0 = Debug|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Release|x86.ActiveCfg = Release|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Release|x86.Build.0 = Release|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Release|x64.ActiveCfg = Release|Any CPU
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}.Release|x64.Build.0 = Release|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Debug|x86.Build.0 = Debug|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Debug|x64.Build.0 = Debug|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Release|x86.ActiveCfg = Release|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Release|x86.Build.0 = Release|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Release|x64.ActiveCfg = Release|Any CPU
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -834,6 +869,9 @@ Global
 		{9085BF67-DB78-41ED-A064-FD47F8F7BD40} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
 		{B617D45C-A422-4B54-920E-30DDF19F93F0} = {10671148-26EC-4BB5-B43C-4074AA083281}
 		{AF8787FD-BDA3-4D39-8576-D17F9C718AF6} = {D5126186-FF36-5522-815D-A630ECE5ADAA}
+		{9E54A774-508D-4DCE-88BA-1C0B00C0C1CC} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165} = {F904F79D-75D5-4918-E32F-904F3CF671B2}
+		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6BF0BD3-FB17-4EDB-AFBF-08A34BD2E2B6}

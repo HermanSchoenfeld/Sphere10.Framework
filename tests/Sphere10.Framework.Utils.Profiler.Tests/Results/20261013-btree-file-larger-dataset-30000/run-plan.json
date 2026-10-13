@@ -1,0 +1,306 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 713,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-larger-order-2048",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "1dbb1e46968f4f14b83beb6c01a5b680",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-2048",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "larger-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-larger-order-4096",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ec97949b935743abb7de18ac64e73722",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-4096",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 4096,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "larger-order-4096",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-larger-order-8192",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ae7cab66a4c54b82a22dd1a60a1997e4",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-8192",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8192,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196633
+          }
+        ]
+      },
+      "Profile": "larger-order-8192",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    },
+    {
+      "Id": "tree-FileStream-BTreePlus-balanced-larger-order-16384",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "97bdaa2786eb4c548ed814ff885a3785",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-16384",
+            "Storage": "FileStream",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 16384,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 393241
+          }
+        ]
+      },
+      "Profile": "larger-order-16384",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    },
+    {
+      "Id": "tree-TransactionalFile-BTreePlus-balanced-larger-order-2048",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "282567484edf414290680eb2b8f98100",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-2048",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "larger-order-2048",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    },
+    {
+      "Id": "tree-TransactionalFile-BTreePlus-balanced-larger-order-4096",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "74ce3a6cf0a840858881ad193a1c5fb5",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-4096",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 4096,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 98329
+          }
+        ]
+      },
+      "Profile": "larger-order-4096",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    },
+    {
+      "Id": "tree-TransactionalFile-BTreePlus-balanced-larger-order-8192",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "f5c43a11a3be43c0ba18911418f6d122",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-8192",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 8192,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 196633
+          }
+        ]
+      },
+      "Profile": "larger-order-8192",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    },
+    {
+      "Id": "tree-TransactionalFile-BTreePlus-balanced-larger-order-16384",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "LargerDatasetTransfer",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 30000,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "7979b9b82e154d8cb206990f9b0aece6",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-larger-dataset-30000",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "larger-order-16384",
+            "Storage": "TransactionalFile",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 16384,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 393241
+          }
+        ]
+      },
+      "Profile": "larger-order-16384",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer"
+    }
+  ]
+}

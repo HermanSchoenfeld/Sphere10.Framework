@@ -331,6 +331,8 @@ Sphere10 Framework provides an extensive suite of collection types that extend b
 - **Synchronized Collections**: Thread-safe variants like `SynchronizedExtendedList<T>`, `SynchronizedDictionary<TKey, TValue>`, and `ProducerConsumerQueue<T>` for concurrent scenarios.
 - **Specialized Data Structures**: Bloom filters, binary heaps, circular lists, bounded lists, and bidirectional dictionaries address specific algorithmic needs.
 
+Managed and stream-mapped B-tree, B+ and grouped lookup implementations expose family-specific new-tree defaults through `Sphere10FrameworkDefaults`. Stream constructors/factories that omit order require empty storage; existing trees require their original explicit order, serializer layout and endianness. The [B-tree profiling guide](../../utils/Sphere10.Framework.Utils.Profiler/BTrees/README.md) explains the measured numeric and explicit wide-key settings, backend comparisons and limitations. These defaults do not migrate stored nodes or change generic ObjectStream index layouts.
+
 #### Memorizing an enumerable
 
 `MemorizingIterator<T>` lazily reads its source once and caches the values for repeated or interleaved traversals. Each traversal has its own position; struct copies and interface casts share the same cache. Its read-only collection members support `Count`, `Contains`, `CopyTo`, and LINQ materialization (`ToArray`/`ToList`). `Count` and `CopyTo` finish reading the source, retaining the memorized snapshot even if the original collection later changes.
@@ -355,9 +357,9 @@ Object spaces abstract the storage and retrieval of typed objects across multipl
 - **Typed Dimensions**: Each dimension stores objects of a specific type, with configurable serialization and indexing strategies.
 - **Indexing**: Automatic or custom indexes accelerate lookups by projected keys. Both unique and non-unique indexes are supported.
 - **Merkle-Tree Integration**: Optional merkle-tree attachments provide cryptographic proofs of data integrity.
-- **ACID Transactions**: Object spaces can participate in transactional scopes, supporting commit/rollback semantics.
+- **File Transactions**: `FileObjectSpace` exposes explicit synchronous commit/rollback. Saved changes remain pending until commit; rollback invalidates previously tracked instances.
 
-Object spaces are suitable for lightweight embedded databases, event stores, and other scenarios requiring structured persistence without a full database engine.
+Object spaces provide structured embedded persistence. See the [ObjectSpace guide](ObjectSpaces/README.md) for schemas, live-record enumeration, identity and ownership, unique/nonunique queries, autosave and current graph limitations. New stores use `Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder` (256), overridable through `WithIndexBTreeOrder`. Opening existing stores requires their original order or an already bound matching definition; historical default stores used 64. Follow the guide's [storage-opening contract](ObjectSpaces/README.md#new-store-defaults-and-existing-storage) and preserve the original layout. The [WinForms tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) retains its original ObjectSpace screen. The [ObjectSpace suite](../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) in the general profiling project compares storage and index settings using reproducible workloads.
 
 ### 🌳 Merkle Trees
 

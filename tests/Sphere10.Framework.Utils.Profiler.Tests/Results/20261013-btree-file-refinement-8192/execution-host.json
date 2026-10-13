@@ -1,0 +1,28 @@
+{
+  "StartedAtUtc": "2026-10-12T17:22:10.4536237Z",
+  "Executable": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.exe",
+  "Arguments": [
+    "study",
+    "--plan",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-file-refinement-8192-plan.json",
+    "--output",
+    "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-refinement-8192",
+    "--data-root",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data"
+  ],
+  "Recipe": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-file-refinement-8192-recipe.json",
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Hash": "30C9660F326F4A8DE39CE07F3DCB3AE80EDFDE9DFC19527BFFB55F10B697E51F",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Hash": "65BE97E5B78751A7D9B16DE37CA5AFE4FF1AAB5B4F3ED887EDC6AA21192658EF",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "Controls": "Direct retained Screening: 1 warmups, 3 actual batches, deterministic round shuffle, pristine baseline outside timing, no forced GC/outlier removal, current power plan, frozen binaries."
+}

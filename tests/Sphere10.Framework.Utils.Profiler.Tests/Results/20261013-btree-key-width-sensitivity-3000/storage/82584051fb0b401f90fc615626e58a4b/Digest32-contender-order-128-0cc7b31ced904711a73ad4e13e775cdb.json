@@ -1,0 +1,20 @@
+{
+  "Profile": "Digest32-contender-order-128",
+  "RunId": "82584051fb0b401f90fc615626e58a4b",
+  "Storage": "ManagedNodes",
+  "Family": "BTree",
+  "KeyShape": "Digest32",
+  "Order": 128,
+  "MaximumLeafEntries": 127,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 32,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

@@ -1,0 +1,27 @@
+{
+  "Profile": "StreamMemory-BTreePlus-legacy-order-control-64",
+  "RunId": "0ed36b2926724673b93f5634ebb3013e",
+  "Storage": "StreamMemory",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 64,
+  "MaximumLeafEntries": 63,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 1561,
+  "LogicalTreeBytes": 302866,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 0,
+  "Geometry": {
+    "Height": 3,
+    "ActiveNodes": 194,
+    "TotalLeaves": 189,
+    "LeafEntries": 8192,
+    "MeanLeafOccupancy": 0.6879986562526245,
+    "PhysicalSlots": 194
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

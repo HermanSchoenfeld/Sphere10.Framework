@@ -1,0 +1,412 @@
+{
+  "Profiles": [
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTree-legacy-order-control-64",
+        "Storage": "ManagedNodes",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "legacy-order-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+          "CaseId": "tree-ManagedNodes-BTree-order-64-Mixed-write-heavy-records-32768-ops-1000",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+          "CaseId": "tree-ManagedNodes-BTree-order-64-Mixed-write-heavy",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 7,
+          "ActualSourceInputs": {
+            "RecordCount": 2048,
+            "OperationCount": 512,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 7
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTree-robust-shared-contender-128",
+        "Storage": "ManagedNodes",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 128,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "robust-shared-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+          "CaseId": "tree-ManagedNodes-BTree-order-128-Mixed-write-heavy-records-32768-ops-1000",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+          "CaseId": "tree-ManagedNodes-BTree-order-128-Mixed-write-heavy",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 7,
+          "ActualSourceInputs": {
+            "RecordCount": 2048,
+            "OperationCount": 512,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 7
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTreePlus-legacy-order-control-64",
+        "Storage": "ManagedNodes",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "legacy-order-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+          "CaseId": "tree-ManagedNodes-BTreePlus-order-64-Mixed-write-heavy-records-32768-ops-1000",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+          "CaseId": "tree-ManagedNodes-BTreePlus-order-64-Mixed-write-heavy",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 7,
+          "ActualSourceInputs": {
+            "RecordCount": 2048,
+            "OperationCount": 512,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 7
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTreePlus-robust-shared-contender-2048",
+        "Storage": "ManagedNodes",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 2048,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "robust-shared-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+          "CaseId": "tree-ManagedNodes-BTreePlus-write-heavy-upper-order-2048",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-Lookup-legacy-order-control-64",
+        "Storage": "ManagedNodes",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 64,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "legacy-order-control",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768\\results.json",
+          "CaseId": "tree-ManagedNodes-Lookup-order-64-Mixed-write-heavy-records-32768-ops-1000",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048\\results.json",
+          "CaseId": "tree-ManagedNodes-Lookup-order-64-Mixed-write-heavy",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 7,
+          "ActualSourceInputs": {
+            "RecordCount": 2048,
+            "OperationCount": 512,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 7
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-Lookup-robust-shared-contender-2048",
+        "Storage": "ManagedNodes",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Role": "robust-shared-contender",
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+          "CaseId": "tree-ManagedNodes-Lookup-write-heavy-upper-order-2048",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "write-heavy"
+          },
+          "ActualSourceProfileKey": {
+            "Storage": "ManagedNodes",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian"
+          },
+          "SampleCount": 3
+        }
+      ],
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy"
+      },
+      "ChangedDatasetRationale": "Managed20,000/StreamMemory8,000 actions lengthen the batch for tiered-JIT warmup sensitivity; file batches use8,192 rows/1,000 actions. All controls/contenders within a cell have identical inputs and knobs except declared Order. Sources are exact profile keys, not minima across timing phases.",
+      "Interpretation": "Independent-process confirmation of these specified workloads; unconfirmed family/backend cells retain screening-only evidence."
+    }
+  ],
+  "Protocol": [
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ]
+}

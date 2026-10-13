@@ -1,0 +1,60 @@
+[
+  {
+    "Storage": "Memory",
+    "Mix": "WriteHeavy",
+    "LowestInteractionMean": "order-only",
+    "UnresolvedCandidates": [
+      "order-only"
+    ],
+    "AllCandidatesConfirmed": [
+      {
+        "CaseId": "os-Memory-order-only-Mixed-WriteHeavy-interaction-1024",
+        "Profile": "order-only",
+        "MeanNanoseconds": 275900828.5714286,
+        "ConfidenceHalfWidth": 13883853.262134666
+      },
+      {
+        "CaseId": "os-Memory-baseline-64-Mixed-WriteHeavy-interaction-1024",
+        "Profile": "baseline-64",
+        "MeanNanoseconds": 327662057.14285713,
+        "ConfidenceHalfWidth": 22646575.796088003
+      },
+      {
+        "CaseId": "os-Memory-combined-candidate-Mixed-WriteHeavy-interaction-1024",
+        "Profile": "combined-candidate",
+        "MeanNanoseconds": 521676142.85714287,
+        "ConfidenceHalfWidth": 9132876.725039119
+      }
+    ],
+    "Meaning": "Screening candidates and overlapping intervals; BenchmarkDotNet independently confirms all three competing configurations."
+  },
+  {
+    "Storage": "File",
+    "Mix": "WriteHeavy",
+    "LowestInteractionMean": "order-only",
+    "UnresolvedCandidates": [
+      "order-only"
+    ],
+    "AllCandidatesConfirmed": [
+      {
+        "CaseId": "os-File-order-only-Mixed-WriteHeavy-interaction-1024",
+        "Profile": "order-only",
+        "MeanNanoseconds": 646411728.5714285,
+        "ConfidenceHalfWidth": 26729918.503784463
+      },
+      {
+        "CaseId": "os-File-combined-candidate-Mixed-WriteHeavy-interaction-1024",
+        "Profile": "combined-candidate",
+        "MeanNanoseconds": 763819385.7142857,
+        "ConfidenceHalfWidth": 22422006.170954578
+      },
+      {
+        "CaseId": "os-File-baseline-64-Mixed-WriteHeavy-interaction-1024",
+        "Profile": "baseline-64",
+        "MeanNanoseconds": 773055685.7142857,
+        "ConfidenceHalfWidth": 30324320.631865505
+      }
+    ],
+    "Meaning": "Screening candidates and overlapping intervals; BenchmarkDotNet independently confirms all three competing configurations."
+  }
+]

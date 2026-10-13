@@ -1,0 +1,647 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 1009,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "os-File-page-65536-cache-4194304-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "df1fa9dc34834d388c1cad17426571f2",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-65536-cache-4194304",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 65536,
+              "MaxMemory": 4194304,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-65536-cache-4194304",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-65536-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "8e40dda685ad4c88867563d0ab2739d4",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-65536-cache-16777216",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 65536,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-65536-cache-16777216",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-65536-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "37872cf865bc42d29e9aaec02d47320e",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-65536-cache-67108864",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 65536,
+              "MaxMemory": 67108864,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-65536-cache-67108864",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-65536-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "0af2f15f294142f38dfac0682e229ac0",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-65536-cache-2147483647",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 65536,
+              "MaxMemory": 2147483647,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-65536-cache-2147483647",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-262144-cache-4194304-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "ef9643ecda604812a0348115dbc9664a",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-262144-cache-4194304",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 4194304,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-262144-cache-4194304",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-262144-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "9a0af55137204c0bae21d31d23af4376",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-262144-cache-16777216",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-262144-cache-16777216",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-262144-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "f1aa67866c6642209920cdafc1537385",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-262144-cache-67108864",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 67108864,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-262144-cache-67108864",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-262144-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "7952da2d96864e54b66cb4588f075cae",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-262144-cache-2147483647",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 2147483647,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-262144-cache-2147483647",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-1048576-cache-4194304-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "3d6993c660d242aa9c89e378a6017e28",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-1048576-cache-4194304",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 1048576,
+              "MaxMemory": 4194304,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-1048576-cache-4194304",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-1048576-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "adad9babdbf44045ac87f011717c630a",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-1048576-cache-16777216",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 1048576,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-1048576-cache-16777216",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-1048576-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "b78e24d14d994382a3a9680c0c9f6f47",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-1048576-cache-67108864",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 1048576,
+              "MaxMemory": 67108864,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-1048576-cache-67108864",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-page-1048576-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "1809b46f55be4f9f8d628121d323485a",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "page-1048576-cache-2147483647",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 1048576,
+              "MaxMemory": 2147483647,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "page-1048576-cache-2147483647",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    },
+    {
+      "Id": "os-File-current-core-default-Mixed-Balanced-cache-pressure-4096",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "FileCachePage",
+      "ObjectSpaces": {
+        "RecordCount": 4096,
+        "RunId": "1df90b5fb9ef4c7a9e61b3e34ad05930",
+        "PayloadBytes": 16384,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 4096,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-file-cache-pressure-4096",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "current-core-default",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 64,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 2147483647,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "current-core-default",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-16384-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True/factor-FileCachePage"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+[
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+      "tree-StreamMemory-BTree-order-64-Mixed-balanced-records-8192-ops-1000",
+      "tree-StreamMemory-BTree-order-256-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTree-order-64-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTree-order-256-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTree-order-64-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTree-order-256-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-BTreePlus-order-1024-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-512-Mixed-balanced-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-768-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-256-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-512-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-1024-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-BTreePlus-order-768-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-Lookup-order-1024-Mixed-balanced-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "tree-StreamMemory-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "tree-StreamMemory-Lookup-order-512-Mixed-balanced-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-Lookup-order-1024-Mixed-read-heavy-records-8192-ops-1000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True",
+    "WinnerId": "tree-StreamMemory-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-Lookup-order-1024-Mixed-write-heavy-records-8192-ops-1000",
+      "tree-StreamMemory-Lookup-order-512-Mixed-write-heavy-records-8192-ops-1000"
+    ]
+  }
+]

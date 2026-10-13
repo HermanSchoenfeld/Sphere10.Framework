@@ -1,0 +1,99 @@
+{
+  "StartedAtUtc": "2026-10-12T19:39:05.3327825Z",
+  "Executable": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.exe",
+  "Arguments": [
+    "btrees",
+    "--config",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-bdn-numeric-lookup-balanced-profiles.json",
+    "--records",
+    "8192",
+    "--operations",
+    "1000",
+    "--group-size",
+    "8",
+    "--insertion",
+    "shuffled",
+    "--mix",
+    "balanced",
+    "--output",
+    "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced",
+    "--data-root",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+    "--filter",
+    "*MixedAndPersist*",
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ],
+  "Recipe": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-bdn-numeric-lookup-balanced-recipe.json",
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Hash": "B0CFB867B1EF68887D19B3A53A40868A2D50D4752BD6B51A497DB13A8B1FDD6E",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Hash": "8BC32BDE0A59C60D0B395A1021E69D5870DF16660398BB8C73C62391C86BAADD",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "Resources": {
+    "DataRoot": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+    "LogicalDisk": {
+      "DeviceID": "D:",
+      "DriveType": 3,
+      "FileSystem": "NTFS",
+      "Size": 2000396742656,
+      "FreeSpace": 10837401600,
+      "VolumeName": "AppData"
+    },
+    "DataDiskMapping": [
+      {
+        "Index": 1,
+        "Model": "Samsung SSD 850 EVO 2TB",
+        "InterfaceType": "IDE",
+        "Size": 2000396321280
+      }
+    ],
+    "PhysicalDisks": [
+      {
+        "Index": 2,
+        "Model": "WD Blue SN570 500GB",
+        "InterfaceType": "SCSI",
+        "Size": 500105249280
+      },
+      {
+        "Index": 1,
+        "Model": "Samsung SSD 850 EVO 2TB",
+        "InterfaceType": "IDE",
+        "Size": 2000396321280
+      },
+      {
+        "Index": 0,
+        "Model": "WDC WDS240G2G0A-00JH30",
+        "InterfaceType": "IDE",
+        "Size": 240063022080
+      }
+    ],
+    "MemoryKilobytes": {
+      "TotalVisibleMemorySize": 33469520,
+      "FreePhysicalMemory": 11933800
+    }
+  },
+  "Controls": "Final Balanced numeric LookupInt32;FilePaged/Txn;1024/2048;8192/1000/group8/shuffled/current262144/int-max;2launch10actual5warm Monitoring/inv1/unroll1/DontRemove/noForcedGC/keepFiles;exact contemporaneous sources; numeric63unchanged."
+}

@@ -1,0 +1,1342 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 713,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "tree-StreamMemory-BTree-order-64-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "5276a08085734c1fa3e674b36d09ffd2",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-64",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1553
+          }
+        ]
+      },
+      "Profile": "order-64",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-128-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "e7d675ea5a4245878fd9518ce6285baf",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-128",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "order-128",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-256-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "ac62729cfd5d4e3095f43e5c4f2dea36",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-64-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "70ee56930d3a4479aaa6cb5586fee626",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-64",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1553
+          }
+        ]
+      },
+      "Profile": "order-64",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-128-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "58cddb372a154d82ba8c6c430f59447d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-128",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "order-128",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-256-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "5c75cd48125b447eba5571619d362d12",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-64-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "04ff08200a8d4a208a75a3dbc052fc00",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-64",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1553
+          }
+        ]
+      },
+      "Profile": "order-64",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-128-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "8119089e02c3470a9fa2323eb4620158",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-128",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "order-128",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTree-order-256-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "fb966f43497140a193404b4daf6d2fdb",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-256-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "8717f9f3ab4b4041955463b4f97b61e8",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-512-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "a9648503605740b7946dec1cf9f6c020",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-768-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "b8ce80e5f58c42aa94359c185c67950e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-768",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 768,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 18457
+          }
+        ]
+      },
+      "Profile": "order-768",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "9b5a29f472cf4cc7a0fcf681e4ae7f1a",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "21d27fce315d494c9c183416adce183e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-256-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "45670ba9a38346acaeb376bdd1c8b8c2",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-512-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "23dee97cb8fa435098d3f24543fe2e1f",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-768-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "2ac91f903bd049b0b4d480d18aa84c11",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-768",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 768,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 18457
+          }
+        ]
+      },
+      "Profile": "order-768",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "1fcebc15344746c78f41730118299a00",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "a03f3b5e66d44938b3d5da35c0e1aff1",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-256-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "c3db38dee25d4851879f87ba1d527705",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-512-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "b30f36255fe140aca2001c4f51b80819",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-768-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "f16053e8298a4edbb1d223fbedc0192d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-768",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 768,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 18457
+          }
+        ]
+      },
+      "Profile": "order-768",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-1024-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "a379456f5d77462381b82a4327ebe7ba",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-BTreePlus-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "9b3a18bb1c63454388c58f0ee0b9cbbf",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "StreamMemory",
+            "Family": "BTreePlus",
+            "KeyShape": "Int64",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-256-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "1c369c31795f4e428ad276c10fd95e69",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-512-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "f9f2c6f5541d44d1836a03ff6a3185e8",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-1024-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "7a24efe41af142aaab5ca80c2fa8ee28",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-2048-Mixed-balanced-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "7cc931b635ea498693167ff0931df932",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "balanced",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-256-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "5cb322038ae5413d815caa7099c01557",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-512-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "53d5c57abae844b4882beeab279fe90f",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-1024-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "a016cf6873024051bf90dfad00cf5170",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-2048-Mixed-read-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "993e5415c50344eea20787ea0c8e0a5e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "read-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-256-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "d9eb195fd7e54f21a3fdc6c23d07352c",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-256",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 256,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6169
+          }
+        ]
+      },
+      "Profile": "order-256",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-512-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "28ac7f2562cc46c398ba2f0027407d17",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-512",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 512,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 12313
+          }
+        ]
+      },
+      "Profile": "order-512",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-1024-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "af66da1b4c374f459a2756315df77f68",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-1024",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 1024,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 24601
+          }
+        ]
+      },
+      "Profile": "order-1024",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    },
+    {
+      "Id": "tree-StreamMemory-Lookup-order-2048-Mixed-write-heavy-records-8192-ops-1000",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": null,
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 1000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "804d2d0789994f0dbd716848323ac7e0",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-stream-memory-refinement-8192",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "order-2048",
+            "Storage": "StreamMemory",
+            "Family": "Lookup",
+            "KeyShape": "Int32",
+            "Order": 2048,
+            "PageSize": 65536,
+            "CacheBytes": 16777216,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 4,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 49177
+          }
+        ]
+      },
+      "Profile": "order-2048",
+      "Mix": "write-heavy",
+      "Operations": 1000,
+      "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<IsTestProject>true</IsTestProject>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="NUnit" />
+		<PackageReference Include="NUnit3TestAdapter" />
+		<ProjectReference Include="../../utils/Sphere10.Framework.Utils.Profiler/Sphere10.Framework.Utils.Profiler.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="Results/**/*" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+</Project>

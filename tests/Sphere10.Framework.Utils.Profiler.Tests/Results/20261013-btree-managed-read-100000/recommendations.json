@@ -1,0 +1,33 @@
+[
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTree-order-1024-Read-balanced-records-100000-ops-100000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-order-1024-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-BTree-order-512-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-BTree-order-256-Read-balanced-records-100000-ops-100000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-100000/ops-100000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-order-512-Read-balanced-records-100000-ops-100000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-order-512-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-BTreePlus-order-256-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-BTreePlus-order-1024-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-BTreePlus-order-128-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-BTreePlus-order-64-Read-balanced-records-100000-ops-100000"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-100000/ops-100000/group-8/shuffled-True",
+    "WinnerId": "tree-ManagedNodes-Lookup-order-512-Read-balanced-records-100000-ops-100000",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-order-512-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-Lookup-order-1024-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-Lookup-order-256-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-Lookup-order-64-Read-balanced-records-100000-ops-100000",
+      "tree-ManagedNodes-Lookup-order-128-Read-balanced-records-100000-ops-100000"
+    ]
+  }
+]

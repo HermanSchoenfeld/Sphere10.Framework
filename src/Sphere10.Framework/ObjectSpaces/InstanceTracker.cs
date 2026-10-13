@@ -137,17 +137,18 @@ internal class InstanceTracker {
 
 	/// <summary>
 	/// Tracks a newly created object with a provisional positive index computed as
-	/// <paramref name="dimensionCount"/> + the number of new instances already created for that type.
+	/// <paramref name="dimensionListCount"/> + the number of new instances already created for that type.
+	/// The physical slot count includes recycled holes so provisional indexes cannot collide with persisted objects.
 	/// This avoids negative provisional indices and produces indices that are safe for use as
 	/// <see cref="ObjectSpaceObjectReference.ObjectIndex"/> values.
 	/// </summary>
-	public long TrackNew(object item, long dimensionCount) {
+	public long TrackNew(object item, long dimensionListCount) {
 		var itemType = item.GetType();
 		if (!_newInstanceCounts.TryGetValue(itemType, out var typeNewCount))
 			typeNewCount = 0;
 		typeNewCount++;
 		_newInstanceCounts[itemType] = typeNewCount;
-		var provisionalIndex = dimensionCount + typeNewCount - 1;
+		var provisionalIndex = dimensionListCount + typeNewCount - 1;
 		Track(item, provisionalIndex);
 		_provisionalObjects.Add(item);
 		AssertConsistency();
@@ -232,7 +233,7 @@ internal class InstanceTracker {
 
 	/// <summary>
 	/// Associates the given object with its <see cref="ObjectSpaceObjectReference"/>. Called eagerly
-	/// during <c>New&lt;T&gt;</c> (with a provisional negative ObjectIndex) and again during <c>Save</c>
+	/// during <c>New&lt;T&gt;</c> (with a provisional ObjectIndex beyond persisted slots) and again during <c>Save</c>
 	/// (with the real persisted ObjectIndex). Replaces any previous association for the same object.
 	/// </summary>
 	public void TrackRef(object item, ObjectSpaceObjectReference objRef) {

@@ -1,0 +1,31 @@
+[04:17:34] btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer; 4 configurations
+[04:18:26] Retained 4/8 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-file-larger-dataset-30000\report.md
+[04:18:26] btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer; 4 configurations
+[04:21:13] Retained 8/8 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-file-larger-dataset-30000\report.md
+# Parameter study: measured screening candidates
+
+Means and approximate 95% Student-t intervals are per reset batch. Intervals assume independent samples; rounds share one process, so confirmation is required.
+Candidates with overlapping intervals are not resolved winners. These results apply only to the retained dataset, mix, capabilities, disk and host.
+Allocation is owner-thread managed allocation, not resident or peak memory. No outliers were removed. File completion does not establish equivalent power-loss durability.
+
+Potential temporal drift is flagged when the medians of the first and last measured halves differ by more than 1.5 times. A flagged mean remains a provisional screening candidate; confirm it after sufficient warmup.
+
+## btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| larger-order-8192 | 6.5073 | 0.4401 | 12.2382 | 3 | lowest measured mean |
+| larger-order-4096 | 6.7018 | 0.1811 | 7.9121 | 3 | interval overlaps fastest |
+| larger-order-16384 | 8.9016 | 1.2154 | 21.4747 | 3 | slower measured mean |
+| larger-order-2048 | 9.6833 | 4.1983 | 6.4276 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-30000/ops-100/group-8/shuffled-True/factor-LargerDatasetTransfer
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| larger-order-2048 | 23.8339 | 3.8588 | 49.0614 | 3 | lowest measured mean |
+| larger-order-4096 | 37.0553 | 20.6780 | 46.4220 | 3 | interval overlaps fastest |
+| larger-order-16384 | 43.0356 | 24.1796 | 91.0517 | 3 | interval overlaps fastest |
+| larger-order-8192 | 47.6183 | 8.5796 | 56.3055 | 3 | slower measured mean |
+
+

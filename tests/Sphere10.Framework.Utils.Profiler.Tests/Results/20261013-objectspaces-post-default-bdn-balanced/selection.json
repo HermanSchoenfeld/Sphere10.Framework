@@ -1,0 +1,34 @@
+[
+  {
+    "Profile": "memory-historical-baseline-64",
+    "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+    "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "HistoricalExactProfile": "memory-baseline-64",
+    "ConfigurationCopiedWithoutChanges": true,
+    "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+  },
+  {
+    "Profile": "memory-selected-defaults-169",
+    "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+    "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "HistoricalExactProfile": "memory-combined-candidate",
+    "ConfigurationCopiedWithoutChanges": true,
+    "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+  },
+  {
+    "Profile": "file-historical-baseline-64",
+    "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+    "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "HistoricalExactProfile": "file-baseline-64",
+    "ConfigurationCopiedWithoutChanges": true,
+    "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+  },
+  {
+    "Profile": "file-selected-defaults-169",
+    "HistoricalRelativeDirectory": "20261013-objectspaces-bdn-confirmations/Balanced",
+    "HistoricalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "HistoricalExactProfile": "file-order-only",
+    "ConfigurationCopiedWithoutChanges": true,
+    "Purpose": "Same historical contender settings under the final integrated implementation, not an assertion of historical worker binary identity."
+  }
+]

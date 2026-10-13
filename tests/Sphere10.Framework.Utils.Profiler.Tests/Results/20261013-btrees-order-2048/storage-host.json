@@ -1,0 +1,47 @@
+{
+  "CapturedAtUtc": "2026-10-12T15:28:13.3681000Z",
+  "CPU": {
+    "Name": "Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz",
+    "NumberOfCores": 10,
+    "NumberOfLogicalProcessors": 20
+  },
+  "OS": {
+    "Caption": "Microsoft Windows 10 Pro",
+    "Version": "10.0.19045",
+    "TotalVisibleMemorySize": 33469520,
+    "FreePhysicalMemory": 12303312
+  },
+  "Disks": [
+    {
+      "Model": "WD Blue SN570 500GB",
+      "Index": 2,
+      "Size": 500105249280
+    },
+    {
+      "Model": "Samsung SSD 850 EVO 2TB",
+      "Index": 1,
+      "Size": 2000396321280
+    },
+    {
+      "Model": "WDC WDS240G2G0A-00JH30",
+      "Index": 0,
+      "Size": 240063022080
+    }
+  ],
+  "Volume": {
+    "DriveLetter": "D",
+    "FileSystem": "NTFS",
+    "Size": 2000396742656,
+    "SizeRemaining": 11018403840
+  },
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "DriveMapping": {
+    "DiskNumber": 1,
+    "PartitionNumber": 1,
+    "Size": 2000396746752
+  },
+  "Counters": {
+    "PercentProcessorTime": 7
+  },
+  "Notes": "Serial measurements; user applications remain running. Data-root is on D:. OS cache is not flushed."
+}

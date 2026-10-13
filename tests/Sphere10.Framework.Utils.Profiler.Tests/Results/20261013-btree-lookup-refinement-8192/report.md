@@ -1,0 +1,116 @@
+# Parameter study: measured screening candidates
+
+Means and approximate 95% Student-t intervals are per reset batch. Intervals assume independent samples; rounds share one process, so confirmation is required.
+Candidates with overlapping intervals are not resolved winners. These results apply only to the retained dataset, mix, capabilities, disk and host.
+Allocation is owner-thread managed allocation, not resident or peak memory. No outliers were removed. File completion does not establish equivalent power-loss durability.
+
+Potential temporal drift is flagged when the medians of the first and last measured halves differ by more than 1.5 times. A flagged mean remains a provisional screening candidate; confirm it after sufficient warmup.
+
+## btrees/FileStream/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 532.8571 | 39.1633 | 577.0644 | 3 | lowest measured mean |
+| order-1024 | 805.0183 | 267.3574 | 527.8228 | 3 | interval overlaps fastest |
+| order-512 | 1032.8651 | 35.6683 | 570.1467 | 3 | slower measured mean |
+| order-256 | 1936.7187 | 118.0214 | 793.7663 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 156.4068 | 3.8252 | 178.9792 | 3 | lowest measured mean |
+| order-1024 | 194.9955 | 3.4744 | 165.8696 | 3 | slower measured mean |
+| order-512 | 252.7063 | 15.7410 | 172.5820 | 3 | slower measured mean |
+| order-256 | 421.8917 | 16.6341 | 217.0574 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 933.1239 | 49.0109 | 994.7208 | 3 | lowest measured mean |
+| order-1024 | 1333.6296 | 65.1063 | 907.5309 | 3 | slower measured mean |
+| order-512 | 1902.5164 | 123.0595 | 988.0772 | 3 | slower measured mean |
+| order-256 | 3422.7251 | 47.3825 | 1401.5343 | 3 | slower measured mean |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 108.9301 | 11.8436 | 577.0644 | 3 | lowest measured mean |
+| order-1024 | 116.7561 | 4.6970 | 527.8228 | 3 | interval overlaps fastest |
+| order-512 | 131.5097 | 12.2144 | 570.1467 | 3 | interval overlaps fastest |
+| order-256 | 196.3705 | 21.4356 | 793.7663 | 3 | slower measured mean |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 37.9734 | 6.0283 | 178.9792 | 3 | lowest measured mean |
+| order-1024 | 39.6626 | 7.1996 | 165.8696 | 3 | interval overlaps fastest |
+| order-512 | 43.4121 | 17.4883 | 172.5820 | 3 | interval overlaps fastest |
+| order-256 | 54.3024 | 12.0135 | 217.0574 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 181.6883 | 6.6405 | 994.7208 | 3 | lowest measured mean |
+| order-1024 | 196.4067 | 5.3639 | 907.5309 | 3 | slower measured mean |
+| order-512 | 235.9582 | 23.8533 | 988.0772 | 3 | slower measured mean |
+| order-256 | 352.4591 | 37.7603 | 1401.5343 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 944.5939 | 143.0427 | 4248.9823 | 3 | lowest measured mean |
+| order-1024 | 1117.4564 | 18.1543 | 4597.7637 | 3 | slower measured mean |
+| order-512 | 1466.5721 | 220.4429 | 5538.1153 | 3 | slower measured mean |
+| order-256 | 2378.3031 | 940.1125 | 8358.7347 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 321.5756 | 12.2985 | 1410.8935 | 3 | lowest measured mean |
+| order-1024 | 361.7535 | 31.2758 | 1461.0989 | 3 | interval overlaps fastest |
+| order-512 | 411.5257 | 35.4955 | 1641.3066 | 3 | slower measured mean |
+| order-256 | 577.9667 | 98.0500 | 2213.3508 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 1614.6132 | 84.7525 | 7220.6168 | 3 | lowest measured mean |
+| order-1024 | 1916.8580 | 24.8720 | 7883.2632 | 3 | slower measured mean |
+| order-512 | 2594.2455 | 741.1744 | 9636.9894 | 3 | slower measured mean |
+| order-256 | 4054.0386 | 398.0702 | 14839.7026 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Mixed/balanced/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 983.3308 | 61.2669 | 4248.8446 | 3 | lowest measured mean |
+| order-1024 | 1263.4504 | 235.1649 | 4597.6266 | 3 | interval overlaps fastest |
+| order-512 | 1538.7702 | 85.7302 | 5538.0004 | 3 | slower measured mean |
+| order-256 | 2371.6076 | 89.4123 | 8358.6192 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Mixed/read-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 330.2513 | 5.2852 | 1410.7568 | 3 | lowest measured mean |
+| order-1024 | 363.0097 | 11.0916 | 1460.9621 | 3 | slower measured mean |
+| order-512 | 432.0357 | 36.6975 | 1641.1908 | 3 | slower measured mean |
+| order-256 | 597.8324 | 42.1704 | 2213.2359 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Mixed/write-heavy/records-8192/ops-1000/group-8/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-2048 | 1746.3699 | 220.8187 | 7220.4798 | 3 | lowest measured mean |
+| order-1024 | 2141.2073 | 332.4049 | 7883.1261 | 3 | interval overlaps fastest |
+| order-512 | 2673.1688 | 82.4044 | 9636.8746 | 3 | slower measured mean |
+| order-256 | 4354.9377 | 671.9114 | 14839.5875 | 3 | slower measured mean |
+

@@ -1,0 +1,598 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 713,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "os-Memory-Endianness-baseline-Mixed-Balanced",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "04847fb34d2940eb9c73a8b4343067d2",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-Memory-Endianness-baseline-Mixed-ReadHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "87a6c34d858e43b6803eec0763ce6459",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "ReadHeavy",
+        "MixedReadPercentage": 90,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline",
+      "Mix": "ReadHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-Memory-Endianness-baseline-Mixed-WriteHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "90b93d862fc8454bb775fd1321f5794e",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "WriteHeavy",
+        "MixedReadPercentage": 10,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline",
+      "Mix": "WriteHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-Memory-Endianness-big-endian-Mixed-Balanced",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "e028597b84734e308eae3b7e2539fcd6",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "big-endian",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "BigEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "big-endian",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-Memory-Endianness-big-endian-Mixed-ReadHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "6855c18465674a3980deb28262325d5a",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "ReadHeavy",
+        "MixedReadPercentage": 90,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "big-endian",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "BigEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "big-endian",
+      "Mix": "ReadHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-Memory-Endianness-big-endian-Mixed-WriteHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "d341223dff004d87a3e314d84621a264",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "WriteHeavy",
+        "MixedReadPercentage": 10,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "big-endian",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "Memory",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "BigEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "Memory/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "big-endian",
+      "Mix": "WriteHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-File-Endianness-baseline-Mixed-Balanced",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "63ff34f10af34c5192c844b963cf79e6",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-File-Endianness-baseline-Mixed-ReadHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "564317f9234e42b4aa1447ebd558cfb3",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "ReadHeavy",
+        "MixedReadPercentage": 90,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline",
+      "Mix": "ReadHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-File-Endianness-baseline-Mixed-WriteHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "889e7d6950c14210beb6f8b68b5d01a3",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "WriteHeavy",
+        "MixedReadPercentage": 10,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "baseline",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "LittleEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "baseline",
+      "Mix": "WriteHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-File-Endianness-big-endian-Mixed-Balanced",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "8fd7d5e19de745868505d7aed01ae4e7",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "Balanced",
+        "MixedReadPercentage": 50,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "big-endian",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "BigEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "big-endian",
+      "Mix": "Balanced",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-File-Endianness-big-endian-Mixed-ReadHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "5b76854528e444778ff2215e4d8f4ca9",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "ReadHeavy",
+        "MixedReadPercentage": 90,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "big-endian",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "BigEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "big-endian",
+      "Mix": "ReadHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    },
+    {
+      "Id": "os-File-Endianness-big-endian-Mixed-WriteHeavy",
+      "Domain": "object-spaces",
+      "Workload": "Mixed",
+      "Factor": "Endianness",
+      "ObjectSpaces": {
+        "RecordCount": 256,
+        "RunId": "0dbc69c54b6f423badea88073814ec9e",
+        "PayloadBytes": 128,
+        "OperationCount": 100,
+        "ShuffledInsertion": true,
+        "LookupPattern": "Shuffled",
+        "HotSetPercent": 10,
+        "PayloadPattern": "Fixed",
+        "CategoryCount": 256,
+        "HotCategoryPercent": 0,
+        "WorkloadMix": "WriteHeavy",
+        "MixedReadPercentage": 10,
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-endian-fixed-256",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Trace": false,
+        "Profiles": [
+          {
+            "Name": "big-endian",
+            "Configuration": {
+              "SchemaProfile": "PayloadOnly",
+              "Storage": "File",
+              "IndexProfile": "Full",
+              "IndexBTreeOrder": 169,
+              "ClusterSize": 4096,
+              "AverageRecordSizeBytes": 256,
+              "PageSize": 262144,
+              "MaxMemory": 16777216,
+              "Policy": "Default",
+              "Endianness": "BigEndian",
+              "Merkleized": false,
+              "HashFunction": "SHA2_256",
+              "AutoSave": false
+            },
+            "ComparisonGroup": "File/PayloadOnly/Full/checks-True/no-merkle"
+          }
+        ]
+      },
+      "BTrees": null,
+      "Profile": "big-endian",
+      "Mix": "WriteHeavy",
+      "Operations": 100,
+      "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness"
+    }
+  ]
+}

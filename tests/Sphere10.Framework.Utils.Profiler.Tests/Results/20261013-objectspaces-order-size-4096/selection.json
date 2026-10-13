@@ -1,0 +1,300 @@
+{
+  "Cases": [
+    {
+      "CaseId": "os-Memory-order-64-Mixed-Balanced-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-64-Mixed-Balanced",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-Memory-order-169-Mixed-Balanced-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-169-Mixed-Balanced",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison.",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-Memory-order-only-Mixed-Balanced-interaction-1024"
+    },
+    {
+      "CaseId": "os-Memory-order-512-Mixed-Balanced-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-512-Mixed-Balanced",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-Memory-order-64-Mixed-ReadHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-64-Mixed-ReadHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-Memory-order-169-Mixed-ReadHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-169-Mixed-ReadHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison.",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-Memory-order-only-Mixed-ReadHeavy-interaction-1024"
+    },
+    {
+      "CaseId": "os-Memory-order-512-Mixed-ReadHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-512-Mixed-ReadHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-Memory-order-64-Mixed-WriteHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-64-Mixed-WriteHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-Memory-order-169-Mixed-WriteHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-169-Mixed-WriteHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison.",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-Memory-order-only-Mixed-WriteHeavy-interaction-1024"
+    },
+    {
+      "CaseId": "os-Memory-order-512-Mixed-WriteHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-Memory-order-512-Mixed-WriteHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-File-order-64-Mixed-Balanced-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-64-Mixed-Balanced",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-File-order-169-Mixed-Balanced-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-169-Mixed-Balanced",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison.",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-File-order-only-Mixed-Balanced-interaction-1024"
+    },
+    {
+      "CaseId": "os-File-order-512-Mixed-Balanced-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-512-Mixed-Balanced",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-File-order-64-Mixed-ReadHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-64-Mixed-ReadHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-File-order-169-Mixed-ReadHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-169-Mixed-ReadHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison.",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-File-order-only-Mixed-ReadHeavy-interaction-1024"
+    },
+    {
+      "CaseId": "os-File-order-512-Mixed-ReadHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-512-Mixed-ReadHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-File-order-64-Mixed-WriteHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-64-Mixed-WriteHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-File-order-169-Mixed-WriteHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-169-Mixed-WriteHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison.",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-File-order-only-Mixed-WriteHeavy-interaction-1024"
+    },
+    {
+      "CaseId": "os-File-order-512-Mixed-WriteHeavy-order-size-4096",
+      "SourceOrderStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-1024",
+      "SourceOrderCaseId": "os-File-order-512-Mixed-WriteHeavy",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096
+      },
+      "PreservedOperationCount": 100,
+      "Purpose": "Larger-store order transfer: all storage/features/layout controls retained; only order varies within each comparison."
+    },
+    {
+      "CaseId": "os-Memory-balanced-memory-candidate-Mixed-Balanced-order-size-4096",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096,
+        "OperationCount": 100,
+        "WorkloadMix": "Balanced"
+      },
+      "PreservedConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "Memory",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 1024,
+        "AverageRecordSizeBytes": 1024,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "CacheClusterHeaders, IntegrityChecks",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "Purpose": "Semantics-preserving Balanced Memory candidate transfer across all three target mixes. The same configuration is reused; each target retains its matching order-only controls."
+    },
+    {
+      "CaseId": "os-Memory-balanced-memory-candidate-Mixed-ReadHeavy-order-size-4096",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096,
+        "OperationCount": 100,
+        "WorkloadMix": "ReadHeavy"
+      },
+      "PreservedConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "Memory",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 1024,
+        "AverageRecordSizeBytes": 1024,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "CacheClusterHeaders, IntegrityChecks",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "Purpose": "Semantics-preserving Balanced Memory candidate transfer across all three target mixes. The same configuration is reused; each target retains its matching order-only controls."
+    },
+    {
+      "CaseId": "os-Memory-balanced-memory-candidate-Mixed-WriteHeavy-order-size-4096",
+      "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+      "SourceInteractionCaseId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+      "ChangedWorkloadControls": {
+        "RecordCount": 4096,
+        "CategoryCount": 4096,
+        "OperationCount": 100,
+        "WorkloadMix": "WriteHeavy"
+      },
+      "PreservedConfiguration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "Memory",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 1024,
+        "AverageRecordSizeBytes": 1024,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "CacheClusterHeaders, IntegrityChecks",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "Purpose": "Semantics-preserving Balanced Memory candidate transfer across all three target mixes. The same configuration is reused; each target retains its matching order-only controls."
+    }
+  ],
+  "Limits": [
+    "One-process screening; three samples, not a universal optimum.",
+    "4096 rows with 128-byte payloads may remain below the 16 MiB file cache budget.",
+    "The corrected 64-bit cluster-link decoder is used; original LittleEndian raw evidence is retained unchanged."
+  ]
+}

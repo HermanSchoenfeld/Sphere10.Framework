@@ -1,0 +1,72 @@
+[03:01:19] object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True; 4 configurations
+[03:01:44] Retained 4/21 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-objectspaces-order-size-4096\report.md
+[03:01:44] object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True; 4 configurations
+[03:02:03] Retained 8/21 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-objectspaces-order-size-4096\report.md
+[03:02:03] object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True; 4 configurations
+[03:02:27] Retained 12/21 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-objectspaces-order-size-4096\report.md
+[03:02:27] object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True; 3 configurations
+[03:03:09] Retained 15/21 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-objectspaces-order-size-4096\report.md
+[03:03:09] object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True; 3 configurations
+[03:03:46] Retained 18/21 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-objectspaces-order-size-4096\report.md
+[03:03:46] object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True; 3 configurations
+[03:04:32] Retained 21/21 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-objectspaces-order-size-4096\report.md
+# Parameter study: measured screening candidates
+
+Means and approximate 95% Student-t intervals are per reset batch. Intervals assume independent samples; rounds share one process, so confirmation is required.
+Candidates with overlapping intervals are not resolved winners. These results apply only to the retained dataset, mix, capabilities, disk and host.
+Allocation is owner-thread managed allocation, not resident or peak memory. No outliers were removed. File completion does not establish equivalent power-loss durability.
+
+Potential temporal drift is flagged when the medians of the first and last measured halves differ by more than 1.5 times. A flagged mean remains a provisional screening candidate; confirm it after sufficient warmup.
+
+## object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-512 | 148.4538 | 54.6384 | 718.0461 | 3 | lowest measured mean |
+| order-169 | 152.1638 | 28.8905 | 733.0493 | 3 | interval overlaps fastest |
+| balanced-memory-candidate | 160.8972 | 20.8825 | 533.6985 | 3 | interval overlaps fastest |
+| order-64 | 209.5028 | 24.5251 | 1045.5344 | 3 | interval overlaps fastest |
+
+## object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-169 | 35.8005 | 11.7381 | 142.5762 | 3 | lowest measured mean |
+| balanced-memory-candidate | 37.3439 | 1.2868 | 112.0413 | 3 | interval overlaps fastest |
+| order-512 | 38.9840 | 5.9168 | 160.2114 | 3 | interval overlaps fastest |
+| order-64 | 52.2098 | 3.8279 | 243.1768 | 3 | slower measured mean |
+
+## object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-169 | 229.1809 | 24.5692 | 1180.1467 | 3 | lowest measured mean |
+| balanced-memory-candidate | 240.6373 | 43.4784 | 892.9697 | 3 | interval overlaps fastest |
+| order-512 | 288.4540 | 27.6271 | 1618.5420 | 3 | slower measured mean |
+| order-64 | 396.7155 | 46.7978 | 1904.4964 | 3 | slower measured mean |
+
+## object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-512 | 336.2265 | 17.5684 | 1204.2847 | 3 | lowest measured mean |
+| order-169 | 352.4952 | 19.5675 | 1234.4474 | 3 | interval overlaps fastest |
+| order-64 | 523.1937 | 59.1320 | 1796.3809 | 3 | slower measured mean |
+
+## object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-169 | 86.5429 | 3.8448 | 242.6748 | 3 | lowest measured mean |
+| order-512 | 93.2298 | 6.6639 | 269.5899 | 3 | interval overlaps fastest |
+| order-64 | 143.3530 | 37.8037 | 417.1371 | 3 | slower measured mean |
+
+## object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-4096/ops-100/payload-128-Fixed/categories-4096-0/lookup-Shuffled-10/shuffled-True
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| order-169 | 537.3270 | 28.0145 | 1995.6716 | 3 | lowest measured mean |
+| order-512 | 758.8610 | 187.9912 | 2698.7942 | 3 | slower measured mean |
+| order-64 | 1100.6451 | 955.9119 | 3263.8309 | 3 | interval overlaps fastest |
+
+

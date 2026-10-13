@@ -1,0 +1,27 @@
+{
+  "Profile": "FilePaged-BTreePlus-Digest32-explicit-wide-1024",
+  "RunId": "afac10cf79654d27b406dc7fecded17d",
+  "Storage": "FilePaged",
+  "Family": "BTreePlus",
+  "KeyShape": "Digest32",
+  "Order": 1024,
+  "MaximumLeafEntries": 1023,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 32,
+  "NodeRecordBytes": 49177,
+  "LogicalTreeBytes": 245917,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 245917,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 5,
+    "TotalLeaves": 4,
+    "LeafEntries": 3000,
+    "MeanLeafOccupancy": 0.7331378299120235,
+    "PhysicalSlots": 5
+  },
+  "AppliedPageSize": 262144,
+  "AppliedCacheBytes": 2147483647,
+  "AppliedFileBufferBytes": null
+}

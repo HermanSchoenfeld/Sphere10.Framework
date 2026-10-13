@@ -89,6 +89,17 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	private long _nodeCount;
 	private bool _disposed;
 
+	/// <summary>Creates a new tree in an empty stream using the framework's recommended order.</summary>
+	/// <remarks>Existing trees must be reopened with their original explicit order and serializer layout.</remarks>
+	public StreamMappedBTree(
+		Stream stream,
+		IItemSerializer<K> keySerializer,
+		IItemSerializer<V> valueSerializer,
+		IComparer<K> keyComparer = null,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness)
+		: this(Sphere10FrameworkDefaults.StreamMappedBTreeOrder, RequireEmptyStream(stream), keySerializer, valueSerializer, keyComparer, endianness) {
+	}
+
 	/// <summary>
 	/// Creates a new stream-mapped B-tree or opens an existing one from the given stream.
 	/// </summary>
@@ -107,6 +118,7 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 		Endianness endianness = Sphere10FrameworkDefaults.Endianness)
 		: base(order, keyComparer) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
+		Guard.Argument(stream.CanSeek && stream.CanRead, nameof(stream), "Tree storage must support reading and seeking.");
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.Argument(keySerializer.IsConstantSize, nameof(keySerializer), "Key serializer must be constant-size.");
@@ -119,18 +131,20 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 		_bitConverter = EndianBitConverter.For(endianness);
 		_reader = new EndianBinaryReader(_bitConverter, stream);
 		_writer = new EndianBinaryWriter(_bitConverter, stream);
-		_keySize = (int)keySerializer.ConstantSize;
-		_valueSize = (int)valueSerializer.ConstantSize;
-		_keyEntrySize = _keySize + _valueSize;
+		_keySize = checked((int)keySerializer.ConstantSize);
+		_valueSize = checked((int)valueSerializer.ConstantSize);
+		_keyEntrySize = checked(_keySize + _valueSize);
 		_freeList = new Stack<long>();
 
 		// Node layout: 1 (IsLeaf) + 4 (KeyCount) + 4 (ChildCount) + keys + children
 		// During splits, a node temporarily holds up to (order) keys and (order + 1) children,
 		// so we allocate one extra slot for keys and children beyond the steady-state maximum.
 		_maxKeySlots = order;             // order - 1 steady-state + 1 overflow during split
-		var MaxChildSlots = order + 1;    // order steady-state + 1 overflow during split
-		_childrenOffset = KeysOffset + (_maxKeySlots * _keyEntrySize);
-		_nodeSize = _childrenOffset + (MaxChildSlots * sizeof(long));
+		var MaxChildSlots = checked(order + 1);    // order steady-state + 1 overflow during split
+		_childrenOffset = checked(KeysOffset + (_maxKeySlots * _keyEntrySize));
+		_nodeSize = checked(_childrenOffset + (MaxChildSlots * sizeof(long)));
+
+		ValidateExistingStorage();
 
 		// Header properties — cached, write-through stream-mapped values
 		_rootIndexProperty = new StreamMappedProperty<long>(_stream, RootIndexOffset, RootIndexLength, PrimitiveSerializer<long>.Instance, _reader, _writer);
@@ -407,6 +421,54 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 			_writer.Flush();
 		}
 		_disposed = true;
+	}
+
+	#endregion
+
+	#region Private — Storage Validation
+
+	private static Stream RequireEmptyStream(Stream stream) {
+		Guard.ArgumentNotNull(stream, nameof(stream));
+		Guard.Argument(stream.CanSeek, nameof(stream), "Tree storage must support seeking.");
+		Guard.Argument(stream.Length == 0, nameof(stream), "Opening an existing tree requires its original explicit order. Default-order construction is only supported for an empty stream.");
+		return stream;
+	}
+
+	private void ValidateExistingStorage() {
+		if (_stream.Length == 0)
+			return;
+		if (_stream.Length < HeaderSize)
+			throw new InvalidDataFormatException("Stream is too short to contain a valid StreamMappedBTree header.");
+		if ((_stream.Length - HeaderSize) % _nodeSize != 0)
+			throw new InvalidDataFormatException("Tree storage is not aligned with the supplied order and serializer sizes. Reopen with the original layout.");
+
+		var position = _stream.Position;
+		try {
+			_stream.Position = 0;
+			var root = _reader.ReadInt64();
+			var count = _reader.ReadInt64();
+			var freeCount = _reader.ReadInt32();
+			var nodeCount = (_stream.Length - HeaderSize) / _nodeSize;
+			if (count < 0 || count > int.MaxValue || count > nodeCount * (Order - 1L))
+				throw new InvalidDataFormatException("Tree header contains an invalid entry count.");
+			if (freeCount < 0 || freeCount > nodeCount)
+				throw new InvalidDataFormatException("Tree header contains an invalid recycled-node count.");
+			if ((count == 0) != (root == NoNode))
+				throw new InvalidDataFormatException("Tree root and entry count disagree.");
+			if (root != NoNode) {
+				if (root < 0 || root >= nodeCount)
+					throw new InvalidDataFormatException("Tree root is outside the supplied storage layout.");
+				_stream.Position = HeaderSize + ((root) * _nodeSize);
+				var isLeaf = _reader.ReadByte();
+				var keyCount = _reader.ReadInt32();
+				var childCount = _reader.ReadInt32();
+				if (isLeaf > 1 || keyCount < 1 || keyCount >= Order || childCount < 0 || childCount > Order
+					|| (isLeaf == 1 ? childCount != 0 : childCount != keyCount + 1))
+					throw new InvalidDataFormatException("Tree root record is inconsistent with the supplied layout.");
+			}
+		} finally {
+			_stream.Position = position;
+		}
 	}
 
 	#endregion

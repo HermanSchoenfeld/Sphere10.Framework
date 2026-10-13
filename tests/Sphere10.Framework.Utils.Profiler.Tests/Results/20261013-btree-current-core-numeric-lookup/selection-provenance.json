@@ -1,0 +1,92 @@
+{
+  "Cases": [
+    {
+      "CaseId": "tree-FilePaged-Lookup-balanced-current-core-order-1024",
+      "Profile": {
+        "Name": "order-1024",
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Final current-Core Balanced serialized numeric lookup comparison1024/2048. Same8192/1000/group8/shuffled/262144/int-max within each pair; separate from100-action interaction. Prior upper-order4096 regression retained; no numeric63 changes.",
+      "PriorSource": {
+        "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+        "CaseId": "tree-FilePaged-Lookup-balanced-refined-core-paging",
+        "ActualSourceOperationCount": 100,
+        "Role": "Nomination context only; not an exact prior1024 measurement.",
+        "ActualSourceOrder": 2048
+      }
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-balanced-current-core-order-2048",
+      "Profile": {
+        "Name": "order-2048",
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Final current-Core Balanced serialized numeric lookup comparison1024/2048. Same8192/1000/group8/shuffled/262144/int-max within each pair; separate from100-action interaction. Prior upper-order4096 regression retained; no numeric63 changes.",
+      "PriorSource": {
+        "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+        "CaseId": "tree-FilePaged-Lookup-balanced-refined-core-paging",
+        "ActualSourceOperationCount": 100,
+        "Role": "Nomination context only; not an exact prior1024 measurement.",
+        "ActualSourceOrder": 2048
+      }
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-balanced-current-core-order-1024",
+      "Profile": {
+        "Name": "order-1024",
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Final current-Core Balanced serialized numeric lookup comparison1024/2048. Same8192/1000/group8/shuffled/262144/int-max within each pair; separate from100-action interaction. Prior upper-order4096 regression retained; no numeric63 changes.",
+      "PriorSource": {
+        "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+        "CaseId": "tree-TransactionalFile-Lookup-balanced-refined-core-paging",
+        "ActualSourceOperationCount": 100,
+        "Role": "Nomination context only; not an exact prior1024 measurement.",
+        "ActualSourceOrder": 2048
+      }
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-balanced-current-core-order-2048",
+      "Profile": {
+        "Name": "order-2048",
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "Rationale": "Final current-Core Balanced serialized numeric lookup comparison1024/2048. Same8192/1000/group8/shuffled/262144/int-max within each pair; separate from100-action interaction. Prior upper-order4096 regression retained; no numeric63 changes.",
+      "PriorSource": {
+        "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-order-settings-interaction-8192\\results.json",
+        "CaseId": "tree-TransactionalFile-Lookup-balanced-refined-core-paging",
+        "ActualSourceOperationCount": 100,
+        "Role": "Nomination context only; not an exact prior1024 measurement.",
+        "ActualSourceOrder": 2048
+      }
+    }
+  ]
+}

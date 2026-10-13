@@ -1,0 +1,27 @@
+{
+  "Profile": "Int32-contender-order-128",
+  "RunId": "496163abf67047a7b7adc5a84a47161c",
+  "Storage": "TransactionalFile",
+  "Family": "BTree",
+  "KeyShape": "Int32",
+  "Order": 128,
+  "MaximumLeafEntries": 127,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 4,
+  "NodeRecordBytes": 2577,
+  "LogicalTreeBytes": 90227,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 90227,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 34,
+    "TotalLeaves": 33,
+    "LeafEntries": 2968,
+    "MeanLeafOccupancy": 0.7081842042471964,
+    "PhysicalSlots": 35
+  },
+  "AppliedPageSize": 262144,
+  "AppliedCacheBytes": 2147483647,
+  "AppliedFileBufferBytes": null
+}

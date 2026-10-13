@@ -1,0 +1,641 @@
+[
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-OuterCluster",
+    "WinnerId": "os-Memory-OuterCluster-outer-1024-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-OuterCluster-outer-1024-Mixed-Balanced",
+      "os-Memory-OuterCluster-outer-256-Mixed-Balanced",
+      "os-Memory-OuterCluster-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-OuterCluster",
+    "WinnerId": "os-Memory-OuterCluster-outer-1024-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-OuterCluster-outer-1024-Mixed-ReadHeavy",
+      "os-Memory-OuterCluster-outer-256-Mixed-ReadHeavy",
+      "os-Memory-OuterCluster-baseline-Mixed-ReadHeavy",
+      "os-Memory-OuterCluster-outer-8192-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-OuterCluster",
+    "WinnerId": "os-Memory-OuterCluster-outer-256-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-OuterCluster-outer-256-Mixed-WriteHeavy",
+      "os-Memory-OuterCluster-outer-1024-Mixed-WriteHeavy",
+      "os-Memory-OuterCluster-baseline-Mixed-WriteHeavy",
+      "os-Memory-OuterCluster-outer-8192-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-InnerCluster",
+    "WinnerId": "os-Memory-InnerCluster-inner-1024-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-InnerCluster-inner-1024-Mixed-Balanced",
+      "os-Memory-InnerCluster-baseline-Mixed-Balanced",
+      "os-Memory-InnerCluster-inner-4096-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-InnerCluster",
+    "WinnerId": "os-Memory-InnerCluster-inner-1024-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-InnerCluster-inner-1024-Mixed-ReadHeavy",
+      "os-Memory-InnerCluster-baseline-Mixed-ReadHeavy",
+      "os-Memory-InnerCluster-inner-4096-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-InnerCluster",
+    "WinnerId": "os-Memory-InnerCluster-inner-1024-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-InnerCluster-inner-1024-Mixed-WriteHeavy",
+      "os-Memory-InnerCluster-inner-4096-Mixed-WriteHeavy",
+      "os-Memory-InnerCluster-baseline-Mixed-WriteHeavy",
+      "os-Memory-InnerCluster-inner-8192-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-Memory-Policy-headers-only-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Policy-headers-only-Mixed-Balanced",
+      "os-Memory-Policy-fast-allocate-Mixed-Balanced",
+      "os-Memory-Policy-descriptors-only-Mixed-Balanced",
+      "os-Memory-Policy-no-caches-Mixed-Balanced",
+      "os-Memory-Policy-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-Memory-Policy-fast-allocate-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Policy-fast-allocate-Mixed-ReadHeavy",
+      "os-Memory-Policy-descriptors-only-Mixed-ReadHeavy",
+      "os-Memory-Policy-baseline-Mixed-ReadHeavy",
+      "os-Memory-Policy-no-caches-Mixed-ReadHeavy",
+      "os-Memory-Policy-headers-only-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-Memory-Policy-descriptors-only-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Policy-descriptors-only-Mixed-WriteHeavy",
+      "os-Memory-Policy-headers-only-Mixed-WriteHeavy",
+      "os-Memory-Policy-baseline-Mixed-WriteHeavy",
+      "os-Memory-Policy-no-caches-Mixed-WriteHeavy",
+      "os-Memory-Policy-fast-allocate-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-False/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-Memory-Policy-performance-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Policy-performance-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-False/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-Memory-Policy-performance-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Policy-performance-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-False/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-Memory-Policy-performance-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Policy-performance-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-SaveMode",
+    "WinnerId": "os-Memory-SaveMode-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-SaveMode-baseline-Mixed-Balanced",
+      "os-Memory-SaveMode-autosave-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-SaveMode",
+    "WinnerId": "os-Memory-SaveMode-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-SaveMode-baseline-Mixed-ReadHeavy",
+      "os-Memory-SaveMode-autosave-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-SaveMode",
+    "WinnerId": "os-Memory-SaveMode-autosave-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-SaveMode-autosave-Mixed-WriteHeavy",
+      "os-Memory-SaveMode-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-SHA2_256/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-sha2-256-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-sha2-256-Mixed-Balanced",
+      "os-Memory-Merkle-merkle-sha2-256-autosave-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-SHA2_256/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-sha2-256-autosave-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-sha2-256-autosave-Mixed-ReadHeavy",
+      "os-Memory-Merkle-merkle-sha2-256-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-SHA2_256/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-sha2-256-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-sha2-256-Mixed-WriteHeavy",
+      "os-Memory-Merkle-merkle-sha2-256-autosave-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-Blake2b_256/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-blake2b-256-autosave-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-blake2b-256-autosave-Mixed-Balanced",
+      "os-Memory-Merkle-merkle-blake2b-256-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-Blake2b_256/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-blake2b-256-autosave-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-blake2b-256-autosave-Mixed-ReadHeavy",
+      "os-Memory-Merkle-merkle-blake2b-256-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-Blake2b_256/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-blake2b-256-autosave-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-blake2b-256-autosave-Mixed-WriteHeavy",
+      "os-Memory-Merkle-merkle-blake2b-256-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-Blake2b_128/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-blake2b-128-autosave-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-blake2b-128-autosave-Mixed-Balanced",
+      "os-Memory-Merkle-merkle-blake2b-128-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-Blake2b_128/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-blake2b-128-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-blake2b-128-Mixed-ReadHeavy",
+      "os-Memory-Merkle-merkle-blake2b-128-autosave-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/merkle-Blake2b_128/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-Memory-Merkle-merkle-blake2b-128-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Merkle-merkle-blake2b-128-Mixed-WriteHeavy",
+      "os-Memory-Merkle-merkle-blake2b-128-autosave-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-Memory-Indexes-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Indexes-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-Memory-Indexes-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Indexes-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-Memory-Indexes-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Indexes-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/IdentifierOnly/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-Memory-Indexes-identifier-only-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Indexes-identifier-only-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/IdentifierOnly/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-Memory-Indexes-identifier-only-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Indexes-identifier-only-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/IdentifierOnly/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-Memory-Indexes-identifier-only-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Indexes-identifier-only-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-Memory-Endianness-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-Memory-Endianness-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-Memory-Endianness-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Endianness-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-Memory-Endianness-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-Memory-Endianness-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-OuterCluster",
+    "WinnerId": "os-File-OuterCluster-outer-1024-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-OuterCluster-outer-1024-Mixed-Balanced",
+      "os-File-OuterCluster-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-OuterCluster",
+    "WinnerId": "os-File-OuterCluster-outer-1024-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-OuterCluster-outer-1024-Mixed-ReadHeavy",
+      "os-File-OuterCluster-baseline-Mixed-ReadHeavy",
+      "os-File-OuterCluster-outer-256-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-OuterCluster",
+    "WinnerId": "os-File-OuterCluster-outer-1024-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-OuterCluster-outer-1024-Mixed-WriteHeavy",
+      "os-File-OuterCluster-baseline-Mixed-WriteHeavy",
+      "os-File-OuterCluster-outer-256-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-InnerCluster",
+    "WinnerId": "os-File-InnerCluster-inner-1024-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-InnerCluster-inner-1024-Mixed-Balanced",
+      "os-File-InnerCluster-baseline-Mixed-Balanced",
+      "os-File-InnerCluster-inner-4096-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-InnerCluster",
+    "WinnerId": "os-File-InnerCluster-inner-1024-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-InnerCluster-inner-1024-Mixed-ReadHeavy",
+      "os-File-InnerCluster-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-InnerCluster",
+    "WinnerId": "os-File-InnerCluster-inner-1024-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-InnerCluster-inner-1024-Mixed-WriteHeavy",
+      "os-File-InnerCluster-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-File-Policy-descriptors-only-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Policy-descriptors-only-Mixed-Balanced",
+      "os-File-Policy-fast-allocate-Mixed-Balanced",
+      "os-File-Policy-baseline-Mixed-Balanced",
+      "os-File-Policy-no-caches-Mixed-Balanced",
+      "os-File-Policy-headers-only-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-File-Policy-fast-allocate-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Policy-fast-allocate-Mixed-ReadHeavy",
+      "os-File-Policy-headers-only-Mixed-ReadHeavy",
+      "os-File-Policy-descriptors-only-Mixed-ReadHeavy",
+      "os-File-Policy-baseline-Mixed-ReadHeavy",
+      "os-File-Policy-no-caches-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-File-Policy-fast-allocate-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Policy-fast-allocate-Mixed-WriteHeavy",
+      "os-File-Policy-no-caches-Mixed-WriteHeavy",
+      "os-File-Policy-baseline-Mixed-WriteHeavy",
+      "os-File-Policy-descriptors-only-Mixed-WriteHeavy",
+      "os-File-Policy-headers-only-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-False/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-File-Policy-performance-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Policy-performance-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-False/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-File-Policy-performance-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Policy-performance-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-False/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Policy",
+    "WinnerId": "os-File-Policy-performance-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Policy-performance-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-SaveMode",
+    "WinnerId": "os-File-SaveMode-autosave-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-SaveMode-autosave-Mixed-Balanced",
+      "os-File-SaveMode-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-SaveMode",
+    "WinnerId": "os-File-SaveMode-autosave-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-SaveMode-autosave-Mixed-ReadHeavy",
+      "os-File-SaveMode-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-SaveMode",
+    "WinnerId": "os-File-SaveMode-autosave-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-SaveMode-autosave-Mixed-WriteHeavy",
+      "os-File-SaveMode-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Merkle-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-SHA2_256/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-sha2-256-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-sha2-256-Mixed-Balanced",
+      "os-File-Merkle-merkle-sha2-256-autosave-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-SHA2_256/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-sha2-256-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-sha2-256-Mixed-ReadHeavy",
+      "os-File-Merkle-merkle-sha2-256-autosave-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-SHA2_256/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-sha2-256-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-sha2-256-Mixed-WriteHeavy",
+      "os-File-Merkle-merkle-sha2-256-autosave-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-Blake2b_256/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-blake2b-256-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-blake2b-256-Mixed-Balanced",
+      "os-File-Merkle-merkle-blake2b-256-autosave-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-Blake2b_256/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-blake2b-256-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-blake2b-256-Mixed-ReadHeavy",
+      "os-File-Merkle-merkle-blake2b-256-autosave-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-Blake2b_256/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-blake2b-256-autosave-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-blake2b-256-autosave-Mixed-WriteHeavy",
+      "os-File-Merkle-merkle-blake2b-256-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-Blake2b_128/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-blake2b-128-autosave-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-blake2b-128-autosave-Mixed-Balanced",
+      "os-File-Merkle-merkle-blake2b-128-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-Blake2b_128/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-blake2b-128-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-blake2b-128-Mixed-ReadHeavy",
+      "os-File-Merkle-merkle-blake2b-128-autosave-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/merkle-Blake2b_128/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Merkle",
+    "WinnerId": "os-File-Merkle-merkle-blake2b-128-autosave-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Merkle-merkle-blake2b-128-autosave-Mixed-WriteHeavy",
+      "os-File-Merkle-merkle-blake2b-128-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-File-Indexes-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Indexes-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-File-Indexes-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Indexes-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-File-Indexes-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Indexes-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/IdentifierOnly/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-File-Indexes-identifier-only-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Indexes-identifier-only-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/IdentifierOnly/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-File-Indexes-identifier-only-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Indexes-identifier-only-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/IdentifierOnly/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Indexes",
+    "WinnerId": "os-File-Indexes-identifier-only-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Indexes-identifier-only-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-File-Endianness-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-Endianness-baseline-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-File-Endianness-baseline-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-Endianness-baseline-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-Endianness",
+    "WinnerId": "os-File-Endianness-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-Endianness-baseline-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-FilePage",
+    "WinnerId": "os-File-FilePage-baseline-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-FilePage-baseline-Mixed-Balanced",
+      "os-File-FilePage-page-65536-Mixed-Balanced",
+      "os-File-FilePage-page-1048576-Mixed-Balanced",
+      "os-File-FilePage-page-16384-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-FilePage",
+    "WinnerId": "os-File-FilePage-page-65536-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-FilePage-page-65536-Mixed-ReadHeavy",
+      "os-File-FilePage-baseline-Mixed-ReadHeavy",
+      "os-File-FilePage-page-1048576-Mixed-ReadHeavy",
+      "os-File-FilePage-page-16384-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-FilePage",
+    "WinnerId": "os-File-FilePage-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-FilePage-baseline-Mixed-WriteHeavy",
+      "os-File-FilePage-page-65536-Mixed-WriteHeavy",
+      "os-File-FilePage-page-1048576-Mixed-WriteHeavy",
+      "os-File-FilePage-page-16384-Mixed-WriteHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-FileCache",
+    "WinnerId": "os-File-FileCache-cache-4194304-Mixed-Balanced",
+    "IndistinguishableIds": [
+      "os-File-FileCache-cache-4194304-Mixed-Balanced",
+      "os-File-FileCache-cache-262144-Mixed-Balanced",
+      "os-File-FileCache-cache-67108864-Mixed-Balanced",
+      "os-File-FileCache-baseline-Mixed-Balanced",
+      "os-File-FileCache-cache-1048576-Mixed-Balanced"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-FileCache",
+    "WinnerId": "os-File-FileCache-cache-1048576-Mixed-ReadHeavy",
+    "IndistinguishableIds": [
+      "os-File-FileCache-cache-1048576-Mixed-ReadHeavy",
+      "os-File-FileCache-cache-4194304-Mixed-ReadHeavy",
+      "os-File-FileCache-cache-262144-Mixed-ReadHeavy",
+      "os-File-FileCache-baseline-Mixed-ReadHeavy",
+      "os-File-FileCache-cache-67108864-Mixed-ReadHeavy"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-256/ops-100/payload-128-Fixed/categories-256-0/lookup-Shuffled-10/shuffled-True/factor-FileCache",
+    "WinnerId": "os-File-FileCache-baseline-Mixed-WriteHeavy",
+    "IndistinguishableIds": [
+      "os-File-FileCache-baseline-Mixed-WriteHeavy",
+      "os-File-FileCache-cache-262144-Mixed-WriteHeavy",
+      "os-File-FileCache-cache-67108864-Mixed-WriteHeavy",
+      "os-File-FileCache-cache-1048576-Mixed-WriteHeavy",
+      "os-File-FileCache-cache-4194304-Mixed-WriteHeavy"
+    ]
+  }
+]

@@ -1,0 +1,363 @@
+{
+  "SourceInteractionStudy": "tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+  "SourceInteractionCaseId": "os-File-order-only-Mixed-Balanced-interaction-1024",
+  "MeasuredPayloadBytes": 16384,
+  "RecordCount": 4096,
+  "CategoryCount": 4096,
+  "OperationCount": 100,
+  "Purpose": "Balanced File cache-pressure interaction; same semantics/schema/payload/workload across all cases. Compare actual current-default order64/int.MaxValue cache with order169 page/cache combinations.",
+  "Cases": [
+    {
+      "CaseId": "os-File-page-65536-cache-4194304-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 4194304,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-65536-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-65536-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 67108864,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-65536-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-262144-cache-4194304-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 4194304,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-262144-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-262144-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 67108864,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-262144-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-1048576-cache-4194304-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 4194304,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-1048576-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-1048576-cache-67108864-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 67108864,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-page-1048576-cache-2147483647-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "PageSize",
+        "MaxMemory"
+      ]
+    },
+    {
+      "CaseId": "os-File-current-core-default-Mixed-Balanced-cache-pressure-4096",
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 64,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      },
+      "ChangedFromSource": [
+        "RecordCount",
+        "CategoryCount",
+        "PayloadBytes",
+        "OperationCount",
+        "IndexBTreeOrder",
+        "MaxMemory"
+      ],
+      "CoreDefaultsSource": "src/Sphere10.Framework/Sphere10Defaults.cs (IndexBTreeOrder64,TransactionalPageSize262144,MaxMemoryPerCollection2147483647,ClusterSize4096,ContainerPolicyDefault)"
+    }
+  ],
+  "Limits": [
+    "Screening: one process, one warmup, three measured batches per case.",
+    "Each payload store has 64 MiB logical payload, plus envelopes, indices and cluster descriptors; it exceeds the4/16 MiB budgets and roughly spans the64 MiB budget.",
+    "Cache int.MaxValue is a ceiling, not a preallocation; cache pages are populated lazily.",
+    "Memory allocations are cumulative batch allocations rather than peak RSS; storage/effective settings are retained by the runner.",
+    "No recommendations until persisted samples and correctness checks pass."
+  ],
+  "DiskEstimate": {
+    "ConservativePerFixtureBytes": 301989888,
+    "FixtureCount": 13,
+    "ConservativeTotalBytes": 3925868544,
+    "Basis": "Planning reserve:96MiB per baseline/working/transaction-sidecar copy.13 distinct page/cache configurations retain baseline+working fixtures; reserve one additional full-store equivalent per fixture. Actual storage manifest must be checked during execution. This is an estimate, not measured file length."
+  }
+}

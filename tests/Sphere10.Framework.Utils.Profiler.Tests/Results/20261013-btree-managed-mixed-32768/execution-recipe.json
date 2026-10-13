@@ -1,0 +1,17 @@
+{
+  "Name": "btree-managed-mixed-32768",
+  "Plan": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-managed-mixed-32768-plan.json",
+  "Output": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768",
+  "Cases": 36,
+  "Arguments": [
+    "study",
+    "--plan",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-managed-mixed-32768-plan.json",
+    "--output",
+    "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-managed-mixed-32768",
+    "--data-root",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data"
+  ],
+  "ProvenancePath": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-managed-mixed-32768-provenance.json",
+  "Controls": "Direct retained Screening: 1 warmups, 3 actual batches, deterministic round shuffle, pristine baseline outside timing, no forced GC/outlier removal, current power plan, frozen binaries."
+}

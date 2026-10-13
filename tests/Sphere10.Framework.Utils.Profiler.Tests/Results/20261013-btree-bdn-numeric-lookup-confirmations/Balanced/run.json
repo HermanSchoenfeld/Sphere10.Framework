@@ -1,0 +1,103 @@
+{
+  "StartedAtUtc": "2026-10-12T19:39:05.4625641Z",
+  "Machine": "WS-HERMAN",
+  "OperatingSystem": "Microsoft Windows 10.0.19045",
+  "Runtime": ".NET 10.0.12",
+  "LogicalProcessorCount": 20,
+  "Settings": {
+    "RecordCount": 8192,
+    "OperationCount": 1000,
+    "GroupSize": 8,
+    "ShuffledInsertion": true,
+    "Mix": "balanced",
+    "RunId": "03c81f9df67c46348fe2d5d9de6b6fc4",
+    "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-numeric-lookup-confirmations\\Balanced",
+    "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+    "Profiles": [
+      {
+        "Name": "FilePaged-Lookup-numeric-current-core-1024",
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "KeyBytes": 4,
+        "StoredKeyBytes": 8,
+        "NodeRecordBytes": 24601
+      },
+      {
+        "Name": "FilePaged-Lookup-numeric-current-core-2048",
+        "Storage": "FilePaged",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "KeyBytes": 4,
+        "StoredKeyBytes": 8,
+        "NodeRecordBytes": 49177
+      },
+      {
+        "Name": "TransactionalFile-Lookup-numeric-current-core-1024",
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "KeyBytes": 4,
+        "StoredKeyBytes": 8,
+        "NodeRecordBytes": 24601
+      },
+      {
+        "Name": "TransactionalFile-Lookup-numeric-current-core-2048",
+        "Storage": "TransactionalFile",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian",
+        "KeyBytes": 4,
+        "StoredKeyBytes": 8,
+        "NodeRecordBytes": 49177
+      }
+    ]
+  },
+  "BenchmarkArguments": [
+    "--filter",
+    "*MixedAndPersist*",
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "5",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ],
+  "Caveats": [
+    "Order is maximum child fanout; maximum steady leaf entries is Order-1. Total leaf count is measured geometry, not a setting.",
+    "Framework FilePaged/TransactionalFile use managed pages over FileStream. OSMemoryMapped is a real OS view with capacity provisioned outside measured work.",
+    "Persist is stream Flush or framework Commit, not an equivalent power-loss durability guarantee across backends.",
+    "Reopen resets tree/managed page state but does not flush the operating-system file cache.",
+    "Fixed-width Digest32 keys are checksum-shaped ordered bytes, not cryptographic hash throughput.",
+    "Each invocation is a batch. Mutation batches include fixed-array expected-value bookkeeping, while validation and full oracle checks are outside timing."
+  ]
+}

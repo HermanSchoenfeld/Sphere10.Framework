@@ -1,0 +1,2 @@
+# Retained profiler evidence preserves exporter bytes, line endings and whitespace.
+tests/Sphere10.Framework.Utils.Profiler.Tests/Results/** -text -whitespace

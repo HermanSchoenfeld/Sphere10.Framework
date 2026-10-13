@@ -1,0 +1,20 @@
+{
+  "Profile": "ManagedNodes-BTreePlus-robust-shared-contender-2048",
+  "RunId": "a9236c97f99f46f39cdd174d39455767",
+  "Storage": "ManagedNodes",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 2048,
+  "MaximumLeafEntries": 2047,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 32768,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

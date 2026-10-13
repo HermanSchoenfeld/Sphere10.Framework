@@ -1,0 +1,18 @@
+{
+  "StartedAtUtc": "2026-10-12T16:48:02.7198266Z",
+  "InteractionDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Hash": "30C9660F326F4A8DE39CE07F3DCB3AE80EDFDE9DFC19527BFFB55F10B697E51F",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Hash": "65BE97E5B78751A7D9B16DE37CA5AFE4FF1AAB5B4F3ED887EDC6AA21192658EF",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "Controls": "Two independent launches, ten measured iterations, five warmups, Monitoring, one invocation, no outlier removal, no forced GC, current power plan retained."
+}

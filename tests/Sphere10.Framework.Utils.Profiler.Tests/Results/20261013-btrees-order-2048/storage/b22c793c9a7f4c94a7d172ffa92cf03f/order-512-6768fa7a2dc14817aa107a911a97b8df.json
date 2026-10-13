@@ -1,0 +1,27 @@
+{
+  "Profile": "order-512",
+  "RunId": "b22c793c9a7f4c94a7d172ffa92cf03f",
+  "Storage": "OSMemoryMapped",
+  "Family": "Lookup",
+  "KeyShape": "Int32",
+  "Order": 512,
+  "MaximumLeafEntries": 511,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 12313,
+  "LogicalTreeBytes": 86223,
+  "ProvisionedMappedCapacity": 591056,
+  "EntryCount": 2048,
+  "PhysicalStorageBytes": 591056,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 7,
+    "TotalLeaves": 6,
+    "LeafEntries": 2048,
+    "MeanLeafOccupancy": 0.6679712981082844,
+    "PhysicalSlots": 7
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

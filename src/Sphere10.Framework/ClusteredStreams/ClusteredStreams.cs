@@ -141,6 +141,31 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		return storage;
 	}
 
+	internal static int ReadStoredClusterSize(Stream stream, long expectedReservedStreams, Endianness endianness) {
+		Guard.ArgumentGTE(expectedReservedStreams, 0, nameof(expectedReservedStreams));
+		return ReadStoredClusterSize(stream, endianness, expectedReservedStreams);
+	}
+
+	internal static int ReadStoredClusterSize(Stream stream, Endianness endianness)
+		=> ReadStoredClusterSize(stream, endianness, null);
+
+	private static int ReadStoredClusterSize(Stream stream, Endianness endianness, long? expectedReservedStreams) {
+		Guard.ArgumentNotNull(stream, nameof(stream));
+		var concurrent = stream.AsConcurrent();
+		using var access = concurrent.EnterAccessScope();
+		var position = concurrent.Position;
+		try {
+			var header = new ClusteredStreamsHeader(concurrent, endianness);
+			header.Load();
+			header.CheckHeaderIntegrity();
+			Guard.Ensure(!expectedReservedStreams.HasValue || header.ReservedStreams == expectedReservedStreams.Value,
+				$"Existing clustered storage has {header.ReservedStreams} reserved streams, expected {expectedReservedStreams}. Retain its original schema and metadata definitions.");
+			return header.ClusterSize;
+		} finally {
+			concurrent.Position = position;
+		}
+	}
+
 	public ICriticalObject ParentCriticalObject { get => _rootStream.ParentCriticalObject; set => _rootStream.ParentCriticalObject = value; }
 
 	public object Lock => _rootStream.Lock;
@@ -175,6 +200,8 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	public IReadOnlyDictionaryList<string, IClusteredStreamsAttachment> Attachments => _attachments;
+
+	internal long RequiredReservedStreams => Math.Max(_reservedStreams, _attachments.Values.Sum(attachment => attachment.StreamCount));
 
 	internal ClusterMap ClusterMap {
 		get {
@@ -908,7 +935,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	private void CreateReservedStreams() {
 		Guard.Ensure(Header.StreamCount == 0, "Records are already existing");
 		// Ensure reserved stream count accommodates all registered attachment stream requirements
-		var totalRequired = _attachments.Values.Sum(a => a.StreamCount);
+		var totalRequired = RequiredReservedStreams;
 		if (totalRequired > Header.ReservedStreams)
 			Header.ReservedStreams = totalRequired;
 		NotifyReservedStreamsCreating();

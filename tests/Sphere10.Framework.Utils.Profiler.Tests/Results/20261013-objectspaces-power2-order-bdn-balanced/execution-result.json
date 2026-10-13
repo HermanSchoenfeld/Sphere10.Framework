@@ -1,0 +1,8 @@
+{
+  "DomainExitCode": 0,
+  "RecordedAtUtc": "2026-10-13T00:02:41.5125919Z",
+  "CapturedAfterRun": false,
+  "Origin": "Captured by launcher immediately after domain process exit, before any other native command or failure guard.",
+  "StartedAtUtc": "2026-10-13T00:00:34.9916924Z",
+  "ElapsedSeconds": 126.5208995
+}

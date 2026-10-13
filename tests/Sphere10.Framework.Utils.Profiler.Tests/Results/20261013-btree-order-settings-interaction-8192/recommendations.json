@@ -1,0 +1,266 @@
+[
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-BTree-balanced-refined-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-balanced-refined-default",
+      "tree-FileStream-BTree-balanced-baseline-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-BTree-read-heavy-refined-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-read-heavy-refined-default",
+      "tree-FileStream-BTree-read-heavy-baseline-default",
+      "tree-FileStream-BTree-read-heavy-refined-selected-buffer",
+      "tree-FileStream-BTree-read-heavy-baseline-selected-buffer"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-BTree-write-heavy-baseline-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-write-heavy-baseline-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-BTreePlus-balanced-refined-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-balanced-refined-default",
+      "tree-FileStream-BTreePlus-balanced-refined-selected-buffer"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-BTreePlus-read-heavy-refined-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-read-heavy-refined-default",
+      "tree-FileStream-BTreePlus-read-heavy-refined-selected-buffer"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-BTreePlus-write-heavy-refined-selected-buffer",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-write-heavy-refined-selected-buffer",
+      "tree-FileStream-BTreePlus-write-heavy-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-Lookup-balanced-refined-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-balanced-refined-default",
+      "tree-FileStream-Lookup-balanced-refined-selected-buffer"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-Lookup-read-heavy-refined-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-read-heavy-refined-default",
+      "tree-FileStream-Lookup-read-heavy-refined-selected-buffer"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FileStream-Lookup-write-heavy-refined-default",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-write-heavy-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-BTree-balanced-refined-combined",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-balanced-refined-combined",
+      "tree-FilePaged-BTree-balanced-baseline-default",
+      "tree-FilePaged-BTree-balanced-baseline-combined",
+      "tree-FilePaged-BTree-balanced-refined-core-paging",
+      "tree-FilePaged-BTree-balanced-baseline-selected-page",
+      "tree-FilePaged-BTree-balanced-baseline-selected-cache",
+      "tree-FilePaged-BTree-balanced-refined-default",
+      "tree-FilePaged-BTree-balanced-current-framework-control"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-BTree-read-heavy-refined-core-paging",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-read-heavy-refined-core-paging",
+      "tree-FilePaged-BTree-read-heavy-refined-combined",
+      "tree-FilePaged-BTree-read-heavy-current-framework-control",
+      "tree-FilePaged-BTree-read-heavy-baseline-default",
+      "tree-FilePaged-BTree-read-heavy-baseline-combined",
+      "tree-FilePaged-BTree-read-heavy-refined-default",
+      "tree-FilePaged-BTree-read-heavy-baseline-selected-page",
+      "tree-FilePaged-BTree-read-heavy-baseline-selected-cache"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-BTree-write-heavy-refined-core-paging",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-write-heavy-refined-core-paging",
+      "tree-FilePaged-BTree-write-heavy-baseline-selected-page",
+      "tree-FilePaged-BTree-write-heavy-current-framework-control",
+      "tree-FilePaged-BTree-write-heavy-baseline-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-BTreePlus-balanced-refined-default",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-balanced-refined-default",
+      "tree-FilePaged-BTreePlus-balanced-refined-combined",
+      "tree-FilePaged-BTreePlus-balanced-refined-core-paging",
+      "tree-FilePaged-BTreePlus-balanced-baseline-default",
+      "tree-FilePaged-BTreePlus-balanced-upper-4096-core-paging"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-BTreePlus-read-heavy-refined-default",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-read-heavy-refined-default",
+      "tree-FilePaged-BTreePlus-read-heavy-refined-combined",
+      "tree-FilePaged-BTreePlus-read-heavy-upper-4096-core-paging",
+      "tree-FilePaged-BTreePlus-read-heavy-baseline-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-BTreePlus-write-heavy-refined-combined",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-write-heavy-refined-combined",
+      "tree-FilePaged-BTreePlus-write-heavy-refined-default",
+      "tree-FilePaged-BTreePlus-write-heavy-refined-core-paging"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-Lookup-balanced-refined-combined",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-balanced-refined-combined",
+      "tree-FilePaged-Lookup-balanced-refined-core-paging",
+      "tree-FilePaged-Lookup-balanced-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-Lookup-read-heavy-refined-core-paging",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-read-heavy-refined-core-paging",
+      "tree-FilePaged-Lookup-read-heavy-refined-default",
+      "tree-FilePaged-Lookup-read-heavy-refined-combined"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-FilePaged-Lookup-write-heavy-refined-core-paging",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-write-heavy-refined-core-paging",
+      "tree-FilePaged-Lookup-write-heavy-refined-combined",
+      "tree-FilePaged-Lookup-write-heavy-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-BTree-balanced-refined-combined",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-balanced-refined-combined",
+      "tree-TransactionalFile-BTree-balanced-baseline-combined",
+      "tree-TransactionalFile-BTree-balanced-refined-core-paging",
+      "tree-TransactionalFile-BTree-balanced-baseline-selected-page",
+      "tree-TransactionalFile-BTree-balanced-current-framework-control",
+      "tree-TransactionalFile-BTree-balanced-refined-default",
+      "tree-TransactionalFile-BTree-balanced-baseline-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-BTree-read-heavy-baseline-selected-page",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-read-heavy-baseline-selected-page",
+      "tree-TransactionalFile-BTree-read-heavy-refined-core-paging",
+      "tree-TransactionalFile-BTree-read-heavy-current-framework-control",
+      "tree-TransactionalFile-BTree-read-heavy-refined-default",
+      "tree-TransactionalFile-BTree-read-heavy-baseline-combined",
+      "tree-TransactionalFile-BTree-read-heavy-refined-combined"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-BTree-write-heavy-baseline-combined",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-write-heavy-baseline-combined",
+      "tree-TransactionalFile-BTree-write-heavy-current-framework-control",
+      "tree-TransactionalFile-BTree-write-heavy-refined-combined",
+      "tree-TransactionalFile-BTree-write-heavy-baseline-selected-page",
+      "tree-TransactionalFile-BTree-write-heavy-baseline-default",
+      "tree-TransactionalFile-BTree-write-heavy-baseline-selected-cache",
+      "tree-TransactionalFile-BTree-write-heavy-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-balanced-refined-combined",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-balanced-refined-combined",
+      "tree-TransactionalFile-BTreePlus-balanced-refined-core-paging",
+      "tree-TransactionalFile-BTreePlus-balanced-refined-default",
+      "tree-TransactionalFile-BTreePlus-balanced-baseline-selected-page",
+      "tree-TransactionalFile-BTreePlus-balanced-baseline-combined",
+      "tree-TransactionalFile-BTreePlus-balanced-baseline-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-read-heavy-refined-combined",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-read-heavy-refined-combined",
+      "tree-TransactionalFile-BTreePlus-read-heavy-refined-core-paging",
+      "tree-TransactionalFile-BTreePlus-read-heavy-baseline-selected-page",
+      "tree-TransactionalFile-BTreePlus-read-heavy-upper-4096-core-paging",
+      "tree-TransactionalFile-BTreePlus-read-heavy-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-write-heavy-refined-combined",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-write-heavy-refined-combined",
+      "tree-TransactionalFile-BTreePlus-write-heavy-refined-core-paging",
+      "tree-TransactionalFile-BTreePlus-write-heavy-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-Lookup-balanced-refined-core-paging",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-balanced-refined-core-paging",
+      "tree-TransactionalFile-Lookup-balanced-refined-combined",
+      "tree-TransactionalFile-Lookup-balanced-refined-default"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-Lookup-read-heavy-refined-core-paging",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-read-heavy-refined-core-paging",
+      "tree-TransactionalFile-Lookup-read-heavy-refined-combined",
+      "tree-TransactionalFile-Lookup-read-heavy-refined-default",
+      "tree-TransactionalFile-Lookup-read-heavy-baseline-selected-cache"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-OrderSettingsInteraction",
+    "WinnerId": "tree-TransactionalFile-Lookup-write-heavy-refined-core-paging",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-write-heavy-refined-core-paging",
+      "tree-TransactionalFile-Lookup-write-heavy-refined-default"
+    ]
+  }
+]

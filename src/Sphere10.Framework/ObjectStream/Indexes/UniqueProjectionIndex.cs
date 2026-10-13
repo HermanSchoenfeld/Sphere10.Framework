@@ -17,10 +17,17 @@ namespace Sphere10.Framework;
 internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<TItem, TKey, UniqueKeyStorageAttachment<TKey>>, IUniqueProjectionIndex<TKey> {
 	private readonly Func<TItem, TKey> _projection;
 
-	public UniqueProjectionIndex(ObjectStream<TItem> objectStream, string indexName, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer)
+	public UniqueProjectionIndex(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TKey> projection,
+		IItemSerializer<TKey> keySerializer,
+		IEqualityComparer<TKey> keyComparer,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	)
 		: base(
 			objectStream, 
-			new UniqueKeyStorageAttachment<TKey>(objectStream.Streams, indexName, keySerializer, keyComparer),
+			new UniqueKeyStorageAttachment<TKey>(objectStream.Streams, indexName, keySerializer, keyComparer, bTreeOrder),
 			IndexNullPolicy.ThrowOnNull
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));

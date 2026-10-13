@@ -1,0 +1,246 @@
+{
+  "Objective": "Balanced throughput",
+  "HumanRationale": "The user selected balanced reads and writes as the primary recommendation and explicitly prioritized Memory throughput despite its measured encoded-storage expansion. File defaults use a stable measured cache budget within the fast pressure-test interval; hardware and workload sensitivity remain documented. The user subsequently preferred power-of-two constants; a separate final-layout order 128/256 comparison selects shared order 256 from the resolved Memory result while retaining File uncertainty and the lower 128 point mean.",
+  "Decisions": [
+    {
+      "Constant": "ObjectSpaceIndexBTreeOrder",
+      "Value": 256,
+      "Rationale": "The user prefers power-of-two settings. In the matched final-layout Balanced comparison, Memory order 256 is faster than 128 with disjoint reported 99.9% intervals. File 128 has a lower point mean but its interval overlaps 256; 256 allocates slightly less. A shared 256 default follows the resolved Memory result without claiming a unique File optimum. Explicit tuning remains available.",
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-objectspaces-power2-order-bdn-balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+        "Profile": "memory-default-layout-order-256",
+        "Method": "MixedReadWriteAndPersist",
+        "SettingPointer": "/Configuration/IndexBTreeOrder"
+      }
+    },
+    {
+      "Constant": "MemoryObjectSpaceClusterSize",
+      "Value": 1024,
+      "Rationale": "Retain the previously confirmed 1024/1024 Memory cluster/policy combination and the explicitly accepted encoded-footprint tradeoff. Both final power-of-two profiles hold these settings fixed and measure only the order128/256 choice.",
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-objectspaces-power2-order-bdn-balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+        "Profile": "memory-default-layout-order-256",
+        "Method": "MixedReadWriteAndPersist",
+        "SettingPointer": "/Configuration/ClusterSize"
+      }
+    },
+    {
+      "Constant": "MemoryObjectSpaceDimensionClusterSize",
+      "Value": 1024,
+      "Rationale": "Retain the measured Memory compound layout, now paired with power-of-two order 256. Explicit dimension hints remain supported and persisted cluster sizes stay authoritative on reopen.",
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-objectspaces-power2-order-bdn-balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+        "Profile": "memory-default-layout-order-256",
+        "Method": "MixedReadWriteAndPersist",
+        "SettingPointer": "/Configuration/AverageRecordSizeBytes"
+      }
+    },
+    {
+      "Constant": "MemoryObjectSpaceContainerPolicy",
+      "Value": "CacheClusterHeaders, IntegrityChecks",
+      "Rationale": "Retain header caching plus integrity checks from the earlier matched compound comparison. The final 128/256 comparison holds policy, indexes, save behavior and endianness fixed.",
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-objectspaces-power2-order-bdn-balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+        "Profile": "memory-default-layout-order-256",
+        "Method": "MixedReadWriteAndPersist",
+        "SettingPointer": "/Configuration/Policy"
+      }
+    },
+    {
+      "Constant": "FileObjectSpaceClusterSize",
+      "Value": 4096,
+      "Rationale": "Retain the 4096-byte File outer cluster tested in both final power-of-two profiles. The earlier combined alternative did not improve Balanced File performance; the final order comparison does not retune clusters.",
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-objectspaces-power2-order-bdn-balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+        "Profile": "file-default-layout-order-256",
+        "Method": "MixedReadWriteAndPersist",
+        "SettingPointer": "/Configuration/ClusterSize"
+      }
+    },
+    {
+      "Constant": "FileObjectSpaceDimensionClusterSize",
+      "Value": 256,
+      "Rationale": "Retain the 256-byte File dimension allocation tested in both final power-of-two profiles, preserving explicit hints and stored cluster sizes.",
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-objectspaces-power2-order-bdn-balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+        "Profile": "file-default-layout-order-256",
+        "Method": "MixedReadWriteAndPersist",
+        "SettingPointer": "/Configuration/AverageRecordSizeBytes"
+      }
+    },
+    {
+      "Constant": "FileObjectSpaceContainerPolicy",
+      "Value": "Default",
+      "Rationale": "Retain File Default policy, held fixed in the final 128/256 comparison. Its lower 128 point mean remains visible; overlapping intervals do not resolve a unique File order.",
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-objectspaces-power2-order-bdn-balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+        "Profile": "file-default-layout-order-256",
+        "Method": "MixedReadWriteAndPersist",
+        "SettingPointer": "/Configuration/Policy"
+      }
+    },
+    {
+      "Constant": "ObjectSpacePageSize",
+      "Value": 262144,
+      "Rationale": "The 256 KiB / 16 MiB pressure profile has a stable measured ms/batch mean inside the fast overlapping interval and retains the independently confirmed File candidate's page size. Keep the existing generic page size and transaction recovery offsets. The 1 MiB / existing-large-bound profile has a lower mean with overlapping uncertainty; this is a robust choice, not a unique optimum.",
+      "Source": {
+        "Kind": "Study",
+        "RelativeDirectory": "20261013-objectspaces-file-cache-pressure-4096",
+        "CaseId": "os-File-page-262144-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+        "SettingPointer": "/ObjectSpaces/Profiles/0/Configuration/PageSize"
+      }
+    },
+    {
+      "Constant": "ObjectSpaceMaxMemory",
+      "Value": 16777216,
+      "Rationale": "The actual 70.2 MiB store exceeds this cache budget. The 256 KiB / 16 MiB profile is stable inside the fast measured interval without the historical 2 GiB per-collection ceiling; large pages with small caches regress severely. This bound excludes tracked entities and cumulative allocation, and is an ObjectSpace default only; generic collection cache defaults remain unchanged.",
+      "Source": {
+        "Kind": "Study",
+        "RelativeDirectory": "20261013-objectspaces-file-cache-pressure-4096",
+        "CaseId": "os-File-page-262144-cache-16777216-Mixed-Balanced-cache-pressure-4096",
+        "SettingPointer": "/ObjectSpaces/Profiles/0/Configuration/MaxMemory"
+      }
+    },
+    {
+      "Constant": "BTreeOrder",
+      "Value": 128,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-managed-warm30/Balanced",
+        "ReportFile": "results/BenchmarkRun-joined-2026-10-13-05-31-27-report-full.json",
+        "Profile": "ManagedNodes-BTree-balanced-warm30-128",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Balanced measured default candidate; explicit tuning and persisted original orders remain supported."
+    },
+    {
+      "Constant": "BTreePlusOrder",
+      "Value": 2048,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-managed-warm30/Balanced",
+        "ReportFile": "results/BenchmarkRun-joined-2026-10-13-05-31-27-report-full.json",
+        "Profile": "ManagedNodes-BTreePlus-balanced-warm30-2048",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Balanced measured default candidate; explicit tuning and persisted original orders remain supported."
+    },
+    {
+      "Constant": "BTreeLookupOrder",
+      "Value": 2048,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-managed-warm30/Balanced",
+        "ReportFile": "results/BenchmarkRun-joined-2026-10-13-05-31-27-report-full.json",
+        "Profile": "ManagedNodes-Lookup-balanced-warm30-2048",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Balanced measured default candidate; explicit tuning and persisted original orders remain supported."
+    },
+    {
+      "Constant": "StreamMappedBTreeOrder",
+      "Value": 128,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-confirmations/File/Balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.BTrees.BTreeMutationBenchmarks-report-full.json",
+        "Profile": "FileStream-BTree-robust-shared-contender-128",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Balanced measured default candidate; explicit tuning and persisted original orders remain supported."
+    },
+    {
+      "Constant": "StreamMappedBTreePlusOrder",
+      "Value": 2048,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-confirmations/File/Balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.BTrees.BTreeMutationBenchmarks-report-full.json",
+        "Profile": "FilePaged-BTreePlus-robust-shared-contender-2048",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Balanced measured default candidate; explicit tuning and persisted original orders remain supported."
+    },
+    {
+      "Constant": "StreamMappedBTreeLookupOrder",
+      "Value": 2048,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-numeric-lookup-confirmations/Balanced",
+        "ReportFile": "results/Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks-report-full.json",
+        "Profile": "TransactionalFile-Lookup-numeric-current-core-2048",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Serialized numeric lookup: independently confirmed Balanced FilePaged/Transactional 1024/2048 pairs; other serialized numeric lookup backends and mixes remain screening-only."
+    },
+    {
+      "Constant": "StreamMappedWideKeyBTreePlusOrder",
+      "Value": 1024,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-wide-confirmations/Balanced",
+        "ReportFile": "results/BenchmarkRun-joined-2026-10-13-05-38-31-report-full.json",
+        "Profile": "FilePaged-BTreePlus-Digest32-explicit-wide-1024",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Balanced measured default candidate; explicit tuning and persisted original orders remain supported."
+    },
+    {
+      "Constant": "StreamMappedWideKeyBTreeLookupOrder",
+      "Value": 1024,
+      "Source": {
+        "Kind": "BenchmarkDotNet",
+        "RelativeDirectory": "20261013-btree-bdn-wide-confirmations/Balanced",
+        "ReportFile": "results/BenchmarkRun-joined-2026-10-13-05-38-31-report-full.json",
+        "Profile": "TransactionalFile-Lookup-Digest32-explicit-wide-1024",
+        "Method": "MixedAndPersist",
+        "SettingPointer": "/Order"
+      },
+      "Rationale": "Balanced measured default candidate; explicit tuning and persisted original orders remain supported."
+    }
+  ],
+  "DefaultBindings": [
+    {
+      "Type": "Sphere10.Framework.ObjectSpaces.MemoryObjectSpace",
+      "Member": ".ctor",
+      "Parameter": "clusteredStreamsPolicy",
+      "ParameterCount": 5,
+      "Constant": "MemoryObjectSpaceContainerPolicy"
+    },
+    {
+      "Type": "Sphere10.Framework.ObjectSpaces.MemoryObjectSpace",
+      "Member": ".ctor",
+      "Parameter": "clusteredStreamsPolicy",
+      "ParameterCount": 6,
+      "Constant": "MemoryObjectSpaceContainerPolicy"
+    },
+    {
+      "Type": "Sphere10.Framework.ObjectSpaces.MemoryObjectSpace",
+      "Member": ".ctor",
+      "Parameter": "clusteredStreamsPolicy",
+      "ParameterCount": 7,
+      "Constant": "MemoryObjectSpaceContainerPolicy"
+    }
+  ]
+}

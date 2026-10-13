@@ -1,0 +1,27 @@
+{
+  "Profile": "upper-order-4096",
+  "RunId": "c1f8d654117447eeb6b3d8a92acd1c15",
+  "Storage": "StreamMemory",
+  "Family": "Lookup",
+  "KeyShape": "Int32",
+  "Order": 4096,
+  "MaximumLeafEntries": 4095,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 98329,
+  "LogicalTreeBytes": 393348,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 0,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 4,
+    "TotalLeaves": 3,
+    "LeafEntries": 8192,
+    "MeanLeafOccupancy": 0.6668294668294669,
+    "PhysicalSlots": 4
+  },
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

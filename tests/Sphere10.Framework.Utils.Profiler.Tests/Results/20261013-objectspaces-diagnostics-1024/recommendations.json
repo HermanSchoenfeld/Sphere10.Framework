@@ -1,0 +1,120 @@
+[
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Read/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-baseline64-Read-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-Memory-baseline64-Read-diagnostics-1024",
+      "os-Memory-balanced-candidate-Read-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Miss/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-balanced-candidate-Miss-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-Memory-balanced-candidate-Miss-diagnostics-1024",
+      "os-Memory-baseline64-Miss-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Scan/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-baseline64-Scan-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-Memory-baseline64-Scan-diagnostics-1024",
+      "os-Memory-balanced-candidate-Scan-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Insert/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-balanced-candidate-Insert-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-Memory-balanced-candidate-Insert-diagnostics-1024",
+      "os-Memory-baseline64-Insert-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Update/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-balanced-candidate-Update-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-Memory-balanced-candidate-Update-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Recycle/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-balanced-candidate-Recycle-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-Memory-balanced-candidate-Recycle-diagnostics-1024",
+      "os-Memory-baseline64-Recycle-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Reopen/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-baseline64-Reopen-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-Memory-baseline64-Reopen-diagnostics-1024",
+      "os-Memory-balanced-candidate-Reopen-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Read/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-baseline64-Read-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-baseline64-Read-diagnostics-1024",
+      "os-File-balanced-candidate-Read-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Miss/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-balanced-candidate-Miss-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-balanced-candidate-Miss-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Scan/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-balanced-candidate-Scan-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-balanced-candidate-Scan-diagnostics-1024",
+      "os-File-baseline64-Scan-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Insert/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-baseline64-Insert-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-baseline64-Insert-diagnostics-1024",
+      "os-File-balanced-candidate-Insert-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Update/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-balanced-candidate-Update-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-balanced-candidate-Update-diagnostics-1024",
+      "os-File-baseline64-Update-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Recycle/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-balanced-candidate-Recycle-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-balanced-candidate-Recycle-diagnostics-1024",
+      "os-File-baseline64-Recycle-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Reopen/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-baseline64-Reopen-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-baseline64-Reopen-diagnostics-1024",
+      "os-File-balanced-candidate-Reopen-diagnostics-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Rollback/n/a/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-baseline64-Rollback-diagnostics-1024",
+    "IndistinguishableIds": [
+      "os-File-baseline64-Rollback-diagnostics-1024",
+      "os-File-balanced-candidate-Rollback-diagnostics-1024"
+    ]
+  }
+]

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2026-10-13-10-02-41</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 10 (10.0.19045.7725/22H2/2022Update)
+Intel Core i9-10900K CPU 3.70GHz, 1 CPU, 20 logical and 10 physical cores
+.NET SDK 10.0.401
+  [Host]     : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+  Job-YYAKRU : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>OutlierMode=DontRemove  PowerPlanMode=00000000-0000-0000-0000-000000000000  Force=False  
+InvocationCount=1  IterationCount=10  LaunchCount=2  
+RunStrategy=Monitoring  UnrollFactor=1  WarmupCount=5  
+</code></pre>
+
+<table>
+<thead><tr><th>Method            </th><th>Profile       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0 </th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>MixedReadWriteAndPersist</td><td>file-(...)r-128 [29]</td><td>475.9 ms</td><td>20.95 ms</td><td>24.13 ms</td><td>165000.0000</td><td>1650.01 MB</td>
+</tr><tr><td>MixedReadWriteAndPersist</td><td>file-(...)r-256 [29]</td><td>505.1 ms</td><td>36.78 ms</td><td>42.36 ms</td><td>161000.0000</td><td>1607.93 MB</td>
+</tr><tr><td>MixedReadWriteAndPersist</td><td>memor(...)r-128 [31]</td><td>219.0 ms</td><td>20.57 ms</td><td>23.68 ms</td><td>61000.0000</td><td>615.9 MB</td>
+</tr><tr><td>MixedReadWriteAndPersist</td><td>memor(...)r-256 [31]</td><td>181.0 ms</td><td>7.67 ms</td><td>8.84 ms</td><td>55000.0000</td><td>556.2 MB</td>
+</tr></tbody></table>
+</body>
+</html>

@@ -65,7 +65,9 @@ internal static class IndexFactory {
 		string indexName,
 		Member member, 
 		IItemSerializer keySerializer = null,
-		object keyComparer = null) {
+		object keyComparer = null,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	) {
 		var itemType = GetObjectStreamItemType(objectStream);
 		Guard.Ensure(itemType.IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(itemType));
 		
@@ -80,7 +82,7 @@ internal static class IndexFactory {
 			.GetMethod(nameof(CreateProjectionIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(itemType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyComparer, bTreeOrder });
 
 	}
 
@@ -89,9 +91,11 @@ internal static class IndexFactory {
 		string indexName,
 		Func<TItem, TKey> projection,
 		IItemSerializer<TKey> keySerializer = null,
-		IEqualityComparer<TKey> keyComparer = null) {
+		IEqualityComparer<TKey> keyComparer = null,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
-		var keyChecksumKeyIndex = new ProjectionIndex<TItem, TKey>(objectStream, indexName, projection, keySerializer, keyComparer);
+		var keyChecksumKeyIndex = new ProjectionIndex<TItem, TKey>(objectStream, indexName, projection, keySerializer, keyComparer, bTreeOrder);
 		return keyChecksumKeyIndex;
 	}
 
@@ -99,7 +103,14 @@ internal static class IndexFactory {
 
 	#region Unique Projection Index
 
-	internal static IClusteredStreamsAttachment CreateUniqueMemberIndex(ObjectStream objectStream, string indexName, Member member, IItemSerializer keySerializer = null, object keyComparer = null) {
+	internal static IClusteredStreamsAttachment CreateUniqueMemberIndex(
+		ObjectStream objectStream,
+		string indexName,
+		Member member,
+		IItemSerializer keySerializer = null,
+		object keyComparer = null,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	) {
 		var itemType = GetObjectStreamItemType(objectStream);
 		Guard.Ensure(itemType.IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(itemType));
 		
@@ -114,14 +125,21 @@ internal static class IndexFactory {
 			.GetMethod(nameof(CreateUniqueProjectionIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(itemType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyComparer, bTreeOrder });
 
 	}
 
-	internal static UniqueProjectionIndex<TItem, TKey> CreateUniqueProjectionIndex<TItem, TKey>(ObjectStream<TItem> objectStream, string indexName, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IEqualityComparer<TKey> keyComparer = null) {
+	internal static UniqueProjectionIndex<TItem, TKey> CreateUniqueProjectionIndex<TItem, TKey>(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TKey> projection,
+		IItemSerializer<TKey> keySerializer = null,
+		IEqualityComparer<TKey> keyComparer = null,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
 		keyComparer ??= EqualityComparer<TKey>.Default; // TODO: should this use a ComparerFactory?
-		var keyChecksumKeyIndex = new UniqueProjectionIndex<TItem, TKey>(objectStream, indexName, projection, keySerializer, keyComparer);
+		var keyChecksumKeyIndex = new UniqueProjectionIndex<TItem, TKey>(objectStream, indexName, projection, keySerializer, keyComparer, bTreeOrder);
 		return keyChecksumKeyIndex;
 	}
 
@@ -137,7 +155,8 @@ internal static class IndexFactory {
 		object keyChecksummer = null, 
 		object keyFetcher = null, 
 		object keyComparer = null,
-		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	) {
 		var itemType = GetObjectStreamItemType(objectStream);
 		Guard.Ensure(itemType.IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(itemType));
@@ -152,7 +171,7 @@ internal static class IndexFactory {
 			.GetMethod(nameof(CreateProjectionChecksumIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(itemType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer, indexNullPolicy });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer, indexNullPolicy, bTreeOrder });
 
 	}
 
@@ -164,7 +183,8 @@ internal static class IndexFactory {
 		IItemChecksummer<TKey> keyChecksummer = null, 
 		Func<long, TKey> keyFetcher = null, 
 		IEqualityComparer<TKey> keyComparer= null,
-		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	) {
 
 		keySerializer ??= ItemSerializer<TKey>.Default;
@@ -178,7 +198,8 @@ internal static class IndexFactory {
 			keyChecksummer,
 			keyFetcher,
 			keyComparer,
-			indexNullPolicy
+			indexNullPolicy,
+			bTreeOrder
 		);
 
 		return keyChecksumKeyIndex;
@@ -196,7 +217,8 @@ internal static class IndexFactory {
 		object keyChecksummer = null, 
 		object keyFetcher = null, 
 		object keyComparer = null,
-		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	) {
 		var itemType = GetObjectStreamItemType(objectStream);
 		Guard.Ensure(itemType.IsAssignableFrom(member.DeclaringType) || member.DeclaringType.IsAssignableFrom(itemType));
@@ -211,7 +233,7 @@ internal static class IndexFactory {
 			.GetMethod(nameof(CreateUniqueProjectionChecksumIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(itemType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer, indexNullPolicy });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer, indexNullPolicy, bTreeOrder });
 
 	}
 
@@ -223,7 +245,8 @@ internal static class IndexFactory {
 		IItemChecksummer<TKey> keyChecksummer = null, 
 		Func<long, TKey> keyFetcher = null, 
 		IEqualityComparer<TKey> keyComparer = null,
-		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
 		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, objectStream.Streams.Endianness);
@@ -236,7 +259,8 @@ internal static class IndexFactory {
 			keyChecksummer,
 			keyFetcher,
 			keyComparer,
-			indexNullPolicy
+			indexNullPolicy,
+			bTreeOrder
 		);
 
 		return uniqueKeyChecksumIndex;

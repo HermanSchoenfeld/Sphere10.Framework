@@ -1,0 +1,42 @@
+{
+  "StartedAtUtc": "2026-10-12T16:19:34.2193121Z",
+  "Machine": "WS-HERMAN",
+  "OperatingSystem": "Microsoft Windows 10.0.19045",
+  "Runtime": ".NET 10.0.12",
+  "LogicalProcessors": 20,
+  "Processor": "Intel64 Family 6 Model 165 Stepping 5, GenuineIntel",
+  "HasAttachedDebugger": false,
+  "Configuration": "Release",
+  "Assemblies": [
+    {
+      "Name": "Sphere10.Framework.Utils.Profiler",
+      "Version": "3.1.3.0",
+      "ModuleVersionId": "cc8846d1-6b9c-4291-9a71-fa3776d832b4",
+      "Sha256": "949EC8F3A413EC1639B89E2D1670D7F2F421AC852659DBCE4CA118BEAE05BFCB"
+    },
+    {
+      "Name": "Sphere10.Framework",
+      "Version": "3.1.3.0",
+      "ModuleVersionId": "006297b8-b22c-4e1e-ad1b-ebf8db677fff",
+      "Sha256": "E1710D86CDAAAE70E9765356D88FBB03E500328ACDA14F968017D02CDE3E56CF"
+    }
+  ],
+  "Frequency": 10000000,
+  "CommandArguments": [
+    "--plan",
+    "BenchmarkDotNet.Artifacts/btree-parameters-selected-orders-plan.json",
+    "--output",
+    "tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261013-btrees-parameters-2048",
+    "--data-root",
+    "D:/Development/Sphere10/Framework/BenchmarkDotNet.Artifacts/study-data"
+  ],
+  "ProcessId": 35940,
+  "Stage": "Screening",
+  "Method": "Synchronous owner-thread Stopwatch batches, deterministic shuffled profile order each round, independent baseline restoration, verification outside timing. No forced GC or outlier removal.",
+  "Caveats": [
+    "One process per study; shared JIT/GC/OS caches. Screening requires independent-process BenchmarkDotNet confirmation.",
+    "File completion is Flush/Commit of the selected backend, not equal power-loss guarantees.",
+    "Owner-thread allocation is not working set or peak memory.",
+    "Reopen clears framework caches; OS disk cache remains warm. Check the data-root disk and concurrent user activity."
+  ]
+}

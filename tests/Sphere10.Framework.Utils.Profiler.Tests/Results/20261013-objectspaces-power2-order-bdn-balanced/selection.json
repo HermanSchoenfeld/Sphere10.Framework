@@ -1,0 +1,102 @@
+[
+  {
+    "Profile": "memory-default-layout-order-128",
+    "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+    "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "OriginalExactProfile": "memory-selected-defaults-169",
+    "OriginalConfiguration": {
+      "SchemaProfile": "PayloadOnly",
+      "Storage": "Memory",
+      "IndexProfile": "Full",
+      "IndexBTreeOrder": 169,
+      "ClusterSize": 1024,
+      "AverageRecordSizeBytes": 1024,
+      "PageSize": 262144,
+      "MaxMemory": 16777216,
+      "Policy": "CacheClusterHeaders, IntegrityChecks",
+      "Endianness": "LittleEndian",
+      "Merkleized": false,
+      "HashFunction": "SHA2_256",
+      "AutoSave": false
+    },
+    "OnlyChangedConfigurationField": "IndexBTreeOrder",
+    "OriginalOrder": 169,
+    "CandidateOrder": 128,
+    "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+  },
+  {
+    "Profile": "memory-default-layout-order-256",
+    "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+    "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "OriginalExactProfile": "memory-selected-defaults-169",
+    "OriginalConfiguration": {
+      "SchemaProfile": "PayloadOnly",
+      "Storage": "Memory",
+      "IndexProfile": "Full",
+      "IndexBTreeOrder": 169,
+      "ClusterSize": 1024,
+      "AverageRecordSizeBytes": 1024,
+      "PageSize": 262144,
+      "MaxMemory": 16777216,
+      "Policy": "CacheClusterHeaders, IntegrityChecks",
+      "Endianness": "LittleEndian",
+      "Merkleized": false,
+      "HashFunction": "SHA2_256",
+      "AutoSave": false
+    },
+    "OnlyChangedConfigurationField": "IndexBTreeOrder",
+    "OriginalOrder": 169,
+    "CandidateOrder": 256,
+    "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+  },
+  {
+    "Profile": "file-default-layout-order-128",
+    "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+    "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "OriginalExactProfile": "file-selected-defaults-169",
+    "OriginalConfiguration": {
+      "SchemaProfile": "PayloadOnly",
+      "Storage": "File",
+      "IndexProfile": "Full",
+      "IndexBTreeOrder": 169,
+      "ClusterSize": 4096,
+      "AverageRecordSizeBytes": 256,
+      "PageSize": 262144,
+      "MaxMemory": 16777216,
+      "Policy": "Default",
+      "Endianness": "LittleEndian",
+      "Merkleized": false,
+      "HashFunction": "SHA2_256",
+      "AutoSave": false
+    },
+    "OnlyChangedConfigurationField": "IndexBTreeOrder",
+    "OriginalOrder": 169,
+    "CandidateOrder": 128,
+    "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+  },
+  {
+    "Profile": "file-default-layout-order-256",
+    "OriginalRelativeDirectory": "20261013-objectspaces-post-default-bdn-balanced",
+    "OriginalReportFile": "results/Sphere10.Framework.Utils.Profiler.ObjectSpaces.ObjectSpaceMutationBenchmarks-report-full.json",
+    "OriginalExactProfile": "file-selected-defaults-169",
+    "OriginalConfiguration": {
+      "SchemaProfile": "PayloadOnly",
+      "Storage": "File",
+      "IndexProfile": "Full",
+      "IndexBTreeOrder": 169,
+      "ClusterSize": 4096,
+      "AverageRecordSizeBytes": 256,
+      "PageSize": 262144,
+      "MaxMemory": 16777216,
+      "Policy": "Default",
+      "Endianness": "LittleEndian",
+      "Merkleized": false,
+      "HashFunction": "SHA2_256",
+      "AutoSave": false
+    },
+    "OnlyChangedConfigurationField": "IndexBTreeOrder",
+    "OriginalOrder": 169,
+    "CandidateOrder": 256,
+    "Purpose": "Compare powers of two under the same currently selected Memory/File layout, with the user-preferred Balanced throughput objective; no default is changed before measuring."
+  }
+]

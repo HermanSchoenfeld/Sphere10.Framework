@@ -1,0 +1,27 @@
+{
+  "Profile": "current-framework-control",
+  "RunId": "a8c2778930b14bf19ac541ef6bd12603",
+  "Storage": "FilePaged",
+  "Family": "Lookup",
+  "KeyShape": "Int32",
+  "Order": 64,
+  "MaximumLeafEntries": 63,
+  "KeyBytes": 4,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 1561,
+  "LogicalTreeBytes": 298183,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 298183,
+  "Geometry": {
+    "Height": 3,
+    "ActiveNodes": 191,
+    "TotalLeaves": 186,
+    "LeafEntries": 8192,
+    "MeanLeafOccupancy": 0.6990954087728282,
+    "PhysicalSlots": 191
+  },
+  "AppliedPageSize": 262144,
+  "AppliedCacheBytes": 2147483647,
+  "AppliedFileBufferBytes": null
+}

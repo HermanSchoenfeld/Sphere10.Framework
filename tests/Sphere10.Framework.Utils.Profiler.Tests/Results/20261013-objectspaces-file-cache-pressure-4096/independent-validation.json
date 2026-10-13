@@ -1,0 +1,366 @@
+{
+  "Verification": "Independent Python reconciliation of raw JSON/JSONL/CSV/clock and measured storage metadata. Three-sample screening retains uncertainty.",
+  "OverlappingCandidates": [
+    "page-1048576-cache-2147483647",
+    "page-1048576-cache-67108864",
+    "page-262144-cache-16777216",
+    "page-262144-cache-67108864",
+    "page-262144-cache-2147483647",
+    "page-65536-cache-67108864",
+    "page-65536-cache-2147483647",
+    "page-262144-cache-4194304"
+  ],
+  "Results": [
+    {
+      "Profile": "page-1048576-cache-2147483647",
+      "MeanMs": 618.8822,
+      "HalfWidth95Ms": 59.66171238239022,
+      "AllocatedMiB": 1429.4934819539387,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        612.7861,
+        598.5026,
+        645.3579
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-1048576-cache-67108864",
+      "MeanMs": 653.7071333333333,
+      "HalfWidth95Ms": 239.82090936389585,
+      "AllocatedMiB": 1429.4960301717122,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        604.9437,
+        591.2831,
+        764.8946
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 67108864,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-262144-cache-16777216",
+      "MeanMs": 663.7701666666667,
+      "HalfWidth95Ms": 20.74983727794032,
+      "AllocatedMiB": 1452.7699457804363,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        671.3745,
+        654.8308,
+        665.1052
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-262144-cache-67108864",
+      "MeanMs": 694.7991666666667,
+      "HalfWidth95Ms": 93.01500694570352,
+      "AllocatedMiB": 1435.6919275919597,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        714.6133,
+        651.6153,
+        718.1689
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 67108864,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-262144-cache-2147483647",
+      "MeanMs": 695.9741666666666,
+      "HalfWidth95Ms": 189.9031606035565,
+      "AllocatedMiB": 1433.7562764485676,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        661.9243,
+        642.4757,
+        783.5225
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "current-core-default",
+      "MeanMs": 895.0231333333334,
+      "HalfWidth95Ms": 114.19839356219481,
+      "AllocatedMiB": 1994.576301574707,
+      "StorageBytes": 73659973,
+      "RawMs": [
+        872.5594,
+        864.6073,
+        947.9027
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 64,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-65536-cache-16777216",
+      "MeanMs": 941.7357666666667,
+      "HalfWidth95Ms": 84.11617454700134,
+      "AllocatedMiB": 1457.3075892130535,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        949.0666,
+        971.3284,
+        904.8123
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-65536-cache-67108864",
+      "MeanMs": 1017.4562,
+      "HalfWidth95Ms": 632.9793056083771,
+      "AllocatedMiB": 1452.6007995605469,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        880.0708,
+        860.8473,
+        1311.4505
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 67108864,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-65536-cache-4194304",
+      "MeanMs": 1298.1737666666668,
+      "HalfWidth95Ms": 18.090380772689105,
+      "AllocatedMiB": 1760.302505493164,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        1291.7831,
+        1296.6369,
+        1306.1013
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 4194304,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-65536-cache-2147483647",
+      "MeanMs": 1358.7269333333334,
+      "HalfWidth95Ms": 1931.7975907040961,
+      "AllocatedMiB": 1451.8405024210613,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        919.2178,
+        2256.5454,
+        900.4176
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 65536,
+        "MaxMemory": 2147483647,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-1048576-cache-16777216",
+      "MeanMs": 1814.5666666666666,
+      "HalfWidth95Ms": 532.3821932424856,
+      "AllocatedMiB": 4326.679807027181,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        1729.7639,
+        2058.2859,
+        1655.6502
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 16777216,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-262144-cache-4194304",
+      "MeanMs": 2624.3181,
+      "HalfWidth95Ms": 2480.7061501312023,
+      "AllocatedMiB": 3641.5029322306314,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        1710.9817,
+        3690.4456,
+        2471.527
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 262144,
+        "MaxMemory": 4194304,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    },
+    {
+      "Profile": "page-1048576-cache-4194304",
+      "MeanMs": 8322.706733333333,
+      "HalfWidth95Ms": 1909.108294918137,
+      "AllocatedMiB": 21229.37984720866,
+      "StorageBytes": 73618843,
+      "RawMs": [
+        8849.9913,
+        8677.1301,
+        7440.9988
+      ],
+      "Configuration": {
+        "SchemaProfile": "PayloadOnly",
+        "Storage": "File",
+        "IndexProfile": "Full",
+        "IndexBTreeOrder": 169,
+        "ClusterSize": 4096,
+        "AverageRecordSizeBytes": 256,
+        "PageSize": 1048576,
+        "MaxMemory": 4194304,
+        "Policy": "Default",
+        "Endianness": "LittleEndian",
+        "Merkleized": false,
+        "HashFunction": "SHA2_256",
+        "AutoSave": false
+      }
+    }
+  ]
+}

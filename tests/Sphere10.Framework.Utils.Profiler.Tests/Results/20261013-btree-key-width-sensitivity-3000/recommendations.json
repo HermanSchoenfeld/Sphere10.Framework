@@ -1,0 +1,231 @@
+[
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-ManagedNodes-BTree-Digest32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-ManagedNodes-BTree-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int32-contender-Mixed",
+      "tree-ManagedNodes-BTree-Int32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "tree-ManagedNodes-BTreePlus-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-ManagedNodes-Lookup-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Digest32-wide-key-1024-Mixed",
+      "tree-ManagedNodes-Lookup-Digest32-contender-Mixed",
+      "tree-ManagedNodes-Lookup-Digest32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-StreamMemory-BTree-Digest32-legacy64-Mixed",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Digest32-legacy64-Mixed",
+      "tree-StreamMemory-BTree-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-StreamMemory-BTree-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int32-contender-Mixed",
+      "tree-StreamMemory-BTree-Int32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "tree-StreamMemory-BTreePlus-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-StreamMemory-Lookup-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Digest32-wide-key-1024-Mixed",
+      "tree-StreamMemory-Lookup-Digest32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FileStream-BTree-Digest32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Digest32-contender-Mixed",
+      "tree-FileStream-BTree-Digest32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FileStream-BTree-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FileStream-BTreePlus-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "tree-FileStream-BTreePlus-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FileStream-BTreePlus-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FileStream-Lookup-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Digest32-wide-key-1024-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FilePaged-BTree-Digest32-legacy64-Mixed",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Digest32-legacy64-Mixed",
+      "tree-FilePaged-BTree-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FilePaged-BTree-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int32-contender-Mixed",
+      "tree-FilePaged-BTree-Int32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FilePaged-BTreePlus-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "tree-FilePaged-BTreePlus-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-FilePaged-Lookup-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Digest32-wide-key-1024-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Digest32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Digest32-contender-Mixed",
+      "tree-OSMemoryMapped-BTree-Digest32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int32-contender-Mixed",
+      "tree-OSMemoryMapped-BTree-Int32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Digest32-wide-key-1024-Mixed",
+      "tree-OSMemoryMapped-BTreePlus-Digest32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Digest32-wide-key-1024-Mixed",
+      "tree-OSMemoryMapped-Lookup-Digest32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-TransactionalFile-BTree-Digest32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Digest32-contender-Mixed",
+      "tree-TransactionalFile-BTree-Digest32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-TransactionalFile-BTree-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int32-contender-Mixed",
+      "tree-TransactionalFile-BTree-Int32-legacy64-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Digest32-wide-key-1024-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int32-contender-Mixed",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int32-contender-Mixed"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Digest32/Mixed/balanced/records-3000/ops-100/group-8/shuffled-True/factor-KeyWidthSensitivity",
+    "WinnerId": "tree-TransactionalFile-Lookup-Digest32-wide-key-1024-Mixed",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Digest32-wide-key-1024-Mixed"
+    ]
+  }
+]

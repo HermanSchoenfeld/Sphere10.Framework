@@ -1,0 +1,9 @@
+[
+  "study",
+  "--plan",
+  "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\objectspaces-order-size-4096-plan.json",
+  "--output",
+  "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-order-size-4096",
+  "--data-root",
+  "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data"
+]

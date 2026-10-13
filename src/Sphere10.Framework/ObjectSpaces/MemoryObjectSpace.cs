@@ -17,11 +17,22 @@ namespace Sphere10.Framework.ObjectSpaces;
 public class MemoryObjectSpace : ObjectSpace {
 
 	public MemoryObjectSpace(
-		ObjectSpaceDefinition objectSpaceDefinition, 
-		SerializerFactory serializerFactory, 
-		ComparerFactory comparerFactory, 
-		int clusterSize = Sphere10FrameworkDefaults.ClusterSize, 
-		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.ContainerPolicy, 
+		ObjectSpaceDefinition objectSpaceDefinition,
+		SerializerFactory serializerFactory,
+		ComparerFactory comparerFactory,
+		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) : this(objectSpaceDefinition, serializerFactory, comparerFactory,
+		Sphere10FrameworkDefaults.MemoryObjectSpaceClusterSize,
+		clusteredStreamsPolicy, endianness) {
+	}
+
+	public MemoryObjectSpace(
+		ObjectSpaceDefinition objectSpaceDefinition,
+		SerializerFactory serializerFactory,
+		ComparerFactory comparerFactory,
+		int clusterSize,
+		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy,
 		Endianness endianness = Sphere10FrameworkDefaults.Endianness
 	) : this(new MemoryStream(), objectSpaceDefinition, serializerFactory, comparerFactory, clusterSize, clusteredStreamsPolicy, endianness) {
 		Streams.OwnsStream = true;
@@ -29,13 +40,26 @@ public class MemoryObjectSpace : ObjectSpace {
 
 	public MemoryObjectSpace(
 		MemoryStream memoryStream,
-		ObjectSpaceDefinition objectSpaceDefinition, 
-		SerializerFactory serializerFactory, 
-		ComparerFactory comparerFactory, 
-		int clusterSize = Sphere10FrameworkDefaults.ClusterSize, 
-		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.ContainerPolicy, 
+		ObjectSpaceDefinition objectSpaceDefinition,
+		SerializerFactory serializerFactory,
+		ComparerFactory comparerFactory,
+		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy,
 		Endianness endianness = Sphere10FrameworkDefaults.Endianness
-	) : base(CreateStreams(memoryStream, clusterSize, clusteredStreamsPolicy, endianness, objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.Merkleized)), objectSpaceDefinition, serializerFactory, comparerFactory) {
+	) : this(memoryStream, objectSpaceDefinition, serializerFactory, comparerFactory,
+		ResolveClusterSize(memoryStream, objectSpaceDefinition, endianness),
+		clusteredStreamsPolicy, endianness) {
+	}
+
+	public MemoryObjectSpace(
+		MemoryStream memoryStream,
+		ObjectSpaceDefinition objectSpaceDefinition,
+		SerializerFactory serializerFactory,
+		ComparerFactory comparerFactory,
+		int clusterSize,
+		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) : base(CreateStreams(memoryStream, objectSpaceDefinition, clusterSize, clusteredStreamsPolicy, endianness), objectSpaceDefinition, serializerFactory, comparerFactory,
+		FileAccessMode.Default, Sphere10FrameworkDefaults.MemoryObjectSpaceDimensionClusterSize) {
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
 		Guard.ArgumentNotNull(comparerFactory, nameof(comparerFactory));
@@ -45,20 +69,22 @@ public class MemoryObjectSpace : ObjectSpace {
 
 	public MemoryStream Stream { get; }
 
-	private static ClusteredStreams CreateStreams(MemoryStream memoryStream, int clusterSize, ClusteredStreamsPolicy clusteredStreamsPolicy, Endianness endianness, bool merkleized) {
-		var objectSpaceMetaDataStreamCount = merkleized ? 1 : 0;
-		var streams = new ClusteredStreams(
-			memoryStream,
-			clusterSize,
-			clusteredStreamsPolicy,
-			objectSpaceMetaDataStreamCount,
-			endianness,
-			false
-		);
-		return streams;
+	private static int ResolveClusterSize(MemoryStream stream, ObjectSpaceDefinition definition, Endianness endianness) {
+		Guard.ArgumentNotNull(stream, nameof(stream));
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		definition.AssertOpeningIndexOrder(stream.Length > 0);
+		return stream.Length == 0 ? Sphere10FrameworkDefaults.MemoryObjectSpaceClusterSize
+			: ClusteredStreams.ReadStoredClusterSize(stream, definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized) ? 1 : 0, endianness);
 	}
 
-	
+	private static ClusteredStreams CreateStreams(MemoryStream memoryStream, ObjectSpaceDefinition definition, int clusterSize, ClusteredStreamsPolicy clusteredStreamsPolicy, Endianness endianness) {
+		Guard.ArgumentNotNull(memoryStream, nameof(memoryStream));
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		definition.AssertOpeningIndexOrder(memoryStream.Length > 0);
+		var objectSpaceMetaDataStreamCount = definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized) ? 1 : 0;
+		if (memoryStream.Length > 0)
+			Guard.Ensure(ClusteredStreams.ReadStoredClusterSize(memoryStream, objectSpaceMetaDataStreamCount, endianness) == clusterSize,
+				"The explicitly configured outer cluster size must match existing storage.");
+		return new ClusteredStreams(memoryStream, clusterSize, clusteredStreamsPolicy, objectSpaceMetaDataStreamCount, endianness, false);
+	}
 }
-
-

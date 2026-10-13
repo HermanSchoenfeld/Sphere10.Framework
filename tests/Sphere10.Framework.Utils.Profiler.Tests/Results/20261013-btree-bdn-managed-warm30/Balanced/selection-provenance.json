@@ -1,0 +1,336 @@
+{
+  "Profiles": [
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTree-balanced-warm30-64",
+        "Storage": "ManagedNodes",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "SourceEvidence": [
+        {
+          "FullJson": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\results\\BenchmarkRun-joined-2026-10-13-05-04-17-report-full.json",
+          "FullName": "Sphere10.Framework.Utils.Profiler.BTrees.BTreeMutationBenchmarks.MixedAndPersist(Profile: \"ManagedNodes-BTree-legacy-order-control-64\")",
+          "RunManifest": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\run.json",
+          "DomainStatus": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\execution-result.json",
+          "N": 20,
+          "Workload": "MixedAndPersist",
+          "SourceWarmupCount": 5,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 20000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        }
+      ],
+      "ActualProfileKey": {
+        "Storage": "ManagedNodes",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 64,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Separate30warmup matched Managed Balanced refinement. Primary5warmup actual series show runtime transitions and remain retained. Ordinary64/128 resolves conservative default; B+/Lookup1024/2048 tests the plateau. Dataset and all applied knobs identical; no runtime/JIT configuration changes or outlier removal."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTree-balanced-warm30-128",
+        "Storage": "ManagedNodes",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 128,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "SourceEvidence": [
+        {
+          "FullJson": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\results\\BenchmarkRun-joined-2026-10-13-05-04-17-report-full.json",
+          "FullName": "Sphere10.Framework.Utils.Profiler.BTrees.BTreeMutationBenchmarks.MixedAndPersist(Profile: \"ManagedNodes-BTree-robust-shared-contender-128\")",
+          "RunManifest": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\run.json",
+          "DomainStatus": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\execution-result.json",
+          "N": 20,
+          "Workload": "MixedAndPersist",
+          "SourceWarmupCount": 5,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 20000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        }
+      ],
+      "ActualProfileKey": {
+        "Storage": "ManagedNodes",
+        "Family": "BTree",
+        "KeyShape": "Int64",
+        "Order": 128,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Separate30warmup matched Managed Balanced refinement. Primary5warmup actual series show runtime transitions and remain retained. Ordinary64/128 resolves conservative default; B+/Lookup1024/2048 tests the plateau. Dataset and all applied knobs identical; no runtime/JIT configuration changes or outlier removal."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTreePlus-balanced-warm30-1024",
+        "Storage": "ManagedNodes",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 1024,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+          "CaseId": "tree-ManagedNodes-BTreePlus-balanced-upper-order-1024",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        }
+      ],
+      "ActualProfileKey": {
+        "Storage": "ManagedNodes",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 1024,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Separate30warmup matched Managed Balanced refinement. Primary5warmup actual series show runtime transitions and remain retained. Ordinary64/128 resolves conservative default; B+/Lookup1024/2048 tests the plateau. Dataset and all applied knobs identical; no runtime/JIT configuration changes or outlier removal."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-BTreePlus-balanced-warm30-2048",
+        "Storage": "ManagedNodes",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 2048,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "SourceEvidence": [
+        {
+          "FullJson": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\results\\BenchmarkRun-joined-2026-10-13-05-04-17-report-full.json",
+          "FullName": "Sphere10.Framework.Utils.Profiler.BTrees.BTreeMutationBenchmarks.MixedAndPersist(Profile: \"ManagedNodes-BTreePlus-robust-shared-contender-2048\")",
+          "RunManifest": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\run.json",
+          "DomainStatus": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\execution-result.json",
+          "N": 20,
+          "Workload": "MixedAndPersist",
+          "SourceWarmupCount": 5,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 20000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+          "CaseId": "tree-ManagedNodes-BTreePlus-balanced-upper-order-2048",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        }
+      ],
+      "ActualProfileKey": {
+        "Storage": "ManagedNodes",
+        "Family": "BTreePlus",
+        "KeyShape": "Int64",
+        "Order": 2048,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Separate30warmup matched Managed Balanced refinement. Primary5warmup actual series show runtime transitions and remain retained. Ordinary64/128 resolves conservative default; B+/Lookup1024/2048 tests the plateau. Dataset and all applied knobs identical; no runtime/JIT configuration changes or outlier removal."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-Lookup-balanced-warm30-1024",
+        "Storage": "ManagedNodes",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "SourceEvidence": [
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+          "CaseId": "tree-ManagedNodes-Lookup-balanced-upper-order-1024",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        }
+      ],
+      "ActualProfileKey": {
+        "Storage": "ManagedNodes",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 1024,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Separate30warmup matched Managed Balanced refinement. Primary5warmup actual series show runtime transitions and remain retained. Ordinary64/128 resolves conservative default; B+/Lookup1024/2048 tests the plateau. Dataset and all applied knobs identical; no runtime/JIT configuration changes or outlier removal."
+    },
+    {
+      "Profile": {
+        "Name": "ManagedNodes-Lookup-balanced-warm30-2048",
+        "Storage": "ManagedNodes",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "SourceEvidence": [
+        {
+          "FullJson": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\results\\BenchmarkRun-joined-2026-10-13-05-04-17-report-full.json",
+          "FullName": "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"ManagedNodes-Lookup-robust-shared-contender-2048\")",
+          "RunManifest": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\run.json",
+          "DomainStatus": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-bdn-confirmations\\Managed\\Balanced\\execution-result.json",
+          "N": 20,
+          "Workload": "MixedAndPersist",
+          "SourceWarmupCount": 5,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 20000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        },
+        {
+          "Results": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+          "CaseId": "tree-ManagedNodes-Lookup-balanced-upper-order-2048",
+          "Workload": "Mixed",
+          "ExpectedSampleCount": 3,
+          "ActualSourceInputs": {
+            "RecordCount": 32768,
+            "OperationCount": 1000,
+            "GroupSize": 8,
+            "ShuffledInsertion": true,
+            "Mix": "balanced"
+          }
+        }
+      ],
+      "ActualProfileKey": {
+        "Storage": "ManagedNodes",
+        "Family": "Lookup",
+        "KeyShape": "Int32",
+        "Order": 2048,
+        "PageSize": 65536,
+        "CacheBytes": 16777216,
+        "FileBufferBytes": 4096,
+        "Endianness": "LittleEndian"
+      },
+      "ConfirmationInputs": {
+        "RecordCount": 32768,
+        "OperationCount": 20000,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced"
+      },
+      "Rationale": "Separate30warmup matched Managed Balanced refinement. Primary5warmup actual series show runtime transitions and remain retained. Ordinary64/128 resolves conservative default; B+/Lookup1024/2048 tests the plateau. Dataset and all applied knobs identical; no runtime/JIT configuration changes or outlier removal."
+    }
+  ],
+  "Protocol": [
+    "--launchCount",
+    "2",
+    "--iterationCount",
+    "10",
+    "--warmupCount",
+    "30",
+    "--strategy",
+    "Monitoring",
+    "--invocationCount",
+    "1",
+    "--unrollFactor",
+    "1",
+    "--outliers",
+    "DontRemove",
+    "--noForcedGCs",
+    "--keepFiles"
+  ]
+}

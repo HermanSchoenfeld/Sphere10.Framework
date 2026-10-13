@@ -1,0 +1,17 @@
+{
+  "Name": "btree-current-core-numeric-lookup",
+  "Plan": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-current-core-numeric-lookup-plan.json",
+  "Output": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup",
+  "Cases": 4,
+  "ProvenancePath": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-current-core-numeric-lookup-selection.json",
+  "Controls": "Final matched Balanced numeric lookup1024/2048;FilePaged/Txn;8192/1000/group8/shuffled/current-Core262144/int-max;1warmup3actual. Four contemporary direct source cases for separate four-profile BDN.",
+  "Arguments": [
+    "study",
+    "--plan",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\btree-current-core-numeric-lookup-plan.json",
+    "--output",
+    "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-current-core-numeric-lookup",
+    "--data-root",
+    "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data"
+  ]
+}

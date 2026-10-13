@@ -1,0 +1,8 @@
+[
+  { "Name": "plus-long-order-128", "Storage": "FileStream", "Family": "BTreePlus", "KeyShape": "Int64", "Order": 128, "FileBufferBytes": 4096 },
+  { "Name": "plus-long-order-169", "Storage": "FileStream", "Family": "BTreePlus", "KeyShape": "Int64", "Order": 169, "FileBufferBytes": 4096 },
+  { "Name": "plus-long-order-170", "Storage": "FileStream", "Family": "BTreePlus", "KeyShape": "Int64", "Order": 170, "FileBufferBytes": 4096 },
+  { "Name": "plus-long-order-192", "Storage": "FileStream", "Family": "BTreePlus", "KeyShape": "Int64", "Order": 192, "FileBufferBytes": 4096 },
+  { "Name": "lookup-int-order-128", "Storage": "TransactionalFile", "Family": "Lookup", "KeyShape": "Int32", "Order": 128, "PageSize": 65536, "CacheBytes": 16777216 },
+  { "Name": "lookup-int-order-256", "Storage": "TransactionalFile", "Family": "Lookup", "KeyShape": "Int32", "Order": 256, "PageSize": 65536, "CacheBytes": 16777216 }
+]

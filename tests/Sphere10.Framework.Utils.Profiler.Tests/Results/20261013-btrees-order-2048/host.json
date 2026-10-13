@@ -1,0 +1,34 @@
+{
+  "StartedAtUtc": "2026-10-12T15:28:24.4988428Z",
+  "Machine": "WS-HERMAN",
+  "OperatingSystem": "Microsoft Windows 10.0.19045",
+  "Runtime": ".NET 10.0.12",
+  "LogicalProcessors": 20,
+  "Processor": "Intel64 Family 6 Model 165 Stepping 5, GenuineIntel",
+  "Frequency": 10000000,
+  "CommandArguments": [
+    "--domain",
+    "btrees",
+    "--suite",
+    "order",
+    "--records",
+    "2048",
+    "--operations",
+    "512",
+    "--samples",
+    "7",
+    "--output",
+    "tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261013-btrees-order-2048",
+    "--data-root",
+    "D:/Development/Sphere10/Framework/BenchmarkDotNet.Artifacts/study-data"
+  ],
+  "ProcessId": 34684,
+  "Stage": "Screening",
+  "Method": "Synchronous owner-thread Stopwatch batches, deterministic shuffled profile order each round, independent baseline restoration, verification outside timing. No forced GC or outlier removal.",
+  "Caveats": [
+    "One process per study; shared JIT/GC/OS caches. Screening requires independent-process BenchmarkDotNet confirmation.",
+    "File completion is Flush/Commit of the selected backend, not equal power-loss guarantees.",
+    "Owner-thread allocation is not working set or peak memory.",
+    "Reopen clears framework caches; OS disk cache remains warm. Check the data-root disk and concurrent user activity."
+  ]
+}

@@ -1,0 +1,1088 @@
+[
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTree-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int64-legacy64-Read",
+      "tree-ManagedNodes-BTree-Int64-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTree-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int64-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTree-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int64-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTree-Int64-contender-Insert",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int64-contender-Insert",
+      "tree-ManagedNodes-BTree-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTree-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int64-contender-Update",
+      "tree-ManagedNodes-BTree-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTree-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTree-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTree-Int64-contender-Range",
+      "tree-ManagedNodes-BTree-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int64-contender-Read",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int64-contender-Read",
+      "tree-ManagedNodes-BTreePlus-Int64-legacy64-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int64-contender-Miss",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int64-contender-Miss",
+      "tree-ManagedNodes-BTreePlus-Int64-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int64-contender-Scan",
+      "tree-ManagedNodes-BTreePlus-Int64-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int64-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-BTreePlus-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-BTreePlus-Int64-contender-Range",
+      "tree-ManagedNodes-BTreePlus-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-Lookup-Int32-contender-Read",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Int32-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-Lookup-Int32-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Int32-legacy64-Miss",
+      "tree-ManagedNodes-Lookup-Int32-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-Lookup-Int32-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Int32-legacy64-Scan",
+      "tree-ManagedNodes-Lookup-Int32-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-Lookup-Int32-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Int32-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-Lookup-Int32-contender-Update",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Int32-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-Lookup-Int32-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Int32-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/ManagedNodes/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-ManagedNodes-Lookup-Int32-contender-Group",
+    "IndistinguishableIds": [
+      "tree-ManagedNodes-Lookup-Int32-contender-Group",
+      "tree-ManagedNodes-Lookup-Int32-legacy64-Group"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTree-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int64-legacy64-Read",
+      "tree-StreamMemory-BTree-Int64-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTree-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int64-legacy64-Miss",
+      "tree-StreamMemory-BTree-Int64-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTree-Int64-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int64-legacy64-Scan",
+      "tree-StreamMemory-BTree-Int64-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTree-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int64-legacy64-Insert",
+      "tree-StreamMemory-BTree-Int64-contender-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTree-Int64-legacy64-Update",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int64-legacy64-Update",
+      "tree-StreamMemory-BTree-Int64-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTree-Int64-legacy64-Recycle",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int64-legacy64-Recycle",
+      "tree-StreamMemory-BTree-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTree-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTree-Int64-contender-Range",
+      "tree-StreamMemory-BTree-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int64-legacy64-Read",
+      "tree-StreamMemory-BTreePlus-Int64-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int64-legacy64-Miss",
+      "tree-StreamMemory-BTreePlus-Int64-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int64-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int64-legacy64-Scan",
+      "tree-StreamMemory-BTreePlus-Int64-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int64-legacy64-Insert",
+      "tree-StreamMemory-BTreePlus-Int64-contender-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int64-contender-Update",
+      "tree-StreamMemory-BTreePlus-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-BTreePlus-Int64-legacy64-Range",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-BTreePlus-Int64-legacy64-Range",
+      "tree-StreamMemory-BTreePlus-Int64-contender-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-Lookup-Int32-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Int32-legacy64-Read",
+      "tree-StreamMemory-Lookup-Int32-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-Lookup-Int32-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Int32-legacy64-Miss",
+      "tree-StreamMemory-Lookup-Int32-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-Lookup-Int32-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Int32-legacy64-Scan",
+      "tree-StreamMemory-Lookup-Int32-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-Lookup-Int32-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Int32-legacy64-Insert",
+      "tree-StreamMemory-Lookup-Int32-contender-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-Lookup-Int32-contender-Update",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Int32-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-Lookup-Int32-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Int32-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/StreamMemory/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-StreamMemory-Lookup-Int32-legacy64-Group",
+    "IndistinguishableIds": [
+      "tree-StreamMemory-Lookup-Int32-legacy64-Group",
+      "tree-StreamMemory-Lookup-Int32-contender-Group"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-contender-Read",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-contender-Read",
+      "tree-FileStream-BTree-Int64-legacy64-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-contender-Miss",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-contender-Miss",
+      "tree-FileStream-BTree-Int64-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-contender-Scan",
+      "tree-FileStream-BTree-Int64-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-contender-Update",
+      "tree-FileStream-BTree-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-contender-Range",
+      "tree-FileStream-BTree-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTree-Int64-contender-Reopen",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTree-Int64-contender-Reopen",
+      "tree-FileStream-BTree-Int64-legacy64-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-legacy64-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-contender-Scan",
+      "tree-FileStream-BTreePlus-Int64-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-legacy64-Update",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-legacy64-Range",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-BTreePlus-Int64-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-FileStream-BTreePlus-Int64-legacy64-Reopen",
+      "tree-FileStream-BTreePlus-Int64-contender-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-legacy64-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-contender-Scan",
+      "tree-FileStream-Lookup-Int32-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-contender-Update",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-legacy64-Group",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-legacy64-Group"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FileStream/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FileStream-Lookup-Int32-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-FileStream-Lookup-Int32-legacy64-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-contender-Read",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-contender-Read",
+      "tree-FilePaged-BTree-Int64-legacy64-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-contender-Miss",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-contender-Miss",
+      "tree-FilePaged-BTree-Int64-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-legacy64-Scan",
+      "tree-FilePaged-BTree-Int64-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-legacy64-Insert",
+      "tree-FilePaged-BTree-Int64-contender-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-contender-Update",
+      "tree-FilePaged-BTree-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-contender-Recycle",
+      "tree-FilePaged-BTree-Int64-legacy64-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-contender-Range",
+      "tree-FilePaged-BTree-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTree-Int64-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTree-Int64-legacy64-Reopen",
+      "tree-FilePaged-BTree-Int64-contender-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-legacy64-Read",
+      "tree-FilePaged-BTreePlus-Int64-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-legacy64-Miss",
+      "tree-FilePaged-BTreePlus-Int64-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-contender-Scan",
+      "tree-FilePaged-BTreePlus-Int64-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-legacy64-Insert",
+      "tree-FilePaged-BTreePlus-Int64-contender-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-legacy64-Update",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-legacy64-Update",
+      "tree-FilePaged-BTreePlus-Int64-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-legacy64-Range",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-legacy64-Range",
+      "tree-FilePaged-BTreePlus-Int64-contender-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-BTreePlus-Int64-contender-Reopen",
+    "IndistinguishableIds": [
+      "tree-FilePaged-BTreePlus-Int64-contender-Reopen",
+      "tree-FilePaged-BTreePlus-Int64-legacy64-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-legacy64-Read",
+      "tree-FilePaged-Lookup-Int32-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-legacy64-Miss",
+      "tree-FilePaged-Lookup-Int32-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-contender-Scan",
+      "tree-FilePaged-Lookup-Int32-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-contender-Update",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-legacy64-Group",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-legacy64-Group",
+      "tree-FilePaged-Lookup-Int32-contender-Group"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/FilePaged/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-FilePaged-Lookup-Int32-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-FilePaged-Lookup-Int32-legacy64-Reopen",
+      "tree-FilePaged-Lookup-Int32-contender-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-contender-Read",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-contender-Read",
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Miss",
+      "tree-OSMemoryMapped-BTree-Int64-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-contender-Scan",
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-contender-Insert",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-contender-Insert",
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-contender-Update",
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-contender-Recycle",
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-legacy64-Range",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Range",
+      "tree-OSMemoryMapped-BTree-Int64-contender-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTree-Int64-contender-Reopen",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTree-Int64-contender-Reopen",
+      "tree-OSMemoryMapped-BTree-Int64-legacy64-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Read",
+      "tree-OSMemoryMapped-BTreePlus-Int64-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Miss",
+      "tree-OSMemoryMapped-BTreePlus-Int64-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-contender-Scan",
+      "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-contender-Update",
+      "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-contender-Range",
+      "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-BTreePlus-Int64-legacy64-Reopen",
+      "tree-OSMemoryMapped-BTreePlus-Int64-contender-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-legacy64-Read",
+      "tree-OSMemoryMapped-Lookup-Int32-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-legacy64-Miss",
+      "tree-OSMemoryMapped-Lookup-Int32-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-legacy64-Scan",
+      "tree-OSMemoryMapped-Lookup-Int32-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-contender-Update",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-legacy64-Group",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-legacy64-Group",
+      "tree-OSMemoryMapped-Lookup-Int32-contender-Group"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/OSMemoryMapped/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-OSMemoryMapped-Lookup-Int32-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-OSMemoryMapped-Lookup-Int32-legacy64-Reopen",
+      "tree-OSMemoryMapped-Lookup-Int32-contender-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-legacy64-Read",
+      "tree-TransactionalFile-BTree-Int64-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-contender-Miss",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-contender-Miss",
+      "tree-TransactionalFile-BTree-Int64-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-legacy64-Scan",
+      "tree-TransactionalFile-BTree-Int64-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-contender-Insert",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-contender-Insert",
+      "tree-TransactionalFile-BTree-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-contender-Update",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-contender-Update",
+      "tree-TransactionalFile-BTree-Int64-legacy64-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-contender-Recycle",
+      "tree-TransactionalFile-BTree-Int64-legacy64-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-contender-Range",
+      "tree-TransactionalFile-BTree-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-legacy64-Reopen",
+      "tree-TransactionalFile-BTree-Int64-contender-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTree/Int64/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTree-Int64-contender-Rollback",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTree-Int64-contender-Rollback",
+      "tree-TransactionalFile-BTree-Int64-legacy64-Rollback"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Read",
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-legacy64-Miss",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Miss",
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-contender-Scan",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Scan",
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-legacy64-Update",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Update",
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-contender-Range",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Range",
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Range"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-legacy64-Reopen",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Reopen",
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/BTreePlus/Int64/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-BTreePlus-Int64-legacy64-Rollback",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-BTreePlus-Int64-legacy64-Rollback",
+      "tree-TransactionalFile-BTreePlus-Int64-contender-Rollback"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-legacy64-Read",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-legacy64-Read",
+      "tree-TransactionalFile-Lookup-Int32-contender-Read"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-contender-Miss",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-contender-Miss",
+      "tree-TransactionalFile-Lookup-Int32-legacy64-Miss"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-legacy64-Scan",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-legacy64-Scan",
+      "tree-TransactionalFile-Lookup-Int32-contender-Scan"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-legacy64-Insert",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-legacy64-Insert"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-contender-Update",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-contender-Update"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-contender-Recycle",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-contender-Recycle"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-legacy64-Group",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-legacy64-Group",
+      "tree-TransactionalFile-Lookup-Int32-contender-Group"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-contender-Reopen",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-contender-Reopen",
+      "tree-TransactionalFile-Lookup-Int32-legacy64-Reopen"
+    ]
+  },
+  {
+    "ComparisonGroup": "btrees/TransactionalFile/Lookup/Int32/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic",
+    "WinnerId": "tree-TransactionalFile-Lookup-Int32-contender-Rollback",
+    "IndistinguishableIds": [
+      "tree-TransactionalFile-Lookup-Int32-contender-Rollback",
+      "tree-TransactionalFile-Lookup-Int32-legacy64-Rollback"
+    ]
+  }
+]

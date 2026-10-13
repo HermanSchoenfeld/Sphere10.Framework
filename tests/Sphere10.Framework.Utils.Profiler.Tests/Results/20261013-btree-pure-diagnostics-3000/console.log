@@ -1,0 +1,1278 @@
+[04:52:21] btrees/ManagedNodes/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:21] Retained 2/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:21] btrees/ManagedNodes/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:21] Retained 4/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:21] btrees/ManagedNodes/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:21] Retained 6/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:21] btrees/ManagedNodes/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 8/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 10/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 12/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 14/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 16/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 18/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 20/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 22/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 24/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 26/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 28/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 30/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 32/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 34/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 36/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 38/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 40/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/ManagedNodes/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:22] Retained 42/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:22] btrees/StreamMemory/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:24] Retained 44/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:24] btrees/StreamMemory/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:25] Retained 46/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:25] btrees/StreamMemory/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:25] Retained 48/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:25] btrees/StreamMemory/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:25] Retained 50/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:25] btrees/StreamMemory/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:26] Retained 52/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:26] btrees/StreamMemory/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:26] Retained 54/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:26] btrees/StreamMemory/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:26] Retained 56/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:26] btrees/StreamMemory/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:27] Retained 58/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:27] btrees/StreamMemory/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:27] Retained 60/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:27] btrees/StreamMemory/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:27] Retained 62/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:27] btrees/StreamMemory/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:28] Retained 64/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:28] btrees/StreamMemory/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:28] Retained 66/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:28] btrees/StreamMemory/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:28] Retained 68/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:28] btrees/StreamMemory/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:29] Retained 70/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:29] btrees/StreamMemory/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:30] Retained 72/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:30] btrees/StreamMemory/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:31] Retained 74/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:31] btrees/StreamMemory/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:32] Retained 76/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:32] btrees/StreamMemory/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:33] Retained 78/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:33] btrees/StreamMemory/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:35] Retained 80/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:35] btrees/StreamMemory/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:36] Retained 82/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:36] btrees/StreamMemory/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:37] Retained 84/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:37] btrees/FileStream/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:39] Retained 86/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:39] btrees/FileStream/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:40] Retained 88/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:40] btrees/FileStream/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:41] Retained 90/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:41] btrees/FileStream/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:42] Retained 92/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:42] btrees/FileStream/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:44] Retained 94/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:44] btrees/FileStream/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:45] Retained 96/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:45] btrees/FileStream/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:46] Retained 98/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:46] btrees/FileStream/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:48] Retained 100/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:48] btrees/FileStream/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:49] Retained 102/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:49] btrees/FileStream/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:50] Retained 104/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:50] btrees/FileStream/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:52] Retained 106/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:52] btrees/FileStream/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:53] Retained 108/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:53] btrees/FileStream/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:54] Retained 110/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:54] btrees/FileStream/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:56] Retained 112/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:56] btrees/FileStream/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:57] Retained 114/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:57] btrees/FileStream/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:52:58] Retained 116/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:52:58] btrees/FileStream/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:03] Retained 118/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:03] btrees/FileStream/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:07] Retained 120/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:07] btrees/FileStream/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:12] Retained 122/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:12] btrees/FileStream/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:15] Retained 124/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:15] btrees/FileStream/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:21] Retained 126/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:21] btrees/FileStream/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:28] Retained 128/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:28] btrees/FileStream/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:32] Retained 130/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:32] btrees/FileStream/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:36] Retained 132/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:36] btrees/FilePaged/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:40] Retained 134/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:40] btrees/FilePaged/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:44] Retained 136/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:44] btrees/FilePaged/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:47] Retained 138/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:47] btrees/FilePaged/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:49] Retained 140/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:49] btrees/FilePaged/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:53] Retained 142/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:53] btrees/FilePaged/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:53:56] Retained 144/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:53:56] btrees/FilePaged/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:00] Retained 146/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:00] btrees/FilePaged/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:03] Retained 148/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:03] btrees/FilePaged/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:06] Retained 150/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:06] btrees/FilePaged/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:10] Retained 152/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:10] btrees/FilePaged/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:13] Retained 154/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:13] btrees/FilePaged/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:15] Retained 156/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:15] btrees/FilePaged/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:18] Retained 158/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:18] btrees/FilePaged/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:22] Retained 160/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:22] btrees/FilePaged/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:25] Retained 162/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:25] btrees/FilePaged/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:29] Retained 164/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:29] btrees/FilePaged/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:41] Retained 166/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:41] btrees/FilePaged/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:54:53] Retained 168/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:54:53] btrees/FilePaged/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:55:06] Retained 170/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:55:06] btrees/FilePaged/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:55:14] Retained 172/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:55:14] btrees/FilePaged/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:55:28] Retained 174/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:55:28] btrees/FilePaged/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:55:43] Retained 176/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:55:43] btrees/FilePaged/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:55:56] Retained 178/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:55:56] btrees/FilePaged/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:08] Retained 180/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:08] btrees/OSMemoryMapped/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:09] Retained 182/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:09] btrees/OSMemoryMapped/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:09] Retained 184/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:09] btrees/OSMemoryMapped/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:09] Retained 186/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:09] btrees/OSMemoryMapped/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:10] Retained 188/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:10] btrees/OSMemoryMapped/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:10] Retained 190/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:10] btrees/OSMemoryMapped/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:10] Retained 192/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:10] btrees/OSMemoryMapped/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:11] Retained 194/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:11] btrees/OSMemoryMapped/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:11] Retained 196/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:11] btrees/OSMemoryMapped/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:11] Retained 198/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:11] btrees/OSMemoryMapped/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:12] Retained 200/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:12] btrees/OSMemoryMapped/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:12] Retained 202/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:12] btrees/OSMemoryMapped/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:13] Retained 204/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:13] btrees/OSMemoryMapped/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:13] Retained 206/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:13] btrees/OSMemoryMapped/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:13] Retained 208/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:13] btrees/OSMemoryMapped/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:14] Retained 210/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:14] btrees/OSMemoryMapped/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:14] Retained 212/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:14] btrees/OSMemoryMapped/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:16] Retained 214/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:16] btrees/OSMemoryMapped/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:17] Retained 216/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:17] btrees/OSMemoryMapped/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:18] Retained 218/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:18] btrees/OSMemoryMapped/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:19] Retained 220/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:19] btrees/OSMemoryMapped/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:21] Retained 222/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:21] btrees/OSMemoryMapped/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:23] Retained 224/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:23] btrees/OSMemoryMapped/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:24] Retained 226/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:24] btrees/OSMemoryMapped/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:25] Retained 228/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:25] btrees/TransactionalFile/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:29] Retained 230/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:29] btrees/TransactionalFile/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:33] Retained 232/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:33] btrees/TransactionalFile/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:37] Retained 234/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:37] btrees/TransactionalFile/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:39] Retained 236/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:39] btrees/TransactionalFile/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:43] Retained 238/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:43] btrees/TransactionalFile/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:46] Retained 240/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:46] btrees/TransactionalFile/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:50] Retained 242/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:50] btrees/TransactionalFile/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:54] Retained 244/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:54] btrees/TransactionalFile/BTree/Int64/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:56:58] Retained 246/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:56:58] btrees/TransactionalFile/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:01] Retained 248/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:01] btrees/TransactionalFile/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:05] Retained 250/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:05] btrees/TransactionalFile/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:08] Retained 252/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:08] btrees/TransactionalFile/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:10] Retained 254/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:10] btrees/TransactionalFile/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:14] Retained 256/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:14] btrees/TransactionalFile/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:18] Retained 258/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:18] btrees/TransactionalFile/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:21] Retained 260/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:21] btrees/TransactionalFile/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:25] Retained 262/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:25] btrees/TransactionalFile/BTreePlus/Int64/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:29] Retained 264/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:29] btrees/TransactionalFile/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:42] Retained 266/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:42] btrees/TransactionalFile/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:57:55] Retained 268/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:57:55] btrees/TransactionalFile/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:58:08] Retained 270/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:58:08] btrees/TransactionalFile/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:58:17] Retained 272/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:58:17] btrees/TransactionalFile/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:58:33] Retained 274/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:58:33] btrees/TransactionalFile/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:58:49] Retained 276/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:58:49] btrees/TransactionalFile/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:59:02] Retained 278/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:59:02] btrees/TransactionalFile/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:59:16] Retained 280/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+[04:59:16] btrees/TransactionalFile/Lookup/Int32/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic; 2 configurations
+[04:59:32] Retained 282/282 cases. Report: D:\Development\Sphere10\Framework\tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-pure-diagnostics-3000\report.md
+# Parameter study: measured screening candidates
+
+Means and approximate 95% Student-t intervals are per reset batch. Intervals assume independent samples; rounds share one process, so confirmation is required.
+Candidates with overlapping intervals are not resolved winners. These results apply only to the retained dataset, mix, capabilities, disk and host.
+Allocation is owner-thread managed allocation, not resident or peak memory. No outliers were removed. File completion does not establish equivalent power-loss durability.
+
+Potential temporal drift is flagged when the medians of the first and last measured halves differ by more than 1.5 times. A flagged mean remains a provisional screening candidate; confirm it after sufficient warmup.
+
+## btrees/ManagedNodes/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.0454 | 0.0016 | 0.0000 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 0.0466 | 0.0228 | 0.0000 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.0399 | 0.0011 | 0.0000 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 0.0433 | 0.0020 | 0.0000 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.3034 | 0.0299 | 0.0029 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.3932 | 0.0174 | 0.0059 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 1.3519 | 0.0539 | 0.2689 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.4710 | 0.4295 | 0.2854 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.0382 | 0.0022 | 0.0000 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.0408 | 0.0035 | 0.0000 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.0900 | 0.0044 | 0.0000 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.1063 | 0.0025 | 0.0053 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.3138 | 0.0375 | 0.0335 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.3985 | 0.0516 | 0.0472 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.0384 | 0.0009 | 0.0000 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.0519 | 0.0253 | 0.0000 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.0384 | 0.0057 | 0.0000 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.0444 | 0.0044 | 0.0000 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.1958 | 0.0049 | 0.0001 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.2052 | 0.0204 | 0.0001 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 1.3346 | 0.0935 | 0.0797 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 1.5665 | 0.0741 | 0.0942 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.0363 | 0.0009 | 0.0000 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.0397 | 0.0004 | 0.0000 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.1436 | 0.0022 | 0.0000 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.9353 | 0.0825 | 0.0011 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.1592 | 0.0106 | 0.0092 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.1703 | 0.0044 | 0.0092 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 0.1975 | 0.0023 | 0.0000 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 0.2207 | 0.0088 | 0.0000 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 0.0107 | 0.0020 | 0.0053 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 0.0108 | 0.0016 | 0.0053 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 0.4149 | 0.0164 | 0.0889 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 0.5001 | 0.4009 | 0.0889 | 3 | interval overlaps fastest |
+
+## btrees/ManagedNodes/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 1.8548 | 0.0284 | 0.0786 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 2.1196 | 0.0773 | 0.0942 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 0.5328 | 0.0188 | 0.0000 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 3.2883 | 0.1424 | 0.0022 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 0.6225 | 0.4054 | 0.0000 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 3.4619 | 1.8633 | 0.0022 | 3 | slower measured mean |
+
+## btrees/ManagedNodes/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 0.0957 | 0.0012 | 0.0053 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 0.0973 | 0.0024 | 0.0053 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 1.2849 | 0.1601 | 1.6476 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 1.3233 | 0.1548 | 1.6865 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.3048 | 0.1173 | 1.5518 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 0.8092 | 2.0879 | 1.8295 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.8389 | 0.1594 | 4.1718 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 0.9932 | 0.8963 | 4.1688 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 12.3890 | 0.9871 | 69.6535 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 13.3451 | 1.6228 | 73.3386 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.3207 | 0.0374 | 1.7132 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 0.3620 | 0.2540 | 1.7521 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.8358 | 0.2548 | 4.1250 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 0.8770 | 0.1153 | 4.0964 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.9349 | 0.0697 | 4.2346 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.0814 | 0.1384 | 4.4067 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.2676 | 0.0789 | 1.2672 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 0.5045 | 0.4157 | 1.5588 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.2415 | 0.0539 | 1.2741 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 0.5103 | 0.6687 | 1.6212 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.7212 | 0.2921 | 4.1661 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 0.7469 | 0.3229 | 4.1661 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 9.5284 | 0.7703 | 56.9704 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 33.4482 | 29.6155 | 242.4737 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.2960 | 0.0626 | 1.6244 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.3189 | 0.2682 | 1.3328 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 1.6747 | 0.1200 | 13.2019 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 5.5223 | 0.3683 | 26.4434 | 3 | slower measured mean |
+
+## btrees/StreamMemory/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.6800 | 0.2267 | 3.4980 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 0.7753 | 0.2689 | 3.7896 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 1.1168 | 0.2788 | 5.5275 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 1.3774 | 0.0530 | 6.9618 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 0.2628 | 0.0347 | 1.2794 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 0.2846 | 0.0189 | 1.6266 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 0.8360 | 0.2676 | 4.2549 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 0.8411 | 0.2505 | 4.2549 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 56.7911 | 11.6886 | 249.7933 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 81.5557 | 16.3554 | 484.9470 | 3 | interval overlaps fastest |
+
+## btrees/StreamMemory/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 15.6028 | 1.7039 | 96.2818 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 32.4372 | 3.7570 | 150.7689 | 3 | slower measured mean |
+
+## btrees/StreamMemory/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 14.8199 | 1.7293 | 93.6923 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 29.0770 | 1.0378 | 143.3917 | 3 | slower measured mean |
+
+## btrees/StreamMemory/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 2.2405 | 0.0859 | 11.2578 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 2.6605 | 0.4186 | 14.0953 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.9999 | 0.4261 | 1.6865 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.3102 | 0.4128 | 1.6476 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 1.0966 | 0.2094 | 1.8295 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.2811 | 0.0757 | 1.5518 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.9445 | 0.1967 | 4.1688 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.0704 | 0.2044 | 4.1718 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 92.8290 | 1.6245 | 69.2678 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 99.9097 | 4.2912 | 72.9604 | 3 | slower measured mean |
+
+## btrees/FileStream/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 1.2222 | 0.4156 | 1.7521 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.5367 | 0.4695 | 1.7132 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 4.0628 | 1.1566 | 4.0964 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 5.6959 | 0.4025 | 4.1250 | 3 | slower measured mean |
+
+## btrees/FileStream/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 1.8672 | 0.4349 | 4.2346 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 2.6023 | 0.7344 | 4.4067 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.9873 | 0.1571 | 1.6930 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.4767 | 0.9995 | 1.6540 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.8238 | 0.2623 | 1.2672 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 1.3053 | 0.1006 | 1.5588 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.8180 | 0.2775 | 1.2741 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 1.3488 | 0.1493 | 1.6212 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.7693 | 0.0876 | 4.1661 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.9869 | 0.2859 | 4.1661 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 78.8438 | 12.2731 | 56.5828 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 104.0396 | 5.1212 | 242.1451 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 1.0912 | 0.0439 | 1.3328 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 1.6415 | 0.0445 | 1.6244 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 9.2566 | 0.7647 | 13.2019 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 90.4946 | 10.4910 | 26.4434 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 1.4145 | 0.3372 | 3.4980 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 2.1294 | 0.2686 | 3.7896 | 3 | slower measured mean |
+
+## btrees/FileStream/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.9354 | 0.0398 | 1.2736 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 1.7647 | 1.1709 | 1.5652 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 3.7232 | 0.7735 | 5.5275 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 6.3050 | 0.4794 | 6.9618 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 0.7866 | 0.0562 | 1.2794 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 1.3911 | 0.3219 | 1.6266 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 0.9079 | 0.0761 | 4.2549 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 1.0606 | 0.1773 | 4.2549 | 3 | interval overlaps fastest |
+
+## btrees/FileStream/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 173.5242 | 24.7167 | 249.4057 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 274.4705 | 8.5603 | 484.6184 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 70.9418 | 3.8051 | 96.2818 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 423.1351 | 16.5090 | 150.7689 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 70.4057 | 5.1540 | 93.6923 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 402.3787 | 19.5262 | 143.3917 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 7.1504 | 0.5255 | 11.2578 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 12.2065 | 0.6099 | 14.0953 | 3 | slower measured mean |
+
+## btrees/FileStream/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 4.7191 | 0.4160 | 9.7003 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 7.2129 | 0.4048 | 11.1347 | 3 | slower measured mean |
+
+## btrees/FilePaged/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-256 | 3.3527 | 0.4402 | 14.4349 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 3.5979 | 0.2786 | 15.6804 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-256 | 3.5067 | 0.3027 | 15.0998 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 3.6757 | 0.7733 | 15.4233 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 7.8246 | 1.5117 | 32.8808 | 3 | lowest measured mean |
+| Int64-contender-order-256 | 8.4559 | 3.7915 | 32.1413 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 138.5540 | 10.6629 | 528.5321 | 3 | lowest measured mean |
+| Int64-contender-order-256 | 142.2381 | 22.1182 | 581.5037 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-256 | 5.2410 | 0.2380 | 13.7035 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 7.8141 | 4.8557 | 14.9493 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-256 | 10.8102 | 3.0101 | 37.6783 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 15.1557 | 13.8314 | 40.1076 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-256 | 8.2955 | 2.7140 | 34.4296 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 9.7370 | 1.5882 | 39.0852 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 5.2245 | 0.7559 | 15.9487 | 3 | lowest measured mean |
+| Int64-contender-order-256 | 6.5363 | 6.8476 | 14.7034 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 3.0922 | 0.5190 | 13.2426 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 3.3986 | 0.5172 | 14.0897 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 2.9947 | 0.1486 | 13.2957 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 3.5681 | 0.7758 | 14.5683 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 7.3268 | 1.7597 | 31.9412 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 7.9728 | 3.0546 | 32.5613 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 117.4399 | 17.7200 | 444.4923 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 158.7922 | 34.8768 | 1027.3955 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 5.6065 | 1.2282 | 12.5112 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 5.8915 | 1.0715 | 13.3573 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 16.4848 | 8.8573 | 71.0047 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 89.0528 | 23.8128 | 324.3725 | 3 | slower measured mean |
+
+## btrees/FilePaged/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 7.0769 | 0.2385 | 31.1208 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 7.5458 | 1.5918 | 31.5878 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 5.4202 | 2.8200 | 14.3572 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 13.1349 | 19.4016 | 13.5113 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 13.0960 | 0.3099 | 58.0770 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 14.2158 | 1.2539 | 62.8911 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 2.8800 | 0.1183 | 13.3011 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 3.1932 | 0.2051 | 14.5734 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 7.1482 | 0.8916 | 32.0300 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 7.2188 | 0.1442 | 32.6403 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 525.3583 | 8.4318 | 2298.6364 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 616.1988 | 12.4475 | 3114.6193 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 131.9202 | 5.1799 | 647.2461 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 450.4411 | 4.5736 | 1804.4138 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 127.3876 | 1.2740 | 630.9618 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 429.4170 | 6.1689 | 1715.7529 | 3 | slower measured mean |
+
+## btrees/FilePaged/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 26.5322 | 1.9549 | 118.0260 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 28.7156 | 1.4905 | 127.2767 | 3 | interval overlaps fastest |
+
+## btrees/FilePaged/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 26.0300 | 17.6234 | 90.8967 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 27.4816 | 19.6146 | 95.1014 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.3607 | 0.0283 | 1.6865 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.3870 | 0.1071 | 1.6476 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.3949 | 0.0805 | 1.5518 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 0.5508 | 0.7405 | 1.8295 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.8531 | 0.0881 | 4.1688 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.9016 | 0.0242 | 4.1718 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 14.9231 | 0.0961 | 72.9604 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 15.0245 | 0.2248 | 69.2678 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.8010 | 0.0741 | 1.7521 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.8565 | 0.0856 | 1.7132 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 1.2449 | 0.0800 | 4.0964 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 1.4498 | 0.1562 | 4.1250 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 1.0481 | 0.1856 | 4.4067 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 1.1872 | 0.9190 | 4.2346 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 0.6729 | 0.0936 | 1.6897 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.7147 | 0.0491 | 1.6508 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.2823 | 0.0042 | 1.2672 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 0.3794 | 0.1397 | 1.5588 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.2838 | 0.0089 | 1.2741 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 0.3726 | 0.1727 | 1.6212 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.8068 | 0.1901 | 4.1661 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.8299 | 0.1135 | 4.1661 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 12.3616 | 0.6084 | 56.5828 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 27.3596 | 1.0279 | 242.1451 | 3 | slower measured mean |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.6508 | 0.2197 | 1.6244 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.8206 | 0.1465 | 1.3328 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 2.3028 | 0.1792 | 13.2019 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 7.8631 | 0.5824 | 26.4434 | 3 | slower measured mean |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 0.7947 | 0.1164 | 3.7896 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 0.8154 | 0.0444 | 3.4980 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 0.6006 | 0.0546 | 1.2704 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 0.7267 | 0.2171 | 1.5620 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 1.2875 | 0.0210 | 5.5275 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 1.5754 | 0.4302 | 6.9618 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 0.2916 | 0.0069 | 1.2794 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 0.3739 | 0.1262 | 1.6266 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 0.8613 | 0.1231 | 4.2549 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 1.0251 | 0.5714 | 4.2549 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 63.0934 | 9.1519 | 249.4057 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 81.6182 | 8.4986 | 484.6184 | 3 | slower measured mean |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 16.8057 | 0.7189 | 96.2818 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 41.5435 | 5.0449 | 150.7689 | 3 | slower measured mean |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 16.4499 | 0.5533 | 93.6923 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 39.2033 | 5.5617 | 143.3917 | 3 | slower measured mean |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 2.7630 | 0.1342 | 11.2578 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 3.3404 | 0.9950 | 14.0953 | 3 | interval overlaps fastest |
+
+## btrees/OSMemoryMapped/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 2.6913 | 0.1747 | 9.6970 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 2.9371 | 0.1340 | 11.1315 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 4.2416 | 1.0282 | 15.6809 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 4.9427 | 5.8185 | 14.6056 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 3.8963 | 0.4014 | 16.1634 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 4.6913 | 2.2002 | 15.4233 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 8.3487 | 0.8364 | 32.8808 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 8.8734 | 3.0122 | 32.3785 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 151.6226 | 29.7553 | 529.9701 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 152.0996 | 40.5972 | 528.5590 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 7.4023 | 0.6307 | 13.9002 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 10.5676 | 5.1027 | 14.9758 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 15.0778 | 9.6261 | 34.0875 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 16.1235 | 4.1422 | 40.1344 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 9.1162 | 1.0680 | 35.6398 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 10.9775 | 3.2709 | 39.0852 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 8.0353 | 4.1116 | 15.9600 | 3 | lowest measured mean |
+| Int64-contender-order-128 | 14.1353 | 21.9936 | 14.8858 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTree/Int64/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-128 | 3.8588 | 0.4161 | 0.2838 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 5.8697 | 7.8366 | 0.2837 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 3.3369 | 0.2849 | 13.2428 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 3.7563 | 1.2836 | 14.0895 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 3.3997 | 0.1756 | 13.2957 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 3.8330 | 1.3236 | 14.5680 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 7.6235 | 0.6754 | 31.9415 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 7.7757 | 1.5206 | 32.5608 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 125.0229 | 9.7110 | 444.5206 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 164.4401 | 10.0515 | 1027.4223 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 7.1611 | 0.9159 | 12.5379 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 8.8288 | 3.6342 | 13.3844 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 17.3195 | 1.0722 | 71.0317 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 98.8115 | 25.0194 | 324.3993 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Range/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-contender-order-2048 | 7.8063 | 0.7710 | 31.5878 | 3 | lowest measured mean |
+| Int64-legacy64-order-64 | 9.8853 | 7.5683 | 31.1208 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 6.6659 | 1.0801 | 13.5219 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 8.1560 | 3.2046 | 14.3681 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/BTreePlus/Int64/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int64-legacy64-order-64 | 3.7195 | 0.1723 | 0.2837 | 3 | lowest measured mean |
+| Int64-contender-order-2048 | 4.6237 | 4.4292 | 0.2837 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/Lookup/Int32/Read/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 13.9486 | 0.0776 | 58.0770 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 15.7252 | 1.9420 | 62.8916 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/Lookup/Int32/Miss/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 3.3148 | 0.1423 | 14.5729 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 3.4750 | 0.5859 | 13.3016 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/Lookup/Int32/Scan/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 7.7027 | 0.5802 | 32.6405 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 7.7272 | 1.0105 | 32.0302 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/Lookup/Int32/Insert/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 577.4914 | 3.5193 | 2298.6644 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 661.7289 | 10.8030 | 3114.6460 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Update/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 154.1687 | 27.0228 | 647.2729 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 493.2696 | 9.3195 | 1804.4406 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Recycle/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 137.7784 | 0.3768 | 630.9884 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 484.5394 | 58.0179 | 1715.7796 | 3 | slower measured mean |
+
+## btrees/TransactionalFile/Lookup/Int32/Group/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-legacy64-order-64 | 29.9960 | 2.0253 | 118.0257 | 3 | lowest measured mean |
+| Int32-contender-order-2048 | 30.4273 | 0.3313 | 127.2767 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/Lookup/Int32/Reopen/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 26.7550 | 4.6508 | 95.1118 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 29.1693 | 17.2728 | 90.9080 | 3 | interval overlaps fastest |
+
+## btrees/TransactionalFile/Lookup/Int32/Rollback/n/a/records-3000/ops-100/group-8/shuffled-True/factor-PureWorkloadDiagnostic
+
+| Profile | Mean ms | 95% half-width ms | Allocated MiB/batch | Samples | Status |
+|---|---:|---:|---:|---:|---|
+| Int32-contender-order-2048 | 13.2139 | 3.8951 | 32.2301 | 3 | lowest measured mean |
+| Int32-legacy64-order-64 | 17.6706 | 22.9994 | 32.8406 | 3 | interval overlaps fastest |
+
+

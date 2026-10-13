@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2026-10-13-05-38-31</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 10 (10.0.19045.7725/22H2/2022Update)
+Intel Core i9-10900K CPU 3.70GHz, 1 CPU, 20 logical and 10 physical cores
+.NET SDK 10.0.401
+  [Host]     : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+  Job-YYAKRU : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>OutlierMode=DontRemove  PowerPlanMode=00000000-0000-0000-0000-000000000000  Force=False  
+InvocationCount=1  IterationCount=10  LaunchCount=2  
+RunStrategy=Monitoring  UnrollFactor=1  WarmupCount=5  
+</code></pre>
+
+<table>
+<thead><tr><th>Type                   </th><th>Method   </th><th>Profile       </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>FileP(...)-1024 [47]</td><td>9.073 ms</td><td>1.124 ms</td><td>1.294 ms</td><td>3000.0000</td><td>-</td><td>-</td><td>30.43 MB</td>
+</tr><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>FileP(...)-2048 [47]</td><td>30.506 ms</td><td>12.753 ms</td><td>14.686 ms</td><td>5000.0000</td><td>4000.0000</td><td>4000.0000</td><td>35.33 MB</td>
+</tr><tr><td>BTreeLookupMutationBenchmarks</td><td>MixedAndPersist</td><td>FileP(...)-1024 [44]</td><td>77.824 ms</td><td>1.460 ms</td><td>1.682 ms</td><td>38000.0000</td><td>-</td><td>-</td><td>382.92 MB</td>
+</tr><tr><td>BTreeLookupMutationBenchmarks</td><td>MixedAndPersist</td><td>FileP(...)-2048 [44]</td><td>234.933 ms</td><td>35.873 ms</td><td>41.312 ms</td><td>69000.0000</td><td>40000.0000</td><td>40000.0000</td><td>440.08 MB</td>
+</tr><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>Trans(...)-1024 [55]</td><td>11.431 ms</td><td>1.289 ms</td><td>1.485 ms</td><td>3000.0000</td><td>-</td><td>-</td><td>30.45 MB</td>
+</tr><tr><td>BTreeMutationBenchmarks</td><td>MixedAndPersist</td><td>Trans(...)-2048 [55]</td><td>25.303 ms</td><td>9.492 ms</td><td>10.931 ms</td><td>5000.0000</td><td>4000.0000</td><td>4000.0000</td><td>35.37 MB</td>
+</tr><tr><td>BTreeLookupMutationBenchmarks</td><td>MixedAndPersist</td><td>Trans(...)-1024 [52]</td><td>82.932 ms</td><td>2.897 ms</td><td>3.336 ms</td><td>38000.0000</td><td>-</td><td>-</td><td>382.97 MB</td>
+</tr><tr><td>BTreeLookupMutationBenchmarks</td><td>MixedAndPersist</td><td>Trans(...)-2048 [52]</td><td>241.139 ms</td><td>26.231 ms</td><td>30.208 ms</td><td>69000.0000</td><td>40000.0000</td><td>40000.0000</td><td>440.13 MB</td>
+</tr></tbody></table>
+</body>
+</html>

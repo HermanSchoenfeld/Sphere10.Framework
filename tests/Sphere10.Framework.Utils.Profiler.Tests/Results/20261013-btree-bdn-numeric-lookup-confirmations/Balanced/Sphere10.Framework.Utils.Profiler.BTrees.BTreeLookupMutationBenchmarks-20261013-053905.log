@@ -1,0 +1,537 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 4 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+Unable to find .sln or .csproj file. Will use current directory D:\Development\Sphere10\Framework to search for project file. If you don't use .sln file on purpose it should not be a problem.
+// start dotnet  restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1/" /p:OutDir="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0/" /p:OutputPath="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0/" /p:PublishDir="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\publish/" in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1
+// command took 0.99 sec and exited with 0
+// start dotnet  build -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1/" /p:OutDir="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0/" /p:OutputPath="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0/" /p:PublishDir="D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\publish/" --output "D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0/" in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1
+// command took 9.63 sec and exited with 0
+// ***** Done, took 00:00:11 (11.13 sec)   *****
+// Found 4 benchmarks:
+//   BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=FileP(...)-1024 [42]]
+//   BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=FileP(...)-2048 [42]]
+//   BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=Trans(...)-1024 [50]]
+//   BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=Trans(...)-2048 [50]]
+
+// **************************
+// Benchmark: BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=FileP(...)-1024 [42]]
+// *** Execute ***
+// Launch: 1 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 640 632 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"FilePaged-Lookup-numeric-current-core-1024\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 0 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 1124563900.00 ns, 1.1246 s/op
+WorkloadWarmup   2: 1 op, 974970000.00 ns, 974.9700 ms/op
+WorkloadWarmup   3: 1 op, 983645800.00 ns, 983.6458 ms/op
+WorkloadWarmup   4: 1 op, 989692600.00 ns, 989.6926 ms/op
+WorkloadWarmup   5: 1 op, 996326800.00 ns, 996.3268 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 974594800.00 ns, 974.5948 ms/op
+WorkloadActual   2: 1 op, 974282000.00 ns, 974.2820 ms/op
+WorkloadActual   3: 1 op, 973141800.00 ns, 973.1418 ms/op
+WorkloadActual   4: 1 op, 981081400.00 ns, 981.0814 ms/op
+WorkloadActual   5: 1 op, 1007121500.00 ns, 1.0071 s/op
+WorkloadActual   6: 1 op, 1034176300.00 ns, 1.0342 s/op
+WorkloadActual   7: 1 op, 964779700.00 ns, 964.7797 ms/op
+WorkloadActual   8: 1 op, 966521700.00 ns, 966.5217 ms/op
+WorkloadActual   9: 1 op, 980843600.00 ns, 980.8436 ms/op
+WorkloadActual  10: 1 op, 983988200.00 ns, 983.9882 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 974594800.00 ns, 974.5948 ms/op
+WorkloadResult   2: 1 op, 974282000.00 ns, 974.2820 ms/op
+WorkloadResult   3: 1 op, 973141800.00 ns, 973.1418 ms/op
+WorkloadResult   4: 1 op, 981081400.00 ns, 981.0814 ms/op
+WorkloadResult   5: 1 op, 1007121500.00 ns, 1.0071 s/op
+WorkloadResult   6: 1 op, 1034176300.00 ns, 1.0342 s/op
+WorkloadResult   7: 1 op, 964779700.00 ns, 964.7797 ms/op
+WorkloadResult   8: 1 op, 966521700.00 ns, 966.5217 ms/op
+WorkloadResult   9: 1 op, 980843600.00 ns, 980.8436 ms/op
+WorkloadResult  10: 1 op, 983988200.00 ns, 983.9882 ms/op
+// GC:  459 10 0 4805675784 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 12108 has exited with code 0.
+// Launch: 2 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 1652 17888 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"FilePaged-Lookup-numeric-current-core-1024\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 0 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 1079228700.00 ns, 1.0792 s/op
+WorkloadWarmup   2: 1 op, 994538900.00 ns, 994.5389 ms/op
+WorkloadWarmup   3: 1 op, 1034263400.00 ns, 1.0343 s/op
+WorkloadWarmup   4: 1 op, 985431200.00 ns, 985.4312 ms/op
+WorkloadWarmup   5: 1 op, 1005174400.00 ns, 1.0052 s/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 981492200.00 ns, 981.4922 ms/op
+WorkloadActual   2: 1 op, 990910000.00 ns, 990.9100 ms/op
+WorkloadActual   3: 1 op, 991316000.00 ns, 991.3160 ms/op
+WorkloadActual   4: 1 op, 998744400.00 ns, 998.7444 ms/op
+WorkloadActual   5: 1 op, 1016842500.00 ns, 1.0168 s/op
+WorkloadActual   6: 1 op, 989014600.00 ns, 989.0146 ms/op
+WorkloadActual   7: 1 op, 977646800.00 ns, 977.6468 ms/op
+WorkloadActual   8: 1 op, 985591100.00 ns, 985.5911 ms/op
+WorkloadActual   9: 1 op, 1006097900.00 ns, 1.0061 s/op
+WorkloadActual  10: 1 op, 990260600.00 ns, 990.2606 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 981492200.00 ns, 981.4922 ms/op
+WorkloadResult   2: 1 op, 990910000.00 ns, 990.9100 ms/op
+WorkloadResult   3: 1 op, 991316000.00 ns, 991.3160 ms/op
+WorkloadResult   4: 1 op, 998744400.00 ns, 998.7444 ms/op
+WorkloadResult   5: 1 op, 1016842500.00 ns, 1.0168 s/op
+WorkloadResult   6: 1 op, 989014600.00 ns, 989.0146 ms/op
+WorkloadResult   7: 1 op, 977646800.00 ns, 977.6468 ms/op
+WorkloadResult   8: 1 op, 985591100.00 ns, 985.5911 ms/op
+WorkloadResult   9: 1 op, 1006097900.00 ns, 1.0061 s/op
+WorkloadResult  10: 1 op, 990260600.00 ns, 990.2606 ms/op
+// GC:  459 10 0 4805675784 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 49004 has exited with code 0.
+
+Mean = 988.422 ms, StdErr = 3.857 ms (0.39%), N = 20, StdDev = 17.251 ms
+Min = 964.780 ms, Q1 = 976.884 ms, Median = 984.790 ms, Q3 = 993.173 ms, Max = 1,034.176 ms
+IQR = 16.289 ms, LowerFence = 952.450 ms, UpperFence = 1,017.607 ms
+ConfidenceInterval = [973.442 ms; 1,003.403 ms] (CI 99.9%), Margin = 14.980 ms (1.52% of Mean)
+Skewness = 0.94, Kurtosis = 3.37, MValue = 2
+
+// ** Remained 3 (75.0%) benchmark(s) to run. Estimated finish 2026-10-13 5:50 (0h 8m from now) **
+// **************************
+// Benchmark: BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=FileP(...)-2048 [42]]
+// *** Execute ***
+// Launch: 1 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 4156 4160 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"FilePaged-Lookup-numeric-current-core-2048\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 1 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 907197800.00 ns, 907.1978 ms/op
+WorkloadWarmup   2: 1 op, 834456400.00 ns, 834.4564 ms/op
+WorkloadWarmup   3: 1 op, 854373200.00 ns, 854.3732 ms/op
+WorkloadWarmup   4: 1 op, 836617100.00 ns, 836.6171 ms/op
+WorkloadWarmup   5: 1 op, 840491800.00 ns, 840.4918 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 846033300.00 ns, 846.0333 ms/op
+WorkloadActual   2: 1 op, 852760600.00 ns, 852.7606 ms/op
+WorkloadActual   3: 1 op, 830738200.00 ns, 830.7382 ms/op
+WorkloadActual   4: 1 op, 843376900.00 ns, 843.3769 ms/op
+WorkloadActual   5: 1 op, 898366200.00 ns, 898.3662 ms/op
+WorkloadActual   6: 1 op, 828710900.00 ns, 828.7109 ms/op
+WorkloadActual   7: 1 op, 851637600.00 ns, 851.6376 ms/op
+WorkloadActual   8: 1 op, 900231600.00 ns, 900.2316 ms/op
+WorkloadActual   9: 1 op, 824359200.00 ns, 824.3592 ms/op
+WorkloadActual  10: 1 op, 836833200.00 ns, 836.8332 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 846033300.00 ns, 846.0333 ms/op
+WorkloadResult   2: 1 op, 852760600.00 ns, 852.7606 ms/op
+WorkloadResult   3: 1 op, 830738200.00 ns, 830.7382 ms/op
+WorkloadResult   4: 1 op, 843376900.00 ns, 843.3769 ms/op
+WorkloadResult   5: 1 op, 898366200.00 ns, 898.3662 ms/op
+WorkloadResult   6: 1 op, 828710900.00 ns, 828.7109 ms/op
+WorkloadResult   7: 1 op, 851637600.00 ns, 851.6376 ms/op
+WorkloadResult   8: 1 op, 900231600.00 ns, 900.2316 ms/op
+WorkloadResult   9: 1 op, 824359200.00 ns, 824.3592 ms/op
+WorkloadResult  10: 1 op, 836833200.00 ns, 836.8332 ms/op
+// GC:  420 21 0 4398488816 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 41900 has exited with code 0.
+// Launch: 2 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 15072 15076 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"FilePaged-Lookup-numeric-current-core-2048\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 1 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 885465700.00 ns, 885.4657 ms/op
+WorkloadWarmup   2: 1 op, 819612700.00 ns, 819.6127 ms/op
+WorkloadWarmup   3: 1 op, 825568300.00 ns, 825.5683 ms/op
+WorkloadWarmup   4: 1 op, 818045700.00 ns, 818.0457 ms/op
+WorkloadWarmup   5: 1 op, 834773000.00 ns, 834.7730 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 814964300.00 ns, 814.9643 ms/op
+WorkloadActual   2: 1 op, 827354300.00 ns, 827.3543 ms/op
+WorkloadActual   3: 1 op, 820829100.00 ns, 820.8291 ms/op
+WorkloadActual   4: 1 op, 818235800.00 ns, 818.2358 ms/op
+WorkloadActual   5: 1 op, 842496100.00 ns, 842.4961 ms/op
+WorkloadActual   6: 1 op, 817438400.00 ns, 817.4384 ms/op
+WorkloadActual   7: 1 op, 1036684800.00 ns, 1.0367 s/op
+WorkloadActual   8: 1 op, 849191700.00 ns, 849.1917 ms/op
+WorkloadActual   9: 1 op, 826970300.00 ns, 826.9703 ms/op
+WorkloadActual  10: 1 op, 839909900.00 ns, 839.9099 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 814964300.00 ns, 814.9643 ms/op
+WorkloadResult   2: 1 op, 827354300.00 ns, 827.3543 ms/op
+WorkloadResult   3: 1 op, 820829100.00 ns, 820.8291 ms/op
+WorkloadResult   4: 1 op, 818235800.00 ns, 818.2358 ms/op
+WorkloadResult   5: 1 op, 842496100.00 ns, 842.4961 ms/op
+WorkloadResult   6: 1 op, 817438400.00 ns, 817.4384 ms/op
+WorkloadResult   7: 1 op, 1036684800.00 ns, 1.0367 s/op
+WorkloadResult   8: 1 op, 849191700.00 ns, 849.1917 ms/op
+WorkloadResult   9: 1 op, 826970300.00 ns, 826.9703 ms/op
+WorkloadResult  10: 1 op, 839909900.00 ns, 839.9099 ms/op
+// GC:  420 21 0 4398488816 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 36912 has exited with code 0.
+
+Mean = 850.356 ms, StdErr = 11.096 ms (1.30%), N = 20, StdDev = 49.623 ms
+Min = 814.964 ms, Q1 = 826.318 ms, Median = 838.372 ms, Q3 = 849.803 ms, Max = 1,036.685 ms
+IQR = 23.486 ms, LowerFence = 791.089 ms, UpperFence = 885.032 ms
+ConfidenceInterval = [807.266 ms; 893.446 ms] (CI 99.9%), Margin = 43.090 ms (5.07% of Mean)
+Skewness = 2.66, Kurtosis = 10.08, MValue = 2
+
+// ** Remained 2 (50.0%) benchmark(s) to run. Estimated finish 2026-10-13 5:50 (0h 5m from now) **
+// **************************
+// Benchmark: BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=Trans(...)-1024 [50]]
+// *** Execute ***
+// Launch: 1 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 17844 17848 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"TransactionalFile-Lookup-numeric-current-core-1024\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 2 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 1082742700.00 ns, 1.0827 s/op
+WorkloadWarmup   2: 1 op, 1085232300.00 ns, 1.0852 s/op
+WorkloadWarmup   3: 1 op, 1030484100.00 ns, 1.0305 s/op
+WorkloadWarmup   4: 1 op, 1008248900.00 ns, 1.0082 s/op
+WorkloadWarmup   5: 1 op, 1015574800.00 ns, 1.0156 s/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 997170000.00 ns, 997.1700 ms/op
+WorkloadActual   2: 1 op, 997321200.00 ns, 997.3212 ms/op
+WorkloadActual   3: 1 op, 1009028700.00 ns, 1.0090 s/op
+WorkloadActual   4: 1 op, 1011574700.00 ns, 1.0116 s/op
+WorkloadActual   5: 1 op, 1024350800.00 ns, 1.0244 s/op
+WorkloadActual   6: 1 op, 1001058800.00 ns, 1.0011 s/op
+WorkloadActual   7: 1 op, 997308500.00 ns, 997.3085 ms/op
+WorkloadActual   8: 1 op, 1001520800.00 ns, 1.0015 s/op
+WorkloadActual   9: 1 op, 1004160600.00 ns, 1.0042 s/op
+WorkloadActual  10: 1 op, 1006965600.00 ns, 1.0070 s/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 997170000.00 ns, 997.1700 ms/op
+WorkloadResult   2: 1 op, 997321200.00 ns, 997.3212 ms/op
+WorkloadResult   3: 1 op, 1009028700.00 ns, 1.0090 s/op
+WorkloadResult   4: 1 op, 1011574700.00 ns, 1.0116 s/op
+WorkloadResult   5: 1 op, 1024350800.00 ns, 1.0244 s/op
+WorkloadResult   6: 1 op, 1001058800.00 ns, 1.0011 s/op
+WorkloadResult   7: 1 op, 997308500.00 ns, 997.3085 ms/op
+WorkloadResult   8: 1 op, 1001520800.00 ns, 1.0015 s/op
+WorkloadResult   9: 1 op, 1004160600.00 ns, 1.0042 s/op
+WorkloadResult  10: 1 op, 1006965600.00 ns, 1.0070 s/op
+// GC:  459 10 0 4805728136 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 7956 has exited with code 0.
+// Launch: 2 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 17940 4196 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"TransactionalFile-Lookup-numeric-current-core-1024\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 2 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 1069454300.00 ns, 1.0695 s/op
+WorkloadWarmup   2: 1 op, 984265100.00 ns, 984.2651 ms/op
+WorkloadWarmup   3: 1 op, 1000633400.00 ns, 1.0006 s/op
+WorkloadWarmup   4: 1 op, 1012375300.00 ns, 1.0124 s/op
+WorkloadWarmup   5: 1 op, 1055325200.00 ns, 1.0553 s/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 1001081900.00 ns, 1.0011 s/op
+WorkloadActual   2: 1 op, 1093690400.00 ns, 1.0937 s/op
+WorkloadActual   3: 1 op, 978146300.00 ns, 978.1463 ms/op
+WorkloadActual   4: 1 op, 987459900.00 ns, 987.4599 ms/op
+WorkloadActual   5: 1 op, 1018375600.00 ns, 1.0184 s/op
+WorkloadActual   6: 1 op, 989724600.00 ns, 989.7246 ms/op
+WorkloadActual   7: 1 op, 1007093600.00 ns, 1.0071 s/op
+WorkloadActual   8: 1 op, 975586000.00 ns, 975.5860 ms/op
+WorkloadActual   9: 1 op, 974442700.00 ns, 974.4427 ms/op
+WorkloadActual  10: 1 op, 983239800.00 ns, 983.2398 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 1001081900.00 ns, 1.0011 s/op
+WorkloadResult   2: 1 op, 1093690400.00 ns, 1.0937 s/op
+WorkloadResult   3: 1 op, 978146300.00 ns, 978.1463 ms/op
+WorkloadResult   4: 1 op, 987459900.00 ns, 987.4599 ms/op
+WorkloadResult   5: 1 op, 1018375600.00 ns, 1.0184 s/op
+WorkloadResult   6: 1 op, 989724600.00 ns, 989.7246 ms/op
+WorkloadResult   7: 1 op, 1007093600.00 ns, 1.0071 s/op
+WorkloadResult   8: 1 op, 975586000.00 ns, 975.5860 ms/op
+WorkloadResult   9: 1 op, 974442700.00 ns, 974.4427 ms/op
+WorkloadResult  10: 1 op, 983239800.00 ns, 983.2398 ms/op
+// GC:  459 10 0 4805728136 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 9432 has exited with code 0.
+
+Mean = 1.003 s, StdErr = 0.006 s (0.56%), N = 20, StdDev = 0.025 s
+Min = 0.974 s, Q1 = 0.989 s, Median = 1.001 s, Q3 = 1.008 s, Max = 1.094 s
+IQR = 0.018 s, LowerFence = 0.962 s, UpperFence = 1.035 s
+ConfidenceInterval = [0.981 s; 1.025 s] (CI 99.9%), Margin = 0.022 s (2.19% of Mean)
+Skewness = 2.12, Kurtosis = 8.53, MValue = 2
+
+// ** Remained 1 (25.0%) benchmark(s) to run. Estimated finish 2026-10-13 5:50 (0h 2m from now) **
+// **************************
+// Benchmark: BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=Trans(...)-2048 [50]]
+// *** Execute ***
+// Launch: 1 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 19252 19248 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"TransactionalFile-Lookup-numeric-current-core-2048\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 3 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 906984900.00 ns, 906.9849 ms/op
+WorkloadWarmup   2: 1 op, 827685400.00 ns, 827.6854 ms/op
+WorkloadWarmup   3: 1 op, 832620000.00 ns, 832.6200 ms/op
+WorkloadWarmup   4: 1 op, 817115300.00 ns, 817.1153 ms/op
+WorkloadWarmup   5: 1 op, 835621600.00 ns, 835.6216 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 822516700.00 ns, 822.5167 ms/op
+WorkloadActual   2: 1 op, 816441500.00 ns, 816.4415 ms/op
+WorkloadActual   3: 1 op, 822081900.00 ns, 822.0819 ms/op
+WorkloadActual   4: 1 op, 827814600.00 ns, 827.8146 ms/op
+WorkloadActual   5: 1 op, 849056700.00 ns, 849.0567 ms/op
+WorkloadActual   6: 1 op, 830141400.00 ns, 830.1414 ms/op
+WorkloadActual   7: 1 op, 829747400.00 ns, 829.7474 ms/op
+WorkloadActual   8: 1 op, 826806200.00 ns, 826.8062 ms/op
+WorkloadActual   9: 1 op, 811977400.00 ns, 811.9774 ms/op
+WorkloadActual  10: 1 op, 822551400.00 ns, 822.5514 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 822516700.00 ns, 822.5167 ms/op
+WorkloadResult   2: 1 op, 816441500.00 ns, 816.4415 ms/op
+WorkloadResult   3: 1 op, 822081900.00 ns, 822.0819 ms/op
+WorkloadResult   4: 1 op, 827814600.00 ns, 827.8146 ms/op
+WorkloadResult   5: 1 op, 849056700.00 ns, 849.0567 ms/op
+WorkloadResult   6: 1 op, 830141400.00 ns, 830.1414 ms/op
+WorkloadResult   7: 1 op, 829747400.00 ns, 829.7474 ms/op
+WorkloadResult   8: 1 op, 826806200.00 ns, 826.8062 ms/op
+WorkloadResult   9: 1 op, 811977400.00 ns, 811.9774 ms/op
+WorkloadResult  10: 1 op, 822551400.00 ns, 822.5514 ms/op
+// GC:  420 21 0 4398541168 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 6048 has exited with code 0.
+// Launch: 2 / 2
+// Execute: dotnet Sphere10.Framework.Utils.Profiler-1.dll --anonymousPipes 19276 19272 --benchmarkName "Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks.MixedAndPersist(Profile: \"TransactionalFile-Lookup-numeric-current-core-2048\")" --job "OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5" --benchmarkId 3 in D:\Development\Sphere10\Framework\utils\Sphere10.Framework.Utils.Profiler\bin\Release\net10.0\Sphere10.Framework.Utils.Profiler-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL VectorSize=256
+// Job: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5)
+
+WorkloadWarmup   1: 1 op, 928894700.00 ns, 928.8947 ms/op
+WorkloadWarmup   2: 1 op, 872877600.00 ns, 872.8776 ms/op
+WorkloadWarmup   3: 1 op, 848087400.00 ns, 848.0874 ms/op
+WorkloadWarmup   4: 1 op, 841569700.00 ns, 841.5697 ms/op
+WorkloadWarmup   5: 1 op, 853494600.00 ns, 853.4946 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 825211100.00 ns, 825.2111 ms/op
+WorkloadActual   2: 1 op, 830226900.00 ns, 830.2269 ms/op
+WorkloadActual   3: 1 op, 826484100.00 ns, 826.4841 ms/op
+WorkloadActual   4: 1 op, 826459700.00 ns, 826.4597 ms/op
+WorkloadActual   5: 1 op, 874868400.00 ns, 874.8684 ms/op
+WorkloadActual   6: 1 op, 830743600.00 ns, 830.7436 ms/op
+WorkloadActual   7: 1 op, 832075400.00 ns, 832.0754 ms/op
+WorkloadActual   8: 1 op, 835854700.00 ns, 835.8547 ms/op
+WorkloadActual   9: 1 op, 831928700.00 ns, 831.9287 ms/op
+WorkloadActual  10: 1 op, 839107300.00 ns, 839.1073 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 825211100.00 ns, 825.2111 ms/op
+WorkloadResult   2: 1 op, 830226900.00 ns, 830.2269 ms/op
+WorkloadResult   3: 1 op, 826484100.00 ns, 826.4841 ms/op
+WorkloadResult   4: 1 op, 826459700.00 ns, 826.4597 ms/op
+WorkloadResult   5: 1 op, 874868400.00 ns, 874.8684 ms/op
+WorkloadResult   6: 1 op, 830743600.00 ns, 830.7436 ms/op
+WorkloadResult   7: 1 op, 832075400.00 ns, 832.0754 ms/op
+WorkloadResult   8: 1 op, 835854700.00 ns, 835.8547 ms/op
+WorkloadResult   9: 1 op, 831928700.00 ns, 831.9287 ms/op
+WorkloadResult  10: 1 op, 839107300.00 ns, 839.1073 ms/op
+// GC:  420 21 0 4398541168 1
+// Threading:  0 0 1
+
+// AfterAll
+// Benchmark Process 49092 has exited with code 0.
+
+Mean = 830.605 ms, StdErr = 2.920 ms (0.35%), N = 20, StdDev = 13.060 ms
+Min = 811.977 ms, Q1 = 824.546 ms, Median = 828.781 ms, Q3 = 831.965 ms, Max = 874.868 ms
+IQR = 7.419 ms, LowerFence = 813.417 ms, UpperFence = 843.094 ms
+ConfidenceInterval = [819.264 ms; 841.945 ms] (CI 99.9%), Margin = 11.341 ms (1.37% of Mean)
+Skewness = 1.85, Kurtosis = 7.11, MValue = 2
+
+// ** Remained 0 (0.0%) benchmark(s) to run. Estimated finish 2026-10-13 5:50 (0h 0m from now) **
+Run time: 00:11:11 (671.65 sec), executed benchmarks: 4
+
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-bdn-numeric-lookup-confirmations\Balanced\results\Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks-report.csv
+  tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-bdn-numeric-lookup-confirmations\Balanced\results\Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks-report-github.md
+  tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-bdn-numeric-lookup-confirmations\Balanced\results\Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks-report.html
+  tests\Sphere10.Framework.Utils.Profiler.Tests\Results\20261013-btree-bdn-numeric-lookup-confirmations\Balanced\results\Sphere10.Framework.Utils.Profiler.BTrees.BTreeLookupMutationBenchmarks-report-full.json
+
+// * Detailed results *
+BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=FileP(...)-1024 [42]]
+Runtime = .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 988.422 ms, StdErr = 3.857 ms (0.39%), N = 20, StdDev = 17.251 ms
+Min = 964.780 ms, Q1 = 976.884 ms, Median = 984.790 ms, Q3 = 993.173 ms, Max = 1,034.176 ms
+IQR = 16.289 ms, LowerFence = 952.450 ms, UpperFence = 1,017.607 ms
+ConfidenceInterval = [973.442 ms; 1,003.403 ms] (CI 99.9%), Margin = 14.980 ms (1.52% of Mean)
+Skewness = 0.94, Kurtosis = 3.37, MValue = 2
+-------------------- Histogram --------------------
+[  956.438 ms ;   992.422 ms) | @@@@@@@@@@@@@@@
+[  992.422 ms ; 1,012.962 ms) | @@@
+[1,012.962 ms ; 1,042.518 ms) | @@
+---------------------------------------------------
+
+BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=FileP(...)-2048 [42]]
+Runtime = .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 850.356 ms, StdErr = 11.096 ms (1.30%), N = 20, StdDev = 49.623 ms
+Min = 814.964 ms, Q1 = 826.318 ms, Median = 838.372 ms, Q3 = 849.803 ms, Max = 1,036.685 ms
+IQR = 23.486 ms, LowerFence = 791.089 ms, UpperFence = 885.032 ms
+ConfidenceInterval = [807.266 ms; 893.446 ms] (CI 99.9%), Margin = 43.090 ms (5.07% of Mean)
+Skewness = 2.66, Kurtosis = 10.08, MValue = 2
+-------------------- Histogram --------------------
+[  809.868 ms ;   857.856 ms) | @@@@@@@@@@@@@@@@@
+[  857.856 ms ;   875.305 ms) | 
+[  875.305 ms ;   923.293 ms) | @@
+[  923.293 ms ;   971.281 ms) | 
+[  971.281 ms ; 1,012.691 ms) | 
+[1,012.691 ms ; 1,060.679 ms) | @
+---------------------------------------------------
+
+BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=Trans(...)-1024 [50]]
+Runtime = .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 1.003 s, StdErr = 0.006 s (0.56%), N = 20, StdDev = 0.025 s
+Min = 0.974 s, Q1 = 0.989 s, Median = 1.001 s, Q3 = 1.008 s, Max = 1.094 s
+IQR = 0.018 s, LowerFence = 0.962 s, UpperFence = 1.035 s
+ConfidenceInterval = [0.981 s; 1.025 s] (CI 99.9%), Margin = 0.022 s (2.19% of Mean)
+Skewness = 2.12, Kurtosis = 8.53, MValue = 2
+-------------------- Histogram --------------------
+[0.962 s ; 0.987 s) | @@@@
+[0.987 s ; 1.012 s) | @@@@@@@@@@@@@
+[1.012 s ; 1.034 s) | @@
+[1.034 s ; 1.058 s) | 
+[1.058 s ; 1.081 s) | 
+[1.081 s ; 1.106 s) | @
+---------------------------------------------------
+
+BTreeLookupMutationBenchmarks.MixedAndPersist: Job-YYAKRU(OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5) [Profile=Trans(...)-2048 [50]]
+Runtime = .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 830.605 ms, StdErr = 2.920 ms (0.35%), N = 20, StdDev = 13.060 ms
+Min = 811.977 ms, Q1 = 824.546 ms, Median = 828.781 ms, Q3 = 831.965 ms, Max = 874.868 ms
+IQR = 7.419 ms, LowerFence = 813.417 ms, UpperFence = 843.094 ms
+ConfidenceInterval = [819.264 ms; 841.945 ms] (CI 99.9%), Margin = 11.341 ms (1.37% of Mean)
+Skewness = 1.85, Kurtosis = 7.11, MValue = 2
+-------------------- Histogram --------------------
+[805.663 ms ; 835.349 ms) | @@@@@@@@@@@@@@@@
+[835.349 ms ; 857.547 ms) | @@@
+[857.547 ms ; 881.183 ms) | @
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.15.8, Windows 10 (10.0.19045.7725/22H2/2022Update)
+Intel Core i9-10900K CPU 3.70GHz, 1 CPU, 20 logical and 10 physical cores
+.NET SDK 10.0.401
+  [Host]     : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+  Job-YYAKRU : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v3
+
+OutlierMode=DontRemove  PowerPlanMode=00000000-0000-0000-0000-000000000000  Force=False  
+InvocationCount=1  IterationCount=10  LaunchCount=2  
+RunStrategy=Monitoring  UnrollFactor=1  WarmupCount=5  
+
+| Method          | Profile              | Mean       | Error    | StdDev   | Gen0        | Gen1       | Allocated |
+|---------------- |--------------------- |-----------:|---------:|---------:|------------:|-----------:|----------:|
+| MixedAndPersist | FileP(...)-1024 [42] |   988.4 ms | 14.98 ms | 17.25 ms | 459000.0000 | 10000.0000 |   4.48 GB |
+| MixedAndPersist | FileP(...)-2048 [42] |   850.4 ms | 43.09 ms | 49.62 ms | 420000.0000 | 21000.0000 |    4.1 GB |
+| MixedAndPersist | Trans(...)-1024 [50] | 1,003.0 ms | 21.97 ms | 25.30 ms | 459000.0000 | 10000.0000 |   4.48 GB |
+| MixedAndPersist | Trans(...)-2048 [50] |   830.6 ms | 11.34 ms | 13.06 ms | 420000.0000 | 21000.0000 |    4.1 GB |
+
+// * Hints *
+Outliers
+  BTreeLookupMutationBenchmarks.MixedAndPersist: OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5 -> 1 outlier  was  detected (1.03 s)
+  BTreeLookupMutationBenchmarks.MixedAndPersist: OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5 -> 3 outliers were detected (898.37 ms..1.04 s)
+  BTreeLookupMutationBenchmarks.MixedAndPersist: OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5 -> 1 outlier  was  detected (1.09 s)
+  BTreeLookupMutationBenchmarks.MixedAndPersist: OutlierMode=DontRemove, PowerPlanMode=00000000-0000-0000-0000-000000000000, Force=False, InvocationCount=1, IterationCount=10, LaunchCount=2, RunStrategy=Monitoring, UnrollFactor=1, WarmupCount=5 -> 3 outliers were detected (811.98 ms, 849.06 ms, 874.87 ms)
+// * Config Issues *
+
+// * Warnings *
+Configuration
+  Summary -> The exporter CsvExporter is already present in configuration. There may be unexpected results.
+
+// * Legends *
+  Profile   : Value of the 'Profile' parameter
+  Mean      : Arithmetic mean of all measurements
+  Error     : Half of 99.9% confidence interval
+  StdDev    : Standard deviation of all measurements
+  Gen0      : GC Generation 0 collects per 1000 operations
+  Gen1      : GC Generation 1 collects per 1000 operations
+  Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  1 ms      : 1 Millisecond (0.001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Global total time: 00:11:23 (683.3 sec), executed benchmarks: 4
+// * Artifacts cleanup *
+Artifacts cleanup is finished

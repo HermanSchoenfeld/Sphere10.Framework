@@ -1,0 +1,20 @@
+{
+  "Profile": "Digest32-legacy64-order-64",
+  "RunId": "83ea8520557c4f01a97553a225b3078d",
+  "Storage": "ManagedNodes",
+  "Family": "BTree",
+  "KeyShape": "Digest32",
+  "Order": 64,
+  "MaximumLeafEntries": 63,
+  "KeyBytes": 32,
+  "StoredKeyBytes": 32,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 3000,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

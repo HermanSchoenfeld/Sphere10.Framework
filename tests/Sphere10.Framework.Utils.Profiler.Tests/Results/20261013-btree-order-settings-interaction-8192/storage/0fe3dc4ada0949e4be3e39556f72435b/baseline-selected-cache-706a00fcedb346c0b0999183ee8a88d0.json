@@ -1,0 +1,27 @@
+{
+  "Profile": "baseline-selected-cache",
+  "RunId": "0fe3dc4ada0949e4be3e39556f72435b",
+  "Storage": "TransactionalFile",
+  "Family": "BTree",
+  "KeyShape": "Int64",
+  "Order": 256,
+  "MaximumLeafEntries": 255,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": 6161,
+  "LogicalTreeBytes": 308082,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 8192,
+  "PhysicalStorageBytes": 308082,
+  "Geometry": {
+    "Height": 2,
+    "ActiveNodes": 49,
+    "TotalLeaves": 48,
+    "LeafEntries": 8145,
+    "MeanLeafOccupancy": 0.6654411764705882,
+    "PhysicalSlots": 50
+  },
+  "AppliedPageSize": 65536,
+  "AppliedCacheBytes": 262144,
+  "AppliedFileBufferBytes": null
+}

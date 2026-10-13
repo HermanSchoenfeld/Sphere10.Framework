@@ -1,0 +1,144 @@
+{
+  "Cases": [
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-larger-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 2048,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-larger-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 4096,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-larger-order-8192",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 8192,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch."
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-balanced-larger-order-16384",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-FileStream-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 16384,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch."
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-balanced-larger-order-2048",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 2048,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch.",
+      "ChangedPaging": {
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "Rationale": "Use unchanged actual genericCorepaging for this nonboundary transfer; all transactional contenders share identical settings."
+      }
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-balanced-larger-order-4096",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 4096,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch.",
+      "ChangedPaging": {
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "Rationale": "Use unchanged actual genericCorepaging for this nonboundary transfer; all transactional contenders share identical settings."
+      }
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-balanced-larger-order-8192",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 8192,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch.",
+      "ChangedPaging": {
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "Rationale": "Use unchanged actual genericCorepaging for this nonboundary transfer; all transactional contenders share identical settings."
+      }
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-balanced-larger-order-16384",
+      "SourceResults": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-upper-order-refinement\\results.json",
+      "SourceCaseId": "tree-TransactionalFile-BTreePlus-balanced-upper-order-2048",
+      "SourceDataset": {
+        "RecordCount": 8192,
+        "OperationCount": 1000
+      },
+      "ChangedDataset": {
+        "RecordCount": 30000,
+        "OperationCount": 100
+      },
+      "AppliedOrder": 16384,
+      "Rationale": "Nonboundary multi-leaf dataset; matched controls probe dataset dependence without deliberately repeating8192-record merge/split cliff. Means compared only within this changed dataset/batch.",
+      "ChangedPaging": {
+        "PageSize": 262144,
+        "CacheBytes": 2147483647,
+        "Rationale": "Use unchanged actual genericCorepaging for this nonboundary transfer; all transactional contenders share identical settings."
+      }
+    }
+  ]
+}

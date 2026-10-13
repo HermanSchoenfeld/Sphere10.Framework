@@ -1,0 +1,254 @@
+[
+  {
+    "CaseId": "os-Memory-baseline-64-Mixed-Balanced-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-baseline-64-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-order-only-Mixed-Balanced-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-order-only-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-combined-candidate-Mixed-Balanced-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-baseline-64-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-baseline-64-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-order-only-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-order-only-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-combined-candidate-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-baseline-64-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-baseline-64-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-order-only-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-order-only-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-combined-candidate-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-Memory-combined-candidate-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-baseline-64-Mixed-Balanced-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-baseline-64-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-order-only-Mixed-Balanced-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-order-only-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-combined-candidate-Mixed-Balanced-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-combined-candidate-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-baseline-64-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-baseline-64-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-order-only-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-order-only-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-combined-candidate-Mixed-ReadHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-baseline-64-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-baseline-64-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-order-only-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-order-only-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-combined-candidate-Mixed-WriteHeavy-transfer-variable-128-hot60",
+    "SourceCaseId": "os-File-combined-candidate-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-baseline-64-Mixed-Balanced-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-baseline-64-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-order-only-Mixed-Balanced-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-order-only-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-combined-candidate-Mixed-Balanced-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-baseline-64-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-baseline-64-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-order-only-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-order-only-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-combined-candidate-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-baseline-64-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-baseline-64-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-order-only-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-order-only-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-Memory-combined-candidate-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-Memory-combined-candidate-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-baseline-64-Mixed-Balanced-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-baseline-64-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-order-only-Mixed-Balanced-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-order-only-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-combined-candidate-Mixed-Balanced-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-combined-candidate-Mixed-Balanced-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-baseline-64-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-baseline-64-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-order-only-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-order-only-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-combined-candidate-Mixed-ReadHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-baseline-64-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-baseline-64-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "baseline-64",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-order-only-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-order-only-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "order-only",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  },
+  {
+    "CaseId": "os-File-combined-candidate-Mixed-WriteHeavy-transfer-variable-1024-hot60",
+    "SourceCaseId": "os-File-combined-candidate-Mixed-WriteHeavy-interaction-1024",
+    "SourceStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-objectspaces-interaction-1024",
+    "Profile": "combined-candidate",
+    "Meaning": "Dataset-transfer sensitivity: smaller256-record store,100operations, variable payload ceiling and concentrated secondary-key/hot-ID reads; not larger-store confirmation."
+  }
+]

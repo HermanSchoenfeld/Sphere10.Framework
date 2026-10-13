@@ -1,0 +1,343 @@
+{
+  "Stage": "Screening",
+  "WarmupCount": 1,
+  "SampleCount": 3,
+  "RandomSeed": 713,
+  "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Cases": [
+    {
+      "Id": "tree-FilePaged-BTree-balanced-current-core-order-64",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "1dab7a67c80e43fd882a6af2aab0e64a",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-64",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1553
+          }
+        ]
+      },
+      "Profile": "current-core-order-64",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-balanced-current-core-order-128",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "13275fecd7e440d98e4e46e8c62bac7e",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-128",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "current-core-order-128",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-balanced-current-core-order-256",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "balanced",
+        "RunId": "460c6b645f5c440f940a7d094ad8e490",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-256",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "current-core-order-256",
+      "Mix": "balanced",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/balanced/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-read-heavy-current-core-order-64",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "1e633278a91c4c10a19301851b6a196d",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-64",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1553
+          }
+        ]
+      },
+      "Profile": "current-core-order-64",
+      "Mix": "read-heavy",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-read-heavy-current-core-order-128",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "a7b12b5544e94f4ab0f4a0ae24f12778",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-128",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "current-core-order-128",
+      "Mix": "read-heavy",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-read-heavy-current-core-order-256",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "read-heavy",
+        "RunId": "5d417f78fbb34ab68ac2dda8b11978cb",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-256",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "current-core-order-256",
+      "Mix": "read-heavy",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/read-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-write-heavy-current-core-order-64",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "767f5ba7043147fb83fa3eec7572930f",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-64",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 64,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 1553
+          }
+        ]
+      },
+      "Profile": "current-core-order-64",
+      "Mix": "write-heavy",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-write-heavy-current-core-order-128",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "01ec7e79bb9a420ea2868ab1286ce7e3",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-128",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 128,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 3089
+          }
+        ]
+      },
+      "Profile": "current-core-order-128",
+      "Mix": "write-heavy",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    },
+    {
+      "Id": "tree-FilePaged-BTree-write-heavy-current-core-order-256",
+      "Domain": "btrees",
+      "Workload": "Mixed",
+      "Factor": "CurrentCoreOrdinarySensitivity",
+      "ObjectSpaces": null,
+      "BTrees": {
+        "RecordCount": 8192,
+        "OperationCount": 100,
+        "GroupSize": 8,
+        "ShuffledInsertion": true,
+        "Mix": "write-heavy",
+        "RunId": "fa586020308c4570aa1636cf4c861348",
+        "OutputDirectory": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btree-file-paged-current-core-ordinary",
+        "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+        "Profiles": [
+          {
+            "Name": "current-core-order-256",
+            "Storage": "FilePaged",
+            "Family": "BTree",
+            "KeyShape": "Int64",
+            "Order": 256,
+            "PageSize": 262144,
+            "CacheBytes": 2147483647,
+            "FileBufferBytes": 4096,
+            "Endianness": "LittleEndian",
+            "KeyBytes": 8,
+            "StoredKeyBytes": 8,
+            "NodeRecordBytes": 6161
+          }
+        ]
+      },
+      "Profile": "current-core-order-256",
+      "Mix": "write-heavy",
+      "Operations": 100,
+      "ComparisonGroup": "btrees/FilePaged/BTree/Int64/Mixed/write-heavy/records-8192/ops-100/group-8/shuffled-True/factor-CurrentCoreOrdinarySensitivity"
+    }
+  ]
+}

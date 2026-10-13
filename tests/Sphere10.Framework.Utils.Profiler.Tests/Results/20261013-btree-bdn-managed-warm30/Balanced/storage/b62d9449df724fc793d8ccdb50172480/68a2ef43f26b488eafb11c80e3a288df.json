@@ -1,0 +1,20 @@
+{
+  "Profile": "ManagedNodes-BTreePlus-balanced-warm30-1024",
+  "RunId": "b62d9449df724fc793d8ccdb50172480",
+  "Storage": "ManagedNodes",
+  "Family": "BTreePlus",
+  "KeyShape": "Int64",
+  "Order": 1024,
+  "MaximumLeafEntries": 1023,
+  "KeyBytes": 8,
+  "StoredKeyBytes": 8,
+  "NodeRecordBytes": null,
+  "LogicalTreeBytes": 0,
+  "ProvisionedMappedCapacity": null,
+  "EntryCount": 32768,
+  "PhysicalStorageBytes": 0,
+  "Geometry": null,
+  "AppliedPageSize": null,
+  "AppliedCacheBytes": null,
+  "AppliedFileBufferBytes": null
+}

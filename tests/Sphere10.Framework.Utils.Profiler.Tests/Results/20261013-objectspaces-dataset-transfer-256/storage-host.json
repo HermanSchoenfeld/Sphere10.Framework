@@ -1,0 +1,34 @@
+{
+  "ObservedAtUtc": "2026-10-12T16:53:10.6592409Z",
+  "Meaning": "Dataset-transfer sensitivity: variable payload ceilings128/1024, HotSet10%,16categories60%hot,256records100operations; all baseline/order-only/combined contenders. This is not larger-store confirmation.",
+  "DataDirectory": "D:\\Development\\Sphere10\\Framework\\BenchmarkDotNet.Artifacts\\study-data",
+  "Storage": {
+    "FriendlyName": "Samsung SSD 850 EVO 2TB",
+    "BusType": "SATA",
+    "PartitionStyle": "MBR",
+    "Size": 2000398934016
+  },
+  "Volume": {
+    "DriveLetter": "D",
+    "FileSystem": "NTFS",
+    "Size": 2000396742656,
+    "SizeRemaining": 10925727744
+  },
+  "PowerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+  "ActivitySnapshot": {
+    "PercentProcessorTime": 5
+  },
+  "Assemblies": [
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.Utils.Profiler.dll",
+      "Hash": "30C9660F326F4A8DE39CE07F3DCB3AE80EDFDE9DFC19527BFFB55F10B697E51F",
+      "Algorithm": "SHA256"
+    },
+    {
+      "Path": "D:\\Development\\Sphere10\\Framework\\utils\\Sphere10.Framework.Utils.Profiler\\bin\\Release\\net10.0\\Sphere10.Framework.dll",
+      "Hash": "65BE97E5B78751A7D9B16DE37CA5AFE4FF1AAB5B4F3ED887EDC6AA21192658EF",
+      "Algorithm": "SHA256"
+    }
+  ],
+  "ConcurrentActivity": "User applications remain running. This is a point snapshot, not a guarantee of exclusive hardware or stable activity."
+}

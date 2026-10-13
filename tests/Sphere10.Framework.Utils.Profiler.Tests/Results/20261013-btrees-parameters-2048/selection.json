@@ -1,0 +1,1302 @@
+{
+  "ParentStudy": "D:\\Development\\Sphere10\\Framework\\tests\\Sphere10.Framework.Utils.Profiler.Tests\\Results\\20261013-btrees-order-2048",
+  "Method": "Use lowest measured order mean for each backend/family/key/mix as the controlled order during factor screening. Overlapping intervals remain provisional.",
+  "Cases": [
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-baseline-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 8590500
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-baseline-Mixed-read-heavy",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 5100628.571428572
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-baseline-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FileStream-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 12201085.714285715
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-1-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 8590500
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-1-Mixed-read-heavy",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 5100628.571428572
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-1-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FileStream-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 12201085.714285715
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-16384-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 8590500
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-16384-Mixed-read-heavy",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 5100628.571428572
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-16384-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FileStream-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 12201085.714285715
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-65536-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 8590500
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-65536-Mixed-read-heavy",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FileStream-BTree-order-64-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 5100628.571428572
+    },
+    {
+      "CaseId": "tree-FileStream-BTree-FileBuffer-buffer-65536-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FileStream-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 12201085.714285715
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 20040628.57142857
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 7934657.142857143
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 33556842.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-1-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 20040628.57142857
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-1-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 7934657.142857143
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-1-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 33556842.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 20040628.57142857
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 7934657.142857143
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-16384-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 33556842.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-65536-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 20040628.57142857
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-65536-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 7934657.142857143
+    },
+    {
+      "CaseId": "tree-FileStream-BTreePlus-FileBuffer-buffer-65536-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 33556842.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 213770071.42857143
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 60856142.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 381749757.14285713
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-1-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 213770071.42857143
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-1-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 60856142.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-1-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 381749757.14285713
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-16384-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 213770071.42857143
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-16384-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 60856142.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-16384-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 381749757.14285713
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 213770071.42857143
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 60856142.85714286
+    },
+    {
+      "CaseId": "tree-FileStream-Lookup-FileBuffer-buffer-65536-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FileStream-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 381749757.14285713
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-baseline-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-baseline-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-4096-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-4096-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-4096-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-16384-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-16384-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-16384-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-262144-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-262144-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-1048576-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FilePage-page-1048576-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-baseline-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-baseline-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-65536-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-65536-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-65536-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-262144-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-262144-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-1048576-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-1048576-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-4194304-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-FilePaged-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 25274771.42857143
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-4194304-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTree-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 22233500
+    },
+    {
+      "CaseId": "tree-FilePaged-BTree-FileCache-cache-4194304-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-FilePaged-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 31475928.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-4096-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-4096-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-4096-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-16384-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-16384-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-16384-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FilePage-page-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-65536-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-65536-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-65536-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-4194304-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 38914914.28571428
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-4194304-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 25321242.85714286
+    },
+    {
+      "CaseId": "tree-FilePaged-BTreePlus-FileCache-cache-4194304-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 54258228.571428575
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-4096-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-4096-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-4096-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-16384-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-16384-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-16384-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FilePage-page-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-65536-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-65536-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-65536-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 427081028.5714286
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 155691328.57142857
+    },
+    {
+      "CaseId": "tree-FilePaged-Lookup-FileCache-cache-4194304-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-FilePaged-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 700786457.1428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-baseline-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-baseline-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-baseline-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-4096-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-4096-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-4096-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-16384-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-16384-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-16384-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-262144-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-1048576-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-1048576-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FilePage-page-1048576-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-baseline-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-baseline-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-baseline-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-65536-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-65536-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-65536-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-262144-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-1048576-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-1048576-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-1048576-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-4194304-Mixed-balanced",
+      "SelectedOrder": 64,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-64-Mixed-balanced",
+      "ParentMeanNanoseconds": 32307514.285714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-4194304-Mixed-read-heavy",
+      "SelectedOrder": 256,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-256-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 24631142.85714286
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTree-FileCache-cache-4194304-Mixed-write-heavy",
+      "SelectedOrder": 128,
+      "ParentCaseId": "tree-TransactionalFile-BTree-order-128-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 39191414.28571428
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-4096-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-4096-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-4096-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-16384-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-16384-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-16384-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FilePage-page-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-65536-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-65536-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-65536-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-4194304-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 45024185.71428572
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-4194304-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 26150000
+    },
+    {
+      "CaseId": "tree-TransactionalFile-BTreePlus-FileCache-cache-4194304-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-BTreePlus-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 60288371.428571425
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-4096-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-4096-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-4096-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-16384-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-16384-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-16384-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FilePage-page-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-baseline-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-baseline-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-baseline-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-65536-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-65536-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-65536-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-262144-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-262144-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-262144-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-1048576-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-1048576-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-1048576-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-4194304-Mixed-balanced",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-balanced",
+      "ParentMeanNanoseconds": 439257142.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-4194304-Mixed-read-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-read-heavy",
+      "ParentMeanNanoseconds": 151947042.85714287
+    },
+    {
+      "CaseId": "tree-TransactionalFile-Lookup-FileCache-cache-4194304-Mixed-write-heavy",
+      "SelectedOrder": 512,
+      "ParentCaseId": "tree-TransactionalFile-Lookup-order-512-Mixed-write-heavy",
+      "ParentMeanNanoseconds": 765833814.2857143
+    }
+  ]
+}

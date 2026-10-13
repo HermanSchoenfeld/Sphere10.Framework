@@ -1,0 +1,47 @@
+[
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+    "IndistinguishableIds": [
+      "os-Memory-combined-candidate-Mixed-Balanced-interaction-1024",
+      "os-Memory-order-only-Mixed-Balanced-interaction-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+    "IndistinguishableIds": [
+      "os-Memory-combined-candidate-Mixed-ReadHeavy-interaction-1024",
+      "os-Memory-order-only-Mixed-ReadHeavy-interaction-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/Memory/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-Memory-order-only-Mixed-WriteHeavy-interaction-1024",
+    "IndistinguishableIds": [
+      "os-Memory-order-only-Mixed-WriteHeavy-interaction-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/Balanced/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-order-only-Mixed-Balanced-interaction-1024",
+    "IndistinguishableIds": [
+      "os-File-order-only-Mixed-Balanced-interaction-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/ReadHeavy/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-order-only-Mixed-ReadHeavy-interaction-1024",
+    "IndistinguishableIds": [
+      "os-File-order-only-Mixed-ReadHeavy-interaction-1024",
+      "os-File-baseline-64-Mixed-ReadHeavy-interaction-1024"
+    ]
+  },
+  {
+    "ComparisonGroup": "object-spaces/File/PayloadOnly/Full/checks-True/no-merkle/Mixed/WriteHeavy/records-1024/ops-200/payload-128-Fixed/categories-1024-0/lookup-Shuffled-10/shuffled-True",
+    "WinnerId": "os-File-order-only-Mixed-WriteHeavy-interaction-1024",
+    "IndistinguishableIds": [
+      "os-File-order-only-Mixed-WriteHeavy-interaction-1024"
+    ]
+  }
+]
