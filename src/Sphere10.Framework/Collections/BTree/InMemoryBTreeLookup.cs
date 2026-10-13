@@ -20,14 +20,22 @@ namespace Sphere10.Framework;
 /// <typeparam name="K">Lookup key type.</typeparam>
 /// <typeparam name="V">Lookup value type.</typeparam>
 public class InMemoryBTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
+	private readonly InMemoryBTreePlus<CompoundKey<K, int>, V> _btree;
 	private readonly BTreeLookup<K, V> _lookup;
+
+	public InMemoryBTreeLookup(IComparer<K> keyComparer)
+		: this(Sphere10FrameworkDefaults.BTreeLookupOrder, keyComparer) {
+	}
 
 	public InMemoryBTreeLookup(int order, IComparer<K> keyComparer) {
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
 		var CompoundComparer = new CompoundKeyComparer<K, int>(keyComparer, Comparer<int>.Default);
-		var Tree = new InMemoryBTreePlus<CompoundKey<K, int>, V>(order, CompoundComparer);
-		_lookup = new BTreeLookup<K, V>(Tree, keyComparer);
+		_btree = new InMemoryBTreePlus<CompoundKey<K, int>, V>(order, CompoundComparer);
+		_lookup = new BTreeLookup<K, V>(_btree, keyComparer);
 	}
+
+	/// <summary>The order of the underlying B+ tree.</summary>
+	public int Order => _btree.Order;
 
 	/// <summary>
 	/// The total number of entries (including duplicate keys with different values).

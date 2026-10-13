@@ -51,6 +51,26 @@ public class ClusterMapTests {
 		Assert.That(clusterMap.Clusters.Count, Is.EqualTo(0));
 	}
 
+	[Test]
+	public void StreamMappedNextLinksAndTerminalsRetainTheirFullWidth(
+		[Values] Endianness endianness,
+		[Values] bool enableCache,
+		[Values(99L, 0x0000000200000001L, -1L)] long terminal
+	) {
+		using var stream = new MemoryStream();
+		var map = new StreamMappedClusterMap(stream, 0, new ClusterSerializer(32), enableCache, endianness, autoLoad: true);
+		map.NewClusterChain(2, terminal);
+		map.AppendClustersToEnd(1, 1);
+		Assert.That(map.ReadClusterNext(0), Is.EqualTo(1));
+		Assert.That(map.ReadClusterNext(1), Is.EqualTo(2));
+		Assert.That(map.ReadClusterNext(2), Is.EqualTo(terminal));
+		var reopened = new StreamMappedClusterMap(stream, 0, new ClusterSerializer(32), enableCache, endianness, autoLoad: true);
+		Assert.That(reopened.ReadClusterNext(0), Is.EqualTo(1));
+		Assert.That(reopened.ReadClusterNext(1), Is.EqualTo(2));
+		Assert.That(reopened.ReadClusterNext(2), Is.EqualTo(terminal));
+		Assert.That(reopened.ReadClusterPrev(2), Is.EqualTo(1));
+	}
+
 
 	[Test]
 	public void SingleCluster([Values] ClusterMapImplementationType implementationType) {

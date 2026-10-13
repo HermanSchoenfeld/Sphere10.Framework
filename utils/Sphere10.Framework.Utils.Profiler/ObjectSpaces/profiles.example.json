@@ -1,0 +1,36 @@
+[
+  {
+    "Name": "order32-inner1024-file",
+    "Configuration": {
+      "Storage": "File",
+      "IndexProfile": "Full",
+      "IndexBTreeOrder": 32,
+      "ClusterSize": 4096,
+      "AverageRecordSizeBytes": 1024,
+      "PageSize": 65536,
+      "MaxMemory": 16777216,
+      "Policy": "Default",
+      "Endianness": "LittleEndian",
+      "Merkleized": false,
+      "HashFunction": "SHA2_256",
+      "AutoSave": false
+    }
+  },
+  {
+    "Name": "order64-inner1024-file",
+    "Configuration": {
+      "Storage": "File",
+      "IndexProfile": "Full",
+      "IndexBTreeOrder": 64,
+      "ClusterSize": 4096,
+      "AverageRecordSizeBytes": 1024,
+      "PageSize": 65536,
+      "MaxMemory": 16777216,
+      "Policy": "Default",
+      "Endianness": "LittleEndian",
+      "Merkleized": false,
+      "HashFunction": "SHA2_256",
+      "AutoSave": false
+    }
+  }
+]

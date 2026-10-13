@@ -26,6 +26,17 @@ public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDispos
 	private readonly StreamMappedBTreePlus<CompoundKey<K, int>, V> _btree;
 	private readonly BTreeLookup<K, V> _lookup;
 
+	/// <summary>Creates a new lookup in an empty stream using the framework's recommended order.</summary>
+	/// <remarks>Existing lookups must be reopened with their original explicit order and serializer layout.</remarks>
+	public StreamMappedBTreeLookup(
+		Stream stream,
+		IItemSerializer<K> keySerializer,
+		IItemSerializer<V> valueSerializer,
+		IComparer<K> keyComparer,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness)
+		: this(Sphere10FrameworkDefaults.StreamMappedBTreeLookupOrder, RequireEmptyStream(stream), keySerializer, valueSerializer, keyComparer, endianness) {
+	}
+
 	/// <summary>
 	/// Creates a new stream-mapped B+ tree lookup or opens an existing one from the given stream.
 	/// </summary>
@@ -61,6 +72,18 @@ public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDispos
 
 		_lookup = new BTreeLookup<K, V>(_btree, keyComparer);
 	}
+
+	private static Stream RequireEmptyStream(Stream stream) {
+		Guard.ArgumentNotNull(stream, nameof(stream));
+		Guard.Argument(stream.CanSeek, nameof(stream), "Tree storage must support seeking.");
+		Guard.Argument(stream.Length == 0, nameof(stream), "Opening an existing tree requires its original explicit order. Default-order construction is only supported for an empty stream.");
+		return stream;
+	}
+
+	/// <summary>
+	/// The order of the underlying B+ tree.
+	/// </summary>
+	public int Order => _btree.Order;
 
 	/// <summary>
 	/// The total number of entries (including duplicate keys with different values).

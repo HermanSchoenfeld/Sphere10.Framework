@@ -1,0 +1,5 @@
+Workload,Job,Storage,Profile,Rank,MeanNanoseconds,StandardErrorNanoseconds,StandardDeviationNanoseconds,Samples,ItemsPerInvocation,ItemsPerSecond,BatchAllocatedBytes,StorageBytes
+"WarmIdentityLookup","ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)","File","order-64",1,7911357.8125,20856.238762358375,36124.065191192145,3,64,8089.6353719306635,14248105,86629
+"WarmIdentityLookup","ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)","File","order-32",2,7961498.4375,25451.826496446349,44083.856637272846,3,64,8038.6877548765451,14729422,82516
+"InsertAndPersist","ShortRun(InvocationCount=1, IterationCount=3, LaunchCount=1, UnrollFactor=1, WarmupCount=3)","File","order-64",1,252003000,2862177.0338910441,4957436.0429560766,3,160,634.91307643162975,987534392,86629
+"InsertAndPersist","ShortRun(InvocationCount=1, IterationCount=3, LaunchCount=1, UnrollFactor=1, WarmupCount=3)","File","order-32",2,257722900,4876345.2369576963,8446077.7056572251,3,160,620.82182064535209,947025520,82516

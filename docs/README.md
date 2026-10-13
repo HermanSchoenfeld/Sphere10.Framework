@@ -43,6 +43,7 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | [Fluent builders](guidelines/patterns/fluent-builders.md) | Configuration composition, validation and product ownership. |
 | [Serialization](guidelines/patterns/serialization.md) | Serializer layers and endian-aware persistence contracts. |
 | [Collections and storage](guidelines/patterns/collections-and-storage.md) | Long indexes, range operations and persistent collection layers. |
+| [Object spaces](guidelines/patterns/object-spaces.md) | Typed identity, indexed CRUD, durability and configuration profiling. |
 | [Data sources](guidelines/patterns/data-sources.md) | CRUD, paging, validation and item/range delegation. |
 | [Logging](guidelines/patterns/logging.md) | Logger selection, composition and sink lifetime. |
 | [Resource scopes](guidelines/patterns/resource-scopes.md) | Synchronization, transactions and owned cleanup. |
@@ -128,6 +129,8 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | Agent-assisted repository work | [Agent Guidance](agent-guidance.md) |
 | Using Tools.* utilities | [Tools Reference](tools-reference.md) |
 | Working with collections | [Sphere10.Framework](../src/Sphere10.Framework/README.md) |
+| ObjectSpace schemas, identity and file transactions | [ObjectSpace guide](../src/Sphere10.Framework/ObjectSpaces/README.md) / [Practices](guidelines/patterns/object-spaces.md) |
+| ObjectSpace demonstration and configuration performance | [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) / [ObjectSpace profiling suite](../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) |
 | Database access | [Sphere10.Framework.Data](../src/Sphere10.Framework.Data/README.md) |
 | Cryptography | [Sphere10.Framework.CryptoEx](../src/Sphere10.Framework.CryptoEx/README.md) |
 | Networking & RPC | [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) |
@@ -171,6 +174,7 @@ docs/
         ├── fluent-builders.md
         ├── serialization.md
         ├── collections-and-storage.md
+        ├── object-spaces.md
         ├── data-sources.md
         ├── logging.md
         ├── resource-scopes.md
@@ -201,6 +205,7 @@ docs/
 | [guidelines/patterns/fluent-builders.md](guidelines/patterns/fluent-builders.md) | Configuration composition and validation |
 | [guidelines/patterns/serialization.md](guidelines/patterns/serialization.md) | Serializer and endian-aware persistence contracts |
 | [guidelines/patterns/collections-and-storage.md](guidelines/patterns/collections-and-storage.md) | Collection and persistent storage layers |
+| [guidelines/patterns/object-spaces.md](guidelines/patterns/object-spaces.md) | Object identity, indexed CRUD, persistence and profiling |
 | [guidelines/patterns/data-sources.md](guidelines/patterns/data-sources.md) | CRUD, paging and delegation |
 | [guidelines/patterns/logging.md](guidelines/patterns/logging.md) | Logger composition and ownership |
 | [guidelines/patterns/resource-scopes.md](guidelines/patterns/resource-scopes.md) | Synchronization, transactions and scoped cleanup |

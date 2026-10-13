@@ -25,21 +25,30 @@ namespace Sphere10.Framework;
 /// This is the <see cref="ILookup{TKey,TElement}"/> analog of <see cref="UniqueKeyStorageAttachment{TKey}"/>.
 /// </summary>
 public class IndexStorageAttachment<TData> : CompositeStorageAttachmentBase, ILookup<TData, long> {
-	private const int BTreeOrder = 64;
-
 	private readonly PagedListStorageAttachment<TData> _pagedListStore;
 	private readonly BTreeLookupStorageAttachment<TData, long> _btreeLookupStore;
 
 	public IndexStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TData> datumSerializer, IEqualityComparer<TData> datumComparer)
+		: this(streams, attachmentID, datumSerializer, datumComparer, Sphere10FrameworkDefaults.IndexBTreeOrder) {
+	}
+
+	public IndexStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TData> datumSerializer,
+		IEqualityComparer<TData> datumComparer,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	)
 		: this(
 			streams,
 			attachmentID,
 			new PagedListStorageAttachment<TData>(streams, attachmentID + ".pagedList", datumSerializer),
-			new BTreeLookupStorageAttachment<TData, long>(streams, attachmentID + ".btreeLookup", BTreeOrder, datumSerializer, PrimitiveSerializer<long>.Instance, Comparer<TData>.Default)
+			new BTreeLookupStorageAttachment<TData, long>(streams, attachmentID + ".btreeLookup", bTreeOrder, datumSerializer, PrimitiveSerializer<long>.Instance, Comparer<TData>.Default)
 		) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Data serializer must be a constant-length serializer.");
 		Guard.ArgumentNotNull(datumComparer, nameof(datumComparer));
+		Guard.ArgumentGTE(bTreeOrder, 3, nameof(bTreeOrder));
 	}
 
 	private IndexStorageAttachment(

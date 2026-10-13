@@ -21,10 +21,17 @@ internal sealed class ProjectionIndex<TItem, TProjection> : ProjectionIndexBase<
 
 	private readonly Func<TItem, TProjection> _projection;
 
-	public ProjectionIndex(ObjectStream<TItem> objectStream, string indexName, Func<TItem, TProjection> projection, IItemSerializer<TProjection> projectionSerializer, IEqualityComparer<TProjection> projectionComparer)
+	public ProjectionIndex(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TProjection> projection,
+		IItemSerializer<TProjection> projectionSerializer,
+		IEqualityComparer<TProjection> projectionComparer,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	)
 		: base(
 			objectStream,
-			new IndexStorageAttachment<TProjection>(objectStream.Streams, indexName, projectionSerializer, projectionComparer),
+			new IndexStorageAttachment<TProjection>(objectStream.Streams, indexName, projectionSerializer, projectionComparer, bTreeOrder),
 			IndexNullPolicy.ThrowOnNull
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));
@@ -46,7 +53,7 @@ internal sealed class ProjectionIndex<TItem, TProjection> : ProjectionIndexBase<
 	}
 
 	protected override void OnUpdated(TItem item, long index, TProjection keyChecksum) {
-		Store.Add(index, keyChecksum);
+		Store.Update(index, keyChecksum);
 	}
 	protected override void OnInserted(TItem item, long index, TProjection keyChecksum) {
 		Store.Insert(index, keyChecksum);

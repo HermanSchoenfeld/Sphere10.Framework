@@ -1,0 +1,49 @@
+# Object Spaces
+
+Use these practices when modeling, querying, hosting or profiling `Sphere10.Framework.ObjectSpaces`. Read the [project guide](../../../src/Sphere10.Framework/ObjectSpaces/README.md) for current APIs and limitations, and the [object-spaces skill](../../../agents/skills/object-spaces/SKILL.md) for task-specific source and validation paths. Select [serialization](serialization.md), [collections/storage](collections-and-storage.md), [resource scopes](resource-scopes.md) and [data sources](data-sources.md) as the work requires.
+
+## Model a reproducible store
+
+Use `ObjectSpaceBuilder` and existing dimension/index factories. Define dimensions, serializers, identity/unique/nonunique indexes and dirty tracking before loading. Keep custom factories application-owned. The builder already creates one recyclable-index store per dimension. Avoid inferred duplicate indexes when mixing annotations with explicit configuration; use `ignoreAnnotations: true` for a complete explicit schema.
+
+Preserve schema and storage configuration across reopen: dimension ordering, serialized member/type layout, index names/types, endianness, outer/inner clusters and index B-tree order. The [ObjectSpace-specific new-store constants and reopening contract](../../../src/Sphere10.Framework/ObjectSpaces/README.md#new-store-defaults-and-existing-storage) own the selected backend defaults. `WithIndexBTreeOrder` requires at least 3; its value is a child-count order, not bytes or total leaf count. A steady node holds at most `order - 1` keys; the number of leaves depends on entry count, occupancy and mutation history. Current index headers do not authenticate the setting. An application can persist its own versioned configuration and reject incompatible layouts, as the [lab factory](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/ObjectSpaceLabFactory.cs) does; do not describe that as automatic core schema migration.
+
+Open existing bytes with `.WithIndexBTreeOrder(originalOrder)` or an already bound matching logical definition; do not substitute the current new-store default for an unknown original order. Historical default stores used 64. File descriptors/builders must retain their original outer cluster and transaction page settings. Omitted existing Memory root/dimension sizes can read their persisted headers; explicit hints still validate, and reserved index counts must remain compatible. Builder retention belongs to its actual target path/transaction context or supplied stream reference, rather than merely its backend. Keep provenance internal instead of adding consumer flags or serialization fields.
+
+Changing the profiling lab's serialized record members, dimension ordering or index schema requires increasing its factory's `SchemaVersion` and preserving or migrating old storage explicitly. The current version 2 distinguishes `PayloadOnly` from the three-dimension `DeveloperLab`; version 1 maps explicitly to the unchanged payload dimension. Require all layout fields in persisted configuration; missing values must not fall back to a different layout's defaults.
+
+## Retain identity and membership
+
+Create through `New<T>()` or explicitly `AcceptNew` an existing new instance before `Save`. Assign application IDs before save. `Get` and `TryGet` return identity-tracked objects; use them for entities that will be updated or deleted.
+
+`GetAll<T>()` is a materialized snapshot of saved live records, skips physical recycled slots and excludes provisional instances. `Count<T>()` can include provisional records. Do not scan slots using live count, or deserialize raw container values and then pass them to ObjectSpace mutations.
+
+Unique member lookup and nonunique projection lookup are different APIs. Resolve nonunique positions under the access scope and retrieve records through ObjectSpace. Use generic enumeration when selecting a typed dimension; its current non-generic dictionary-list enumerator is not a sequence of dimension objects.
+
+For editable data sources, distinguish detached rows from identity-tracked objects. Reject updates whose original store, slot or identifier no longer identifies the intended record after rollback, reopen or slot reuse. Allocate application IDs according to the model's identity contract; recomputing `Max(live IDs) + 1` can reuse a deleted identity. Validate unique values before altering tracked objects and discard a failed provisional insert. Keep searches/paging/sorting in the data source and return the actual filtered count.
+
+## Make persistence decisions explicit
+
+`Save`/`Flush` are not a file commit. File spaces require explicit `Commit` or `Rollback`; rollback rebuilds identity tracking. Discard every old row/entity snapshot after it. A value visible through an in-memory identity cache is not proof of persisted state.
+
+Integrity verification that first flushes Merkle attachments can write root headers even when record values are unchanged. Run it on the storage owner thread under the attachment access scopes and treat it as pending transactional work. The owning consumer must decide whether to commit or roll back those writes.
+
+Dirty-flag autosave runs at flush/commit. Make every supported automatic edit mark the configured flag; manual-mode edits require explicit save. Exclude transient flags from serialization. Flush memory streams before snapshotting them, retain ownership of supplied streams, and dispose created stores through their actual owner.
+
+ObjectSpace access scopes are thread-affine, and current permanent dimension streams retain locks for the store lifetime. Create, use and dispose one space on one owner thread. An asynchronous UI consumer dispatches commands to a dedicated storage worker; moving an already created space among arbitrary `Task.Run` workers can deadlock even when individual calls have scopes. Never hold an operation scope across suspension. Current file `CommitAsync`/`RollbackAsync` are unsupported. Serialize shared sessions, check cancellation at safe record boundaries, and complete or roll back pending work before replacement.
+
+## Profile real work
+
+Keep subsystem workloads and their support models in the general profiling project's `ObjectSpaces/` folder. Its `Lab/` folder owns deterministic schemas, configuration and file fixtures; it is not an application UI or a separate shared library. The current measured workload uses `PayloadOnly`; `DeveloperLab` is retained for factory and manifest fixture coverage and is rejected by the benchmark settings.
+
+Use the [ObjectSpace suite](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) in the general profiling project, with deterministic datasets and correctness checks outside measured regions. Compare B-tree order, outer and effective inner cluster sizes, file page/cache settings, actual index key shapes, storage policy, dirty tracking and Merkle algorithm/digest width. The selected Merkle hash does not select member-checksum index hashing in the current factory. Page/cache budgets apply to file storage and do not bound the strong identity cache.
+
+Separate warm identity hits from first-touch hydration, scans from indexed lookups, mutations from setup, and flush from durable commit. A warmed member-ID lookup still traverses its identifier B-tree; only direct physical-slot retrieval can isolate tracker cache hits. Reset every measured mutation to equivalent data and consume query results. Cover lookup locality, payload variability/growth, nonunique key cardinality/skew and insertion order before transferring a result to another dataset.
+
+Use the profiler's retained [study workflow](../../../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md) to screen factors, shortlist candidates, then test interactions on the intended storage device. Compare actual mixed persistence batches separately for Balanced (50/50), ReadHeavy (90/10) and WriteHeavy (10/90), including real secondary-index changes, explicit saving or dirty-flag autosave, and Flush/Commit. These mixes are measured workloads, not weights applied to unrelated timings. Inspect the complete plan before execution; do not start an accidental Cartesian matrix.
+
+Keep schema/index membership, runtime integrity checks, Merkle digest, backend/durability and dataset controls in the comparison group. Disabling an index or integrity feature cannot create an interchangeable winner. Retain exact plans, raw verified samples/checksums, host/runtime, allocations and space costs. Check the recorded results through the profiler NUnit fixtures; exclude failed or incomplete measurements. Owner-thread managed allocation is not peak/resident memory. File workspaces must use an explicit data root on the intended drive.
+
+Direct Stopwatch studies are screening evidence: one process shares JIT/GC/OS-cache conditions. Confirm finalists with independent BenchmarkDotNet process launches, sufficient batch duration, repeated samples and the same guarantees. Preserve overlapping uncertainty intervals as unresolved candidates. Dry runs verify execution; short runs are exploratory evidence. Publish workload-specific candidates only alongside retained results and limits. Changes to central defaults require an explicit objective, representative interaction/transfer checks and compatible existing-store opening. The selected Balanced Memory defaults accept greater encoded footprint; the selected File cache budget is a practical candidate, not a universal or uniquely resolved optimum.
+
+Keep persistent graph GC outside advertised configuration winners until reference persistence, reopened cycles and collection across physical holes are covered. Preserve this limitation and the comparer-registry caveat in the project guide rather than copying a broken implementation as the pattern.

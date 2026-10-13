@@ -24,7 +24,7 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 	private readonly TransactionalStream _fileStream;
 
 	public FileObjectSpace(Sphere10FrameworkFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default)
-		: base(CreateStreams(file, objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.Merkleized), accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode) {
+		: base(CreateStreams(file, objectSpaceDefinition, accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode, Sphere10FrameworkDefaults.FileObjectSpaceDimensionClusterSize) {
 		Guard.ArgumentNotNull(file, nameof(file));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
@@ -48,7 +48,11 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 	
 	public Sphere10FrameworkFileDescriptor File { get; }
 
-	private static ClusteredStreams CreateStreams(Sphere10FrameworkFileDescriptor file, bool merkleized, FileAccessMode accessMode, out TransactionalStream fileStream) {
+	private static ClusteredStreams CreateStreams(Sphere10FrameworkFileDescriptor file, ObjectSpaceDefinition definition, FileAccessMode accessMode, out TransactionalStream fileStream) {
+		Guard.ArgumentNotNull(file, nameof(file));
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		definition.AssertOpeningIndexOrder(TransactionalFileMappedListBase<byte>.HasPersistedState(file));
+		var merkleized = definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized);
 		fileStream = new TransactionalStream(file, accessMode.WithoutAutoLoad());
 		var objectSpaceMetaDataStreamCount = merkleized ? 1 : 0;
 		var streams = new ClusteredStreams(

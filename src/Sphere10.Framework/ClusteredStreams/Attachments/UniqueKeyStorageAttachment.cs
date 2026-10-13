@@ -23,25 +23,44 @@ namespace Sphere10.Framework;
 /// and a <see cref="BTreeStorageAttachment{TKey,TValue}"/> for the B-tree (reverse mapping).
 /// </summary>
 public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, IReadOnlyDictionary<TKey, long> {
-	private const int BTreeOrder = 64;
-
 	private readonly PagedListStorageAttachment<TKey> _pagedListStore;
 	private readonly BTreeStorageAttachment<TKey, long> _btreeStore;
 
 	public UniqueKeyStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer)
-		: this(streams, attachmentID, keySerializer, Comparer<TKey>.Default) {
+		: this(streams, attachmentID, keySerializer, keyComparer, Sphere10FrameworkDefaults.IndexBTreeOrder) {
+	}
+
+	public UniqueKeyStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IEqualityComparer<TKey> keyComparer,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	)
+		: this(streams, attachmentID, keySerializer, Comparer<TKey>.Default, bTreeOrder) {
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
 	}
 
 	public UniqueKeyStorageAttachment(ClusteredStreams streams, string attachmentID, IItemSerializer<TKey> keySerializer, IComparer<TKey> keyComparer)
+		: this(streams, attachmentID, keySerializer, keyComparer, Sphere10FrameworkDefaults.IndexBTreeOrder) {
+	}
+
+	public UniqueKeyStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IComparer<TKey> keyComparer,
+		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	)
 		: this(
 			streams,
 			attachmentID,
 			new PagedListStorageAttachment<TKey>(streams, attachmentID + ".pagedList", keySerializer),
-			new BTreeStorageAttachment<TKey, long>(streams, attachmentID + ".btree", BTreeOrder, keySerializer, PrimitiveSerializer<long>.Instance, keyComparer ?? Comparer<TKey>.Default)
+			new BTreeStorageAttachment<TKey, long>(streams, attachmentID + ".btree", bTreeOrder, keySerializer, PrimitiveSerializer<long>.Instance, keyComparer ?? Comparer<TKey>.Default)
 		) {
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.Argument(keySerializer.IsConstantSize, nameof(keySerializer), "Key serializer must be a constant-length serializer.");
+		Guard.ArgumentGTE(bTreeOrder, 3, nameof(bTreeOrder));
 	}
 
 	private UniqueKeyStorageAttachment(

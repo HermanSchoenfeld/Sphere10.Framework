@@ -37,13 +37,36 @@ public static class Sphere10FrameworkDefaults {
 	public const CHF HashFunction = CHF.SHA2_256;
 
 	// Object Streams
+	public const int IndexBTreeOrder = 64;
 	public const string DefaultReyclableIndexIndexName = "Recylable Index";
 	public const string DefaultMerkleTreeIndexName = "Merkle Tree";
 	public const string DefaultItemChecksumIndexName = "Item Checksum";
 	public const string DefaultKeyChecksumIndexName = "Key Checksum";
 	public const string DefaultKeyStoreAttachmentName = "Key Store";
 
+	// Standalone trees: balanced numeric-key/value recommendations; explicit orders remain available.
+	public const int BTreeOrder = 128;
+	public const int BTreePlusOrder = 2048;
+	public const int BTreeLookupOrder = 2048;
+	public const int StreamMappedBTreeOrder = 128;
+	public const int StreamMappedBTreePlusOrder = 2048;
+	public const int StreamMappedBTreeLookupOrder = 2048;
+
+	// Explicit serialized 32-byte-key/8-byte-value choices; generic constructors do not infer serializer widths.
+	public const int StreamMappedWideKeyBTreePlusOrder = 1024;
+	public const int StreamMappedWideKeyBTreeLookupOrder = 1024;
+
 	// Object Spaces
+	// ObjectSpace defaults selected for balanced throughput; generic collection layouts remain unchanged.
+	public const int ObjectSpaceIndexBTreeOrder = 256;
+	public const int MemoryObjectSpaceClusterSize = 1024;
+	public const int MemoryObjectSpaceDimensionClusterSize = 1024;
+	public const ClusteredStreamsPolicy MemoryObjectSpaceContainerPolicy = ClusteredStreamsPolicy.CacheClusterHeaders | ClusteredStreamsPolicy.IntegrityChecks;
+	public const int FileObjectSpaceClusterSize = ClusterSize;
+	public const int FileObjectSpaceDimensionClusterSize = SmallestRecommendedClusterSize;
+	public const ClusteredStreamsPolicy FileObjectSpaceContainerPolicy = ContainerPolicy;
+	public const int ObjectSpacePageSize = TransactionalPageSize;
+	public const int ObjectSpaceMaxMemory = 16777216;
 	public const string DefaultSpatialMerkleTreeIndexName = "Spatial Tree";
 
 }

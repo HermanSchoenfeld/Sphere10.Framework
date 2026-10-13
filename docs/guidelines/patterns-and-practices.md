@@ -21,6 +21,7 @@ instructions take precedence; these topic files hold the implementation rules.
 | Selecting utilities, guards or cryptographic infrastructure | [Framework utilities](patterns/framework-utilities.md) |
 | Serialization, binary layouts or endian-aware I/O | [Serialization](patterns/serialization.md) |
 | Graph storage, collections, clustered streams or comparers | [Collections and storage](patterns/collections-and-storage.md) |
+| ObjectSpace schemas, identity, indexed CRUD, file transactions or configuration profiling | [Object spaces](patterns/object-spaces.md) |
 | Data-source CRUD, paging or batch/single operations | [Data sources](patterns/data-sources.md) |
 | Application logging, sinks or logger decorators | [Logging](patterns/logging.md) |
 | Acquisition, cleanup, locking, transactions or disposal scopes | [Resource scopes](patterns/resource-scopes.md) |

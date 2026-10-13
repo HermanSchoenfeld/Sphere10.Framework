@@ -134,6 +134,21 @@ public static class StreamMappedFactory {
 	#endregion
 
 	#region BTree
+
+	public static StreamMappedBTree<TKey, TValue> CreateBTree<TKey, TValue>(
+		Stream stream,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer = null,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) => new(
+			stream,
+			keySerializer,
+			valueSerializer,
+			keyComparer,
+			endianness
+		);
+
 	public static StreamMappedBTree<TKey, TValue> CreateBTree<TKey, TValue>(
 		int order,
 		Stream stream,
@@ -149,14 +164,57 @@ public static class StreamMappedFactory {
 			keyComparer,
 			endianness
 		);
-	
 
-		public static StreamMappedBTreePlus<TKey, TValue> CreateBTreePlus<TKey, TValue>(
+	public static StreamMappedBTreePlus<TKey, TValue> CreateBTreePlus<TKey, TValue>(
+		Stream stream,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer = null,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) => new(
+			stream,
+			keySerializer,
+			valueSerializer,
+			keyComparer,
+			endianness
+		);
+
+	public static StreamMappedBTreePlus<TKey, TValue> CreateBTreePlus<TKey, TValue>(
 		int order,
 		Stream stream,
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IComparer<TKey> keyComparer = null,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) => new(
+			order,
+			stream,
+			keySerializer,
+			valueSerializer,
+			keyComparer,
+			endianness
+		);
+
+	public static StreamMappedBTreeLookup<TKey, TValue> CreateBTreeLookup<TKey, TValue>(
+		Stream stream,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer,
+		Endianness endianness = Sphere10FrameworkDefaults.Endianness
+	) => new(
+			stream,
+			keySerializer,
+			valueSerializer,
+			keyComparer,
+			endianness
+		);
+
+	public static StreamMappedBTreeLookup<TKey, TValue> CreateBTreeLookup<TKey, TValue>(
+		int order,
+		Stream stream,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer,
 		Endianness endianness = Sphere10FrameworkDefaults.Endianness
 	) => new(
 			order,

@@ -16,6 +16,7 @@
 /agents/.local-alias-state.json
 
 # Build results
+/BenchmarkDotNet.Artifacts/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -111,6 +112,10 @@ dlldata.c
 *.tlh
 *.tmp_proj
 *.log
+!/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.log
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.dll
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.exe
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.pdb
 *.vspscc
 *.vssscc
 .builds

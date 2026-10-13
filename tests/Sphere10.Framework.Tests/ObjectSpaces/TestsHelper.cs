@@ -15,7 +15,7 @@ public static class TestsHelper {
 		activationArgs ??= [];
 		var disposables = new Disposables();
 
-		var builder = new ObjectSpaceBuilder();
+		var builder = new ObjectSpaceBuilder().WithIndexBTreeOrder(Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder);
 		builder
 			.AutoLoad()
 			.AddDimension<Account>(true)

@@ -145,7 +145,7 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 			return GetCachedClusterHeader(cluster).Next;
 
 		_clusters.InternalCollection.ReadItemBytes(cluster, ClusterSerializer.NextOffset, ClusterSerializer.NextLength, out var bytes);
-		var nextValue = _clusters.InternalCollection.Reader.BitConverter.ToInt32(bytes);
+		var nextValue = _clusters.InternalCollection.Reader.BitConverter.ToInt64(bytes);
 		return nextValue;
 	}
 

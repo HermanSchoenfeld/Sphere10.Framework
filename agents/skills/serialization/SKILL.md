@@ -48,3 +48,5 @@ Implement `CalculateSize(context, item)` consistently with `Serialize`: verify i
 
 ## Persistence layers
 Serialization feeds into `ClusteredStreams` → `ObjectStream<T>` → `ObjectSpace` and the stream-mapped collections (`StreamMappedList`, `StreamMappedDictionary`, `StreamMappedHashSet`). When changing serializer behavior, verify these consumers still round-trip.
+
+For ObjectSpace dimension schemas, identity, indexes, dirty flags and file reopen contracts, select [object-spaces](../object-spaces/SKILL.md). Changing serialized layout or index B-tree order requires preserving or explicitly replacing existing storage, not silently reopening it with another configuration.

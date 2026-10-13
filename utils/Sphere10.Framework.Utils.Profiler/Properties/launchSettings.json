@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Sphere10.Framework.Utils.Profiler": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "workingDirectory": "$(ProjectDir)../..",
+      "commandLineArgs": "run --configuration Release --project utils/Sphere10.Framework.Utils.Profiler/Sphere10.Framework.Utils.Profiler.csproj --no-launch-profile -- study --report tests/Sphere10.Framework.Utils.Profiler.Tests/Results",
+      "hotReloadEnabled": false,
+      "environmentVariables": {
+        "BuildRevision": "0"
+      }
+    },
+    "ObjectSpace order study": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "workingDirectory": "$(ProjectDir)../..",
+      "commandLineArgs": "run --configuration Release --project utils/Sphere10.Framework.Utils.Profiler/Sphere10.Framework.Utils.Profiler.csproj --no-launch-profile -- study --domain object-spaces --suite order --records 1024 --operations 200 --data-root \"$(ProjectDir)../../BenchmarkDotNet.Artifacts/study-data\"",
+      "hotReloadEnabled": false,
+      "environmentVariables": {
+        "BuildRevision": "0"
+      }
+    },
+    "BTree order study": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "workingDirectory": "$(ProjectDir)../..",
+      "commandLineArgs": "run --configuration Release --project utils/Sphere10.Framework.Utils.Profiler/Sphere10.Framework.Utils.Profiler.csproj --no-launch-profile -- study --domain btrees --suite order --records 2048 --operations 512 --data-root \"$(ProjectDir)../../BenchmarkDotNet.Artifacts/study-data\"",
+      "hotReloadEnabled": false,
+      "environmentVariables": {
+        "BuildRevision": "0"
+      }
+    },
+    "ObjectSpace parameter study": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "workingDirectory": "$(ProjectDir)../..",
+      "commandLineArgs": "run --configuration Release --project utils/Sphere10.Framework.Utils.Profiler/Sphere10.Framework.Utils.Profiler.csproj --no-launch-profile -- study --domain object-spaces --suite parameters --records 256 --operations 100 --data-root \"$(ProjectDir)../../BenchmarkDotNet.Artifacts/study-data\"",
+      "hotReloadEnabled": false,
+      "environmentVariables": {
+        "BuildRevision": "0"
+      }
+    },
+    "BTree parameter study": {
+      "commandName": "Executable",
+      "executablePath": "dotnet",
+      "workingDirectory": "$(ProjectDir)../..",
+      "commandLineArgs": "run --configuration Release --project utils/Sphere10.Framework.Utils.Profiler/Sphere10.Framework.Utils.Profiler.csproj --no-launch-profile -- study --domain btrees --suite parameters --records 2048 --operations 512 --data-root \"$(ProjectDir)../../BenchmarkDotNet.Artifacts/study-data\"",
+      "hotReloadEnabled": false,
+      "environmentVariables": {
+        "BuildRevision": "0"
+      }
+    }
+  }
+}
