@@ -110,6 +110,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "code-style", "code-style", 
 		..\agents\skills\code-style\SKILL.md = ..\agents\skills\code-style\SKILL.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "collections", "collections", "{B366FEBA-D1B8-4DB4-BB5B-C2B4633F4411}"
+	ProjectSection(SolutionItems) = preProject
+		..\agents\skills\collections\SKILL.md = ..\agents\skills\collections\SKILL.md
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crud-grid", "crud-grid", "{0717CA64-3518-5D33-A64D-DD16B9765634}"
 	ProjectSection(SolutionItems) = preProject
 		..\agents\skills\crud-grid\SKILL.md = ..\agents\skills\crud-grid\SKILL.md
@@ -164,6 +169,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "oo-design", "oo-design", "{F020A02C-5F8B-5AE3-BD49-C967B0E63015}"
 	ProjectSection(SolutionItems) = preProject
 		..\agents\skills\oo-design\SKILL.md = ..\agents\skills\oo-design\SKILL.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "persistence", "persistence", "{BA3776B2-22C3-40F5-9B9D-EA6E73A8B918}"
+	ProjectSection(SolutionItems) = preProject
+		..\agents\skills\persistence\SKILL.md = ..\agents\skills\persistence\SKILL.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "protocols", "protocols", "{F71ACB85-0410-5EE5-8033-5ED60C5B52F8}"
@@ -292,6 +302,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "patterns", "patterns", "{AF
 		..\docs\guidelines\patterns\agent-guidance.md = ..\docs\guidelines\patterns\agent-guidance.md
 		..\docs\guidelines\patterns\application-ownership.md = ..\docs\guidelines\patterns\application-ownership.md
 		..\docs\guidelines\patterns\collections-and-storage.md = ..\docs\guidelines\patterns\collections-and-storage.md
+		..\docs\guidelines\patterns\collections.md = ..\docs\guidelines\patterns\collections.md
 		..\docs\guidelines\patterns\data-sources.md = ..\docs\guidelines\patterns\data-sources.md
 		..\docs\guidelines\patterns\fluent-builders.md = ..\docs\guidelines\patterns\fluent-builders.md
 		..\docs\guidelines\patterns\framework-reuse.md = ..\docs\guidelines\patterns\framework-reuse.md
@@ -303,9 +314,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "patterns", "patterns", "{AF
 		..\docs\guidelines\patterns\scheduling.md = ..\docs\guidelines\patterns\scheduling.md
 		..\docs\guidelines\patterns\serialization.md = ..\docs\guidelines\patterns\serialization.md
 		..\docs\guidelines\patterns\sync-async.md = ..\docs\guidelines\patterns\sync-async.md
+		..\docs\guidelines\patterns\synchronization.md = ..\docs\guidelines\patterns\synchronization.md
 		..\docs\guidelines\patterns\testing.md = ..\docs\guidelines\patterns\testing.md
 		..\docs\guidelines\patterns\type-hierarchies.md = ..\docs\guidelines\patterns\type-hierarchies.md
 		..\docs\guidelines\patterns\object-spaces.md = ..\docs\guidelines\patterns\object-spaces.md
+		..\docs\guidelines\patterns\persistence-and-transactions.md = ..\docs\guidelines\patterns\persistence-and-transactions.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source Notes", "Source Notes", "{532962B1-B12B-50F0-BEB4-0F6063E82329}"
@@ -812,6 +825,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{BA3776B2-22C3-40F5-9B9D-EA6E73A8B918} = {B964E1FE-D96B-50B6-8623-126359123FC0}
+		{B366FEBA-D1B8-4DB4-BB5B-C2B4633F4411} = {B964E1FE-D96B-50B6-8623-126359123FC0}
 		{A1206153-4D43-4A74-82FE-60B1A1C00AF9} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{5EFC5E99-FD35-4F12-A9A1-966F40ED70B6} = {E7705E7B-D04B-488C-8442-149A029F34B8}

@@ -14,6 +14,8 @@ Use the [Patterns and Practices task index](../../docs/guidelines/patterns-and-p
 | [state-machines](state-machines/SKILL.md) | Existing Stateless workflows or user-authorized adoption: typed triggers, hierarchical states, guarded transitions and async actions. Preserve the existing `IApplication` lifecycle without adding Stateless. |
 | [protocols](protocols/SKILL.md) | Application message protocols using `Protocol`, `ProtocolBuilder`, and `ProtocolOrchestrator`: commands, request/response, handshakes, modes, and wire serialization. |
 | [serialization](serialization/SKILL.md) | Writing `IItemSerializer<T>` implementations, using `SerializerBuilder`/`SerializerFactory`, or touching endian-aware I/O. |
+| [collections](collections/SKILL.md) | Selecting or composing extended lists, dictionary families, bidirectional maps, synchronized wrappers, projections or persistent collections. |
+| [persistence](persistence/SKILL.md) | Consuming or implementing repository CRUD, `ILoadable`/`ISaveable`/`IPersistable`, or transaction-backed scopes and collections. |
 | [object-spaces](object-spaces/SKILL.md) | Modeling or using ObjectSpace dimensions/indexes, object-store CRUD screens, dirty tracking, transactional persistence and configuration profiling. |
 | [guards-and-scopes](guards-and-scopes/SKILL.md) | Argument/invariant validation (`Guard`), or resource/state cleanup via disposable scopes. |
 | [disposable-scopes](disposable-scopes/SKILL.md) | Acquiring a resource, entering a state, locking, or guaranteed cleanup — the `IScope`/`Tools.Scope`/synchronization/transaction scope idiom. |

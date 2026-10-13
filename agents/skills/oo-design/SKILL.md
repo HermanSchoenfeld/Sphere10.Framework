@@ -41,6 +41,8 @@ Follow the [directional implementation guide](../../../docs/guidelines/patterns/
 ## 3. `long`-indexed, range-first APIs
 The extended collection contracts are `long`-indexed (`IExtendedCollection<T>` / `IExtendedList<T>`) with `*Range` methods (`ReadRange`, `InsertRange`, `RemoveRange`, `UpdateRange`). Preserve their `long` counts and indices; inherited `int` members bridge to the wider contract. This does not change the `int` paging parameters of `IDataSource<T>` or the required signatures of BCL collection contracts.
 
+For collection work, read [collection selection and composition](../../../docs/guidelines/patterns/collections.md) before choosing a base or wrapper. For repository and load/save lifecycle work, read [persistence and transactions](../../../docs/guidelines/patterns/persistence-and-transactions.md); CRUD, saving and transaction completion have distinct owners.
+
 ## 4. Composition of orthogonal behavior via decorators
 Use decorators for optional, orthogonal behavior such as synchronization, observation, persistence and read-only access. Existing collection families also provide transactional, merkle and recyclable wrappers. Extend the established decorator for that abstraction rather than adding unrelated mode flags to its inheritance foundation; do not create wrappers that have no consumer.
 

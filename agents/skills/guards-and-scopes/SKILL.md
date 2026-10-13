@@ -7,6 +7,8 @@ description: Validate arguments and invariants with Guard.*, and use existing di
 
 Read [framework utility guidance](../../../docs/guidelines/patterns/framework-utilities.md) for argument and invariant validation, and [resource scope guidance](../../../docs/guidelines/patterns/resource-scopes.md) for owned acquire/release work.
 
+For locking, also read [synchronization](../../../docs/guidelines/patterns/synchronization.md) to select the scope lifetime and check the wrapper's actual locking behavior. For transactions, read [persistence and transactions](../../../docs/guidelines/patterns/persistence-and-transactions.md) to identify the backend owner and its commit, rollback and close semantics.
+
 ## Argument and invariant guards
 Use [Guard](../../../src/Sphere10.Framework/Exceptions/Guard.cs) for argument and invariant checks instead of repeating equivalent `if`/`throw` guards. Choose the helper whose predicate and exception contract match the check:
 

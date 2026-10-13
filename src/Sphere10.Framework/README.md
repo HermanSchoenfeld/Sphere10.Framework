@@ -1090,81 +1090,64 @@ Console.WriteLine($"Tree depth: {size.Depth}");
 
 **Synchronized Collections: Thread-Safe Wrappers**
 
+Use the existing synchronized decorators for shared collections. Individual
+members usually self-lock; an outer scope protects a compound operation or the
+consumption of a live view. See [synchronization practices](../../docs/guidelines/patterns/synchronization.md)
+for enumeration, recursion, shared parent locks and thread-affinity rules.
+
 ```csharp
-using Sphere10.Framework;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Sphere10.Framework;
 
-// SynchronizedExtendedList: Thread-safe variant of ExtendedList
+// Each Add acquires its own write scope.
 var syncList = new SynchronizedExtendedList<int>();
+Parallel.For(0, 10, worker => {
+	for (var index = 0; index < 1000; index++)
+		syncList.Add(index);
+});
+Console.WriteLine($"Total items: {syncList.Count}"); // 10,000
 
-// Safe for concurrent access from multiple threads
-var tasks = new List<Task>();
-for (int t = 0; t < 10; t++) {
-    tasks.Add(Task.Run(() => {
-        for (int i = 0; i < 1000; i++) {
-            syncList.Add(i);  // Automatically locked
-        }
-    }));
-}
-Task.WaitAll(tasks.ToArray());
-Console.WriteLine($"Total items: {syncList.Count}");  // 10,000 safely
-
-// SynchronizedDictionary: Thread-safe key-value pairs
+// Copy the required data while the read scope protects enumeration.
 var syncDict = new SynchronizedDictionary<string, Account>();
-
-var producer = Task.Run(() => {
-    for (int i = 0; i < 100; i++) {
-        syncDict[$"account_{i}"] = new Account { Id = i, Balance = 100m };
-    }
+Parallel.For(0, 100, index => {
+	syncDict[$"account_{index}"] = new Account { Id = index, Balance = 100m };
 });
+KeyValuePair<string, decimal>[] balances;
+using (syncDict.EnterReadScope())
+	balances = syncDict.Select(pair => new KeyValuePair<string, decimal>(pair.Key, pair.Value.Balance)).ToArray();
+foreach (var balance in balances)
+	Console.WriteLine($"{balance.Key}: {balance.Value}");
 
-var consumer = Task.Run(() => {
-    System.Threading.Thread.Sleep(50);  // Let producer add some
-    foreach (var key in syncDict.Keys) {
-        var account = syncDict[key];
-        Console.WriteLine($"{key}: {account.Balance}");
-    }
-});
+// An outer write scope protects both the lookup and mutable account update.
+using (syncDict.EnterWriteScope()) {
+	if (syncDict.TryGetValue("account_0", out var account))
+		account.Balance += 25m;
+}
 
-Task.WaitAll(producer, consumer);
+// The current SynchronizedSet members require explicit scopes.
+var visited = new SynchronizedSet<int>();
+using (visited.EnterWriteScope())
+	visited.Add(42);
 
-// SynchronizedRepository: Cached, thread-safe data access
-var syncRepo = new SynchronizedRepository<int, Product>(
-    loadFunc: id => FetchProductFromDatabase(id)
-);
+// Wrap a real repository; the wrapper owns disposal of its inner repository.
+using var syncRepo = new SynchronizedRepository<Product, int>(new DictionaryRepositoryAdapter<Product, int>(product => product.Id));
+syncRepo.Create(new Product { Id = 1, Name = "Widget", Price = 9.99m });
+if (syncRepo.TryGet(1, out var product))
+	Console.WriteLine(product.Name);
 
-// Thread-safe get (with automatic caching)
-var product1 = syncRepo.Get(1);
-var product2 = syncRepo.Get(2);
-
-// Multiple threads can safely access the cache
-var readTasks = Enumerable.Range(0, 100)
-    .Select(i => Task.Run(() => syncRepo.Get(i % 10)))
-    .ToArray();
-Task.WaitAll(readTasks);
-
-// Synchronized collection types available:
-// - SynchronizedExtendedList<T>
-// - SynchronizedDictionary<TKey, TValue>
-// - SynchronizedSet<T>
-// - SynchronizedQueue<T>
-// - SynchronizedHeap<T>
-// All use internal locking for thread safety
-
+// Models also used by the stream-mapped collection example above.
 class Account {
-    public int Id { get; set; }
-    public decimal Balance { get; set; }
+	public int Id { get; set; }
+	public decimal Balance { get; set; }
 }
 
 class Product {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-}
-
-Product FetchProductFromDatabase(int id) {
-    return new Product { Id = id, Name = $"Product {id}", Price = 9.99m };
+	public int Id { get; set; }
+	public string Name { get; set; }
+	public decimal Price { get; set; }
 }
 
 class CustomProductSerializer : ItemSerializerBase<Product> {
@@ -1203,7 +1186,32 @@ class CustomProductSerializer : ItemSerializerBase<Product> {
 }
 ```
 
+`SynchronizedDictionary.Keys` and `Values` retain the source dictionary's view
+semantics; ordinary dictionary views are live, and their getters do not retain
+a lock for later enumeration. The example instead copies keys and
+balance values under an outer read scope and prints after releasing it. Mutable
+entities returned by a dictionary or repository remain borrowed: users that
+mutate them must participate in the same synchronization protocol.
+
+`SynchronizedCollection<T>`, `SynchronizedList<T>`, `SynchronizedExtendedList<T>`,
+`SynchronizedDictionary<TKey, TValue>`, `SynchronizedQueue<T>` and
+`SynchronizedHeap<T>` provide self-locking ordinary operations. The current
+`SynchronizedSet<T>` locks its enumerator but requires explicit scopes for its
+ordinary methods and properties. Returned deferred range sequences likewise
+need a scope covering their actual consumption.
+
+`SynchronizedRepository<TEntity, TIdentity>` adds locking around an existing
+`IRepository<TEntity, TIdentity>`; it does not add caching or a fetch delegate.
+The example uses its synchronous `Create` and `TryGet` operations. Read
+[persistence and transaction practices](../../docs/guidelines/patterns/persistence-and-transactions.md)
+for repository composition and the existing async adapter limitations.
+
 ## 💾 Persistence & Transactions
+
+Read [repository and persistence practices](../../docs/guidelines/patterns/persistence-and-transactions.md)
+for `IRepository`, `ILoadable`, `ISaveable`, `IPersistable`, directional bases,
+nested transaction ownership and concrete backend guarantees. For collection
+selection, read [collection practices](../../docs/guidelines/patterns/collections.md).
 
 **Advanced StreamMappedList Usage:**
 

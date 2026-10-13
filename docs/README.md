@@ -43,7 +43,10 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | [Framework utilities](guidelines/patterns/framework-utilities.md) | Existing Tools, validation, conversion, crypto and comparer infrastructure. |
 | [Fluent builders](guidelines/patterns/fluent-builders.md) | Configuration composition, validation and product ownership. |
 | [Serialization](guidelines/patterns/serialization.md) | Serializer layers and endian-aware persistence contracts. |
-| [Collections and storage](guidelines/patterns/collections-and-storage.md) | Long indexes, range operations and persistent collection layers. |
+| [Collection selection and composition](guidelines/patterns/collections.md) | Extended lists, dictionary families, projections, paging and storage layers. |
+| [Synchronization](guidelines/patterns/synchronization.md) | Read/write scopes, shared parents, enumeration and thread affinity. |
+| [Repositories, persistence and transactions](guidelines/patterns/persistence-and-transactions.md) | CRUD, load/save lifecycle, transaction ownership and backend guarantees. |
+| [Collections and storage](guidelines/patterns/collections-and-storage.md) | Caches, graph identity, clustered streams and storage comparers. |
 | [Object spaces](guidelines/patterns/object-spaces.md) | Typed identity, indexed CRUD, durability and configuration profiling. |
 | [Data sources](guidelines/patterns/data-sources.md) | CRUD, paging, validation and item/range delegation. |
 | [Logging](guidelines/patterns/logging.md) | Logger selection, composition and sink lifetime. |
@@ -129,7 +132,9 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | New to the framework | [Getting Started](start-here.md) |
 | Agent-assisted repository work | [Agent Guidance](agent-guidance.md) |
 | Using Tools.* utilities | [Tools Reference](tools-reference.md) |
-| Working with collections | [Sphere10.Framework](../src/Sphere10.Framework/README.md) |
+| Working with collections | [Collection selection](guidelines/patterns/collections.md) / [Sphere10.Framework](../src/Sphere10.Framework/README.md) |
+| Protecting shared state and collection operations | [Synchronization scopes](guidelines/patterns/synchronization.md) |
+| Repository CRUD, loading/saving and transaction lifetimes | [Persistence and transactions](guidelines/patterns/persistence-and-transactions.md) |
 | ObjectSpace schemas, identity and file transactions | [ObjectSpace guide](../src/Sphere10.Framework/ObjectSpaces/README.md) / [Practices](guidelines/patterns/object-spaces.md) |
 | ObjectSpace demonstration and configuration performance | [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) / [ObjectSpace profiling suite](../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) |
 | Database access | [Sphere10.Framework.Data](../src/Sphere10.Framework.Data/README.md) |
@@ -175,7 +180,10 @@ docs/
         ├── framework-utilities.md
         ├── fluent-builders.md
         ├── serialization.md
+        ├── collections.md
         ├── collections-and-storage.md
+        ├── synchronization.md
+        ├── persistence-and-transactions.md
         ├── object-spaces.md
         ├── data-sources.md
         ├── logging.md
@@ -207,7 +215,10 @@ docs/
 | [guidelines/patterns/framework-utilities.md](guidelines/patterns/framework-utilities.md) | Existing utility infrastructure |
 | [guidelines/patterns/fluent-builders.md](guidelines/patterns/fluent-builders.md) | Configuration composition and validation |
 | [guidelines/patterns/serialization.md](guidelines/patterns/serialization.md) | Serializer and endian-aware persistence contracts |
-| [guidelines/patterns/collections-and-storage.md](guidelines/patterns/collections-and-storage.md) | Collection and persistent storage layers |
+| [guidelines/patterns/collections.md](guidelines/patterns/collections.md) | Collection selection, contracts and composition |
+| [guidelines/patterns/synchronization.md](guidelines/patterns/synchronization.md) | Read/write scopes, shared parents and borrowed results |
+| [guidelines/patterns/persistence-and-transactions.md](guidelines/patterns/persistence-and-transactions.md) | Repositories, loading/saving and transaction ownership |
+| [guidelines/patterns/collections-and-storage.md](guidelines/patterns/collections-and-storage.md) | Caches, graph identity and persistent storage layers |
 | [guidelines/patterns/object-spaces.md](guidelines/patterns/object-spaces.md) | Object identity, indexed CRUD, persistence and profiling |
 | [guidelines/patterns/data-sources.md](guidelines/patterns/data-sources.md) | CRUD, paging and delegation |
 | [guidelines/patterns/logging.md](guidelines/patterns/logging.md) | Logger composition and ownership |
