@@ -20,7 +20,7 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 
 	protected BulkFetchCacheBase(ExpirationPolicy expirationStrategy, TimeSpan? expirationDuration = null, bool fetchOnceOnly = false, NullValuePolicy nullValuePolicy = NullValuePolicy.CacheNormally,
 	                             StaleValuePolicy staleValuePolicy = StaleValuePolicy.AssumeNeverStale, IEqualityComparer<TKey> keyComparer = null)
-		: base(CacheReapPolicy.None, expirationStrategy, uint.MaxValue, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer, new IsolatedCacheReaper()) {
+		: base(CacheReapPolicy.None, expirationStrategy, uint.MaxValue, expirationDuration, nullValuePolicy, staleValuePolicy, keyComparer) {
 		_fetchOnceOnly = fetchOnceOnly;
 		FetchCount = 0;
 	}
@@ -29,16 +29,11 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		TValue result;
 		using (EnterWriteScope()) {
 			if (!_fetchOnceOnly || FetchCount == 0) {
-				NotifyItemFetching(key);
 				ForceRefresh();
 			}
 
 			if (InternalStorage.TryGetValue(key, out var item)) {
-				item.AccessedCount++;
-				item.LastAccessedOn = DateTime.Now;
-				base.TotalAccesses++;
-				base.LastAccessedOn = DateTime.Now;
-				result = ((CachedItem<TValue>)item).Value;
+				result = item.Value;
 			} else {
 				switch (NullValuePolicy) {
 					case NullValuePolicy.Throw:
@@ -51,31 +46,38 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 				}
 			}
 		}
-		NotifyItemFetched(key, result);
 		return result;
 	}
 
-	public override CachedItem Get(object key) {
-		if (FetchCount == 0)
-			ForceRefresh();
-
-		return base.Get(key);
+	public override CachedItem<TValue> Get(TKey key) {
+		if (key is null)
+			Guard.ArgumentNotNull(key, nameof(key));
+		using (EnterWriteScope()) {
+			if (FetchCount == 0)
+				ForceRefresh();
+			return base.Get(key);
+		}
 	}
 
-	public override bool ContainsCachedItem(object key) {
-		if (FetchCount == 0)
-			ForceRefresh();
-
-		return base.ContainsCachedItem(key);
+	public override bool ContainsCachedItem(TKey key) {
+		if (key is null)
+			Guard.ArgumentNotNull(key, nameof(key));
+		using (EnterWriteScope()) {
+			if (FetchCount == 0)
+				ForceRefresh();
+			return base.ContainsCachedItem(key);
+		}
 	}
 
 	/// <summary>
 	/// Immediately refetches all items and resets fetch counters.
 	/// </summary>
 	public void ForceRefresh() {
-		Purge();
-		BulkLoad(BulkFetch());
-		FetchCount++;
+		using (EnterWriteScope()) {
+			Purge();
+			BulkLoad(BulkFetch());
+			FetchCount++;
+		}
 	}
 
 	public override void Purge() {
@@ -83,7 +85,7 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		FetchCount = 0;
 	}
 
-	public override void Remove(object key) {
+	public override void Remove(TKey key) {
 		throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
 	}
 

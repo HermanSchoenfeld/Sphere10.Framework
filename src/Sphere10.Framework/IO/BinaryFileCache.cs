@@ -20,8 +20,9 @@ public class BinaryFileCache : FileCacheBase<byte[]> {
 		long maxCapacity = int.MaxValue,
 		TimeSpan? expirationDuration = null,
 		IEqualityComparer<string> fileNameComparer = null,
-		ICacheReaper reaper = null
-	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper) {
+		ICacheReaper reaper = null,
+		double reapLevel = Sphere10FrameworkDefaults.CacheReapLevel
+	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, fileNameComparer, reaper, reapLevel) {
 	}
 
 	protected override long EstimateSize(byte[] value)

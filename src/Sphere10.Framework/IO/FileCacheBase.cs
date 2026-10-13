@@ -19,8 +19,9 @@ public abstract class FileCacheBase<TContent> : CacheBase<string, TContent> {
 		long maxCapacity = int.MaxValue,
 		TimeSpan? expirationDuration = null,
 		IEqualityComparer<string> fileNameComparer = null,
-		ICacheReaper reaper = null
-	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, NullValuePolicy.Throw, StaleValuePolicy.CheckStaleOnDemand, fileNameComparer, reaper) {
+		ICacheReaper reaper = null,
+		double reapLevel = Sphere10FrameworkDefaults.CacheReapLevel
+	) : base(reapStrategy, expirationStrategy, maxCapacity, expirationDuration, NullValuePolicy.Throw, StaleValuePolicy.CheckStaleOnDemand, fileNameComparer, reaper, reapLevel) {
 	}
 
 	/// <summary>
@@ -33,12 +34,28 @@ public abstract class FileCacheBase<TContent> : CacheBase<string, TContent> {
 	/// A stale file will result in a re-fetching of that file TRUE. When FALSE, the cache re-uses the cached item.
 	/// Scenarios:
 	///   - file does not exist, stale = !RetainCacheOnDelete  (this means if Retain is true, it is not stale and value is reused)
-	///   - file does exist and time is same since last fetch, stale = false 
-	///   - file does exist and time is different to last fetch, stale = true
+	///   - file does exist and its UTC modification time and length match the captured source version, stale = false
+	///   - file does exist and its captured source version differs, stale = true
 	/// </remarks>	
-	protected override bool CheckStaleness(string key, CachedItem<TContent> item)
-		=> !File.Exists(key)
+	protected override bool CheckStaleness(string key, CachedItem<TContent> item) {
+		var sourceVersion = ReadSourceVersion(key);
+		return !sourceVersion.HasValue
 			? !RetainCacheOnDelete
-			: item.FetchedOn < File.GetLastWriteTime(key);
+			: item is not FileCachedItem fileItem || fileItem.SourceVersion != sourceVersion;
+	}
+
+	protected override CachedItem<TContent> NewCachedItem(string key, TContent value)
+		=> new FileCachedItem { Value = value, SourceVersion = ReadSourceVersion(key) };
+
+	private static FileSourceVersion? ReadSourceVersion(string key) {
+		var file = new FileInfo(key);
+		return file.Exists ? new FileSourceVersion(file.LastWriteTimeUtc, file.Length) : null;
+	}
+
+	private readonly record struct FileSourceVersion(DateTime LastWriteTimeUtc, long Length);
+
+	private sealed class FileCachedItem : CachedItem<TContent> {
+		public FileSourceVersion? SourceVersion { get; init; }
+	}
 }
 

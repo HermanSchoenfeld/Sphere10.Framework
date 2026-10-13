@@ -35,6 +35,7 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 |---|---|
 | [Framework reuse](guidelines/patterns/framework-reuse.md) | Reuse existing layers and adopt changes in real consumers. |
 | [Type hierarchies](guidelines/patterns/type-hierarchies.md) | Contracts, abstract foundations, concrete products and decorators. |
+| [Projection adapters](guidelines/patterns/projections.md) | Typed source implementations exposed through another representation. |
 | [Sync/async operations](guidelines/patterns/sync-async.md) | Directional bases, completion, cancellation and disposal. |
 | [Interface bridges](guidelines/patterns/interface-bridges.md) | Inline projections between specialized and base contracts. |
 | [Application ownership](guidelines/patterns/application-ownership.md) | Runtime parents, definitions, plugins and lifecycle ownership. |
@@ -166,6 +167,7 @@ docs/
     └── patterns/
         ├── framework-reuse.md
         ├── type-hierarchies.md
+        ├── projections.md
         ├── sync-async.md
         ├── interface-bridges.md
         ├── application-ownership.md
@@ -197,6 +199,7 @@ docs/
 | [guidelines/patterns-and-practices.md](guidelines/patterns-and-practices.md) | Task index for focused pattern guides |
 | [guidelines/patterns/framework-reuse.md](guidelines/patterns/framework-reuse.md) | Reuse and adoption in real consumers |
 | [guidelines/patterns/type-hierarchies.md](guidelines/patterns/type-hierarchies.md) | Contract, inheritance, concrete and decorator responsibilities |
+| [guidelines/patterns/projections.md](guidelines/patterns/projections.md) | Conversion directions, typed cores and projected views |
 | [guidelines/patterns/sync-async.md](guidelines/patterns/sync-async.md) | Directional execution, completion, cancellation and disposal |
 | [guidelines/patterns/interface-bridges.md](guidelines/patterns/interface-bridges.md) | Inline specialized interface projections |
 | [guidelines/patterns/application-ownership.md](guidelines/patterns/application-ownership.md) | Runtime structure, lifecycle and ownership |

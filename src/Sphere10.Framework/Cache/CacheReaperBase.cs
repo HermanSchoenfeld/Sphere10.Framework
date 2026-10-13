@@ -9,20 +9,18 @@
 namespace Sphere10.Framework;
 
 /// <summary>
-/// Base implementation for cache reapers that enforces registration semantics.
+/// Inheritance foundation for isolated and shared-capacity cache reapers.
 /// </summary>
-public abstract class CacheReaperBase : ICacheReaper {
+public abstract class CacheReaperBase : SynchronizedObject, ICacheReaper {
 
-	/// <inheritdoc />
-	public abstract void Register(ICache cache);
+	public abstract void Register(ICacheBase cache);
 
-	/// <inheritdoc />
-	public abstract void Deregister(ICache cache);
+	public abstract void Deregister(ICacheBase cache);
 
-	/// <inheritdoc />
 	public abstract long AvailableSpace();
 
-	/// <inheritdoc />
-	public abstract long MakeSpace(ICache requestingCache, long requestedBytes);
-}
+	public virtual long AvailableSpace(ICacheBase requestingCache) => AvailableSpace();
 
+	public abstract long MakeSpace(ICacheBase requestingCache, long requestedSpace);
+
+}

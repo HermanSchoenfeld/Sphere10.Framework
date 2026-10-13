@@ -335,6 +335,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "patterns", "patterns", "{AF
 		..\docs\guidelines\patterns\framework-utilities.md = ..\docs\guidelines\patterns\framework-utilities.md
 		..\docs\guidelines\patterns\interface-bridges.md = ..\docs\guidelines\patterns\interface-bridges.md
 		..\docs\guidelines\patterns\logging.md = ..\docs\guidelines\patterns\logging.md
+		..\docs\guidelines\patterns\projections.md = ..\docs\guidelines\patterns\projections.md
 		..\docs\guidelines\patterns\resource-scopes.md = ..\docs\guidelines\patterns\resource-scopes.md
 		..\docs\guidelines\patterns\scheduling.md = ..\docs\guidelines\patterns\scheduling.md
 		..\docs\guidelines\patterns\serialization.md = ..\docs\guidelines\patterns\serialization.md

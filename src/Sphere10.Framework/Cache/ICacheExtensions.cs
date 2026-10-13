@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,6 +16,18 @@ namespace Sphere10.Framework;
 /// Convenience extensions for working with cache implementations.
 /// </summary>
 public static class ICacheExtensions {
+
+	/// <summary>Creates an explicit object view that borrows the typed cache and shares its live entry metadata.</summary>
+	public static ObjectCacheProjection<TKey, TValue> AsObjectCache<TKey, TValue>(this ICache<TKey, TValue> cache) => new(cache);
+
+	/// <summary>Creates a borrowed cache view with explicit forward and inverse key/value conversions.</summary>
+	public static ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> AsProjection<TKey, TValue, TProjectedKey, TProjectedValue>(
+		this ICache<TKey, TValue> cache,
+		Func<TKey, TProjectedKey> keyProjection,
+		Func<TProjectedKey, TKey> inverseKeyProjection,
+		Func<TValue, TProjectedValue> valueProjection,
+		Func<TProjectedValue, TValue> inverseValueProjection
+	) => new(cache, keyProjection, inverseKeyProjection, valueProjection, inverseValueProjection);
 
 	/// <summary>
 	/// Returns all currently cached values, forcing an initial bulk fetch when applicable.

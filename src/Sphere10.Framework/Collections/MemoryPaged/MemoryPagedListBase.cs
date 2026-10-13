@@ -54,10 +54,10 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 				NotifyPageAccessed(memPage);
 				return memPage;
 			},
-			sizeEstimator: p => (uint)pageSize,
+			sizeEstimator: p => pageSize,
 			reapStrategy: CacheReapPolicy.LeastUsed,
 			expirationStrategy: ExpirationPolicy.SinceLastAccessedTime,
-			maxCapacity: (uint)maxMemory
+			maxCapacity: maxMemory
 		);
 
 		_loadedPages.ItemRemoved += (page, key) => {

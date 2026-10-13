@@ -53,8 +53,12 @@ public class SessionCache<K, T> : CacheBase<K, T> {
 	}
 
 	public override void Dispose() {
-		_cleaner.Stop();
-		_cleaner.Dispose();
+		try {
+			_cleaner.Stop();
+			_cleaner.Dispose();
+		} finally {
+			base.Dispose();
+		}
 	}
 
 	protected override long EstimateSize(T value) => 0;
