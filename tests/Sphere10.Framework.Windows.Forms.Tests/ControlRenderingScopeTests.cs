@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections;
+using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
@@ -192,6 +193,39 @@ public class ControlRenderingScopeTests {
 		var disposal = scope.DisposeAsync();
 		Assert.That(disposal.IsCompletedSuccessfully, Is.True);
 		Assert.That(panel.EnableRedrawCount, Is.EqualTo(1));
+	}
+
+	[TestCase(false, false)]
+	[TestCase(true, false)]
+	[TestCase(false, true)]
+	[TestCase(true, true)]
+	public void RetainedParentRestoresItsChildsOwnNativeVisibility(bool hideChild, bool declaredDefault) {
+		using var form = new Form { StartPosition = FormStartPosition.Manual, Location = new Point(-19000, -19000) };
+		using var parent = new Panel { Dock = DockStyle.Fill };
+		using Control child = declaredDefault ? new DefaultHiddenComboBox() : new ComboBox();
+		child.Bounds = new Rectangle(10, 10, 180, 24);
+		form.Controls.Add(parent);
+		parent.Controls.Add(child);
+		form.Show();
+		System.Windows.Forms.Application.DoEvents();
+		Assert.That(Sphere10.Framework.Windows.WinAPI.USER32.IsWindowVisible(child.Handle), Is.True);
+		using (parent.EnterRenderingScope()) {
+			parent.Hide();
+			if (hideChild)
+				child.Hide();
+		}
+		parent.Show();
+		System.Windows.Forms.Application.DoEvents();
+		Assert.That(child.Visible, Is.EqualTo(!hideChild));
+		Assert.That(Sphere10.Framework.Windows.WinAPI.USER32.IsWindowVisible(child.Handle), Is.EqualTo(!hideChild), "Showing a retained parent must restore requested native visibility without resurrecting explicitly hidden children.");
+	}
+
+	private sealed class DefaultHiddenComboBox : ComboBox {
+		[DefaultValue(false)]
+		public new bool Visible {
+			get => base.Visible;
+			set => base.Visible = value;
+		}
 	}
 
 	private class CountingPanel : Panel {
