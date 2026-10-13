@@ -33,4 +33,6 @@ Original three-mix ObjectSpace confirmations retain an explicit limitation: thei
 
 Retain original failed cases with their attributed errors and exclude them from recommendations. The original BigEndian failures remain preserved alongside the separate verified fixed-endian run. New defaults preserve explicit parameters and existing storage layouts; measurements do not authorize silently migrating persisted nodes or transaction pages.
 
-The repository's `.gitattributes` preserves the evidence directory's original bytes and exporter whitespace across Windows and Linux checkouts. Console logs are explicitly tracked as evidence; local worker DLLs remain ignored. Do not normalize raw reports or rewrite captures to make formatting checks pass.
+New campaign subdirectories are ignored local output, including raw reports, console logs, per-iteration metrics and generated worker files. Existing checked-in evidence and top-level reports/manifests remain versioned; `.gitignore` does not untrack historical evidence. A future evidence publication must be deliberate rather than staging a complete local run accidentally. Cache evidence fixtures skip when no local captures exist; ordinary workload correctness tests still run.
+
+The repository's `.gitattributes` preserves deliberately versioned evidence bytes and exporter whitespace across Windows and Linux checkouts. Local worker DLLs remain ignored. Do not normalize raw reports or rewrite captures to make formatting checks pass.

@@ -42,6 +42,7 @@ prints domain help; the launch profile supplies its benchmark selection explicit
 | --- | --- |
 | `object-spaces` | [ObjectSpace benchmarks](ObjectSpaces/README.md), storage/index configuration suites and [deterministic lab models](ObjectSpaces/Lab/README.md). |
 | `btrees` | [Regular/B+ and multimap trees](BTrees/README.md), six actual storage backends, key layouts, order/page/cache/buffer sweeps and leaf geometry. |
+| `caches` | [Typed/object key access and admission pressure](Caches/README.md), LRU/FIFO policies, minimal/quarter/half eviction batches and verified fetch/victim accounting. |
 | `study` | [Retained parameter studies](Studies/README.md), all three real workload mixes, exact replay plans, verified sample journals and evidence displayed by NUnit tests. |
 
 Each domain owns its benchmark classes, configuration, sample models and retained
@@ -54,7 +55,7 @@ boundaries. Keep shared runner concerns at the root when another domain needs th
 The existing ObjectSpace workloads, configuration sweeps and [measured pilot
 evidence](ObjectSpaces/results/pilot-btree-file.md) are retained. Dry checks prove
 execution; they do not select a preferred configuration. [Profiler tests](../../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md)
-cover the dispatcher, ObjectSpace and B-tree correctness, evidence eligibility,
+cover the dispatcher, ObjectSpace, B-tree and cache correctness, evidence eligibility,
 and the recorded decisions. Run the `RecordedStudyResults` and
 `RecordedBenchmarkDotNetConfirmations` fixtures in Visual Studio Test Explorer
 to see the tables, samples, exact configurations and attached reports. The tests

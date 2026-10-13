@@ -16,7 +16,10 @@
 /agents/.local-alias-state.json
 
 # Build results
-/BenchmarkDotNet.Artifacts/
+BenchmarkDotNet.Artifacts/
+
+# Profiler runs are local output; test source and top-level reports remain visible.
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/*/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -112,7 +115,6 @@ dlldata.c
 *.tlh
 *.tmp_proj
 *.log
-!/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.log
 /tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.dll
 /tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.exe
 /tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.pdb
