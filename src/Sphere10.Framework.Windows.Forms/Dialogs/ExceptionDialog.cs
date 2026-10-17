@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class ExceptionDialog : DialogEx {
+public partial class ExceptionDialog : DialogEx {
 
 	public ExceptionDialog() : this(string.Empty, new Exception()) {
 
@@ -12,6 +12,7 @@ public class ExceptionDialog : DialogEx {
 
 	private ExceptionDialog(string title, Exception error)
 		: base(SystemIconType.Error, title, error.ToDisplayString(), false, "&Close", "&Detail") {
+		InitializeComponent();
 		Exception = error;
 	}
 
@@ -36,10 +37,12 @@ public class ExceptionDialog : DialogEx {
 		if (System.Windows.Forms.Application.OpenForms.Count > 0) {
 			await System.Windows.Forms.Application.OpenForms[0].InvokeAsyncEx(async _ => {
 				using var form = new ExceptionDialog(title, error);
+				form.InitializeModalOwner(owner);
 				await form.ShowDialogAsync(owner);
 			});
 		} else {
 			using var form = new ExceptionDialog(title, error);
+			form.InitializeModalOwner(owner);
 			await form.ShowDialogAsync(owner);
 		}
 	}

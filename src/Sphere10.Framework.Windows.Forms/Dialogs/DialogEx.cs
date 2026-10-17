@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -47,16 +48,6 @@ public partial class DialogEx : FormEx {
 		this.Text = title;
 
 
-		// determine size of form based on label/text
-		if (!_textLabel.CanTextFit(text)) {
-			var oldSize = _textLabel.Size;
-			var newSize = _textLabel.FitSize(text, oldSize.Width);
-
-			// we resize the form, not the label since the label is anchored to the form
-			var heightDiff = newSize.Height - oldSize.Height;
-			_textLabel.Height += (int)Math.Round(heightDiff * AutoScaleFactor.Height);
-			_textLabelPanel.VerticalScroll.Visible = true;
-		}
 		_textLabel.Text = text;
 
 		for (var i = 0; i < buttonNames.Length; i++) {
@@ -108,6 +99,77 @@ public partial class DialogEx : FormEx {
 		_pictureBoxEx.SystemIcon = iconType;
 	}
 
+	protected override void OnLoad(EventArgs e) {
+		if (!DesignMode && !Tools.Runtime.IsDesignMode)
+			FitMessageToWorkingArea();
+		base.OnLoad(e);
+	}
+
+	protected void InitializeModalOwner(IWin32Window owner) {
+		if (owner is not Form ownerForm)
+			return;
+		Owner = ownerForm;
+		if (IsHandleCreated)
+			return;
+		// CenterParent uses default coordinates during handle creation. Initialize on the owner's monitor first to keep DPI scaling and anchors consistent.
+		var startPosition = StartPosition;
+		StartPosition = FormStartPosition.Manual;
+		Location = ownerForm.Location;
+		using var positionState = Tools.Scope.ExecuteOnDispose(() => StartPosition = startPosition);
+		_ = Handle;
+	}
+
+	private void FitMessageToWorkingArea() {
+		var nativeOwner = IsHandleCreated ? WinAPI.USER32.GetWindow(Handle, WinAPI.USER32.GetWindow_Cmd.GW_OWNER) : IntPtr.Zero;
+		var monitor = Owner != null ? Screen.FromControl(Owner) : nativeOwner != IntPtr.Zero ? Screen.FromHandle(nativeOwner) : Screen.FromControl(this);
+		var workingArea = monitor.WorkingArea;
+		var scale = DeviceDpi / 96.0;
+		var margin = (int)Math.Round(16 * scale);
+		var maximum = new Size(Math.Min((int)Math.Round(900 * scale), Math.Max(1, workingArea.Width - margin * 2)),
+			Math.Min((int)Math.Round(780 * scale), Math.Max(1, workingArea.Height - margin * 2)));
+		if (MaximumSize.Width > 0) maximum.Width = Math.Min(maximum.Width, MaximumSize.Width);
+		if (MaximumSize.Height > 0) maximum.Height = Math.Min(maximum.Height, MaximumSize.Height);
+		var frame = Size - ClientSize;
+		var maximumClient = new Size(Math.Max(1, maximum.Width - frame.Width), Math.Max(1, maximum.Height - frame.Height));
+		var baseline = ClientSize;
+		var horizontalInsets = baseline.Width - _textLabelPanel.Width + _textLabel.Left + _textLabelPanel.Padding.Right;
+		var verticalInsets = baseline.Height - _textLabelPanel.Height + _textLabel.Top + _textLabelPanel.Padding.Bottom;
+		var width = Math.Min(baseline.Width, maximumClient.Width);
+		var requiredHeight = MeasureMessageHeight(Math.Max(1, width - horizontalInsets)) + verticalInsets;
+		// Widen only while it reduces wrapping and avoids an unnecessarily tall confirmation.
+		while (width < maximumClient.Width && requiredHeight > Math.Max(baseline.Height, width * 0.7)) {
+			var wider = Math.Min(maximumClient.Width, width + (int)Math.Round(80 * scale));
+			var shorter = MeasureMessageHeight(Math.Max(1, wider - horizontalInsets)) + verticalInsets;
+			if (shorter >= requiredHeight) break;
+			width = wider;
+			requiredHeight = shorter;
+		}
+		_textLabelPanel.AutoScroll = false;
+		_textLabelPanel.AutoScrollMinSize = Size.Empty;
+		MaximumSize = maximum;
+		ClientSize = new Size(width, Math.Min(maximumClient.Height, Math.Max(baseline.Height, requiredHeight)));
+		PerformLayout();
+		var textWidth = Math.Max(1, _textLabelPanel.ClientSize.Width - _textLabel.Left - _textLabelPanel.Padding.Right);
+		var textHeight = MeasureMessageHeight(textWidth);
+		var availableHeight = Math.Max(1, _textLabelPanel.ClientSize.Height - _textLabel.Top - _textLabelPanel.Padding.Bottom);
+		var scroll = textHeight > availableHeight;
+		if (scroll) {
+			textWidth = Math.Max(1, textWidth - SystemInformation.VerticalScrollBarWidth);
+			textHeight = MeasureMessageHeight(textWidth);
+		}
+		_textLabel.Size = new Size(textWidth, textHeight);
+		_textLabelPanel.AutoScrollMinSize = scroll ? new Size(0, _textLabel.Top + textHeight + _textLabelPanel.Padding.Bottom) : Size.Empty;
+		_textLabelPanel.AutoScroll = scroll;
+		var centeredOn = StartPosition == FormStartPosition.CenterParent && Owner != null ? Owner.Bounds : workingArea;
+		var location = StartPosition is FormStartPosition.CenterParent or FormStartPosition.CenterScreen
+			? new Point(centeredOn.Left + (centeredOn.Width - Width) / 2, centeredOn.Top + (centeredOn.Height - Height) / 2)
+			: Location;
+		Location = new Point(Math.Clamp(location.X, workingArea.Left, Math.Max(workingArea.Left, workingArea.Right - Width)),
+			Math.Clamp(location.Y, workingArea.Top, Math.Max(workingArea.Top, workingArea.Bottom - Height)));
+	}
+
+	private int MeasureMessageHeight(int width) => Math.Max(_textLabel.Font.Height, _textLabel.GetPreferredSize(new Size(width, 0)).Height) + 4;
+
 	public bool AlwaysFlag { get; private set; }
 
 	public static Task<DialogResult> ShowAsync(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icons)
@@ -139,6 +201,7 @@ public partial class DialogEx : FormEx {
 	public static async Task<DialogExResult> ShowAsync(IWin32Window owner, SystemIconType iconType, string title, string text, CancellationToken cancellationToken, params string[] buttonNames) {
 		cancellationToken.ThrowIfCancellationRequested();
 		using var dialog = new DialogEx(iconType, title, text, false, buttonNames);
+		dialog.InitializeModalOwner(owner);
 		dialog.StartPosition = FormStartPosition.CenterParent;
 		await dialog.ShowDialogAsync(owner).WaitAsync(cancellationToken);
 		return dialog.DialogResult;
