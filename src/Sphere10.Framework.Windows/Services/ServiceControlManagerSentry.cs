@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework;
 
 namespace Sphere10.Framework.Windows;
 
@@ -33,4 +33,3 @@ public class ServiceControlManagerSentry : ProcessSentry {
 	}
 
 }
-
