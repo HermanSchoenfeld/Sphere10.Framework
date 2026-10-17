@@ -21,8 +21,8 @@ public static class Windows {
 	[ThreadStatic] private static RegistryUtil _registry;
 	public static RegistryUtil Registry => _registry ??= new();
 
-	[ThreadStatic] private static ServicesUtil _services;
-	public static ServicesUtil Services => _services ??= new();
+	[ThreadStatic] private static ServiceUtil _services;
+	public static ServiceUtil Services => _services ??= new();
 
 	[ThreadStatic] private static PrivilegeUtil _security;
 	public static PrivilegeUtil Security => _security ??= new();
