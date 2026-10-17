@@ -21,21 +21,21 @@ public class FileAppendTextWriter : TextWriterBase {
 	/// <summary>
 	/// This is the default encoding used by StreamWriter, which File.AppendAllText uses internally.
 	/// </summary>
-	private static Encoding _swEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+	private static readonly Encoding _defaultEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+	private readonly Encoding _encoding;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="FileAppendTextWriter"/> class.
 	/// </summary>
 	/// <param name="filePath">The file path.</param>
 	/// <remarks></remarks>
-	public FileAppendTextWriter(string filePath, bool createIfMissing = false) : this(filePath, _swEncoding, createIfMissing) {
-		FilePath = filePath;
-		if (createIfMissing && !File.Exists(FilePath))
-			Tools.FileSystem.CreateBlankFile(FilePath, true);
+	public FileAppendTextWriter(string filePath, bool createIfMissing = false)
+		: this(filePath, _defaultEncoding, createIfMissing) {
 	}
 
 	public FileAppendTextWriter(string filePath, Encoding encoding, bool createIfMissing) {
-		_swEncoding = encoding;
+		Guard.ArgumentNotNull(encoding, nameof(encoding));
+		_encoding = encoding;
 		FilePath = filePath;
 		if (createIfMissing && !File.Exists(FilePath))
 			Tools.FileSystem.CreateBlankFile(FilePath, true);
@@ -43,11 +43,13 @@ public class FileAppendTextWriter : TextWriterBase {
 
 	public string FilePath { get; set; }
 
+	public override Encoding Encoding => _encoding;
+
 	protected override void InternalWrite(string value)
-		=> File.AppendAllText(FilePath, value, _swEncoding);
+		=> File.AppendAllText(FilePath, value, _encoding);
 
 	protected override Task InternalWriteAsync(string value)
-		=> File.AppendAllTextAsync(FilePath, value, _swEncoding);
+		=> File.AppendAllTextAsync(FilePath, value, _encoding);
 
 }
 
