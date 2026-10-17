@@ -11,8 +11,11 @@ partial class SplashScreen {
 	/// </summary>
 	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 	protected override void Dispose(bool disposing) {
-		if (disposing && (components != null)) {
-			components.Dispose();
+		if (disposing) {
+			components?.Dispose();
+			_pictureBox?.Image?.Dispose();
+			if (_pictureBox != null)
+				_pictureBox.Image = null;
 		}
 		base.Dispose(disposing);
 	}
@@ -27,7 +30,9 @@ partial class SplashScreen {
 		_pictureBox = new System.Windows.Forms.PictureBox();
 		_titleLabel = new System.Windows.Forms.Label();
 		_subTitleLabel = new System.Windows.Forms.Label();
+		_progressPanel = new System.Windows.Forms.Panel();
 		((System.ComponentModel.ISupportInitialize)(_pictureBox)).BeginInit();
+		_progressPanel.SuspendLayout();
 		SuspendLayout();
 		// 
 		// _pictureBox
@@ -45,7 +50,7 @@ partial class SplashScreen {
 		_titleLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 		_titleLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
 		_titleLabel.ForeColor = System.Drawing.Color.FromArgb(64, 64, 64);
-		_titleLabel.Location = new System.Drawing.Point(12, 348);
+		_titleLabel.Location = new System.Drawing.Point(12, 8);
 		_titleLabel.Name = "_titleLabel";
 		_titleLabel.Size = new System.Drawing.Size(576, 22);
 		_titleLabel.TabIndex = 1;
@@ -55,10 +60,20 @@ partial class SplashScreen {
 		_subTitleLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 		_subTitleLabel.Font = new System.Drawing.Font("Segoe UI", 8.25F);
 		_subTitleLabel.ForeColor = System.Drawing.Color.Gray;
-		_subTitleLabel.Location = new System.Drawing.Point(12, 372);
+		_subTitleLabel.Location = new System.Drawing.Point(12, 32);
 		_subTitleLabel.Name = "_subTitleLabel";
 		_subTitleLabel.Size = new System.Drawing.Size(576, 20);
 		_subTitleLabel.TabIndex = 2;
+		//
+		// _progressPanel
+		//
+		_progressPanel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+		_progressPanel.BackColor = System.Drawing.Color.White;
+		_progressPanel.Location = new System.Drawing.Point(0, 340);
+		_progressPanel.Name = "_progressPanel";
+		_progressPanel.Size = new System.Drawing.Size(600, 60);
+		_progressPanel.Controls.Add(_titleLabel);
+		_progressPanel.Controls.Add(_subTitleLabel);
 		// 
 		// SplashScreen
 		// 
@@ -67,15 +82,15 @@ partial class SplashScreen {
 		BackColor = System.Drawing.Color.White;
 		ClientSize = new System.Drawing.Size(600, 400);
 		ControlBox = false;
-		Controls.Add(_titleLabel);
-		Controls.Add(_subTitleLabel);
 		Controls.Add(_pictureBox);
+		Controls.Add(_progressPanel);
 		FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		Name = "SplashScreen";
 		ShowInTaskbar = false;
 		StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 		TopMost = true;
 		((System.ComponentModel.ISupportInitialize)(_pictureBox)).EndInit();
+		_progressPanel.ResumeLayout(false);
 		ResumeLayout(false);
 	}
 
@@ -84,4 +99,5 @@ partial class SplashScreen {
 	private System.Windows.Forms.PictureBox _pictureBox;
 	private System.Windows.Forms.Label _titleLabel;
 	private System.Windows.Forms.Label _subTitleLabel;
+	private System.Windows.Forms.Panel _progressPanel;
 }

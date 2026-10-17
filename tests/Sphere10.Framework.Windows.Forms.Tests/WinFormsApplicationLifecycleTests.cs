@@ -60,6 +60,8 @@ public class WinFormsApplicationLifecycleTests {
 		using var block = new WinFormsApplicationBlockBuilder().WithName("Logging block")
 			.WithDefaultScreen<LoggingScreen>("Logging screen", ScreenActivationMode.PermanentSingleton).Build();
 		using var bitmap = new Bitmap(32, 32);
+		using var icon = (Icon)SystemIcons.Information.Clone();
+		var previousIcon = Sphere10Framework.Instance.GetAppIcon();
 		var splashEnabledField = typeof(Sphere10FrameworkExtensions).GetField("_splashEnabled", BindingFlags.Static | BindingFlags.NonPublic);
 		var splashImageField = typeof(Sphere10FrameworkExtensions).GetField("_splashImage", BindingFlags.Static | BindingFlags.NonPublic);
 		var originalSplashEnabled = splashEnabledField.GetValue(null);
@@ -87,6 +89,7 @@ public class WinFormsApplicationLifecycleTests {
 			System.Windows.Forms.Application.ExitThread();
 		};
 		var builder = Sphere10Framework.Instance.BuildWinFormsApplication()
+			.UseIcon(icon)
 			.UseMainForm<LifecycleMainForm>(mainForm => form = mainForm)
 			.UseModule(new CallbackModule(() => modulesInitialized = true))
 			.ConfigureServices(services => {
@@ -98,6 +101,8 @@ public class WinFormsApplicationLifecycleTests {
 					return application;
 				});
 				services.AddTransient<IApplicationInitializer>(provider => new CallbackInitializer(() => {
+					Assert.That(form.Icon, Is.SameAs(icon), "The configured application icon must reach the actual form before initializers or child dialogs run.");
+					Assert.That(provider.GetRequiredService<IApplicationIconProvider>().ApplicationIcon, Is.SameAs(icon));
 					var root = provider.GetRequiredService<IApplication>();
 					Assert.That(root, Is.SameAs(application));
 					Assert.That(root.Logger, Is.SameAs(rootLogger));
@@ -112,6 +117,7 @@ public class WinFormsApplicationLifecycleTests {
 					root.Logger.Info("Global task uses the executing application logger");
 				}));
 			});
+		using var restoreIcon = Tools.Scope.ExecuteOnDispose(() => builder.UseIcon(previousIcon));
 		if (showSplash)
 			builder.UseSplashScreen(bitmap);
 		closeWindow.Start();
@@ -418,6 +424,7 @@ public class WinFormsApplicationLifecycleTests {
 	public void RunnerRunsShutdownTasksBeforeClosingWindowAndDisposingServices(bool failFinalizer, bool showSplash, bool failFrameworkFinalizer, bool vetoFirstExit, bool exitWhenShown) {
 		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
 		var events = new List<string>();
+		var configuredSplashes = new List<SplashScreen>();
 		var expectedFailure = new InvalidOperationException("Application finalizer failed.");
 		var expectedFrameworkFailure = new InvalidOperationException("Framework finalizer failed.");
 		LifecycleMainForm form = null;
@@ -432,9 +439,12 @@ public class WinFormsApplicationLifecycleTests {
 		var splashImageField = typeof(Sphere10FrameworkExtensions).GetField("_splashImage", BindingFlags.Static | BindingFlags.NonPublic);
 		var originalSplashEnabled = splashEnabledField.GetValue(null);
 		var originalSplashImage = splashImageField.GetValue(null);
+		var splashConfigurationField = typeof(Sphere10FrameworkExtensions).GetField("_configureSplash", BindingFlags.Static | BindingFlags.NonPublic);
+		var originalSplashConfiguration = splashConfigurationField.GetValue(null);
 		using var restoreSplash = Tools.Scope.ExecuteOnDispose(() => {
 			splashEnabledField.SetValue(null, originalSplashEnabled);
 			splashImageField.SetValue(null, originalSplashImage);
+			splashConfigurationField.SetValue(null, originalSplashConfiguration);
 		});
 		splashEnabledField.SetValue(null, false);
 		using var block = new WinFormsApplicationBlockBuilder()
@@ -501,8 +511,11 @@ public class WinFormsApplicationLifecycleTests {
 					Assert.That(form.Visible, Is.False);
 					Assert.That(provider.GetRequiredService<IApplication>().Blocks, Is.EqualTo(new[] { block }));
 					provider.GetRequiredService<ProviderResource>();
-					if (showSplash)
+					if (showSplash) {
 						startupSplash = System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>().Single(splash => splash.Visible);
+						Assert.That(configuredSplashes, Does.Contain(startupSplash));
+						Assert.That(startupSplash.ProgressOverImage, Is.True);
+					}
 					events.Add("Application initialized");
 				}));
 				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(IApplication), (_, _) => new AsyncCallbackFinalizer(async () => {
@@ -516,6 +529,8 @@ public class WinFormsApplicationLifecycleTests {
 					if (showSplash) {
 						shutdownSplash = System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>().Single(splash => splash.Visible && !ReferenceEquals(splash, startupSplash));
 						Assert.That(shutdownSplash, Is.Not.SameAs(startupSplash), "Completed startup closes its splash; shutdown requires a fresh visible instance.");
+						Assert.That(configuredSplashes, Does.Contain(shutdownSplash), "The same consumer configuration must apply to the fresh shutdown splash.");
+						Assert.That(shutdownSplash.ProgressBackColor, Is.EqualTo(Color.FromArgb(25, 43, 64)));
 						Assert.That(shutdownSplash.Opacity, Is.EqualTo(1), "The shutdown splash appears immediately at full opacity.");
 						Assert.That(GetLabel(shutdownSplash, "_titleLabel").Text, Is.EqualTo("Finalizing"));
 						SystemLog.Info("Visible shutdown task");
@@ -540,7 +555,11 @@ public class WinFormsApplicationLifecycleTests {
 				services.AddSingleton<IApplicationFinalizer>(new CallbackFinalizer(() => events.Add("Framework shutdown completed")));
 			});
 		if (showSplash)
-			builder.UseSplashScreen(bitmap);
+			builder.UseSplashScreen(bitmap, splash => {
+				splash.ProgressOverImage = true;
+				splash.ProgressBackColor = Color.FromArgb(25, 43, 64);
+				configuredSplashes.Add(splash);
+			});
 		Tools.Exceptions.ExecuteCapturingException(builder.StartWinFormsApplication, out var failure);
 		Assert.That(watchdogFailure, Is.Null);
 		Assert.That(vetoed, Is.EqualTo(vetoFirstExit));
@@ -551,6 +570,7 @@ public class WinFormsApplicationLifecycleTests {
 		Assert.That(resource.IsDisposed, Is.True);
 		Assert.That(System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>(), Is.Empty);
 		Assert.That(GetGlobalLoggers(), Is.EqualTo(originalLoggers), "Both splash instances must release their global logger subscription.");
+		Assert.That(configuredSplashes.Count, Is.EqualTo(showSplash ? 2 : 0));
 		if (showSplash)
 			Assert.That(startupSplash.IsDisposed && shutdownSplash.IsDisposed, Is.True);
 		if (failFinalizer || failFrameworkFinalizer) {
@@ -578,6 +598,34 @@ public class WinFormsApplicationLifecycleTests {
 		Tools.Exceptions.ExecuteCapturingException(application.Initialize, out var failure);
 		Assert.That(failure, Is.InstanceOf<InvalidOperationException>());
 		Assert.That(form.RegisteredBlocks, Is.Empty, "The lifecycle guard must precede native block installation.");
+	}
+
+	[Test]
+	public void SplashProgressCanOverlayArtworkWithoutChangingDefaultLayoutOrErrorDetails() {
+		using var image = new Bitmap(600, 340);
+		using var splash = new SplashScreen(image);
+		Assert.That(splash.ClientSize, Is.EqualTo(new Size(600, 400)), "Existing callers keep the separate default footer.");
+		splash.ProgressOverImage = true;
+		splash.ProgressBounds = new Rectangle(0, 278, 600, 62);
+		splash.ProgressBackColor = Color.FromArgb(25, 43, 64);
+		splash.ProgressTitleColor = Color.White;
+		splash.ProgressMessageColor = Color.LightGray;
+		splash.ProgressTextFormatter = text => text == "OwnedInitializer" ? "Preparing Owned Resources" : text;
+		splash.UpdateTitle("Initializing");
+		splash.UpdateSubTitle("OwnedInitializer");
+		Assert.That(splash.ClientSize, Is.EqualTo(new Size(600, 340)));
+		Assert.That(splash.Controls.Find("_pictureBox", true).Single().Bounds, Is.EqualTo(splash.ClientRectangle), "The artwork must not shrink when progress moves over it.");
+		Assert.That(GetLabel(splash, "_subTitleLabel").Text, Is.EqualTo("Preparing Owned Resources"));
+		Assert.That(GetLabel(splash, "_titleLabel").Parent.Bounds, Is.EqualTo(splash.ProgressBounds));
+		const string error = "Owned access failure: 0x80070005 at C:\\Resource\\file.dat";
+		splash.UpdateSubTitle(error);
+		Assert.That(GetLabel(splash, "_subTitleLabel").Text, Is.EqualTo(error));
+		Assert.That(() => splash.ProgressBounds = new Rectangle(0, 0, 600, 20), Throws.InstanceOf<ArgumentException>());
+		splash.ProgressOverImage = false;
+		Assert.That(splash.ClientSize, Is.EqualTo(new Size(600, 402)), "Moving the configured 62-pixel area below the image must retain the complete artwork.");
+		Assert.That(splash.ProgressBounds.Top, Is.EqualTo(340));
+		splash.Dispose();
+		Assert.That(image.Width, Is.EqualTo(600), "The splash owns its resized copy, while the supplied source image remains caller-owned.");
 	}
 
 	[Test]
