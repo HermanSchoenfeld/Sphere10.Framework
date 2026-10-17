@@ -8,6 +8,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework.Windows;
 
@@ -58,16 +63,49 @@ public class ProcessSignaler {
 	/// <param name="signal">The console control signal (use <see cref="WinAPI.KERNEL32.CTRL_C_EVENT"/> or <see cref="WinAPI.KERNEL32.CTRL_BREAK_EVENT"/>).</param>
 	/// <exception cref="InvalidOperationException">Thrown when the console cannot be attached.</exception>
 	public void SendConsoleSignal(int processId, uint signal) {
+		Guard.Argument(signal is WinAPI.KERNEL32.CTRL_C_EVENT or WinAPI.KERNEL32.CTRL_BREAK_EVENT, nameof(signal), "Choose CTRL+C or CTRL+BREAK.");
 		WinAPI.KERNEL32.FreeConsole();
 		if (!WinAPI.KERNEL32.AttachConsole(processId))
 			throw new InvalidOperationException($"Could not attach to console of process (PID {processId}). It may not be a console application.");
-		try {
-			WinAPI.KERNEL32.SetConsoleCtrlHandler(IntPtr.Zero, true);
-			WinAPI.KERNEL32.GenerateConsoleCtrlEvent(signal, 0);
-			WinAPI.KERNEL32.SetConsoleCtrlHandler(IntPtr.Zero, false);
-		} finally {
+		WinAPI.KERNEL32.ControlHandler handler = _ => true;
+		using var attachedConsole = Tools.Scope.ExecuteOnDispose(() => {
 			WinAPI.KERNEL32.FreeConsole();
-		}
+			WinAPI.KERNEL32.SetConsoleCtrlHandler(handler, false);
+			GC.KeepAlive(handler);
+		});
+		if (!WinAPI.KERNEL32.SetConsoleCtrlHandler(handler, true))
+			throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not protect the signal sender.");
+		if (!WinAPI.KERNEL32.GenerateConsoleCtrlEvent(signal, 0))
+			throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows rejected the console control signal.");
 	}
 
+	public string GetProcessName(int processId) {
+		using var process = Process.GetProcessById(processId);
+		return process.ProcessName;
+	}
+
+	public WindowsProcessInfo[] GetProcesses() => GetProcessesCore(null);
+
+	public Task<WindowsProcessInfo[]> GetProcessesAsync(CancellationToken cancellationToken = default)
+		=> Task.Run(() => GetProcessesCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
+
+	private static WindowsProcessInfo[] GetProcessesCore(Action checkpoint) {
+		checkpoint?.Invoke();
+		using var snapshot = WinAPI.KERNEL32.CreateToolhelp32Snapshot(WinAPI.KERNEL32.SnapshotProcesses, 0);
+		if (snapshot.IsInvalid)
+			throw new Win32Exception(Marshal.GetLastWin32Error());
+		var entry = new WinAPI.KERNEL32.PROCESSENTRY32 { Size = (uint)Marshal.SizeOf<WinAPI.KERNEL32.PROCESSENTRY32>() };
+		var result = new List<WindowsProcessInfo>();
+		if (!WinAPI.KERNEL32.Process32First(snapshot, ref entry))
+			throw new Win32Exception(Marshal.GetLastWin32Error());
+		do {
+			checkpoint?.Invoke();
+			result.Add(new WindowsProcessInfo((int)entry.ProcessId, (int)entry.ParentProcessId, entry.ExecutableFile, (int)entry.ThreadCount));
+		} while (WinAPI.KERNEL32.Process32Next(snapshot, ref entry));
+		var error = Marshal.GetLastWin32Error();
+		if (error != WinAPI.KERNEL32.ERROR_NO_MORE_FILES)
+			throw new Win32Exception(error);
+		checkpoint?.Invoke();
+		return result.ToArray();
+	}
 }

@@ -30,6 +30,9 @@ public static class Windows {
 	[ThreadStatic] private static ProcessSignaler _processes;
 	public static ProcessSignaler Processes => _processes ??= new();
 
+	[ThreadStatic] private static ThreadUtil _threads;
+	public static ThreadUtil Threads => _threads ??= new();
+
 	[ThreadStatic] private static Win32Util _win32;
 	public static Win32Util Win32 => _win32 ??= new();
 
