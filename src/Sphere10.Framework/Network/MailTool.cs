@@ -125,7 +125,16 @@ public static class Mail {
 
 		var requiresLogon = !string.IsNullOrEmpty(username);
 
-		var mailMessage = new MailMessage { Subject = subject, Body = body, IsBodyHtml = bodyHtml, From = new MailAddress(@from) };
+		// Own the message, retaining caller ownership of supplied attachments and alternate views.
+		using var mailMessage = new MailMessage();
+		using var detachBorrowedContent = Scope.ExecuteOnDispose(() => {
+			mailMessage.Attachments.Clear();
+			mailMessage.AlternateViews.Clear();
+		});
+		mailMessage.Subject = subject;
+		mailMessage.Body = body;
+		mailMessage.IsBodyHtml = bodyHtml;
+		mailMessage.From = new MailAddress(@from);
 
 		toRecipients.Distinct().ForEach(u => mailMessage.To.Add(new MailAddress(u)));
 
@@ -139,7 +148,7 @@ public static class Mail {
 
 		alternativeViews?.ForEach(av => mailMessage.AlternateViews.Add(av));
 
-		var smtpClient = new SmtpClient(smtpServer, port.Value);
+		using var smtpClient = new SmtpClient(smtpServer, port.Value);
 		if (requiresSSL) {
 			smtpClient.EnableSsl = true;
 		}
@@ -151,7 +160,7 @@ public static class Mail {
 		smtpClient.Send(mailMessage);
 	}
 
-	public static Task SendEmailAsync(
+	public static async Task SendEmailAsync(
 		string smtpServer,
 		string from,
 		string subject,
@@ -195,7 +204,16 @@ public static class Mail {
 
 		var requiresLogon = !string.IsNullOrEmpty(username);
 
-		var mailMessage = new MailMessage { Subject = subject, Body = body, IsBodyHtml = bodyHtml, From = new MailAddress(@from) };
+		// Own the message, retaining caller ownership of supplied attachments and alternate views.
+		using var mailMessage = new MailMessage();
+		using var detachBorrowedContent = Scope.ExecuteOnDispose(() => {
+			mailMessage.Attachments.Clear();
+			mailMessage.AlternateViews.Clear();
+		});
+		mailMessage.Subject = subject;
+		mailMessage.Body = body;
+		mailMessage.IsBodyHtml = bodyHtml;
+		mailMessage.From = new MailAddress(@from);
 
 		toRecipients.Distinct().ForEach(u => mailMessage.To.Add(new MailAddress(u)));
 
@@ -209,7 +227,7 @@ public static class Mail {
 
 		alternativeViews?.ForEach(av => mailMessage.AlternateViews.Add(av));
 
-		var smtpClient = new SmtpClient(smtpServer, port.Value);
+		using var smtpClient = new SmtpClient(smtpServer, port.Value);
 		if (requiresSSL) {
 			smtpClient.EnableSsl = true;
 		}
@@ -219,7 +237,8 @@ public static class Mail {
 			smtpClient.Credentials = new NetworkCredential(username, password, domain);
 		}
 
-		return smtpClient.SendMailAsync(mailMessage);
+		// Keep both resources alive until the actual send has completed or failed.
+		await smtpClient.SendMailAsync(mailMessage).ConfigureAwait(false);
 	}
 
 	public static IEnumerable<string> ParseEmailsFromCommaSeparatedList(string emails) 
