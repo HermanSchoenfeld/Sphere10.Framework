@@ -24,6 +24,9 @@ public static class Windows {
 	[ThreadStatic] private static FileUtil _files;
 	public static FileUtil Files => _files ??= new();
 
+	[ThreadStatic] private static ComputerUtil _computer;
+	public static ComputerUtil Computer => _computer ??= new();
+
 	[ThreadStatic] private static RegistryUtil _registry;
 	public static RegistryUtil Registry => _registry ??= new();
 
