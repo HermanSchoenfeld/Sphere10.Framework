@@ -16,6 +16,13 @@ namespace Sphere10.Framework.Windows;
 public static partial class WinAPI {
 
 	public static partial class USER32 {
+		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ExitWindowsEx(uint flags, uint reason);
+
+		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool LockWorkStation();
 		// ReSharper disable InconsistentNaming
 
 		#region Constants
@@ -1173,10 +1180,41 @@ public static partial class WinAPI {
 
 		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetCursorPos(out POINT point);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr WindowFromPoint(POINT point);
+
+		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, ref Point pptDst, ref Size psize, IntPtr hdcSrc, ref Point pptSrc, UInt32 crKey, [In] ref BLENDFUNCTION pblend, BlendFlags dwFlags);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern IntPtr GetWindowDC(IntPtr hWnd);
+
+		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetWindowRect(IntPtr window, out RECT rectangle);
+
+		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+		public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr GetThreadDpiAwarenessContext();
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr GetWindowDpiAwarenessContext(IntPtr window);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool AreDpiAwarenessContextsEqual(IntPtr first, IntPtr second);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern uint GetDpiForWindow(IntPtr window);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsIconic(IntPtr window);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
@@ -1335,6 +1373,207 @@ public static partial class WinAPI {
 		#endregion
 
 		// ReSharper restore InconsistentNaming
+
+		public const int WM_GETMINMAXINFO = 0x0024;
+		public const int WM_NCHITTEST = 0x0084;
+		public const int WM_MOUSEACTIVATE = 0x0021;
+		public const int MA_NOACTIVATE = 3;
+		public const int WM_NCCALCSIZE = 0x0083;
+		public const int WM_MOVING = 0x0216;
+		public const int WM_SIZING = 0x0214;
+		public const int WM_WINDOWPOSCHANGED = 0x0047;
+		public const int WM_PAINT = 0x000F;
+		public const int WM_ERASEBKGND = 0x0014;
+		public const int WM_PRINT = 0x0317;
+		public const int WM_PRINTCLIENT = 0x0318;
+		public const int WM_QUERYENDSESSION = 0x0011;
+		public const int WM_COMMAND = 0x0111;
+		public const int WM_KEYDOWN = 0x0100;
+		public const int WM_USER = 0x0400;
+		public const int WM_REFLECT = WM_USER + 0x1C00;
+		public const int WM_LBUTTONDOWN = 0x0201;
+		public const int WM_LBUTTONUP = 0x0202;
+		public const int CBN_DROPDOWN = 7;
+		public const int CBN_CLOSEUP = 8;
+		public const int GWL_STYLE = -16;
+		public const int WS_MINIMIZE = 0x20000000;
+		public const int WS_MAXIMIZE = 0x01000000;
+		public const int WS_EX_LAYOUTRTL = 0x400000;
+		public const int WS_EX_NOINHERITLAYOUT = 0x100000;
+		public const int WS_EX_NOACTIVATE = 0x08000000;
+		public const int WS_EX_TOPMOST = 0x00000008;
+		public const int WS_EX_TOOLWINDOW = 0x00000080;
+		public const int WS_EX_TRANSPARENT = 0x00000020;
+		public const int WS_EX_LAYERED = 0x00080000;
+		public const int HTTRANSPARENT = -1;
+		public const int HTCLIENT = 1;
+		public const int HTCAPTION = 2;
+		public const int HTLEFT = 10;
+		public const int HTRIGHT = 11;
+		public const int HTTOP = 12;
+		public const int HTTOPLEFT = 13;
+		public const int HTTOPRIGHT = 14;
+		public const int HTBOTTOM = 15;
+		public const int HTBOTTOMLEFT = 16;
+		public const int HTBOTTOMRIGHT = 17;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MINMAXINFO {
+			public Point Reserved;
+			public Size MaxSize;
+			public Point MaxPosition;
+			public Size MinTrackSize;
+			public Size MaxTrackSize;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct ICONINFO {
+			[MarshalAs(UnmanagedType.Bool)]
+			public bool fIcon;
+			public int xHotspot;
+			public int yHotspot;
+			public IntPtr hbmMask;
+			public IntPtr hbmColor;
+		}
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern IntPtr CreateIconIndirect(ref ICONINFO icon);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetIconInfo(IntPtr iconHandle, ref ICONINFO iconInfo);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool DestroyIcon(IntPtr iconHandle);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool DestroyCursor(IntPtr cursorHandle);
+
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Unicode)]
+		public static extern IntPtr SendMessage(HandleRef windowHandle, uint message, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ValidateRect(HandleRef windowHandle, IntPtr rectangle);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetUpdateRect(HandleRef windowHandle, out RECT rectangle, [MarshalAs(UnmanagedType.Bool)] bool erase);
+
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Unicode)]
+		public static extern IntPtr SendMessage(HandleRef windowHandle, uint message, IntPtr wParam, ref RICHEDIT.CHARFORMAT format);
+
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Unicode)]
+		public static extern IntPtr SendMessage(HandleRef windowHandle, uint message, IntPtr wParam, ref RECT rectangle);
+
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Unicode)]
+		public static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, ref RICHEDIT.FORMATRANGE format);
+		[DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = CharSet.Unicode)]
+		public static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, ref COMCTL32.TCITEM item);
+
+
+
+
+		public const uint WM_NULL = 0x0000;
+		public const uint WM_CLOSE = 0x0010;
+
+		public const uint WM_APP = 0x8000;
+
+		[Flags]
+		public enum SendMessageTimeoutFlags : uint {
+			Normal = 0,
+			Block = 0x0001,
+			AbortIfHung = 0x0002,
+			NoTimeoutIfNotHung = 0x0008,
+			ErrorOnExit = 0x0020
+		}
+
+		[UnmanagedFunctionPointer(CallingConvention.Winapi)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public delegate bool WindowEnumCallback(IntPtr window, IntPtr parameter);
+
+		public const uint PM_REMOVE = 0x0001;
+		public const uint QS_ALLINPUT = 0x04FF;
+		public const uint MWMO_INPUTAVAILABLE = 0x0004;
+		public const uint WM_QUIT = 0x0012;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MSG {
+			public IntPtr Window;
+			public uint Message;
+			public UIntPtr WParam;
+			public IntPtr LParam;
+			public uint Time;
+			public int PointX;
+			public int PointY;
+			public uint Private;
+		}
+
+		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool EnumThreadWindows(uint threadId, WindowEnumCallback callback, IntPtr parameter);
+
+		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool PeekMessageW(out MSG message, IntPtr window, uint firstMessage, uint lastMessage, uint removal);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool TranslateMessage(ref MSG message);
+
+		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
+		public static extern IntPtr DispatchMessageW(ref MSG message);
+
+		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsDialogMessageW(IntPtr dialog, ref MSG message);
+
+		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+		public static extern uint MsgWaitForMultipleObjectsEx(uint count, IntPtr handles, uint milliseconds, uint wakeMask, uint flags);
+
+		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern IntPtr CreateWindowExW(uint extendedStyle, string className, string windowName, uint style, int x, int y, int width, int height,
+			IntPtr parent, IntPtr menu, IntPtr instance, IntPtr parameter);
+
+		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool EnumWindows(WindowEnumCallback callback, IntPtr parameter);
+
+		[DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsWindow(IntPtr window);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsWindowEnabled(IntPtr window);
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+		public static extern int GetClassNameW(IntPtr window, StringBuilder className, int maximumLength);
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool PostMessageW(IntPtr window, uint message, UIntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool PostThreadMessageW(uint threadId, uint message, UIntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+		public static extern IntPtr SendMessageTimeoutW(IntPtr window, uint message, UIntPtr wParam, IntPtr lParam,
+			SendMessageTimeoutFlags flags, uint timeoutMilliseconds, out UIntPtr result);
+
+
+
+		public static readonly IntPtr HWND_BROADCAST = (IntPtr)0xFFFF;
+		public const uint WM_SETTINGCHANGE = 0x001A;
+		public const uint SMTO_ABORTIFHUNG = 0x0002;
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true)]
+		public static extern IntPtr SendMessageTimeoutW(IntPtr window, uint message, IntPtr wParam, string lParam, uint flags, uint timeoutMilliseconds, out UIntPtr result);
+
+
 	}
 
 }

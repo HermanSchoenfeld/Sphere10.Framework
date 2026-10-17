@@ -61,7 +61,7 @@ public static partial class WinAPI {
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 		public struct LOCALGROUP_MEMBERS_INFO_1 {
 			public IntPtr lgrmi1_sid;
-			public short lgrmi1_sidusage;
+			public int lgrmi1_sidusage;
 			public IntPtr lgrmi1_name;
 
 		}
@@ -70,7 +70,7 @@ public static partial class WinAPI {
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 		public struct LOCALGROUP_MEMBERS_INFO_2 {
 			public IntPtr lgrmi2_sid;
-			public short lgrmi2_sidusage;
+			public int lgrmi2_sidusage;
 			public IntPtr lgrmi2_domainandname;
 
 		}
@@ -528,10 +528,29 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.U4)]
 		public static extern NET_API_STATUS NetUserEnum([MarshalAs(UnmanagedType.LPWStr)] string servername, int level, int filter, out IntPtr bufptr, int prefmaxlen, out int entriesread, out int totalentries, out int resume_handle);
 
-		[DllImport("netapi32.dll")]
-		[return: MarshalAs(UnmanagedType.U4)]
-		public static extern NET_API_STATUS NetLocalGroupGetMembers([MarshalAs(UnmanagedType.LPWStr)] string servername, [MarshalAs(UnmanagedType.LPWStr)] string localgroupname, uint level, out IntPtr bufptr, uint prefmaxlen, out uint entriesread,
-		                                                            out uint totalentries, out int resume_handle);
+		public static NET_API_STATUS NetLocalGroupGetMembers(string servername, string localgroupname, uint level, out IntPtr bufptr, uint prefmaxlen, out uint entriesread,
+		                                                    out uint totalentries, out int resume_handle) {
+			var resume = UIntPtr.Zero;
+			var result = NetLocalGroupGetMembersPaged(servername, localgroupname, level, out bufptr, prefmaxlen, out entriesread, out totalentries, ref resume);
+			resume_handle = unchecked((int)resume.ToUInt64());
+			return result;
+		}
+
+		[DllImport("netapi32.dll", EntryPoint = "NetLocalGroupGetMembers", CharSet = CharSet.Unicode)]
+		public static extern NET_API_STATUS NetLocalGroupGetMembersPaged(string servername, string localgroupname, uint level, out IntPtr bufptr, uint prefmaxlen,
+			out uint entriesread, out uint totalentries, ref UIntPtr resumehandle);
+
+		[DllImport("netapi32.dll", EntryPoint = "NetLocalGroupEnum", CharSet = CharSet.Unicode)]
+		public static extern NET_API_STATUS NetLocalGroupEnumPaged(string servername, uint level, out IntPtr bufptr, uint prefmaxlen,
+			out uint entriesread, out uint totalentries, ref UIntPtr resumehandle);
+
+		[DllImport("netapi32.dll", EntryPoint = "NetUserEnum", CharSet = CharSet.Unicode)]
+		public static extern NET_API_STATUS NetUserEnumPaged(string servername, uint level, uint filter, out IntPtr bufptr, uint prefmaxlen,
+			out uint entriesread, out uint totalentries, ref uint resumehandle);
+
+		[DllImport("netapi32.dll", EntryPoint = "NetShareEnum", CharSet = CharSet.Unicode)]
+		public static extern NET_API_STATUS NetShareEnumPaged(string servername, uint level, out IntPtr bufptr, uint prefmaxlen,
+			out uint entriesread, out uint totalentries, ref uint resumehandle);
 
 		[DllImport("netapi32.dll")]
 		[return: MarshalAs(UnmanagedType.U4)]
@@ -562,9 +581,12 @@ public static partial class WinAPI {
 		//    ref uint totalentries,
 		//    IntPtr resumeHandle);
 
-		[DllImport("netapi32.dll")]
-		[return: MarshalAs(UnmanagedType.U4)]
-		public static extern NET_API_STATUS NetLocalGroupEnum([MarshalAs(UnmanagedType.LPWStr)] string servername, uint level, out IntPtr siPtr, int prefmaxlen, out uint entriesread, out uint totalentries, out int resumeHandle);
+		public static NET_API_STATUS NetLocalGroupEnum(string servername, uint level, out IntPtr siPtr, int prefmaxlen, out uint entriesread, out uint totalentries, out int resumeHandle) {
+			var resume = UIntPtr.Zero;
+			var result = NetLocalGroupEnumPaged(servername, level, out siPtr, unchecked((uint)prefmaxlen), out entriesread, out totalentries, ref resume);
+			resumeHandle = unchecked((int)resume.ToUInt64());
+			return result;
+		}
 
 		#endregion
 
