@@ -27,6 +27,9 @@ public static class ControlExtensions {
 	/// <summary>Defers layout and drawing for this control tree; nested scopes render only when the outermost scope ends.</summary>
 	public static ControlRenderingScope EnterRenderingScope(this Control control) => new(control);
 
+	/// <summary>Defers layout and drawing, optionally leaving the final paint to the next native paint cycle.</summary>
+	public static ControlRenderingScope EnterRenderingScope(this Control control, bool repaintImmediately) => new(control, repaintImmediately);
+
 	public static bool TryGetParentForm(this Control control, out Form parent) {
 		while (control != null) {
 			if (control is Form form) {

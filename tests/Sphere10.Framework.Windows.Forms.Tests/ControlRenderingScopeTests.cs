@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
@@ -20,6 +21,101 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class ControlRenderingScopeTests {
+	[TestCase(false, false)]
+	[TestCase(true, false)]
+	[TestCase(false, true)]
+	[TestCase(true, true)]
+	public void ReparentedTreeReceivesOneCompletePaintWhenItsOriginalScopeEnds(bool repaintImmediately, bool disposeOriginalRoot) {
+		using var original = new Form { StartPosition = FormStartPosition.Manual, Location = new Point(-19000, -19000) };
+		using var destination = new Form { StartPosition = FormStartPosition.Manual, Location = new Point(-18000, -18000) };
+		using var moved = new CountingPanel { Dock = DockStyle.Fill, Padding = new Padding(7) };
+		using var child = new CountingPanel { Dock = DockStyle.Fill };
+		original.Controls.Add(moved);
+		moved.Controls.Add(child);
+		original.Show();
+		destination.Show();
+		System.Windows.Forms.Application.DoEvents();
+		using (original.EnterRenderingScope(repaintImmediately)) {
+			destination.Controls.Add(moved);
+			if (disposeOriginalRoot)
+				original.Dispose();
+			// Observe the final repaint rather than incidental exposure queued by native reparenting.
+			WinAPI.USER32.ValidateRect(new HandleRef(moved, moved.Handle), IntPtr.Zero);
+			WinAPI.USER32.ValidateRect(new HandleRef(child, child.Handle), IntPtr.Zero);
+			moved.ResetCounts();
+			child.ResetCounts();
+		}
+		Assert.That(moved.PaintCount, Is.EqualTo(repaintImmediately ? 1 : 0), "The released subtree follows the requested immediate/deferred paint policy even after leaving its original root.");
+		System.Windows.Forms.Application.DoEvents();
+		Assert.Multiple(() => {
+			Assert.That(moved.PaintCount, Is.EqualTo(1), "The reparented root must receive its completed native paint exactly once.");
+			Assert.That(child.PaintCount, Is.EqualTo(1), "The final invalidation must include descendants in the new window.");
+			Assert.That(moved.LastUpdateRegion, Is.EqualTo(moved.ClientRectangle));
+			Assert.That(child.LastUpdateRegion, Is.EqualTo(child.ClientRectangle));
+			Assert.That(WinAPI.USER32.IsWindowVisible(moved.Handle), Is.True);
+			Assert.That(WinAPI.USER32.IsWindowVisible(child.Handle), Is.True);
+		});
+	}
+
+	[Test]
+	public void ReparentedTreeRemainsSuppressedUntilItsNewOwnersScopeEnds() {
+		using var original = new Form { StartPosition = FormStartPosition.Manual, Location = new Point(-19000, -19000) };
+		using var destination = new Form { StartPosition = FormStartPosition.Manual, Location = new Point(-18000, -18000) };
+		using var moved = new CountingPanel { Dock = DockStyle.Fill, Padding = new Padding(7) };
+		using var child = new CountingPanel { Dock = DockStyle.Fill };
+		original.Controls.Add(moved);
+		moved.Controls.Add(child);
+		original.Show();
+		destination.Show();
+		System.Windows.Forms.Application.DoEvents();
+		using var oldOwner = original.EnterRenderingScope();
+		using (destination.EnterRenderingScope()) {
+			destination.Controls.Add(moved);
+			moved.ResetCounts();
+			child.ResetCounts();
+			oldOwner.Dispose();
+			System.Windows.Forms.Application.DoEvents();
+			Assert.That(moved.EnableRedrawCount, Is.Zero, "The new owner still holds redraw suppression.");
+			Assert.That(moved.PaintCount, Is.Zero);
+			Assert.That(child.PaintCount, Is.Zero);
+		}
+		System.Windows.Forms.Application.DoEvents();
+		Assert.Multiple(() => {
+			Assert.That(moved.EnableRedrawCount, Is.EqualTo(1));
+			Assert.That(child.EnableRedrawCount, Is.EqualTo(1));
+			Assert.That(moved.PaintCount, Is.EqualTo(1));
+			Assert.That(child.PaintCount, Is.EqualTo(1));
+		});
+	}
+
+	[Test]
+	public void DeferredPaintingCompletesLayoutAndVisibilityBeforeTheNextNativePaintCycle() {
+		using var form = new Form();
+		using var parent = new CountingPanel { Dock = DockStyle.Fill };
+		using var child = new Button { Dock = DockStyle.Fill };
+		using var hidden = new TextBox();
+		form.Controls.Add(parent);
+		parent.Controls.Add(child);
+		parent.Controls.Add(hidden);
+		form.Show();
+		System.Windows.Forms.Application.DoEvents();
+		parent.ResetCounts();
+		using (parent.EnterRenderingScope(repaintImmediately: false)) {
+			parent.Padding = new Padding(13);
+			hidden.Hide();
+		}
+		Assert.Multiple(() => {
+			Assert.That(parent.EnableRedrawCount, Is.EqualTo(1));
+			Assert.That(parent.LayoutCount, Is.EqualTo(1));
+			Assert.That(child.Bounds, Is.EqualTo(new Rectangle(13, 13, parent.ClientSize.Width - 26, parent.ClientSize.Height - 26)));
+			Assert.That(hidden.Visible, Is.False);
+			Assert.That(WinAPI.USER32.IsWindowVisible(hidden.Handle), Is.False);
+			Assert.That(parent.PaintCount, Is.Zero, "Restoring drawing does not force a paint inside the operation that released the scope.");
+		});
+		System.Windows.Forms.Application.DoEvents();
+		Assert.That(parent.PaintCount, Is.EqualTo(1), "The normal native paint cycle renders the final state once.");
+	}
+
 	[Test]
 	public void NestedScopesSuppressRealWindowPaintingAndFlushChildLayoutOnce() {
 		using var form = new Form();
@@ -233,10 +329,17 @@ public class ControlRenderingScopeTests {
 		public int EnableRedrawCount { get; private set; }
 		public int LayoutCount { get; private set; }
 		public int PaintCount { get; private set; }
+		public Rectangle LastUpdateRegion { get; private set; }
 
-		public void ResetCounts() => DisableRedrawCount = EnableRedrawCount = LayoutCount = PaintCount = 0;
+		public void ResetCounts() {
+			DisableRedrawCount = EnableRedrawCount = LayoutCount = PaintCount = 0;
+			LastUpdateRegion = Rectangle.Empty;
+		}
 
 		protected override void WndProc(ref Message message) {
+			// BeginPaint clips a fully offscreen HWND to an empty visible area; its native update region is still complete.
+			if (message.Msg == 0x000F && WinAPI.USER32.GetUpdateRect(new HandleRef(this, Handle), out var update, false))
+				LastUpdateRegion = Rectangle.FromLTRB(update.Left, update.Top, update.Right, update.Bottom);
 			if (message.Msg == 0x000B) {
 				if (message.WParam == IntPtr.Zero)
 					DisableRedrawCount++;
