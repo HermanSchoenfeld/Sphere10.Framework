@@ -25,6 +25,7 @@ public static class Sphere10FrameworkExtensions {
 	private static Icon _appIcon = null;
 	private static Size? _size = null;
 	private static bool _splashEnabled = false;
+	private static Action<SplashScreen> _configureSplash;
 
 	public static Icon GetAppIcon(this Sphere10Framework framework) => _appIcon;
 
@@ -42,8 +43,16 @@ public static class Sphere10FrameworkExtensions {
 
 	public static Sphere10FrameworkBuilder UseSplashScreen(this Sphere10FrameworkBuilder builder, Image splashImage = null) {
 		_splashEnabled = true;
+		_configureSplash = null;
 		if (splashImage != null)
 			_splashImage = splashImage;
+		return builder;
+	}
+
+	/// <summary>Configures each startup and shutdown splash without replacing its lifecycle subscriptions.</summary>
+	public static Sphere10FrameworkBuilder UseSplashScreen(this Sphere10FrameworkBuilder builder, Image splashImage, Action<SplashScreen> configure) {
+		UseSplashScreen(builder, splashImage);
+		_configureSplash = configure;
 		return builder;
 	}
 
@@ -107,7 +116,7 @@ public static class Sphere10FrameworkExtensions {
 			if (_splashEnabled && application != null)
 				Tools.Exceptions.ExecuteCapturingException(() => {
 					if (splash == null || splash.IsDisposed) {
-						splash = new SplashScreen(_splashImage);
+						splash = CreateSplashScreen();
 						splash.AttachToFramework();
 					}
 					splash.AttachToApplication(application);
@@ -140,7 +149,7 @@ public static class Sphere10FrameworkExtensions {
 				if (_splashEnabled) {
 					if (_splashImage == null)
 						_splashImage = GenerateDefaultSplashImage(600, 400);
-					splash = new SplashScreen(_splashImage);
+					splash = CreateSplashScreen();
 					splash.AttachToFramework();
 					splash.FadeIn();
 				}
@@ -305,6 +314,15 @@ public static class Sphere10FrameworkExtensions {
 		}
 
 		return Bitmap;
+	}
+
+	private static SplashScreen CreateSplashScreen() {
+		var splash = new SplashScreen(_splashImage);
+		var configured = false;
+		using var rollback = Tools.Scope.ExecuteOnDispose(() => { if (!configured) splash.Dispose(); });
+		_configureSplash?.Invoke(splash);
+		configured = true;
+		return splash;
 	}
 
 	private sealed record MainFormSettingsOptions(bool AutoPersist, string SettingsID);
