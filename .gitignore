@@ -189,7 +189,11 @@ publish/
 # Package directories
 node_modules/
 packages/
+!/src/Sphere10.Framework.Windows/Packages/
+!/tests/Sphere10.Framework.Windows.Tests/Packages/
 nuget-packages/
+!/src/Sphere10.Framework.Windows/Packages/
+!/tests/Sphere10.Framework.Windows.Tests/Packages/
 
 # Local appsettings
 appsettings.local.json
