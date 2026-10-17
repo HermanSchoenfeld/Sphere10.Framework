@@ -407,7 +407,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		}
 
 		public static void ScanPersistedFileMarkers(string baseDir, Guid fileID, out ExtendedLookup<long, PageMarkerType> pagerMarkers, out HashSet<FileMarkerType> fileMarkers) {
-			pagerMarkers = new ExtendedLookup<long, PageMarkerType>();
+			pagerMarkers = new ExtendedLookup<long, PageMarkerType>(_ => new ExtendedList<PageMarkerType>(capacity: 2, capacityGrowthSize: 2, maxCapacity: long.MaxValue));
 			fileMarkers = new HashSet<FileMarkerType>();
 			var filenameWithoutExtension = fileID.ToStrictAlphaString().ToLowerInvariant();
 			var files = Tools.FileSystem.GetFiles(baseDir, $"{filenameWithoutExtension}.*");
