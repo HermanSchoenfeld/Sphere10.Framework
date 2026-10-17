@@ -26,7 +26,7 @@ public static class WinFormsDemoPlugin {
 		Guard.ArgumentNotNull(application, nameof(application));
 		var menu = new WinFormsApplicationMenuBuilder()
 			.WithText("Views")
-			.AddActionItem("Toggle screen mode", userInterface => {
+			.AddActionItem("Toggle Screen Mode", userInterface => {
 				var mode = userInterface.ScreenHost.ScreenMode == ScreenMode.MultiView ? ScreenMode.SingleView : ScreenMode.MultiView;
 				SetScreenMode(userInterface, mode);
 			}, (Image)Resources.Generic16x16.Clone())
@@ -54,11 +54,11 @@ public static class WinFormsDemoPlugin {
 				.WithImage32x32((Image)Resources.TestBlock32x32.Clone())
 				.WithImage8x8((Image)Resources.TestBlock8x8.Clone())
 				.WithDefaultScreen(freshEmptyWorkspace ? emptyScreen : typeof(ScreenHostingSettingsTestScreen),
-					freshEmptyWorkspace ? "Empty workspace" : "Settings", emptyLifetime,
+					freshEmptyWorkspace ? "Empty Workspace" : "Settings", emptyLifetime,
 					freshEmptyWorkspace ? ScreenKind.Empty : ScreenKind.Normal
 				)
 				.ConfigureMenu(menu => menu
-					.WithText("Screen hosting")
+					.WithText("Screen Hosting")
 					.WithImage32x32((Image)Resources.Tests32x32.Clone())
 					.ConfigureItem(item => item
 						.AsScreenItem()
@@ -68,14 +68,14 @@ public static class WinFormsDemoPlugin {
 						.WithImage((Image)Resources.Settings16x16.Clone())
 						.WithTitle("Settings")
 					)
-					.AddScreenItem<ScreenHostingDesignTestScreen>("New design", (Image)Resources.Generic16x16.Clone(), title: "Design")
-					.AddScreenItem<ScreenHostingPlainTestScreen>("Plain screen (no bars)", (Image)Resources.Generic16x16.Clone(), title: "Plain screen")
+					.AddScreenItem<ScreenHostingDesignTestScreen>("New Design", (Image)Resources.Generic16x16.Clone(), title: "Design")
+					.AddScreenItem<ScreenHostingPlainTestScreen>("Plain Screen (No Bars)", (Image)Resources.Generic16x16.Clone(), title: "Plain Screen")
 					.AddActionItem("Use SingleView", userInterface => SetScreenMode(userInterface, ScreenMode.SingleView), (Image)Resources.Generic16x16.Clone())
 					.AddActionItem("Use MultiView", userInterface => SetScreenMode(userInterface, ScreenMode.MultiView), (Image)Resources.Generic16x16.Clone())
-					.AddActionItem("Close ordinary screens", CloseOrdinaryScreens, (Image)Resources.Generic16x16.Clone())
+					.AddActionItem("Close Ordinary Screens", CloseOrdinaryScreens, (Image)Resources.Generic16x16.Clone())
 					.ConfigureItem(item => item
 						.AsScreenItem()
-						.WithText("Empty workspace")
+						.WithText("Empty Workspace")
 						.WithScreen(emptyScreen)
 						.WithScreenKind(ScreenKind.Empty)
 						.ShowOnExplorerBar(false)
@@ -84,11 +84,11 @@ public static class WinFormsDemoPlugin {
 					)
 				)
 				.ConfigureMenu(menu => menu
-					.WithText("Navigation samples")
+					.WithText("Navigation Samples")
 					.WithImage32x32((Image)Resources.Menu32x32.Clone())
-					.AddScreenItem<ScreenA>("Calendar and toolbar", (Image)Resources.Generic16x16.Clone())
-					.AddScreenItem<ScreenB>("Expandable panels", (Image)Resources.Generic16x16.Clone())
-					.AddScreenItem<ScreenC>("Task pane grids", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ScreenA>("Calendar And Toolbar", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ScreenB>("Expandable Panels", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ScreenC>("Task Pane Grids", (Image)Resources.Generic16x16.Clone())
 				)
 				.ConfigureMenu(menu => menu
 					.WithText("Wizard")
@@ -108,12 +108,12 @@ public static class WinFormsDemoPlugin {
 						.WithImage32x32((Image)Resources.Menu32x32.Clone())
 						.ConfigureItem(item => item
 							.AsScreenItem()
-							.WithText("Permanent notes")
+							.WithText("Permanent Notes")
 							.WithScreen<ScreenHostingPermanentTestScreen>()
 							.AsPermanentSingleton()
 							.WithImage((Image)Resources.Generic16x16.Clone())
 						)
-						.AddActionItem("Remove notes block", RemoveNotesBlock, (Image)Resources.Generic16x16.Clone())
+						.AddActionItem("Remove Notes Block", RemoveNotesBlock, (Image)Resources.Generic16x16.Clone())
 					)
 				);
 	}
