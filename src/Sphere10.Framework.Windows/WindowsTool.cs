@@ -71,5 +71,11 @@ public static class Windows {
 	[ThreadStatic] private static SecurityDescriptorUtil _securityDescriptors;
 	public static SecurityDescriptorUtil SecurityDescriptors => _securityDescriptors ??= new();
 
+	[ThreadStatic] private static NamedPipeUtil _pipes;
+	public static NamedPipeUtil Pipes => _pipes ??= new();
+
+	[ThreadStatic] private static SessionUtil _sessions;
+	public static SessionUtil Sessions => _sessions ??= new();
+
 }
 
