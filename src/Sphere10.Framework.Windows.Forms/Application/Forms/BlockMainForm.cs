@@ -166,7 +166,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		#endregion
 
 		ScreenHost.RegisterScreenTypes(block);
-		this.Text = block.Name;
+		if (ActiveBlock == null || ReferenceEquals(ActiveBlock, block))
+			Text = block.Name;
 
 		TaskPane taskPane = CreateApplicationBlockPane(block);
 		taskPane.AutoScroll = true;
@@ -555,7 +556,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		bool foundLocation = false;
 		int location = 0;
 		for (int i = 0; i < MenuStrip.Items.Count; i++) {
-			if (MenuStrip.Items[i] == HelpToolStripMenuItem) {
+			if (MenuStrip.Items[i] == ScreensToolStripMenuItem || MenuStrip.Items[i] == HelpToolStripMenuItem) {
 				location = i;
 				foundLocation = true;
 				break;
@@ -742,22 +743,29 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	private void NavigationSelectionChanged(ApplicationBar source, ApplicationBar.Item button) {
 		var block = BlockBindings.FirstOrDefault(binding => ReferenceEquals(binding.Value, button.MenuControl)).Key;
+		using var restoreSelection = Tools.Scope.ExecuteOnDispose(SynchronizeNavigationSelection);
 		if (block != null)
 			ScreenHost.SelectBlock(block);
-		UpdateNavigationTheme();
 	}
 
 	private void ScreenHostChanged() {
 		if (IsDisposed || Disposing)
 			return;
-		if (ActiveBlock != null && BlockBindings.TryGetValue(ActiveBlock, out var pane)) {
-			var selected = _applicationBar.Items.FirstOrDefault(item => ReferenceEquals(item.MenuControl, pane));
-			if (selected != null && !ReferenceEquals(selected, _applicationBar.SelectedItem))
-				_applicationBar.SelectedItem = selected;
-		}
+		SynchronizeNavigationSelection();
 		UpdateNavigationPane(ActiveScreen);
 		UpdateApplicationCommands();
 		OnApplicationChanged();
+	}
+
+	private void SynchronizeNavigationSelection() {
+		if (IsDisposed || Disposing)
+			return;
+		ApplicationBar.Item selected = null;
+		if (ActiveBlock != null && BlockBindings.TryGetValue(ActiveBlock, out var pane)) {
+			selected = _applicationBar.Items.FirstOrDefault(item => ReferenceEquals(item.MenuControl, pane));
+		}
+		_applicationBar.SelectedItem = selected;
+		UpdateNavigationTheme();
 	}
 
 	private void NavigationThemeChanged(object? Sender, EventArgs Args) => UpdateNavigationTheme();

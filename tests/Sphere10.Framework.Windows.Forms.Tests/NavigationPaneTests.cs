@@ -10,6 +10,8 @@ using System;
 using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -281,6 +283,59 @@ public class NavigationPaneTests {
 			Assert.That(Item.Width, Is.GreaterThanOrEqualTo(Item.PreferredWidth), $"'{Item.Text}' should fit beside its icon without wrapping at the default navigation font");
 	}
 
+	[TestCase(320)]
+	[TestCase(900)]
+	public void ResizingSidebarReflowsAllMenuCaptionsWithoutManualLayout(int clientHeight) {
+		using var form = new NavigationLayoutProbeMainForm {
+			ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000), ClientSize = new Size(1280, clientHeight)
+		};
+		using var icon = new Bitmap(16, 16);
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Navigation reflow")
+			.ConfigureMenu(menu => menu
+				.WithText("Monitor")
+				.AddScreenItem<NavigationScreen>("Performance Statistics", icon)
+				.AddScreenItem<NavigationScreen>("Installed Applications Management", icon)
+			)
+			.ConfigureMenu(menu => menu
+				.WithText("Files")
+				.AddScreenItem<NavigationScreen>("Open Files And File Locks", icon)
+				.AddScreenItem<NavigationScreen>("Physical Disks And Partitions", icon)
+			)
+			.Build();
+		form.RegisterBlock(block);
+		form.Show();
+		var pane = form.BlockBindings[block];
+		var menus = pane.Expandos.Cast<Expando>().ToArray();
+		var items = menus.SelectMany(menu => menu.Items.Cast<TaskItem>()).ToArray();
+		form.NavigationPaneWidth = 420;
+		System.Windows.Forms.Application.DoEvents();
+		var wideHeights = items.Select(item => item.Height).ToArray();
+		form.NavigationPaneWidth = 180;
+		System.Windows.Forms.Application.DoEvents();
+		Assert.That(pane.Width, Is.EqualTo(form.NavigationPaneWidth), "The menu viewport must follow the divider rather than retain its initial width.");
+		Assert.That(items.Select(item => item.Height), Is.All.GreaterThan(wideHeights.Max()), "Narrow menu items must grow to show their wrapped captions.");
+		AssertSidebarCaptionLayout(pane, menus, items);
+		CaptureSidebar(pane, $"Navigation-Narrow-{clientHeight}.png");
+		form.NavigationPaneWidth = 420;
+		System.Windows.Forms.Application.DoEvents();
+		Assert.That(pane.Width, Is.EqualTo(form.NavigationPaneWidth));
+		Assert.That(items.Select(item => item.Height), Is.EqualTo(wideHeights), "Widening the sidebar must return captions to their original line count.");
+		AssertSidebarCaptionLayout(pane, menus, items);
+		CaptureSidebar(pane, $"Navigation-Wide-{clientHeight}.png");
+	}
+
+	[Test]
+	public void TaskItemSizeChangedObserversSeeCurrentWrappedHeight() {
+		using var item = new TaskItem { Text = "Installed Applications Management", Width = 400 };
+		var wideHeight = item.PreferredHeight;
+		var observedHeight = 0;
+		item.SizeChanged += (_, _) => observedHeight = item.PreferredHeight;
+		item.Width = 100;
+		Assert.That(observedHeight, Is.GreaterThan(wideHeight), "Layout observers must not receive the cached height from before the width changed.");
+		Assert.That(observedHeight, Is.EqualTo(item.PreferredHeight));
+	}
+
 	[TestCase(ScreenMode.SingleView)]
 	[TestCase(ScreenMode.MultiView)]
 	public void SidebarButtonPreservesWidthAndActiveScreen(ScreenMode Mode) {
@@ -536,6 +591,32 @@ public class NavigationPaneTests {
 		Form.UnregisterBlock(Block);
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(DefaultBackColor));
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewForeColor, Is.EqualTo(DefaultForeColor));
+	}
+
+	private static void AssertSidebarCaptionLayout(TaskPane pane, Expando[] menus, TaskItem[] items) {
+		Assert.That(pane.HorizontalScroll.Visible, Is.False, "Caption reflow must not create a horizontal navigation scrollbar.");
+		foreach (var item in items) {
+			var expando = (Expando)item.Parent;
+			Assert.That(item.Right, Is.LessThanOrEqualTo(expando.ClientSize.Width));
+			Assert.That(item.Bottom, Is.LessThanOrEqualTo(expando.ExpandedHeight));
+			using var graphics = item.CreateGraphics();
+			using var format = new StringFormat();
+			var textWidth = item.Width - item.Padding.Right - (item.Image == null ? 0 : 16 + item.Padding.Left);
+			graphics.MeasureString(item.Text, item.Font, new SizeF(textWidth, item.Height), format, out var charactersFitted, out _);
+			Assert.That(charactersFitted, Is.EqualTo(item.Text.Length), $"'{item.Text}' must fit entirely within its wrapped menu row.");
+		}
+		for (var index = 1; index < menus.Length; index++)
+			Assert.That(menus[index].Top, Is.GreaterThanOrEqualTo(menus[index - 1].Bottom), "Wrapping must move subsequent menu groups down without overlap.");
+	}
+
+	private static void CaptureSidebar(TaskPane pane, string filename) {
+		var directory = TestContext.Parameters.Get("UiCaptureDirectory", string.Empty);
+		if (string.IsNullOrWhiteSpace(directory))
+			return;
+		Directory.CreateDirectory(directory);
+		using var bitmap = new Bitmap(pane.Width, pane.Height);
+		pane.DrawToBitmap(bitmap, pane.ClientRectangle);
+		bitmap.Save(Path.Combine(directory, filename), ImageFormat.Png);
 	}
 
 	private static bool DragNavigationDivider(SplitContainer SplitContainer, params int[] Widths) {
