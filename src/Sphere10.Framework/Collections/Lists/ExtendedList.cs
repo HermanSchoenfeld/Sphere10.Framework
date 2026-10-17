@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework;
 
@@ -226,6 +227,8 @@ public class ExtendedList<T> : RangedListBase<T> {
 		// Use Array.Copy to move original items, since handles overlap scenarios
 		Array.Copy(_internalArray, index + count, _internalArray, index, (_length - (index + count)));
 		_length -= count;
+		if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+			Array.Clear(_internalArray, checked((int)_length), checked((int)count));
 		UpdateVersion();
 	}
 
