@@ -73,6 +73,28 @@ public abstract class ScreenFactoryBase<TBlock, TScreen>
 
 For declarations without a body, such as interface methods, the terminating semicolon remains at the end of the final constraint line.
 
+### Type source files
+
+Each top-level class or record belongs in its own source file named for the
+declared type. This includes internal, abstract, static and generic classes and
+record structs. Do not bundle unrelated DTOs, result records or helper classes
+into a collector, service or another model's file. The matching generic-arity
+family may share one basename file, such as `Foo`, `Foo<T>` and `Foo<T1, T2>` in
+`Foo.cs`; differing type names do not qualify.
+
+Nested implementation helpers remain encapsulated in their owning class and
+follow the member-order rules below. A concrete WinForms type and its existing
+designer partial each declare that same type, in `Type.cs` and
+`Type.Designer.cs`; do not split ordinary feature methods into new partial files.
+The established WinAPI DLL declaration partition remains intact. Preserve the
+explicit central `WindowsTool.cs` facade file rather than create a second facade
+to satisfy a filename convention. These established structures do not authorize
+grouping unrelated new top-level classes or records.
+
+When splitting files, preserve namespaces, access, behavior and source history;
+update project/solution references, tests and documentation. File organization
+does not determine architectural ownership.
+
 ### Naming Conventions
 
 The naming conventions should follow the default C# conventions as suggested by Visual Studio IDE and/or Resharper intellisense. These include

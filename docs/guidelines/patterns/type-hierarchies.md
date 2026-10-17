@@ -2,6 +2,11 @@
 
 ## Inheritance foundations and concrete products
 
+For WinForms visual types, first read the
+[designer practice](winforms-designer.md): their concrete nongeneric designer
+surface is the intentional exception to the abstract foundation rule below.
+Nonvisual services/controllers retain the ordinary hierarchy rules.
+
 A class whose purpose is to supply reusable behavior for subclasses must be
 abstract and named `FooBase`. This applies even when every interface member
 has an implementation: abstractness communicates that the class is a
