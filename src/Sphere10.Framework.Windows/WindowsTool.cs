@@ -11,6 +11,7 @@ using Sphere10.Framework.Windows;
 using Sphere10.Framework.Windows.Files;
 using Sphere10.Framework.Windows.Networking;
 using Sphere10.Framework.Windows.Security;
+using Sphere10.Framework.Windows.Storage;
 
 namespace Tools;
 
@@ -46,6 +47,9 @@ public static class Windows {
 
 	[ThreadStatic] private static WindowsNetworkUtil _network;
 	public static WindowsNetworkUtil Network => _network ??= new();
+
+	[ThreadStatic] private static WindowsDriveUtil _drives;
+	public static WindowsDriveUtil Drives => _drives ??= new();
 
 	[ThreadStatic] private static SecurityDescriptorUtil _securityDescriptors;
 	public static SecurityDescriptorUtil SecurityDescriptors => _securityDescriptors ??= new();
