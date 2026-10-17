@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -24,16 +25,21 @@ public class ControlRenderingScope : ScopeBase {
 	private const int SetRedrawMessage = 0x000B;
 	private static readonly ConditionalWeakTable<Control, RenderingState> _states = new();
 	private static readonly PropertyDescriptor _visibleProperty = TypeDescriptor.GetProperties(typeof(Control))[nameof(Control.Visible)];
-	private readonly Control _control;
 	private readonly int _threadId;
+	private readonly bool _repaintImmediately;
 	private readonly List<RenderingState> _participants = new();
 	private bool _ended;
 
-	public ControlRenderingScope(Control control) {
+	public ControlRenderingScope(Control control)
+		: this(control, true) {
+	}
+
+	/// <param name="repaintImmediately">Whether to paint the final invalidated controls immediately rather than in the next native paint cycle.</param>
+	public ControlRenderingScope(Control control, bool repaintImmediately) {
 		Guard.ArgumentNotNull(control, nameof(control));
 		Guard.Argument(!control.IsDisposed && !control.Disposing, nameof(control), "Cannot defer rendering of a disposed control.");
 		Guard.Ensure(!control.InvokeRequired, "Rendering scopes must be entered on the control's UI thread.");
-		_control = control;
+		_repaintImmediately = repaintImmediately;
 		_threadId = Environment.CurrentManagedThreadId;
 		var entered = false;
 		using var rollback = Tools.Scope.ExecuteOnDispose(() => {
@@ -62,12 +68,25 @@ public class ControlRenderingScope : ScopeBase {
 			Tools.Exceptions.ExecuteCapturingException(participant.ResumeLayout, errors);
 		foreach (var participant in releasing)
 			Tools.Exceptions.ExecuteCapturingException(participant.Restore, errors);
+		foreach (var participant in releasing)
+			Tools.Exceptions.ExecuteCapturingException(participant.SynchronizeNativeLayout, errors);
 		if (errors.Count > 0)
 			ExceptionDispatchInfo.Capture(errors[0]).Throw();
-		if (_control.IsDisposed || _control.Disposing || IsSuppressed(_control))
-			return;
-		_control.Invalidate(true);
-		_control.Update();
+
+		// Reparenting can move a released subtree outside the original root (for example, an undocked screen).
+		// Paint its current root once, while controls still owned by another rendering scope remain suppressed.
+		var repainting = new HashSet<Control>(releasing.Select(participant => participant.Control)
+			.Where(control => !control.IsDisposed && !control.Disposing && !IsSuppressed(control)), ReferenceEqualityComparer.Instance);
+		foreach (var control in repainting) {
+			var ancestor = control.Parent;
+			while (ancestor != null && !repainting.Contains(ancestor))
+				ancestor = ancestor.Parent;
+			if (ancestor != null)
+				continue;
+			control.Invalidate(true);
+			if (_repaintImmediately)
+				control.Update();
+		}
 	}
 
 	protected override ValueTask OnScopeEndAsync() {
@@ -109,6 +128,8 @@ public class ControlRenderingScope : ScopeBase {
 
 		public RenderingState(Control control) => _control = control;
 
+		public Control Control => _control;
+
 		public bool IsActive => _scopes.Count > 0;
 
 		public bool Enter(ControlRenderingScope scope) {
@@ -149,6 +170,23 @@ public class ControlRenderingScope : ScopeBase {
 				_layoutResumed = true;
 				_control.ResumeLayout(false);
 			}
+		}
+
+		public void SynchronizeNativeLayout() {
+			if (_control is not TabControl { IsDisposed: false, Disposing: false, IsHandleCreated: true, Alignment: TabAlignment.Top, SelectedTab: { } page } tabs)
+				return;
+			if (!tabs.Visible || IsSuppressed(tabs) || _visibleProperty.ShouldSerializeValue(page))
+				return;
+			var native = new RECT { Left = 0, Top = 0, Right = tabs.ClientSize.Width, Bottom = tabs.ClientSize.Height };
+			USER32.SendMessage(new HandleRef(tabs, tabs.Handle), COMCTL32.TCM_ADJUSTRECT, IntPtr.Zero, ref native);
+			if (tabs.DisplayRectangle == Rectangle.FromLTRB(native.Left, native.Top, native.Right, native.Bottom))
+				return;
+			// WinForms can cache DisplayRectangle in OnResize before comctl32 handles WM_SIZE. Reapply the existing
+			// nonvirtual image metadata to refresh that parent cache, preserving the key/index mode and custom Text setters.
+			if (!string.IsNullOrEmpty(page.ImageKey))
+				page.ImageKey = page.ImageKey;
+			else
+				page.ImageIndex = page.ImageIndex;
 		}
 
 		private void RestoreRedraw() {
