@@ -40,15 +40,21 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | [Interface bridges](guidelines/patterns/interface-bridges.md) | Inline projections between specialized and base contracts. |
 | [Application ownership](guidelines/patterns/application-ownership.md) | Runtime parents, definitions, plugins and lifecycle ownership. |
 | [Agent guidance](guidelines/patterns/agent-guidance.md) | Master instruction storage, pointers and local client aliases. |
+| [WinForms designer](guidelines/patterns/winforms-designer.md) | Concrete visual bases, editable layouts and runtime composition. |
+| [Reusable WinForms controls](guidelines/patterns/winforms-controls.md) | Selectors, database provider controls, grids, editors and presentation components. |
+| [Windows API facades](guidelines/patterns/windows-interop.md) | Native bindings, ownership and application consumption. |
 | [Framework utilities](guidelines/patterns/framework-utilities.md) | Existing Tools, validation, conversion, crypto and comparer infrastructure. |
 | [Fluent builders](guidelines/patterns/fluent-builders.md) | Configuration composition, validation and product ownership. |
 | [Serialization](guidelines/patterns/serialization.md) | Serializer layers and endian-aware persistence contracts. |
 | [Collection selection and composition](guidelines/patterns/collections.md) | Extended lists, dictionary families, projections, paging and storage layers. |
 | [Synchronization](guidelines/patterns/synchronization.md) | Read/write scopes, shared parents, enumeration and thread affinity. |
+| [Statistics without history](guidelines/patterns/stateless-statistics.md) | Live metric aggregates without retaining samples. |
 | [Repositories, persistence and transactions](guidelines/patterns/persistence-and-transactions.md) | CRUD, load/save lifecycle, transaction ownership and backend guarantees. |
 | [Collections and storage](guidelines/patterns/collections-and-storage.md) | Caches, graph identity, clustered streams and storage comparers. |
 | [Object spaces](guidelines/patterns/object-spaces.md) | Typed identity, indexed CRUD, durability and configuration profiling. |
 | [Data sources](guidelines/patterns/data-sources.md) | CRUD, paging, validation and item/range delegation. |
+| [Per-user UI settings](guidelines/patterns/user-ui-settings.md) | Typed preferences, stable control identities and accepted save boundaries. |
+| [Independent projects](guidelines/patterns/new-projects.md) | Internal/client placement and source/package references. |
 | [Logging](guidelines/patterns/logging.md) | Logger selection, composition and sink lifetime. |
 | [Resource scopes](guidelines/patterns/resource-scopes.md) | Synchronization, transactions and owned cleanup. |
 | [Scheduling](guidelines/patterns/scheduling.md) | Job execution, scheduling policy and completion. |
@@ -132,6 +138,8 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | New to the framework | [Getting Started](start-here.md) |
 | Agent-assisted repository work | [Agent Guidance](agent-guidance.md) |
 | Using Tools.* utilities | [Tools Reference](tools-reference.md) |
+| Deferred/lazy/reloadable values and projections | [Future contracts](guidelines/patterns/futures.md) |
+| Wrapping an external executable | [Process Sentries](guidelines/patterns/process-sentries.md) |
 | Working with collections | [Collection selection](guidelines/patterns/collections.md) / [Sphere10.Framework](../src/Sphere10.Framework/README.md) |
 | Protecting shared state and collection operations | [Synchronization scopes](guidelines/patterns/synchronization.md) |
 | Repository CRUD, loading/saving and transaction lifetimes | [Persistence and transactions](guidelines/patterns/persistence-and-transactions.md) |
@@ -141,6 +149,7 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | Cryptography | [Sphere10.Framework.CryptoEx](../src/Sphere10.Framework.CryptoEx/README.md) |
 | Networking & RPC | [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) |
 | Windows desktop | [Sphere10.Framework.Windows.Forms](../src/Sphere10.Framework.Windows.Forms/README.md) |
+| Windows processes, raw counters, services, networking and storage | [Windows resource abstractions](../src/Sphere10.Framework.Windows/README.md#windows-resource-abstractions) and [ownership layers](guidelines/patterns/framework-reuse.md#windows-abstraction-layers); application collectors compose these APIs. |
 | ASP.NET Core web | [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
 | Editable Blazor grids | [Complete grid example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start) |
 | Custom grid editors and related records | [Editor, reference picker and action example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions) |
