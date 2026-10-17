@@ -24,6 +24,8 @@
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\" />
+		<Compile Update="Charts\TelemetryChart.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Charts\TelemetryChart.Designer.cs"><DependentUpon>TelemetryChart.cs</DependentUpon></Compile>
 	</ItemGroup>
 	<ItemGroup>
 		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ButtonMultiSelection.resources" />
@@ -83,6 +85,73 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="Application\Controls\WinFormsApplicationScreenTabControl.cs">
+			<SubType>Component</SubType>
+		</Compile>
+		<Compile Update="Application\Controls\WinFormsApplicationScreenTabControl.Designer.cs">
+			<DependentUpon>WinFormsApplicationScreenTabControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Dialogs\ReviewTextDialog.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Dialogs\ReviewTextDialog.Designer.cs">
+			<DependentUpon>ReviewTextDialog.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\HexEditorControl.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Controls\HexEditorControl.Designer.cs"><DependentUpon>HexEditorControl.cs</DependentUpon></Compile>
+		<Compile Update="Dialogs\HexEditorDialog.cs"><SubType>Form</SubType></Compile>
+		<Compile Update="Dialogs\HexEditorDialog.Designer.cs"><DependentUpon>HexEditorDialog.cs</DependentUpon></Compile>
+		<Compile Update="Controls\LogOutputSelectorControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Controls\LogOutputSelectorControl.Designer.cs">
+			<DependentUpon>LogOutputSelectorControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\LogOutputSelectorControl.Settings.cs">
+			<DependentUpon>LogOutputSelectorControl.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputConfigurationDialog.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputConfigurationDialog.Designer.cs">
+			<DependentUpon>LogOutputConfigurationDialog.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputWizardScreen.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputWizardScreen.Designer.cs">
+			<DependentUpon>LogOutputWizardScreen.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputDestinationWizardScreen.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputDestinationWizardScreen.Designer.cs">
+			<DependentUpon>LogOutputDestinationWizardScreen.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputFileWizardScreen.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputFileWizardScreen.Designer.cs">
+			<DependentUpon>LogOutputFileWizardScreen.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputRollingWizardScreen.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputRollingWizardScreen.Designer.cs">
+			<DependentUpon>LogOutputRollingWizardScreen.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputFormattingWizardScreen.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputFormattingWizardScreen.Designer.cs">
+			<DependentUpon>LogOutputFormattingWizardScreen.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputReviewWizardScreen.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Controls\Logging\LogOutputReviewWizardScreen.Designer.cs">
+			<DependentUpon>LogOutputReviewWizardScreen.cs</DependentUpon>
+		</Compile>
 		<Compile Update="Application\DRM\DRMAboutBox.cs" />
 		<Compile Update="Common\ImageAttachmentSelectorControl.cs" />
 		<Compile Update="Common\ImageAttachmentSelectorControl.Designer.cs">
@@ -94,6 +163,8 @@
 		</Compile>
 		<Compile Update="Components\PlaceHolderExtender.cs" />
 		<Compile Update="Application\Controls\ApplicationBanner.cs" />
+		<Compile Update="Application\Controls\ApplicationBannerHost.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Application\Controls\ApplicationBannerHost.Designer.cs"><DependentUpon>ApplicationBannerHost.cs</DependentUpon></Compile>
 		<Compile Update="Application\Controls\ApplicationBanner.Designer.cs">
 			<DependentUpon>ApplicationBanner.cs</DependentUpon>
 		</Compile>
