@@ -11,14 +11,18 @@ using Sphere10.Framework.Application.UI;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Screen tabs with close buttons, a context menu, reordering and drag-out requests.</summary>
-public class WinFormsApplicationScreenTabControl : TabControl {
+public partial class WinFormsApplicationScreenTabControl : TabControl {
 	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenCloseRequested;
 	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenUndockRequested;
+	public event EventHandlerEx ScreenCloseAllRequested;
+	public event EventHandlerEx<WinFormsApplicationScreen> ScreenCloseOthersRequested;
 	public event EventHandlerEx TabOrderChanged;
 
 	private const int LogicalDpi = 96;
@@ -26,6 +30,8 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 	private const int LogicalVerticalPadding = 5;
 	private const int LogicalTextInset = 6;
 	private const int LogicalCloseSize = 16;
+	private const int LogicalIconSize = 16;
+	private const int LogicalIconGap = 4;
 	private const int LogicalGlyphInset = 4;
 	private const int LogicalBorderWidth = 2;
 	private const int LogicalDockMarkerWidth = 3;
@@ -34,8 +40,6 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 	private const int LogicalDockToolTipGap = 4;
 	private const int LogicalMinimumTabWidth = 64;
 	private static readonly (Color BackColor, Color ForeColor) _defaultDockPreviewColors = GetDefaultDockPreviewColors();
-	private readonly ContextMenuStrip _tabMenu;
-	private readonly ToolTip _dockPreviewTip;
 	private Color _dockPreviewBackColor = _defaultDockPreviewColors.BackColor;
 	private Color _dockPreviewForeColor = _defaultDockPreviewColors.ForeColor;
 	private TabPage? _pressedTab;
@@ -48,31 +52,40 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 	private bool _dragging;
 	private bool _completingDrag;
 	private bool _updatingCaptions;
+	private bool _deferringInputRendering;
 	private bool _refreshAfterRecreate;
 	private int _originalIndex;
-	private int _maximumTabWidth = 260;
+	private int _maximumTabWidth = 320;
 	private int _metricsDpi = LogicalDpi;
 
 	public WinFormsApplicationScreenTabControl() {
-		DrawMode = TabDrawMode.OwnerDrawFixed;
-		SizeMode = TabSizeMode.Normal;
+		InitializeComponent();
 		_metricsDpi = DeviceDpi;
 		ApplyMetrics();
-		ShowToolTips = true;
-		AllowDrop = true;
-		_dockPreviewTip = new ToolTip { ShowAlways = true, UseAnimation = false, UseFading = false };
-		_tabMenu = new ContextMenuStrip();
-		_tabMenu.Items.Add("Undock", null, (_, _) => RequestUndock(_contextTab));
-		_tabMenu.Items.Add("Close", null, (_, _) => RequestClose(_contextTab));
-		_tabMenu.Opening += (_, _) => {
-			foreach (ToolStripItem item in _tabMenu.Items)
-				item.Enabled = CanCloseOrUndock(_contextTab);
-		};
+	}
+
+	private void TabMenuOpening(object sender, CancelEventArgs args) {
+		_undockMenuItem.Enabled = _closeMenuItem.Enabled = CanCloseOrUndock(_contextTab);
+		var screen = _contextTab?.Tag as WinFormsApplicationScreen;
+		var openScreens = screen?.Host?.OpenScreens ?? Array.Empty<WinFormsApplicationScreen>();
+		_closeAllMenuItem.Enabled = openScreens.Any(candidate => candidate.ActivationMode != ScreenActivationMode.PermanentSingleton);
+		_closeOthersMenuItem.Enabled = openScreens.Any(candidate => !ReferenceEquals(candidate, screen) && candidate.ActivationMode != ScreenActivationMode.PermanentSingleton);
+	}
+
+	private void UndockMenuClicked(object sender, EventArgs args) => RequestUndock(_contextTab);
+
+	private void CloseMenuClicked(object sender, EventArgs args) => RequestClose(_contextTab);
+
+	private void CloseAllMenuClicked(object sender, EventArgs args) => ScreenCloseAllRequested?.Invoke();
+
+	private void CloseOthersMenuClicked(object sender, EventArgs args) {
+		if (_contextTab?.Tag is WinFormsApplicationScreen screen)
+			ScreenCloseOthersRequested?.Invoke(screen);
 	}
 
 	internal bool Reordering { get; private set; }
 
-	[DefaultValue(260), Category("Layout"), Description("Maximum width of a tab in logical pixels at 96 DPI; longer titles use an ellipsis")]
+	[DefaultValue(320), Category("Layout"), Description("Maximum width of a tab in logical pixels at 96 DPI; longer titles use an ellipsis")]
 	public int MaximumTabWidth {
 		get => _maximumTabWidth;
 		set {
@@ -185,6 +198,13 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 		Args.Graphics.FillRectangle(Background, Bounds);
 		var CloseBounds = GetCloseBounds(Bounds);
 		var TextBounds = Rectangle.FromLTRB(Bounds.Left + ScaleMetric(LogicalTextInset), Bounds.Top, CloseBounds.Left - ScaleMetric(LogicalTextInset), Bounds.Bottom);
+		var imageIndex = !string.IsNullOrEmpty(Page.ImageKey) ? ImageList?.Images.IndexOfKey(Page.ImageKey) ?? -1 : Page.ImageIndex;
+		if (ImageList != null && imageIndex >= 0 && imageIndex < ImageList.Images.Count) {
+			var imageSize = ScaleMetric(LogicalIconSize);
+			ImageList.Draw(Args.Graphics, TextBounds.Left, Bounds.Top + (Bounds.Height - imageSize) / 2, imageSize, imageSize, imageIndex);
+			TextBounds.X += imageSize + ScaleMetric(LogicalIconGap);
+			TextBounds.Width = Math.Max(0, TextBounds.Width - imageSize - ScaleMetric(LogicalIconGap));
+		}
 		// The explicit insets provide text padding; match the native caption's glyph width when drawing.
 		TextRenderer.DrawText(Args.Graphics, Page.Text, Font, TextBounds, SystemColors.ControlText,
 			TextFormatFlags.EndEllipsis | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding);
@@ -292,11 +312,13 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 	}
 
 	protected override void OnMouseUp(MouseEventArgs Args) {
+		var WasDragging = _dragging;
 		var UndockingTab = Args.Button == MouseButtons.Left && _dragging && _pressedTab == SelectedTab && !IsOverTabBar(Args.Location) ? _pressedTab : null;
 		_pressedTab = null;
 		_dragging = false;
 		Capture = false;
-		Invalidate();
+		if (WasDragging)
+			Invalidate();
 		base.OnMouseUp(Args);
 		if (UndockingTab != null && TabPages.Contains(UndockingTab))
 			RequestUndock(UndockingTab);
@@ -317,6 +339,27 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 	}
 
 	protected override void WndProc(ref Message message) {
+		if (_deferringInputRendering && message.Msg == WinAPI.USER32.WM_PAINT) {
+			// Native selection can request synchronous painting even with WM_SETREDRAW disabled.
+			// Validate this intermediate frame; the input rendering scope invalidates the final selection afterward.
+			WinAPI.USER32.ValidateRect(new HandleRef(this, Handle), IntPtr.Zero);
+			message.Result = IntPtr.Zero;
+			return;
+		}
+		if (_deferringInputRendering && message.Msg == WinAPI.USER32.WM_ERASEBKGND) {
+			message.Result = (IntPtr)1;
+			return;
+		}
+		if (message.Msg == WinAPI.USER32.WM_LBUTTONDOWN) {
+			// The native tab control can paint while committing its selection after managed Selecting handlers return.
+			// Keep its redraw suppressed until that input message has completed, then queue the final paint.
+			var wasDeferring = _deferringInputRendering;
+			_deferringInputRendering = true;
+			using var input = Tools.Scope.ExecuteOnDispose(() => _deferringInputRendering = wasDeferring);
+			using var rendering = this.EnterRenderingScope(repaintImmediately: false);
+			base.WndProc(ref message);
+			return;
+		}
 		if (message.Msg != WinAPI.USER32.WM_LBUTTONUP) {
 			base.WndProc(ref message);
 			if (message.Msg == WinAPI.COMCTL32.TCM_SETITEMW && !_updatingCaptions)
@@ -349,8 +392,7 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 	protected override void Dispose(bool Disposing) {
 		if (Disposing) {
 			HideDockPreview();
-			_dockPreviewTip.Dispose();
-			_tabMenu.Dispose();
+			components?.Dispose();
 		}
 		base.Dispose(Disposing);
 	}
@@ -450,13 +492,24 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 	private int ScaleMetric(int Value) => (int)Math.Round(Value * _metricsDpi / (double)LogicalDpi);
 
 	private void ApplyMetrics() {
-		Padding = new Point(ScaleMetric(LogicalHorizontalPadding), ScaleMetric(LogicalVerticalPadding));
+		UpdateTabPadding();
 		RefreshTabCaptions();
+	}
+
+	private void UpdateTabPadding() {
+		var reservedWidth = ScaleMetric(LogicalCloseSize) + 3 * ScaleMetric(LogicalTextInset);
+		if (ImageList != null)
+			reservedWidth += ScaleMetric(LogicalIconSize) + ScaleMetric(LogicalIconGap) - ImageList.ImageSize.Width;
+		// Native tabs measure their caption and unscaled image list. Reserve the remaining owner-drawn icon, gap and close-button area separately.
+		var padding = new Point(Math.Max(ScaleMetric(LogicalHorizontalPadding), (reservedWidth + 1) / 2), ScaleMetric(LogicalVerticalPadding));
+		if (Padding != padding)
+			Padding = padding;
 	}
 
 	private void RefreshTabCaptions() {
 		if (!IsHandleCreated || Disposing || IsDisposed || _updatingCaptions)
 			return;
+		UpdateTabPadding();
 		HideDockPreview();
 		WinAPI.USER32.SendMessage(Handle, WinAPI.COMCTL32.TCM_SETMINTABWIDTH, IntPtr.Zero, (IntPtr)ScaleMetric(LogicalMinimumTabWidth));
 		for (var index = 0; index < TabCount; index++)
@@ -471,6 +524,10 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 		using var Update = Tools.Scope.ExecuteOnDispose(() => _updatingCaptions = false);
 		var Page = TabPages[Index];
 		var Title = Page.Text;
+		// ImageKey set before attachment has no parent image list in WinForms' native item cache.
+		// Rebind it after attachment so native width measurement reserves the icon that owner drawing already renders.
+		if (!string.IsNullOrEmpty(Page.ImageKey))
+			Page.ImageKey = Page.ImageKey;
 		Page.ToolTipText = Title;
 		SetNativeCaption(Index, Title);
 		var MaximumWidth = ScaleMetric(_maximumTabWidth);
@@ -509,13 +566,15 @@ public class WinFormsApplicationScreenTabControl : TabControl {
 
 	private void CancelDrag() {
 		var Page = _pressedTab;
+		var WasDragging = _dragging;
 		var RestoreOrder = _dragging && !Disposing && !IsDisposed && Page != null && !Page.IsDisposed && TabPages.Contains(Page);
 		_pressedTab = null;
 		_dragging = false;
 		if (RestoreOrder)
 			MoveTab(Page!, Math.Min(_originalIndex, TabCount - 1));
 		Capture = false;
-		Invalidate();
+		if (WasDragging)
+			Invalidate();
 	}
 
 	private static bool CanCloseOrUndock(TabPage Page) => Page?.Tag is not WinFormsApplicationScreen screen || screen.ActivationMode != ScreenActivationMode.PermanentSingleton;

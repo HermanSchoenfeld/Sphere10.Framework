@@ -25,6 +25,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	private readonly Dictionary<WinFormsApplicationScreen, ScreenBinding> _screens = new(ReferenceEqualityComparer.Instance);
 	private readonly NativeScreenHostEngine _engine;
 	private readonly WinFormsApplicationScreenTabControl _tabs;
+	private readonly ImageList _tabImages;
 	private readonly Panel _singleView;
 	private bool _updating;
 	private int _updateDepth;
@@ -33,13 +34,16 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	public WinFormsApplicationScreenHost() {
 		_engine = new NativeScreenHostEngine(this);
-		_tabs = new WinFormsApplicationScreenTabControl { Dock = DockStyle.Fill, Visible = false };
+		_tabImages = new ImageList { ImageSize = new Size(16, 16), ColorDepth = ColorDepth.Depth32Bit };
+		_tabs = new WinFormsApplicationScreenTabControl { Dock = DockStyle.Fill, Visible = false, ImageList = _tabImages };
 		_singleView = new Panel { Dock = DockStyle.Fill };
 		Controls.Add(_tabs);
 		Controls.Add(_singleView);
 		_tabs.Selecting += TabSelecting;
 		_tabs.ScreenCloseRequested += Screen => CloseScreen(Screen);
 		_tabs.ScreenUndockRequested += Screen => UndockScreen(Screen);
+		_tabs.ScreenCloseAllRequested += CloseAllRequested;
+		_tabs.ScreenCloseOthersRequested += CloseOthersRequested;
 		_tabs.TabOrderChanged += SynchronizeTabOrder;
 		_tabs.DragEnter += TabDragEnter;
 		_tabs.DragOver += TabDragEnter;
@@ -231,13 +235,15 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	public override bool ShowScreen(WinFormsApplicationScreen Screen) => ShowScreenCore(Screen, true);
 
+	public override bool ShowScreenUndocked(WinFormsApplicationScreen screen) => ShowScreenCore(screen, false, undocked: true);
+
 	private bool ShowScreenCore(WinFormsApplicationScreen Screen, bool checkHide, ApplicationScreenDefinition requestedDefinition = null,
-		bool registerBlock = true) {
+		bool registerBlock = true, bool selectTab = true, bool undocked = false) {
 		Guard.ArgumentNotNull(Screen, nameof(Screen));
 		Guard.Argument(!Screen.IsDisposed, nameof(Screen), "Cannot show a disposed screen");
 		Guard.Argument(Screen.Host == null || ReferenceEquals(Screen.Host, this), nameof(Screen), "Screen already belongs to another host");
 		Guard.Ensure(!_disposing, "The screen host is disposing");
-		using var update = EnterUpdateScope();
+		using var update = EnterUpdateScope(repaintImmediately: selectTab);
 		if (registerBlock && Screen.Host == null && Screen.Block != null)
 			RegisterScreenTypes(Screen.Block);
 		var ScreenType = Screen.GetType();
@@ -249,6 +255,8 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			Screen.ScreenKind = definition.ScreenKind;
 		Tools.UI.ValidateScreenPolicy(Screen.ActivationMode, Screen.ScreenKind);
 		_engine.ValidateActivation(ScreenType, Screen.ActivationMode);
+		if (undocked && (ScreenMode != ScreenMode.MultiView || Screen.ScreenKind != ScreenKind.Normal || Screen.ActivationMode == ScreenActivationMode.PermanentSingleton))
+			return false;
 		if (Screen.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
 			return false;
 		Guard.Argument(!Tools.UI.IsSingleton(Screen.ActivationMode)
@@ -258,6 +266,20 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			if (Binding.Window.WindowState == FormWindowState.Minimized)
 				Binding.Window.WindowState = FormWindowState.Normal;
 			Binding.Window.Activate();
+			return true;
+		}
+		if (undocked) {
+			if (Binding != null && IsPresented(Screen, Binding))
+				return UndockScreen(Screen);
+			Binding ??= RetainScreen(Screen, requestedDefinition);
+			Binding.Window = CreateScreenForm(Screen);
+			Binding.Window.Disposed += ScreenFormDisposed;
+			_engine.SetOpen(Screen, true);
+			if (FindForm() is { } owner)
+				Binding.Window.Show(owner);
+			else
+				Binding.Window.Show();
+			Screen.NotifyShow();
 			return true;
 		}
 		if (ReferenceEquals(Screen, ActiveScreen)) {
@@ -278,7 +300,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			Binding = RetainScreen(Screen, requestedDefinition);
 		if (!IsPresented(Screen, Binding))
 			AddPresentation(Screen, Binding);
-		if (Binding.Tab != null)
+		if (selectTab && Binding.Tab != null)
 			_tabs.SelectedTab = Binding.Tab;
 		ChangeActiveScreen(Screen);
 		Screen.NotifyShow();
@@ -286,6 +308,22 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	}
 
 	public override bool CloseScreen(WinFormsApplicationScreen Screen) => CloseScreens(new[] { Screen });
+
+	private async void CloseAllRequested() {
+		try {
+			await CloseAllScreensAsync();
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void CloseOthersRequested(WinFormsApplicationScreen screen) {
+		try {
+			await CloseAllOtherScreensAsync(screen);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
 
 	public override bool CloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) {
 		Guard.ArgumentNotNull(Screens, nameof(Screens));
@@ -461,13 +499,14 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			Tools.Exceptions.ExecuteCapturingException(_engine.Dispose, errors);
 		}
 		Tools.Exceptions.ExecuteCapturingException(() => base.Dispose(disposing), errors);
+		Tools.Exceptions.ExecuteCapturingException(_tabImages.Dispose, errors);
 		if (errors.Count == 1)
 			ExceptionDispatchInfo.Capture(errors[0]).Throw();
 		if (errors.Count > 1)
 			throw new AggregateException(errors);
 	}
 
-	private IDisposable EnterUpdateScope() => new ScreenTransitionScope(this);
+	private IDisposable EnterUpdateScope(bool repaintImmediately = true) => new ScreenTransitionScope(this, repaintImmediately);
 
 	private static bool CanHide(WinFormsApplicationScreen? Screen) {
 		var Cancel = false;
@@ -504,7 +543,13 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	private ScreenBinding RetainScreen(WinFormsApplicationScreen screen, ApplicationScreenDefinition requestedDefinition = null) {
 		var definition = requestedDefinition ?? screen.Block?.ScreenDefinitions.FirstOrDefault(item => item.ScreenType == screen.GetType());
-		var binding = new ScreenBinding();
+		var binding = new ScreenBinding { Definition = definition, ImageKey = Guid.NewGuid().ToString("N") };
+		var image = screen.ScreenImage
+			?? definition?.Activators.OfType<IWinFormsApplicationMenuItem>().Select(item => item.Image16x16).FirstOrDefault(candidate => candidate != null)
+			?? screen.Block?.ScreenDefinitions.Where(candidate => candidate.ScreenType == screen.GetType()).SelectMany(candidate => candidate.Activators)
+				.OfType<IWinFormsApplicationMenuItem>().Select(item => item.Image16x16).FirstOrDefault(candidate => candidate != null);
+		if (image != null)
+			_tabImages.Images.Add(binding.ImageKey, image);
 		_engine.Retain(screen, definition);
 		_screens.Add(screen, binding);
 		if (screen.ActivationMode == ScreenActivationMode.PermanentSingleton)
@@ -528,7 +573,8 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	private void AddPresentation(WinFormsApplicationScreen Screen, ScreenBinding Binding) {
 		Screen.Dock = DockStyle.Fill;
 		if (ScreenMode == ScreenMode.MultiView && Screen.ScreenKind == ScreenKind.Normal) {
-			Binding.Tab = new TabPage(Screen.Title) { Tag = Screen, Padding = Padding.Empty };
+			Binding.Tab = new TabPage(Screen.Title) { Tag = Screen, Padding = Padding.Empty,
+				ImageKey = _tabImages.Images.ContainsKey(Binding.ImageKey) ? Binding.ImageKey : string.Empty };
 			Binding.Tab.Controls.Add(Screen);
 			_tabs.TabPages.Add(Binding.Tab);
 		} else {
@@ -561,6 +607,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		Screen.ScreenDestroyed -= ScreenDestroyed;
 		RemovePresentation(Screen, Binding);
 		_screens.Remove(Screen);
+		_tabImages.Images.RemoveByKey(Binding.ImageKey);
 		using var remove = Tools.Scope.ExecuteOnDispose(() => _engine.Remove(Screen));
 		Screen.Dispose();
 	}
@@ -568,7 +615,10 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	private void SelectRemainingScreen() {
 		if (ActiveScreen != null || _disposing)
 			return;
-		var next = _tabs.SelectedTab?.Tag as WinFormsApplicationScreen;
+		// During a batched close the native selection can still name a removed page.
+		var selectedIndex = _tabs.SelectedIndex;
+		var next = selectedIndex >= 0 && selectedIndex < _tabs.TabPages.Count
+			? _tabs.TabPages[selectedIndex].Tag as WinFormsApplicationScreen : null;
 		next ??= Screens.FirstOrDefault(screen => IsPresented(screen, GetBinding(screen)) && GetBinding(screen).Window == null && screen.ScreenKind == ScreenKind.Normal);
 		next ??= Screens.FirstOrDefault(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton);
 		if (next != null) {
@@ -584,7 +634,8 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	private void TabSelecting(object? Sender, TabControlCancelEventArgs Args) {
 		if (!_updating && !_tabs.Reordering && Args.TabPage?.Tag is WinFormsApplicationScreen Screen)
-			Args.Cancel = !ShowScreen(Screen);
+			// The native control is already selecting this page. Complete the host transition without selecting it again or painting before native input returns.
+			Args.Cancel = !ShowScreenCore(Screen, true, selectTab: false);
 	}
 
 	private void SynchronizeTabOrder() {
@@ -643,6 +694,8 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	}
 
 	private sealed class ScreenBinding {
+		public ApplicationScreenDefinition Definition { get; init; }
+		public string ImageKey { get; init; }
 		public TabPage? Tab { get; set; }
 		public WinFormsApplicationScreenForm? Window { get; set; }
 	}
@@ -652,7 +705,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		private readonly IDisposable _rendering;
 		private readonly IDisposable _notifications;
 
-		public ScreenTransitionScope(WinFormsApplicationScreenHost owner) {
+		public ScreenTransitionScope(WinFormsApplicationScreenHost owner, bool repaintImmediately) {
 			_owner = owner;
 			if (_owner._updateDepth++ > 0)
 				return;
@@ -669,7 +722,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 				_owner._activeSelectionChanged = false;
 			});
 			if (!_owner._disposing)
-				_rendering = ((Control)_owner.FindForm() ?? _owner).EnterRenderingScope();
+				_rendering = ((Control)_owner.FindForm() ?? _owner).EnterRenderingScope(repaintImmediately);
 			_notifications = _owner._engine.DeferChanges();
 			entered = true;
 		}
@@ -907,8 +960,14 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		public override Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 			EnsureUsable();
-			Guard.Argument(_owner.ContainsScreen(screen), nameof(screen), "The screen does not belong to this host.");
+			// The native owner validates both new supplied instances and retained screens before presentation.
 			return Task.FromResult(_owner.ShowScreen(screen));
+		}
+
+		public override Task<bool> ShowScreenUndockedAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			EnsureUsable();
+			return Task.FromResult(_owner.ShowScreenUndocked(screen));
 		}
 
 		public override Task<bool> CloseScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) {

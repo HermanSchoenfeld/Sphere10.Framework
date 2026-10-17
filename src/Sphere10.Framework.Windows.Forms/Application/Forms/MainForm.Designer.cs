@@ -34,6 +34,11 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// </summary>
 		private void InitializeComponent() {
 			_menuStrip = new System.Windows.Forms.MenuStrip();
+			_screensMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_noOpenScreensMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_screensSeparator = new System.Windows.Forms.ToolStripSeparator();
+			_closeAllScreensMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_closeOtherScreensMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			_userguideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,12 +58,31 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			// _menuStrip
 			// 
-			_menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem });
+			_menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, _screensMenuItem });
 			_menuStrip.Location = new System.Drawing.Point(0, 0);
 			_menuStrip.Name = "_menuStrip";
 			_menuStrip.Size = new System.Drawing.Size(664, 24);
 			_menuStrip.TabIndex = 3;
 			_menuStrip.Text = "menuStrip1";
+			//
+			// Screens
+			//
+			_screensMenuItem.Name = "_screensMenuItem";
+			_screensMenuItem.Text = "Screens";
+			_screensMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { _noOpenScreensMenuItem, _screensSeparator, _closeAllScreensMenuItem, _closeOtherScreensMenuItem });
+			_screensMenuItem.DropDownOpening += ScreensMenuOpening;
+			_noOpenScreensMenuItem.Name = "_noOpenScreensMenuItem";
+			_noOpenScreensMenuItem.Text = "No Open Screens";
+			_noOpenScreensMenuItem.Enabled = false;
+			_screensSeparator.Name = "_screensSeparator";
+			_closeAllScreensMenuItem.Name = "_closeAllScreensMenuItem";
+			_closeAllScreensMenuItem.Text = "Close All";
+			_closeAllScreensMenuItem.Enabled = false;
+			_closeAllScreensMenuItem.Click += CloseAllScreensClicked;
+			_closeOtherScreensMenuItem.Name = "_closeOtherScreensMenuItem";
+			_closeOtherScreensMenuItem.Text = "Close All Others";
+			_closeOtherScreensMenuItem.Enabled = false;
+			_closeOtherScreensMenuItem.Click += CloseOtherScreensClicked;
 			// 
 			// fileToolStripMenuItem
 			// 
@@ -98,21 +122,21 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			_requestAFeatureToolStripMenuItem.Name = "_requestAFeatureToolStripMenuItem";
 			_requestAFeatureToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			_requestAFeatureToolStripMenuItem.Text = "Request a feature";
+			_requestAFeatureToolStripMenuItem.Text = "Request A Feature";
 			_requestAFeatureToolStripMenuItem.Click += RequestAFeature_Click;
 			// 
 			// sendACommentToolStripMenuItem
 			// 
 			sendACommentToolStripMenuItem.Name = "sendACommentToolStripMenuItem";
 			sendACommentToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			sendACommentToolStripMenuItem.Text = "Send a comment";
+			sendACommentToolStripMenuItem.Text = "Send A Comment";
 			sendACommentToolStripMenuItem.Click += SendComment_Click;
 			// 
 			// reportABugToolStripMenuItem
 			// 
 			reportABugToolStripMenuItem.Name = "reportABugToolStripMenuItem";
 			reportABugToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
-			reportABugToolStripMenuItem.Text = "Report a bug";
+			reportABugToolStripMenuItem.Text = "Report A Bug";
 			reportABugToolStripMenuItem.Click += ReportABug_Click;
 			// 
 			// toolStripSeparator4
@@ -169,6 +193,11 @@ namespace Sphere10.Framework.Windows.Forms {
 		#endregion
 
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _screensMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _noOpenScreensMenuItem;
+		private System.Windows.Forms.ToolStripSeparator _screensSeparator;
+		private System.Windows.Forms.ToolStripMenuItem _closeAllScreensMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _closeOtherScreensMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _userguideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _contextHelpToolStripMenuItem;

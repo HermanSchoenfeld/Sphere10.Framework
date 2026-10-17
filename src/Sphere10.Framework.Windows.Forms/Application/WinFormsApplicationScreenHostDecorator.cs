@@ -58,9 +58,19 @@ public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : MultiA
 
 	public virtual bool ShowScreen(WinFormsApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
 
+	public virtual bool ShowScreenUndocked(WinFormsApplicationScreen screen) => InternalHost.ShowScreenUndocked(screen);
+
+	public override Task<bool> ShowScreenUndockedAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default)
+		=> InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
+
 	public virtual bool CloseScreen(WinFormsApplicationScreen Screen) => InternalHost.CloseScreen(Screen);
 
 	public virtual bool CloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) => InternalHost.CloseScreens(Screens);
+
+	public virtual Task<bool> CloseAllScreensAsync(CancellationToken cancellationToken = default) => InternalHost.CloseAllScreensAsync(cancellationToken);
+
+	public virtual Task<bool> CloseAllOtherScreensAsync(WinFormsApplicationScreen keepScreen, CancellationToken cancellationToken = default)
+		=> InternalHost.CloseAllOtherScreensAsync(keepScreen, cancellationToken);
 
 	public virtual bool CanCloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) => InternalHost.CanCloseScreens(Screens);
 

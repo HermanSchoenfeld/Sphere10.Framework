@@ -399,13 +399,31 @@ public class SharedScreenHostIntegrationTests {
 	}
 
 	[Test]
-	public void SharedShowingRejectsAnUntrackedNativeControl() {
-		using var native = new WinFormsApplicationScreenHost();
-		using var screen = new ProbeScreen();
+	public async Task SharedShowingAcceptsANewConfiguredNativeControlAndPreservesOwnershipAndPolicyValidation() {
+		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var otherHost = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var block = CreateBlock("work");
+		var screen = new ProbeScreen { Block = block, Title = "Configured Editor", Value = 42 };
 		IMultiApplicationScreenHost host = native;
-		Assert.That(() => host.ShowScreenAsync(screen), Throws.ArgumentException);
-		Assert.That(host.Screens, Is.Empty);
+		Assert.That(await host.ShowScreenAsync(screen), Is.True);
+		Assert.That(host.Screens, Is.EqualTo(new[] { screen }));
+		Assert.That(host.ActiveScreen, Is.SameAs(screen));
+		Assert.That(screen.Title, Is.EqualTo("Configured Editor"));
+		Assert.That(screen.Value, Is.EqualTo(42));
 		Assert.That(screen.IsDisposed, Is.False);
+		IMultiApplicationScreenHost foreign = otherHost;
+		Assert.That(() => foreign.ShowScreenAsync(screen), Throws.ArgumentException);
+		Assert.That(foreign.Screens, Is.Empty);
+		using var disposed = new ProbeScreen();
+		disposed.Dispose();
+		Assert.That(() => host.ShowScreenAsync(disposed), Throws.ArgumentException);
+		var singleton = new SingletonScreen { Block = block };
+		Assert.That(await host.ShowScreenAsync(singleton), Is.True);
+		using var duplicate = new SingletonScreen { Block = block };
+		Assert.That(() => host.ShowScreenAsync(duplicate), Throws.ArgumentException);
+		Assert.That(duplicate.Host, Is.Null);
+		Assert.That(duplicate.IsDisposed, Is.False, "The caller retains rejected instances.");
+		Assert.That(host.Screens, Is.EqualTo(new[] { screen, singleton }));
 	}
 
 	[Test]

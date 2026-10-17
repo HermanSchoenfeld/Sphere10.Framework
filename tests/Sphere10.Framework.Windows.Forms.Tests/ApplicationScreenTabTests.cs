@@ -7,10 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using Sphere10.Framework.Application.UI;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
@@ -412,6 +414,156 @@ public class ApplicationScreenTabTests {
 		}
 	}
 
+	[TestCase(96)]
+	[TestCase(144)]
+	[TestCase(192)]
+	public void DefaultWidthFitsCommonLongScreenNamesWithIconsAndCloseButtons(int Dpi) {
+		using var Images = new ImageList { ImageSize = new Size(16, 16) };
+		Images.Images.Add(SystemIcons.Information);
+		using var Tabs = new TestTabs { Size = new Size(2400, 400), ImageList = Images };
+		var Titles = new[] { "Open Files And File Blockers", "Physical Disks And Partitions", "All Network Interfaces", "Performance Statistics", "Inspect Current Process" };
+		Tabs.TabPages.AddRange(Titles.Select(Title => new TabPage(Title) { ImageIndex = 0 }).ToArray());
+		_ = Tabs.Handle;
+		Tabs.ApplyDpiChange(Tabs.DeviceDpi, Dpi);
+		Assert.That(Tabs.MaximumTabWidth, Is.EqualTo(320));
+		var ReservedWidth = Scale(16) + 3 * Scale(6) + Scale(16) + Scale(4);
+		for (var Index = 0; Index < Titles.Length; Index++) {
+			var TextWidth = TextRenderer.MeasureText(Titles[Index], Tabs.Font, Size.Empty, TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding).Width;
+			Assert.That(Tabs.GetTabRect(Index).Width - ReservedWidth, Is.GreaterThanOrEqualTo(TextWidth), $"'{Titles[Index]}' must fit beside its image and close action at {Dpi} DPI.");
+			Assert.That(Tabs.GetTabRect(Index).Width, Is.LessThanOrEqualTo(Scale(320)));
+			Assert.That(Tabs.TabPages[Index].ToolTipText, Is.EqualTo(Titles[Index]));
+		}
+		Tabs.TabPages[0].Text = new string('W', 150);
+		Assert.That(Tabs.GetTabRect(0).Width, Is.LessThanOrEqualTo(Scale(320)));
+		Assert.That(Tabs.TabPages[0].ToolTipText, Is.EqualTo(Tabs.TabPages[0].Text));
+
+		int Scale(int Value) => (int)Math.Round(Value * Dpi / 96.0);
+	}
+
+	[TestCase(true)]
+	[TestCase(false)]
+	public void FirstHostedPermanentTabAndLaterTabsReserveKeyedIconsBeforeAndAfterTheFormIsShown(bool RegisterBeforeShowing) {
+		Exception Failure = null;
+		var PreviousContext = SynchronizationContext.Current;
+		using var Context = new WindowsFormsSynchronizationContext();
+		using var RestoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(PreviousContext));
+		SynchronizationContext.SetSynchronizationContext(Context);
+		using var Icon = SystemIcons.Information.ToBitmap();
+		using var Block = new WinFormsApplicationBlock { Name = "Hosted Tab Test" };
+		var Overview = new WinFormsScreenMenuItem("Overview", typeof(PermanentDragScreen), Icon) {
+			ScreenDefinition = new ApplicationScreenDefinition(typeof(PermanentDragScreen), "Overview", ScreenActivationMode.PermanentSingleton)
+		};
+		var Files = new WinFormsScreenMenuItem("Open Files And File Blockers", typeof(DragScreen), Icon);
+		Block.AddMenu(new WinFormsApplicationMenu("Monitor", new IWinFormsApplicationMenuItem[] { Overview, Files }));
+		Block.DefaultScreenDefinition = Overview.ScreenDefinition;
+		using var Form = new HostedTabLayoutForm { ScreenMode = ScreenMode.MultiView, ClientSize = new Size(1300, 750),
+			ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000) };
+		using var LoopOwner = new Form { ClientSize = new Size(1300, 750), ShowInTaskbar = false,
+			StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000) };
+		using var Watchdog = new System.Windows.Forms.Timer { Interval = 20000 };
+		var Finished = false;
+		var Completed = false;
+		var Stage = "waiting for owner Shown";
+		Watchdog.Tick += (_, _) => { Failure = new AssertionException("Hosted tab layout test timed out: " + Stage); Finish(); };
+		LoopOwner.Shown += async (_, _) => {
+			using var Close = Tools.Scope.ExecuteOnDispose(Finish);
+			try {
+				Stage = "registering before main frame Show";
+				if (RegisterBeforeShowing)
+					Form.RegisterBlock(Block);
+				Stage = "showing main frame";
+				Form.Show(LoopOwner);
+				Stage = "registering after main frame Show";
+				if (!RegisterBeforeShowing)
+					Form.RegisterBlock(Block);
+				Stage = "awaiting displayed frame";
+				await Task.Yield();
+				Stage = "checking native caption measurements";
+				Assert.That(Form.Visible, Is.True);
+				AssertHostedCaption(0, "Overview");
+				Form.ScreenHost.ActivateScreen(Block, typeof(DragScreen), "Open Files And File Blockers");
+				AssertHostedCaption(0, "Overview");
+				AssertHostedCaption(1, "Open Files And File Blockers");
+				Completed = true;
+			} catch (Exception Error) {
+				Failure = Error;
+			}
+		};
+		Watchdog.Start();
+		System.Windows.Forms.Application.Run(LoopOwner);
+		Assert.That(Failure, Is.Null, Failure?.ToString());
+		Assert.That(Completed, Is.True, "The owned frame must run all native caption assertions before its loop owner closes.");
+		Assert.That(Form.UiErrors, Is.Empty, "A UI event error must be recorded rather than opening an unanswerable modal error dialog.");
+
+		void Finish() {
+			if (Finished)
+				return;
+			Finished = true;
+			Watchdog.Stop();
+			using var CloseOwner = Tools.Scope.ExecuteOnDispose(LoopOwner.Close);
+			Form.Dispose();
+		}
+
+		void AssertHostedCaption(int Index, string Title) {
+			var Tabs = Form.ScreenHost.TabControl;
+			var Page = Tabs.TabPages[Index];
+			var ImageIndex = Tabs.ImageList.Images.IndexOfKey(Page.ImageKey);
+			Assert.That(Page.ImageKey, Is.Not.Empty, "The real host uses keyed activator icons, rather than standalone numeric image indices.");
+			Assert.That(ImageIndex, Is.GreaterThanOrEqualTo(0));
+			var NativeItem = new WinAPI.COMCTL32.TCITEM { Mask = WinAPI.COMCTL32.TCIF_IMAGE };
+			Assert.That(WinAPI.USER32.SendMessage(Tabs.Handle, WinAPI.COMCTL32.TCM_GETITEMW, (IntPtr)Index, ref NativeItem), Is.Not.EqualTo(IntPtr.Zero));
+			Assert.That(NativeItem.Image, Is.EqualTo(ImageIndex), "Native caption measurement must reserve the keyed image already painted by the owner-draw implementation.");
+			var NativeFontHandle = WinAPI.USER32.SendMessage(Tabs.Handle, 0x0031, IntPtr.Zero, IntPtr.Zero);
+			Assert.That(NativeFontHandle, Is.Not.EqualTo(IntPtr.Zero));
+			using var NativeFont = Font.FromHfont(NativeFontHandle);
+			var TextWidth = TextRenderer.MeasureText(Title, Tabs.Font, Size.Empty, TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding).Width;
+			var NativeTextWidth = TextRenderer.MeasureText(Title, NativeFont, Size.Empty, TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding).Width;
+			Assert.That(NativeTextWidth, Is.EqualTo(TextWidth), "Native and owner-drawn caption measurements must use the same font.");
+			var ReservedWidth = Tabs.LogicalToDeviceUnits(16) + 3 * Tabs.LogicalToDeviceUnits(6) + Tabs.LogicalToDeviceUnits(16) + Tabs.LogicalToDeviceUnits(4);
+			Assert.That(Tabs.GetTabRect(Index).Width - ReservedWidth, Is.GreaterThanOrEqualTo(TextWidth),
+				$"{Title}: rectangle={Tabs.GetTabRect(Index)}; padding={Tabs.Padding}; font={Tabs.Font}; native font={NativeFont}; image={NativeItem.Image}.");
+			Assert.That(Page.Text, Is.EqualTo(Title));
+			Assert.That(Page.ToolTipText, Is.EqualTo(Title));
+		}
+	}
+
+	[Test]
+	public async Task PermanentTabsRejectCloseAndUndockInputWhileOfferingBulkCloseForOtherScreens() {
+		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var Permanent = new PermanentDragScreen();
+		var Other = new DragScreen();
+		Host.ShowScreen(Permanent);
+		Host.ShowScreen(Other);
+		using var Tabs = new TestTabs { Size = new Size(800, 400) };
+		Tabs.TabPages.AddRange(new[] { new TabPage("Overview") { Tag = Permanent }, new TabPage("Other") { Tag = Other } });
+		_ = Tabs.Handle;
+		var CloseRequests = 0;
+		var UndockRequests = 0;
+		Tabs.ScreenCloseRequested += _ => CloseRequests++;
+		Tabs.ScreenUndockRequested += _ => UndockRequests++;
+		var Page = Tabs.TabPages[0];
+		var Bounds = Tabs.GetTabRect(0);
+		Tabs.PressMouseButton(MouseButtons.Middle, Center(Bounds));
+		Tabs.PressMouseButton(MouseButtons.Left, new Point(Bounds.Right - Tabs.LogicalToDeviceUnits(14), Bounds.Top + Bounds.Height / 2));
+		Tabs.BeginDrag(Page);
+		Tabs.DragTo(new Point(20, 150));
+		Tabs.EndNativeDrag(new Point(20, 150));
+		Assert.That(CloseRequests, Is.Zero);
+		Assert.That(UndockRequests, Is.Zero);
+		Tabs.PressMouseButton(MouseButtons.Right, Center(Tabs.GetTabRect(0)));
+		var Menu = (ContextMenuStrip)typeof(WinFormsApplicationScreenTabControl).GetField("_tabMenu", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(Tabs);
+		Assert.That(Menu.Items["_closeMenuItem"].Enabled, Is.False);
+		Assert.That(Menu.Items["_undockMenuItem"].Enabled, Is.False);
+		Assert.That(Menu.Items["_closeAllMenuItem"].Enabled, Is.True);
+		Assert.That(Menu.Items["_closeOthersMenuItem"].Enabled, Is.True);
+		Menu.Close();
+		Assert.That(Host.CloseScreen(Permanent), Is.False);
+		Assert.That(Host.UndockScreen(Permanent), Is.False);
+		Assert.That(await Host.CloseAllScreensAsync(), Is.True);
+		Assert.That(Host.OpenScreens, Is.EqualTo(new[] { Permanent }));
+		Assert.That(Permanent.IsDisposed, Is.False);
+	}
+
 	[Test]
 	public void WidthCapSurvivesFontChangesAndHandleRecreation() {
 		using var Tabs = new TestTabs { Size = new Size(1100, 400), MaximumTabWidth = 180 };
@@ -538,6 +690,8 @@ public class ApplicationScreenTabTests {
 
 		public void PaintNativePreview() => WinAPI.USER32.SendMessage(Handle, 0x000F, IntPtr.Zero, IntPtr.Zero);
 
+		public void PressMouseButton(MouseButtons Button, Point Location) => OnMouseDown(new MouseEventArgs(Button, 1, Location.X, Location.Y, 0));
+
 		public void DrawTab(Graphics Graphics, int Index, Rectangle Bounds)
 			=> OnDrawItem(new DrawItemEventArgs(Graphics, Font, Bounds, Index, DrawItemState.Default));
 
@@ -596,5 +750,20 @@ public class ApplicationScreenTabTests {
 
 	private class DragScreen : WinFormsApplicationScreen {
 		public DragScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
+	}
+
+	private sealed class PermanentDragScreen : WinFormsApplicationScreen {
+		public PermanentDragScreen() => ActivationMode = ScreenActivationMode.PermanentSingleton;
+	}
+
+	private sealed class HostedTabLayoutForm : BlockMainForm {
+		public List<Exception> UiErrors { get; } = new();
+
+		// This fixture exercises native screen layout, independently of product usage/licensing startup services.
+		protected override void OnLoad(EventArgs Args) { }
+
+		protected override void OnFirstActivated() { }
+
+		public override void ReportError(Exception Error) => UiErrors.Add(Error);
 	}
 }

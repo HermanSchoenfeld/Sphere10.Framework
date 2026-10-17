@@ -10,6 +10,7 @@ using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
@@ -91,9 +92,23 @@ public abstract class WinFormsApplicationScreenHostBase : UserControlEx, IWinFor
 
 	public virtual Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) => ApplicationHost.ShowScreenAsync(screen, cancellationToken);
 
+	public virtual Task<bool> ShowScreenUndockedAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default)
+		=> ApplicationHost.ShowScreenUndockedAsync(screen, cancellationToken);
+
 	public virtual Task<bool> CloseScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) => ApplicationHost.CloseScreenAsync(screen, cancellationToken);
 
 	public virtual Task<bool> CloseScreensAsync(IEnumerable<WinFormsApplicationScreen> screens, CancellationToken cancellationToken = default) => ApplicationHost.CloseScreensAsync(screens, cancellationToken);
+
+	/// <summary>Closes all presented instances, including detached windows, after their guards accept. Permanent screens remain open.</summary>
+	public virtual Task<bool> CloseAllScreensAsync(CancellationToken cancellationToken = default)
+		=> CloseScreensAsync(OpenScreens.Where(screen => screen.ActivationMode != ScreenActivationMode.PermanentSingleton).ToArray(), cancellationToken);
+
+	/// <summary>Closes other presented instances, retaining this exact instance and every permanent screen.</summary>
+	public virtual Task<bool> CloseAllOtherScreensAsync(WinFormsApplicationScreen keepScreen, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(keepScreen, nameof(keepScreen));
+		Guard.Argument(OpenScreens.Contains(keepScreen, ReferenceEqualityComparer.Instance), nameof(keepScreen), "Screen is not open in this host.");
+		return CloseScreensAsync(OpenScreens.Where(screen => !ReferenceEquals(screen, keepScreen) && screen.ActivationMode != ScreenActivationMode.PermanentSingleton).ToArray(), cancellationToken);
+	}
 
 	public virtual Task<bool> CanCloseScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) => ApplicationHost.CanCloseScreenAsync(screen, cancellationToken);
 
@@ -121,6 +136,8 @@ public abstract class WinFormsApplicationScreenHostBase : UserControlEx, IWinFor
 	public abstract WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock block, ApplicationScreenDefinition definition);
 
 	public abstract bool ShowScreen(WinFormsApplicationScreen Screen);
+
+	public abstract bool ShowScreenUndocked(WinFormsApplicationScreen screen);
 
 	public abstract bool CloseScreen(WinFormsApplicationScreen Screen);
 
