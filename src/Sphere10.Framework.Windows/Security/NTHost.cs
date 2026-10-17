@@ -21,27 +21,26 @@ namespace Sphere10.Framework.Windows.Security;
 /// <summary>
 /// Encapsulates a remote host.
 /// </summary>
-/// <remarks>
-/// Make sure remote host allows anonymous enumeration of users and groups.
-/// For Windows 2003/XP/Vista make sure
-///    HKLM\System\CurrentControlSet\Control\Lsa\RestrictAnonymousSAM = 1
-///    
-/// For Windows 2000 make sure
-///      HKLM\System\CurrentControlSet\Control\Lsa\RestrictAnonymousSAM = 0
-/// 
-/// To set it as a policy
-///  Computer Configuration/Windows Settings /Security Settings/Local Policies/Security Options/Network Access: Do not allow anonymous enumeration of SAM accounts = Disabled.
-///  
-/// For more information see http://web.mit.edu/win/security.html
-/// </remarks>
+/// <remarks>Native inventory uses the caller's Windows credentials and the remote server's access policy.
+/// Reachable DNS does not establish permission to enumerate or modify its users, groups or shares.</remarks>
 public class NTHost : NTObject {
 	static private readonly NTHost _currentMachine = new NTHost(null);
+	internal delegate bool AccountNameLookup(string host, string accountName, out SecurityIdentifier sid, out string domain,
+		out WinAPI.ADVAPI32.SidNameUse usage, out int win32Error);
 
 	/// <summary>
-	/// Constructor establishes connection to host.
+	/// Resolves the host name and attempts its identity lookup. Inventory access is established by each native query.
 	/// </summary>
-	/// <param name="hostToConnectTo">Name of host to connect to, or null/empty for local host.</param>
-	public NTHost(string host) {
+	/// <param name="host">Name of host to query, or null/empty for local host.</param>
+	public NTHost(string host) : this(host, null) {
+	}
+
+	public NTHost(string host, Action checkpoint) : this(host, checkpoint, null) {
+	}
+
+	internal NTHost(string host, Action checkpoint, AccountNameLookup suppliedLookup) {
+		Checkpoint = checkpoint ?? (() => { });
+		Checkpoint();
 		string hostToConnectTo = string.IsNullOrEmpty(host) ? Environment.MachineName : host;
 		IPHostEntry hostEntry = Dns.GetHostEntry(hostToConnectTo);
 		Host = hostToConnectTo;
@@ -53,7 +52,7 @@ public class NTHost : NTObject {
 
 			#region Get SID for host
 
-			var resolver = new SidNameResolver(this.Host);
+			var lookup = suppliedLookup ?? new AccountNameLookup(SecurityTool.TryLookupAccountName);
 			var nameUse = WinAPI.ADVAPI32.SidNameUse.Unknown;
 			SecurityIdentifier sid = null;
 
@@ -67,14 +66,15 @@ public class NTHost : NTObject {
 			var found = false;
 			var nameMatched = string.Empty;
 			foreach (var name in namesToSearch) {
-				string resolveError;
+				int resolveError;
 				string resolvedDomain;
-				if (resolver.TryReverseResolve(name, out sid, out resolvedDomain, out nameUse, out resolveError)) {
+				Checkpoint();
+				if (lookup(Host, name, out sid, out resolvedDomain, out nameUse, out resolveError)) {
 					found = true;
 					nameMatched = name;
 					break;
 				} else {
-					resolveErrors.Add(resolveError);
+					resolveErrors.Add(WindowsException.ErrorCodeToDescription(resolveError));
 				}
 			}
 			if (!found) {
@@ -103,21 +103,14 @@ public class NTHost : NTObject {
 
 			#endregion
 
-		} catch {
-// TODO: Dodgy workaround - can't get host SID for domain controllers. Ignorning for now
-			try {
-				SidNameUsage = WinAPI.ADVAPI32.SidNameUse.Invalid;
-				SID = new SecurityIdentifier(WellKnownSidType.BuiltinDomainSid, null);
-			} catch {
-				try {
-					SID = new SecurityIdentifier(WellKnownSidType.LocalSid, null);
-				} catch {
-					SID = new SecurityIdentifier(WellKnownSidType.AnonymousSid, null);
-				}
-			}
+		} catch (OperationCanceledException) {
+			throw;
+		} catch (Exception error) {
+			SID = null;
+			SidNameUsage = WinAPI.ADVAPI32.SidNameUse.Invalid;
+			SidResolutionError = error.Message;
 		}
 	}
-
 	/// <summary>
 	/// Gets the current machine.
 	/// </summary>
@@ -133,6 +126,19 @@ public class NTHost : NTObject {
 
 	public IPAddress[] Addresses { get; set; }
 
+	public Action Checkpoint { get; }
+
+	/// <summary>Why this host identity could not be resolved; inventory may still be available.</summary>
+	public string SidResolutionError { get; private set; }
+
+	public static bool IsLocalHost(string host) {
+		host = host?.Trim().TrimStart('\\');
+		if (string.IsNullOrEmpty(host) || host == "." || string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)
+			|| string.Equals(host, Environment.MachineName, StringComparison.OrdinalIgnoreCase))
+			return true;
+		return string.Equals(Dns.GetHostEntry(host).HostName, CurrentMachine.Name, StringComparison.OrdinalIgnoreCase);
+	}
+
 	public static bool CanConnectTo(string hostname) {
 		try {
 			var host = new NTHost(hostname);
@@ -147,54 +153,15 @@ public class NTHost : NTObject {
 	/// </summary>
 	/// <returns></returns>
 	public NTLocalGroup[] GetLocalGroups() {
-		var bufPtr = IntPtr.Zero;
-		var localGroups = new List<NTLocalGroup>();
-
-		try {
-			uint entriesRead;
-			uint totalEntries;
-			int resumeHandle;
-			var result = WinAPI.NETAPI32.NetLocalGroupEnum(
-				this.NTCompatibleHostName,
-				(uint)0,
-				out bufPtr,
-				(int)-1,
-				out entriesRead,
-				out totalEntries,
-				out resumeHandle
-			);
-			if (result != 0) {
-				throw new NetApiException(
-					result,
-					"Failed to enumerate local groups on host '{0}'",
-					Host
-				);
-			}
-
-			var iter = bufPtr;
-			var structSize = Marshal.SizeOf(typeof(WinAPI.NETAPI32.LOCALGROUP_INFO_0));
-			var startAddr = bufPtr.ToInt64();
-			var endAddr = startAddr + (int)entriesRead * structSize;
-			for (var offset = startAddr; offset < endAddr; offset += structSize) {
-				var groupInfo =
-					(WinAPI.NETAPI32.LOCALGROUP_INFO_0)Marshal.PtrToStructure(
-						new IntPtr(offset),
-						typeof(WinAPI.NETAPI32.LOCALGROUP_INFO_0)
-					);
-				var group = new NTLocalGroup();
-				group.Host = Host;
-				group.Name = groupInfo.name;
+		var resume = UIntPtr.Zero;
+		return NetApiEnumeration.Read<WinAPI.NETAPI32.LOCALGROUP_INFO_0, NTLocalGroup>(
+			(out IntPtr buffer, out uint count) => WinAPI.NETAPI32.NetLocalGroupEnumPaged(NTCompatibleHostName, 0, out buffer, WinAPI.NETAPI32.MAX_PREFERRED_LENGTH, out count, out _, ref resume),
+			info => {
+				var group = new NTLocalGroup { Host = Host, Name = info.name, Checkpoint = Checkpoint };
 				group.Refresh();
-				localGroups.Add(group);
-			}
-		} finally {
-			if (bufPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(bufPtr);
-			}
-		}
-		return localGroups.ToArray();
+				return group;
+			}, Checkpoint);
 	}
-
 	public bool TryGetLocalObject(string remoteName, out NTLocalObject obj) {
 		var retval = false;
 		obj = null;
@@ -212,7 +179,12 @@ public class NTHost : NTObject {
 	}
 
 	public bool TryGetLocalGroup(string name, out NTLocalGroup group) {
-		group = new NTLocalGroup();
+		return TryGetLocalGroup(name, out group, Checkpoint);
+	}
+
+	public bool TryGetLocalGroup(string name, out NTLocalGroup group, Action checkpoint) {
+		checkpoint?.Invoke();
+		group = new NTLocalGroup { Checkpoint = checkpoint ?? (() => { }) };
 		if (NTLocalGroup.TryLoadLocalGroup(NTCompatibleHostName, name, group) == 0) {
 			return true;
 		} else {
@@ -226,7 +198,10 @@ public class NTHost : NTObject {
 	/// </summary>
 	/// <param name="name"></param>
 	/// <param name="description"></param>
-	public NTLocalGroup CreateLocalGroup(string name, string description) {
+	public NTLocalGroup CreateLocalGroup(string name, string description) => CreateLocalGroup(name, description, Checkpoint);
+
+	public NTLocalGroup CreateLocalGroup(string name, string description, Action checkpoint) {
+		checkpoint?.Invoke();
 		var error = 0;
 		var newLocalGroup = new WinAPI.NETAPI32.LOCALGROUP_INFO_1();
 		newLocalGroup.lgrpi1_name = name;
@@ -245,6 +220,7 @@ public class NTHost : NTObject {
 		localGroup.Host = Host;
 		localGroup.Name = name;
 		localGroup.Description = description;
+		localGroup.Checkpoint = checkpoint ?? (() => { });
 		localGroup.Refresh();
 
 		return localGroup;
@@ -256,60 +232,37 @@ public class NTHost : NTObject {
 	/// </summary>
 	/// <returns></returns>
 	public NTLocalUser[] GetLocalUsers() {
-		var bufPtr = IntPtr.Zero;
-		var localUsers = new List<NTLocalUser>();
-
-		try {
-			int entriesRead;
-			int totalEntries;
-			int resumeHandle;
-			var result = WinAPI.NETAPI32.NetUserEnum(
-				this.NTCompatibleHostName,
-				3,
-				2,
-				out bufPtr,
-				-1,
-				out entriesRead,
-				out totalEntries,
-				out resumeHandle
-			);
-			if (result != 0) {
-				throw new NetApiException(
-					result,
-					"Failed to enumerate local users on host '{0}'",
-					Host
-				);
-			}
-			var structSize = Marshal.SizeOf(typeof(WinAPI.NETAPI32.USER_INFO_3));
-			var startAddr = bufPtr.ToInt64();
-			var endAddr = startAddr + entriesRead * structSize;
-			for (var offset = startAddr; offset < endAddr; offset += structSize) {
-				var userInfo =
-					(WinAPI.NETAPI32.USER_INFO_3)Marshal.PtrToStructure(
-						new IntPtr(offset),
-						typeof(WinAPI.NETAPI32.USER_INFO_3)
-					);
-				var user = new NTLocalUser {
-					Host = Host,
-					Name = !string.IsNullOrEmpty(userInfo.usri3_name) ? userInfo.usri3_name : string.Empty
-				};
-				user.Refresh();
-				localUsers.Add(user);
-			}
-		} catch (Exception) {
-// TODO: Need to fix this
-			//throw new ApplicationException(
-
-		} finally {
-			if (bufPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(bufPtr);
-			}
-		}
-		return localUsers.ToArray();
+		var users = GetLocalUsers(out var errors);
+		if (errors.Length > 0)
+			throw new AggregateException("Some local users could not be read.", errors);
+		return users;
 	}
 
+	public NTLocalUser[] GetLocalUsers(out Exception[] errors) {
+		uint resume = 0;
+		var failures = new List<Exception>();
+		var users = NetApiEnumeration.Read<WinAPI.NETAPI32.USER_INFO_0, NTLocalUser>(
+			(out IntPtr buffer, out uint count) => WinAPI.NETAPI32.NetUserEnumPaged(NTCompatibleHostName, 0, 2, out buffer, WinAPI.NETAPI32.MAX_PREFERRED_LENGTH, out count, out _, ref resume),
+			info => {
+				try {
+					var user = new NTLocalUser { Host = Host, Name = info.Username, Checkpoint = Checkpoint };
+					user.Refresh();
+					return user;
+				} catch (OperationCanceledException) { throw; } catch (Exception error) {
+					failures.Add(error);
+					return null;
+				}
+			}, Checkpoint);
+		errors = failures.ToArray();
+		return users;
+	}
 	public bool TryGetLocalUser(string name, out NTLocalUser user) {
-		user = new NTLocalUser();
+		return TryGetLocalUser(name, out user, Checkpoint);
+	}
+
+	public bool TryGetLocalUser(string name, out NTLocalUser user, Action checkpoint) {
+		checkpoint?.Invoke();
+		user = new NTLocalUser { Checkpoint = checkpoint ?? (() => { }) };
 		if (NTLocalUser.TryLoadLocalUser(NTCompatibleHostName, name, user) == 0) {
 			return true;
 		}
@@ -321,10 +274,25 @@ public class NTHost : NTObject {
 	/// Creates a local user on the host.
 	/// </summary>
 	/// <param name="name"></param>
-	public NTLocalUser CreateLocalUser(string name, string password) {
+	public NTLocalUser CreateLocalUser(string name, string password)
+		=> CreateLocalUser(name, password, UserFlags.NormalAccount | UserFlags.Script, Checkpoint);
+
+	public NTLocalUser CreateLocalUser(string name, string password, Action checkpoint)
+		=> CreateLocalUser(name, password, UserFlags.NormalAccount | UserFlags.Script, checkpoint);
+
+	/// <summary>Creates a local user with flags applied during the native creation call, including PasswordNotRequired.</summary>
+	/// <remarks>Script is required by Windows. Windows still enforces account permissions and password policy.</remarks>
+	public NTLocalUser CreateLocalUser(string name, string password, UserFlags initialFlags)
+		=> CreateLocalUser(name, password, initialFlags, Checkpoint);
+
+	public NTLocalUser CreateLocalUser(string name, string password, UserFlags initialFlags, Action checkpoint) {
+		Guard.Argument(initialFlags.HasFlag(UserFlags.Script), nameof(initialFlags), "Windows requires the Script flag when creating a user.");
+		Guard.Argument(!initialFlags.HasFlag(UserFlags.Lockout), nameof(initialFlags), "A new user cannot be created in a locked-out state.");
+		checkpoint?.Invoke();
 		var newUser = new WinAPI.NETAPI32.USER_INFO_1 {
 			usri1_name = name,
 			usri1_password = password,
+			usri1_flags = (uint)initialFlags,
 			usri1_priv = (int)UserPrivilege.User,
 			usri1_home_dir = null,
 			comment = null,
@@ -342,7 +310,8 @@ public class NTHost : NTObject {
 
 		var user = new NTLocalUser {
 			Host = Host,
-			Name = name
+			Name = name,
+			Checkpoint = checkpoint ?? (() => { })
 		};
 		user.Refresh();
 		return user;
@@ -351,61 +320,23 @@ public class NTHost : NTObject {
 
 
 	public NTShare[] GetShares(out Exception[] errors) {
-		errors = new Exception[0];
-		var resumeHandle = 0;
-		var bufPtr = IntPtr.Zero;
-		var localShares = new List<NTShare>();
-		var errorList = new List<Exception>();
-		try {
-			int entriesRead;
-			int totalEntries;
-			var result = WinAPI.NETAPI32.NetShareEnum(
-				this.NTCompatibleHostName,
-				0,
-				ref bufPtr,
-				WinAPI.NETAPI32.MAX_PREFERRED_LENGTH,
-				out entriesRead,
-				out totalEntries,
-				ref resumeHandle
-			);
-
-			if (result != 0) {
-				throw new NetApiException(
-					result,
-					"Failed to enumerate shares on host '{0}'",
-					Host
-				);
-			}
-			var iter = bufPtr;
-			var structSize = Marshal.SizeOf(typeof(WinAPI.NETAPI32.SHARE_INFO_0));
-			var startAddr = bufPtr.ToInt64();
-			var endAddr = startAddr + entriesRead * structSize;
-			for (var offset = startAddr; offset < endAddr; offset += structSize) {
+		uint resume = 0;
+		var failures = new List<Exception>();
+		var shares = NetApiEnumeration.Read<WinAPI.NETAPI32.SHARE_INFO_0, NTShare>(
+			(out IntPtr buffer, out uint count) => WinAPI.NETAPI32.NetShareEnumPaged(NTCompatibleHostName, 0, out buffer, WinAPI.NETAPI32.MAX_PREFERRED_LENGTH, out count, out _, ref resume),
+			info => {
 				try {
-					var shareInfo =
-						(WinAPI.NETAPI32.SHARE_INFO_0)Marshal.PtrToStructure(
-							new IntPtr(offset),
-							typeof(WinAPI.NETAPI32.SHARE_INFO_0)
-						);
-					var share = new NTShare {
-						Host = Host,
-						Name = shareInfo.shi0_netname
-					};
+					var share = new NTShare { Host = Host, Name = info.shi0_netname, Checkpoint = Checkpoint };
 					share.Refresh();
-					localShares.Add(share);
-				} catch (Exception error) {
-					errorList.Add(error);
+					return share;
+				} catch (OperationCanceledException) { throw; } catch (Exception error) {
+					failures.Add(error);
+					return null;
 				}
-			}
-		} finally {
-			if (bufPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(bufPtr);
-			}
-		}
-		errors = errorList.ToArray();
-		return localShares.ToArray();
+			}, Checkpoint);
+		errors = failures.ToArray();
+		return shares;
 	}
-
 	public NTShare[] GetShares() {
 		Exception[] errors;
 		return GetShares(out errors);
@@ -413,7 +344,12 @@ public class NTHost : NTObject {
 
 
 	public bool TryGetShare(string name, out NTShare share) {
-		share = new NTShare();
+		return TryGetShare(name, out share, Checkpoint);
+	}
+
+	public bool TryGetShare(string name, out NTShare share, Action checkpoint) {
+		checkpoint?.Invoke();
+		share = new NTShare { Checkpoint = checkpoint ?? (() => { }) };
 		if (NTShare.TryLoadLocalShare(NTCompatibleHostName, name, share) == 0) {
 			return true;
 		} else {
@@ -432,7 +368,10 @@ public class NTHost : NTObject {
 		return TryGetShare(name, out share);
 	}
 
-	public NTShare CreateShare(string name, string description, WinAPI.NETAPI32.SHARE_TYPE type, string path) {
+	public NTShare CreateShare(string name, string description, WinAPI.NETAPI32.SHARE_TYPE type, string path) => CreateShare(name, description, type, path, Checkpoint);
+
+	public NTShare CreateShare(string name, string description, WinAPI.NETAPI32.SHARE_TYPE type, string path, Action checkpoint) {
+		checkpoint?.Invoke();
 		var newShare = new WinAPI.NETAPI32.SHARE_INFO_502 {
 			shi502_netname = name,
 			shi502_remark = description,
@@ -453,7 +392,8 @@ public class NTHost : NTObject {
 
 		var share = new NTShare {
 			Host = Host,
-			Name = name
+			Name = name,
+			Checkpoint = checkpoint ?? (() => { })
 		};
 		share.Refresh();
 		return share;

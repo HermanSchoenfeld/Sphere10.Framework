@@ -119,8 +119,8 @@ public class NTLocalUser : NTLocalObject {
 	/// List of workstations the user can log on from. To disable logons from all workstations to this account, set the 'UserFlags.AccountDisable' value in the User.Flags member.
 	/// </summary>
 	public string[] Workstations {
-		get { return usri2_workstations.Split(',').TrimMany().ToArray(); }
-		set { usri2_workstations = value.ToDelimittedString(","); }
+		get { return (usri2_workstations ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries).TrimMany().ToArray(); }
+		set { usri2_workstations = (value ?? Array.Empty<string>()).ToDelimittedString(","); }
 	}
 
 	/// <summary>
@@ -128,7 +128,7 @@ public class NTLocalUser : NTLocalObject {
 	/// This member is maintained separately on each backup domain controller (BDC) in the domain. To obtain an accurate value, you must query each BDC in the domain. The last logon occurred at the time indicated by the largest retrieved value.
 	/// </summary>
 	public DateTime LastLogon {
-		get { return (_last_logon == 0) ? DateTime.MinValue : Tools.Time.DateFrom1979Jan1(_last_logon); }
+		get { return (_last_logon == 0) ? DateTime.MinValue : DateTimeOffset.FromUnixTimeSeconds(_last_logon).UtcDateTime; }
 	}
 
 	/// <summary>
@@ -136,7 +136,7 @@ public class NTLocalUser : NTLocalObject {
 	/// This member is maintained separately on each backup domain controller (BDC) in the domain. To obtain an accurate value, you must query each BDC in the domain. The last logoff occurred at the time indicated by the largest retrieved value. This member is currently not used. 
 	/// </summary>
 	public DateTime LastLogoff {
-		get { return (_last_logoff == 0) ? DateTime.MinValue : Tools.Time.DateFrom1979Jan1(_last_logoff); }
+		get { return (_last_logoff == 0) ? DateTime.MinValue : DateTimeOffset.FromUnixTimeSeconds(_last_logoff).UtcDateTime; }
 	}
 
 	/// <summary>
@@ -146,11 +146,11 @@ public class NTLocalUser : NTLocalObject {
 	public DateTime AccountExpires {
 		get {
 			return
-				(_acct_expires == unchecked((uint)-1)) ? DateTime.MaxValue : Tools.Time.DateFrom1979Jan1(_acct_expires);
+				(_acct_expires == unchecked((uint)-1)) ? DateTime.MaxValue : DateTimeOffset.FromUnixTimeSeconds(_acct_expires).UtcDateTime;
 		}
 		set {
 			_acct_expires =
-				(value == DateTime.MaxValue) ? unchecked((uint)-1) : value.MilliSecondsSince1979Jan1();
+				(value == DateTime.MaxValue) ? unchecked((uint)-1) : checked((uint)new DateTimeOffset(value).ToUnixTimeSeconds());
 		}
 	}
 
@@ -176,14 +176,14 @@ public class NTLocalUser : NTLocalObject {
 	public byte[] LogonHours { get; set; }
 
 	/// <summary>
-	/// The number of times the user tried to log on to the account using an incorrect password. A value of –1 indicates that the value is unknown.
+	/// The number of times the user tried to log on to the account using an incorrect password. A value of ï¿½1 indicates that the value is unknown.
 	/// 
 	/// This member is replicated from the primary domain controller (PDC); it is also maintained on each backup domain controller (BDC) in the domain. To obtain an accurate value, you must query each BDC in the domain. The number of times the user tried to log on using an incorrect password is the largest value retrieved.
 	/// </summary>
 	public uint BadPasswordCount { get; set; }
 
 	/// <summary>
-	/// The number of times the user logged on successfully to this account. A value of –1 indicates that the value is unknown. 
+	/// The number of times the user logged on successfully to this account. A value of -1 indicates that the value is unknown.
 	/// This member is maintained separately on each backup domain controller (BDC) in the domain. To obtain an accurate value, you must query each BDC in the domain. The number of times the user logged on successfully is the sum of the retrieved values.
 	/// </summary>
 	public uint NumberOfLogons { get; set; }
@@ -212,67 +212,26 @@ public class NTLocalUser : NTLocalObject {
 	/// </summary>
 	/// <returns></returns>
 	public NTLocalGroup[] GetMembership() {
-		var bufPtr = IntPtr.Zero;
-		var members = new List<NTLocalGroup>();
-		try {
-			int entriesRead, totalEntries;
-			var result =
-				WinAPI.NETAPI32.NetUserGetLocalGroups(
-					this.Host,
-					this.Name,
-					0,
-					0,
-					out bufPtr,
-					8192,
-					out entriesRead,
-					out totalEntries
-				);
-
-			if (result != 0) {
-				throw new NetApiException(
-					result,
-					"Unable to get user '{0}' list of membership on host '{1}'",
-					Name,
-					Host
-				);
-			}
-
-			var structSize = Marshal.SizeOf(typeof(WinAPI.NETAPI32.LOCALGROUP_USERS_INFO_0));
-			var startAddr = bufPtr.ToInt64();
-			var endAddr = startAddr + (int)totalEntries * structSize;
-			for (var i = startAddr; i < endAddr; i += structSize) {
-				var groupInfo
-					= (WinAPI.NETAPI32.LOCALGROUP_USERS_INFO_0)Marshal.PtrToStructure(
-						new IntPtr(i),
-						typeof(WinAPI.NETAPI32.LOCALGROUP_USERS_INFO_0)
-					);
-
-				#region Local object
-
-				NTLocalGroup localGroup = new NTLocalGroup();
-				localGroup.Host = Host;
-				localGroup.Name = groupInfo.groupname;
-				localGroup.Refresh();
-				members.Add(localGroup);
-
-				#endregion
-
-			}
-
-		} finally {
-			if (bufPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(bufPtr);
-			}
-		}
-		return members.ToArray();
+		return NetApiEnumeration.Read<WinAPI.NETAPI32.LOCALGROUP_USERS_INFO_0, NTLocalGroup>(
+			(out IntPtr buffer, out uint count) => {
+				var status = WinAPI.NETAPI32.NetUserGetLocalGroups(Host, Name, 0, 0, out buffer, -1, out var read, out _);
+				count = checked((uint)read);
+				if (status != 0)
+					throw new NetApiException(status, "Unable to read group membership for '{0}\\{1}'.", Host, Name);
+				return status;
+			}, info => {
+				var group = new NTLocalGroup { Host = Host, Name = info.groupname, Checkpoint = Checkpoint };
+				group.Refresh();
+				return group;
+			}, Checkpoint);
 	}
-
 	/// <summary>
 	/// Makes the user a member of the specified local group.
 	/// </summary>
 	/// <param name="groupName">The local name of the group.</param>
 	/// <remarks>The group must be local to the machine this user is defined on (i.e. User.Host)</remarks>
 	public void AddMembership(string groupName) {
+		Checkpoint();
 
 		var newGroupMember = new WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_3 { lgrmi3_domainandname = this.Name };
 		var result = WinAPI.NETAPI32.NetLocalGroupAddMembers(
@@ -308,69 +267,58 @@ public class NTLocalUser : NTLocalObject {
 	}
 
 	public override void Update() {
+		Checkpoint();
 		var userInfo = new WinAPI.NETAPI32.USER_INFO_2();
-		var logonHoursUnmanaged = IntPtr.Zero;
+		var logonHoursLength = LogonHours?.Length ?? 0;
+		Guard.Ensure(logonHoursLength == 0 || (ulong)logonHoursLength == ((ulong)UnitsPerWeek + 7) / 8, "Logon hours must match the configured units per week.");
+		using var logonHours = logonHoursLength == 0 ? null : new UnmanagedMemoryScope(logonHoursLength);
+		var logonHoursUnmanaged = logonHours?.Item ?? IntPtr.Zero;
+		if (logonHoursLength > 0)
+			Marshal.Copy(LogonHours, 0, logonHoursUnmanaged, logonHoursLength);
 
-		try {
-			if (LogonHours.Length > 0) {
-				logonHoursUnmanaged = Marshal.AllocHGlobal(21);
-				if (logonHoursUnmanaged == IntPtr.Zero) {
-					throw new WindowsException("Unable to allocate 21 bytes of unmanaged memory");
-				}
-				Marshal.Copy(LogonHours, 0, logonHoursUnmanaged, 21);
-			}
+		userInfo.usri2_acct_expires = _acct_expires;
+		userInfo.usri2_auth_flags = _auth_flags;
+		userInfo.usri2_bad_pw_count = BadPasswordCount;
+		userInfo.usri2_code_page = CodePage;
+		userInfo.usri2_comment = Description;
+		userInfo.usri2_country_code = CountryCode;
+		userInfo.usri2_flags = _flags;
+		userInfo.usri2_full_name = _full_name;
+		userInfo.usri2_home_dir = _home_dir;
+		userInfo.usri2_usr_comment = _comment;
+		userInfo.usri2_last_logoff = _last_logoff;
+		userInfo.usri2_last_logon = _last_logon;
+		userInfo.usri2_logon_hours = logonHoursUnmanaged;
+		userInfo.usri2_logon_server = _logon_server;
+		userInfo.usri2_max_storage = MaxStorage;
+		userInfo.usri2_name = Name;
+		userInfo.usri2_num_logons = NumberOfLogons;
+		userInfo.usri2_parms = _parms;
+		userInfo.usri2_password = _password;
+		userInfo.usri2_password_age = _password_age; // ignored anyway
+		userInfo.usri2_priv = _priv;
+		userInfo.usri2_script_path = _script_path;
+		userInfo.usri2_units_per_week = UnitsPerWeek;
+		userInfo.usri2_workstations = usri2_workstations;
 
+		const int parmError = 0;
 
-			userInfo.usri2_acct_expires = _acct_expires;
-			userInfo.usri2_auth_flags = _auth_flags;
-			userInfo.usri2_bad_pw_count = BadPasswordCount;
-			userInfo.usri2_code_page = CodePage;
-			userInfo.usri2_comment = Description;
-			userInfo.usri2_country_code = CountryCode;
-			userInfo.usri2_flags = _flags;
-			userInfo.usri2_full_name = _full_name;
-			userInfo.usri2_home_dir = _home_dir;
-			userInfo.usri2_usr_comment = _comment;
-			userInfo.usri2_last_logoff = _last_logoff;
-			userInfo.usri2_last_logon = _last_logon;
-			userInfo.usri2_logon_hours = logonHoursUnmanaged;
-			userInfo.usri2_logon_server = _logon_server;
-			userInfo.usri2_max_storage = MaxStorage;
-			userInfo.usri2_name = Name;
-			userInfo.usri2_num_logons = NumberOfLogons;
-			userInfo.usri2_parms = _parms;
-			userInfo.usri2_password = _password;
-			userInfo.usri2_password_age = _password_age; // ignored anyway
-			userInfo.usri2_priv = _priv;
-			userInfo.usri2_script_path = _script_path;
-			userInfo.usri2_units_per_week = UnitsPerWeek;
-			userInfo.usri2_workstations = usri2_workstations;
+		var result = WinAPI.NETAPI32.NetUserSetInfo(
+			this.Host,
+			this.Name,
+			2,
+			ref userInfo,
+			parmError
+		);
 
-			const int parmError = 0;
-
-			var result = WinAPI.NETAPI32.NetUserSetInfo(
-				this.Host,
-				this.Name,
-				2,
-				ref userInfo,
-				parmError
+		if (result != 0) {
+			throw new NetApiException(
+				result,
+				"Unable to update user '{0}' on host '{1}'",
+				Name,
+				Host
 			);
-
-			if (result != 0) {
-				throw new NetApiException(
-					result,
-					"Unable to update user '{0}' on host '{1}'",
-					Name,
-					Host
-				);
-			}
-		} finally {
-			if (logonHoursUnmanaged != IntPtr.Zero) {
-				Marshal.FreeHGlobal(logonHoursUnmanaged);
-			}
 		}
-
-
 	}
 
 	public override void Refresh() {
@@ -388,98 +336,98 @@ public class NTLocalUser : NTLocalObject {
 	}
 
 	public override void Delete() {
+		Checkpoint();
 		var result = WinAPI.NETAPI32.NetUserDel(this.Host, this.Name);
 		if (result != 0) {
 			throw new NetApiException(
 				result,
-				"Unable to delete user '{0}' on host '{2}'",
+				"Unable to delete user '{0}' on host '{1}'",
 				Name,
 				Host
 			);
 		}
 	}
 
+	internal void CopyNativeInfo(string host, WinAPI.NETAPI32.USER_INFO_2 userInfo) {
+		Host = host;
+		_acct_expires = userInfo.usri2_acct_expires;
+		_auth_flags = userInfo.usri2_auth_flags;
+		BadPasswordCount = userInfo.usri2_bad_pw_count;
+		CodePage = userInfo.usri2_code_page;
+		Description = userInfo.usri2_comment;
+		CountryCode = userInfo.usri2_country_code;
+		_flags = userInfo.usri2_flags;
+		_full_name = userInfo.usri2_full_name;
+		_home_dir = userInfo.usri2_home_dir;
+		_comment = userInfo.usri2_usr_comment;
+		_last_logoff = userInfo.usri2_last_logoff;
+		_last_logon = userInfo.usri2_last_logon;
+		_logon_server = userInfo.usri2_logon_server;
+		MaxStorage = userInfo.usri2_max_storage;
+		Name = userInfo.usri2_name;
+		NumberOfLogons = userInfo.usri2_num_logons;
+		_parms = userInfo.usri2_parms;
+		_password = userInfo.usri2_password;
+		_password_age = userInfo.usri2_password_age;
+		_priv = userInfo.usri2_priv;
+		_script_path = userInfo.usri2_script_path;
+		UnitsPerWeek = userInfo.usri2_units_per_week;
+		usri2_workstations = userInfo.usri2_workstations;
+
+		LogonHours = userInfo.usri2_logon_hours == IntPtr.Zero ? Array.Empty<byte>() : new byte[checked((int)(((ulong)UnitsPerWeek + 7) / 8))];
+		if (LogonHours?.Length > 0)
+			Marshal.Copy(userInfo.usri2_logon_hours, LogonHours, 0, LogonHours.Length);
+	}
+
 	internal static WinAPI.NETAPI32.NET_API_STATUS TryLoadLocalUser(string host, string username, NTLocalUser user) {
 		WinAPI.NETAPI32.NET_API_STATUS result;
 		var bufPtr = IntPtr.Zero;
-		try {
-			result = WinAPI.NETAPI32.NetUserGetInfo(
-				host,
-				username,
-				2,
-				out bufPtr
+		user.Checkpoint();
+		result = WinAPI.NETAPI32.NetUserGetInfo(
+			host,
+			username,
+			2,
+			out bufPtr
+		);
+
+		using var nativeBuffer = new NetApiBufferScope(bufPtr);
+		if (result != 0) {
+			return result;
+		}
+
+		var userInfo = (WinAPI.NETAPI32.USER_INFO_2)Marshal.PtrToStructure(bufPtr, typeof(WinAPI.NETAPI32.USER_INFO_2));
+
+		user.CopyNativeInfo(host, userInfo);
+
+		#region Get the group SID
+
+		user.Checkpoint();
+		WinAPI.ADVAPI32.SidNameUse nameUse;
+		SecurityIdentifier sid;
+		string resolvedDomain;
+		int resolveError;
+		if (SecurityTool.TryLookupAccountName(user.Host, user.Name, out sid, out resolvedDomain, out nameUse, out resolveError)) {
+			if (nameUse != WinAPI.ADVAPI32.SidNameUse.User && nameUse != WinAPI.ADVAPI32.SidNameUse.Alias) {
+				throw new WindowsException(
+					"User '{0}' on host '{1}' had a non-user and non-alias SID name",
+					user.Name,
+					user.Host
+				);
+			}
+			user.SID = sid;
+			user.SidNameUsage = nameUse;
+		} else {
+			throw new WindowsException(
+				"Unable to resolve SID for user '{0}' on host '{1}. {2}",
+				user.Name,
+				user.Host,
+				WindowsException.ErrorCodeToDescription(resolveError)
 			);
 
-			if (result != 0) {
-				return result;
-			}
-
-			var userInfo = (WinAPI.NETAPI32.USER_INFO_2)Marshal.PtrToStructure(bufPtr, typeof(WinAPI.NETAPI32.USER_INFO_2));
-
-			user.Host = host;
-			user._acct_expires = userInfo.usri2_acct_expires;
-			user._auth_flags = userInfo.usri2_auth_flags;
-			user.BadPasswordCount = userInfo.usri2_bad_pw_count;
-			user.CodePage = userInfo.usri2_code_page;
-			user.Description = userInfo.usri2_comment;
-			user.CountryCode = userInfo.usri2_country_code;
-			user._flags = userInfo.usri2_flags;
-			user._full_name = userInfo.usri2_full_name;
-			user._home_dir = userInfo.usri2_home_dir;
-			user._comment = userInfo.usri2_usr_comment;
-			user._last_logoff = userInfo.usri2_last_logoff;
-			user._last_logon = userInfo.usri2_last_logon;
-			user._logon_server = userInfo.usri2_logon_server;
-			user.MaxStorage = userInfo.usri2_max_storage;
-			user.Name = userInfo.usri2_name;
-			user.NumberOfLogons = userInfo.usri2_num_logons;
-			user._parms = userInfo.usri2_parms;
-			user._password = userInfo.usri2_password;
-			user._password_age = userInfo.usri2_password_age;
-			user._priv = userInfo.usri2_priv;
-			user._script_path = userInfo.usri2_script_path;
-			user.UnitsPerWeek = userInfo.usri2_units_per_week;
-			user.usri2_workstations = userInfo.usri2_workstations;
-
-			if (userInfo.usri2_logon_hours != IntPtr.Zero) {
-				Marshal.Copy(userInfo.usri2_logon_hours, user.LogonHours, 0, 21);
-				WinAPI.NETAPI32.NetApiBufferFree(userInfo.usri2_logon_hours);
-			} else {
-				user.LogonHours = new byte[0];
-			}
-
-			#region Get the group SID
-
-			var resolver = new SidNameResolver(user.NTCompatibleHostName);
-			WinAPI.ADVAPI32.SidNameUse nameUse;
-			SecurityIdentifier sid;
-			string resolvedDomain;
-			string resolveError;
-			if (resolver.TryReverseResolve(user.Name, out sid, out resolvedDomain, out nameUse, out resolveError)) {
-				if (nameUse != WinAPI.ADVAPI32.SidNameUse.User && nameUse != WinAPI.ADVAPI32.SidNameUse.Alias) {
-					throw new WindowsException(
-						"User '{0}' on host '{1}' had a non-user and non-alias SID name",
-						user.Name,
-						user.Host
-					);
-				}
-				user.SID = sid;
-				user.SidNameUsage = nameUse;
-			} else {
-				throw new WindowsException(
-					"Unable to resolve SID for user '{0}' on host '{1}. {2}",
-					user.Name,
-					user.Host,
-					resolveError
-				);
-
-			}
-
-			#endregion
-
-		} finally {
-			WinAPI.NETAPI32.NetApiBufferFree(bufPtr);
 		}
+
+		#endregion
+
 		return result;
 	}
 

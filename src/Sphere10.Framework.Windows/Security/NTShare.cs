@@ -14,6 +14,7 @@ using System.IO;
 namespace Sphere10.Framework.Windows.Security;
 
 public class NTShare : NTLocalObject {
+	private byte[] _securityDescriptorBytes;
 	//_securityDescriptor; 
 
 
@@ -36,7 +37,20 @@ public class NTShare : NTLocalObject {
 
 	public IntPtr SecurityDescriptor { get; set; }
 
+	/// <summary>Owned managed descriptor snapshot. Native inventory buffers never escape the read operation.</summary>
+	public byte[] SecurityDescriptorBytes {
+		get => _securityDescriptorBytes == null ? null : (byte[])_securityDescriptorBytes.Clone();
+		set { _securityDescriptorBytes = value == null ? null : (byte[])value.Clone(); SecurityDescriptor = IntPtr.Zero; }
+	}
+
 	public override void Update() {
+		Checkpoint();
+		var descriptor = SecurityDescriptor;
+		using var ownedDescriptor = descriptor == IntPtr.Zero && _securityDescriptorBytes?.Length > 0 ? new UnmanagedMemoryScope(_securityDescriptorBytes.Length) : null;
+		if (ownedDescriptor != null) {
+			Marshal.Copy(_securityDescriptorBytes, 0, ownedDescriptor.Item, _securityDescriptorBytes.Length);
+			descriptor = ownedDescriptor.Item;
+		}
 		var shareInfo = new WinAPI.NETAPI32.SHARE_INFO_502 {
 			shi502_current_uses = (uint)CurrentUses,
 			shi502_max_uses = (uint)MaxUses,
@@ -46,7 +60,7 @@ public class NTShare : NTLocalObject {
 			shi502_permissions = (uint)Permissions,
 			shi502_remark = Description,
 			shi502_reserved = (uint)Reserved,
-			shi502_security_descriptor = SecurityDescriptor,
+			shi502_security_descriptor = descriptor,
 			shi502_type = (uint)Type
 		};
 
@@ -99,6 +113,7 @@ public class NTShare : NTLocalObject {
 	}
 
 	public override void Delete() {
+		Checkpoint();
 		var result = WinAPI.NETAPI32.NetShareDel(
 			this.NTCompatibleHostName,
 			this.Name,
@@ -120,10 +135,16 @@ public class NTShare : NTLocalObject {
 	}
 
 	public ShareSecurity GetAccessControl() {
-		return new ShareSecurity(FullName, AccessControlSections.All);
+		return GetAccessControl(AccessControlSections.All);
+	}
+
+	public ShareSecurity GetAccessControl(AccessControlSections sections) {
+		Checkpoint();
+		return new ShareSecurity(FullName, sections);
 	}
 
 	public void SetAccessControl(ShareSecurity security) {
+		Checkpoint();
 		SetAccessControl(FullName, security);
 	}
 
@@ -136,42 +157,46 @@ public class NTShare : NTLocalObject {
 	}
 
 
+	internal void CopyNativeInfo(string host, WinAPI.NETAPI32.SHARE_INFO_502 shareInfo) {
+		CurrentUses = (int)shareInfo.shi502_current_uses;
+		Description = shareInfo.shi502_remark;
+		Host = host;
+		MaxUses = (int)shareInfo.shi502_max_uses;
+		Name = shareInfo.shi502_netname;
+		Password = shareInfo.shi502_passwd;
+		ServerPath = shareInfo.shi502_path;
+		Permissions = (WinAPI.NETAPI32.GlobalSharePermission)shareInfo.shi502_permissions;
+		Reserved = (int)shareInfo.shi502_reserved;
+		SecurityDescriptor = IntPtr.Zero;
+		Type = (WinAPI.NETAPI32.SHARE_TYPE)shareInfo.shi502_type;
+		_securityDescriptorBytes = null;
+		if (shareInfo.shi502_security_descriptor != IntPtr.Zero) {
+			var length = checked((int)WinAPI.ADVAPI32.GetSecurityDescriptorLength(shareInfo.shi502_security_descriptor));
+			_securityDescriptorBytes = new byte[length];
+			Marshal.Copy(shareInfo.shi502_security_descriptor, _securityDescriptorBytes, 0, length);
+		}
+		Description = shareInfo.shi502_remark;
+
+	}
+
 	internal static WinAPI.NETAPI32.NET_API_STATUS TryLoadLocalShare(string host, string name, NTShare share) {
 		WinAPI.NETAPI32.NET_API_STATUS result;
 		var bufPtr = IntPtr.Zero;
-		var securityDescriptorPtr = IntPtr.Zero;
-		try {
-			result = WinAPI.NETAPI32.NetShareGetInfo(host, name, 502, out bufPtr);
+		share.Checkpoint();
+		result = WinAPI.NETAPI32.NetShareGetInfo(host, name, 502, out bufPtr);
 
-			if (result != WinAPI.NETAPI32.NET_API_STATUS.NERR_Success) {
-				return result;
-			}
-
-			var shareInfo = (WinAPI.NETAPI32.SHARE_INFO_502)Marshal.PtrToStructure(
-				bufPtr,
-				typeof(WinAPI.NETAPI32.SHARE_INFO_502)
-			);
-
-			share.CurrentUses = (int)shareInfo.shi502_current_uses;
-			share.Description = shareInfo.shi502_remark;
-			share.Host = host;
-			share.MaxUses = (int)shareInfo.shi502_max_uses;
-			share.Name = shareInfo.shi502_netname;
-			share.Password = shareInfo.shi502_passwd;
-			share.ServerPath = shareInfo.shi502_path;
-			share.Permissions = (WinAPI.NETAPI32.GlobalSharePermission)shareInfo.shi502_permissions;
-			share.Reserved = (int)shareInfo.shi502_reserved;
-			share.SecurityDescriptor = shareInfo.shi502_security_descriptor;
-			share.Description = shareInfo.shi502_remark;
-
-		} finally {
-			if (bufPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(bufPtr);
-			}
-			if (securityDescriptorPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(securityDescriptorPtr);
-			}
+		using var nativeBuffer = new NetApiBufferScope(bufPtr);
+		if (result != WinAPI.NETAPI32.NET_API_STATUS.NERR_Success) {
+			return result;
 		}
+
+		var shareInfo = (WinAPI.NETAPI32.SHARE_INFO_502)Marshal.PtrToStructure(
+			bufPtr,
+			typeof(WinAPI.NETAPI32.SHARE_INFO_502)
+		);
+
+		share.CopyNativeInfo(host, shareInfo);
+
 		return result;
 	}
 

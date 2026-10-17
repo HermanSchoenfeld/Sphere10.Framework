@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Sphere10.Framework.Windows.Security;
 
 /// <summary>
@@ -13,6 +15,9 @@ namespace Sphere10.Framework.Windows.Security;
 /// </summary>
 public abstract class NTLocalObject : NTObject {
 	private string _description;
+
+	/// <summary>Optional cooperative checkpoint before native operations. Never aborts an operation already in Windows.</summary>
+	public Action Checkpoint { get; set; } = () => { };
 
 	public string Description {
 		get { return _description; }

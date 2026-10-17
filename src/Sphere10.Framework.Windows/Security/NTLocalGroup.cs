@@ -64,119 +64,41 @@ public class NTLocalGroup : NTLocalObject {
 	/// </summary>
 	/// <returns>List of members.</returns>
 	public NTObject[] GetMembers() {
-		var members = new List<NTObject>();
-		var memberInfoPtr = IntPtr.Zero;
-		try {
-			var resumeHandle = 0;
-			const uint prefmaxlen1 = 0xffffffff;
-			uint entriesread1, totalentries1;
-			var result =
-				WinAPI.NETAPI32.NetLocalGroupGetMembers(this.NTCompatibleHostName, this.Name, 2, out memberInfoPtr, prefmaxlen1, out entriesread1, out totalentries1, out resumeHandle);
-			if (result != 0) {
-				throw new NetApiException(
-					result,
-					"Unable to get members of group '{0}' on host '{1}'",
-					Name,
-					Host
-				);
-			}
-			var structSize = Marshal.SizeOf(typeof(WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_2));
-			var startAddr = memberInfoPtr.ToInt64();
-			var endAddr = startAddr + (int)totalentries1 * structSize;
-			for (var offset = startAddr; offset < endAddr; offset += structSize) {
-				var memberInfo =
-					(WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_2)Marshal.PtrToStructure(
-						new IntPtr(offset),
-						typeof(WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_2)
-					);
-
-				var memberDomainName = Marshal.PtrToStringAuto(memberInfo.lgrmi2_domainandname);
-				var memberDomain = SecurityTool.GetDomainFromDomainUserString(memberDomainName);
-				var memberName = SecurityTool.GetUserFromDomainUserString(memberDomainName);
-				var memberSid = new SecurityIdentifier(memberInfo.lgrmi2_sid);
-				var memberSidUsage = (WinAPI.ADVAPI32.SidNameUse)memberInfo.lgrmi2_sidusage;
-
-				if (memberSidUsage == WinAPI.ADVAPI32.SidNameUse.DeletedAccount || memberSidUsage == WinAPI.ADVAPI32.SidNameUse.Unknown) {
-
-					#region It's Dangling object
-
-					members.Add(
-						new NTDanglingObject(
-							Host,
-							memberSid,
-							memberSidUsage
-						)
-					);
-
-					#endregion
-
-				} else if (memberDomain.ToUpper() != this.Host.ToUpper()) {
-
-					#region It's a remote object
-
-					members.Add(
-						new NTRemoteObject(
-							Host,
-							memberDomain,
-							memberName,
-							memberSid,
-							memberSidUsage
-						)
-					);
-
-					#endregion
-
-				} else {
-
-					#region It's a local object
-
-					switch (memberSidUsage) {
-						case WinAPI.ADVAPI32.SidNameUse.User:
-							var user = new NTLocalUser {
-								Host = Host,
-								Name = memberName,
-								SID = memberSid
-							};
-							user.Refresh();
-							members.Add(user);
-							break;
-						case WinAPI.ADVAPI32.SidNameUse.Group:
-						case WinAPI.ADVAPI32.SidNameUse.WellKnownGroup:
-							var group = new NTLocalGroup();
-							group.Host = Host;
-							group.Name = memberName;
-							group.Refresh();
-							members.Add(group);
-							break;
-						default:
-							members.Add(
-								new NTDanglingObject(
-									Host,
-									memberSid,
-									memberSidUsage
-								)
-							);
-							break;
-					}
-
-					#endregion
-
-				}
-			}
-		} finally {
-			if (memberInfoPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(memberInfoPtr);
-			}
-		}
-		return members.ToArray();
+		var resume = UIntPtr.Zero;
+		return NetApiEnumeration.Read<WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_2, NTObject>(
+			(out IntPtr buffer, out uint count) => WinAPI.NETAPI32.NetLocalGroupGetMembersPaged(NTCompatibleHostName, Name, 2, out buffer, WinAPI.NETAPI32.MAX_PREFERRED_LENGTH, out count, out _, ref resume),
+			info => {
+				var fullName = Marshal.PtrToStringUni(info.lgrmi2_domainandname) ?? string.Empty;
+				var domain = SecurityTool.GetDomainFromDomainUserString(fullName);
+				var name = SecurityTool.GetUserFromDomainUserString(fullName);
+				var sid = new SecurityIdentifier(info.lgrmi2_sid);
+				var usage = (WinAPI.ADVAPI32.SidNameUse)info.lgrmi2_sidusage;
+				if (usage == WinAPI.ADVAPI32.SidNameUse.DeletedAccount || usage == WinAPI.ADVAPI32.SidNameUse.Unknown)
+					return new NTDanglingObject(Host, sid, usage);
+				if (!string.Equals(domain, Host, StringComparison.OrdinalIgnoreCase))
+					return new NTRemoteObject(Host, domain, name, sid, usage);
+				NTLocalObject member;
+				if (usage == WinAPI.ADVAPI32.SidNameUse.User)
+					member = new NTLocalUser();
+				else if (usage == WinAPI.ADVAPI32.SidNameUse.Group || usage == WinAPI.ADVAPI32.SidNameUse.Alias || usage == WinAPI.ADVAPI32.SidNameUse.WellKnownGroup)
+					member = new NTLocalGroup();
+				else
+					return new NTDanglingObject(Host, sid, usage);
+				member.Host = Host;
+				member.Name = name;
+				member.SID = sid;
+				member.Checkpoint = Checkpoint;
+				member.Refresh();
+				return member;
+			}, Checkpoint);
 	}
-
 	/// <summary>
 	/// Adds a user to the group. The user could be a local or domain user.
 	/// </summary>
 	/// <param name="domainAndName">The username referenced by 'domain\name'.</param>
 	/// <remarks>The domain could be the name of an accessible domain or hostmachine.</remarks>
 	public void AddMember(string domainAndName) {
+		Checkpoint();
 		var newGroupMember = new WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_3 {
 			lgrmi3_domainandname = domainAndName
 		};
@@ -227,41 +149,39 @@ public class NTLocalGroup : NTLocalObject {
 		} else {
 			var toDelete = obj.Name;
 			if (obj is NTRemoteObject) {
-				toDelete = ((NTRemoteObject)obj).Domain + "\\";
+				toDelete = ((NTRemoteObject)obj).Domain + "\\" + obj.Name;
 			}
 			DeleteMember(toDelete);
 		}
 	}
 
 	public void DeleteMember(SecurityIdentifier sid) {
+		Checkpoint();
 		var groupMember = new WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_0();
 		var sidPtr = IntPtr.Zero;
-		;
-		try {
-			if (WinAPI.ADVAPI32.ConvertStringSidToSid(sid.ToString(), out sidPtr)) {
-				groupMember.lgrmi0_sid = sidPtr;
-				var result = WinAPI.NETAPI32.NetLocalGroupDelMembers(this.NTCompatibleHostName, this.Name, 0, ref groupMember, 1);
-				if (result != 0) {
-					throw new NetApiException(
-						result,
-						"Unable to delete member with SID '{0}' from group '{1}' on host '{2}'",
-						sid,
-						Name,
-						Host
-					);
-				}
-			} else {
-				throw new WindowsException(
-					"Unable to delete member with SID '{0}' from group '{1}' on host '{2}'. Could not convert SID to native SID structure.",
+		using var nativeSid = Tools.Scope.ExecuteOnDispose(() => {
+			if (sidPtr != IntPtr.Zero)
+				WinAPI.KERNEL32.LocalFree(sidPtr);
+		});
+		if (WinAPI.ADVAPI32.ConvertStringSidToSid(sid.ToString(), out sidPtr)) {
+			groupMember.lgrmi0_sid = sidPtr;
+			var result = WinAPI.NETAPI32.NetLocalGroupDelMembers(this.NTCompatibleHostName, this.Name, 0, ref groupMember, 1);
+			if (result != 0) {
+				throw new NetApiException(
+					result,
+					"Unable to delete member with SID '{0}' from group '{1}' on host '{2}'",
 					sid,
 					Name,
 					Host
 				);
 			}
-		} finally {
-			if (sidPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(sidPtr);
-			}
+		} else {
+			throw new WindowsException(
+				"Unable to delete member with SID '{0}' from group '{1}' on host '{2}'. Could not convert SID to native SID structure.",
+				sid,
+				Name,
+				Host
+			);
 		}
 	}
 
@@ -270,6 +190,7 @@ public class NTLocalGroup : NTLocalObject {
 	}
 
 	public void DeleteMember(string domainAndName) {
+		Checkpoint();
 		var groupMember = new WinAPI.NETAPI32.LOCALGROUP_MEMBERS_INFO_3 {
 			lgrmi3_domainandname = domainAndName
 		};
@@ -294,6 +215,7 @@ public class NTLocalGroup : NTLocalObject {
 	}
 
 	public override void Update() {
+		Checkpoint();
 		var groupInfo = new WinAPI.NETAPI32.LOCALGROUP_INFO_1 {
 			lgrpi1_name = this.Name,
 			lgrpi1_comment = this.Description
@@ -332,6 +254,7 @@ public class NTLocalGroup : NTLocalObject {
 	}
 
 	public override void Delete() {
+		Checkpoint();
 		var result = WinAPI.NETAPI32.NetLocalGroupDel(this.NTCompatibleHostName, this.Name);
 
 		if (result != 0) {
@@ -347,54 +270,50 @@ public class NTLocalGroup : NTLocalObject {
 	internal static WinAPI.NETAPI32.NET_API_STATUS TryLoadLocalGroup(string host, string name, NTLocalGroup group) {
 		WinAPI.NETAPI32.NET_API_STATUS result;
 		var bufPtr = IntPtr.Zero;
-		try {
-			result = WinAPI.NETAPI32.NetLocalGroupGetInfo(host, name, 1, out bufPtr);
+		group.Checkpoint();
+		result = WinAPI.NETAPI32.NetLocalGroupGetInfo(host, name, 1, out bufPtr);
 
-			if (result != 0) {
-				return result;
-			}
+		using var nativeBuffer = new NetApiBufferScope(bufPtr);
+		if (result != 0) {
+			return result;
+		}
 
-			var groupInfo = (WinAPI.NETAPI32.LOCALGROUP_INFO_1)Marshal.PtrToStructure(
-				bufPtr,
-				typeof(WinAPI.NETAPI32.LOCALGROUP_INFO_1)
-			);
-			group.Host = host;
-			group.Name = groupInfo.lgrpi1_name;
-			group.Description = groupInfo.lgrpi1_comment;
+		var groupInfo = (WinAPI.NETAPI32.LOCALGROUP_INFO_1)Marshal.PtrToStructure(
+			bufPtr,
+			typeof(WinAPI.NETAPI32.LOCALGROUP_INFO_1)
+		);
+		group.Host = host;
+		group.Name = groupInfo.lgrpi1_name;
+		group.Description = groupInfo.lgrpi1_comment;
 
-			#region Get the group SID
+		#region Get the group SID
 
-			var resolver = new SidNameResolver(group.NTCompatibleHostName);
-			WinAPI.ADVAPI32.SidNameUse nameUse;
-			SecurityIdentifier sid;
-			string resolvedDomain;
-			string resolveError;
-			if (resolver.TryReverseResolve(group.Name, out sid, out resolvedDomain, out nameUse, out resolveError)) {
-				if (nameUse != WinAPI.ADVAPI32.SidNameUse.Group && nameUse != WinAPI.ADVAPI32.SidNameUse.Alias) {
-					throw new WindowsException(
-						"Group '{0}' on host '{1}' had a non-group and/or non-alias SID name use.",
-						group.Name,
-						group.Host
-					);
-				}
-				group.SID = sid;
-				group.SidNameUsage = nameUse;
-			} else {
+		group.Checkpoint();
+		WinAPI.ADVAPI32.SidNameUse nameUse;
+		SecurityIdentifier sid;
+		string resolvedDomain;
+		int resolveError;
+		if (SecurityTool.TryLookupAccountName(group.Host, group.Name, out sid, out resolvedDomain, out nameUse, out resolveError)) {
+			if (nameUse != WinAPI.ADVAPI32.SidNameUse.Group && nameUse != WinAPI.ADVAPI32.SidNameUse.Alias) {
 				throw new WindowsException(
-					"Unable to resolve SID for group '{0}' on host '{1}'. {2}",
+					"Group '{0}' on host '{1}' had a non-group and/or non-alias SID name use.",
 					group.Name,
-					group.Host,
-					resolveError
+					group.Host
 				);
 			}
-
-			#endregion
-
-		} finally {
-			if (bufPtr != IntPtr.Zero) {
-				WinAPI.NETAPI32.NetApiBufferFree(bufPtr);
-			}
+			group.SID = sid;
+			group.SidNameUsage = nameUse;
+		} else {
+			throw new WindowsException(
+				"Unable to resolve SID for group '{0}' on host '{1}'. {2}",
+				group.Name,
+				group.Host,
+				WindowsException.ErrorCodeToDescription(resolveError)
+			);
 		}
+
+		#endregion
+
 		return result;
 	}
 
