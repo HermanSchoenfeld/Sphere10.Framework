@@ -172,7 +172,37 @@ public class DefaultCrudEntityEditorTests {
 	public void EditingHonorsCrudCapabilities(DataSourceCapabilities Capabilities, bool IsNewEntity, bool Enabled) {
 		using var Editor = new DefaultCrudEntityEditor();
 		Editor.SetEntity(Capabilities, new Employee(), IsNewEntity);
-		Assert.That(GetGrid(Editor).Enabled, Is.EqualTo(Enabled));
+		var grid = GetGrid(Editor);
+		Assert.That(grid.Enabled, Is.True, "Readonly inspection must retain property selection, expansion and copy.");
+		Assert.That(TypeDescriptor.GetProperties(grid.SelectedObject)[nameof(Employee.Address)].IsReadOnly, Is.EqualTo(!Enabled));
+	}
+
+	[Test]
+	public void ReadonlyInspectionKeepsNestedValuesSelectableAndSuppressesMutatingCollectionEditors() {
+		var entity = new Employee { Address = new Address { Street = "Original" } };
+		using var editor = new DefaultCrudEntityEditor();
+		editor.SetEntity(DataSourceCapabilities.CanRead, entity, false);
+		editor.CreateControl();
+		var grid = GetGrid(editor);
+		grid.CreateControl();
+		var address = FindItem(grid, "Address");
+		Assert.That(grid.Enabled, Is.True);
+		Assert.That(address.Expandable, Is.True);
+		Assert.That(address.PropertyDescriptor.IsReadOnly, Is.True);
+		Assert.That(address.PropertyDescriptor.GetEditor(typeof(UITypeEditor)), Is.Null);
+		var street = ExpandAndFind(grid, "Address", "Street");
+		grid.SelectedGridItem = street;
+		Assert.That(street.Value, Is.EqualTo("Original"));
+		Assert.That(street.PropertyDescriptor.IsReadOnly, Is.True);
+		Assert.That(() => street.PropertyDescriptor.SetValue(null, "Changed"), Throws.InvalidOperationException);
+		Assert.That(entity.Address.Street, Is.EqualTo("Original"));
+		Assert.That(editor.HasChanges, Is.False);
+		Assert.That(TypeDescriptor.GetProperties(entity)["Address"].IsReadOnly, Is.False, "Readonly policy belongs to this editing session, not global model metadata.");
+		using var custom = new DefaultCrudEntityEditor();
+		custom.SetEntity(DataSourceCapabilities.CanRead, new SpecialProperties(), false);
+		custom.CreateControl();
+		GetGrid(custom).CreateControl();
+		Assert.That(FindItem(GetGrid(custom), "Items").PropertyDescriptor.GetEditor(typeof(UITypeEditor)), Is.Null);
 	}
 
 	[TestCase(false)]
