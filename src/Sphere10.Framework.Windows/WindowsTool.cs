@@ -9,6 +9,7 @@
 using System;
 using Sphere10.Framework.Windows;
 using Sphere10.Framework.Windows.Files;
+using Sphere10.Framework.Windows.EventLogs;
 using Sphere10.Framework.Windows.Networking;
 using Sphere10.Framework.Windows.Security;
 using Sphere10.Framework.Windows.Startup;
@@ -60,6 +61,9 @@ public static class Windows {
 
 	[ThreadStatic] private static WindowsStartupUtil _startup;
 	public static WindowsStartupUtil Startup => _startup ??= new();
+
+	[ThreadStatic] private static WindowsEventLogUtil _eventLogs;
+	public static WindowsEventLogUtil EventLogs => _eventLogs ??= new();
 
 	[ThreadStatic] private static EnvironmentUtil _environment;
 	public static EnvironmentUtil Environment => _environment ??= new();
