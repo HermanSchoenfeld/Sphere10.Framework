@@ -48,6 +48,12 @@
 		<Compile Update="Screens\ObjectSpaceScreen.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
+		<Compile Update="Screens\LoggingTestScreen.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="Screens\LoggingTestScreen.Designer.cs">
+			<DependentUpon>LoggingTestScreen.cs</DependentUpon>
+		</Compile>
 		<Compile Update="Screens\TransactionalCollectionScreen.cs" />
 		<Compile Update="Screens\WAMSTestScreen.cs" />
 		<Compile Update="Wizard\DemoWizardScreenBase.cs" />
