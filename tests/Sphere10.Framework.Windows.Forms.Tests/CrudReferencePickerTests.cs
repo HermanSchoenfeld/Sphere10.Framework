@@ -134,6 +134,7 @@ public class CrudReferencePickerTests {
 		Assert.That(RowGrid[1, 0].Editor.EnableEdit, Is.False);
 		if (Capabilities.HasFlag(DataSourceCapabilities.CanPage)) {
 			Assert.That(Picker.Grid.VisibleEntities.Count(), Is.InRange(1, 30));
+			Assert.That(FindControl<Button>(Picker, "_lastPageButton").Visible, Is.True);
 			FindControl<Button>(Picker, "_lastPageButton").PerformClick();
 			await Picker.Grid.RefreshGrid();
 			Assert.That(Picker.Grid.VisibleEntities.Last(), Is.SameAs(Records[119]));
@@ -318,20 +319,29 @@ public class CrudReferencePickerTests {
 	private static void RunWithMessageLoop(Func<Form, Task> Test) {
 		Exception? Failure = null;
 		var Completed = false;
+		var Finished = false;
 		var PreviousContext = SynchronizationContext.Current;
 		using var UiContext = new WindowsFormsSynchronizationContext();
 		using var RestoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(PreviousContext));
 		SynchronizationContext.SetSynchronizationContext(UiContext);
 		using var Owner = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000), ClientSize = new Size(1000, 600) };
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
+		void Finish() {
+			if (Finished)
+				return;
+			Finished = true;
+			Watchdog.Stop();
+			using var CloseOwner = Tools.Scope.ExecuteOnDispose(Owner.Close);
+			foreach (var Dialog in Owner.OwnedForms.Reverse().ToArray())
+				Dialog.Dispose();
+			// Closing this plain owner also disposes its PropertyGrid/inline editors and their native popup holders.
+		}
 		Watchdog.Tick += (_, _) => {
 			Failure = new AssertionException("The CRUD reference picker test timed out. Forms: " + string.Join(", ", FormsApplication.OpenForms.Cast<Form>().Select(Form => $"{Form.GetType().Name} ({Form.Text}): {string.Join(", ", Descendants(Form).Select(Control => Control.GetType().Name))}")));
-			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
-				Dialog.Dispose();
-			FormsApplication.ExitThread();
+			Finish();
 		};
 		Owner.Shown += async (_, _) => {
-			using var CloseOwner = Tools.Scope.ExecuteOnDispose(Owner.Close);
+			using var FinishScope = Tools.Scope.ExecuteOnDispose(Finish);
 			try {
 				await Test(Owner);
 				Completed = true;

@@ -8,6 +8,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Drawing;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
@@ -39,6 +40,7 @@ public class SortIndicator : Icon, ISortIndicator {
 	public SortIndicator(SortIndicator other)
 		: base(other) {
 		SortStyle = other.SortStyle;
+		ReserveSpaceWhenUnsorted = other.ReserveSpaceWhenUnsorted;
 	}
 
 	#endregion
@@ -52,6 +54,9 @@ public class SortIndicator : Icon, ISortIndicator {
 	}
 
 	#region Properties
+	/// <summary>Retains the glyph's width before sorting so natural header sizing also fits a later sort indicator.</summary>
+	[DefaultValue(true)]
+	public bool ReserveSpaceWhenUnsorted { get; set; } = true;
 
 	private HeaderSortStyle mHeaderSortStyle = HeaderSortStyle.None;
 
@@ -70,6 +75,15 @@ public class SortIndicator : Icon, ISortIndicator {
 	}
 
 	#endregion
+
+	protected override SizeF OnMeasureContent(MeasureHelper measure, SizeF maxSize) {
+		var size = base.OnMeasureContent(measure, maxSize);
+		if (ReserveSpaceWhenUnsorted) {
+			size.Width = Math.Max(size.Width, Math.Max(Resources.IEW_SortUp.Width, Resources.IEW_SortDown.Width));
+			size.Height = Math.Max(size.Height, Math.Max(Resources.IEW_SortUp.Height, Resources.IEW_SortDown.Height));
+		}
+		return size;
+	}
 
 }
 

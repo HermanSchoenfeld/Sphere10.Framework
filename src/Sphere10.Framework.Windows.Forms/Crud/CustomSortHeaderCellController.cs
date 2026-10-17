@@ -22,6 +22,8 @@ internal class CustomSortHeaderCellController : SourceGrid.Cells.Controllers.Con
 
 	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
 		base.OnMouseUp(sender, e);
+		if (e.Button != MouseButtons.Left)
+			return;
 		var cellRect = sender.Grid.PositionToRectangle(sender.Position);
 		var mousePoint = new Point(e.X, e.Y);
 		var cell = sender.Grid.PositionAtPoint(e.Location);

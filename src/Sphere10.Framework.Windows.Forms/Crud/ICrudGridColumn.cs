@@ -16,6 +16,12 @@ public interface ICrudGridColumn {
 	string ColumnName { get; set; }
 	Type DataType { get; set; }
 	CrudCellDisplayType DisplayType { get; }
+	/// <summary>Alignment of a borrowed image within its cell; defaults to the center in both dimensions.</summary>
+	Sphere10.Framework.ResizeAlignment ImageAlignment => Sphere10.Framework.ResizeAlignment.CenterCenter;
+
+	/// <summary>Optional image scaling; null retains the original image dimensions.</summary>
+	Sphere10.Framework.ResizeMethod? ImageResizeMethod => null;
+
 	string SortName { get; }
 
 	string? PropertyName => null;
@@ -47,20 +53,4 @@ public interface ICrudGridColumn {
 	Image GetButtonImage(object row);
 
 	string GetDateTimeFormat(object row);
-}
-
-
-public enum CrudCellDisplayType {
-	Text,
-	Boolean,
-	Currency,
-	Numeric,
-	DateTime,
-	Date,
-	Time,
-	DropDownList,
-	Button,
-	EditCommand,
-	DeleteCommand,
-	Empty
 }

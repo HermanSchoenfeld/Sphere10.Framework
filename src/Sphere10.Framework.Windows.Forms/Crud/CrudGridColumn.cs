@@ -19,6 +19,8 @@ public class CrudGridColumn<TEntity> : ICrudGridColumn {
 
 	public string ColumnName { get; set; }
 	public CrudCellDisplayType DisplayType { get; set; }
+	public Sphere10.Framework.ResizeAlignment ImageAlignment { get; set; } = Sphere10.Framework.ResizeAlignment.CenterCenter;
+	public Sphere10.Framework.ResizeMethod? ImageResizeMethod { get; set; }
 	public Type DataType { get; set; }
 	public string SortName { get; set; }
 	public string? PropertyName { get; set; }

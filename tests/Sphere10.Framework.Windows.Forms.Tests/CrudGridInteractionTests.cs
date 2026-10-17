@@ -135,9 +135,16 @@ public class CrudGridInteractionTests {
 		// Set only this test thread's keyboard state; do not send keyboard input to the desktop.
 		var OriginalKeys = new byte[256];
 		Assert.That(Sphere10.Framework.Windows.WinAPI.USER32.GetKeyboardState(OriginalKeys), Is.True);
-		using var RestoreKeys = Tools.Scope.ExecuteOnDispose(() => SetKeyboardState(OriginalKeys));
+		using var RestoreKeys = Tools.Scope.ExecuteOnDispose(() => {
+			Assert.That(SetKeyboardState(OriginalKeys), Is.True);
+			var restoredKeys = new byte[256];
+			Assert.That(Sphere10.Framework.Windows.WinAPI.USER32.GetKeyboardState(restoredKeys), Is.True);
+			Assert.That(restoredKeys, Is.EqualTo(OriginalKeys), "Restore every original thread-local key state, including toggle bits and left/right modifiers.");
+		});
 		var ModifiedKeys = (byte[])OriginalKeys.Clone();
-		ModifiedKeys[(int)Keys.ControlKey] |= 0x80;
+		// Keep the aggregate and side-specific virtual keys consistent when Windows synchronizes its input-state cache.
+		foreach (var key in new[] { Keys.ControlKey, Keys.LControlKey, Keys.RControlKey })
+			ModifiedKeys[(int)key] |= 0x80;
 		Assert.That(SetKeyboardState(ModifiedKeys), Is.True);
 		Assert.That(Control.ModifierKeys.HasFlag(Keys.Control), Is.True);
 
@@ -360,6 +367,58 @@ public class CrudGridInteractionTests {
 		Assert.That(Grid.Selection.IsSelectedRow(1), Is.True);
 		Assert.That(Context.EndEdit(true), Is.True);
 	});
+
+	[TestCase(false, CrudCellDisplayType.Text)]
+	[TestCase(true, CrudCellDisplayType.Text)]
+	[TestCase(false, CrudCellDisplayType.Boolean)]
+	[TestCase(true, CrudCellDisplayType.Boolean)]
+	public void NativeRightMouseDownSelectsItsRowBeforeTheContextMenuOpens(bool leftClickToDeselect, CrudCellDisplayType displayType) => RunWithMessageLoop(async owner => {
+		using var crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = leftClickToDeselect };
+		owner.Controls.Add(crud);
+		var records = await BindRecords(crud, DisplayType: displayType);
+		var grid = FindControl<Grid>(crud, "_grid");
+		crud.SelectedEntity = records[0];
+		var bounds = grid.PositionToRectangle(new Position(2, 0));
+		var point = new Point(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
+		var menu = (ContextMenuStrip)typeof(CrudGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
+		using var closeMenu = Tools.Scope.ExecuteOnDispose(menu.Close);
+		object selectedAtOpening = null;
+		menu.Opening += (_, _) => selectedAtOpening = crud.SelectedEntity;
+		SendRightMouseDown(grid, point);
+		Assert.That(crud.SelectedEntity, Is.SameAs(records[1]), "The native press must select the row before any menu command reads its target.");
+		Assert.That(grid.Selection.IsSelectedRow(2), Is.True);
+		RaiseMouseEvent(grid, "OnMouseClick", new MouseEventArgs(MouseButtons.Right, 1, point.X, point.Y, 0));
+		Assert.That(menu.Visible, Is.True);
+		Assert.That(selectedAtOpening, Is.SameAs(records[1]));
+		Assert.That(records[1].Enabled, Is.False, "A right click must not toggle a checkbox value.");
+		Assert.That(new CellContext(grid, new Position(2, 0)).IsEditing(), Is.False, "A context menu press must not enter cell editing.");
+	});
+
+	[TestCase(false, false)]
+	[TestCase(true, false)]
+	[TestCase(false, true)]
+	[TestCase(true, true)]
+	public void NativeRightClicksOnHeaderOrBlankAreaDoNotOpenAnEntityMenu(bool leftClickToDeselect, bool blankArea) => RunWithMessageLoop(async owner => {
+		using var crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = leftClickToDeselect };
+		owner.Controls.Add(crud);
+		var records = await BindRecords(crud);
+		var grid = FindControl<Grid>(crud, "_grid");
+		crud.SelectedEntity = records[0];
+		var header = grid.PositionToRectangle(new Position(0, 0));
+		var lastRow = grid.PositionToRectangle(new Position(2, 0));
+		var point = blankArea ? new Point(10, lastRow.Bottom + 20) : new Point(10, header.Top + header.Height / 2);
+		var menu = (ContextMenuStrip)typeof(CrudGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
+		using var closeMenu = Tools.Scope.ExecuteOnDispose(menu.Close);
+		SendRightMouseDown(grid, point);
+		RaiseMouseEvent(grid, "OnMouseClick", new MouseEventArgs(MouseButtons.Right, 1, point.X, point.Y, 0));
+		Assert.That(menu.Visible, Is.False);
+		Assert.That(crud.SelectedEntity, Is.SameAs(records[0]));
+	});
+
+	private static void SendRightMouseDown(Grid grid, Point point) {
+		var coordinates = (IntPtr)((point.Y << 16) | (point.X & ushort.MaxValue));
+		Sphere10.Framework.Windows.WinAPI.USER32.SendMessage(grid.Handle, Sphere10.Framework.Windows.WinAPI.WindowMessageFlags.WM_RBUTTONDOWN, (IntPtr)2, coordinates);
+	}
 
 	private static async Task<Record[]> BindRecords(CrudGrid Crud, bool CanEditColumn = true, string? InitialAddress = "1 Original Street", CrudCellDisplayType DisplayType = CrudCellDisplayType.Text) {
 		var Records = new[] { new Record { Address = InitialAddress }, new Record { Address = "2 Original Street" } };
