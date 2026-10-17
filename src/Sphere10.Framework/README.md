@@ -585,12 +585,46 @@ Fluent extensions for .NET types:
 
 ### 🌍 Data Source Abstractions
 
-Abstractions for querying data from various sources:
+`IDataSource<T>` supplies item/range CRUD, validation, count/capabilities and paged
+reads. Choose the existing item-first or batch-first sync/async base according to
+the source's actual primitive; see the [data-source practice](../../docs/guidelines/patterns/data-sources.md).
 
-- **IDataSource**: Generic interface for querying objects from a source (database, file, API).
-- **Caching Data Sources**: Wrap data sources with caching layers.
-- **Composed Data Sources**: Combine multiple sources with fallback semantics.
-- **Filtering Data Sources**: Add filtering and projection to any data source.
+- `ListDataSource<T>` wraps an extended list; `FutureListDataSource<T>` delays its acquisition and `BulkFetchDataSource<T>` can invalidate/reload it. Their default read pages the list rather than automatically implementing arbitrary search/sort.
+- `ProjectedDataSource<TFrom,TTo>` adapts representations using forward/inverse maps.
+- [SnapshotDataSource<T>](DataSource/SnapshotDataSource.cs) supplies read-only atomic snapshot replacement, property-based search, raw-value sorting and clamped paging without a Windows or visual dependency.
+- [ReloadableSnapshotDataSource<T>](DataSource/ReloadableSnapshotDataSource.cs) loads through an asynchronous capture delegate on first access, then pages the published snapshot until explicitly reloaded.
+
+```csharp
+using Sphere10.Framework;
+
+var source = new SnapshotDataSource<SnapshotRow>();
+source.ReplaceSnapshot(new[] { new SnapshotRow(2, "Alpha"), new SnapshotRow(1, "ALPHA") });
+var page = source.ReadRange("alpha", 1, 0, nameof(SnapshotRow.Id), SortDirection.Ascending);
+// page contains ID 1, Page 0 and TotalCount 2.
+
+public sealed record SnapshotRow(int Id, string Name);
+```
+
+`SnapshotDataSource<T>` searches public readable nonindexed instance properties,
+with invariant default text and case-insensitive matching/string sorting. Supply
+`Func<object,string>` in its constructor for specialized value/search text.
+Comparable raw values retain their native ordering, so formatted numbers do not
+sort lexicographically. Membership arrays are copied on replacement and access;
+row object ownership remains with the caller. Configure default sorting before
+publishing the source. CRUD mutation/validation operations remain unsupported.
+Its async reads use the existing sync-first data-source adapter. Native consumers
+can bind it through the WinForms `CrudGridSnapshotController<T>`; core retains no
+visual dependency. [Snapshot tests](../../tests/Sphere10.Framework.Tests/DataSource/SnapshotDataSourceTests.cs)
+exercise query, ownership, concurrency and adapter behavior.
+
+`ReloadableSnapshotDataSource<T>` provides `GetSnapshotAsync` and `ReloadAsync`.
+It serializes captures, retains the prior successful inventory on failure or
+cancellation, and prevents an older capture overwriting an explicit
+`ReplaceSnapshot` publication. Asynchronous initialization invokes even a loader's
+synchronous setup on a worker. Synchronous `Snapshot`, `Count` and `ReadRange`
+can initialize synchronously; UI callers must use the asynchronous operations.
+Native process, service, endpoint and storage sources in Framework.Windows use
+this mechanism without imposing sampling timers or application display policy.
 
 ### 🔌 Peripherals & Hardware Access
 
