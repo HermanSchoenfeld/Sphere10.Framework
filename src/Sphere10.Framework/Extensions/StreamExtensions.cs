@@ -35,7 +35,7 @@ public static class StreamExtensions {
 	public static byte[] ToArray(this Stream stream) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentLTE(stream.Length, int.MaxValue, nameof(string.Length));
-		return stream.ReadAll((int)stream.Length);
+		return stream.ReadAll();
 	}
 
 	public static bool CanRead(this Stream stream, int byteCount) =>
