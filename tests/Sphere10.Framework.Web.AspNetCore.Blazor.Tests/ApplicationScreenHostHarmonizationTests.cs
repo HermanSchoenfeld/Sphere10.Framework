@@ -306,6 +306,23 @@ public class ApplicationScreenHostHarmonizationTests {
 		Assert.That(concrete.OpenScreens, Is.EqualTo(new[] { first, second }));
 	}
 
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task DetachedPresentationIsUnsupportedThroughTheSharedBlazorContractAndItsDecorator(bool decorate) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var concrete = new BlazorApplicationScreenHost(new[] { CreateBlock() }, provider);
+		using IApplicationScreenHost host = decorate ? new TrackingDecorator(concrete) : concrete;
+		var block = concrete.Blocks.Single();
+		var definition = ((BlazorScreenMenuItem)block.Menus.Single().Items.Single()).ScreenDefinition;
+		var session = await host.OpenScreenAsync(block, definition);
+		var ownership = session.Host;
+		await Assert.ThatAsync(async () => await host.ShowScreenUndockedAsync(session), Throws.TypeOf<NotSupportedException>());
+		Assert.That(host.ActiveScreen, Is.SameAs(session));
+		Assert.That(concrete.OpenScreens, Is.EqualTo(new[] { session }));
+		Assert.That(session.Host, Is.SameAs(ownership));
+		Assert.That(session.Block, Is.SameAs(block));
+	}
+
 	[Test]
 	public async Task ActionsResolveTheUiCoordinatorAndConfiguredHostFromTheExecutingScope() {
 		var services = CreateServices();

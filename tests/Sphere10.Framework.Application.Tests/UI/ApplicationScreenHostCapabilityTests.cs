@@ -32,6 +32,27 @@ public class ApplicationScreenHostCapabilityTests {
 		Assert.That(typeof(ISingleApplicationScreenHost).GetProperties().Select(property => property.Name), Has.None.EqualTo(nameof(IMultiApplicationScreenHost.Screens)));
 		Assert.That(typeof(IApplicationScreenHost).GetProperty(nameof(IApplicationScreenHost.ScreenMode)).CanWrite, Is.True);
 		Assert.That(typeof(IApplicationScreenHost).GetProperty(nameof(IApplicationScreenHost.UserInterfaceServices)).PropertyType, Is.EqualTo(typeof(IUserInterfaceServices)));
+		Assert.That(typeof(IApplicationScreenHost).GetMethod(nameof(IApplicationScreenHost.ShowScreenUndockedAsync)), Is.Not.Null);
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task ALogicalHostRejectsDetachedPresentationWithoutChangingOwnershipOrSelection(bool decorate) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var block = Block();
+		using var owner = new ApplicationScreenHost(new[] { block }, provider);
+		using IApplicationScreenHost host = decorate ? new SingleDecorator(owner) : owner;
+		var active = await host.ActivateBlockAsync(block);
+		var supplied = new ProbeScreen();
+		await Assert.ThatAsync(async () => await host.ShowScreenUndockedAsync(supplied), Throws.TypeOf<NotSupportedException>());
+		Assert.That(host.ActiveScreen, Is.SameAs(active));
+		Assert.That(owner.OpenScreens, Is.EqualTo(new[] { active }));
+		Assert.That(supplied.Host, Is.Null);
+		Assert.That(supplied.Block, Is.Null);
+		using var canceled = new CancellationTokenSource();
+		canceled.Cancel();
+		await Assert.ThatAsync(async () => await host.ShowScreenUndockedAsync(supplied, canceled.Token), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(supplied.Host, Is.Null);
 	}
 
 	[Test]
