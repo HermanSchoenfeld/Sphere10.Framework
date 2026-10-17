@@ -93,19 +93,19 @@ namespace Sphere10.Framework.Windows.Forms {
             // 
             // _textLabel
             // 
-            this._textLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._textLabel.AutoEllipsis = true;
+            this._textLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left));
+            this._textLabel.AutoEllipsis = false;
             this._textLabel.Location = new System.Drawing.Point(0, 0);
             this._textLabel.Margin = new System.Windows.Forms.Padding(9, 0, 9, 0);
             this._textLabel.Name = "_textLabel";
             this._textLabel.Size = new System.Drawing.Size(366, 106);
             this._textLabel.TabIndex = 1;
             this._textLabel.Text = "This is a very large message. ";
+            this._textLabel.UseMnemonic = false;
             // 
             // _textLabelPanel
             // 
-            this._textLabelPanel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this._textLabelPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right));
             this._textLabelPanel.AutoScroll = true;
             this._textLabelPanel.Controls.Add(this._textLabel);
             this._textLabelPanel.Location = new System.Drawing.Point(124, 26);
@@ -153,7 +153,6 @@ namespace Sphere10.Framework.Windows.Forms {
             this.Controls.Add(this._textLabelPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Margin = new System.Windows.Forms.Padding(9, 12, 9, 12);
-            this.MaximumSize = new System.Drawing.Size(1497, 3159);
             this.MinimizeBox = false;
             this.Name = "DialogEx";
             this.ShowIcon = false;

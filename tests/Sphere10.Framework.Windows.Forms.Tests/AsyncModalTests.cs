@@ -262,6 +262,86 @@ public class AsyncModalTests {
 		Assert.That(Dialog.IsDisposed, Is.True);
 	});
 
+	[TestCase(SystemIconType.None)]
+	[TestCase(SystemIconType.Question)]
+	public void DialogExKeepsShortMessagesAtTheDesignerSizeWithoutScrollbars(SystemIconType Icon) => RunWithMessageLoop(async Owner => {
+		using var Baseline = new DialogEx();
+		const string Message = "Continue copying C:\\Files & Data?";
+		var Pending = DialogEx.ShowAsync(Owner, Icon, "Short Question", Message, "Cancel", "Copy");
+		using var Dialog = await WaitForDialog<DialogEx>();
+		await Task.Yield();
+		var Panel = (Panel)Dialog.Controls.Find("_textLabelPanel", true).Single();
+		var Label = (Label)Dialog.Controls.Find("_textLabel", true).Single();
+		Assert.That(Dialog.ClientSize, Is.EqualTo(Baseline.ClientSize));
+		Assert.That(Panel.VerticalScroll.Visible, Is.False);
+		Assert.That(Panel.HorizontalScroll.Visible, Is.False);
+		Assert.That(Label.Text, Is.EqualTo(Message));
+		Assert.That(Label.AutoEllipsis, Is.False);
+		Assert.That(Label.UseMnemonic, Is.False);
+		((Button)Dialog.Controls.Find("button2", true).Single()).PerformClick();
+		Assert.That(await Pending, Is.EqualTo(DialogExResult.Button2));
+	});
+
+	[TestCase(SystemIconType.None)]
+	[TestCase(SystemIconType.Question)]
+	public void DialogExFitsMultilineConfirmationsByGrowingTheFormAndViewport(SystemIconType Icon) => RunWithMessageLoop(async Owner => {
+		using var Baseline = new DialogEx();
+		var Message = string.Join(Environment.NewLine, Enumerable.Range(1, 12).Select(Index => $"Step {Index}: Copy file contents, ownership, permissions and timestamps."));
+		var Pending = DialogEx.ShowAsync(Owner, Icon, "Confirm Changes", Message, "Cancel", "Copy");
+		using var Dialog = await WaitForDialog<DialogEx>();
+		await Task.Yield();
+		var Panel = (Panel)Dialog.Controls.Find("_textLabelPanel", true).Single();
+		var Label = (Label)Dialog.Controls.Find("_textLabel", true).Single();
+		Assert.That(Dialog.ClientSize.Height, Is.GreaterThan(Baseline.ClientSize.Height));
+		Assert.That(Panel.Height, Is.GreaterThan(106));
+		Assert.That(Panel.VerticalScroll.Visible, Is.False, "An ordinary confirmation should be readable in full before scrolling is needed.");
+		Assert.That(Panel.HorizontalScroll.Visible, Is.False);
+		Assert.That(Label.GetPreferredSize(new Size(Label.Width, 0)).Height, Is.LessThanOrEqualTo(Panel.ClientSize.Height));
+		Assert.That(Screen.FromControl(Owner).WorkingArea.Contains(Dialog.Bounds), Is.True);
+		Assert.That(Dialog.ClientRectangle.Contains(Panel.Bounds), Is.True);
+		Assert.That(Dialog.Controls.OfType<Button>().Where(Button => Button.Visible).All(Button => Dialog.ClientRectangle.Contains(Button.Bounds)), Is.True);
+		((Button)Dialog.Controls.Find("button1", true).Single()).PerformClick();
+		Assert.That(await Pending, Is.EqualTo(DialogExResult.Button1));
+	});
+
+	[Test]
+	public void DialogExBoundsLongTextOnTheOwnerMonitorAndScrollsItsEntireMessage() => RunWithMessageLoop(async Owner => {
+		var WorkingArea = Screen.FromControl(Owner).WorkingArea;
+		Owner.Location = new Point(WorkingArea.Right - Owner.Width, WorkingArea.Bottom - Owner.Height);
+		var Message = string.Join(Environment.NewLine, Enumerable.Range(1, 180).Select(Index => $"Line {Index}: Retained diagnostic text."));
+		var Pending = DialogEx.ShowAsync(Owner, SystemIconType.Question, "Long Text", Message, "Close");
+		using var Dialog = await WaitForDialog<DialogEx>();
+		await Task.Yield();
+		var Panel = (Panel)Dialog.Controls.Find("_textLabelPanel", true).Single();
+		var Label = (Label)Dialog.Controls.Find("_textLabel", true).Single();
+		Assert.That(WorkingArea.Contains(Dialog.Bounds), Is.True, $"Dialog {Dialog.Bounds} must stay within the owner monitor's {WorkingArea}.");
+		Assert.That(Dialog.Width, Is.LessThanOrEqualTo((int)Math.Round(900 * Dialog.DeviceDpi / 96.0)));
+		Assert.That(Dialog.Height, Is.LessThanOrEqualTo((int)Math.Round(780 * Dialog.DeviceDpi / 96.0)));
+		Assert.That(Panel.VerticalScroll.Visible, Is.True);
+		Assert.That(Panel.HorizontalScroll.Visible, Is.False);
+		Assert.That(Label.Height, Is.GreaterThan(Panel.ClientSize.Height));
+		Assert.That(Label.Text, Is.EqualTo(Message[..Math.Min(Message.Length, DialogEx.MaxTextLength)]));
+		Panel.AutoScrollPosition = new Point(0, Label.Height);
+		Assert.That(Panel.AutoScrollPosition.Y, Is.LessThan(0), "Long text must remain available through the real scrollable viewport.");
+		((Button)Dialog.Controls.Find("button1", true).Single()).PerformClick();
+		await Pending;
+	});
+
+	[Test]
+	public void DialogExHonorsACallersSmallerMaximumSizeAndKeepsCommandsOutsideTheScrollArea() => RunWithMessageLoop(async Owner => {
+		using var Dialog = new TextFitDialog(string.Join(Environment.NewLine, Enumerable.Range(1, 100).Select(Index => $"Line {Index}: Full retained text."))) { MaximumSize = new Size(600, 350) };
+		var Pending = Dialog.ShowDialogAsync(Owner);
+		await WaitForDialog<TextFitDialog>();
+		await Task.Yield();
+		var Panel = (Panel)Dialog.Controls.Find("_textLabelPanel", true).Single();
+		Assert.That(Dialog.Width, Is.LessThanOrEqualTo(600));
+		Assert.That(Dialog.Height, Is.LessThanOrEqualTo(350));
+		Assert.That(Panel.VerticalScroll.Visible, Is.True);
+		Assert.That(Dialog.Controls.OfType<Button>().Where(Button => Button.Visible).All(Button => Button.Top >= Panel.Bottom), Is.True);
+		((Button)Dialog.Controls.Find("button1", true).Single()).PerformClick();
+		await Pending;
+	});
+
 	[Test]
 	public void ExceptionDetailsLeaveParentModalPending() => RunWithMessageLoop(async Owner => {
 		var Pending = ExceptionDialog.ShowAsync(Owner, new InvalidOperationException("Details test"));
@@ -380,6 +460,10 @@ public class AsyncModalTests {
 	}
 
 	public class ProbeDialog : Form, IApplicationDialog { }
+
+	private sealed class TextFitDialog : DialogEx {
+		public TextFitDialog(string Text) : base(SystemIconType.Question, "Bounded Text", Text, false, "Close") { }
+	}
 
 	private sealed class ChangedEntityEditor : Control, ICrudEntityEditor<object> {
 		public event EventHandlerEx<CrudEntityPropertyChangedEventArgs> PropertyChanged { add { } remove { } }
