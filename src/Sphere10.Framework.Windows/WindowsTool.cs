@@ -8,6 +8,7 @@
 
 using System;
 using Sphere10.Framework.Windows;
+using Sphere10.Framework.Windows.Security;
 
 namespace Tools;
 
@@ -34,6 +35,9 @@ public static class Windows {
 
 	[ThreadStatic] private static ShellUtility _shell;
 	public static ShellUtility Shell => _shell ??= new();
+
+	[ThreadStatic] private static SecurityDescriptorUtil _securityDescriptors;
+	public static SecurityDescriptorUtil SecurityDescriptors => _securityDescriptors ??= new();
 
 }
 
