@@ -12,6 +12,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 public class ControllerContainer : IController {
 	private ControllerList m_ControllerList = null;
+	private IController[] _dispatchControllers;
 
 
 	/// <summary>
@@ -39,83 +40,87 @@ public class ControllerContainer : IController {
 			m_ControllerList = new ControllerList();
 
 		m_ControllerList.Add(model);
+		_dispatchControllers = null;
 	}
 
 	public virtual void RemoveController(IController model) {
-		if (m_ControllerList != null)
-			m_ControllerList.Remove(model);
+		if (m_ControllerList != null && m_ControllerList.Remove(model))
+			_dispatchControllers = null;
 	}
+
+	// A callback can rebuild cells and modify their controllers. Keep the admitted dispatch stable,
+	// while nested/subsequent events see the new list; reuse the snapshot until membership changes.
+	private IController[] GetDispatchControllers() => _dispatchControllers ??= m_ControllerList?.ToArray() ?? Array.Empty<IController>();
 
 	#region IController Members
 
 	public void OnMouseDown(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnMouseDown(sender, e);
 	}
 
 	public void OnMouseUp(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnMouseUp(sender, e);
 	}
 
 	public void OnMouseMove(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnMouseMove(sender, e);
 	}
 
 	public void OnMouseEnter(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnMouseEnter(sender, e);
 	}
 
 	public void OnMouseLeave(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnMouseLeave(sender, e);
 	}
 
 	public void OnKeyUp(CellContext sender, System.Windows.Forms.KeyEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnKeyUp(sender, e);
 	}
 
 	public void OnKeyDown(CellContext sender, System.Windows.Forms.KeyEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnKeyDown(sender, e);
 	}
 
 	public void OnKeyPress(CellContext sender, System.Windows.Forms.KeyPressEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnKeyPress(sender, e);
 	}
 
 	public void OnDoubleClick(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnDoubleClick(sender, e);
 	}
 
 	public void OnClick(CellContext sender, EventArgs e) {
-		for (int Counter = 0; Counter < m_ControllerList.Count; Counter++) {
-			m_ControllerList[Counter].OnClick(sender, e);
-		}
+		foreach (var controller in GetDispatchControllers())
+			controller.OnClick(sender, e);
 	}
 
 	public void OnFocusLeaving(CellContext sender, System.ComponentModel.CancelEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnFocusLeaving(sender, e);
 	}
 
 	public void OnFocusLeft(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnFocusLeft(sender, e);
 	}
 
 	public void OnFocusEntering(CellContext sender, System.ComponentModel.CancelEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnFocusEntering(sender, e);
 	}
 
 	public void OnFocusEntered(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnFocusEntered(sender, e);
 	}
 
@@ -125,7 +130,7 @@ public class ControllerContainer : IController {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	public void OnValueChanging(CellContext sender, ValueChangeEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnValueChanging(sender, e);
 	}
 
@@ -135,7 +140,7 @@ public class ControllerContainer : IController {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	public void OnValueChanged(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnValueChanged(sender, e);
 	}
 
@@ -145,7 +150,7 @@ public class ControllerContainer : IController {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	public void OnEditStarting(CellContext sender, System.ComponentModel.CancelEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnEditStarting(sender, e);
 	}
 	/// <summary>
@@ -154,7 +159,7 @@ public class ControllerContainer : IController {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	public void OnEditStarted(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnEditStarted(sender, e);
 	}
 	/// <summary>
@@ -163,12 +168,12 @@ public class ControllerContainer : IController {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	public void OnEditEnded(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnEditEnded(sender, e);
 	}
 
 	public bool CanReceiveFocus(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList) {
+		foreach (var controller in GetDispatchControllers()) {
 			if (controller.CanReceiveFocus(sender, e) == false)
 				return false;
 		}
@@ -177,27 +182,27 @@ public class ControllerContainer : IController {
 	}
 
 	public void OnDragDrop(CellContext sender, System.Windows.Forms.DragEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnDragDrop(sender, e);
 	}
 
 	public void OnDragEnter(CellContext sender, System.Windows.Forms.DragEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnDragEnter(sender, e);
 	}
 
 	public void OnDragLeave(CellContext sender, EventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnDragLeave(sender, e);
 	}
 
 	public void OnDragOver(CellContext sender, System.Windows.Forms.DragEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnDragOver(sender, e);
 	}
 
 	public void OnGiveFeedback(CellContext sender, System.Windows.Forms.GiveFeedbackEventArgs e) {
-		foreach (IController controller in m_ControllerList)
+		foreach (var controller in GetDispatchControllers())
 			controller.OnGiveFeedback(sender, e);
 	}
 
