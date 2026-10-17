@@ -134,7 +134,7 @@ Derive synchronous tasks from `SyncApplicationInitializerBase` or `SyncApplicati
 
 `StartWinFormsApplication` starts the framework with the native message loop running. Module initialization finishes before it constructs the application root; global initializers then run with that exact `IApplication.Logger`, including an override of the registered process logger. Constructing the root does not install blocks or create screens. `Framework.Initialized` still runs before block installation and `application.InitializeAsync()`, which finish before showing the main window. A vetoed block installation can retry without running application tasks. Approved exit awaits application finalization and then runs framework finalizers while the main window remains open with interaction disabled. The window closes after these tasks; the runner waits for the root's exit result before ending the message loop and disposing the service provider. Cleanup still proceeds when a finalizer fails. `Disposables` holds resources owned by the application, independently of the borrowed form and screen host.
 
-Enable the startup and shutdown splash with `.UseSplashScreen()` or `.UseSplashScreen(image)` on the `BuildWinFormsApplication()` chain. It retains its framework events and global information logger, subscribes to process task progress even with a custom application logger, and subscribes to application lifecycle and progress before initialization. After exit confirmation and all closing permissions succeed, a fresh splash appears immediately at full opacity and displays application and framework shutdown tasks while the main window remains behind it. Closing the main window is the last step after those tasks. The splash then fades out during resource cleanup. A failed initialization reuses its still-visible splash for cleanup. Updates from worker tasks queue onto the UI thread. Startup retains its fade-in; shutdown does not fade in. Application tasks touching native controls must run on the UI thread; reserve parallelizable tasks for work that does not access controls directly.
+Enable the startup and shutdown splash with `.UseSplashScreen()` or `.UseSplashScreen(image)` on the `BuildWinFormsApplication()` chain. It retains its framework events and global information logger, subscribes to process task progress even with a custom application logger, and subscribes to application lifecycle and progress before initialization. After exit confirmation and all closing permissions succeed, a fresh splash appears immediately at full opacity and displays application and framework shutdown tasks while the main window remains behind it. Closing the main window is the last step after those tasks. The splash then fades out during resource cleanup. A failed initialization reuses its still-visible splash for cleanup. Updates from worker tasks queue onto the UI thread. Startup retains its fade-in; shutdown does not fade in. The overload `.UseSplashScreen(image, configure)` applies the same `Action<SplashScreen>` to each startup and shutdown instance. `ProgressOverImage` places the real lifecycle text over the artwork; `ProgressBounds`, `ProgressBackColor`, `ProgressTitleColor` and `ProgressMessageColor` customize that area. An optional `ProgressTextFormatter` can turn task identifiers into display captions while preserving meaningful messages and errors. Existing overloads retain the separate default footer. Supplied artwork remains caller-owned; the splash disposes its resized copy. Application tasks touching native controls must run on the UI thread; reserve parallelizable tasks for work that does not access controls directly.
 
 The root's `Logger` is the framework `Sphere10.Framework.ILogger`, resolved from its provider with `SystemLog.Logger` as the fallback. Lifecycle tasks can inject `IApplication`; hosted screens can reach the same logger through `Block.Parent.Logger`. Add only application-owned resources to `application.Disposables`; services, the form and the host keep their existing disposal owners. The adapter does not call plugin `Unload()` during shutdown.
 
@@ -167,9 +167,11 @@ public class WorkspaceNavigation {
 
 The native host exposes actual `WinFormsApplicationScreen` instances through every hosting interface. `Screens` includes retained singleton controls even when hidden; `OpenScreens` follows open order, including detached windows. Control identity remains stable across hide, show, docking and title changes. `SelectBlockAsync` browses a block without replacing the active editor; `ActivateBlockAsync` opens its default screen. Both navigation and hosting changes raise `Changed`. Showing a retained screen again selects its owner for application navigation.
 
+For a configured screen that should start in a modeless detached window, use `await application.ScreenHost.ShowScreenUndockedAsync(screen)` through the shared `IApplicationScreenHost`. The native host also retains `ShowScreenUndocked(screen)` for synchronous native callers. In **MultiView**, a new normal nonpermanent instance opens centered over its main frame without inserting or selecting a main-frame tab, changing the active block, or asking the current main screen to hide. The host retains the exact instance; it remains available in **Screens** and can be docked through the ordinary guarded controls. Showing an existing detached instance activates its window. Showing an existing docked instance this way uses the usual undocking checks. A false result leaves an unretained supplied instance with its caller. Ordinary `ShowScreenAsync(screen)` keeps the normal docked launch behavior.
+
 The generic `IApplicationScreenHost<TBlock, TScreen>` provides typed blocks, screens and lifecycle operations once for every platform. `IWinFormsApplicationScreenHost` adds native docking and existing synchronous presentation APIs. A reference to a screen identifies the same object through neutral, generic and native interfaces. Blocks also use reference identity; distinct native block definitions can have matching names.
 
-The native adapter composes the common logical host and performs native presentation on the UI thread. Its binding dictionary contains only tabs and detached windows. A screen exposes its public native `Host` and owning `Block` through both native and shared contracts; `ApplicationBlock` remains an alias of `Block`. These references are available during activation and destruction hooks, remain attached while a singleton is hidden or a window is undocked, and clear when the instance leaves the host. A `WinFormsApplicationScreen` can also access the owning shared host through protected `ApplicationScreenHost` and close itself with `await ApplicationScreenHost.CloseScreenAsync(this)`.
+The native adapter composes the common logical host and performs native presentation on the UI thread. Its binding dictionary contains native presentation state, including tabs, detached windows and tab image keys. A screen exposes its public native `Host` and owning `Block` through both native and shared contracts; `ApplicationBlock` remains an alias of `Block`. These references are available during activation and destruction hooks, remain attached while a singleton is hidden or a window is undocked, and clear when the instance leaves the host. A `WinFormsApplicationScreen` can also access the owning shared host through protected `ApplicationScreenHost` and close itself with `await ApplicationScreenHost.CloseScreenAsync(this)`.
 
 `OpenScreenAsync(block, definition)` accepts a registered block and an exact definition reference from its `ScreenDefinitions`. Blocks own immutable definitions independently of menus, so a screen can open without a navigation item. A menu item references `ScreenDefinition`, and the block's `DefaultScreenDefinition` references the desired startup definition. Use `RegisterBlockAsync` and `UnregisterBlockAsync` for application membership; guarded removal closes its native controls and updates the same host registry.
 
@@ -178,6 +180,35 @@ Menu items expose their declaring menu through `Parent`, and menus expose their 
 A registered block's `Parent` references the running application. That link follows live host membership and clears when the block is removed or the application adapter is disposed. `Source` records the plugin that successfully contributed the captured block; standalone blocks have no source plugin. Removing and registering a contributed block again preserves its source, independently of its current application membership. Native and shared interfaces expose the same references.
 
 Execute the actual menu item supplied by the registered block, and pass the actual block, definition or screen to host operations. Ownership comes from these references; command dispatch does not search blocks for matching captions or IDs. The typed WinForms contracts specialize `Parent`, `Source`, `Host` and `Block`, with inline bridges to the shared interfaces under `#region Base Interface Bridges`.
+
+## Native screen construction
+
+Native screen tabs prefer `WinFormsApplicationScreen.ScreenImage`, including for
+screens launched directly without a menu activator. Set this designer-editable,
+borrowed image before the screen is first hosted and keep it alive while hosted;
+neither screen nor host disposes the supplied image. If it is null, the host uses
+a registered screen activator image, including another definition for the same
+screen type. The host owns its image-list entry, keeps each tab's image key across
+docking and releases that entry when its screen is removed. Shared definitions
+remain platform-neutral.
+
+The default `WinFormsApplicationScreenHost.CreateScreen` selects compatible
+`(block, owner)` or `(block)` constructors, then a parameterless constructor.
+It does not automatically resolve arbitrary DI constructors. When a screen
+needs application-registered dependencies, adapt that construction boundary or
+override the host factory; verify the real menu activation path uses the intended
+service instances. Do not assume a manually constructed DI screen proves hosted
+activation uses DI.
+
+Keep explicit dependency constructors for standalone use and a parameterless
+designer constructor for hosted construction. Initialize the static layout, then
+return in design mode before resolving providers or binding services. Runtime
+screens can use the application's configured provider or an overridden host
+factory for shared collectors. Hosted screens use `Block.Parent.Logger` for
+application diagnostics. Reusable typed Windows resource APIs live in
+[Sphere10.Framework.Windows](../Sphere10.Framework.Windows/README.md#windows-resource-abstractions),
+independently of an application checkout. Collectors, sampling policy and display
+models live in the application and compose these APIs.
 
 ## ⚡ 10-Second Example
 
@@ -509,6 +540,37 @@ serviceStatus.ServiceName = "MyService";
 // Displays: Running, Stopped, Starting, etc.
 ```
 
+### Application banners
+
+[ApplicationBanner](Application/Controls/ApplicationBanner.cs) is the concrete
+designer surface for product title, version and company branding. Extend it with
+a product-owned subclass and designer pair, then register that subclass as the
+transient `ApplicationBanner` service. Framework registers the stock transient
+only when no application registration exists.
+
+Place [ApplicationBannerHost](Application/Controls/ApplicationBannerHost.cs) in a
+form's designer to opt in to that registration. It retains a static stock preview
+on the design surface and resolves `Banner` on runtime load or first access.
+Each host requires its own transient instance and owns that child through its
+control collection, disposing it with the host.
+
+The banner owns its rendered icon bitmaps, releases replaced images during
+resizing and disposes its final image with the control. The icon supplied by
+`IApplicationIconProvider` remains borrowed from that provider.
+
+`UseIcon(icon)` selects that application's borrowed icon; retain it for the
+runner's complete lifetime. `AddMainForm` preserves an explicitly registered
+`IApplicationIconProvider`. Its default provider uses the configured icon, then
+the main form's `ApplicationIcon` contract. The native runner applies the
+resolved icon to the main window before initialization, and the standard About
+dialog uses the same provider for its title bar and banner. Consumers must not
+dispose the shared icon or allocate undisposed per-read copies. The banner uses
+Drawing's aspect-fit padded resize, centered in both dimensions, and About uses
+the full product version consistently. `ShowAboutBox` resolves its dialog from a
+per-call DI scope retained through awaited modal completion. Closing disposes a
+transient or scoped dialog and its rendered banner images; a custom singleton
+remains owned by the application container and can be shown again.
+
 ## 🛠️ Tools.WinForms Namespace
 
 ```csharp
@@ -531,6 +593,8 @@ editors, registration requirements, ownership and current limitations.
 | Control | Description |
 |---------|-------------|
 | `CheckedGroupBox` | Group box with checkbox header |
+| `ApplicationBanner` | Designer-editable product title, version and company branding |
+| `ApplicationBannerHost` | Stock designer preview with a registered transient banner at runtime |
 | `PathSelectorControl` | File/folder path selection |
 | `ProgressBarEx` | Progress bar with text display |
 | `PropertyGridEx` | Enhanced property grid |
@@ -788,7 +852,7 @@ Screen builders declare the type's instance policy with `.AsSingleInstance()` or
 
 `WinFormsApplicationScreen.Title` uses the control's `Text` property. Menu navigation supplies the menu text as the initial title unless a specific builder title is provided. Screens can subsequently change `Title`; the tab and detached window update immediately. A block's default screen opens during registration if there is no active screen after its `ExecuteOnLoad` items have run.
 
-Tab widths grow with their titles up to `WinFormsApplicationScreenTabControl.MaximumTabWidth`, which defaults to 260 logical pixels. Longer titles display an ellipsis, with the full title available on hover. Tab spacing, close buttons, docking markers, and the width limit scale for the current monitor's DPI.
+Tab widths grow with their titles up to `WinFormsApplicationScreenTabControl.MaximumTabWidth`, which defaults to 320 logical pixels. Native caption measurements reserve room for the owner-drawn icon, its spacing and the close action, including when the image list retains its original pixel size on a higher-DPI monitor. Longer titles display an ellipsis, with the full title available on hover. Tab spacing, close buttons, docking markers, and the width limit scale for the current monitor's DPI.
 
 Selecting a tab restores the previous screen's toolbar items and removes its screen menu, then merges the selected screen's `ToolBar` and registered `MenuItems` into the main form. The same item instances and event handlers are retained. When detached, `WinFormsApplicationScreenForm` displays the registered `MenuItems` directly as top-level menus, including File when supplied, regardless of `ShowInApplicationMenuStrip`. It retains the original `ToolBar` control, layout, and handlers instead of copying its items into a replacement strip. The selected docked screen continues to supply the main window's menu and toolbar. Redocking selects the returned tab and merges its items back into the main form.
 
@@ -800,6 +864,8 @@ Detached windows use a compact caption with accessible **Re-dock**, **Minimize**
 - In a detached window, use the caption's **Re-dock** icon, or bring the window's title bar close to the main tab strip. Only the header band accepts drag docking; the screen content panel does not. A highlighted tab-sized **Release to dock** preview and text hint show the proposed position and screen title without changing tab widths, order, or selection. The highlight uses the ExplorerBar palette and follows the visible navigation pane's blue in `BlockMainForm`. Leaving the target or cancelling the drag clears the preview.
 
 The left navigation pane starts at 320 logical pixels wide and scales with the form. Drag its divider to choose a different width. `MaximumNavigationPaneWidth` defaults to 480 logical pixels at 96 DPI; the effective limit also reserves 320 logical pixels for the screen when space permits. Limits scale with DPI and clamp oversized saved widths. Minimized or temporarily undersized layouts defer divider updates until both panels fit; the remembered width remains available for restoration and settings capture. Collapse and restore the entire left navigation pane with the **sidebar icon** in the main toolbar, or **Ctrl+Alt+M**. The icon remains available across screen switches and supplies Show/Hide sidebar tooltips. It does not reserve a separate header or collapsed gutter. `BlockMainForm.NavigationPaneCollapsed` exposes the preference. The pane remembers its width and collapsed state across screen switches. Filled screens temporarily hide navigation without changing that preference.
+
+Menu rows wrap captions to the available navigation width. Narrowing the pane increases row and group heights; widening it removes unnecessary wrapped lines. The navigation container keeps its menu viewport sized to the pane, including applications with one block and no block-selector buttons. Following groups move below their contents, with vertical scrolling when necessary.
 
 `MainForm.ScreenHost` exposes `ActivateScreen`, `ShowScreen`, `CloseScreen`, `CloseScreens`, `CanCloseScreens`, `UndockScreen`, `DockScreen`, `OpenScreens` and `Screens`. `ActiveScreen` identifies the selected docked screen; detached windows retain independent chrome. `Screens` also includes cached single-instance screens hidden in SingleView. `ActivateScreen` and menu navigation reuse an existing singleton. Direct `ShowScreen` calls reject a second singleton instance; the caller still owns a rejected instance. A screen belongs to one host at a time.
 
@@ -850,9 +916,28 @@ The existing `OnHide(ref bool CancelHide)` and `ScreenHidden` event can cancel n
 
 The reusable host follows `IWinFormsApplicationScreenHost` → `WinFormsApplicationScreenHostBase` → `WinFormsApplicationScreenHost`, with `WinFormsApplicationScreenHostDecorator` for extensions. `WinFormsApplicationScreenTabControl` supplies the tab interactions and `WinFormsApplicationScreenForm` hosts detached screens.
 
-The **WinForms Tester** loads two plugins through `AddWinFormsApplicationPlugin`: `WinFormsDemoPlugin.Configure` contributes Workspace and Notes, while `WinFormsComponentDemoPlugin.Configure` contributes Controls, Data and collections, Integration, and Utilities. Each plugin registers its own initialization and finalization tasks from the tester's `Lifecycle` folder, alongside the existing framework startup tasks. It starts in MultiView and uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales its existing screen and dialog layouts. **Workspace > Screen hosting** explicitly declares **Settings** as single-instance; **New design** and ordinary component screens use the multi-instance default. Both screen modes are available, and the hidden Empty screen belongs to Workspace. These demos have independent notes, a counter, **Rename tab** actions, a lifecycle log, and a checkbox to exercise cancellation. **Plain screen (no bars)** exercises a screen with no menus or toolbar. See the [Tester instructions](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md). [SystemExpert](../../utils/SystemExpert/README.md) also uses MultiView; monitoring tools use the framework's default multi-instance policy unless they explicitly declare another lifetime.
+`MainForm` and `BlockMainForm` provide a **Screens** menu listing the exact open instances across blocks, including detached windows. Duplicate titles receive an occurrence number; detached entries are marked **Undocked**. Selecting an entry navigates to that instance without opening another or docking its window. The menu and tab context menus expose **Close All** and **Close All Others**. `CloseAllScreensAsync` and `CloseAllOtherScreensAsync(keepScreen)` close docked and detached instances through the existing atomic guard checks; permanent screens remain open. Hidden retained singletons are not open menu entries, and the ordinary exit guard still includes them.
+
+The **WinForms Tester** loads two plugins through `AddWinFormsApplicationPlugin`: `WinFormsDemoPlugin.Configure` contributes Workspace and Notes, while `WinFormsComponentDemoPlugin.Configure` contributes Controls, Data and collections, Integration, and Utilities. Each plugin registers its own initialization and finalization tasks from the tester's `Lifecycle` folder, alongside the existing framework startup tasks. It starts in MultiView and uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales its existing screen and dialog layouts. **Workspace > Screen hosting** explicitly declares **Settings** as single-instance; **New design** and ordinary component screens use the multi-instance default. Both screen modes are available, and the hidden Empty screen belongs to Workspace. These demos have independent notes, a counter, **Rename tab** actions, a lifecycle log, and a checkbox to exercise cancellation. **Plain screen (no bars)** exercises a screen with no menus or toolbar. See the [Tester instructions](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md). SystemExpert is an independent diagnostic application consuming these hosts and the Windows diagnostics library; the framework checkout does not require its source or tests.
 
 `Directory.Build.props` sets `ForceDesignerDPIUnaware=true` for the Visual Studio WinForms designer across the repository. This designer setting is separate from runtime DPI awareness. The library leaves runtime DPI policy to the application; Tester explicitly selects `HighDpiMode.DpiUnaware` before creating controls to preserve Windows bitmap scaling.
+
+## Global keyboard shortcuts
+
+`GlobalHotKey` implements `IGlobalHotKey` using a private message-only window and
+the Windows hotkey API, independently of low-level keyboard hooks. Create,
+register, unregister and dispose it on the same UI thread. Construction performs
+no registration; `TryRegister(Keys.Control | Keys.Alt | Keys.A, out error)` begins
+receiving `Pressed` events through the native message loop. `Keys.None` disables
+the shortcut. Windows auto-repeat is suppressed, so holding the key does not
+toggle repeatedly.
+
+An unavailable shortcut returns an error while retaining its previous active
+registration. Modifier-only keys, F12 and unsupported combinations are rejected.
+Disposal unregisters the shortcut and destroys the owned window. The consuming
+application owns its activation policy, settings, user feedback and subscription
+lifetime; keep registration alive when temporarily disabling the operation it
+controls. AutoMouse uses this component for its configurable toggle shortcut.
 
 ## 📦 Dependencies
 
@@ -904,6 +989,10 @@ Legacy DES stream helpers retain their existing full-length input buffer and zer
 
 Application, block and screen command layers compose through `Tools.UI.MergeApplicationMenus` and `MergeApplicationToolBarItems`. Application commands survive contextual commands with the same caption; screen commands replace matching block commands. Native captions merge without mnemonic markers, including contributions to the existing File and Help headers. Exit and help commands survive screen changes, with Help last. Native presentation honors block/menu placement flags and preserves caller-owned menu and item references.
 
-`Control.EnterRenderingScope()` defers layout and native redraw across the control tree. Nested scopes, added controls, newly created handles and newly shown controls share suppression. The last scope flushes parent/child layout and performs one redraw; disposed and intentionally hidden controls remain so. Dispose scopes on the creating UI thread. Screen-host transitions use this scope around the form and publish one completed selection and command update.
+`Control.EnterRenderingScope()` defers layout and native redraw across the control tree. Nested scopes, added controls, newly created handles and newly shown controls share suppression. The last scope flushes parent/child layout and performs one redraw; disposed and intentionally hidden controls remain so. Controls moved into another window receive their final full-tree invalidation at their current surviving root, including when the original root was disposed. A subtree still held by another rendering scope waits for that owner to release it. `EnterRenderingScope(repaintImmediately: false)` restores layout and native visibility synchronously but queues painting for the next normal native paint cycle, appropriate inside native input/selection callbacks. The existing no-argument overload retains immediate painting. Dispose scopes on the creating UI thread; never keep one across an await or BeginInvoke. Screen-host transitions use this scope around the form and publish one completed selection and command update.
+
+After native resizing and redraw restoration, the scope compares a top-aligned `TabControl`'s native `TCM_ADJUSTRECT` display area with WinForms' cached display rectangle. During toolbar restoration and undocking, managed `OnResize` can run before the native `WM_SIZE` recalculates wrapped header rows; the retained page then covers those headers. A mismatch reapplies the selected page's existing nonvirtual image metadata, whose parent update clears that cache. Its image-key/index mode, captions, custom text setters, native handles, selected page and selection events remain unchanged. This synchronization finishes before the existing final invalidation; it does not resize or recreate controls or select another page.
+
+SourceGrid controller dispatch uses a cached membership snapshot. Controllers may add or remove controllers while handling a mouse, keyboard, focus or editing callback; the current event retains its admitted order and nested/subsequent events use the updated membership. A new snapshot is allocated only when membership changes.
 
 Restoring redraw preserves each control's own requested visibility, rather than its effective `Visible` value inherited from a hidden parent. The base `Control.Visible` designer descriptor supplies that state through `ShouldSerializeValue`, even when a derived control declares a different default. Native regression checks must inspect actual window visibility after hiding and reactivating a retained view: healthy managed bounds alone do not prove its dropdowns and search controls are painted.
