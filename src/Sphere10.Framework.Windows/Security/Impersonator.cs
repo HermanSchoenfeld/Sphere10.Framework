@@ -7,90 +7,35 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Security.Principal;
-using System.Runtime.InteropServices;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 
 namespace Sphere10.Framework.Windows.Security;
 
-/////////////////////////////////////////////////////////////////////////
-/// <summary>
-/// Impersonation of a user. Allows to execute code under another
-/// user context.
-/// Please note that the account that instantiates the Impersonator class
-/// needs to have the 'Act as part of operating system' privilege set.
-/// </summary>
-/// <remarks>	
-/// This class is based on the information in the Microsoft knowledge base
-/// article http://support.microsoft.com/default.aspx?scid=kb;en-us;Q306158
-/// 
-/// Encapsulate an instance into a using-directive like e.g.:
-///
-///		Impersonator.RunAs("myUsername", "myDomainname", "myPassword", action);
-///		...
-///		using (Impersonator.Scope( ) )
-///		{
-///			...
-///			[code that executes under the new context]
-///			...
-///		}
-///		...
-/// 
-/// </remarks>
+/// <summary>Runs the complete synchronous worker under supplied credentials and restores the caller's existing identity.</summary>
 public class Impersonator {
+	public static void RunAs(string userName, string domain, string password, Action code)
+		=> RunAs(userName, domain, password, WinAPI.ADVAPI32.LOGON_TYPE.LOGON32_LOGON_INTERACTIVE,
+			WinAPI.ADVAPI32.LOGON_PROVIDER.LOGON32_PROVIDER_DEFAULT, WinAPI.ADVAPI32.SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, false, false, code);
 
-	public static void RunAs(
-		string userName,
-		string domain,
-		string password,
-		WinAPI.ADVAPI32.LOGON_TYPE logonType,
-		WinAPI.ADVAPI32.LOGON_PROVIDER logonProvider,
-		WinAPI.ADVAPI32.SECURITY_IMPERSONATION_LEVEL impersonationLevel,
-		bool usePrimaryToken,
-		bool attemptEnableSeRestorePrivilege,
-		Action code
-	) {
-		var token = IntPtr.Zero;
-		var tokenDuplicate = IntPtr.Zero;
-
-		try {
-			if (WinAPI.ADVAPI32.RevertToSelf()) {
-				if (WinAPI.ADVAPI32.LogonUser(userName, domain, password, (int)logonType, (int)logonProvider, out token)) {
-					if (usePrimaryToken) {
-						if (!WinAPI.ADVAPI32.DuplicateTokenEx(token, WinAPI.NETAPI32.MAXIMUM_ALLOWED, impersonationLevel, WinAPI.ADVAPI32.TOKEN_TYPE.TokenPrimary, out tokenDuplicate)) {
-							throw new WindowsException(Marshal.GetLastWin32Error(), "Unable to impersonate user '{0}'", userName);
-						}
-						if (attemptEnableSeRestorePrivilege) {
-							if (!Tools.Windows.Security.ModifyState(tokenDuplicate, "SeRestorePrivilege", true)) {
-								//throw new WindowsException(Marshal.GetLastWin32Error(), "Unable to enable SeRestorePrivilege in impersonated security context");
-							}
-						}
-
-					} else {
-						// use an impersonation token via simplified API call
-						if (!WinAPI.ADVAPI32.DuplicateToken(token, impersonationLevel, out tokenDuplicate)) {
-							throw new WindowsException(Marshal.GetLastWin32Error(), "Unable to impersonate user '{0}'", userName);
-						}
-					}
-
-					var tempWindowsIdentity = new WindowsIdentity(tokenDuplicate);
-					WindowsIdentity.RunImpersonated(tempWindowsIdentity.AccessToken, code);
-
-				} else {
-					throw new Win32Exception(Marshal.GetLastWin32Error());
-				}
-			} else {
-				throw new Win32Exception(Marshal.GetLastWin32Error());
-			}
-		} finally {
-			if (token != IntPtr.Zero) {
-				WinAPI.KERNEL32.CloseHandle(token);
-			}
-			if (tokenDuplicate != IntPtr.Zero) {
-				WinAPI.KERNEL32.CloseHandle(tokenDuplicate);
+	public static void RunAs(string userName, string domain, string password, WinAPI.ADVAPI32.LOGON_TYPE logonType,
+		WinAPI.ADVAPI32.LOGON_PROVIDER logonProvider, WinAPI.ADVAPI32.SECURITY_IMPERSONATION_LEVEL impersonationLevel,
+		bool usePrimaryToken, bool attemptEnableSeRestorePrivilege, Action code) {
+		Guard.ArgumentNotNullOrEmpty(userName, nameof(userName));
+		Guard.ArgumentNotNull(code, nameof(code));
+		if (!WinAPI.ADVAPI32.LogonUser(userName, domain, password, (int)logonType, (int)logonProvider, out Microsoft.Win32.SafeHandles.SafeAccessTokenHandle token))
+			throw new Win32Exception(Marshal.GetLastWin32Error(), $"Could not log on as '{domain}\\{userName}'.");
+		using (token) {
+			if (!WinAPI.ADVAPI32.DuplicateTokenEx(token, WinAPI.ADVAPI32.TokenQuery | WinAPI.ADVAPI32.TokenDuplicate | WinAPI.ADVAPI32.TokenImpersonate | WinAPI.ADVAPI32.TokenAdjustPrivileges,
+				IntPtr.Zero, (int)impersonationLevel, usePrimaryToken ? 1 : 2, out var duplicate))
+				throw new Win32Exception(Marshal.GetLastWin32Error(), $"Could not create the worker identity for '{userName}'.");
+			using (duplicate) {
+				if (attemptEnableSeRestorePrivilege && !Tools.Windows.Security.ModifyState(duplicate.DangerousGetHandle(), "SeRestorePrivilege", true))
+					throw new Win32Exception(Marshal.GetLastWin32Error(), "The supplied identity does not hold SeRestorePrivilege.");
+				WindowsIdentity.RunImpersonated(duplicate, code);
 			}
 		}
 	}
-
 }
 

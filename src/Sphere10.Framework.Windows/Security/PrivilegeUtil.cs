@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Runtime.InteropServices;
+using Sphere10.Framework.Windows.Security;
 
 namespace Sphere10.Framework.Windows;
 
@@ -14,6 +16,21 @@ namespace Sphere10.Framework.Windows;
 /// Provides utility methods for managing Windows security token privileges.
 /// </summary>
 public class PrivilegeUtil {
+	/// <summary>Enables required privileges on an operation-local effective token and restores the previous identity on disposal.
+	/// Acquire and dispose synchronously on the same worker thread; do not hold across await.</summary>
+	public IDisposable EnterScope(params string[] privileges) {
+		Guard.ArgumentNotNull(privileges, nameof(privileges));
+		return privileges.Length == 0 ? Tools.Scope.ExecuteOnDispose(() => { }) : new TokenPrivilegeScope((string[])privileges.Clone());
+	}
+
+	/// <summary>Attempts operation-local privilege admission. Missing privileges return false; other native failures are reported.</summary>
+	public bool TryEnterScope(string[] privileges, out IDisposable scope) {
+		try { scope = EnterScope(privileges); return true; }
+		catch (System.ComponentModel.Win32Exception error) when (error.NativeErrorCode == WinAPI.ADVAPI32.ErrorNotAllAssigned) {
+			scope = null;
+			return false;
+		}
+	}
 
 	public bool EnablePrivilege(string privilege) {
 		return ModifyState(privilege, true);
@@ -66,8 +83,8 @@ public class PrivilegeUtil {
 			privilege.Privileges[0].Attributes = 0;
 		}
 		uint retLengthInBytes;
-		if (WinAPI.ADVAPI32.AdjustTokenPrivileges(token, false, ref privilege, 1024, out retLengthInBytes)) {
-			retval = true;
+		if (WinAPI.ADVAPI32.AdjustTokenPrivileges(token, false, ref privilege, 0, out retLengthInBytes)) {
+			retval = Marshal.GetLastWin32Error() == 0;
 		}
 		return retval;
 	}
