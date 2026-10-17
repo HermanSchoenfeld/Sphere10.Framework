@@ -492,6 +492,36 @@ pathSelector.Path = @"C:\Data\file.txt";
 string selectedPath = pathSelector.Path;
 ```
 
+### LogOutputSelectorControl
+
+`LogOutputSelectorControl` is a public, designer-editable control in `Sphere10.Framework.Windows.Forms`. It presents a compact **Log Output** checkbox and **...** (Configure Log Output) button, and can be used without depending on SystemExpert.
+
+Checking it for the first time opens the WinForms wizard: choose **File**, **Application**, **Standard Output** or **Standard Error**, then configure the applicable destination, levels, timestamping and **Remember After Close** option. File output supports append/rolling files, encoding, retained file count and maximum encoded bytes. The checkbox turns on only after Finish validates and opens the selected output. After acceptance, unchecking stops output and checking again reuses those options. **...** (Configure Log Output) opens `LogOutputConfigurationDialog`, showing the current details with a **Change** button to launch the wizard. Cancelling a change preserves the current output; a failed Finish attempts to recover the old output when reopening it is possible.
+
+```csharp
+using Sphere10.Framework;
+using Sphere10.Framework.Windows.Forms;
+
+// Supply the owning application's borrowed logger for the Application option.
+logOutputSelector.ApplicationLogger = application.Logger;
+// Bind LoggingStarting/LoggingFailed before restoring a possibly enabled output.
+logOutputSelector.RestoreSettings();
+await logOutputSelector.ConfigureAsync(this);
+
+// Resolve the current logger for each write; inactive output is a NoOpLogger.
+logOutputSelector.Logger.Info("Monitoring started"); // Also safe from workers.
+
+logOutputSelector.StopLogging();
+```
+
+`Logger` returns a `NoOpLogger` while off and changes to the accepted session when on. Retrieve it per write or supply a callback to a long-lived service; a logger captured while off remains inactive. Closed sessions safely ignore late calls. File writers/sinks are owned and writes join before disposal. Application loggers and console writers are borrowed and retain their existing owners/options; their callbacks run outside the session scope and their owner controls in-flight completion. Reading the property, construction and design-mode loading perform no file IO.
+
+`Configuration` is a defensive `LogOutputConfiguration` snapshot. Configure/start/stop on the creating UI thread. `StartLogging()` accepts its already configured values for programmatic consumers; `ConfigureAsync(owner)` supplies the wizard and `ShowConfigurationAsync(owner)` supplies the details dialog. `LoggingStarting(configuration)` can veto before IO, including during restoration. `LoggingStateChanged`, `LoggingFailed`, `HasConfiguration`, `IsLogging` and `LastError` expose state and failures. Do not separately dispose the selected session or register it as another global owner.
+
+With **Remember After Close**, `LogOutputSelectorSettings` persists the accepted configuration and enabled choice through `UserSettings`. Call `RestoreSettings()` explicitly after the application logger and consumer hooks are ready. Construction/handle creation never read preferences or open output. The method returns false while a stable owner/provider is unavailable and can then be retried; completed restoration is idempotent. `SettingsKey` can supply an explicit stable ID; otherwise the owning screen/control type and named child path identify this selector independently of captions or docking. Set the key before restoring or accepting output. Restoration and unchanged disposal do not write preferences, and disposal closes a remembered active sink without changing its saved enabled choice. Turning Remember off deletes only that selector's stored preferences, including its cached record. Optional preference failures appear in `LastSettingsError`; output remains usable and failed accepted saves retry on disposal. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md#reusable-logging-preferences).
+
+SystemExpert's watcher passes `eventLoggerProvider: () => logOutputSelector.Logger`, so output changes take effect without restarting monitoring. Every accepted event is independent of display filters, pause and retention; file paths inside the watched tree are rejected before IO. WinFormsTester's **Logging** screen demonstrates the selector alongside a TextBoxLogger preview. See the [reusable controls catalog](../../docs/guidelines/patterns/winforms-controls.md).
+
 ### ProgressBarEx
 
 Enhanced progress bar with text display:
@@ -596,6 +626,7 @@ editors, registration requirements, ownership and current limitations.
 | `ApplicationBanner` | Designer-editable product title, version and company branding |
 | `ApplicationBannerHost` | Stock designer preview with a registered transient banner at runtime |
 | `PathSelectorControl` | File/folder path selection |
+| `LogOutputSelectorControl` | Optional wizard-configured file/application/stdout/stderr output, configuration details dialog and remembered preferences |
 | `ProgressBarEx` | Progress bar with text display |
 | `PropertyGridEx` | Enhanced property grid |
 | `RadioGroupBox` | Radio button group container |

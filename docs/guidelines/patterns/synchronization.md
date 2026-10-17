@@ -7,6 +7,22 @@ for the collection and storage families.
 
 ## Contract and lock lifetime
 
+Application/framework consumers must use the synchronized pattern and
+scope-based acquire/release. Prefer `SynchronizedObject` and its
+`EnterReadScope()`/`EnterWriteScope()`; do not replace this idiom with raw
+`SemaphoreSlim.Wait/WaitAsync/Release` or manually paired lock calls.
+For synchronous provider collection, enter/release the write scope within the
+same worker delegate. A thread-affine scope must never span an `await`.
+
+When exclusive asynchronous admission is actually needed, use the framework's
+[AsyncSynchronizedGate](../../../src/Sphere10.Framework/Threading/AsyncSynchronizedGate.cs):
+`using var admission = await gate.EnterScopeAsync(cancellationToken);` releases
+admission on disposal. This is a non-reentrant FIFO gate, not a read/write lock.
+Its internal queue/state is protected by short synchronized write scopes;
+its admission scope can span `await` without holding a thread-affine lock.
+Cancelled queued admissions do not consume ownership or block later callers.
+Do not implement another semaphore/gate with manual releases in a consumer.
+
 [ISynchronizedObject](../../../src/Sphere10.Framework/Threading/ISynchronizedObject.cs)
 exposes `EnterReadScope()`, `EnterWriteScope()`, `ThreadLock` and
 `ParentSyncObject`. [SynchronizedObject](../../../src/Sphere10.Framework/Threading/SynchronizedObject.cs)
@@ -87,6 +103,20 @@ enumerator to another thread or hold it across an `await`. For slow processing,
 copy the required membership under a read scope and process the copy after
 releasing the scope. A membership snapshot does not make mutable elements
 immutable or thread safe.
+
+## Borrowed callbacks and UI dispatch
+
+A lifetime scope must not be held while borrowed code synchronously dispatches
+to a UI thread that can read or stop the same object. The worker waits for the UI,
+while the UI waits for its scope, causing a deadlock. Snapshot the borrowed target
+and local options under a short scope, release it, then invoke that target. Its
+actual owner controls in-flight completion and disposal.
+
+Owned resources have a different boundary: an owned file writer can remain under
+the lifetime write scope so Stop/disposal joins the write before closing it.
+[LogOutputSession](../../../src/Sphere10.Framework.Windows.Forms/Controls/Logging/LogOutputSession.cs)
+demonstrates both paths. Native event subscriptions should post UI work rather
+than synchronously invoke a UI thread that may be stopping the native source.
 
 ## Sharing a synchronization root
 
@@ -171,11 +201,12 @@ lock scopes.
 For async work, take a short synchronous scope to capture or update state,
 release it before awaiting, then acquire a new scope and revalidate any state
 that may have changed. If an operation must serialize an entire asynchronous
-workflow, use its established async coordination mechanism rather than wrapping
-it in a thread-affine read/write scope. For example,
+workflow, use the scope-returning `AsyncSynchronizedGate` described above rather
+than wrapping it in a thread-affine read/write scope. The existing
 [ApplicationScreenHost](../../../src/Sphere10.Framework.Application/UI/ApplicationScreenHost.cs)
 coordinates transitions with `SemaphoreSlim.WaitAsync` and releases through
-`Tools.Scope.ExecuteOnDispose`.
+`Tools.Scope.ExecuteOnDispose`; that is an existing implementation, not the
+consumer pattern for new coordination code.
 
 [SynchronizedRepository](../../../src/Sphere10.Framework/Repository/SynchronizedRepository.cs)
 has existing async adapters that call `ContinueOnSameThread` inside these

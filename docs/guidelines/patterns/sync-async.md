@@ -5,6 +5,30 @@ both operations and choose the implementation direction through inheritance.
 The chosen operation is the primitive: the concrete implementation supplies its
 real work, and a directional base adapts the other API to that primitive.
 
+## Cancellation belongs to asynchronous operations
+
+Synchronous methods that conduct operations must not accept CancellationToken,
+whether public, protected, internal or private. Remove that parameter for the
+synchronous operation or expose the cancellable operation as a task-returning
+`...Async` method. Apply the rule to implementations, helpers, interfaces and
+decorators rather than fixing only the visible entrypoint. A synchronous method
+does not become an asynchronous contract because it checks a token or wraps a
+blocking wait. Task/ValueTask completion must represent the actual operation.
+
+Constructors may accept a token when storing operation state for later async
+execution; they must not perform cancellable IO as a constructor side effect.
+A synchronous worker checkpoint can be supplied as an Action that consults the
+owning async operation's state. Native synchronous calls may still run inside the
+async worker with checkpoints between calls; a token cannot interrupt a native
+call whose API provides no cancellation mechanism.
+
+Existing older blocking APIs are references for their execution direction,
+not permission to reproduce synchronous CancellationToken signatures. Preserve
+external contracts unless their migration is in scope; use this rule for new
+and updated operation methods.
+
+## Directional implementation
+
 The established architectural reference is
 [`IRepository`](../../../src/Sphere10.Framework/Repository/IRepository.cs),
 [`RepositoryBase`](../../../src/Sphere10.Framework/Repository/RepositoryBase.cs),
@@ -26,6 +50,9 @@ the same direction. For example, `RepositoryBase.Contains` delegates to `TryGet`
 and `ContainsAsync` delegates to `TryGetAsync`. Shared lifecycle orchestration
 may also accept execution delegates while retaining a single owner for state,
 coalescing and cleanup. The directional base still selects which primitive runs.
+
+The following declarations are separate files named for each type; they are
+shown together to explain the hierarchy.
 
 ```csharp
 using System.Threading;
