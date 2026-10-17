@@ -9,6 +9,7 @@
 using System;
 using Sphere10.Framework.Application.UI;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -92,6 +93,41 @@ public class ApplicationScreenHostTests {
 		Assert.That(contract.CloseScreens(contract.OpenScreens), Is.True);
 		Assert.That(first.IsDisposed, Is.True);
 		Assert.That(second.IsDisposed, Is.True);
+	}
+
+	[TestCase(false, true)]
+	[TestCase(true, true)]
+	[TestCase(true, false)]
+	public void ScreenImageSupportsUnlinkedDefinitionsOverridesActivatorsAndRemainsBorrowed(bool hasActivator, bool hasExplicitImage) {
+		using var screenImage = new Bitmap(16, 16);
+		using var menuImage = new Bitmap(16, 16);
+		using (var graphics = Graphics.FromImage(screenImage))
+			graphics.Clear(Color.Lime);
+		using (var graphics = Graphics.FromImage(menuImage))
+			graphics.Clear(Color.Red);
+		using var block = new WinFormsApplicationBlock();
+		var definition = new ApplicationScreenDefinition(typeof(MultiProbeScreen), "Direct screen", ScreenActivationMode.MultiInstance);
+		block.AddScreenDefinition(definition);
+		if (hasActivator)
+			block.AddMenu(new WinFormsApplicationMenu("Tools", new IWinFormsApplicationMenuItem[] {
+				new WinFormsScreenMenuItem("Direct screen", typeof(MultiProbeScreen), menuImage) { ScreenDefinition = definition }
+			}));
+		Assert.That(definition.Activators.Length, Is.EqualTo(hasActivator ? 1 : 0));
+		using (var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView }) {
+			var screen = new MultiProbeScreen { Block = block, ScreenImage = hasExplicitImage ? screenImage : null };
+			Assert.That(host.ShowScreen(screen), Is.True);
+			var tab = host.TabControl.SelectedTab;
+			Assert.That(tab.ImageKey, Is.Not.Empty, "A screen without a menu command must still receive its explicit native tab image.");
+			using var displayed = new Bitmap(host.TabControl.ImageList.Images[tab.ImageKey]);
+			Assert.That(displayed.GetPixel(8, 8).ToArgb(), Is.EqualTo((hasExplicitImage ? Color.Lime : Color.Red).ToArgb()), "The screen image takes precedence while a null image retains the registered activator fallback.");
+			Assert.That(host.CloseScreen(screen), Is.True);
+			Assert.That(screen.IsDisposed, Is.True);
+			Assert.That(host.TabControl.ImageList.Images.Count, Is.Zero, "Removing a screen must release the host's tab image entry.");
+		}
+		// Both the screen and host have ended, but neither owns the explicit image.
+		using var afterDisposal = Graphics.FromImage(screenImage);
+		afterDisposal.Clear(Color.Blue);
+		Assert.That(screenImage.GetPixel(8, 8).ToArgb(), Is.EqualTo(Color.Blue.ToArgb()));
 	}
 
 	[Test]

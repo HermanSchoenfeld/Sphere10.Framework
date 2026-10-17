@@ -22,6 +22,8 @@ namespace Sphere10.Framework.Windows.Forms;
 public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	private readonly List<ToolStripItem> _screenToolBarItems = new();
 	private readonly List<ToolStripItem> _screenMenuItems = new();
+	private readonly List<ToolStripMenuItem> _openScreenMenuItems = new();
+	private WinFormsApplicationScreen _menuSelectedScreen;
 	private ToolStripMenuItem? _screenMenu;
 	private bool _ownsScreenMenu;
 	private bool _screenToolBarVisible;
@@ -40,6 +42,8 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 		ScreenHost.BringToFront();
 		ScreenHost.ActiveScreenChanging += OnActiveScreenChanging;
 		ScreenHost.ActiveScreenChanged += OnActiveScreenChanged;
+		ScreenHost.ActiveScreenChanged += screen => _menuSelectedScreen = screen;
+		ScreenHost.Changed += ScreensChanged;
 	}
 
 	[DefaultValue(ScreenMode.SingleView), Category("Behavior"), Description("Display one screen or multiple screens in detachable tabs")]
@@ -63,6 +67,75 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	}
 
 	public bool ShowScreen(WinFormsApplicationScreen Screen) => ScreenHost.ShowScreen(Screen);
+
+	private void ScreensMenuOpening(object sender, EventArgs args) => RebuildScreensMenu();
+
+	private void ScreensChanged() {
+		if (!IsDisposed && !Disposing && !_screensMenuItem.DropDown.Visible)
+			RebuildScreensMenu();
+	}
+
+	private void RebuildScreensMenu() {
+		foreach (var item in _openScreenMenuItems) {
+			_screensMenuItem.DropDownItems.Remove(item);
+			item.Dispose();
+		}
+		_openScreenMenuItems.Clear();
+		var screens = ScreenHost.OpenScreens;
+		var selected = GetScreensMenuSelection();
+		var titleCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+		foreach (var screen in screens) {
+			var title = string.IsNullOrWhiteSpace(screen.Title) ? screen.GetType().Name : screen.Title;
+			if (!string.IsNullOrWhiteSpace(screen.Block?.Name))
+				title = $"{screen.Block.Name} — {title}";
+			titleCounts.TryGetValue(title, out var occurrence);
+			titleCounts[title] = ++occurrence;
+			var caption = occurrence > 1 ? $"{title} ({occurrence})" : title;
+			if (ScreenHost.IsScreenUndocked(screen))
+				caption += " (Undocked)";
+			var item = new ToolStripMenuItem(caption) { Tag = screen, Checked = ReferenceEquals(screen, selected), Image = screen.Block?.Image32x32 };
+			item.Click += OpenScreenMenuClicked;
+			_screensMenuItem.DropDownItems.Insert(_openScreenMenuItems.Count, item);
+			_openScreenMenuItems.Add(item);
+		}
+		_noOpenScreensMenuItem.Visible = screens.Length == 0;
+		_closeAllScreensMenuItem.Enabled = screens.Any(screen => screen.ActivationMode != ScreenActivationMode.PermanentSingleton);
+		_closeOtherScreensMenuItem.Enabled = selected != null && screens.Any(screen => !ReferenceEquals(screen, selected)
+			&& screen.ActivationMode != ScreenActivationMode.PermanentSingleton);
+	}
+
+	private WinFormsApplicationScreen GetScreensMenuSelection() => _menuSelectedScreen != null
+		&& ScreenHost.OpenScreens.Contains(_menuSelectedScreen, ReferenceEqualityComparer.Instance) && ScreenHost.IsScreenUndocked(_menuSelectedScreen)
+		? _menuSelectedScreen : ActiveScreen;
+
+	private async void OpenScreenMenuClicked(object sender, EventArgs args) {
+		try {
+			if (sender is ToolStripMenuItem { Tag: WinFormsApplicationScreen screen } && ScreenHost.OpenScreens.Contains(screen, ReferenceEqualityComparer.Instance)
+				&& await ScreenHost.ShowScreenAsync(screen)) {
+				_menuSelectedScreen = screen;
+				RebuildScreensMenu();
+			}
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void CloseAllScreensClicked(object sender, EventArgs args) {
+		try {
+			await ScreenHost.CloseAllScreensAsync();
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void CloseOtherScreensClicked(object sender, EventArgs args) {
+		try {
+			if (GetScreensMenuSelection() is { } screen)
+				await ScreenHost.CloseAllOtherScreensAsync(screen);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
 
 	protected virtual void OnActiveScreenChanging(WinFormsApplicationScreen? Screen) {
 		RestoreScreenToolBar();
@@ -92,8 +165,8 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 			_ownsScreenMenu = _screenMenu == null;
 			if (_ownsScreenMenu) {
 				_screenMenu = new ToolStripMenuItem(Screen.ApplicationMenuStripText) { Tag = Screen };
-				var helpIndex = MenuStrip.Items.IndexOf(HelpToolStripMenuItem);
-				MenuStrip.Items.Insert(helpIndex < 0 ? MenuStrip.Items.Count : helpIndex, _screenMenu);
+				var screensIndex = MenuStrip.Items.IndexOf(_screensMenuItem);
+				MenuStrip.Items.Insert(screensIndex < 0 ? MenuStrip.Items.Count : screensIndex, _screenMenu);
 			}
 			_screenMenuItems.AddRange(Screen.MenuItems);
 			_screenMenu.DropDownItems.AddRange(_screenMenuItems.ToArray());
@@ -104,7 +177,7 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	protected static string GetMenuCaptionKey(string caption) => (caption ?? string.Empty).Replace("&", string.Empty).Trim().ToUpperInvariant();
 
 	protected virtual ToolStripMenuItem FindApplicationMenuHeader(string caption) => MenuStrip.Items.OfType<ToolStripMenuItem>()
-		.FirstOrDefault(item => GetMenuCaptionKey(item.Text) == GetMenuCaptionKey(caption));
+		.FirstOrDefault(item => item != _screensMenuItem && GetMenuCaptionKey(item.Text) == GetMenuCaptionKey(caption));
 
 	protected virtual void KeepHelpMenuLast() {
 		if (HelpToolStripMenuItem == null || HelpToolStripMenuItem.IsDisposed || !MenuStrip.Items.Contains(HelpToolStripMenuItem))
@@ -145,6 +218,8 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	[Browsable(false)] protected ToolStripMenuItem PurchaseFullVersionToolStripMenuItem { get; private set; }
 
 	[Browsable(false)] protected ToolStripMenuItem HelpToolStripMenuItem { get; private set; }
+
+	[Browsable(false)] protected ToolStripMenuItem ScreensToolStripMenuItem => _screensMenuItem;
 
 	[Browsable(false)] protected ToolStrip ToolStrip => _toolStrip;
 

@@ -11,6 +11,7 @@ using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.ComponentModel;
+using System.Drawing;
 using System.Globalization;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows.Forms.Components.BlockFramework;
@@ -74,6 +75,10 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 		get => Text;
 		set => Text = value;
 	}
+
+	/// <summary>A borrowed image supplied before hosting, with registered menu activator images used as the fallback.</summary>
+	[Browsable(true), Category("Appearance"), DefaultValue(null), Description("The borrowed image used for this screen's tab. Set before the screen is first hosted.")]
+	public Image ScreenImage { get; set; }
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IWinFormsApplicationScreenHost Host { get; set; }
