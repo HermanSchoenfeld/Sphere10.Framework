@@ -148,6 +148,9 @@ public static class Sphere10FrameworkExtensions {
 					// Module setup must finish before constructing the root; its logger then owns process task diagnostics too.
 					mainForm = provider.GetService<IMainForm>() as Form;
 					Guard.Ensure(mainForm != null, "Registered IMainForm is not a WinForms Form.");
+					var icon = provider.GetService<IApplicationIconProvider>()?.ApplicationIcon;
+					if (icon != null)
+						mainForm.Icon = icon;
 					application = provider.GetService<IWinFormsApplication>();
 					if (application != null)
 						splash?.AttachToApplication(application);

@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Drawing;
-using System.Windows.Forms;
 using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Application;
@@ -21,9 +20,9 @@ public class DefaultApplicationIconProvider : IApplicationIconProvider {
 
 			var serviceProvider = Sphere10Framework.Instance.ServiceProvider;
 			if (serviceProvider != null) {
-				var mainForm = serviceProvider.GetService(typeof(IMainForm)) as Form;
-				if (mainForm != null && mainForm.Icon != null)
-					return mainForm.Icon;
+				var mainForm = serviceProvider.GetService(typeof(IMainForm)) as IMainForm;
+				if (mainForm != null)
+					return mainForm.ApplicationIcon;
 			}
 
 			return null;

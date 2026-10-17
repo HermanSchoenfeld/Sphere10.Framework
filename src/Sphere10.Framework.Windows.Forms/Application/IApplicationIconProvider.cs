@@ -11,6 +11,7 @@ using System.Drawing;
 namespace Sphere10.Framework.Windows.Forms;
 
 public interface IApplicationIconProvider {
+	/// <summary>Gets the application's borrowed icon. Consumers must not dispose it; its owner retains it for the application lifetime.</summary>
 	Icon ApplicationIcon { get; }
 }
 
