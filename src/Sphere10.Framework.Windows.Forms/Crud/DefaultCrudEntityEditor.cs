@@ -32,9 +32,9 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 	public void SetEntity(DataSourceCapabilities Capabilities, object Entity, bool IsNewEntity) {
 		Guard.ArgumentNotNull(Entity, nameof(Entity));
 		_entity = Entity;
-		_entityDescriptor = new CrudEntityTypeDescriptor(Entity, ReferenceBindings);
+		_entityDescriptor = new CrudEntityTypeDescriptor(Entity, ReferenceBindings, !Capabilities.HasFlag(IsNewEntity ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate));
 		_propertyGrid.SelectedObject = _entityDescriptor;
-		_propertyGrid.Enabled = Capabilities.HasFlag(IsNewEntity ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate);
+		_propertyGrid.Enabled = true;
 	}
 
 	public object GetEntityWithChanges() => _entity!;

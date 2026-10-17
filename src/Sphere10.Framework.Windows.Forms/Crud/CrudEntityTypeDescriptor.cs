@@ -20,13 +20,15 @@ namespace Sphere10.Framework.Windows.Forms;
 internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 	private readonly object _entity;
 	private readonly IDictionary<string, CrudReferenceBinding> _referenceBindings;
+	private readonly bool _readOnly;
 	private readonly List<PropertyEdit> _edits = new();
 	private readonly List<CollectionEdit> _collectionEdits = new();
 
-	public CrudEntityTypeDescriptor(object Entity, IDictionary<string, CrudReferenceBinding> ReferenceBindings)
+	public CrudEntityTypeDescriptor(object Entity, IDictionary<string, CrudReferenceBinding> ReferenceBindings, bool readOnly = false)
 		: base(TypeDescriptor.GetProvider(Entity).GetTypeDescriptor(Entity)) {
 		_entity = Entity;
 		_referenceBindings = ReferenceBindings;
+		_readOnly = readOnly;
 	}
 
 	public bool HasChanges => _edits.Any(Edit => Edit.Property.IsActive && !Equals(Edit.OriginalValue, Edit.Property.GetValue(null)))
@@ -137,7 +139,7 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 
 		public override Type PropertyType => _property.PropertyType;
 
-		public override bool IsReadOnly => _property.IsReadOnly || (_parent?.IsReadOnly ?? false);
+		public override bool IsReadOnly => _session._readOnly || _property.IsReadOnly || (_parent?.IsReadOnly ?? false);
 
 		public bool CanRestore => !_property.IsReadOnly;
 
@@ -166,6 +168,8 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		public override bool ShouldSerializeValue(object Component) => _property.ShouldSerializeValue(Owner);
 
 		public override object? GetEditor(Type EditorBaseType) {
+			if (_session._readOnly)
+				return null;
 			if (_referenceBinding != null && EditorBaseType == typeof(UITypeEditor))
 				return IsReadOnly ? null : new CrudReferenceEditor(_referenceBinding);
 			var Editor = _property.GetEditor(EditorBaseType);
@@ -183,7 +187,7 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		public PropertyDescriptorCollection GetChildren(object Value, Attribute[]? Attributes, ITypeDescriptorContext? Context) {
 			var Properties = CanExpandAutomatically ? TypeDescriptor.GetProperties(Value, Attributes) : _property.Converter.GetProperties(Context, Value, Attributes);
 			// Let WinForms manage boxed values and immutable converters through their owning property setter.
-			return Value.GetType().IsValueType ? Properties ?? new PropertyDescriptorCollection(null)
+			return Value.GetType().IsValueType && !_session._readOnly ? Properties ?? new PropertyDescriptorCollection(null)
 				: _session.WrapProperties(Value, Properties ?? new PropertyDescriptorCollection(null), this);
 		}
 	}
