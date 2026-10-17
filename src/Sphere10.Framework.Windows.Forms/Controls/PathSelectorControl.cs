@@ -8,6 +8,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -22,6 +23,12 @@ public partial class PathSelectorControl : UserControlEx {
 		InitializeComponent();
 	}
 
+	public override Size GetPreferredSize(Size proposedSize) {
+		var preferred = base.GetPreferredSize(proposedSize);
+		var height = Math.Max(_filenameTextBox?.PreferredHeight ?? Font.Height, _fileSelectorButton?.Height ?? 0);
+		return new Size(preferred.Width, height + Padding.Vertical);
+	}
+
 	[Browsable(true)]
 	[DefaultValue(PathSelectionMode.OpenFile)]
 	public PathSelectionMode Mode { get; set; }
@@ -30,6 +37,11 @@ public partial class PathSelectorControl : UserControlEx {
 	[Browsable(true)]
 	[DefaultValue(false)]
 	public bool ForcePathExists { get; set; }
+
+	[Browsable(true)]
+	[DefaultValue(true)]
+	[Description("Ask before selecting an existing file in save-file mode. Disable for append-only consumers.")]
+	public bool OverwritePrompt { get; set; } = true;
 
 	[Browsable(true)]
 	[DefaultValue(true)]
@@ -67,7 +79,7 @@ public partial class PathSelectorControl : UserControlEx {
 	}
 
 	private void ShowOpenDialog() {
-		var dlg = new OpenFileDialog();
+		using var dlg = new OpenFileDialog();
 		dlg.CheckFileExists = ForcePathExists;
 		dlg.CheckPathExists = ForcePathExists;
 		dlg.Multiselect = false;
@@ -78,16 +90,17 @@ public partial class PathSelectorControl : UserControlEx {
 	}
 
 	private void ShowSaveDialog() {
-		var dlg = new SaveFileDialog();
+		using var dlg = new SaveFileDialog();
 		dlg.CheckPathExists = ForcePathExists;
 		dlg.CheckFileExists = ForcePathExists;
+		dlg.OverwritePrompt = OverwritePrompt;
 		if (dlg.ShowDialog(this) == DialogResult.OK) {
 			Path = dlg.FileName;
 		}
 	}
 
 	private void ShowOpenSaveDialog() {
-		var dlg = new OpenFileDialog();
+		using var dlg = new OpenFileDialog();
 		dlg.Title = "Select File";
 		dlg.CheckFileExists = ForcePathExists;
 		dlg.CheckPathExists = ForcePathExists;
@@ -98,7 +111,7 @@ public partial class PathSelectorControl : UserControlEx {
 	}
 
 	private void ShowSelectFolderDialog() {
-		var dlg = new FolderBrowserDialog();
+		using var dlg = new FolderBrowserDialog();
 		if (dlg.ShowDialog(this) == DialogResult.OK) {
 			Path = dlg.SelectedPath;
 		}

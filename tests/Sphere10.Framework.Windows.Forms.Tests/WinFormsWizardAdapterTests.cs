@@ -257,15 +257,18 @@ public class WinFormsWizardAdapterTests {
 			FormsApplication.ExitThread();
 		};
 		owner.Shown += async (_, _) => {
-			try {
-				await test(owner);
-				completed = true;
-			} catch (Exception error) {
-				failure = error;
-			} finally {
-				foreach (var dialog in owner.OwnedForms)
-					dialog.Dispose();
-				owner.Close();
+			{
+				using var closeWizardDialogs = Tools.Scope.ExecuteOnDispose(() => {
+					foreach (var dialog in owner.OwnedForms)
+						dialog.Dispose();
+					owner.Close();
+				});
+				try {
+					await test(owner);
+					completed = true;
+				} catch (Exception error) {
+					failure = error;
+				}
 			}
 		};
 		watchdog.Start();
