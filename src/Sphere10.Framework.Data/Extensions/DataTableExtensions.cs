@@ -148,7 +148,7 @@ public static class DataTableExtensions {
 		table.Rows.Cast<DataRow>().ForEach(row => {
 			row.ItemArray.ForEach(item => {
 				if (!(item is System.DBNull)) {
-					result.Append(item.ToString().EscapeCSV());
+					result.Append(item.ToString().EscapeCSV(delimiter));
 				}
 				result.Append(delimiter);
 			});

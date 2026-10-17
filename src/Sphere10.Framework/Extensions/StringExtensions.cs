@@ -379,12 +379,11 @@ public static class StringExtensions {
 	}
 
 	static public string EscapeCSV(this string value, string delimiter = ",") {
-		var needsQuotes = value.Contains(delimiter);
-		var isQuoted = value.StartsWith("\"") && !value.StartsWith("\"\"") && value.EndsWith("\"") && !value.EndsWith("\"\""); // doesn't handle """"text"""" scenarios
-		value = value.Replace("\"", "\"\"");
-		if (needsQuotes && !isQuoted)
-			value = $"\"{value}\"";
-		return value;
+		Guard.ArgumentNotNull(value, nameof(value));
+		Guard.ArgumentNotNullOrEmpty(delimiter, nameof(delimiter));
+		// Input is a raw field, including literal quotes; quote all CSV structural characters.
+		return value.Contains(delimiter) || value.IndexOfAny(new[] { '\"', '\r', '\n' }) >= 0
+			? "\"" + value.Replace("\"", "\"\"") + "\"" : value;
 	}
 
 	public static bool ToBool(this string value) {

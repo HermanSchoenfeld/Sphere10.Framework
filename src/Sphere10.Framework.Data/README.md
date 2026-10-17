@@ -412,12 +412,20 @@ var loadedObject = Tools.Xml.ReadFromFile<MyClass>("data.xml");
 
 ### CSV Reader
 
+For exports, reuse `DataTable.ToCSV(delimiter, includeHeader)` from
+`Sphere10.Framework.Data`. It uses the shared `EscapeCSV` field escaper for
+headers and rows; raw delimiter, quote, carriage-return and newline characters
+are quoted and embedded quotes doubled. Pass raw field values rather than
+pre-escaped CSV. Round-trip generated output with `CsvReader` in tests.
+SystemExpert converts diagnostic fields/timestamps into a string-valued table
+and uses these facilities for every CSV snapshot export.
+
 Full-featured CSV parser with streaming support:
 
 ```csharp
-using Sphere10.Framework.Data.Csv;
+using Sphere10.Framework.Data;
 
-using (var reader = new CsvReader(new StreamReader("data.csv"), hasHeaders: true)) {
+using (var reader = new Sphere10.Framework.Data.Csv.CsvReader(new StreamReader("data.csv"), hasHeaders: true)) {
 	while (reader.ReadNextRecord()) {
 		var name = reader["Name"];
 		var email = reader["Email"];
