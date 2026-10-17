@@ -60,7 +60,8 @@ public class Statistics {
 		get {
 			var variance = double.NaN;
 			if (SampleCount > 0) {
-				variance = ((SampleCount * SquaredSum) - Sum * Sum) / (SampleCount * SampleCount);
+				// The denominator must use floating-point arithmetic; uint multiplication wraps after 65,535 samples.
+				variance = Math.Max(0, ((SampleCount * SquaredSum) - Sum * Sum) / ((double)SampleCount * SampleCount));
 			}
 			return variance;
 		}
