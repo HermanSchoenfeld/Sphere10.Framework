@@ -18,36 +18,6 @@ using System.Text;
 namespace Sphere10.Framework.Windows.Security;
 
 public class SecurityTool {
-	public static readonly IActionObserver DefaultActionObserver = new NullActionObserver();
-
-
-	private class NullActionObserver : IActionObserver {
-
-		#region IActionObserver Members
-
-		public void NotifyAction(string actionName, string objectType, string sourceName, string destName) {
-		}
-
-		public void NotifyActionFailed(string action, string objectType, string sourceName, string destName, string reason) {
-		}
-
-		public void NotifyInformation(string info, params object[] formatArgs) {
-		}
-
-		public void NotifyWarning(string info, params object[] formatArgs) {
-		}
-
-		public void NotifyError(string info, params object[] formatArgs) {
-		}
-
-		public void NotifyCompleted() {
-		}
-
-		#endregion
-
-	}
-
-
 	/// <summary>
 	/// Changes the owner of an object or directory. Make sure SeRestore security is on.
 	/// </summary>
