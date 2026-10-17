@@ -1823,6 +1823,8 @@ logged.Add(42);  // "Adding 42" logged
 ### Performance Considerations
 
 - **Range Operations**: Prefer `ReadRange`, `UpdateRange`, and `InsertRange` over element-by-element operations for large datasets.
+- **Removed References**: `ExtendedList<T>` releases references in vacated slots after removal or clearing, including references inside structs. It retains its backing capacity for reuse; clearing is not a shrink operation.
+- **Stream Materialization**: The `Stream.ToArray()` extension uses the standard bounded transfer buffer. The returned array still needs space for the complete stream, but scratch capacity does not scale with its length. Seekable source position is restored.
 - **Paging Configuration**: Tune page sizes and in-memory page counts for memory-paged and file-paged collections based on access patterns.
 - **Serialization**: Constant-size serializers enable efficient random access. Variable-size serializers require sequential scans.
 - **Merkle Trees**: Flat merkle trees optimize for proof generation but consume O(n log n) memory. Long merkle trees trade memory for computation.
