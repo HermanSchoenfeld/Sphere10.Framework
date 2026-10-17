@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.ComponentModel;
 using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,21 +19,33 @@ namespace Sphere10.Framework.Windows.Forms;
 /// </summary>
 public partial class ApplicationControl : UserControlEx {
 
-	private readonly IFuture<IUserInterfaceServices> _userInterfaceServices;
+	private IServiceProvider _serviceProvider;
+	private IFuture<ISettingsServices> _settingsServices;
+	private IFuture<IUserInterfaceServices> _userInterfaceServices;
 
-	public ApplicationControl() {
-		if (!Tools.Runtime.IsDesignMode) {
-			SettingsServices = Sphere10Framework.Instance.ServiceProvider.GetService<ISettingsServices>();
-			_userInterfaceServices = Tools.Values.Future.LazyLoad(() => Sphere10Framework.Instance.ServiceProvider.GetService<IUserInterfaceServices>());
+	/// <summary>Resolves and retains the active runtime's settings service; unavailable on the design surface or outside its lifetime.</summary>
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	protected ISettingsServices SettingsServices => TryInitializeServiceCache() ? _settingsServices.Value : null;
+
+	/// <summary>Resolves and retains the active runtime's UI service; unavailable on the design surface or outside its lifetime.</summary>
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	protected IUserInterfaceServices UserInterfaceServices => TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
+
+	private bool TryInitializeServiceCache() {
+		var framework = Sphere10Framework.Instance;
+		if (DesignMode || Tools.Runtime.IsDesignMode || !framework.IsStarted)
+			return false;
+		var provider = framework.ServiceProvider;
+		if (provider == null)
+			return false;
+		if (!ReferenceEquals(_serviceProvider, provider)) {
+			_serviceProvider = provider;
+			_settingsServices = Tools.Values.Future.LazyLoad(() => provider.GetService<ISettingsServices>());
+			_userInterfaceServices = Tools.Values.Future.LazyLoad(() => provider.GetService<IUserInterfaceServices>());
 		}
+		return true;
 	}
-
-	[Browsable(false)]
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected ISettingsServices SettingsServices { get; }
-
-	[Browsable(false)]
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected IUserInterfaceServices UserInterfaceServices => _userInterfaceServices.Value;
 }
 
