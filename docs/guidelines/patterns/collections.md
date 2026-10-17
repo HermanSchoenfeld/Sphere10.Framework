@@ -179,6 +179,37 @@ offers typed `Set`, `Get` and `TryGet` over named object values. It lives in
 `IDictionary` implementation. The older `IPersistedDictionary` contract is
 covered in [persistence and transactions](persistence-and-transactions.md).
 
+## Sparse groups and capacity
+
+For indexes, caches and grouped collections, estimate group cardinality times
+initial bucket capacity times element size, in addition to the live item count.
+Inspect nested factories: a lazily populated outer dictionary can retain an
+oversized array for every group. Distinguish capacity limits from storage that
+constructors actually allocate.
+
+Logical removal must also release the backing store's references. Array-backed
+collections must clear vacated slots for reference types and structs containing
+references; changing `Count` alone leaves removed payloads reachable. Verify
+removed objects become collectible while the container remains alive, as in
+[ExtendedListMemoryTests](../../../tests/Sphere10.Framework.Tests/Collections/Lists/ExtendedListMemoryTests.cs).
+For paging, distinguish released payload references from retained buffer capacity;
+an unloaded page can still own a large empty array.
+
+`ExtendedList<T>` initially allocates 4096 slots by default, and the default
+`ExtendedLookup<TKey, TValue>` factory uses that constructor for each group.
+For references on x64, that is about 32 KiB per group before array/object headers.
+Configure a small growing bucket when most groups contain one or a few values.
+[TypeResolver.AssemblyInfo](../../../src/Sphere10.Framework/Types/TypeResolver.cs)
+uses the lookup's existing factory with capacity 1 and growth 1 for short type
+names. Preserve duplicate-name growth, equality, ordering and count contracts;
+fix the owning factory without changing general collection defaults unnecessarily.
+
+For a material allocation regression, cover representative sparse cardinality
+and collisions with a bounded allocation test, as in
+[TypeResolverTests](../../../tests/Sphere10.Framework.Tests/Types/TypeResolverTests.cs).
+Startup/cache changes also require the
+[startup memory comparison](testing.md#startup-memory-regressions).
+
 ## Compose synchronization, observation and views
 
 Use existing constructors or the appropriate extensions in
