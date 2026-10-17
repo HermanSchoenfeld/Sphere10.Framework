@@ -284,7 +284,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	#region IApplicationIconProvider Implementation
 
 	public virtual Icon ApplicationIcon {
-		get { return new Icon(this.Icon, 128, 128); }
+		get { return Sphere10Framework.Instance.GetAppIcon() ?? Icon; }
 	}
 
 	#endregion
@@ -393,7 +393,11 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		=> this.InvokeAsyncEx(_ => Sphere10Framework.Instance.ServiceProvider.GetService<IProductRequestFeatureDialog>().ShowDialogAsync(this));
 
 	public virtual Task ShowAboutBox()
-		=> this.InvokeAsyncEx(_ => Sphere10Framework.Instance.ServiceProvider.GetService<IAboutBox>().ShowDialogAsync(this));
+		=> this.InvokeAsyncEx(async _ => {
+			using var scope = Sphere10Framework.Instance.ServiceProvider.CreateScope();
+			var about = scope.ServiceProvider.GetRequiredService<IAboutBox>();
+			await about.ShowDialogAsync(this);
+		});
 
 	public virtual void ReportError(Exception error) {
 		ExecuteInUIFriendlyContext(() => _ = ExceptionDialog.ShowAsync(this, error));

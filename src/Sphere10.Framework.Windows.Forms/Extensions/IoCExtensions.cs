@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sphere10.Framework.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -24,7 +26,7 @@ public static class IoCExtensions {
 			Configure?.Invoke(Form);
 			return Form;
 		});
-		serviceCollection.AddSingleton<IApplicationIconProvider>(provider => provider.GetService<IMainForm>());
+		serviceCollection.TryAddSingleton<IApplicationIconProvider, DefaultApplicationIconProvider>();
 		serviceCollection.AddSingleton<IUserInterfaceServices>(provider => provider.GetService<IMainForm>());
 		if (typeof(MainForm).IsAssignableFrom(typeof(TMainForm))) {
 			serviceCollection.AddSingleton<IWinFormsApplicationScreenHost>(provider => ((MainForm)provider.GetRequiredService<IMainForm>()).ScreenHost);

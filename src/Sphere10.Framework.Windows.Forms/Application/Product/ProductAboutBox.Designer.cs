@@ -73,55 +73,55 @@ partial class ProductAboutBox {
 		applicationBanner1.TabIndex = 32;
 		applicationBanner1.Title = "{ProductName}";
 		applicationBanner1.ToColor = System.Drawing.Color.LightBlue;
-		applicationBanner1.Version = "Version {ProductVersion}";
+		applicationBanner1.Version = "Version {ProductLongVersion}";
 		// 
 		// _label5
 		// 
-		_label5.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-		_label5.AutoSize = true;
-		_label5.Location = new System.Drawing.Point(408, 132);
+		_label5.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
+		_label5.Location = new System.Drawing.Point(303, 132);
 		_label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		_label5.Name = "_label5";
-		_label5.Size = new System.Drawing.Size(60, 15);
+		_label5.Size = new System.Drawing.Size(162, 15);
 		_label5.TabIndex = 38;
-		_label5.Text = "First used:";
+		_label5.Text = "First Used:";
+		_label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 		// 
 		// _label6
 		// 
-		_label6.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-		_label6.AutoSize = true;
-		_label6.Location = new System.Drawing.Point(404, 147);
+		_label6.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
+		_label6.Location = new System.Drawing.Point(303, 147);
 		_label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		_label6.Name = "_label6";
-		_label6.Size = new System.Drawing.Size(61, 15);
+		_label6.Size = new System.Drawing.Size(162, 15);
 		_label6.TabIndex = 39;
-		_label6.Text = "Total uses:";
+		_label6.Text = "Total Uses:";
+		_label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 		// 
 		// _label7
 		// 
-		_label7.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-		_label7.AutoSize = true;
-		_label7.Location = new System.Drawing.Point(323, 162);
+		_label7.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
+		_label7.Location = new System.Drawing.Point(303, 162);
 		_label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		_label7.Name = "_label7";
-		_label7.Size = new System.Drawing.Size(142, 15);
+		_label7.Size = new System.Drawing.Size(162, 15);
 		_label7.TabIndex = 40;
-		_label7.Text = "First used by current user:";
+		_label7.Text = "First Used By Current User:";
+		_label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 		// 
 		// _label8
 		// 
-		_label8.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-		_label8.AutoSize = true;
-		_label8.Location = new System.Drawing.Point(318, 177);
+		_label8.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
+		_label8.Location = new System.Drawing.Point(303, 177);
 		_label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 		_label8.Name = "_label8";
-		_label8.Size = new System.Drawing.Size(143, 15);
+		_label8.Size = new System.Drawing.Size(162, 15);
 		_label8.TabIndex = 41;
-		_label8.Text = "Total uses by current user:";
+		_label8.Text = "Total Uses By Current User:";
+		_label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 		// 
 		// _label9
 		// 
-		_label9.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+		_label9.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
 		_label9.AutoSize = true;
 		_label9.Location = new System.Drawing.Point(479, 132);
 		_label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -132,7 +132,7 @@ partial class ProductAboutBox {
 		// 
 		// _label10
 		// 
-		_label10.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+		_label10.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
 		_label10.AutoSize = true;
 		_label10.Location = new System.Drawing.Point(479, 147);
 		_label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -143,7 +143,7 @@ partial class ProductAboutBox {
 		// 
 		// _label11
 		// 
-		_label11.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+		_label11.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
 		_label11.AutoSize = true;
 		_label11.Location = new System.Drawing.Point(479, 162);
 		_label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -154,7 +154,7 @@ partial class ProductAboutBox {
 		// 
 		// _label12
 		// 
-		_label12.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+		_label12.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
 		_label12.AutoSize = true;
 		_label12.Location = new System.Drawing.Point(479, 177);
 		_label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -251,7 +251,7 @@ partial class ProductAboutBox {
 		MaximizeBox = false;
 		MinimizeBox = false;
 		Name = "ProductAboutBox";
-		ShowIcon = false;
+		ShowIcon = true;
 		ShowInTaskbar = false;
 		StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 		Text = "About {ProductName}";

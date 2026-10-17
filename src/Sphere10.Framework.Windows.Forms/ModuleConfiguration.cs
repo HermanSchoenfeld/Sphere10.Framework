@@ -21,6 +21,8 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 
 
 		// EnableHooks(serviceCollection);
+		if (!serviceCollection.HasImplementationFor<ApplicationBanner>())
+			serviceCollection.AddTransient<ApplicationBanner>();
 
 		if (!serviceCollection.HasImplementationFor<IProductReportBugDialog>())
 			serviceCollection.AddTransient<IProductReportBugDialog, ProductProductReportBugDialog>();

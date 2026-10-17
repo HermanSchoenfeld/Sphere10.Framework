@@ -19,6 +19,7 @@ public partial class ApplicationBanner : ApplicationControl {
 	private string _companyName;
 	private string _version;
 	private string _title;
+	private Image _iconImage;
 
 	public ApplicationBanner()
 		: base() {
@@ -28,7 +29,11 @@ public partial class ApplicationBanner : ApplicationControl {
 		CompanyName = _companyNameLabel.Text;
 		Version = _versionLabel.Text;
 		Title = _productNameLabel.Text;
-		ApplicationIcon = Tools.Values.Future.LazyLoad(() => Sphere10Framework.Instance.ServiceProvider.GetService<IApplicationIconProvider>().ApplicationIcon);
+		ApplicationIcon = Tools.Values.Future.LazyLoad(() => Sphere10Framework.Instance.ServiceProvider.GetService<IApplicationIconProvider>()?.ApplicationIcon);
+		Disposables.Add(() => {
+			_iconImage?.Dispose();
+			_iconImage = null;
+		});
 	}
 
 	protected IFuture<Icon> ApplicationIcon { get; }
@@ -38,7 +43,7 @@ public partial class ApplicationBanner : ApplicationControl {
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();
-		_iconPanel.BackgroundImage = ApplicationIcon.Value.ToBitmap().Resize(new Size(_iconPanel.Width, _iconPanel.Height), ResizeMethod.AspectFitPadded, paddingColor: Color.Transparent);
+		RenderApplicationIcon();
 		// Upload to child controls the processed strings. Visual inheritance can be used to change these strings.
 		_companyNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(CompanyName);
 		_productNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(Title);
@@ -115,9 +120,22 @@ public partial class ApplicationBanner : ApplicationControl {
 	}
 
 	private void _iconPanel_SizeChanged(object sender, EventArgs e) {
-		if (Loaded) {
-			_iconPanel.BackgroundImage = ApplicationIcon.Value.ToBitmap(_iconPanel.Width, _iconPanel.Height);
-		}
+		if (Loaded && !Disposing && !IsDisposed)
+			RenderApplicationIcon();
+	}
+
+	private void RenderApplicationIcon() {
+		var icon = ApplicationIcon.Value;
+		if (icon == null || _iconPanel.Width <= 0 || _iconPanel.Height <= 0)
+			return;
+		SetIconImage(icon.ToBitmap(_iconPanel.Width, _iconPanel.Height));
+	}
+
+	private void SetIconImage(Image image) {
+		var previousImage = _iconImage;
+		_iconPanel.BackgroundImage = image;
+		_iconImage = image;
+		previousImage?.Dispose();
 	}
 
 }
