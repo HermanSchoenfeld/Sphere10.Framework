@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace Sphere10.Framework.Tests;
 
@@ -42,6 +43,68 @@ public class MailTlsIntegrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public Task RequiredTlsRejectsServerWithoutStartTls(bool useAsync) => VerifyDelivery(useAsync, true, false, false);
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task SendPreservesBorrowedContentDuringAndAfterDelivery(bool useAsync) {
+		// Hold a real loopback SMTP exchange before its greeting to observe pending-send ownership.
+		using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+		using var cancelOperations = Tools.Scope.ExecuteOnDispose(cancellation.Cancel);
+		var listener = new TcpListener(IPAddress.Loopback, 0);
+		using var stopListener = Tools.Scope.ExecuteOnDispose(listener.Stop);
+		listener.Start();
+		var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+		var connectionAccepted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var allowGreeting = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var releaseGreeting = Tools.Scope.ExecuteOnDispose(() => allowGreeting.TrySetResult(true));
+		using var attachmentStream = new MemoryStream(Encoding.ASCII.GetBytes("Synthetic attachment"));
+		using var attachment = new Attachment(attachmentStream, "attachment.txt");
+		using var viewStream = new MemoryStream(Encoding.ASCII.GetBytes("Synthetic alternate view"));
+		using var view = new AlternateView(viewStream, "text/plain");
+		var receiveTask = ReceiveDeferredMessage(listener, connectionAccepted, allowGreeting.Task, cancellation.Token);
+		var sendTask = useAsync
+			? Tools.Mail.SendEmailAsync("localhost", "sender@example.test", "Ownership regression", "Synthetic local message", new[] { "recipient@example.test" },
+				attachments: new[] { attachment }, alternativeViews: new[] { view }, port: port)
+			: Task.Run(() => Tools.Mail.SendEmail("localhost", "sender@example.test", "Ownership regression", "Synthetic local message", new[] { "recipient@example.test" },
+				attachments: new[] { attachment }, alternativeViews: new[] { view }, port: port));
+		await connectionAccepted.Task.WaitAsync(cancellation.Token);
+		Assert.That(sendTask.IsCompleted, Is.False, "The send cannot complete before the SMTP server greeting.");
+		Assert.That(attachmentStream.CanRead, Is.True, "The message must retain its attachment stream throughout the pending send.");
+		Assert.That(viewStream.CanRead, Is.True, "The message must retain its alternate view throughout the pending send.");
+
+		// Complete delivery and retain the supplied content for reuse by its caller.
+		allowGreeting.SetResult(true);
+		var message = await receiveTask;
+		await sendTask.WaitAsync(cancellation.Token);
+		Assert.That(message, Does.Contain("Subject: Ownership regression").And.Contain("attachment.txt"));
+		Assert.That(attachmentStream.CanRead, Is.True, "Send completion must preserve caller-owned attachments.");
+		Assert.That(viewStream.CanRead, Is.True, "Send completion must preserve caller-owned alternate views.");
+	}
+
+	[TestCase(false, false)]
+	[TestCase(true, false)]
+	[TestCase(false, true)]
+	[TestCase(true, true)]
+	public async Task ConfigurationFailurePreservesBorrowedContent(bool useAsync, bool invalidPort) {
+		// Fail after borrowed content enters the message, before any network connection is attempted.
+		using var attachmentStream = new MemoryStream(Encoding.ASCII.GetBytes("Synthetic attachment"));
+		using var attachment = new Attachment(attachmentStream, "attachment.txt");
+		using var viewStream = new MemoryStream(Encoding.ASCII.GetBytes("Synthetic alternate view"));
+		using var view = new AlternateView(viewStream, "text/plain");
+		var views = invalidPort ? new[] { view } : new[] { view, null };
+		var port = invalidPort ? 65536 : Tools.Mail.SMTPPort;
+		IResolveConstraint expectedFailure = invalidPort && useAsync
+			? Throws.TypeOf<SmtpException>().With.InnerException.TypeOf<InvalidOperationException>()
+			: Throws.TypeOf(invalidPort ? typeof(InvalidOperationException) : typeof(ArgumentNullException));
+		if (useAsync)
+			await Assert.ThatAsync(() => Tools.Mail.SendEmailAsync("localhost", "sender@example.test", "Ownership regression", "Synthetic local message",
+				new[] { "recipient@example.test" }, attachments: new[] { attachment }, alternativeViews: views, port: port), expectedFailure);
+		else
+			Assert.That(() => Tools.Mail.SendEmail("localhost", "sender@example.test", "Ownership regression", "Synthetic local message",
+				new[] { "recipient@example.test" }, attachments: new[] { attachment }, alternativeViews: views, port: port), expectedFailure);
+		Assert.That(attachmentStream.CanRead, Is.True, "A later configuration failure must preserve already accepted caller-owned attachments.");
+		Assert.That(viewStream.CanRead, Is.True, "A later configuration failure must preserve partially populated caller-owned alternate views.");
+	}
 
 	private static async Task VerifyDelivery(bool useAsync, bool requiresTls, bool serverOffersTls, bool trustTestCertificate) {
 		// Certificate creation needs X509/BCL primitives; there is no framework certificate factory.
@@ -76,18 +139,24 @@ public class MailTlsIntegrationTests {
 		listener.Start();
 		var port = ((IPEndPoint)listener.LocalEndpoint).Port;
 		var receiveTask = ReceiveEmail(listener, serverOffersTls, certificate, cancellation.Token);
+		using var attachmentStream = new MemoryStream(Encoding.ASCII.GetBytes("Synthetic attachment"));
+		using var attachment = new Attachment(attachmentStream, "attachment.txt");
+		using var viewStream = new MemoryStream(Encoding.ASCII.GetBytes("Synthetic alternate view"));
+		using var view = new AlternateView(viewStream, "text/plain");
 		Exception sendError = null;
 		try {
 			var sendTask = useAsync
 				? Tools.Mail.SendEmailAsync("localhost", "sender@example.test", "TLS regression", "Synthetic local message", new[] { "recipient@example.test" },
-					requiresSSL: requiresTls, port: port)
+					attachments: new[] { attachment }, alternativeViews: new[] { view }, requiresSSL: requiresTls, port: port)
 				: Task.Run(() => Tools.Mail.SendEmail("localhost", "sender@example.test", "TLS regression", "Synthetic local message", new[] { "recipient@example.test" },
-					requiresSSL: requiresTls, port: port));
+					attachments: new[] { attachment }, alternativeViews: new[] { view }, requiresSSL: requiresTls, port: port));
 			await sendTask.WaitAsync(cancellation.Token);
 		} catch (Exception error) {
 			sendError = error;
 		}
 		var message = await receiveTask;
+		Assert.That(attachmentStream.CanRead, Is.True, "Successful sends and TLS failures must preserve caller-owned attachments.");
+		Assert.That(viewStream.CanRead, Is.True, "Successful sends and TLS failures must preserve caller-owned alternate views.");
 		var shouldDeliver = !requiresTls || serverOffersTls && trustTestCertificate;
 		if (shouldDeliver) {
 			Assert.That(sendError, Is.Null);
@@ -107,6 +176,24 @@ public class MailTlsIntegrationTests {
 #pragma warning disable SYSLIB0014
 		Assert.That(ServicePointManager.ServerCertificateValidationCallback, Is.SameAs(validationPolicy), "Mail helpers must not install a certificate bypass.");
 #pragma warning restore SYSLIB0014
+	}
+
+	private static async Task<string> ReceiveDeferredMessage(TcpListener listener, TaskCompletionSource<bool> connectionAccepted, Task allowGreeting, CancellationToken cancellationToken) {
+		using var connection = await listener.AcceptTcpClientAsync(cancellationToken);
+		using var stream = connection.GetStream();
+		using var reader = new StreamReader(stream, Encoding.ASCII, false, 1024, leaveOpen: true);
+		using var writer = new StreamWriter(stream, Encoding.ASCII, 1024, leaveOpen: true) { AutoFlush = true, NewLine = "\r\n" };
+		connectionAccepted.SetResult(true);
+		await allowGreeting.WaitAsync(cancellationToken);
+		await writer.WriteLineAsync("220 localhost test SMTP".AsMemory(), cancellationToken);
+		var message = await ReceiveMessage(reader, writer, cancellationToken);
+
+		// The helper owns its SMTP client and must close the connection without the server doing so first.
+		var closingCommand = await reader.ReadLineAsync(cancellationToken);
+		Assert.That(closingCommand, Is.Null.Or.EqualTo("QUIT"), "Client disposal must end the SMTP session after delivery.");
+		if (closingCommand == "QUIT")
+			await writer.WriteLineAsync("221 Bye".AsMemory(), cancellationToken);
+		return message;
 	}
 
 	private static async Task<string> ReceiveEmail(TcpListener listener, bool offersTls, X509Certificate2 certificate, CancellationToken cancellationToken) {
