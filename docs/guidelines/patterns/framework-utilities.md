@@ -21,7 +21,9 @@ Static utility/tool classes live in the **`Tools`** global namespace so consumer
 - **`Tools.Sqlite`** / **`Tools.MSSQL`** — provider-specific helpers; the Firebird project exposes `FirebirdDAC`, not a `Tools.Firebird` facade.
 - **`Tools.NUnit`** — test utilities (e.g., 2D array formatting).
 
-`Tools.Windows` is a **static facade** with `[ThreadStatic]` singleton properties (`Registry`, `Services`, `Security`, `Processes`, `Win32`, `Shell`) that return instance-based utility classes (e.g., `RegistryUtil`, `ServicesUtil`).
+`Tools.Windows` is the existing **static facade** whose thread-static properties
+return instance utilities. Read the Windows-specific rules below before adding
+a utility, and read [process Sentries](process-sentries.md) for executable wrappers.
 
 To add a new tool, create a `static class` in the `Tools` namespace anywhere in the codebase — it becomes discoverable via `Tools.` intellisense automatically.
 
@@ -34,6 +36,54 @@ general OS/version detection from those helpers.
 Observe stream ownership flags: `ReadByteArray` defaults to closing its input,
 and `WriteStreamToFile` defaults `closeReadStream` to `true`. Supply the relevant
 `false` flag when the caller retains ownership of a reusable stream.
+
+## Windows utility facade and source folders
+
+Expose reusable Windows utilities through the central
+[WindowsTool.cs](../../../src/Sphere10.Framework.Windows/WindowsTool.cs) facade.
+Inspect the existing property/utility before extending it. Retain its established
+pattern: a private ThreadStatic instance field and public property using lazy
+initialization. Public utility methods are instance methods on that utility;
+private stateless helpers may remain static. Consumers use `Tools.Windows.<Domain>`
+rather than instantiate an otherwise parallel public helper or invent another
+static discovery class. This facade does not change ownership of resources
+returned by an operation.
+
+Current additional domains include `Tools.Windows.Pipes` for passive local pipe
+name discovery and `Tools.Windows.TraceSessions` for accessible native ETW session
+identity/logfile queries. Their instance utilities live under Pipes and Tracing.
+Client reads, capture attribution/retention, selected log output and recovery/exit
+policy stay in the app. `PktMonSentry` wraps an executable rather than becoming
+a native utility property; see [its command boundary](process-sentries.md).
+
+Choose an appropriate domain property and extend the existing utility when it
+already owns the responsibility. `Tools.Windows.Services` returns ServiceUtil
+for native service resource operations. ServiceControlManagerSentry is a
+ProcessSentry executable wrapper for sc.exe and must not absorb those methods.
+New native utility abstractions use a Util name, not an Api name. Reuse the
+existing native → resource utility → app layering; see
+[Windows resource layers](framework-reuse.md#windows-abstraction-layers).
+
+Put implementations under the owning domain folder: Registry, Services,
+Security, Processes, Networking, Storage, Files, EventLogs or another existing
+domain. Use Misc only for general helpers without a more appropriate domain.
+Do not scatter naked helper files at the Windows project root; WindowsTool.cs
+remains the central root facade. Physical folders need not introduce additional
+public namespaces. Preserve type filenames and
+[one-type source organization](../code-styling.md#type-source-files).
+
+ThreadStatic caching means one utility instance per accessing thread, not a
+process-wide singleton or a lease for returned handles. Acquire and dispose
+thread-affine scopes on the actual worker thread, do not carry them across await,
+and obey each returned resource's owner. A utility with mutable state must still
+use the existing [synchronization contract](synchronization.md) where needed.
+
+## Deferred utility inputs
+
+For deferred, refreshable or projected inputs, inspect `Tools.Values.Future`
+and read [the future contracts](futures.md). Its factories have distinct loading,
+failure, concurrency and disposal semantics; a future is not a Task and does not
+make a returned value immutable.
 
 ## Guard Pattern (Argument & Invariant Checking)
 
