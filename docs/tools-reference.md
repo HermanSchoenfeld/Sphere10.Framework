@@ -74,6 +74,8 @@ referenced module and registry configuration. See
 
 The future factories are `Tools.Values.Future.Explicit`, `LazyLoad`,
 `Reloadable`, `AlwaysLoad`, `BackgroundFetched` and `Projection`.
+Read [future semantics](guidelines/patterns/futures.md) before choosing caching,
+invalidation, projection or background loading; IFuture is not an async Task.
 Object cloning belongs to `Tools.Object`, rather than a `Tools.Value` facade.
 
 ### Numeric & Memory Tools
