@@ -1,0 +1,24 @@
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
+
+namespace Sphere10.Framework.Windows.Storage;
+
+public sealed record WindowsPartitionInfo {
+	public string DeviceId { get; init; }
+	public uint? DiskIndex { get; init; }
+	public uint? Index { get; init; }
+	public string Type { get; init; }
+	public ulong? SizeBytes { get; init; }
+	public ulong? StartingOffsetBytes { get; init; }
+	public bool? BootPartition { get; init; }
+	public string[] DriveRoots { get; init; } = Array.Empty<string>();
+	public Exception DriveAssociationError { get; init; }
+	public Exception ReadError { get; init; }
+}
