@@ -8,6 +8,7 @@
 
 using System;
 using Sphere10.Framework.Windows;
+using Sphere10.Framework.Windows.Files;
 using Sphere10.Framework.Windows.Security;
 
 namespace Tools;
@@ -17,6 +18,9 @@ namespace Tools;
 /// thread-static singleton of the corresponding utility class from <see cref="Sphere10.Framework.Windows"/>.
 /// </summary>
 public static class Windows {
+
+	[ThreadStatic] private static FileUtil _files;
+	public static FileUtil Files => _files ??= new();
 
 	[ThreadStatic] private static RegistryUtil _registry;
 	public static RegistryUtil Registry => _registry ??= new();
