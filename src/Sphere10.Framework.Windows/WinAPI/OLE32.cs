@@ -14,6 +14,14 @@ namespace Sphere10.Framework.Windows;
 public static partial class WinAPI {
 
 	public static class OLE32 {
+		public const uint COINIT_APARTMENTTHREADED = 0x2;
+		public const uint COINIT_DISABLE_OLE1DDE = 0x4;
+
+		[DllImport("ole32.dll", ExactSpelling = true)]
+		public static extern int CoInitializeEx(IntPtr reserved, uint concurrencyModel);
+
+		[DllImport("ole32.dll", ExactSpelling = true)]
+		public static extern void CoUninitialize();
 
 
 		[DllImport("ole32.dll")]

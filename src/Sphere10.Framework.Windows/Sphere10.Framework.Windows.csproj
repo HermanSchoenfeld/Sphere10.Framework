@@ -26,14 +26,20 @@
     <PackageReference Include="System.CodeDom" />
     <PackageReference Include="System.Diagnostics.EventLog" />
     <PackageReference Include="System.Drawing.Common" />
+    <PackageReference Include="System.Management" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sphere10.Framework\Sphere10.Framework.csproj" />
+	<ProjectReference Include="..\Sphere10.Framework.Drawing\Sphere10.Framework.Drawing.csproj" />
   </ItemGroup>
 
   <!-- These APIs require Windows; expose that contract to callers and analyzers. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sphere10.Framework.Windows.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
       <_Parameter1>windows</_Parameter1>

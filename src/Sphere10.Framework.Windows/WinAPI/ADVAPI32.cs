@@ -10,11 +10,199 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
+using Microsoft.Win32.SafeHandles;
+
 namespace Sphere10.Framework.Windows;
 
 public static partial class WinAPI {
 
-	public static class ADVAPI32 {
+	public static partial class ADVAPI32 {
+		[DllImport("advapi32.dll", EntryPoint = "OpenProcessToken", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool OpenProcessToken(KERNEL32.KernelHandle process, uint access, out SafeAccessTokenHandle token);
+
+		[DllImport("advapi32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetTokenInformation(SafeAccessTokenHandle token, int informationClass, IntPtr information, uint length, out uint returnLength);
+
+		[DllImport("advapi32.dll", EntryPoint = "LookupPrivilegeNameW", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool LookupPrivilegeName(string systemName, ref LUID luid, StringBuilder name, ref uint length);
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SID_AND_ATTRIBUTES {
+			public IntPtr Sid;
+			public uint Attributes;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct TOKEN_GROUPS_HEADER {
+			public uint Count;
+			public SID_AND_ATTRIBUTES FirstGroup;
+		}
+
+		public const uint EVENT_TRACE_REAL_TIME_MODE = 0x00000100;
+		public const uint PROCESS_TRACE_MODE_REAL_TIME = 0x00000100;
+		public const uint PROCESS_TRACE_MODE_EVENT_RECORD = 0x10000000;
+		public const uint EVENT_TRACE_CONTROL_UPDATE = 2;
+		public const uint WNODE_FLAG_TRACED_GUID = 0x00020000;
+
+		[UnmanagedFunctionPointer(CallingConvention.Winapi)]
+		public delegate void EVENT_RECORD_CALLBACK(IntPtr record);
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_DESCRIPTOR {
+			public ushort Id;
+			public byte Version;
+			public byte Channel;
+			public byte Level;
+			public byte Opcode;
+			public ushort Task;
+			public ulong Keyword;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_HEADER {
+			public ushort Size;
+			public ushort HeaderType;
+			public ushort Flags;
+			public ushort EventProperty;
+			public uint ThreadId;
+			public uint ProcessId;
+			public long TimeStamp;
+			public Guid ProviderId;
+			public EVENT_DESCRIPTOR EventDescriptor;
+			public ulong ProcessorTime;
+			public Guid ActivityId;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_RECORD {
+			public EVENT_HEADER EventHeader;
+			public uint BufferContext;
+			public ushort ExtendedDataCount;
+			public ushort UserDataLength;
+			public IntPtr ExtendedData;
+			public IntPtr UserData;
+			public IntPtr UserContext;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_TRACE_HEADER {
+			public ushort Size;
+			public ushort FieldTypeFlags;
+			public uint Version;
+			public uint ThreadId;
+			public uint ProcessId;
+			public long TimeStamp;
+			public Guid Guid;
+			public ulong ProcessorTime;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_TRACE {
+			public EVENT_TRACE_HEADER Header;
+			public uint InstanceId;
+			public uint ParentInstanceId;
+			public Guid ParentGuid;
+			public IntPtr MofData;
+			public uint MofLength;
+			public uint ClientContext;
+		}
+
+		[StructLayout(LayoutKind.Sequential, Size = 172)]
+		public struct TRACE_TIME_ZONE_INFORMATION {
+			public int Bias;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct TRACE_LOGFILE_HEADER {
+			public uint BufferSize;
+			public uint Version;
+			public uint ProviderVersion;
+			public uint NumberOfProcessors;
+			public long EndTime;
+			public uint TimerResolution;
+			public uint MaximumFileSize;
+			public uint LogFileMode;
+			public uint BuffersWritten;
+			public Guid LogInstanceGuid;
+			public IntPtr LoggerName;
+			public IntPtr LogFileName;
+			public TRACE_TIME_ZONE_INFORMATION TimeZone;
+			public long BootTime;
+			public long PerfFreq;
+			public long StartTime;
+			public uint ReservedFlags;
+			public uint BuffersLost;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_TRACE_LOGFILEW {
+			public IntPtr LogFileName;
+			public IntPtr LoggerName;
+			public long CurrentTime;
+			public uint BuffersRead;
+			public uint ProcessTraceMode;
+			public EVENT_TRACE CurrentEvent;
+			public TRACE_LOGFILE_HEADER LogfileHeader;
+			public IntPtr BufferCallback;
+			public uint BufferSize;
+			public uint Filled;
+			public uint EventsLost;
+			public IntPtr EventRecordCallback;
+			public uint IsKernelTrace;
+			public IntPtr Context;
+		}
+
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+		public static extern uint ControlTraceW(ulong sessionHandle, string sessionName, IntPtr properties, uint controlCode);
+
+		[DllImport("advapi32.dll", ExactSpelling = true, SetLastError = true)]
+		public static extern ulong OpenTraceW(ref EVENT_TRACE_LOGFILEW logfile);
+
+		[DllImport("advapi32.dll", ExactSpelling = true)]
+		public static extern uint ProcessTrace([In] ulong[] handles, uint count, IntPtr startTime, IntPtr endTime);
+
+		[DllImport("advapi32.dll", ExactSpelling = true)]
+		public static extern uint CloseTrace(ulong traceHandle);
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct WNODE_HEADER {
+			public uint BufferSize;
+			public uint ProviderId;
+			public ulong HistoricalContext;
+			public long TimeStamp;
+			public Guid Guid;
+			public uint ClientContext;
+			public uint Flags;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_TRACE_PROPERTIES {
+			public WNODE_HEADER Wnode;
+			public uint BufferSize;
+			public uint MinimumBuffers;
+			public uint MaximumBuffers;
+			public uint MaximumFileSize;
+			public uint LogFileMode;
+			public uint FlushTimer;
+			public uint EnableFlags;
+			public int AgeLimit;
+			public uint NumberOfBuffers;
+			public uint FreeBuffers;
+			public uint EventsLost;
+			public uint BuffersWritten;
+			public uint LogBuffersLost;
+			public uint RealTimeBuffersLost;
+			public IntPtr LoggerThreadId;
+			public uint LogFileNameOffset;
+			public uint LoggerNameOffset;
+		}
+
+		[DllImport("advapi32.dll", EntryPoint = "QueryAllTracesW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+		public static extern uint QueryAllTracesW([In, Out] IntPtr[] properties, uint propertyCount, out uint loggerCount);
+
 		// ReSharper disable InconsistentNaming
 
 		#region Constants
@@ -177,15 +365,18 @@ public static partial class WinAPI {
 		public static extern bool ConvertStringSidToSid(string StringSid, out IntPtr ptrSid);
 
 
-		[DllImport("advapi32.dll", SetLastError = true)]
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool LookupAccountName(string lpSystemName, string lpAccountName, IntPtr Sid, ref uint cbSid, StringBuilder ReferencedDomainName, ref uint cchReferencedDomainName, out SidNameUse peUse);
+
+		[DllImport("advapi32.dll", SetLastError = true)]
+		public static extern uint GetSecurityDescriptorLength(IntPtr securityDescriptor);
 
 		[DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool LookupAccountSid(string lpSystemName, IntPtr SID, StringBuilder lpName, ref uint cchName, StringBuilder ReferencedDomainName, ref uint cchReferencedDomainName, out SidNameUse peUse);
 
-		[DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool LookupAccountSidW(string lpSystemName, IntPtr SID, StringBuilder lpName, ref uint cchName, StringBuilder ReferencedDomainName, ref uint cchReferencedDomainName, out SidNameUse peUse);
 
@@ -222,6 +413,108 @@ public static partial class WinAPI {
 		#endregion
 
 		// ReSharper restore InconsistentNaming
+
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+		public static extern int RegRenameKey(SafeRegistryHandle key, string subKeyName, string newKeyName);
+
+
+
+		public const uint TokenDuplicate = 0x0002;
+		public const uint TokenImpersonate = 0x0004;
+		public const uint TokenQuery = 0x0008;
+		public const uint TokenAdjustPrivileges = 0x0020;
+		public const int ErrorNoToken = 1008;
+		public const int ErrorNotAllAssigned = 1300;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct TokenPrivilege {
+			public uint Count;
+			public ADVAPI32.LUID Luid;
+			public uint Attributes;
+		}
+
+		[DllImport("advapi32.dll", EntryPoint = "LogonUserW", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool LogonUser(string userName, string domain, string password, int logonType, int provider, out SafeAccessTokenHandle token);
+
+		[DllImport("advapi32.dll", EntryPoint = "OpenThreadToken", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool OpenThreadToken(IntPtr thread, uint access, [MarshalAs(UnmanagedType.Bool)] bool openAsSelf, out SafeAccessTokenHandle token);
+
+		[DllImport("advapi32.dll", EntryPoint = "OpenProcessToken", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool OpenProcessToken(IntPtr process, uint access, out SafeAccessTokenHandle token);
+
+		[DllImport("advapi32.dll", EntryPoint = "DuplicateTokenEx", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool DuplicateTokenEx(SafeAccessTokenHandle token, uint access, IntPtr attributes, int impersonationLevel, int tokenType, out SafeAccessTokenHandle duplicate);
+
+		[DllImport("advapi32.dll", EntryPoint = "SetThreadToken", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetThreadToken(IntPtr thread, IntPtr token);
+
+		[DllImport("advapi32.dll", EntryPoint = "AdjustTokenPrivileges", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool AdjustTokenPrivileges(SafeAccessTokenHandle token, [MarshalAs(UnmanagedType.Bool)] bool disableAll, ref TokenPrivilege privilege,
+			uint bufferSize, out TokenPrivilege previous, out uint requiredSize);
+
+
+
+		public const uint SC_MANAGER_CONNECT = 1;
+		public const uint SERVICE_QUERY_CONFIG = 1;
+		public const uint SERVICE_CHANGE_CONFIG = 2;
+		public const uint SERVICE_QUERY_STATUS = 4;
+		public const uint SERVICE_NO_CHANGE = uint.MaxValue;
+		public const uint SERVICE_CONFIG_DESCRIPTION = 1;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct QUERY_SERVICE_CONFIG {
+			public uint ServiceType;
+			public uint StartType;
+			public uint ErrorControl;
+			public IntPtr BinaryPath;
+			public IntPtr LoadOrderGroup;
+			public uint TagId;
+			public IntPtr Dependencies;
+			public IntPtr StartName;
+			public IntPtr DisplayName;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SERVICE_STATUS_PROCESS {
+			public uint ServiceType;
+			public uint CurrentState;
+			public uint ControlsAccepted;
+			public uint Win32ExitCode;
+			public uint ServiceSpecificExitCode;
+			public uint CheckPoint;
+			public uint WaitHint;
+			public uint ProcessId;
+			public uint ServiceFlags;
+		}
+
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		public static extern IntPtr OpenSCManagerW(string machine, string database, uint access);
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		public static extern IntPtr OpenServiceW(IntPtr manager, string name, uint access);
+		[DllImport("advapi32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool CloseServiceHandle(IntPtr handle);
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool QueryServiceConfigW(IntPtr service, IntPtr buffer, uint size, out uint needed);
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool QueryServiceConfig2W(IntPtr service, uint level, IntPtr buffer, uint size, out uint needed);
+		[DllImport("advapi32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool QueryServiceStatusEx(IntPtr service, uint level, out SERVICE_STATUS_PROCESS status, uint size, out uint needed);
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ChangeServiceConfigW(IntPtr service, uint type, uint startType, uint errorControl, string binaryPath,
+			string loadOrderGroup, IntPtr tagId, string dependencies, string account, string password, string displayName);
+
+
 	}
 
 }

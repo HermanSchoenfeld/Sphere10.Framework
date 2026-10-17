@@ -14,9 +14,13 @@ namespace Sphere10.Framework.Windows;
 public static partial class WinAPI {
 
 	public static class COMCTL32 {
+		public const uint TCM_ADJUSTRECT = 0x1328;
+		public const int TCM_SETCURSEL = 0x130C;
 		public const int TCM_SETITEMW = 0x133D;
+		public const int TCM_GETITEMW = 0x133C;
 		public const int TCM_SETMINTABWIDTH = 0x1331;
 		public const uint TCIF_TEXT = 1;
+		public const uint TCIF_IMAGE = 2;
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 		public struct TCITEM {

@@ -11,11 +11,54 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
+using Microsoft.Win32.SafeHandles;
+
 namespace Sphere10.Framework.Windows;
 
 public static partial class WinAPI {
 
-	public static class KERNEL32 {
+	public static partial class KERNEL32 {
+		[DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ReadProcessMemory(KernelHandle process, IntPtr address, [Out] byte[] buffer, UIntPtr size, out UIntPtr bytesRead);
+
+		[DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+		public static extern UIntPtr VirtualQueryEx(KernelHandle process, IntPtr address, out MEMORY_BASIC_INFORMATION information, UIntPtr length);
+
+		[DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsWow64Process(KernelHandle process, [MarshalAs(UnmanagedType.Bool)] out bool wow64);
+
+		[DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsProcessInJob(KernelHandle process, IntPtr job, [MarshalAs(UnmanagedType.Bool)] out bool isInJob);
+
+		[DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool QueryInformationJobObject(IntPtr job, int informationClass, out JOBOBJECT_BASIC_ACCOUNTING_INFORMATION information, uint length, out uint returnedLength);
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MEMORY_BASIC_INFORMATION {
+			public IntPtr BaseAddress;
+			public IntPtr AllocationBase;
+			public uint AllocationProtect;
+			public UIntPtr RegionSize;
+			public uint State;
+			public uint Protect;
+			public uint Type;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct JOBOBJECT_BASIC_ACCOUNTING_INFORMATION {
+			public long TotalUserTime;
+			public long TotalKernelTime;
+			public long PeriodUserTime;
+			public long PeriodKernelTime;
+			public uint TotalPageFaultCount;
+			public uint TotalProcesses;
+			public uint ActiveProcesses;
+			public uint TotalTerminatedProcesses;
+		}
 
 		#region Constants
 
@@ -168,6 +211,20 @@ public static partial class WinAPI {
 		[DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool FindClose(IntPtr handle);
 
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct WIN32_FIND_STREAM_DATA {
+			public long StreamSize;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 296)]
+			public string StreamName;
+		}
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		public static extern SafeFindHandle FindFirstStreamW(string fileName, int infoLevel, out WIN32_FIND_STREAM_DATA data, uint flags);
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool FindNextStreamW(SafeFindHandle search, out WIN32_FIND_STREAM_DATA data);
+
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
 		[return: MarshalAs(UnmanagedType.Bool)]
@@ -266,6 +323,187 @@ public static partial class WinAPI {
 
 		#endregion
 
+
+		[UnmanagedFunctionPointer(CallingConvention.Winapi)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public delegate bool ControlHandler(uint controlType);
+
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetConsoleCtrlHandler(ControlHandler handler, [MarshalAs(UnmanagedType.Bool)] bool add);
+
+
+
+		public const uint Continue = 0;
+		public const uint Cancel = 1;
+		public const int ErrorRequestAborted = 1235;
+
+		[UnmanagedFunctionPointer(CallingConvention.Winapi)]
+		public delegate uint ProgressCallback(long totalSize, long totalTransferred, long streamSize, long streamTransferred,
+			uint streamNumber, uint reason, IntPtr sourceHandle, IntPtr destinationHandle, IntPtr data);
+
+		[DllImport("kernel32.dll", EntryPoint = "CopyFileExW", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool CopyFileEx(string sourcePath, string destinationPath, ProgressCallback progress, IntPtr data, IntPtr cancel, uint flags);
+
+
+
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetNamedPipeClientProcessId(SafePipeHandle pipe, out uint clientProcessId);
+
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetNamedPipeServerProcessId(SafePipeHandle pipe, out uint serverProcessId);
+
+
+
+		public const uint ProcessQueryLimitedInformation = 4096;
+		public const uint Synchronize = 0x00100000;
+		public const uint ThreadQueryLimitedInformation = 0x0800;
+		public const uint ThreadSetLimitedInformation = 0x0400;
+		public const uint ThreadSuspendResume = 0x0002;
+		public const uint WaitObject0 = 0;
+		public const uint WaitTimeout = 258;
+		public const uint WaitFailed = uint.MaxValue;
+		public const int ThreadPriorityErrorReturn = int.MaxValue;
+		public const uint SnapshotProcesses = 2;
+		public const ushort AllProcessorGroups = 65535;
+		[DllImport("kernel32.dll", EntryPoint = "OpenProcess", SetLastError = true)]
+		public static extern KERNEL32.KernelHandle OpenProcess(uint desiredAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern KERNEL32.KernelHandle OpenThread(uint desiredAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint threadId);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern uint GetThreadId(KERNEL32.KernelHandle thread);
+		[DllImport("kernel32.dll", ExactSpelling = true)]
+		public static extern uint GetCurrentThreadId();
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern uint GetProcessIdOfThread(KERNEL32.KernelHandle thread);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern uint WaitForSingleObject(KERNEL32.KernelHandle handle, uint milliseconds);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetThreadTimes(KERNEL32.KernelHandle thread, out KERNEL32.FILETIME creation, out KERNEL32.FILETIME exit, out KERNEL32.FILETIME kernel, out KERNEL32.FILETIME user);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern int GetThreadPriority(KERNEL32.KernelHandle thread);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetThreadPriority(KERNEL32.KernelHandle thread, int priority);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetThreadPriorityBoost(KERNEL32.KernelHandle thread, [MarshalAs(UnmanagedType.Bool)] out bool disabled);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetThreadPriorityBoost(KERNEL32.KernelHandle thread, [MarshalAs(UnmanagedType.Bool)] bool disabled);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern uint SuspendThread(KERNEL32.KernelHandle thread);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		public static extern uint ResumeThread(KERNEL32.KernelHandle thread);
+		[DllImport("kernel32.dll", EntryPoint = "GetProcessTimes", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetProcessTimes(KERNEL32.KernelHandle process, out KERNEL32.FILETIME creation, out KERNEL32.FILETIME exit, out KERNEL32.FILETIME kernel, out KERNEL32.FILETIME user);
+		[DllImport("kernel32.dll", EntryPoint = "GetProcessIoCounters", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetProcessIoCounters(KERNEL32.KernelHandle process, out KERNEL32.IO_COUNTERS counters);
+		[DllImport("kernel32.dll", EntryPoint = "GetProcessHandleCount", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetProcessHandleCount(KERNEL32.KernelHandle process, out uint count);
+		[DllImport("kernel32.dll", EntryPoint = "GetPriorityClass", SetLastError = true)]
+		public static extern uint GetPriorityClass(KERNEL32.KernelHandle process);
+		[DllImport("kernel32.dll", EntryPoint = "ProcessIdToSessionId", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ProcessIdToSessionId(uint processId, out uint sessionId);
+		[DllImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", CharSet = CharSet.Unicode, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool QueryFullProcessImageName(KERNEL32.KernelHandle process, uint flags, StringBuilder name, ref uint size);
+		[DllImport("kernel32.dll", EntryPoint = "CreateToolhelp32Snapshot", SetLastError = true)]
+		public static extern KERNEL32.KernelHandle CreateToolhelp32Snapshot(uint flags, uint processId);
+		[DllImport("kernel32.dll", EntryPoint = "Process32FirstW", CharSet = CharSet.Unicode, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool Process32First(KERNEL32.KernelHandle snapshot, ref KERNEL32.PROCESSENTRY32 entry);
+		[DllImport("kernel32.dll", EntryPoint = "Process32NextW", CharSet = CharSet.Unicode, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool Process32Next(KERNEL32.KernelHandle snapshot, ref KERNEL32.PROCESSENTRY32 entry);
+		[DllImport("kernel32.dll", EntryPoint = "GetSystemTimes", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetSystemTimes(out KERNEL32.FILETIME idle, out KERNEL32.FILETIME kernel, out KERNEL32.FILETIME user);
+		[DllImport("kernel32.dll", EntryPoint = "GlobalMemoryStatusEx", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GlobalMemoryStatusEx(ref KERNEL32.MEMORYSTATUSEX memory);
+		[DllImport("kernel32.dll", EntryPoint = "GetActiveProcessorCount", SetLastError = true)]
+		public static extern uint GetActiveProcessorCount(ushort groupNumber);
+		[DllImport("kernel32.dll", EntryPoint = "GetCurrentThread", SetLastError = true)]
+		public static extern IntPtr GetCurrentThread();
+		[DllImport("kernel32.dll", EntryPoint = "GetThreadGroupAffinity", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetThreadGroupAffinity(IntPtr thread, out KERNEL32.GROUP_AFFINITY affinity);
+		public sealed class KernelHandle : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid {
+			public KernelHandle()
+				: base(true) { }
+			protected override bool ReleaseHandle() => KERNEL32.CloseHandle(handle);
+		}
+		[StructLayout(LayoutKind.Sequential)]
+		public struct GROUP_AFFINITY {
+			public UIntPtr Mask;
+			public ushort Group;
+			public ushort Reserved1;
+			public ushort Reserved2;
+			public ushort Reserved3;
+		}
+		[StructLayout(LayoutKind.Sequential)]
+		public struct IO_COUNTERS {
+			public ulong ReadOperationCount;
+			public ulong WriteOperationCount;
+			public ulong OtherOperationCount;
+			public ulong ReadTransferCount;
+			public ulong WriteTransferCount;
+			public ulong OtherTransferCount;
+		}
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct PROCESSENTRY32 {
+			public uint Size;
+			public uint Usage;
+			public uint ProcessId;
+			public UIntPtr DefaultHeapId;
+			public uint ModuleId;
+			public uint ThreadCount;
+			public uint ParentProcessId;
+			public int BasePriority;
+			public uint Flags;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+			public string ExecutableFile;
+		}
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MEMORYSTATUSEX {
+			public uint Length;
+			public uint MemoryLoad;
+			public ulong TotalPhysical;
+			public ulong AvailablePhysical;
+			public ulong TotalPageFile;
+			public ulong AvailablePageFile;
+			public ulong TotalVirtual;
+			public ulong AvailableVirtual;
+			public ulong AvailableExtendedVirtual;
+		}
+
+		public const uint ProcessDuplicateHandle = 0x40;
+		public const uint DuplicateSameAccess = 2;
+		public const uint DuplicateCloseSource = 1;
+		public const uint FileTypeDisk = 1;
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool DuplicateHandle(KERNEL32.KernelHandle sourceProcess, IntPtr sourceHandle,
+			IntPtr targetProcess, out KERNEL32.KernelHandle targetHandle, uint desiredAccess, [MarshalAs(UnmanagedType.Bool)] bool inherit, uint options);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern uint GetFileType(KERNEL32.KernelHandle file);
+
+		[DllImport("kernel32.dll", EntryPoint = "GetFileType", SetLastError = true)]
+		public static extern uint GetFileType(Microsoft.Win32.SafeHandles.SafeFileHandle file);
+
+		[DllImport("kernel32.dll", EntryPoint = "GetFinalPathNameByHandleW", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern uint GetFinalPathNameByHandle(KERNEL32.KernelHandle file, StringBuilder path, uint size, uint flags);
 	}
 
 }
