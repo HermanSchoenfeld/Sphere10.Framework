@@ -19,5 +19,7 @@ public interface ICrudGrid {
 	IEnumerable<ICrudGridColumn> GridBindings { get; }
 
 	Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource);
+	Task<bool> RefreshEntityAsync(object entity);
+	Task<bool> RefreshSelectedEntityAsync();
 }
 

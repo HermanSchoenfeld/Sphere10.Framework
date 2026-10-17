@@ -9,6 +9,7 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements;
 
@@ -48,6 +49,8 @@ public class Image : VisualElementBase, IImage {
 			Value = null;
 
 		Enabled = other.Enabled;
+		ResizeMethod = other.ResizeMethod;
+		ResizeAlignment = other.ResizeAlignment;
 	}
 
 	#endregion
@@ -73,16 +76,28 @@ public class Image : VisualElementBase, IImage {
 		set { mEnabled = value; }
 	}
 
+	/// <summary>Optional scaling through Framework.Drawing; null preserves the visual element's native drawing behavior.</summary>
+	public Sphere10.Framework.ResizeMethod? ResizeMethod { get; set; }
+
+	public Sphere10.Framework.ResizeAlignment ResizeAlignment { get; set; } = Sphere10.Framework.ResizeAlignment.CenterCenter;
+
 	#endregion
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
-		if (Value != null) {
+		var rectangle = Rectangle.Round(area);
+		if (Value != null && rectangle.Width > 0 && rectangle.Height > 0) {
+			// Images belong to their model. Only explicitly requested scaling creates a temporary owned bitmap.
+			// Padded fit has the same visual placement as fit while retaining the cell's complete drawing rectangle.
+			var method = ResizeMethod == Sphere10.Framework.ResizeMethod.AspectFit ? Sphere10.Framework.ResizeMethod.AspectFitPadded : ResizeMethod;
+			if (!method.HasValue && rectangle.Size != Value.Size)
+				method = Sphere10.Framework.ResizeMethod.Stretch;
+			using var resized = method.HasValue ? Value.Resize(rectangle.Size, method.Value, ResizeAlignment, newPixelFormat: PixelFormat.Format32bppPArgb) : null;
+			var image = resized ?? Value;
 			if (Enabled) {
-				graphics.Graphics.DrawImage(Value,
-					Rectangle.Round(area)); //Note: If I don't make the Rectangle.Round sometimes the image is drawed with a strange stretch (not clear). Probably this problem is caused by some rounding in the drawing code that use the float overload
+				graphics.Graphics.DrawImageUnscaled(image, rectangle.Location);
 			} else {
-				using (System.Drawing.Image imgDisabled = Utilities.CreateDisabledImage(Value, Color.White)) {
-					graphics.Graphics.DrawImage(imgDisabled, area);
+				using (System.Drawing.Image imgDisabled = Utilities.CreateDisabledImage(image, Color.White)) {
+					graphics.Graphics.DrawImageUnscaled(imgDisabled, rectangle.Location);
 				}
 			}
 		}

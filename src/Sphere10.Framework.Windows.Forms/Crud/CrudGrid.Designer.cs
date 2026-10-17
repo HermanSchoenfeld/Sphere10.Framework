@@ -18,6 +18,10 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing) {
+			if (disposing) {
+				this._initialLoadingCircle.Active = false;
+				SaveGridSettings();
+			}
 			if (disposing && (components != null)) {
 				components.Dispose();
 			}
@@ -32,12 +36,18 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// </summary>
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
+			this._initialLoadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
 			this._layoutPanel = new System.Windows.Forms.TableLayoutPanel();
-			this._topPanel = new System.Windows.Forms.Panel();
+			this._topPanel = new System.Windows.Forms.TableLayoutPanel();
 			this._titleLabel = new System.Windows.Forms.Label();
 			this._createButton = new System.Windows.Forms.Button();
 			this._deleteButton = new System.Windows.Forms.Button();
-			this._bottomPanel = new System.Windows.Forms.Panel();
+			this._bottomPanel = new System.Windows.Forms.TableLayoutPanel();
+			this._pagingControlsPanel = new System.Windows.Forms.FlowLayoutPanel();
+			this._totalRecordsPanel = new System.Windows.Forms.FlowLayoutPanel();
+			this._pageModeComboBox = new System.Windows.Forms.ComboBox();
+			this._manualPageSizePanel = new System.Windows.Forms.FlowLayoutPanel();
+			this._pageNavigationPanel = new System.Windows.Forms.FlowLayoutPanel();
 			this._lastPageButton = new System.Windows.Forms.Button();
 			this._firstPageButton = new System.Windows.Forms.Button();
 			this._nextPageButton = new System.Windows.Forms.Button();
@@ -59,10 +69,26 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._layoutPanel.SuspendLayout();
 			this._topPanel.SuspendLayout();
 			this._bottomPanel.SuspendLayout();
+			this._pagingControlsPanel.SuspendLayout();
+			this._totalRecordsPanel.SuspendLayout();
+			this._manualPageSizePanel.SuspendLayout();
+			this._pageNavigationPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._pageSizeUpDown)).BeginInit();
 			this._gridContainerPanel.SuspendLayout();
 			this._selectionContextMenuStrip.SuspendLayout();
 			this.SuspendLayout();
+			//
+			// _initialLoadingCircle
+			//
+			this._initialLoadingCircle.Active = false;
+			this._initialLoadingCircle.BackColor = System.Drawing.SystemColors.Control;
+			this._initialLoadingCircle.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._initialLoadingCircle.AccessibleName = "Loading Grid";
+			this._initialLoadingCircle.Name = "_initialLoadingCircle";
+			this._initialLoadingCircle.StylePreset = Sphere10.Framework.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
+			this._initialLoadingCircle.TabStop = false;
+			this._initialLoadingCircle.Visible = false;
+			this._initialLoadingCircle.Resize += new System.EventHandler(this.LoadingIndicatorResized);
 			// 
 			// _layoutPanel
 			// 
@@ -85,14 +111,21 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._topPanel.AutoSize = true;
 			this._topPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._topPanel.Controls.Add(this._titleLabel);
-			this._topPanel.Controls.Add(this._searchTextBox);
-			this._topPanel.Controls.Add(this._createButton);
-			this._topPanel.Controls.Add(this._deleteButton);
+			this._topPanel.ColumnCount = 4;
+			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+			this._topPanel.Controls.Add(this._createButton, 0, 0);
+			this._topPanel.Controls.Add(this._deleteButton, 1, 0);
+			this._topPanel.Controls.Add(this._titleLabel, 2, 0);
+			this._topPanel.Controls.Add(this._searchTextBox, 3, 0);
 			this._topPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._topPanel.Location = new System.Drawing.Point(3, 3);
 			this._topPanel.Name = "_topPanel";
 			this._topPanel.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
+			this._topPanel.RowCount = 1;
+			this._topPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
 			this._topPanel.Size = new System.Drawing.Size(518, 25);
 			this._topPanel.TabIndex = 2;
 			// 
@@ -101,6 +134,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._titleLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this._titleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._titleLabel.Location = new System.Drawing.Point(62, 5);
+			this._titleLabel.Margin = new System.Windows.Forms.Padding(0, 5, 6, 0);
 			this._titleLabel.Name = "_titleLabel";
 			this._titleLabel.Size = new System.Drawing.Size(331, 18);
 			this._titleLabel.TabIndex = 3;
@@ -111,6 +145,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._createButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.Plus;
 			this._createButton.Location = new System.Drawing.Point(1, 2);
+			this._createButton.Margin = new System.Windows.Forms.Padding(1, 2, 2, 0);
 			this._createButton.Name = "_createButton";
 			this._createButton.Size = new System.Drawing.Size(28, 23);
 			this._createButton.TabIndex = 1;
@@ -121,6 +156,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._deleteButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.Minus;
 			this._deleteButton.Location = new System.Drawing.Point(32, 2);
+			this._deleteButton.Margin = new System.Windows.Forms.Padding(1, 2, 2, 0);
 			this._deleteButton.Name = "_deleteButton";
 			this._deleteButton.Size = new System.Drawing.Size(28, 23);
 			this._deleteButton.TabIndex = 0;
@@ -132,22 +168,84 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._bottomPanel.AutoSize = true;
 			this._bottomPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._bottomPanel.Controls.Add(this._pageCountLabel);
-			this._bottomPanel.Controls.Add(this._pageNumberBox);
-			this._bottomPanel.Controls.Add(this._lastPageButton);
-			this._bottomPanel.Controls.Add(this._firstPageButton);
-			this._bottomPanel.Controls.Add(this._nextPageButton);
-			this._bottomPanel.Controls.Add(this._pageSizeUpDown);
-			this._bottomPanel.Controls.Add(this._previousPageButton);
-			this._bottomPanel.Controls.Add(this._totalRecordsLabel);
-			this._bottomPanel.Controls.Add(this.label3);
-			this._bottomPanel.Controls.Add(this._pageSizeLabel);
+			this._bottomPanel.ColumnCount = 2;
+			this._bottomPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+			this._bottomPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this._bottomPanel.Controls.Add(this._totalRecordsPanel, 0, 0);
+			this._bottomPanel.Controls.Add(this._pagingControlsPanel, 1, 0);
 			this._bottomPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._bottomPanel.Location = new System.Drawing.Point(3, 278);
+			this._bottomPanel.Margin = new System.Windows.Forms.Padding(0);
 			this._bottomPanel.Name = "_bottomPanel";
-			this._bottomPanel.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
+			this._bottomPanel.RowCount = 1;
+			this._bottomPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
 			this._bottomPanel.Size = new System.Drawing.Size(518, 25);
 			this._bottomPanel.TabIndex = 3;
+			this._bottomPanel.Layout += new System.Windows.Forms.LayoutEventHandler(this.PageBarLayout);
+			//
+			// _pagingControlsPanel
+			//
+			this._pagingControlsPanel.AutoSize = true;
+			this._pagingControlsPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._pagingControlsPanel.Controls.Add(this._pageNavigationPanel);
+			this._pagingControlsPanel.Controls.Add(this._manualPageSizePanel);
+			this._pagingControlsPanel.Controls.Add(this._pageModeComboBox);
+			this._pagingControlsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._pagingControlsPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+			this._pagingControlsPanel.Margin = new System.Windows.Forms.Padding(0);
+			this._pagingControlsPanel.Name = "_pagingControlsPanel";
+			this._pagingControlsPanel.Size = new System.Drawing.Size(436, 26);
+			this._pagingControlsPanel.TabIndex = 1;
+			//
+			// _totalRecordsPanel
+			//
+			this._totalRecordsPanel.AutoSize = true;
+			this._totalRecordsPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._totalRecordsPanel.Controls.Add(this.label3);
+			this._totalRecordsPanel.Controls.Add(this._totalRecordsLabel);
+			this._totalRecordsPanel.Margin = new System.Windows.Forms.Padding(0, 0, 6, 0);
+			this._totalRecordsPanel.Name = "_totalRecordsPanel";
+			this._totalRecordsPanel.TabIndex = 0;
+			this._totalRecordsPanel.WrapContents = false;
+			//
+			// _pageModeComboBox
+			//
+			this._pageModeComboBox.AccessibleName = "Page Mode";
+			this._pageModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._pageModeComboBox.FormattingEnabled = true;
+			this._pageModeComboBox.Items.AddRange(new object[] { "Paged", "Auto", "Single" });
+			this._pageModeComboBox.Margin = new System.Windows.Forms.Padding(3, 3, 6, 3);
+			this._pageModeComboBox.Name = "_pageModeComboBox";
+			this._pageModeComboBox.SelectedIndex = 0;
+			this._pageModeComboBox.Size = new System.Drawing.Size(80, 21);
+			this._pageModeComboBox.TabIndex = 1;
+			this._pageModeComboBox.SelectedIndexChanged += new System.EventHandler(this.PageModeSelectedIndexChanged);
+			//
+			// _manualPageSizePanel
+			//
+			this._manualPageSizePanel.AutoSize = true;
+			this._manualPageSizePanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._manualPageSizePanel.Controls.Add(this._pageSizeLabel);
+			this._manualPageSizePanel.Controls.Add(this._pageSizeUpDown);
+			this._manualPageSizePanel.Margin = new System.Windows.Forms.Padding(0);
+			this._manualPageSizePanel.Name = "_manualPageSizePanel";
+			this._manualPageSizePanel.TabIndex = 2;
+			this._manualPageSizePanel.WrapContents = false;
+			//
+			// _pageNavigationPanel
+			//
+			this._pageNavigationPanel.AutoSize = true;
+			this._pageNavigationPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this._pageNavigationPanel.Controls.Add(this._firstPageButton);
+			this._pageNavigationPanel.Controls.Add(this._previousPageButton);
+			this._pageNavigationPanel.Controls.Add(this._pageNumberBox);
+			this._pageNavigationPanel.Controls.Add(this._pageCountLabel);
+			this._pageNavigationPanel.Controls.Add(this._nextPageButton);
+			this._pageNavigationPanel.Controls.Add(this._lastPageButton);
+			this._pageNavigationPanel.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+			this._pageNavigationPanel.Name = "_pageNavigationPanel";
+			this._pageNavigationPanel.TabIndex = 3;
+			this._pageNavigationPanel.WrapContents = false;
 			// 
 			// _lastPageButton
 			// 
@@ -185,7 +283,6 @@ namespace Sphere10.Framework.Windows.Forms {
 			// _pageSizeUpDown
 			// 
 			this._pageSizeUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
-			this._pageSizeUpDown.Font = new System.Drawing.Font("Arial", 8.25F);
 			this._pageSizeUpDown.Increment = new decimal(new int[] {
             1,
             0,
@@ -227,7 +324,6 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._totalRecordsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
 			this._totalRecordsLabel.AutoSize = true;
-			this._totalRecordsLabel.Font = new System.Drawing.Font("Arial", 8.25F);
 			this._totalRecordsLabel.Location = new System.Drawing.Point(34, 5);
 			this._totalRecordsLabel.Name = "_totalRecordsLabel";
 			this._totalRecordsLabel.Size = new System.Drawing.Size(13, 14);
@@ -238,7 +334,6 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
 			this.label3.AutoSize = true;
-			this.label3.Font = new System.Drawing.Font("Arial", 8.25F);
 			this.label3.Location = new System.Drawing.Point(4, 5);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(32, 14);
@@ -249,7 +344,6 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._pageSizeLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
 			this._pageSizeLabel.AutoSize = true;
-			this._pageSizeLabel.Font = new System.Drawing.Font("Arial", 8.25F);
 			this._pageSizeLabel.Location = new System.Drawing.Point(94, 5);
 			this._pageSizeLabel.Name = "_pageSizeLabel";
 			this._pageSizeLabel.Size = new System.Drawing.Size(58, 14);
@@ -310,9 +404,8 @@ namespace Sphere10.Framework.Windows.Forms {
 			// _pageCountLabel
 			// 
 			this._pageCountLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._pageCountLabel.AutoEllipsis = true;
+			this._pageCountLabel.AutoSize = true;
 			this._pageCountLabel.BackColor = System.Drawing.Color.Transparent;
-			this._pageCountLabel.Font = new System.Drawing.Font("Arial", 8.25F);
 			this._pageCountLabel.Location = new System.Drawing.Point(423, 2);
 			this._pageCountLabel.Name = "_pageCountLabel";
 			this._pageCountLabel.Size = new System.Drawing.Size(43, 20);
@@ -324,6 +417,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._searchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this._searchTextBox.Location = new System.Drawing.Point(399, 3);
+			this._searchTextBox.Margin = new System.Windows.Forms.Padding(0, 3, 3, 0);
 			this._searchTextBox.Name = "_searchTextBox";
 			this._searchTextBox.PlaceHolderText = "Search";
 			this._searchTextBox.Size = new System.Drawing.Size(116, 20);
@@ -333,7 +427,6 @@ namespace Sphere10.Framework.Windows.Forms {
 			// _pageNumberBox
 			// 
 			this._pageNumberBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._pageNumberBox.Font = new System.Drawing.Font("Arial", 8.25F);
 			this._pageNumberBox.Location = new System.Drawing.Point(371, 2);
 			this._pageNumberBox.Name = "_pageNumberBox";
 			this._pageNumberBox.NullText = "1";
@@ -362,6 +455,8 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._grid.ToolTipText = "";
 			this._grid.MouseClick += new System.Windows.Forms.MouseEventHandler(this._grid_MouseClick);
 			this._grid.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this._grid_MouseDoubleClick);
+			this._grid.SizeChanged += new System.EventHandler(this.GridViewportChanged);
+			this._grid.FontChanged += new System.EventHandler(this.GridViewportChanged);
 			// 
 			// CrudGrid
 			// 
@@ -369,14 +464,25 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.Controls.Add(this._layoutPanel);
+			this.Controls.Add(this._initialLoadingCircle);
 			this.MinimumSize = new System.Drawing.Size(319, 87);
 			this.Name = "CrudGrid";
 			this.Size = new System.Drawing.Size(524, 306);
+			this.FontChanged += new System.EventHandler(this.GridViewportChanged);
+			this.DpiChangedAfterParent += new System.EventHandler(this.GridViewportChanged);
 			this._layoutPanel.ResumeLayout(false);
 			this._topPanel.ResumeLayout(false);
 			this._topPanel.PerformLayout();
 			this._bottomPanel.ResumeLayout(false);
 			this._bottomPanel.PerformLayout();
+			this._pagingControlsPanel.ResumeLayout(false);
+			this._pagingControlsPanel.PerformLayout();
+			this._totalRecordsPanel.ResumeLayout(false);
+			this._totalRecordsPanel.PerformLayout();
+			this._manualPageSizePanel.ResumeLayout(false);
+			this._manualPageSizePanel.PerformLayout();
+			this._pageNavigationPanel.ResumeLayout(false);
+			this._pageNavigationPanel.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._pageSizeUpDown)).EndInit();
 			this._gridContainerPanel.ResumeLayout(false);
 			this._gridContainerPanel.PerformLayout();
@@ -388,10 +494,16 @@ namespace Sphere10.Framework.Windows.Forms {
 		#endregion
 
 		private System.Windows.Forms.TableLayoutPanel _layoutPanel;
-		private System.Windows.Forms.Panel _topPanel;
+		private Sphere10.Framework.Windows.Forms.LoadingCircle _initialLoadingCircle;
+		private System.Windows.Forms.TableLayoutPanel _topPanel;
 		private System.Windows.Forms.Button _createButton;
 		private System.Windows.Forms.Button _deleteButton;
-		private System.Windows.Forms.Panel _bottomPanel;
+		private System.Windows.Forms.TableLayoutPanel _bottomPanel;
+		private System.Windows.Forms.FlowLayoutPanel _pagingControlsPanel;
+		private System.Windows.Forms.FlowLayoutPanel _totalRecordsPanel;
+		private System.Windows.Forms.ComboBox _pageModeComboBox;
+		private System.Windows.Forms.FlowLayoutPanel _manualPageSizePanel;
+		private System.Windows.Forms.FlowLayoutPanel _pageNavigationPanel;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label _pageSizeLabel;
 		private System.Windows.Forms.Label label4;

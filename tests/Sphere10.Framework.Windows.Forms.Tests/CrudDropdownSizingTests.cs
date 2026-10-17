@@ -153,18 +153,19 @@ public class CrudDropdownSizingTests {
 		await Picker.LoadItemsAsync();
 		await WaitForStableLayout(Picker, Source);
 		var ConfiguredSize = Picker.Size;
+		var originalWidths = ColumnWidths(FindControl<Grid>(Picker, "_grid"));
 		FindControl<SearchTextBox>(Picker, "_searchTextBox").Text = "Find me";
 		await WaitForStableLayout(Picker, Source);
 		Assert.That(Picker.Grid.VisibleEntities.Single(), Is.SameAs(Records[0]));
 		Assert.That(Picker.Size, Is.EqualTo(ConfiguredSize));
-		AssertColumnsFillViewport(FindControl<Grid>(Picker, "_grid"));
+		Assert.That(ColumnWidths(FindControl<Grid>(Picker, "_grid")), Is.EqualTo(originalWidths));
 		AssertChromeFits(Picker);
 
 		FindControl<SearchTextBox>(Picker, "_searchTextBox").Text = "No matching employee";
 		await WaitForStableLayout(Picker, Source);
 		Assert.That(Picker.Grid.VisibleEntities, Is.Empty);
 		Assert.That(Picker.Size, Is.EqualTo(ConfiguredSize));
-		AssertColumnsFillViewport(FindControl<Grid>(Picker, "_grid"));
+		Assert.That(ColumnWidths(FindControl<Grid>(Picker, "_grid")), Is.EqualTo(originalWidths));
 
 		FindControl<SearchTextBox>(Picker, "_searchTextBox").Text = string.Empty;
 		await WaitForStableLayout(Picker, Source);
@@ -185,15 +186,25 @@ public class CrudDropdownSizingTests {
 		await WaitForStableLayout(Picker, Source);
 		var ConfiguredSize = Picker.Size;
 		var PageSize = Picker.Grid.VisibleEntities.Count();
+		var originalWidths = ColumnWidths(FindControl<Grid>(Picker, "_grid"));
+		var pageMode = FindControl<ComboBox>(Picker, "_pageModeComboBox");
+		Assert.That(pageMode.SelectedIndex, Is.EqualTo((int)CrudGridPageMode.Auto));
+		Assert.That(FindControl<Button>(Picker, "_lastPageButton").Visible, Is.True);
+		Assert.That(Picker.Size, Is.EqualTo(ConfiguredSize));
 		FindControl<Button>(Picker, "_lastPageButton").PerformClick();
 		await WaitForStableLayout(Picker, Source);
 		Assert.That(Picker.Grid.VisibleEntities.Last(), Is.SameAs(Records[^1]));
 		Assert.That(Picker.Size, Is.EqualTo(ConfiguredSize));
-		Assert.That(FindControl<Grid>(Picker, "_grid").HScrollBarVisible, Is.True, "A stretch column still preserves its natural minimum width for long content.");
+		Assert.That(ColumnWidths(FindControl<Grid>(Picker, "_grid")), Is.EqualTo(originalWidths), "Longer values on a different page must not resize columns.");
 		FindControl<Button>(Picker, "_firstPageButton").PerformClick();
 		await WaitForStableLayout(Picker, Source);
 		Assert.That(Picker.Size, Is.EqualTo(ConfiguredSize));
 		Assert.That(Picker.Grid.VisibleEntities.Count(), Is.EqualTo(PageSize));
+		Assert.That(FindControl<Button>(Picker, "_lastPageButton").Visible, Is.True);
+		Assert.That(Picker.Size, Is.EqualTo(ConfiguredSize));
+		Assert.That(Picker.Grid.VisibleEntities.Count(), Is.EqualTo(PageSize));
+		AssertPageFits(FindControl<Grid>(Picker, "_grid"));
+		AssertChromeFits(Picker);
 	});
 
 	[TestCase(false)]
@@ -248,10 +259,25 @@ public class CrudDropdownSizingTests {
 				return;
 			InspectTimer.Stop();
 			try {
+				var lifecycle = new System.Collections.Generic.List<string>();
+				var popup = Picker.FindForm();
+				var sourceGrid = FindControl<Grid>(Picker, "_grid");
+				void Trace(string name) {
+					var foreground = Sphere10.Framework.Windows.WinAPI.USER32.GetForegroundWindow();
+					Sphere10.Framework.Windows.WinAPI.USER32.GetWindowThreadProcessId(foreground, out var process);
+					lifecycle.Add($"{name}: foreground pid {process}/{Environment.ProcessId}, active {Form.ActiveForm?.GetType().Name}, "
+						+ $"grid enabled {sourceGrid.Enabled}, popup visible {popup?.Visible}, picker disposed {Picker.IsDisposed}");
+				}
+				popup.Deactivate += (_, _) => Trace("Popup deactivated");
+				sourceGrid.EnabledChanged += (_, _) => Trace("Grid enabled changed");
+				sourceGrid.LostFocus += (_, _) => Trace("Grid lost focus");
+				Picker.Disposed += (_, _) => Trace("Picker disposed");
+				Trace("Before releasing source read");
 				await Source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 				Source.ReadAllowed.TrySetResult();
 				await Picker.LoadItemsAsync();
-				await WaitForStableLayout(Picker, Source);
+				Trace("After loading source");
+				await WaitForStableLayout(Picker.Grid, Source, Picker, () => string.Join(Environment.NewLine, lifecycle));
 				Assert.That(Picker.IsDisposed, Is.False, "The native editor must remain open while asynchronous sizing completes.");
 				Assert.That(Picker.Size, Is.EqualTo(Binding.DropDownSize));
 				var Host = Picker.Parent!;
@@ -302,6 +328,7 @@ public class CrudDropdownSizingTests {
 		var ConfiguredSize = Combo.Grid.Size;
 		Assert.That(ConfiguredSize, Is.EqualTo(Binding.DropDownSize));
 		AssertColumnsFillViewport(FindControl<Grid>(Combo.Grid, "_grid"));
+		var originalWidths = ColumnWidths(FindControl<Grid>(Combo.Grid, "_grid"));
 
 		Records[1].Name = new string('W', 160);
 		await Combo.Grid.RefreshGrid();
@@ -310,7 +337,9 @@ public class CrudDropdownSizingTests {
 		Assert.That(WorkingArea.Contains(Popup.Bounds), Is.True, "New content must keep the popup within the monitor working area.");
 		AssertFitsAncestors(Combo.Grid, Popup);
 		Assert.That(Popup.ClientSize.Width - Combo.Grid.Right, Is.LessThanOrEqualTo(SystemInformation.VerticalScrollBarWidth));
-		Assert.That(FindControl<Grid>(Combo.Grid, "_grid").HScrollBarVisible, Is.True);
+		Assert.That(ColumnWidths(FindControl<Grid>(Combo.Grid, "_grid")), Is.EqualTo(originalWidths), "Refreshing longer values must preserve the established dropdown column widths.");
+		Assert.That(Combo.Grid.VisibleEntities.Cast<Employee>().Single(record => record.ID == Records[1].ID).Name, Is.EqualTo(Records[1].Name),
+			"Width stability must not prevent the refreshed record from being displayed.");
 	});
 
 	[Test]
@@ -377,14 +406,14 @@ public class CrudDropdownSizingTests {
 
 	private static Task WaitForStableLayout(CrudReferencePicker Picker, SizingDataSource Source) => WaitForStableLayout(Picker.Grid, Source, Picker);
 
-	private static async Task WaitForStableLayout(CrudGrid Crud, SizingDataSource Source, Control? PopupContent = null) {
+	private static async Task WaitForStableLayout(CrudGrid Crud, SizingDataSource Source, Control? PopupContent = null, Func<string> diagnostics = null) {
 		PopupContent ??= Crud;
 		var PreviousSize = Size.Empty;
 		var PreviousReads = -1;
 		var StableSamples = 0;
 		for (var Attempt = 0; Attempt < 160; Attempt++) {
 			await Task.Delay(25);
-			Assert.That(PopupContent.IsDisposed, Is.False);
+			Assert.That(PopupContent.IsDisposed, Is.False, diagnostics?.Invoke());
 			var Normal = typeof(CrudGrid).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Crud)!.ToString() == "Normal";
 			StableSamples = Normal && PopupContent.Size == PreviousSize && Source.ReadCount == PreviousReads ? StableSamples + 1 : 0;
 			if (StableSamples == 5)

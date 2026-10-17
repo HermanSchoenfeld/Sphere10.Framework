@@ -50,12 +50,13 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_allowCellEditingCheckBox = new System.Windows.Forms.CheckBox();
 			_refreshEntireGridOnUpdateCheckBox = new System.Windows.Forms.CheckBox();
 			_refreshEntireGridOnDeleteCheckBox = new System.Windows.Forms.CheckBox();
+			_suppressLoadingIndicatorCheckBox = new System.Windows.Forms.CheckBox();
 			SuspendLayout();
 			// 
 			// _outputTextBox
 			// 
 			_outputTextBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_outputTextBox.Location = new System.Drawing.Point(14, 653);
+			_outputTextBox.Location = new System.Drawing.Point(14, 680);
 			_outputTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_outputTextBox.Multiline = true;
 			_outputTextBox.Name = "_outputTextBox";
@@ -76,7 +77,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			// 
 			// _crudDialogButton
 			// 
-			_crudDialogButton.Location = new System.Drawing.Point(20, 587);
+			_crudDialogButton.Location = new System.Drawing.Point(20, 614);
 			_crudDialogButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_crudDialogButton.Name = "_crudDialogButton";
 			_crudDialogButton.Size = new System.Drawing.Size(147, 27);
@@ -111,7 +112,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			// 
 			// _selectFirstEntityButton
 			// 
-			_selectFirstEntityButton.Location = new System.Drawing.Point(20, 554);
+			_selectFirstEntityButton.Location = new System.Drawing.Point(20, 581);
 			_selectFirstEntityButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_selectFirstEntityButton.Name = "_selectFirstEntityButton";
 			_selectFirstEntityButton.Size = new System.Drawing.Size(147, 27);
@@ -146,7 +147,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			// 
 			// _refreshGrid
 			// 
-			_refreshGrid.Location = new System.Drawing.Point(20, 520);
+			_refreshGrid.Location = new System.Drawing.Point(20, 547);
 			_refreshGrid.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_refreshGrid.Name = "_refreshGrid";
 			_refreshGrid.Size = new System.Drawing.Size(147, 27);
@@ -185,7 +186,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_crudComboBox.ControlSize = new System.Drawing.Size(524, 306);
 			_crudComboBox.DropDownSizeMode = CustomComboBox.SizeMode.UseInitialControlSize;
 			_crudComboBox.DropSize = new System.Drawing.Size(121, 106);
-			_crudComboBox.Location = new System.Drawing.Point(20, 621);
+			_crudComboBox.Location = new System.Drawing.Point(20, 648);
 			_crudComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_crudComboBox.Name = "_crudComboBox";
 			_crudComboBox.PlaceHolderText = "Select Entity";
@@ -216,7 +217,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_crudGrid.MinimumSize = new System.Drawing.Size(372, 100);
 			_crudGrid.Name = "_crudGrid";
 			_crudGrid.RightClickForContextMenu = false;
-			_crudGrid.Size = new System.Drawing.Size(876, 632);
+			_crudGrid.Size = new System.Drawing.Size(876, 659);
 			_crudGrid.TabIndex = 0;
 			_crudGrid.EntitySelected += _crudGrid_EntitySelected;
 			_crudGrid.EntityDeselected += _crudGrid_EntityDeselected;
@@ -260,12 +261,25 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_refreshEntireGridOnDeleteCheckBox.Text = "Refresh entire grid on delete";
 			_refreshEntireGridOnDeleteCheckBox.UseVisualStyleBackColor = true;
 			_refreshEntireGridOnDeleteCheckBox.CheckedChanged += _refreshEntireGridOnDeleteCheckBox_CheckedChanged;
+			//
+			// _suppressLoadingIndicatorCheckBox
+			//
+			_suppressLoadingIndicatorCheckBox.AutoSize = true;
+			_suppressLoadingIndicatorCheckBox.Location = new System.Drawing.Point(19, 511);
+			_suppressLoadingIndicatorCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			_suppressLoadingIndicatorCheckBox.Name = "_suppressLoadingIndicatorCheckBox";
+			_suppressLoadingIndicatorCheckBox.Size = new System.Drawing.Size(180, 19);
+			_suppressLoadingIndicatorCheckBox.TabIndex = 17;
+			_suppressLoadingIndicatorCheckBox.Text = "Suppress loading indicator";
+			_suppressLoadingIndicatorCheckBox.UseVisualStyleBackColor = true;
+			_suppressLoadingIndicatorCheckBox.CheckedChanged += SuppressLoadingIndicatorCheckedChanged;
 			// 
 			// CrudTestScreen
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			Controls.Add(_refreshEntireGridOnDeleteCheckBox);
+			Controls.Add(_suppressLoadingIndicatorCheckBox);
 			Controls.Add(_refreshEntireGridOnUpdateCheckBox);
 			Controls.Add(_allowCellEditingCheckBox);
 			Controls.Add(_autoSelectOnCreateCheckBox);
@@ -284,7 +298,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			Controls.Add(_crudGrid);
 			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			Name = "CrudTestScreen";
-			Size = new System.Drawing.Size(1106, 762);
+			Size = new System.Drawing.Size(1106, 789);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -308,6 +322,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 		private System.Windows.Forms.CheckBox _allowCellEditingCheckBox;
 		private System.Windows.Forms.CheckBox _refreshEntireGridOnUpdateCheckBox;
 		private System.Windows.Forms.CheckBox _refreshEntireGridOnDeleteCheckBox;
+		private System.Windows.Forms.CheckBox _suppressLoadingIndicatorCheckBox;
 
 	}
 }
