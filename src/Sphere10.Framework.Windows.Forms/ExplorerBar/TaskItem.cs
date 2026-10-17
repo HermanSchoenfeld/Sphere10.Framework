@@ -1016,14 +1016,13 @@ public class TaskItem : Button {
 	/// </summary>
 	/// <param name="e">An EventArgs that contains the event data</param>
 	protected override void OnSizeChanged(EventArgs e) {
-		base.OnSizeChanged(e);
-
-		// invalidate the preferred size cache
+		// Native layout and SizeChanged observers must measure the new width rather than the previous cached size.
 		this.preferredWidth = -1;
 		this.preferredHeight = -1;
 
 		this.textRect.Width = 0;
 		this.textRect.Height = 0;
+		base.OnSizeChanged(e);
 	}
 
 	#endregion

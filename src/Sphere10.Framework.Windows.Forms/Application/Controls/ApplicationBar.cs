@@ -61,9 +61,9 @@ public partial class ApplicationBar : ApplicationControl {
 		// if first button, then auto select and hide button panel
 		if (_items.Count == 1) {
 			_splitContainer.Panel2Collapsed = true;
-			item.Button.Pressed = true;
-			ShowMenuControl(item.MenuControl);
+			SelectedItem = item;
 		} else {
+			item.Button.Pressed = false;
 			_splitContainer.Panel2Collapsed = false;
 		}
 		PerformCustomLayout();
@@ -105,9 +105,10 @@ public partial class ApplicationBar : ApplicationControl {
 			return null;
 		}
 		set {
-			if (value != null) {
-				value.Button.Pressed = true;
-			}
+			Guard.Argument(value == null || _items.Contains(value), nameof(value), "Item is not registered.");
+			foreach (var item in _items)
+				item.Button.Pressed = ReferenceEquals(item, value);
+			ShowMenuControl(value?.MenuControl);
 		}
 	}
 
@@ -115,6 +116,11 @@ public partial class ApplicationBar : ApplicationControl {
 		using (this.EnterUpdateScope()) {
 
 			if (_items != null) {
+				// A collapsed button panel fills the bar. Its old splitter minimum must not block the native panels from following resize.
+				if (_splitContainer.Panel2Collapsed || _items.Count == 0) {
+					_splitContainer.Panel1MinSize = 0;
+					return;
+				}
 
 				// place the buttons in the correct place
 				if (!_splitContainer.Panel2Collapsed) {
@@ -181,14 +187,8 @@ public partial class ApplicationBar : ApplicationControl {
 		}
 		if (source != null) {
 			if (source.Button.Pressed) {
-				ShowMenuControl(source.MenuControl);
+				SelectedItem = source;
 				FireButtonPressedEvent(this, source);
-			}
-			// unpress all other buttons
-			foreach (Item item in _items) {
-				if (item.Button != source.Button) {
-					item.Button.Pressed = false;
-				}
 			}
 		}
 
@@ -216,10 +216,16 @@ public partial class ApplicationBar : ApplicationControl {
 			// invalid state so just clear all menu controls in there
 			_splitContainer.Panel1.Controls.Clear();
 		}
+		if (ReferenceEquals(currentControl, control)) {
+			ApplicationBarControl = control;
+			return;
+		}
 
 		// add the new control
-		control.Dock = DockStyle.Fill;
-		_splitContainer.Panel1.Controls.Add(control);
+		if (control != null) {
+			control.Dock = DockStyle.Fill;
+			_splitContainer.Panel1.Controls.Add(control);
+		}
 
 		// remove the old control
 		if (currentControl != null) {
