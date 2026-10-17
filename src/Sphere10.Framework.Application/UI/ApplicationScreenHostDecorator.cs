@@ -52,6 +52,8 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 
 	public virtual Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) => InternalHost.OpenScreenAsync(block, definition, cancellationToken);
 
+	public virtual Task<bool> ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken = default) => InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
+
 	public virtual Task RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) => InternalHost.RegisterBlockAsync(block, cancellationToken);
 
 	public virtual Task<bool> UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) => InternalHost.UnregisterBlockAsync(block, cancellationToken);
@@ -112,6 +114,8 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 
 	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) => InternalHost.OpenScreenAsync(block, definition, cancellationToken);
 
+	public virtual Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default) => InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
+
 	public virtual Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) => InternalHost.RegisterBlockAsync(block, cancellationToken);
 
 	public virtual Task<bool> UnregisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) => InternalHost.UnregisterBlockAsync(block, cancellationToken);
@@ -130,6 +134,7 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 
 	public virtual ValueTask DisposeAsync() => InternalHost.DisposeAsync();
 
+	#region Base Interface Bridges
 	// Preserve neutral calls to virtual class members when a subclass explicitly remaps the typed interface.
 	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
@@ -149,6 +154,8 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 
 	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
 
+	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) => ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
+
 	Task IApplicationScreenHost.RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) => RegisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	Task<bool> IApplicationScreenHost.UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) => UnregisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
@@ -156,6 +163,7 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 	IApplicationBlock IApplicationScreenHost.GetScreenBlock(IApplicationScreen screen) => GetScreenBlock(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
 
 	void IApplicationScreenHost.NotifyScreenChanged(IApplicationScreen screen) => NotifyScreenChanged(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
+	#endregion
 }
 
 public abstract class ApplicationScreenHostDecorator : ApplicationScreenHostDecorator<IApplicationScreenHost> {

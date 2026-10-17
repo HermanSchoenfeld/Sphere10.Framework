@@ -60,6 +60,28 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		Assert.That(neutral.GetScreenBlock(screen), Is.SameAs(block));
 	}
 
+	[Test]
+	public async Task DetachedPresentationKeepsTheTypedOverrideAndTheOriginalPendingTaskThroughNeutralDecoration() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var block = new TestApplicationBlock { Name = "Workspace" };
+		using var host = new ProbeHost(block, provider);
+		using var typedDecorator = new ProjectedHostDecorator(host, block);
+		using var neutral = new NeutralHostDecorator(typedDecorator);
+		using var cancellation = new CancellationTokenSource();
+		var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		host.UndockedPresentation = completion.Task;
+		var screen = new ProbeScreen();
+		var pending = neutral.ShowScreenUndockedAsync(screen, cancellation.Token);
+		Assert.That(pending, Is.SameAs(completion.Task));
+		Assert.That(pending.IsCompleted, Is.False);
+		Assert.That(typedDecorator.UndockedCalls, Is.EqualTo(1));
+		Assert.That(host.UndockedCalls, Is.EqualTo(1));
+		Assert.That(host.LastUndockedScreen, Is.SameAs(screen));
+		Assert.That(host.LastUndockedToken, Is.EqualTo(cancellation.Token));
+		completion.SetResult(false);
+		Assert.That(await pending, Is.False);
+	}
+
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task NeutralReusableHostsKeepClassDispatchWhenSubclassesRemapTypedInterfaces(bool decorate) {
@@ -88,12 +110,15 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		Assert.That(neutralMulti.Screens.Single(), Is.SameAs(screen));
 		Assert.That(neutralMulti.OpenScreens.Single(), Is.SameAs(screen));
 		Assert.That(await neutralMulti.ShowScreenAsync(screen), Is.True);
+		Assert.That(await neutral.ShowScreenUndockedAsync(screen), Is.True);
 		Assert.That(typed.Blocks.Single(), Is.SameAs(remappedBlock));
 		Assert.That(typed.ActiveScreen, Is.SameAs(remappedScreen));
 		Assert.That(typed.GetScreenBlock((ProbeScreen)screen), Is.SameAs(remappedBlock));
 		Assert.That(await typed.OpenScreenAsync(block, block.DefaultScreenDefinition), Is.SameAs(remappedScreen));
 		Assert.That(typedMulti.Screens.Single(), Is.SameAs(remappedScreen));
 		Assert.That(await typedMulti.ShowScreenAsync((ProbeScreen)screen), Is.False);
+		Assert.That(await typed.ShowScreenUndockedAsync((ProbeScreen)screen), Is.False);
+		Assert.That(host.UndockedCalls, Is.EqualTo(1), "The neutral detached operation must use the virtual class member, not an explicit typed remapping.");
 		Assert.That(host.OpenCalls, Is.EqualTo(1), "An explicit typed remapping must not replace the neutral class mapping.");
 	}
 
@@ -107,8 +132,10 @@ public class ApplicationDefaultInterfaceDispatchTests {
 
 		Assert.That(() => neutral.SelectBlockAsync(new OtherBlock()), Throws.ArgumentException);
 		Assert.That(() => neutral.GetScreenBlock(new OtherScreen()), Throws.ArgumentException);
+		Assert.That(() => neutral.ShowScreenUndockedAsync(new OtherScreen()), Throws.ArgumentException);
 		Assert.That(decorator.SelectionCalls, Is.Zero);
 		Assert.That(decorator.ScreenBlockCalls, Is.Zero);
+		Assert.That(decorator.UndockedCalls, Is.Zero);
 		Assert.That(neutral.GetScreenBlock(null), Is.Null);
 	}
 
@@ -131,6 +158,21 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		}
 
 		public int OpenCalls { get; private set; }
+
+		public int UndockedCalls { get; private set; }
+
+		public Task<bool> UndockedPresentation { get; set; } = Task.FromResult(true);
+
+		public ProbeScreen LastUndockedScreen { get; private set; }
+
+		public CancellationToken LastUndockedToken { get; private set; }
+
+		public override Task<bool> ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken = default) {
+			UndockedCalls++;
+			LastUndockedScreen = screen;
+			LastUndockedToken = cancellationToken;
+			return UndockedPresentation;
+		}
 
 		public override Task<ProbeScreen> OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
 			OpenCalls++;
@@ -162,6 +204,8 @@ public class ApplicationDefaultInterfaceDispatchTests {
 
 		Task<ProbeScreen> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => Task.FromResult(_screen);
 
+		Task<bool> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken) => Task.FromResult(false);
+
 		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Screens => new[] { _screen };
 
 		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreens => new[] { _screen };
@@ -191,6 +235,8 @@ public class ApplicationDefaultInterfaceDispatchTests {
 
 		Task<ProbeScreen> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => Task.FromResult(_screen);
 
+		Task<bool> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken) => Task.FromResult(false);
+
 		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Screens => new[] { _screen };
 
 		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreens => new[] { _screen };
@@ -216,6 +262,13 @@ public class ApplicationDefaultInterfaceDispatchTests {
 
 		public int ScreenBlockCalls { get; private set; }
 
+		public int UndockedCalls { get; private set; }
+
+		public override Task<bool> ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken = default) {
+			UndockedCalls++;
+			return base.ShowScreenUndockedAsync(screen, cancellationToken);
+		}
+
 		public override Task SelectBlockAsync(TestApplicationBlock block, CancellationToken cancellationToken = default) {
 			SelectionCalls++;
 			return base.SelectBlockAsync(block, cancellationToken);
@@ -237,6 +290,8 @@ public class ApplicationDefaultInterfaceDispatchTests {
 
 		public IApplicationBlock Block { get; set; }
 	}
+
+	private sealed class NeutralHostDecorator(IApplicationScreenHost host) : ApplicationScreenHostDecorator(host);
 
 	private sealed class OtherScreen : IApplicationScreen {
 		public IApplicationScreenHost Host { get; set; }

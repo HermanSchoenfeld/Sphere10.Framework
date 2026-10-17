@@ -43,6 +43,10 @@ public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
 
 	Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default);
 
+	/// <summary>Shows a supplied instance directly in a modeless detached window without changing the main-frame selection.</summary>
+	/// <exception cref="NotSupportedException">This host does not support detached presentation.</exception>
+	Task<bool> ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken = default);
+
 	Task RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default);
 
 	Task<bool> UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default);
@@ -80,6 +84,8 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 
 	Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default);
 
+	Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default);
+
 	Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default);
 
 	Task<bool> UnregisterBlockAsync(TBlock block, CancellationToken cancellationToken = default);
@@ -88,6 +94,7 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 
 	void NotifyScreenChanged(TScreen screen);
 
+	#region Base Interface Bridges
 	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
 	IApplicationBlock[] IApplicationScreenHost.Blocks => Blocks;
@@ -106,6 +113,8 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 
 	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
 
+	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) => ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
+
 	Task IApplicationScreenHost.RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) => RegisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	Task<bool> IApplicationScreenHost.UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) => UnregisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
@@ -113,4 +122,5 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 	IApplicationBlock IApplicationScreenHost.GetScreenBlock(IApplicationScreen screen) => GetScreenBlock(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
 
 	void IApplicationScreenHost.NotifyScreenChanged(IApplicationScreen screen) => NotifyScreenChanged(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
+	#endregion
 }

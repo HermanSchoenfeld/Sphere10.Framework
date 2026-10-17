@@ -104,6 +104,13 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	protected TBlock[] TrackedBlocks => _blocks.Values.ToArray();
 
+	public override Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		EnsureUsable();
+		Guard.ArgumentNotNull(screen, nameof(screen));
+		throw new NotSupportedException("This screen host does not support detached presentation.");
+	}
+
 	public override Task InitializeAsync(CancellationToken cancellationToken = default) =>
 		RunTransitionAsync(async token => {
 			if (_initialized)

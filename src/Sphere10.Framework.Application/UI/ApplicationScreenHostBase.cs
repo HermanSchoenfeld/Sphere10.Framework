@@ -51,6 +51,8 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 
 	public abstract Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default);
 
+	public abstract Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default);
+
 	public abstract Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default);
 
 	public abstract Task<bool> UnregisterBlockAsync(TBlock block, CancellationToken cancellationToken = default);
@@ -79,6 +81,7 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 
 	public abstract void NotifyScreenChanged(TScreen screen);
 
+	#region Base Interface Bridges
 	// Preserve neutral calls to virtual class members when a subclass explicitly remaps the typed interface.
 	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
@@ -97,6 +100,8 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken) => await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
 
 	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
+
+	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) => ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
 
 	Task IApplicationScreenHost.RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) => RegisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
@@ -122,6 +127,7 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 	Task<bool> IMultiApplicationScreenHost.CloseScreenAsync(IApplicationScreen screen, CancellationToken cancellationToken) => CloseScreenAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
 
 	Task<bool> IMultiApplicationScreenHost.CanCloseScreenAsync(IApplicationScreen screen, CancellationToken cancellationToken) => CanCloseScreenAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
+	#endregion
 
 	protected virtual void OnChanged() => Changed?.Invoke();
 
