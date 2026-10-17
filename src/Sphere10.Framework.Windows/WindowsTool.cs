@@ -74,6 +74,9 @@ public static class Windows {
 	[ThreadStatic] private static NamedPipeUtil _pipes;
 	public static NamedPipeUtil Pipes => _pipes ??= new();
 
+	[ThreadStatic] private static EtwTraceUtil _traceSessions;
+	public static EtwTraceUtil TraceSessions => _traceSessions ??= new();
+
 	[ThreadStatic] private static SessionUtil _sessions;
 	public static SessionUtil Sessions => _sessions ??= new();
 
