@@ -162,7 +162,8 @@ public static class TypeResolver {
 
 		public AssemblyInfo(Assembly assembly) {
 			Assembly = assembly;
-			TypesByShortName = new ExtendedLookup<string, Type>();
+			// Most names identify one type; the general list's 4096-slot default multiplies across the entire index.
+			TypesByShortName = new ExtendedLookup<string, Type>(_ => new ExtendedList<Type>(capacity: 1, capacityGrowthSize: 1, maxCapacity: long.MaxValue));
 			TypesByLongName = new Dictionary<string, Type>();
 			Load();
 		}
