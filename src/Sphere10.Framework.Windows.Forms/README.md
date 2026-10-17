@@ -12,6 +12,57 @@ Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application dev
 dotnet add package Sphere10.Framework.Windows.Forms
 ```
 
+## Telemetry history charts
+
+`TelemetryChart` is a designer-editable chart for captured time/value samples.
+Call `SetSamples(TelemetryChartPoint[])` on its UI thread; input membership is
+copied and the returned `Points` array is detached. The chart performs no sampling,
+background scheduling or native inventory. The consumer owns capture cadence,
+history length and statistics. All System Expert CPU, memory, GPU, network,
+overview, process-inspection and temperature charts use this control.
+
+`Unit` selects percent, bytes, bytes/second or Celsius scales. Celsius supports
+real subzero readings and extends beyond 100 °C when necessary. Invalid and
+missing observations break both line and filled-area segments; they do not become
+zero readings. Select `PlotStyle = TelemetryChartStyle.Area` for a filled history,
+and configure `LineColor`, `FillColor`, `PlotBackColor`, `GridColor` and
+`ShowVerticalGrid` to match its host. `Compact` hides scale labels and headers;
+`ShowHeader` independently hides the title/current-value header.
+
+Hover displays the nearest captured value and local capture time, using elapsed
+time rather than sample index. `TryGetSampleAt` exposes the same lookup in control
+coordinates. Data normalization and scale labels are prepared when samples
+change; native resizing and paint only project that prepared history. The
+control owns its tooltip and disposes it with the surface.
+
+```csharp
+var chart = new TelemetryChart {
+	Unit = TelemetryChartUnit.Celsius,
+	PlotStyle = TelemetryChartStyle.Area,
+	LineColor = Color.Firebrick,
+	ShowVerticalGrid = true
+};
+chart.SetSamples(new[] {
+	new TelemetryChartPoint(DateTime.UtcNow.AddSeconds(-1), 42),
+	new TelemetryChartPoint(DateTime.UtcNow, 43)
+});
+```
+
+## Scoped window outlines
+
+`WindowHighlightScope` owns a hollow, nonactivating, click-through frame over caller-supplied **physical desktop pixel bounds**. Supply its color and physical-pixel thickness; update `Bounds` to follow a target, then dispose the scope to remove every overlay pixel. Create, update and dispose on the same STA UI thread. The frame uses a layered input-transparent window, leaving the target's device context and foreground activation untouched. The application owns target identity checks, timeout and selection policy; `WindowsWindow.GetPhysicalBounds` supplies verified geometry independently of the querying thread's DPI awareness. Outer bounds include invisible resize borders, as with GetWindowRect. No monitoring or timeout starts in the generic scope.
+
+The frame's HWND is created and updated under a scoped per-monitor V2 awareness
+context. Native geometry and placement therefore use the same physical coordinate
+space even when a worker and UI thread have different awareness or monitors use
+different scales. The scope restores the thread's prior context after every
+operation; it does not change the application's overall DPI mode. DPI-change
+suggestions do not rescale an already supplied physical rectangle. Never multiply
+desktop coordinates by a global DPI ratio: monitor origins can be negative and
+scaling can differ between displays.
+
+Keep this frame's managed `Form.TopMost` false. In [.NET 10's Form implementation](https://github.com/dotnet/winforms/blob/v10.0.0/src/System.Windows.Forms/System/Windows/Forms/Form.cs#L2061-L2068), `SetVisibleCore` explicitly focuses managed topmost forms even when `ShowWithoutActivation` is true; its [TopMost setter](https://github.com/dotnet/winforms/blob/v10.0.0/src/System.Windows.Forms/System/Windows/Forms/Form.cs#L1901-L1914) also changes z-order without `SWP_NOACTIVATE`. `WindowHighlightForm` instead specifies native `WS_EX_TOPMOST` at creation alongside `WS_EX_NOACTIVATE`, retains `ShowWithoutActivation`, and rejects keyboard selection. Native tests verify the actual topmost style and zero activation/focus events/messages across first show, resize and reshow. Do not replace that native creation style with the managed property or restore a previously foreground window after an accidental activation.
+
 ## Async modal dialogs (.NET 10)
 
 Await modal operations from UI event handlers or methods returning `Task`:
@@ -24,7 +75,9 @@ private async void EditButton_Click(object sender, EventArgs args) {
 }
 ```
 
-Use `ShowAsync` on `DialogEx`, `ExceptionDialog`, `EnterTextDialog`, `PasswordDialog`, `LogonDialog`, and `CrudDialog`; use `GenericEditorForm.ShowFormAsync` and `QuestionDialogSession.AskQuestionAsync`. Password input returns `(DialogResult Result, string Password)`; text input returns `(bool Accepted, string UserInput)`. These helpers dispose the dialogs they create after completion. When calling native `Form.ShowDialogAsync` on your own form, keep it in a `using` scope across the `await`.
+Use `ShowAsync` on `DialogEx`, `ExceptionDialog`, `EnterTextDialog`, `ReviewTextDialog`, `HexEditorDialog`, `PasswordDialog`, `LogonDialog`, and `CrudDialog`; use `GenericEditorForm.ShowFormAsync` and `QuestionDialogSession.AskQuestionAsync`. Password input returns `(DialogResult Result, string Password)`; text input returns `(bool Accepted, string UserInput)`. These helpers dispose the dialogs they create after completion. When calling native `Form.ShowDialogAsync` on your own form, keep it in a `using` scope across the `await`.
+
+`DialogEx` fits its message when shown on the owner's monitor. Short messages retain the designer's small size; longer confirmations grow the form and text viewport, widening when that reduces wrapping. Growth is bounded by the monitor working area and a 900 × 780 logical-pixel window limit, or a smaller caller-supplied `MaximumSize`. Text scrolls vertically once that limit is reached, with command buttons kept outside the scroll area. The existing 5,000-character text limit remains; use `ReviewTextDialog` for full reports.
 
 Custom forms use .NET WinForms directly: `using var dialog = new MyDialog(); var result = await dialog.ShowDialogAsync(this);`. `InvokeAsyncEx` remains a UI dispatch convenience over native `Control.InvokeAsync`, propagating completion, exceptions, and cancellation; it does not implement a modal loop.
 
@@ -43,6 +96,29 @@ Run the STA regression tests with `dotnet test tests/Sphere10.Framework.Windows.
 Call `await application.ExitAsync()` to request shutdown and receive whether the main window actually closed. File > Exit and the close button delegate to that same application workflow. It owns one asynchronous native confirmation, the retained screens' close guards, the active screen's block and the selected block's `CanExitAsync(application)` permissions, and existing application-exit observers. Each distinct block is checked once. Repeated requests share the pending decision. A native `FormClosing` observer can still decline normal exit, and another request can retry. Window close continues to hide or minimize forms configured for those actions; explicit application exit closes the window. `application.Exit()` provides the synchronous counterpart, using the same pending decision and native message pumping on the UI thread. `IsExiting` identifies a pending request; `HasExited` identifies completed closure.
 
 `await application.ExitAsync(force: true)` and `application.Exit(force: true)` skip confirmation and permission vetoes, including native `FormClosing` vetoes, while completing normal WinForms closure. Force also upgrades a pending normal request and dismisses its default confirmation dialog. Cancellation during confirmation dismisses that dialog and leaves the application available for another request. Once shutdown is committed, finalizers and resource cleanup finish even if a caller stops waiting. Exit dispatches onto the UI thread even when requested from a worker. Session-ending messages use forced graceful closure. A standalone main form retains its existing closing behavior and confirmation override. Once exit is approved, application and framework shutdown tasks complete before the main window closes; service-provider disposal follows after `Application.Run` returns.
+
+## Review text before saving
+
+`ReviewTextDialog` shows the complete generated text in a read-only, scrollable preview, with **Copy** for the full text and **Save** for choosing a destination. It opens without selecting the preview. Use it for CSV, JSON and other text exports after generating the content with the framework's existing serializers/writers:
+
+```csharp
+var savedPath = await ReviewTextDialog.ShowAsync(
+	this, "Review CSV Export", "Inspect the export before saving a copy.", csv,
+	"export.csv", "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*",
+	cancellationToken: cancellationToken, logger: application.Logger);
+```
+
+The helper returns the saved absolute path, or `null` when the user closes the review. Token cancellation disposes the helper-owned dialog, awaits native modal cleanup to restore the owner, then throws `OperationCanceledException`. It awaits native `ShowDialogAsync(owner)`; the filename picker is the existing synchronous Windows common dialog. Construction and preview setup perform no file IO and require no application services, including on the designer surface.
+
+For an existing dialog instance, configure `PreviewText`, `Instructions`, `DefaultFileName`, `Filter`, `OutputEncoding` and optional borrowed `Logger` on the creating UI thread. `SaveAsync(path, cancellationToken)` saves without opening a picker. The default encoding is UTF-8 without a BOM. A complete temporary copy in the destination directory is written before replacing the destination; save failure or cancellation preserves its original content and cleans up the dialog's temporary copy. Saving prevents simultaneous saves and normal closure. Disposing the dialog cancels an outstanding save. The dialog reports save failures through `Logger`, leaving its options and disposal with the caller.
+
+## Byte and hexadecimal editing
+
+`HexEditorControl` is a designer-editable byte editor with offset, sixteen hexadecimal byte columns and an ASCII preview. Its virtual grid displays at most 4 KiB (256 rows) at once; jump by hexadecimal offset or use the page controls. Cell edits require exactly two hex digits. **Insert**, **Delete**, **Paste Hex**, **Copy Hex**, **Find Next** and **Revert** work on the selected contiguous byte range; Ctrl+C, Ctrl+V, Delete and Ctrl+A provide keyboard equivalents. The last blank byte cell can append a byte. Find accepts whitespace-separated hexadecimal pairs and wraps after the end.
+
+`Bytes` copies both incoming and outgoing arrays. Assignment establishes a clean baseline; `HasChanges` compares with that baseline and `RevertChanges()` restores it. Parameterless `BytesChanged` fires only when buffer contents change, including assignment of different contents. Use a loading guard and treat this as a dirty notification; read `Bytes` at an accepted edit or conversion boundary rather than copying the full buffer per cell edit. `ReadOnly` disables mutations while retaining selection, search and copy. Programmatic consumers can call `SelectRange`, `SetByte`, `InsertBytes`, `DeleteBytes`, `ReplaceBytes`, `PasteHex` and `FindBytes`; all control access belongs on the creating UI thread. `CommitEdit()` completes a pending native edit and returns false for invalid input.
+
+`HexEditorDialog` hosts the same control over its own byte copy. `await HexEditorDialog.ShowAsync(owner, title, bytes, readOnly: false, cancellationToken: cancellationToken)` returns a fresh array on **OK**, or null on **Cancel**; it never changes the input array. Token cancellation joins modal cleanup before throwing. The control/dialog edit only memory: the application decides when and where accepted bytes are persisted.
 
 ## Application lifecycle and splash
 
@@ -123,6 +199,22 @@ IDAC dac = connectionPanel.GetDAC();
 
 **Custom Controls**: Enhanced controls like `PathSelectorControl`, `ProgressBarEx`, `PropertyGridEx`, `RadioGroupBox`, and validation indicators.
 
+`PropertyGridEx.AutoSizeLabelColumn` opts into measuring the visible property
+captions rather than using the native default label/value split. Labels adapt to
+the current font, DPI, object and viewport, bounded by `MaximumLabelColumnWidth`
+(320 logical pixels) and `MaximumLabelColumnRatio` (0.4). Values receive the
+remaining width. A native splitter drag or keyboard adjustment takes precedence
+until `ResetLabelColumnWidth()` is called. The same control, selected object,
+property selection and native view remain in place.
+
+The optional splitter adapter targets .NET 10's internal `PropertyGridView`
+`LabelWidth` and `MoveSplitterTo` members. Native minimum/maximum splitter limits
+still apply; for example, very wide views reserve at least roughly one ninth for
+labels. If a future runtime removes those members, automatic sizing disables
+itself and the normal property grid remains available. `Readonly` is retained as
+a legacy marker; use property descriptor `ReadOnly` metadata to govern editing.
+It no longer clears native selection, an unsupported operation on .NET 10.
+
 **Data Binding**: Enhanced data binding with validation and change notification.
 
 **Wizard Framework**: Multi-step wizard UI pattern implementation.
@@ -133,11 +225,141 @@ IDAC dac = connectionPanel.GetDAC();
 
 ### CrudGrid
 
+Set `GridTitle` to a meaningful content name in the designer or constructor.
+It updates the caption synchronously on the creating UI thread without requiring
+an existing window. When a live handle requires cross-thread dispatch, the
+setter queues the caption update and tolerates native-handle teardown.
+A nonempty title keeps the header visible when the grid is disabled or the source
+offers no create, delete or search controls. Changing the title updates header
+visibility without explicitly reading or rebinding the source. Normal Auto paging
+may refresh if that layout change alters the viewport's page capacity. An untitled
+header collapses only when none of those controls is supported.
+
+Use `CrudCellDisplayType.Image` with an `Image`-typed column and its value getter
+for an image cell, such as an executable icon. These cells are read-only and do
+not instantiate the text editor. The grid borrows the supplied image; its data
+source/screen retains ownership and must keep it alive through presentation.
+Extract/load expensive images on a worker and use an owned bounded cache rather
+than querying the filesystem during cell painting. The reusable Windows
+[FileIconCache](../Sphere10.Framework.Windows/Shell/FileIconCache.cs)
+returns borrowed images; keep its lifetime longer than the cells displaying them.
+
+Image columns use `ImageAlignment` from Drawing's `Sphere10.Framework.ResizeAlignment`,
+defaulting to `CenterCenter` at the original image size. Set `ImageResizeMethod`
+to Drawing's `ResizeMethod.AspectFit`, `AspectFitPadded`, `AspectFill` or `Stretch`
+to scale within the cell content area. Null uses native-size placement with
+SourceGrid's existing clamping when the cell is smaller than the image. Fit leaves the
+remaining cell background visible; alignment also controls padded placement and
+fill cropping. Ordinary and worker-prepared cells share one view per image column,
+retain prepared slots on refresh and keep source image ownership with the caller.
+Explicit scaling uses the existing `Image.Resize` API and disposes its temporary
+bitmap after painting; it does not create an owned image per cell.
+
+Natural header sizing reserves the actual sort glyph extent before the first
+sort, so a later ascending or descending indicator cannot cover the measured
+caption. Sorting keeps the established widths; explicit user widths still take
+precedence. SourceGrid's `SortIndicator.ReserveSpaceWhenUnsorted` defaults to true.
+
 `CrudGrid` hides the create and delete buttons when their respective capabilities are unavailable. Delete is also hidden unless a visible row is selected. Toolbar and paging controls size to their contents, including scaled fonts and DPI.
 
 Set `AllowCellEditing = true` to edit columns with `CanEditCell = true` and a `SetPropertyValue` binding; `CanUpdate` must also be enabled. Changing the editing setting updates existing cells immediately. `LeftClickToDeselect` toggles a row on successive single clicks, including Ctrl-clicks. When both settings are enabled, double-click an editable cell or press **F2** to edit while keeping its row selected; checkbox values also change only through that explicit edit gesture. These selection modes also support `SelectOnMouseUp`.
 
-Manual page sizes range from **1 to 9999**, in steps of one. With paging enabled, `AutoPageSize` uses the grid viewport, measured header and row heights, and any horizontal scrollbar to fit complete rows. It recalculates when the control is resized and retains a minimum page size of one for very small controls.
+Read-only text cells retain type conversion through SourceGrid's nonvisual
+`EditorBase`, without constructing a WinForms editor control or attaching a
+write-through controller for every displayed value. Enabling effective editing
+later creates the normal editor for eligible columns without rereading the source;
+revoking it cancels drafts and detaches persistence callbacks. Empty cells require
+no editor. This keeps complete read-only inventories lighter during refresh.
+
+For frequently refreshed read-only tables, `AutoSizeRowsOnRefresh = false` can
+retain measured heights of ordinary single-line text/image rows. Initial binding,
+new rows, changed image height, multiline/wrapped content and custom/editable cells
+still measure. Source, bindings, column widths, fonts and DPI changes invalidate
+the retained geometry. The default is true, preserving normal per-refresh sizing.
+
+`PrepareReadOnlyCellsInBackground = true` opts a worker-safe read-only Text/Image
+table into background source reads, result enumeration, `CellHasValue`/value
+delegates and display conversion. The source, row objects, delegates, converters
+and borrowed images must support that execution context; the default remains
+false for UI-affine consumers. Keep column configuration stable during a refresh,
+or replace `GridBindings` to supersede an in-flight result. Editable columns and
+other display types keep their existing owner-thread path. Prepared value records
+contain the original typed values and cached display strings, so sizing and
+painting do not reevaluate model delegates or converters. Only plain compatible
+prepared cells reuse their complete native cell/model/editor graph, replacing
+snapshot values without edit callbacks. Row and reverse-selection lookups are
+also prepared on the worker. First/new row slots create their detached native
+cell graphs there too, before attachment on the owner thread. Native controls, editing, selection and
+layout remain on the owner thread. Superseded/disposed preparations are discarded
+before publishing a page. Targeted row refresh follows the same preparation
+contract. Image ownership stays with the caller, including while preparation is
+in flight. An explicit programmatic cell-value change outside the data source
+uses the normal converter until the next prepared refresh.
+
+Prepared grids also divide native first sizing and later row remeasurement into
+short owner-thread slices. A WinForms timer admits each subsequent slice, giving
+pending input and painting a real message-loop opportunity. Each slice completes
+its redraw/layout scopes before yielding; graphics and editor controls stay on
+the owner thread. SourceGrid's measurement order, intrinsic widths/heights,
+visibility and auto-size flags remain in use. Query, permission, disposal and
+font/DPI/geometry changes are checked between slices, and explicit column widths
+chosen during sizing survive completion. The initial loading surface stays in
+place until the accepted page has finished sizing. Other grids retain their
+existing synchronous sizing behavior.
+
+When a resize changes native sizing geometry during a prepared binding, sizing
+retries over the already committed cells. It does not reread, reconvert or rebind
+the same snapshot. Actual query or binding changes still supersede the result.
+
+`GridTitleAlignment` uses `System.Drawing.ContentAlignment` and defaults to
+`MiddleCenter` for compatibility; choose `MiddleLeft` for a left-aligned table title.
+The header collapses hidden Create/Delete button slots, so a read-only title
+starts at the normal header inset rather than reserving space for unavailable actions.
+
+The footer keeps **Total** on the left and the page-mode dropdown, **Page Size** and navigator aligned on the right. Narrow hosts wrap complete groups without clipping their controls. `PageMode` selects a `CrudGridPageMode`:
+
+| Mode | Behavior |
+|---|---|
+| **Paged** | Manual **Page Size** label/editor and page navigator. Sizes range from **1 to 9999**, in steps of one. |
+| **Auto** | Page navigator remains available; the manual label/editor are hidden. The viewport, header, row heights and horizontal scrollbar determine how many complete rows fit, with a minimum of one. Resize, font and DPI changes recalculate capacity. |
+| **Single** | All matching rows in one vertically scrollable page. The manual size and page navigator are hidden; the source receives page zero and `int.MaxValue` page length. Search and sorting still apply. |
+
+Switching modes starts at page zero and retains the remembered manual size for returning to **Paged**. `AutoPageSize` remains a compatibility alias: true selects **Auto**, false selects **Paged**. Sources without `CanPage` retain their existing complete-result behavior and hide the paging footer. Navigation and sorting are remembered for **Paged** and **Auto**; **Single** always uses page zero.
+
+For rapid live updates, set `SuppressLoadingIndicator = true`. Refresh begins immediately, without the normal stampede delay, loading animation or temporary grid disabling. It retains the logical busy state, joins an active refresh task and discards superseded query results. The default remains false for ordinary data loading. The WinForms tester's CRUD screen exposes the option for its grid and dropdown.
+
+While a suppressed refresh awaits data, selection, deselection, paging and row
+context menus continue against the last committed page. A right click first
+selects its actual row. Internal native publication gates selection callbacks
+until the replacement page and its lookups are consistent; the newest user
+selection is then retained where possible. This does not permit inline editing
+or CRUD mutations during a refresh, and replacing the source or columns blocks
+interaction with the superseded view. Ordinary loading and initial binding keep
+their normal input gate.
+
+At runtime a newly created grid shows its loading surface immediately. First binding and later ordinary refreshes use the same full-grid overlay, with painted spokes scaled to the current viewport and resized with its host. Its search, CRUD buttons, table and footer remain covered until the first completed `RefreshGrid()` after `SetDataSource(...)`; a slow capability read or initial collection cannot expose designer placeholders. Nested loading operations retain the overlay until the last operation completes. `SuppressLoadingIndicator` suppresses later routine updates, while the first binding retains this loading surface. The Visual Studio designer still displays the editable normal layout.
+
+After a selected-row operation, await `RefreshEntityAsync(entity)` or `RefreshSelectedEntityAsync()` to reread only that visible row through the source's `RefreshRangeAsync`. The source can replace the array entry with a fresh instance, or null when it disappeared. The grid retains page/sort settings, column widths and unaffected rows, and transfers selection to the replacement. A false result means the row is no longer visible or a source/query change superseded it. This requires a source that implements entity refresh; the standard read-only `SnapshotDataSource<T>` deliberately does not. A caller-owned snapshot source can supply that behavior without adding application collection policy to the grid. Targeted and full-page refreshes share scoped asynchronous admission.
+
+Click a sortable column header to cycle **Ascending → Descending → None**, then ascending again. **None** clears the header arrow and requests the source's natural order with `SortDirection.None`; changing to another column starts ascending. Sorting preserves the current page and established column widths, and an explicitly cleared sort persists across sessions. `SnapshotDataSource<T>` honors explicit **None** even when a default sort is configured; the initial null column with **Ascending** still requests that configured default.
+
+Columns take their natural widths from the first nonempty result for a binding set, then keep those widths across paging, searching and refresh. Longer values on a later page do not resize the table. Explicit user resizing takes precedence and survives subsequent reads. Columns marked `ExpandsToFit` share spare viewport width when the viewport changes; an explicitly resized column keeps its chosen width. Assigning a new binding set starts a fresh natural-width calculation. Right mouse-down selects the clicked data row before a context menu opens in either left-click selection mode, without starting an editor or toggling checkbox values; headers and empty space do not open an entity menu.
+
+`PersistSettings` defaults to true. Each logical grid uses a typed `CrudGridSettings` object through `UserSettings` to remember its page mode, manual size, page number and source sort name/direction across sessions. Older settings without `PageMode` migrate through their retained `AutoPageSize` flag. The default settings ID uses its concrete screen/control type and named child path, so docking and caption changes do not change it. Set `SettingsKey` for an explicit stable identity when names are dynamic or ambiguous; set `PersistSettings = false` for transient grids. Reference pickers already opt out. Settings restore after bindings and the provider are available, validate obsolete values, and preserve the consumer's configured defaults on first use. Accepted preference changes save; viewport resizing and source refreshes do not write settings. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md).
+
+### Snapshot collection and binding
+
+For read-only changing collections, use the nonvisual
+[CrudGridSnapshotController<T>](Crud/CrudGridSnapshotController.cs) behind a
+designer-owned grid. It accepts an async collector, stable row identity and
+optional property-value formatter; an overload accepts an existing core
+`SnapshotDataSource<T>`. It binds once, serializes refreshes, queries the grid's
+current page and restores selection to the replacement row with that identity.
+Typed `Rows`, `Count`, `SetDefaultSort`, `RefreshAsync` and `CaptureSnapshot`
+support concrete nongeneric screen surfaces. CSV/JSON export belongs to the caller.
+Create/configure/refresh it on the grid's UI thread with its dispatcher context;
+the collector determines its own worker execution. Late results are ignored
+after grid disposal. See [controller tests](../../tests/Sphere10.Framework.Windows.Forms.Tests/CrudGridSnapshotControllerTests.cs).
 
 ### References from a data source
 
@@ -160,13 +382,15 @@ var ManagerColumn = new CrudGridColumn<Employee> {
 
 The picker is read-only, automatically fits complete rows, and supports paging, search, and sorting when the data source supports them. Create, edit, delete, and action columns are omitted. Selecting a row assigns that exact record; **Clear** assigns null when allowed, and **Cancel** or Escape preserves the current reference. Set `AllowNull = false` to remove Clear. `DropDownSize` (also exposed as `MaximumDropDownSize`) sets the popup's content size in device pixels, defaulting to 760 × 380 and capped to the available screen space. The grid fills the popup. Search, paging, and empty results keep its dimensions stable; manual resizing lasts for that open picker.
 
-Set `ExpandsToFit = true` on the column that should occupy spare width, such as the Name column in a reference picker. Other columns keep their measured content widths. Multiple configured columns share the extra space; no column stretches implicitly when none is configured. Resizing recalculates the configured columns from their content widths, and content that cannot fit still uses horizontal scrolling. Automatic page sizing continues to fit complete rows in the available grid height.
+Set `ExpandsToFit = true` on the column that should occupy spare width, such as the Name column in a reference picker. Other columns keep their initial measured widths. Multiple configured columns share extra space; none stretch implicitly when no column is configured. Resizing redistributes spare width from remembered minimum widths. Explicitly resized columns retain the chosen width and leave automatic stretching. Pages, search and refresh do not remeasure columns from their new values. Existing columns wider than the viewport use horizontal scrolling. Automatic page sizing continues to fit complete rows in the available grid height.
 
 `CrudGrid.ReferenceBindings` and `DefaultCrudEntityEditor.ReferenceBindings` also accept bindings keyed by a property path, such as `"Manager"` or `"Address.Contact"`. The grid supplies its own data source automatically for properties whose type matches the edited entity type and which have no custom editor or converter. Explicit bindings take precedence. This avoids expanding recursive entity relationships while ordinary nested values such as Address remain editable.
 
 `CrudComboBox` uses the same column configuration. Its `MaximumDropDownSize` and optional `SetCrudParameters(size: ...)` configure the popup size, capped to the available screen space. Use `ExpandsToFit` in its grid bindings to choose which columns fill spare width.
 
 ### Default entity editor
+
+The default property-grid editor remains enabled for read-only inspection, so users can select, expand and copy values. Its session-local descriptors mark all fields read-only and suppress mutating custom/collection editors when create/update capability is absent; model metadata is not changed globally. Writable editing sessions retain their existing nested/custom-editor behavior.
 
 The default CRUD dialog expands ordinary reference properties such as `Address` into editable child rows without requiring attributes on the model. Existing interface and abstract instances can also be expanded. Writable concrete types with public parameterless constructors offer **(Create new)** and **(none)** choices. Circular references stop expanding when they reach an object already shown in the current path.
 
@@ -298,6 +522,10 @@ Cursor rawCursor = WinForms.LoadRawCursor(cursorBytes);
 ```
 
 ## 📋 Available Components
+
+Use the central [reusable WinForms controls catalog](../../docs/guidelines/patterns/winforms-controls.md)
+for the full categorized selection guide, including provider-specific database
+editors, registration requirements, ownership and current limitations.
 
 ### Controls
 | Control | Description |

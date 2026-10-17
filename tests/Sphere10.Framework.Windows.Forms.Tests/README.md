@@ -10,6 +10,10 @@ The project references both the framework and the [WinForms tester](../../utils/
 
 | Fixture | Coverage |
 | --- | --- |
+| `TelemetryChartTests` | Captured-series ownership and invalid-input atomicity, Celsius ranges and invalid-value gaps, unsigned metric validation, filled-area gaps across resizing, and nearest-timestamp hover including missing readings. |
+| `HexEditorTests` | Defensive buffer ownership, changed-event and baseline semantics, byte/range editing, invalid-input atomicity, bounded 16 MiB browsing, cross-page search, readonly tools, native cell validation/append, and accepted/canceled modal results with joined cancellation cleanup. |
+| `CrudGridRefreshTests` | Slow initial binding without designer-placeholder flashes, immediate suppressed routine refreshes, source replacement/null row refresh, preserved row selection/column widths/paging, stale-query rejection and delayed-read disposal. |
+| `ScreenWindowMenuTests` | Exact duplicate-caption and detached instance menu tracking, rename/dock/remove updates, atomic bulk-close vetoes, permanent-screen retention and Close All Others with a detached retained instance. |
 | `DemoPluginRegistrationTests` | Both running demo plugins and each block's source/parent, six independent navigation blocks, preservation of every original screen, four keyed initializers and four keyed finalizers with once-only application logging, unchanged process usage registration, ordinary multi-instance screens, singleton Settings, normal and fresh-empty startup profiles, permanent Notes removal guards and both empty-workspace lifetimes. Executes actual configured menu objects through the native application host and DI registration. |
 | `ScreenPolicyTests` | Shared default ordering, permanent singleton lifecycle, tabless empty screens, guarded registration/removal and single/multi-view transitions. |
 | `ControlRenderingScopeTests` | Actual native redraw suppression, one final paint, nested and added controls, deferred child layout, handle creation, newly visible controls, hidden/disposed controls, exception recovery and UI-thread asynchronous disposal. |

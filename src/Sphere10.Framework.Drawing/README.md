@@ -144,23 +144,36 @@ circularImage.Save("circular_photo.jpg");
 ```csharp
 using Sphere10.Framework;
 using System.Drawing;
+using System.Drawing.Imaging;
 
-Bitmap original = new Bitmap("large_image.jpg");
+using var original = new Bitmap("large_image.jpg");
 
 // Resize to specific dimensions
-Size newSize = new Size(400, 300);
-Bitmap resized = Tools.Drawing.ResizeImage(original, newSize, ResizeMethod.HighQuality);
+var newSize = new Size(400, 300);
+using var resized = original.Resize(newSize, ResizeMethod.Stretch);
 resized.Save("resized.jpg");
 
 // Scale by percentage
-Bitmap scaled = Tools.Drawing.ScaleImage(original, 0.5);  // 50% of original
+using var scaled = original.Zoom(0.5f);  // 50% of original
 scaled.Save("scaled_50percent.jpg");
 
 // Maintain aspect ratio while fitting in bounds
-Size maxBounds = new Size(800, 600);
-Bitmap fitted = Tools.Drawing.FitImageInBounds(original, maxBounds);
+var maxBounds = new Size(800, 600);
+using var fitted = original.Resize(maxBounds, ResizeMethod.AspectFit);
 fitted.Save("fitted.jpg");
+
+// Keep the requested canvas size with centered, transparent padding
+using var padded = original.Resize(maxBounds, ResizeMethod.AspectFitPadded,
+	ResizeAlignment.CenterCenter, newPixelFormat: PixelFormat.Format32bppArgb);
+padded.Save("padded.png");
 ```
+
+`ResizeMethod` selects `Stretch`, `AspectFit`, `AspectFitPadded` or `AspectFill`.
+`ResizeAlignment` controls placement of padded fits and the crop used by fills.
+The optional `interpolationMode` parameter uses `System.Drawing.Drawing2D.InterpolationMode`
+and defaults to `HighQualityBicubic`. Each operation returns a caller-owned bitmap;
+the source remains borrowed. `ResizeAndDispose` and `ZoomAndDispose` explicitly
+transfer source disposal to the operation. Native icons can use `icon.ToBitmap(width, height)`.
 
 ### Point & Rectangle Extensions
 
@@ -277,7 +290,7 @@ Console.WriteLine($"Thumbnail: {thumb}");
 ## ⚠️ Best Practices
 
 - **Dispose resources**: Always dispose Bitmap, Graphics, and Brush objects
-- **Quality vs performance**: Use HighQuality resize for final output; LowQuality for previews
+- **Quality vs performance**: Select `InterpolationMode` through `Image.Resize` when tuning quality; `ResizeMethod` describes sizing and aspect behavior
 - **Color validation**: Validate color strings before conversion
 - **Image size limits**: Check image dimensions before processing to avoid memory issues
 - **Use using statements**: Wrap Graphics operations in using blocks
