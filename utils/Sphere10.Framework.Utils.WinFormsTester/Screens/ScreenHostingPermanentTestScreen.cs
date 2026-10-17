@@ -12,6 +12,6 @@ namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 public class ScreenHostingPermanentTestScreen : ScreenHostingTestScreen {
 	public ScreenHostingPermanentTestScreen()
-		: base("Permanent notes", ScreenActivationMode.PermanentSingleton) {
+		: base("Permanent Notes", ScreenActivationMode.PermanentSingleton) {
 	}
 }

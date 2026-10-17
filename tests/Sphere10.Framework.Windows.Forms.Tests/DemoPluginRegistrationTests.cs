@@ -115,7 +115,7 @@ public class DemoPluginRegistrationTests {
 		var application = (WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
 		WinFormsDemoPlugin.ConfigureApplicationCommands(application);
 		var toggle = application.ToolBarItems.OfType<IWinFormsLinkMenuItem>().Single();
-		Assert.That(toggle.Text, Is.EqualTo("Toggle screen mode"));
+		Assert.That(toggle.Text, Is.EqualTo("Toggle Screen Mode"));
 		toggle.OnSelect(form);
 		Assert.That(form.ScreenMode, Is.EqualTo(ScreenMode.SingleView));
 		form.ActiveBlock = form.RegisteredBlocks.Single(block => block.Name == "Controls");
@@ -131,7 +131,7 @@ public class DemoPluginRegistrationTests {
 		var plugins = application.LoadedPlugins;
 		Assert.That(plugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Workspace demonstrations", "Component demonstrations" }));
 		Assert.That(plugins[0].Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Workspace", "Notes" }));
-		Assert.That(plugins[1].Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Controls", "Data and collections", "Integration", "Utilities" }));
+		Assert.That(plugins[1].Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Controls", "Data And Collections", "Integration", "Utilities" }));
 		var contributedBlocks = plugins.SelectMany(plugin => plugin.Blocks).ToArray();
 		Assert.That(form.RegisteredBlocks, Is.EqualTo(contributedBlocks));
 		Assert.That(application.Blocks, Is.EqualTo(form.RegisteredBlocks));
@@ -180,6 +180,7 @@ public class DemoPluginRegistrationTests {
 			"HooksScreen",
 			"ImageResizeScreen",
 			"LoadingCircleTestScreen",
+			"LoggingTestScreen",
 			"MerkleTreeTestScreen",
 			"MiscTestScreen",
 			"ObjectSpaceScreen",
@@ -215,9 +216,10 @@ public class DemoPluginRegistrationTests {
 	[TestCase("Workspace", typeof(ScreenA))]
 	[TestCase("Notes", typeof(ScreenHostingPermanentTestScreen))]
 	[TestCase("Controls", typeof(EnumComboScreen))]
-	[TestCase("Data and collections", typeof(CrudTestScreen))]
+	[TestCase("Data And Collections", typeof(CrudTestScreen))]
 	[TestCase("Integration", typeof(CommunicationsTestScreen))]
 	[TestCase("Utilities", typeof(CompressionTestScreen))]
+	[TestCase("Utilities", typeof(LoggingTestScreen))]
 	public async Task ScreenBelongsToItsFeatureBlock(string blockName, Type screenType) {
 		var form = await StartDemoAsync();
 		var definition = Tools.UI.GetScreenDefinitions(form.RegisteredBlocks).Single(screen => screen.ScreenType == screenType);
@@ -272,11 +274,43 @@ public class DemoPluginRegistrationTests {
 	}
 
 	[Test]
+	public async Task LoggingDemoUsesTheOwningApplicationsLoggerForApplicationOutput() {
+		using var log = new StringWriter();
+		var logger = new TextWriterLogger(log);
+		var form = await StartDemoAsync(logger: logger);
+		form.ExecuteMenuItem(GetItem(form, "Utilities", "Logging"));
+		var screen = (LoggingTestScreen)form.ActiveScreen;
+		Assert.That(screen.OutputSelector.ApplicationLogger, Is.SameAs(logger));
+		screen.OutputSelector.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Application });
+		screen.OutputSelector.Logger.Info("Logging demonstration selected the owning application.");
+		Assert.That(log.ToString(), Does.Contain("Logging demonstration selected the owning application."));
+		screen.OutputSelector.StopLogging();
+	}
+
+	[Test]
+	public async Task CrudGridDemoExposesSuppressedLoadingForItsGridAndDropdown() {
+		var form = await StartDemoAsync();
+		form.ExecuteMenuItem(GetItem(form, "Data And Collections", "CRUD Grid"));
+		var screen = (CrudTestScreen)form.ActiveScreen;
+		var option = screen.Controls.Find("_suppressLoadingIndicatorCheckBox", true).OfType<CheckBox>().Single();
+		var grid = screen.Controls.Find("_crudGrid", true).OfType<CrudGrid>().Single();
+		var combo = screen.Controls.Find("_crudComboBox", true).OfType<Sphere10.Framework.Windows.Forms.Crud.CrudComboBox>().Single();
+		Assert.That(grid.SuppressLoadingIndicator, Is.False);
+		Assert.That(combo.Grid.SuppressLoadingIndicator, Is.False);
+		option.Checked = true;
+		Assert.That(grid.SuppressLoadingIndicator, Is.True);
+		Assert.That(combo.Grid.SuppressLoadingIndicator, Is.True);
+		option.Checked = false;
+		Assert.That(grid.SuppressLoadingIndicator, Is.False);
+		Assert.That(combo.Grid.SuppressLoadingIndicator, Is.False);
+	}
+
+	[Test]
 	public async Task SettingsMenuReturnsToItsExistingScreenAndPreservesNotes() {
 		var form = await StartDemoAsync();
 		var settings = form.ActiveScreen;
 		GetNotesEditor(settings).Text = "Keep this settings draft";
-		form.ExecuteMenuItem(GetItem(form, "Workspace", "New design"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "New Design"));
 		form.ExecuteMenuItem(GetItem(form, "Workspace", "Settings"));
 		Assert.That(form.ActiveScreen, Is.SameAs(settings));
 		Assert.That(settings.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
@@ -290,7 +324,7 @@ public class DemoPluginRegistrationTests {
 		var notes = form.ScreenHost.OpenScreens.OfType<ScreenHostingPermanentTestScreen>().Single();
 		var notesBlock = form.RegisteredBlocks.Single(block => block.Name == "Notes");
 		var guard = notes.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<CheckBox>().Single();
-		var removeNotes = (IWinFormsLinkMenuItem)GetItem(form, "Notes", "Remove notes block");
+		var removeNotes = (IWinFormsLinkMenuItem)GetItem(form, "Notes", "Remove Notes Block");
 		guard.Checked = true;
 		form.ExecuteMenuItem(removeNotes);
 		Assert.That(form.IsBlockRegistered(notesBlock), Is.True);
@@ -301,14 +335,14 @@ public class DemoPluginRegistrationTests {
 		Assert.That(form.IsBlockRegistered(notesBlock), Is.False);
 		Assert.That(notes.IsDisposed, Is.True);
 
-		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close ordinary screens"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close Ordinary Screens"));
 		var empty = form.ActiveScreen;
 		Assert.That(empty, Is.TypeOf<ScreenHostingEmptyTestScreen>());
 		Assert.That(form.ScreenHost.TabControl.TabCount, Is.Zero);
 		GetNotesEditor(empty).Text = "Retain my empty workspace";
-		form.ExecuteMenuItem(GetItem(form, "Workspace", "New design"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "New Design"));
 		Assert.That(empty.IsDisposed, Is.False);
-		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close ordinary screens"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close Ordinary Screens"));
 		Assert.That(form.ActiveScreen, Is.SameAs(empty));
 		Assert.That(GetNotesEditor(form.ActiveScreen).Text, Is.EqualTo("Retain my empty workspace"));
 		Assert.That(form.ScreenHost.OpenScreens, Is.Empty);
@@ -319,10 +353,10 @@ public class DemoPluginRegistrationTests {
 		var form = await StartDemoAsync(freshEmptyWorkspace: true);
 		var empty = form.ActiveScreen;
 		GetNotesEditor(empty).Text = "This draft belongs to this instance";
-		form.ExecuteMenuItem(GetItem(form, "Workspace", "New design"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "New Design"));
 		Assert.That(empty.IsDisposed, Is.True);
 		Assert.That(form.ScreenHost.TabControl.TabCount, Is.EqualTo(1));
-		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close ordinary screens"));
+		form.ExecuteMenuItem(GetItem(form, "Workspace", "Close Ordinary Screens"));
 		Assert.That(form.ActiveScreen, Is.TypeOf<ScreenHostingEmptyMultiTestScreen>());
 		Assert.That(form.ActiveScreen, Is.Not.SameAs(empty));
 		Assert.That(GetNotesEditor(form.ActiveScreen).Text, Is.Not.EqualTo("This draft belongs to this instance"));

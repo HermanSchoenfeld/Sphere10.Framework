@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -54,18 +54,11 @@
 //            return new ComponentRegistryDefinition {
 //                RegistrationsDefinition = new ComponentRegistryDefinition.RegistrationDefinition[] {
 //                        new ComponentRegistryDefinition.AssemblyRegistrationDefinition() { Dll = "Sphere10.Framework.Application"},
-//                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IBackgroundLicenseVerifier", Implementation = "StandardBackgroundLicenseVerifier"},
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ISettingsServices", Implementation = "StandardUserSettingsProvider", Name = "UserSettings", Activation = ActivationType.Singleton },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ISettingsServices", Implementation = "StandardSystemSettingsProvider", Name = "SystemSettings", Activation = ActivationType.Singleton },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IConfigurationServices", Implementation = "StandardConfigurationServices", Activation = ActivationType.Singleton },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IDuplicateProcessDetector", Implementation = "StandardDuplicateProcessDetector" },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IHelpServices", Implementation = "StandardHelpServices" },
-//                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ILicenseEnforcer", Implementation = "StandardLicenseEnforcer", Activation = ActivationType.Singleton},
-//                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ILicenseKeyDecoder", Implementation = "StandardLicenseKeyDecoder" },
-//                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ILicenseKeyValidator", Implementation = "StandardLicenseKeyValidatorWithVersionCheck" },
-//                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ILicenseKeyEncoder", Implementation = "DefaultLicenseKeyEncoder" },
-//                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ILicenseKeyServices", Implementation = "StandardLicenseKeyProvider" },
-//                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "ILicenseServices", Implementation = "StandardLicenseServices", Activation = ActivationType.Singleton },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IProductInformationServices", Implementation = "StandardProductInformationServices", Activation = ActivationType.Singleton },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IProductInstancesCounter", Implementation = "StandardProductInstancesCounter" },
 //                        new ComponentRegistryDefinition.ComponentRegistrationDefinition { Interface = "IProductUsageServices", Implementation = "StandardProductUsageProvider", Activation = ActivationType.Singleton },

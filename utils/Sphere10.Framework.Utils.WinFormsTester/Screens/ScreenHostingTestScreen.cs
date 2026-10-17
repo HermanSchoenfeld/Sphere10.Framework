@@ -73,7 +73,7 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 			"To re-dock, use the window's caption icon or drag its title bar back to the tabs. Its menus and toolbar stay with the screen.", headingFont);
 		AddInstruction("View modes", "Use the sidebar toolbar button to toggle navigation. SingleView closes other ordinary screens; MultiView restores tabs. " +
 			"Permanent screens remain retained.", headingFont);
-		AddInstruction("Permanent screen", "Permanent notes opens at startup and cannot be closed or undocked. Use Remove notes block to remove it through the guarded block manager.", headingFont);
+		AddInstruction("Permanent screen", "Permanent Notes opens at startup and cannot be closed or undocked. Use Remove Notes Block to remove it through the guarded block manager.", headingFont);
 		AddInstruction("Empty workspace", "When no ordinary or permanent screens are open, a workspace appears without a tab. " +
 			"Its notes and instance number show whether it is retained or recreated.", headingFont);
 		_layout.Controls.Add(_instructions);
