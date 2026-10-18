@@ -71,25 +71,55 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 
 	// Sync batch: wraps async batch via .WaitSafe/.ResultSafe
 
-    public override void CreateRange(IEnumerable<TItem> entities)
-		=> CreateRangeAsync(entities).WaitSafe();
+	public override void CreateRange(IEnumerable<TItem> entities) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		CreateRangeAsync(entities).WaitSafe();
+	}
 
-  public override DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection)
-		=> ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection).ResultSafe();
+	public override DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		return ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection).ResultSafe();
+	}
 
-  public override void RefreshRange(TItem[] entities)
-		=> RefreshRangeAsync(entities).WaitSafe();
+	public override void RefreshRange(TItem[] entities) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		RefreshRangeAsync(entities).WaitSafe();
+	}
 
-    public override void UpdateRange(IEnumerable<TItem> entities)
-		=> UpdateRangeAsync(entities).WaitSafe();
+	public override void UpdateRange(IEnumerable<TItem> entities) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		UpdateRangeAsync(entities).WaitSafe();
+	}
 
-    public override void DeleteRange(IEnumerable<TItem> entities)
-		=> DeleteRangeAsync(entities).WaitSafe();
+	public override void DeleteRange(IEnumerable<TItem> entities) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		DeleteRangeAsync(entities).WaitSafe();
+	}
 
- public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions)
-		=> ValidateRangeAsync(actions).ResultSafe();
+	public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		return ValidateRangeAsync(actions).ResultSafe();
+	}
 
-	public override long Count => CountAsync.ResultSafe();
+	public override long Count {
+		get {
+			var result = CountAsync;
+			if (result.IsCompletedSuccessfully)
+				return result.Result;
+			if (!result.IsCompleted)
+				DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+			return result.ResultSafe();
+		}
+	}
 
-	public override DataSourceCapabilities Capabilities => CapabilitiesAsync.ResultSafe();
+	public override DataSourceCapabilities Capabilities {
+		get {
+			var result = CapabilitiesAsync;
+			if (result.IsCompletedSuccessfully)
+				return result.Result;
+			if (!result.IsCompleted)
+				DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+			return result.ResultSafe();
+		}
+	}
 }

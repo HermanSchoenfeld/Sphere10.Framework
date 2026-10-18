@@ -34,6 +34,7 @@ public class RefreshableSnapshotDataSource<T, TKey> : SnapshotDataSource<T>
 	/// that snapshot wins and the supplied array receives its current rows instead of the stale callback results.
 	/// </remarks>
 	public override void RefreshRange(T[] entities) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
 		Guard.ArgumentNotNull(entities, nameof(entities));
 		if (entities.Length == 0)
 			return;
