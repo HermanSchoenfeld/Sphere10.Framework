@@ -80,6 +80,10 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	[Browsable(true), Category("Appearance"), DefaultValue(null), Description("The borrowed image used for this screen's tab. Set before the screen is first hosted.")]
 	public Image ScreenImage { get; set; }
 
+	/// <summary>Whether the registered screen can be reopened without session-specific launch state.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public virtual bool CanRestoreAtStartup => true;
+
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IWinFormsApplicationScreenHost Host { get; set; }
 

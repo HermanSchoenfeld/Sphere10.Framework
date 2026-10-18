@@ -70,6 +70,12 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 		var openScreens = screen?.Host?.OpenScreens ?? Array.Empty<WinFormsApplicationScreen>();
 		_closeAllMenuItem.Enabled = openScreens.Any(candidate => candidate.ActivationMode != ScreenActivationMode.PermanentSingleton);
 		_closeOthersMenuItem.Enabled = openScreens.Any(candidate => !ReferenceEquals(candidate, screen) && candidate.ActivationMode != ScreenActivationMode.PermanentSingleton);
+		var startupHost = screen?.Host as WinFormsApplicationScreenHost;
+		_makeStartupMenuItem.Enabled = startupHost?.CanMakeStartupScreen(screen) == true;
+		_makeStartupMenuItem.Checked = startupHost?.IsStartupScreen(screen) == true;
+		_makeStartupMenuItem.ToolTipText = _makeStartupMenuItem.Enabled
+			? "Open this screen when the application starts."
+			: "This screen requires session-specific state or is not registered for startup restoration.";
 	}
 
 	private void UndockMenuClicked(object sender, EventArgs args) => RequestUndock(_contextTab);
@@ -81,6 +87,16 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	private void CloseOthersMenuClicked(object sender, EventArgs args) {
 		if (_contextTab?.Tag is WinFormsApplicationScreen screen)
 			ScreenCloseOthersRequested?.Invoke(screen);
+	}
+
+	private async void MakeStartupMenuClicked(object sender, EventArgs args) {
+		if (_contextTab?.Tag is not WinFormsApplicationScreen screen || screen.Host is not WinFormsApplicationScreenHost host)
+			return;
+		try {
+			await host.MakeStartupScreenAsync(screen);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, "Make Startup Screen", error);
+		}
 	}
 
 	internal bool Reordering { get; private set; }
