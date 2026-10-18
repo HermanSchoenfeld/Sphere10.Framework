@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Sphere10.Framework.Windows.Forms;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester {
 	partial class CrudTestScreen {
@@ -20,10 +22,19 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
+			var disposeLive = disposing && !_liveDisposed;
+			if (disposeLive) {
+				_liveDisposed = true;
+				_liveCancellation.Cancel();
+				components?.Dispose();
 			}
 			base.Dispose(disposing);
+			if (disposeLive) {
+				_liveCancellation.Dispose();
+				if (_liveImages != null)
+					foreach (var image in _liveImages)
+						image.Dispose();
+			}
 		}
 
 		#region Windows Form Designer generated code
@@ -33,6 +44,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
+			components = new System.ComponentModel.Container();
 			_outputTextBox = new System.Windows.Forms.TextBox();
 			_generateDeleteErrorCheckBox = new System.Windows.Forms.CheckBox();
 			_crudDialogButton = new System.Windows.Forms.Button();
@@ -51,6 +63,39 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_refreshEntireGridOnUpdateCheckBox = new System.Windows.Forms.CheckBox();
 			_refreshEntireGridOnDeleteCheckBox = new System.Windows.Forms.CheckBox();
 			_suppressLoadingIndicatorCheckBox = new System.Windows.Forms.CheckBox();
+			_optionsPanel = new Panel();
+			_contentTabs = new TabControl();
+			_editingTab = new TabPage();
+			_liveTab = new TabPage();
+			_liveGrid = new CrudGrid();
+			_liveActions = new FlowLayoutPanel();
+			_liveOptions = new FlowLayoutPanel();
+			_liveUpdatesCheckBox = new CheckBox();
+			_liveRefreshButton = new Button();
+			_refreshSelectedLiveButton = new Button();
+			_removeSelectedLiveButton = new Button();
+			_selectFirstLiveButton = new Button();
+			_livePageModeLabel = new Label();
+			_livePageMode = new ComboBox();
+			_liveTitleLabel = new Label();
+			_liveTitleAlignment = new ComboBox();
+			_liveImageAlignmentLabel = new Label();
+			_liveImageAlignment = new ComboBox();
+			_liveImageResizeLabel = new Label();
+			_liveImageResize = new ComboBox();
+			_prepareLiveCellsCheckBox = new CheckBox();
+			_measureLiveRowsCheckBox = new CheckBox();
+			_liveLoadingFeedbackCheckBox = new CheckBox();
+			_liveMouseUpCheckBox = new CheckBox();
+			_liveToggleSelectionCheckBox = new CheckBox();
+			_liveStatus = new Label();
+			_liveTimer = new System.Windows.Forms.Timer(components);
+			_optionsPanel.SuspendLayout();
+			_contentTabs.SuspendLayout();
+			_editingTab.SuspendLayout();
+			_liveTab.SuspendLayout();
+			_liveActions.SuspendLayout();
+			_liveOptions.SuspendLayout();
 			SuspendLayout();
 			// 
 			// _outputTextBox
@@ -59,6 +104,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_outputTextBox.Location = new System.Drawing.Point(14, 680);
 			_outputTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_outputTextBox.Multiline = true;
+			_outputTextBox.Dock = DockStyle.Bottom;
+			_outputTextBox.ReadOnly = true;
+			_outputTextBox.ScrollBars = ScrollBars.Vertical;
 			_outputTextBox.Name = "_outputTextBox";
 			_outputTextBox.Size = new System.Drawing.Size(1077, 94);
 			_outputTextBox.TabIndex = 2;
@@ -211,6 +259,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			// 
 			_crudGrid.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 			_crudGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			_crudGrid.Dock = DockStyle.Fill;
+			_crudGrid.GridTitle = "Employees";
+			_crudGrid.GridTitleAlignment = ContentAlignment.MiddleLeft;
 			_crudGrid.Capabilities = DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanRead;
 			_crudGrid.Location = new System.Drawing.Point(217, 15);
 			_crudGrid.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
@@ -273,29 +324,194 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_suppressLoadingIndicatorCheckBox.Text = "Suppress loading indicator";
 			_suppressLoadingIndicatorCheckBox.UseVisualStyleBackColor = true;
 			_suppressLoadingIndicatorCheckBox.CheckedChanged += SuppressLoadingIndicatorCheckedChanged;
+			//
+			// Editable Records And Live Snapshot Workspaces
+			//
+			_optionsPanel.Name = "_optionsPanel";
+			_optionsPanel.Dock = DockStyle.Left;
+			_optionsPanel.Width = 215;
+			_optionsPanel.AutoScroll = true;
+			_optionsPanel.Enabled = false;
+			_contentTabs.Name = "_contentTabs";
+			_contentTabs.Dock = DockStyle.Fill;
+			_contentTabs.Controls.Add(_editingTab);
+			_contentTabs.Controls.Add(_liveTab);
+			_editingTab.Name = "_editingTab";
+			_editingTab.Text = "Editable Records";
+			_editingTab.BackColor = SystemColors.Control;
+			_editingTab.Padding = new Padding(3);
+			_editingTab.Controls.Add(_crudGrid);
+			_liveTab.Name = "_liveTab";
+			_liveTab.Text = "Live Snapshots";
+			_liveTab.BackColor = SystemColors.Control;
+			_liveTab.Padding = new Padding(3);
+			_liveGrid.Name = "_liveGrid";
+			_liveGrid.Dock = DockStyle.Fill;
+			_liveGrid.GridTitle = "Background Snapshot Samples";
+			_liveGrid.GridTitleAlignment = ContentAlignment.MiddleLeft;
+			_liveGrid.PersistSettings = false;
+			_liveGrid.PageMode = CrudGridPageMode.Auto;
+			_liveGrid.PrepareReadOnlyCellsInBackground = true;
+			_liveGrid.SuppressLoadingIndicator = true;
+			_liveGrid.AutoSizeRowsOnRefresh = false;
+			_liveGrid.UseEntityReferenceForLookup = true;
+			_liveGrid.EntitySelected += LiveSelectionChanged;
+			_liveGrid.EntityDeselected += LiveSelectionChanged;
+			_liveActions.Name = "_liveActions";
+			_liveActions.Dock = DockStyle.Top;
+			_liveActions.AutoSize = true;
+			_liveActions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			_liveActions.Padding = new Padding(3);
+			_liveActions.WrapContents = true;
+			_liveUpdatesCheckBox.Name = "_liveUpdatesCheckBox";
+			_liveUpdatesCheckBox.Text = "Live Updates (750 ms)";
+			_liveUpdatesCheckBox.AutoSize = true;
+			_liveUpdatesCheckBox.Anchor = AnchorStyles.Left;
+			_liveUpdatesCheckBox.CheckedChanged += LiveUpdatesChanged;
+			_liveRefreshButton.Name = "_liveRefreshButton";
+			_liveRefreshButton.Text = "Capture Snapshot";
+			_liveRefreshButton.AutoSize = true;
+			_liveRefreshButton.Click += LiveRefreshClicked;
+			_refreshSelectedLiveButton.Name = "_refreshSelectedLiveButton";
+			_refreshSelectedLiveButton.Text = "Refresh Selected Row";
+			_refreshSelectedLiveButton.AutoSize = true;
+			_refreshSelectedLiveButton.Enabled = false;
+			_refreshSelectedLiveButton.Click += RefreshSelectedLiveClicked;
+			_removeSelectedLiveButton.Name = "_removeSelectedLiveButton";
+			_removeSelectedLiveButton.Text = "Simulate Disappearance";
+			_removeSelectedLiveButton.AutoSize = true;
+			_removeSelectedLiveButton.Enabled = false;
+			_removeSelectedLiveButton.Click += RemoveSelectedLiveClicked;
+			_selectFirstLiveButton.Name = "_selectFirstLiveButton";
+			_selectFirstLiveButton.Text = "Select First Visible Row";
+			_selectFirstLiveButton.AutoSize = true;
+			_selectFirstLiveButton.Click += SelectFirstLiveClicked;
+			_liveActions.Controls.Add(_liveUpdatesCheckBox);
+			_liveActions.Controls.Add(_liveRefreshButton);
+			_liveActions.Controls.Add(_refreshSelectedLiveButton);
+			_liveActions.Controls.Add(_removeSelectedLiveButton);
+			_liveActions.Controls.Add(_selectFirstLiveButton);
+			_liveOptions.Name = "_liveOptions";
+			_liveOptions.Dock = DockStyle.Top;
+			_liveOptions.AutoSize = true;
+			_liveOptions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			_liveOptions.Padding = new Padding(3);
+			_liveOptions.WrapContents = true;
+			_livePageModeLabel.Text = "Page Mode";
+			_livePageModeLabel.AutoSize = true;
+			_livePageModeLabel.Anchor = AnchorStyles.Left;
+			_livePageMode.Name = "_livePageMode";
+			_livePageMode.DropDownStyle = ComboBoxStyle.DropDownList;
+			_livePageMode.Width = 115;
+			_livePageMode.Items.AddRange(new object[] { "Paged", "Auto Paged", "Single Paged" });
+			_livePageMode.SelectedIndexChanged += LivePageModeChanged;
+			_livePageMode.DropDown += LivePageModeDropDown;
+			_liveTitleLabel.Text = "Title";
+			_liveTitleLabel.AutoSize = true;
+			_liveTitleLabel.Anchor = AnchorStyles.Left;
+			_liveTitleAlignment.Name = "_liveTitleAlignment";
+			_liveTitleAlignment.DropDownStyle = ComboBoxStyle.DropDownList;
+			_liveTitleAlignment.Width = 90;
+			_liveTitleAlignment.Items.AddRange(new object[] { "Left", "Center", "Right" });
+			_liveTitleAlignment.SelectedIndexChanged += LivePresentationChanged;
+			_liveImageAlignmentLabel.Text = "Image Alignment";
+			_liveImageAlignmentLabel.AutoSize = true;
+			_liveImageAlignmentLabel.Anchor = AnchorStyles.Left;
+			_liveImageAlignment.Name = "_liveImageAlignment";
+			_liveImageAlignment.DropDownStyle = ComboBoxStyle.DropDownList;
+			_liveImageAlignment.Width = 120;
+			_liveImageAlignment.Items.AddRange(new object[] { "Top Left", "Top Center", "Top Right", "Center Left", "Center Center", "Center Right", "Bottom Left", "Bottom Center", "Bottom Right" });
+			_liveImageAlignment.SelectedIndexChanged += LivePresentationChanged;
+			_liveImageResizeLabel.Text = "Image Layout";
+			_liveImageResizeLabel.AutoSize = true;
+			_liveImageResizeLabel.Anchor = AnchorStyles.Left;
+			_liveImageResize.Name = "_liveImageResize";
+			_liveImageResize.DropDownStyle = ComboBoxStyle.DropDownList;
+			_liveImageResize.Width = 130;
+			_liveImageResize.Items.AddRange(new object[] { "Original Size", "Stretch", "Aspect Fill", "Aspect Fit Padded", "Aspect Fit" });
+			_liveImageResize.SelectedIndexChanged += LivePresentationChanged;
+			_prepareLiveCellsCheckBox.Name = "_prepareLiveCellsCheckBox";
+			_prepareLiveCellsCheckBox.Text = "Prepare Cells On Worker";
+			_prepareLiveCellsCheckBox.AutoSize = true;
+			_prepareLiveCellsCheckBox.Checked = true;
+			_prepareLiveCellsCheckBox.CheckedChanged += LivePresentationChanged;
+			_measureLiveRowsCheckBox.Name = "_measureLiveRowsCheckBox";
+			_measureLiveRowsCheckBox.Text = "Measure Rows On Each Refresh";
+			_measureLiveRowsCheckBox.AutoSize = true;
+			_measureLiveRowsCheckBox.CheckedChanged += LivePresentationChanged;
+			_liveLoadingFeedbackCheckBox.Name = "_liveLoadingFeedbackCheckBox";
+			_liveLoadingFeedbackCheckBox.Text = "Show Loading Feedback";
+			_liveLoadingFeedbackCheckBox.AutoSize = true;
+			_liveLoadingFeedbackCheckBox.CheckedChanged += LivePresentationChanged;
+			_liveMouseUpCheckBox.Name = "_liveMouseUpCheckBox";
+			_liveMouseUpCheckBox.Text = "Select On Mouse Up";
+			_liveMouseUpCheckBox.AutoSize = true;
+			_liveMouseUpCheckBox.CheckedChanged += LivePresentationChanged;
+			_liveToggleSelectionCheckBox.Name = "_liveToggleSelectionCheckBox";
+			_liveToggleSelectionCheckBox.Text = "Left Click To Deselect";
+			_liveToggleSelectionCheckBox.AutoSize = true;
+			_liveToggleSelectionCheckBox.CheckedChanged += LivePresentationChanged;
+			_liveOptions.Controls.Add(_livePageModeLabel);
+			_liveOptions.Controls.Add(_livePageMode);
+			_liveOptions.Controls.Add(_liveTitleLabel);
+			_liveOptions.Controls.Add(_liveTitleAlignment);
+			_liveOptions.Controls.Add(_liveImageAlignmentLabel);
+			_liveOptions.Controls.Add(_liveImageAlignment);
+			_liveOptions.Controls.Add(_liveImageResizeLabel);
+			_liveOptions.Controls.Add(_liveImageResize);
+			_liveOptions.Controls.Add(_prepareLiveCellsCheckBox);
+			_liveOptions.Controls.Add(_measureLiveRowsCheckBox);
+			_liveOptions.Controls.Add(_liveLoadingFeedbackCheckBox);
+			_liveOptions.Controls.Add(_liveMouseUpCheckBox);
+			_liveOptions.Controls.Add(_liveToggleSelectionCheckBox);
+			_liveStatus.Name = "_liveStatus";
+			_liveStatus.Dock = DockStyle.Bottom;
+			_liveStatus.AutoSize = true;
+			_liveStatus.Height = 62;
+			_liveStatus.Padding = new Padding(3);
+			_liveStatus.Text = "Synthetic samples are collected and queried on background workers. No operating-system telemetry is collected by this demonstration.";
+			_liveTab.Controls.Add(_liveGrid);
+			_liveTab.Controls.Add(_liveStatus);
+			_liveTab.Controls.Add(_liveOptions);
+			_liveTab.Controls.Add(_liveActions);
+			_liveGrid.BringToFront();
+			_liveTimer.Interval = 750;
+			_liveTimer.Tick += LiveTimerTick;
 			// 
 			// CrudTestScreen
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			Controls.Add(_refreshEntireGridOnDeleteCheckBox);
-			Controls.Add(_suppressLoadingIndicatorCheckBox);
-			Controls.Add(_refreshEntireGridOnUpdateCheckBox);
-			Controls.Add(_allowCellEditingCheckBox);
-			Controls.Add(_autoSelectOnCreateCheckBox);
-			Controls.Add(_autoSizeCheckBox);
-			Controls.Add(_refreshGrid);
-			Controls.Add(_rightClickCheckBox);
-			Controls.Add(_leftClickCheckBox);
-			Controls.Add(_selectFirstEntityButton);
-			Controls.Add(_generateUpdateErrorCheckBox);
-			Controls.Add(_generateCreateErrorCheckBox);
-			Controls.Add(_crudComboBox);
-			Controls.Add(_crudDialogButton);
-			Controls.Add(_generateDeleteErrorCheckBox);
+			_optionsPanel.Controls.Add(_refreshEntireGridOnDeleteCheckBox);
+			_optionsPanel.Controls.Add(_suppressLoadingIndicatorCheckBox);
+			_optionsPanel.Controls.Add(_refreshEntireGridOnUpdateCheckBox);
+			_optionsPanel.Controls.Add(_allowCellEditingCheckBox);
+			_optionsPanel.Controls.Add(_autoSelectOnCreateCheckBox);
+			_optionsPanel.Controls.Add(_autoSizeCheckBox);
+			_optionsPanel.Controls.Add(_refreshGrid);
+			_optionsPanel.Controls.Add(_rightClickCheckBox);
+			_optionsPanel.Controls.Add(_leftClickCheckBox);
+			_optionsPanel.Controls.Add(_selectFirstEntityButton);
+			_optionsPanel.Controls.Add(_generateUpdateErrorCheckBox);
+			_optionsPanel.Controls.Add(_generateCreateErrorCheckBox);
+			_optionsPanel.Controls.Add(_crudComboBox);
+			_optionsPanel.Controls.Add(_crudDialogButton);
+			_optionsPanel.Controls.Add(_generateDeleteErrorCheckBox);
+			_optionsPanel.Controls.Add(_flagsCheckedListBox);
 			Controls.Add(_outputTextBox);
-			Controls.Add(_flagsCheckedListBox);
-			Controls.Add(_crudGrid);
+			Controls.Add(_optionsPanel);
+			Controls.Add(_contentTabs);
+			_contentTabs.BringToFront();
+			_optionsPanel.ResumeLayout(false);
+			_optionsPanel.PerformLayout();
+			_contentTabs.ResumeLayout(false);
+			_editingTab.ResumeLayout(false);
+			_liveTab.ResumeLayout(false);
+			_liveTab.PerformLayout();
+			_liveActions.ResumeLayout(false);
+			_liveActions.PerformLayout();
+			_liveOptions.ResumeLayout(false);
+			_liveOptions.PerformLayout();
 			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			Name = "CrudTestScreen";
 			Size = new System.Drawing.Size(1106, 789);
@@ -323,6 +539,33 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 		private System.Windows.Forms.CheckBox _refreshEntireGridOnUpdateCheckBox;
 		private System.Windows.Forms.CheckBox _refreshEntireGridOnDeleteCheckBox;
 		private System.Windows.Forms.CheckBox _suppressLoadingIndicatorCheckBox;
+		private Panel _optionsPanel;
+		private TabControl _contentTabs;
+		private TabPage _editingTab;
+		private TabPage _liveTab;
+		private CrudGrid _liveGrid;
+		private FlowLayoutPanel _liveActions;
+		private FlowLayoutPanel _liveOptions;
+		private CheckBox _liveUpdatesCheckBox;
+		private Button _liveRefreshButton;
+		private Button _refreshSelectedLiveButton;
+		private Button _removeSelectedLiveButton;
+		private Button _selectFirstLiveButton;
+		private Label _livePageModeLabel;
+		private ComboBox _livePageMode;
+		private Label _liveTitleLabel;
+		private ComboBox _liveTitleAlignment;
+		private Label _liveImageAlignmentLabel;
+		private ComboBox _liveImageAlignment;
+		private Label _liveImageResizeLabel;
+		private ComboBox _liveImageResize;
+		private CheckBox _prepareLiveCellsCheckBox;
+		private CheckBox _measureLiveRowsCheckBox;
+		private CheckBox _liveLoadingFeedbackCheckBox;
+		private CheckBox _liveMouseUpCheckBox;
+		private CheckBox _liveToggleSelectionCheckBox;
+		private Label _liveStatus;
+		private System.Windows.Forms.Timer _liveTimer;
 
 	}
 }

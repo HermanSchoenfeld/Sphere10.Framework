@@ -83,13 +83,33 @@ The remaining demonstrations are grouped by function as listed above and can be 
 
 ## CRUD Grid walkthrough
 
-Choose **Data and collections > Data editing > CRUD Grid** to open a fresh screen each time; each tab has its own data and grid settings.
+Choose **Data And Collections > Data Editing > CRUD Grid** to open a fresh screen each time; each tab has its own data and grid settings.
 
-Enable **Allow cell editing** and **CanUpdate** on the CRUD Grid screen to edit **Address (street)** and **Notes** immediately. The street editor creates an address when needed and preserves its other fields, which remain visible in **Location**. Turning editing or update capability off also closes an active cell editor.
+The **Editable Records** tab retains the employee editor and reference-picker demonstrations. Its options scroll independently when the window is short. Enable **Allow cell editing** and **CanUpdate** to edit **Address (Street)** and **Notes** immediately. The street editor creates an address when needed and preserves its other fields, which remain visible in **Location**. Turning editing or update capability off also closes an active cell editor.
 
 Enable **Left click to deselect** to select an unselected row with one click and clear a selected row with the next click, including slow presses and quick switches between rows. When **Allow cell editing** is also enabled, double-click the editable cell or press **F2** to edit while keeping its row selected. A single click on a checkbox selects or deselects its row; double-click or **F2** changes its value.
 
 The manual **Page Size** accepts **1–9999** in steps of one. **Delete** appears only when deletion is allowed and a row is selected.
+
+The footer dropdown selects **Paged**, **Auto Paged** or **Single Paged**. Paged shows the
+manual size and navigator; Auto Paged fits complete rows and keeps the navigator while
+hiding the manual size; Single Paged displays all matching rows in one scrollable page.
+The footer returns to one compact line when the screen has enough width, including
+after narrowing and widening it. Columns keep their widths across page changes
+and refresh; right-clicking a data row selects it before its context menu opens.
+
+Enable **Suppress loading indicator** to refresh the main grid and dropdown
+immediately without the spinner or temporary disabling. Use **Refresh Grid** to
+compare this with the default loading feedback. Pending reads still join and
+retain their stale-query protection in either mode.
+
+The **Live Snapshots** tab demonstrates a separate read-only Text/Image grid backed by `RefreshableSnapshotDataSource<T,TKey>` and `CrudGridSnapshotController<T>`. **Capture Snapshot** creates 500 immutable synthetic rows on a worker, including a deliberate asynchronous capture delay. No operating-system telemetry or files are read. **Live Updates (750 ms)** repeats capture while this workspace is visible; disposal stops the timer and cancels pending collection. The status line shows the capture and UI thread IDs. Employee sample generation also runs on a worker before its first binding.
+
+Live updates default to `SuppressLoadingIndicator = true`, `PrepareReadOnlyCellsInBackground = true` and `AutoSizeRowsOnRefresh = false`. Keep clicking different rows or resizing while capture runs: the committed grid remains enabled, compatible native cell slots are reused, and stable row IDs transfer selection to replacement instances. **Show Loading Feedback**, **Prepare Cells On Worker**, and **Measure Rows On Each Refresh** let you compare the supported paths. The first binding still uses the grid's normal full-size loading surface.
+
+Select a row and choose **Refresh Selected Row** to replace only that row through the source's item-refresh contract. **Simulate Disappearance** pauses automatic capture and returns null for the selected identity, removing that row while retaining the remaining page; the next complete capture restores it. Search, sorting and paging query the published snapshot rather than capturing again. The **Page Mode** selector demonstrates all three modes; each grid's footer remains usable directly. Resize at different Windows scaling settings to inspect Auto Paged fitting with the deliberately mixed 18, 28 and 40 pixel images, horizontal scrollbar space and complete rows. Sort a short header such as **ID** to check that its indicator has reserved space, then resize a column and confirm its width survives later captures.
+
+Use **Title** to try left, center and right aligned grid titles. **Image Alignment** offers all nine Drawing `ResizeAlignment` values; **Image Layout** switches between original size and the four Drawing `ResizeMethod` modes. Image columns start centered at their original size, and the sample screen owns the images for the grid's lifetime. **Select On Mouse Up** and **Left Click To Deselect** exercise selection timing and toggling during those same background updates. The employee grid continues to demonstrate editable checkbox/date/currency cells, row context commands, owned properties and the existing CRUD reference dropdown.
 
 Open a record's edit dialog and expand **Address** to edit Street, City, State, and PostCode. For a missing address, choose **(Create new)** first. **Manager** opens a read-only CRUD dropdown configured at 520 × 300 containing the full employee data source and showing only **ID**, **Name**, and **Unsigned Int Field**. The same picker opens from an inline Manager cell. The grid fills the dropdown; **Name** is configured with `ExpandsToFit = true` to take spare width, while ID and Unsigned Int Field keep their content widths. Searching and changing pages keep the popup size stable. Resize it to check that Name follows the available width and automatic page sizing fits complete rows; selecting a row assigns that employee, **Clear** removes the manager, and **Cancel** or Escape keeps the previous value. Manager does not expand recursively. **Cancel** restores the original nested values and shared object references.
 
