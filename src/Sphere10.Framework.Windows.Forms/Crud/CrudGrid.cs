@@ -679,7 +679,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		_pageNavigationPanel.Margin = new Padding(spacing, 0, 0, 0);
 		_totalRecordsPanel.Margin = new Padding(0, 0, spacing * 2, 0);
 		_pageSizeUpDown.Width = TextRenderer.MeasureText("9999", Font).Width + SystemInformation.VerticalScrollBarWidth + 12;
-		_pageModeComboBox.Width = TextRenderer.MeasureText("Single", Font).Width + SystemInformation.VerticalScrollBarWidth + 12;
+		_pageModeComboBox.Width = _pageModeComboBox.Items.Cast<object>().Max(item => TextRenderer.MeasureText(item.ToString(), Font).Width)
+			+ SystemInformation.VerticalScrollBarWidth + spacing * 4;
 		_pageNumberBox.Width = TextRenderer.MeasureText(Math.Max(9999, _endPageNumber + 1).ToString(), Font).Width + 12;
 		foreach (var control in new Control[] { label3, _totalRecordsLabel, _pageSizeLabel, _pageCountLabel })
 			control.Margin = new Padding(spacing, Math.Max(0, (height - control.PreferredSize.Height) / 2) + spacing, spacing, spacing);
@@ -820,8 +821,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			});
 			if (!suppressLoading)
 				_grid.Enabled = false;
+			var pageSizing = new AutoPageSizing();
 			while (!IsDisposed) {
-				while (await BindInternal()) ;
+				while (await BindInternal(pageSizing)) ;
 				if (!initialBinding || _dataSource == null || IsDisposed)
 					break;
 				// Hidden controls retain their old bounds. Lay out accepted data under the opaque loading mask
@@ -833,7 +835,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 				_layoutPanel.PerformLayout();
 				_bottomPanel.PerformLayout();
 				if (AutoPageSize && _crudCapabilities.HasFlag(DataSourceCapabilities.CanPage)) {
-					_pageSize = CalculateAutoPageSize();
+					_pageSize = CalculateAutoPageSize(pageSizing);
 					UpdatePageSizeDisplay();
 				}
 				if (_pageSize == previousPageSize)
@@ -1014,12 +1016,44 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		SaveGridSettings(true);
 	}
 
-	private int CalculateAutoPageSize() {
-		// Use the actual viewport and measured rows, including the header and any horizontal scrollbar.
-		var minimumRowHeight = Math.Max(DefaultRowHeight, _grid.MinimumHeight);
-		var headerHeight = _grid.Rows.Count > 0 ? _grid.Rows[0].Height : minimumRowHeight;
-		var rowHeight = Math.Max(minimumRowHeight, _grid.Rows.Skip(1).Select(row => row.Height).DefaultIfEmpty(minimumRowHeight).Max());
-		return Math.Max(1, (_grid.DisplayRectangle.Height - headerHeight) / rowHeight);
+	private int CalculateAutoPageSize(AutoPageSizing sizing = null) {
+		// Native row, header and viewport measurements already use the current window's device pixels.
+		// Scale only the unmeasured fallback; a tall image must not inflate the budget for every ordinary row.
+		var fallbackHeight = Math.Max(_grid.MinimumHeight, (int)Math.Round(DefaultRowHeight * _grid.DeviceDpi / 96.0));
+		var headerHeight = _grid.Rows.Count > 0 ? _grid.Rows[0].Height : fallbackHeight;
+		var available = Math.Max(0, _grid.DisplayRectangle.Height - headerHeight);
+		var fitted = 0;
+		var used = 0;
+		var nextHeight = int.MaxValue;
+		for (var row = 1; row < _grid.Rows.Count; row++) {
+			var height = Math.Max(1, _grid.Rows[row].Height);
+			if (height > available - used)
+				break;
+			used += height;
+			fitted++;
+			nextHeight = Math.Min(nextHeight, height);
+		}
+		var overflow = fitted < _grid.Rows.Count - 1;
+		var capacity = overflow ? Math.Max(1, fitted)
+			: Math.Max(1, fitted + (available - used) / (nextHeight == int.MaxValue ? Math.Max(1, fallbackHeight) : nextHeight));
+		// A short final result has no additional rows to fill the viewport. Do not move its source offset by probing indefinitely.
+		if (!overflow && _boundDataSource == _dataSource && _boundColumns == _columnsBindings && _grid.Rows.Count - 1 < _pageSize)
+			capacity = Math.Min(capacity, _pageSize);
+		if (sizing != null) {
+			// A probe's temporary vertical scrollbar must not reset its own fitting boundary.
+			var query = (_dataSource, _dataPublicationVersion, _columnsBindings, _searchText, _pageNumber, _sortColumnName, _sortDirection,
+				_grid.ClientSize, Enumerable.Range(0, _grid.ColumnsCount).Sum(column => _grid.Columns[column].Width), headerHeight, GetRowHeightGeometry());
+			if (!Equals(sizing.Query, query)) {
+				sizing.Query = query;
+				sizing.MaximumPageSize = int.MaxValue;
+			}
+			// Probing can discover a tall next row. Retain that fitting boundary when the shorter page is rebound.
+			// A capacity change shifts nonzero page offsets, so do not assume arbitrary row heights are monotonic.
+			if (overflow)
+				sizing.MaximumPageSize = Math.Min(sizing.MaximumPageSize, capacity);
+			capacity = Math.Min(capacity, sizing.MaximumPageSize);
+		}
+		return capacity;
 	}
 
 	private void UpdatePageSizeDisplay() {
@@ -1038,7 +1072,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	/// Binds the datasource to the view. 
 	/// </summary>
 	/// <returns>True if search parameters changed during search, false otherwise.</returns>
-	private async Task<bool> BindInternal() {
+	private async Task<bool> BindInternal(AutoPageSizing pageSizing) {
 		var dataSource = _dataSource;
 		var dataPublicationVersion = _dataPublicationVersion;
 		var columns = _columnsBindings;
@@ -1200,12 +1234,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		if (prepared != null)
 			_grid.Invalidate();
 
-		// The first binding measures editors, images and fonts that can be taller than the default row.
-		// Only shrink during this binding cycle so pages with different row heights cannot oscillate.
+		// Reconcile the estimate with the actual rows, allowing both growth and shrinkage under one bounded settle cycle.
 		if (AutoPageSize && _crudCapabilities.HasFlag(DataSourceCapabilities.CanPage)) {
-			var fittingPageSize = CalculateAutoPageSize();
-			if (fittingPageSize < _pageSize)
-				_pageSize = fittingPageSize;
+			_pageSize = CalculateAutoPageSize(pageSizing);
 			UpdatePageSizeDisplay();
 		}
 
@@ -1806,6 +1837,11 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		RefreshAutoPageSize();
 	}
 
+	private void GridMetricsChanged(object sender, EventArgs args) {
+		if (AutoPageSize)
+			RefreshAutoPageSize(true);
+	}
+
 	private void PageModeSelectedIndexChanged(object sender, EventArgs args) {
 		if (!_updatingPageModeControl && _pageModeComboBox.SelectedIndex >= 0)
 			PageMode = (CrudGridPageMode)_pageModeComboBox.SelectedIndex;
@@ -2125,6 +2161,12 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	#endregion
 
 	#region Internal Types
+
+	private sealed class AutoPageSizing {
+		public object Query { get; set; }
+
+		public int MaximumPageSize { get; set; } = int.MaxValue;
+	}
 
 	private enum VisualState {
 		Normal,

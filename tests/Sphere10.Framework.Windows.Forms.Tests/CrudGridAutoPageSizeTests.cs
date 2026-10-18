@@ -315,7 +315,7 @@ public class CrudGridAutoPageSizeTests {
 		var modeSelector = Find<ComboBox>(crud, "_pageModeComboBox");
 		Assert.That(total.Left, Is.EqualTo(0));
 		Assert.That(paging.Right, Is.EqualTo(footer.ClientSize.Width));
-		Assert.That(modeSelector.Items.Cast<string>(), Is.EqualTo(new[] { "Paged", "Auto", "Single" }));
+		Assert.That(modeSelector.Items.Cast<string>(), Is.EqualTo(new[] { "Paged", "Auto Paged", "Single Paged" }));
 		Assert.That(modeSelector.SelectedIndex, Is.EqualTo((int)mode));
 		Assert.That(manual.Visible, Is.EqualTo(mode == CrudGridPageMode.Paged));
 		Assert.That(navigator.Visible, Is.EqualTo(mode != CrudGridPageMode.Single));
