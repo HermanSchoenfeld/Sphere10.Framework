@@ -380,6 +380,14 @@ After a selected-row operation, await `RefreshEntityAsync(entity)` or `RefreshSe
 
 Click a sortable column header to cycle **Ascending → Descending → None**, then ascending again. **None** clears the header arrow and requests the source's natural order with `SortDirection.None`; changing to another column starts ascending. Sorting preserves the current page and established column widths, and an explicitly cleared sort persists across sessions. `SnapshotDataSource<T>` honors explicit **None** even when a default sort is configured; the initial null column with **Ascending** still requests that configured default.
 
+`await grid.ReadFilteredEntitiesAsync(cancellationToken)` captures the current
+source, search and sort on the owning UI thread, then reads and materializes all
+matching rows on a worker, across pages. It does not rebind, disable the grid,
+show an indicator or change page/selection. The returned `Array` retains the
+source's declared item type, including an empty result, so exporters can retain
+typed CSV headers. It queries the bound source rather than calling a separate
+collector; snapshot sources therefore reuse their published inventory.
+
 Columns take their natural widths from the first nonempty result for a binding set, then keep those widths across paging, searching and refresh. Longer values on a later page do not resize the table. Explicit user resizing takes precedence and survives subsequent reads. Columns marked `ExpandsToFit` share spare viewport width when the viewport changes; an explicitly resized column keeps its chosen width. Assigning a new binding set starts a fresh natural-width calculation. Right mouse-down selects the clicked data row before a context menu opens in either left-click selection mode, without starting an editor or toggling checkbox values; headers and empty space do not open an entity menu.
 
 `PersistSettings` defaults to true. Each logical grid uses a typed `CrudGridSettings` object through `UserSettings` to remember its page mode, manual size, page number and source sort name/direction across sessions. Older settings without `PageMode` migrate through their retained `AutoPageSize` flag. The default settings ID uses its concrete screen/control type and named child path, so docking and caption changes do not change it. Set `SettingsKey` for an explicit stable identity when names are dynamic or ambiguous; set `PersistSettings = false` for transient grids. Reference pickers already opt out. Settings restore after bindings and the provider are available, validate obsolete values, and preserve the consumer's configured defaults on first use. Accepted preference changes save; viewport resizing and source refreshes do not write settings. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md).
