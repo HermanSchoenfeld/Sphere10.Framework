@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -19,6 +20,7 @@ public interface ICrudGrid {
 	IEnumerable<ICrudGridColumn> GridBindings { get; }
 
 	Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource);
+	Task<Array> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default);
 	Task<bool> RefreshEntityAsync(object entity);
 	Task<bool> RefreshSelectedEntityAsync();
 }

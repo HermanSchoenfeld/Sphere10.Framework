@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
@@ -62,6 +63,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	private CrudGridPageMode _pageMode;
 	private int _totalRecords;
 	private string _searchText;
+	private Type _dataSourceItemType = typeof(object);
 	private string _gridTitle;
 	private DataSourceCapabilities _crudCapabilities;
 	private ICrudGridColumn[] _columnsBindings;
@@ -411,6 +413,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		if (IsDisposed || Disposing || assignmentVersion != _sourceAssignmentVersion)
 			return;
 		_dataSource = projected;
+		_dataSourceItemType = typeof(TEntity);
 		ResolvePublishedEntity = null;
 		ResetRowHeightMeasurements();
 		_crudCapabilities = available & capabilities;
@@ -422,9 +425,34 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	public void ClearDataSource() {
 		_sourceAssignmentVersion++;
 		_dataSource = null;
+		_dataSourceItemType = typeof(object);
 		ResolvePublishedEntity = null;
 		_columnWidthOverrides.Clear();
 		ResetRowHeightMeasurements();
+	}
+
+	/// <summary>Reads all matching rows using the current filter and sort, independent of the visible page. Capture on the owning UI thread.</summary>
+	/// <remarks>Queries the bound source on a worker without rebinding, disabling or changing the selection. The returned one-dimensional array retains its source item type, including when empty.</remarks>
+	public async Task<Array> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default) {
+		Guard.Ensure(!InvokeRequired, "Capture the grid query on its owning UI thread.");
+		cancellationToken.ThrowIfCancellationRequested();
+		var source = _dataSource;
+		var itemType = _dataSourceItemType;
+		var search = _searchText;
+		var sort = _sortColumnName;
+		var direction = _sortDirection;
+		if (source == null || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead))
+			return Array.CreateInstance(itemType, 0);
+		return await Task.Run(async () => {
+			cancellationToken.ThrowIfCancellationRequested();
+			var read = await source.ReadRangeAsync(search, int.MaxValue, 0, sort, direction).ConfigureAwait(false);
+			cancellationToken.ThrowIfCancellationRequested();
+			var rows = read.Items?.ToArray() ?? Array.Empty<object>();
+			var snapshot = Array.CreateInstance(itemType, rows.Length);
+			for (var index = 0; index < rows.Length; index++)
+				snapshot.SetValue(rows[index], index);
+			return snapshot;
+		}, cancellationToken);
 	}
 
 	/// <summary>Refreshes the supplied visible entity through the source and replaces only its displayed row. A null refreshed entity removes that row.</summary>
