@@ -33,21 +33,23 @@ public class FileUtil {
 	public virtual Task DeleteAlternateStreamAsync(string filePath, string streamName, CancellationToken cancellationToken = default)
 		=> WindowsFile.DeleteAlternateStreamAsync(filePath, streamName, cancellationToken);
 
-	public virtual async Task<byte[]> ReadAlternateStreamAsync(string filePath, string streamName, int maximumBytes, CancellationToken cancellationToken = default) {
+	public virtual Task<byte[]> ReadAlternateStreamAsync(string filePath, string streamName, int maximumBytes, CancellationToken cancellationToken = default) => Task.Run(async () => {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
 		Guard.Argument(maximumBytes > 0, nameof(maximumBytes), "Specify a positive byte limit.");
 		cancellationToken.ThrowIfCancellationRequested();
-		await using var stream = await Task.Run(() => OpenAlternateStream(filePath, streamName, FileMode.Open, FileAccess.Read), cancellationToken).ConfigureAwait(false);
+		await using var stream = OpenAlternateStream(filePath, streamName, FileMode.Open, FileAccess.Read);
 		Guard.Ensure(stream.Length <= maximumBytes, "The stream is larger than the requested read limit.");
 		var bytes = new byte[checked((int)stream.Length)];
 		await stream.ReadExactlyAsync(bytes, cancellationToken).ConfigureAwait(false);
 		return bytes;
-	}
+	}, cancellationToken);
 
-	public virtual async Task WriteAlternateStreamAsync(string filePath, string streamName, byte[] data, bool createNew, CancellationToken cancellationToken = default) {
+	public virtual Task WriteAlternateStreamAsync(string filePath, string streamName, byte[] data, bool createNew, CancellationToken cancellationToken = default) => Task.Run(async () => {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
 		Guard.ArgumentNotNull(data, nameof(data));
 		cancellationToken.ThrowIfCancellationRequested();
-		await using var stream = await Task.Run(() => OpenAlternateStream(filePath, streamName, createNew ? FileMode.CreateNew : FileMode.Truncate, FileAccess.Write), cancellationToken).ConfigureAwait(false);
+		await using var stream = OpenAlternateStream(filePath, streamName, createNew ? FileMode.CreateNew : FileMode.Truncate, FileAccess.Write);
 		await stream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
 		await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
-	}
+	}, cancellationToken);
 }
