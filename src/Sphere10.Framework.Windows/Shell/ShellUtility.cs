@@ -316,10 +316,37 @@ public class ShellUtility {
 
 	/// <summary>Returns the current user's path for an explicit known-folder ID without creating or redirecting the folder.</summary>
 	public virtual string GetKnownFolderPath(Guid folderId) {
+		return ReadKnownFolderPath(folderId, 0);
+	}
+
+	/// <summary>Returns the unredirected default path even when that directory does not exist. No directory is created.</summary>
+	public virtual string GetDefaultKnownFolderPath(Guid folderId) => ReadKnownFolderPath(folderId, WinAPI.SHELL32.KF_FLAG_DEFAULT_PATH | WinAPI.SHELL32.KF_FLAG_DONT_VERIFY);
+
+	public virtual Task<string> GetDefaultKnownFolderPathAsync(Guid folderId, CancellationToken cancellationToken = default)
+		=> RunShellQueryAsync(() => GetDefaultKnownFolderPath(folderId), cancellationToken);
+
+	/// <summary>Changes the current user's known-folder mapping. Existing files are not moved, copied or deleted.</summary>
+	/// <remarks>Windows enforces folder redirection permissions. The expected path rejects a stale caller before dispatch.</remarks>
+	public virtual void SetKnownFolderPath(Guid folderId, string path, string expectedPath = null) {
+		Guard.Argument(folderId != Guid.Empty, nameof(folderId), "Supply a known-folder ID.");
+		Guard.ArgumentNotNullOrWhitespace(path, nameof(path));
+		Guard.Argument(Path.IsPathFullyQualified(path) && !path.Contains('\0'), nameof(path), "Supply a fully qualified directory path.");
+		path = Path.GetFullPath(path);
+		Guard.Ensure(Directory.Exists(path), "Select an existing accessible directory.");
+		if (expectedPath != null)
+			Guard.Ensure(string.Equals(Path.TrimEndingDirectorySeparator(GetKnownFolderPath(folderId)), Path.TrimEndingDirectorySeparator(expectedPath), StringComparison.OrdinalIgnoreCase),
+				"The Windows folder path changed. Refresh the location before redirecting it.");
+		Marshal.ThrowExceptionForHR(WinAPI.SHELL32.SHSetKnownFolderPath(ref folderId, 0, IntPtr.Zero, path));
+	}
+
+	public virtual Task SetKnownFolderPathAsync(Guid folderId, string path, string expectedPath = null, CancellationToken cancellationToken = default)
+		=> RunShellQueryAsync(() => { SetKnownFolderPath(folderId, path, expectedPath); return true; }, cancellationToken, false);
+
+	private static string ReadKnownFolderPath(Guid folderId, uint flags) {
 		Guard.Argument(folderId != Guid.Empty, nameof(folderId), "Supply a known-folder ID.");
 		var pointer = IntPtr.Zero;
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => Marshal.FreeCoTaskMem(pointer));
-		Marshal.ThrowExceptionForHR(WinAPI.SHELL32.SHGetKnownFolderPath(ref folderId, 0, IntPtr.Zero, out pointer));
+		Marshal.ThrowExceptionForHR(WinAPI.SHELL32.SHGetKnownFolderPath(ref folderId, flags, IntPtr.Zero, out pointer));
 		return Marshal.PtrToStringUni(pointer) ?? string.Empty;
 	}
 

@@ -21,6 +21,8 @@ public static partial class WinAPI {
 		public const uint SHERB_NOSOUND = 4;
 		public const int SHCNE_ASSOCCHANGED = 0x08000000;
 		public const uint SHCNF_IDLIST = 0;
+		public const uint KF_FLAG_DEFAULT_PATH = 0x00000400;
+		public const uint KF_FLAG_DONT_VERIFY = 0x00004000;
 
 		[DllImport("shell32.dll", ExactSpelling = true)]
 		public static extern void SHChangeNotify(int eventId, uint flags, IntPtr firstItem, IntPtr secondItem);
@@ -40,6 +42,9 @@ public static partial class WinAPI {
 
 		[DllImport("shell32.dll", ExactSpelling = true)]
 		public static extern int SHGetKnownFolderPath(ref Guid folderId, uint flags, IntPtr token, out IntPtr path);
+
+		[DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+		public static extern int SHSetKnownFolderPath(ref Guid folderId, uint flags, IntPtr token, string path);
 
 		[DllImport("shell32.dll", ExactSpelling = true)]
 		public static extern int SHGetIDListFromObject([MarshalAs(UnmanagedType.IUnknown)] object item, out IntPtr itemIdList);
