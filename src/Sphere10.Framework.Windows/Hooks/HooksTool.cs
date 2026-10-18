@@ -89,5 +89,24 @@ public static class HooksTool {
 		}
 	}
 
+	/// <summary>Moves the vertical mouse wheel by the signed delta; positive is up and one notch is 120 units.</summary>
+	public static void SimulateMouseWheel(int delta) {
+		if (delta == 0)
+			return;
+		var inputs = new[] {
+			new WinAPI.USER32.INPUT {
+				type = WinAPI.USER32.INPUT_TYPE.INPUT_MOUSE,
+				di = new WinAPI.USER32.DEVICEINPUTUNION {
+					mi = {
+						mouseData = unchecked((WinAPI.USER32.MouseEventDataXButtons)(uint)delta),
+						dwFlags = WinAPI.USER32.MOUSEEVENTF.WHEEL
+					}
+				}
+			}
+		};
+		if (WinAPI.USER32.SendInput((uint)inputs.Length, inputs, WinAPI.USER32.INPUT.Size) != inputs.Length)
+			throw new WindowsException(WinAPI.KERNEL32.GetLastError(), "Windows could not emulate mouse wheel input.");
+	}
+
 }
 
