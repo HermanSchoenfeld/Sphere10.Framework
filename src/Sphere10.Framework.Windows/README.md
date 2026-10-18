@@ -77,6 +77,15 @@ resource APIs, and the application's collectors, workflows and presentation.
 The [ownership practice](../../docs/guidelines/patterns/framework-reuse.md#windows-abstraction-layers)
 defines the boundary. Extend the existing domain utility in its owning class/file.
 
+`Tools.Windows.Shell.GetDefaultKnownFolderPath` resolves the default known-folder
+path without creating it. `SetKnownFolderPath` redirects an existing absolute
+directory for the current user; optional `expectedPath` rejects a stale current
+mapping before mutation. It changes the Windows mapping and does not move or
+delete files. Async variants use the owned Shell STA worker. Once a set operation
+has dispatched, cancellation does not hide its completed result. Consumers own
+folder eligibility, destination creation, confirmation and saved bookmarks. See
+the native [SHSetKnownFolderPath contract](https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shsetknownfolderpath).
+
 Windows utilities are discovered through [WindowsTool.cs](WindowsTool.cs), whose
 thread-static properties return reusable instance utilities. Use
 Tools.Windows.Registry, Services, Processes, Threads, PerformanceCounters, Network, Drives, Startup, EventLogs,
