@@ -51,3 +51,26 @@ total and actual clamped page, rather than making the grid trim a complete resul
 Page navigation must not trigger another native collection. In WinForms, advertise
 `CanPage` and use Auto or Paged to bound cell preparation and native binding;
 Single remains the explicit choice to render the complete matching collection.
+
+## Debugging foreground-thread data work
+
+Register a UI thread for the lifetime of a Debug host with
+`using var registration = DataSourceThreadDiagnostics.Default.DisallowCurrentThreadExecution("UI Thread");`.
+The core registry has no UI dependency and tracks the exact thread, including nested
+registrations. Its default reporter uses `Debug.Assert` and includes the executing
+source, operation and managed thread ID. Tests can supply a reporting callback to
+capture violations without opening an assertion dialog. Release hosts need not
+register, and `AssertBackgroundExecution` calls are conditional on `DEBUG` in the
+assembly containing the call.
+
+Assert inside actual queries, refresh callbacks, native worker bodies and before
+synchronous waiting bridges. Do not assert merely because a UI event invokes an
+async facade: confirmation callbacks and editor draft creation belong to that
+thread. Snapshot queries and refresh, reloadable capture/loading waits, and
+async-first synchronous adapters use the shared diagnostic. Cached snapshot counts,
+capabilities and publication remain valid UI metadata operations. Successfully
+completed count/capability tasks return directly without an extra queued wait.
+
+An async resource method must keep its complete operation on a worker. Dispatching
+only `Open` does not protect subsequent `Length`, seek/truncate, or disposal calls:
+an await can complete synchronously and continue on the original UI thread.

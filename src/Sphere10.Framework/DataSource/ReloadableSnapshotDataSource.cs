@@ -73,7 +73,10 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 		return base.Snapshot;
 	}
 
-	public void Reload() => Task.Run(() => ReloadAsync()).GetAwaiter().GetResult();
+	public void Reload() {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Task.Run(() => ReloadAsync()).GetAwaiter().GetResult();
+	}
 
 	/// <summary>Serializes native captures and atomically publishes each completed result. Failure/cancellation preserves the previous inventory.</summary>
 	public async Task ReloadAsync(CancellationToken cancellationToken = default) {
@@ -82,8 +85,10 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 	}
 
 	private void EnsureLoaded() {
-		if (!IsLoaded)
+		if (!IsLoaded) {
+			DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
 			Task.Run(() => EnsureLoadedAsync(CancellationToken.None)).GetAwaiter().GetResult();
+		}
 	}
 
 	private async Task EnsureLoadedAsync(CancellationToken cancellationToken) {
@@ -105,7 +110,10 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 		using (_publication.EnterReadScope())
 			version = _version;
 		// Even a loader with synchronous setup executes away from the asynchronous consumer's dispatcher.
-		var rows = await Task.Run(() => _capture(cancellationToken), cancellationToken).ConfigureAwait(false);
+		var rows = await Task.Run(() => {
+			DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+			return _capture(cancellationToken);
+		}, cancellationToken).ConfigureAwait(false);
 		Guard.Ensure(rows != null, "A snapshot capture must return its complete inventory.");
 		cancellationToken.ThrowIfCancellationRequested();
 		using var scope = _publication.EnterWriteScope();

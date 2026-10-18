@@ -46,6 +46,7 @@ public class SnapshotDataSource<T> : SyncBatchDataSourceBase<T> {
 	}
 
 	public override DataSourceItems<T> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
 		Guard.ArgumentGT(pageLength, 0, nameof(pageLength));
 		Guard.ArgumentGTE(page, 0, nameof(page));
 		IEnumerable<T> query = Volatile.Read(ref _snapshot);
