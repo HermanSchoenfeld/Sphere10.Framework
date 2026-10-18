@@ -142,14 +142,20 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	protected override ValueTask FreeManagedResourcesAsync() =>
 		new(Environment.CurrentManagedThreadId == _uiThread || IsDisposed || _mainForm.IsDisposed && HasExited ? DisposeOnUIThreadAsync() : DisposeFromWorkerAsync());
 
-	protected override Task<bool> OnInitializeAsync(CancellationToken cancellationToken) {
+	protected override async Task<bool> OnInitializeAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
 		if (!_blocksInitialized) {
+			await _mainForm.ScreenHost.LoadStartupScreenSettingsAsync(cancellationToken);
 			var ordered = Tools.UI.OrderApplicationBlocks(_loadedPluginRegistrations,
 				_configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance));
 			_blocksInitialized = _mainForm.RegisterBlocks(ordered.Cast<IWinFormsApplicationBlock>());
 		}
-		return Task.FromResult(_blocksInitialized);
+		return _blocksInitialized;
+	}
+
+	protected override async Task OnFinalizeAsync(CancellationToken cancellationToken) {
+		await _mainForm.ScreenHost.CompleteStartupScreenWritesAsync();
+		await base.OnFinalizeAsync(cancellationToken);
 	}
 
 	protected override Task<bool> ConfirmExitAsync(CancellationToken cancellationToken) => _mainForm.ConfirmApplicationExitAsync(cancellationToken);

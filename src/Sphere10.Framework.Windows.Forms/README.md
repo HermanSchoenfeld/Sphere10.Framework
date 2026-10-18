@@ -959,6 +959,17 @@ var emptyBlock = new WinFormsApplicationBlockBuilder()
 
 The screen types in this example derive from `WinFormsApplicationScreen`. Startup selects the first `.AsDefault()` or block `WithDefaultScreen` in plugin, block, then menu declaration order. A permanent screen prevents an Empty default from taking selection. Block `Position` continues to order the displayed navigation independently. If no explicit default exists, existing `IsStartScreen` / `ExecuteOnLoad` screen registrations keep their behavior; startup actions still execute.
 
+The tab context menu's **Make Startup Screen** saves an
+`ApplicationStartupScreenSettings` preference through the application's
+`UserSettings`. The host loads it asynchronously before block registration and
+prefers a matching registered screen over the configured default, while still
+creating permanent screens. Identity uses plugin/block names, full screen type
+and simple assembly name; captions, assembly versions and live session handles
+are not persisted. Missing, invalid or non-restorable definitions fall back to
+the configured default without overwriting the preference. Override
+`WinFormsApplicationScreen.CanRestoreAtStartup` to false for screens that require
+session arguments; their context action remains visible with an explanation.
+
 `BlockMainForm.RegisterBlock` initializes new permanent screens without replacing an ordinary active screen. If an active Empty screen refuses the transition, the new block remains unregistered and undisposed so the caller can retry after clearing the guard. For a standalone host, `InitializeScreens(blocks)` returns whether initialization was accepted. `UnregisterScreenTypes(block)` removes its definitions and owned screens after all close guards agree. The form's existing `UnregisterBlock` uses that path, allowing administrative removal of permanent screens and disposal of hidden Empty instances. `CanCloseScreens(Screens)` remains the application-exit guard: permanent lifetime does not prevent shutdown.
 
 The existing `OnHide(ref bool CancelHide)` and `ScreenHidden` event can cancel navigation, close, undock, redock, block removal, and changes to SingleView. Batch close and mode changes check all affected screens before removing any. `ScreenDisplayedFirstTime` runs once per instance; `ScreenDisplayed` runs on each subsequent selection or hosting transition. Closing or disposing the host also disposes hidden and detached instances, with `ScreenDestroyed` raised once per instance.

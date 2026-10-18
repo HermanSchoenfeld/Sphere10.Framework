@@ -27,10 +27,16 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	private readonly WinFormsApplicationScreenTabControl _tabs;
 	private readonly ImageList _tabImages;
 	private readonly Panel _singleView;
+	private readonly AsyncSynchronizedGate _startupSettingsGate = new();
+	private readonly HashSet<Task> _startupSettingsWrites = new();
 	private bool _updating;
 	private int _updateDepth;
 	private bool _activeSelectionChanged;
 	private bool _disposing;
+	private bool _startupSettingsFinalizing;
+	private ISettingsProvider _startupSettingsProvider;
+	private StartupScreenIdentity _startupScreenIdentity;
+	private Task _startupSettingsLoad;
 
 	public WinFormsApplicationScreenHost() {
 		_engine = new NativeScreenHostEngine(this);
@@ -105,6 +111,65 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		}
 	}
 
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public Exception LastStartupScreenSettingsError { get; private set; }
+
+	/// <summary>Loads the optional startup choice off the UI thread before initial screen registration. Normal application startup calls this automatically.</summary>
+	public Task LoadStartupScreenSettingsAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		if (Tools.Runtime.IsDesignMode || _disposing)
+			return Task.CompletedTask;
+		return (_startupSettingsLoad ??= LoadStartupScreenSettingsCoreAsync()).WaitAsync(cancellationToken);
+	}
+
+	/// <summary>Session-only targets and screens without a registered normal definition cannot be reopened automatically.</summary>
+	public bool CanMakeStartupScreen(WinFormsApplicationScreen screen) => !_disposing && !_startupSettingsFinalizing && screen != null && !screen.IsDisposed && screen.CanRestoreAtStartup
+		&& ReferenceEquals(screen.Host, this) && screen.Block != null && _engine.RegistrationBlocks.Contains(screen.Block, ReferenceEqualityComparer.Instance)
+		&& screen.Block.ScreenDefinitions.Any(definition => definition.ScreenType == screen.GetType() && definition.ScreenKind == ScreenKind.Normal);
+
+	public bool IsStartupScreen(WinFormsApplicationScreen screen) => CanMakeStartupScreen(screen)
+		&& _startupScreenIdentity == StartupScreenIdentity.FromScreen(screen);
+
+	/// <summary>Persists an explicit user choice using the current app's settings provider. No control, caption, assembly version or target handle is stored.</summary>
+	public async Task MakeStartupScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) {
+		Guard.Ensure(CanMakeStartupScreen(screen), "This screen cannot be restored without session-specific state or is not registered with this application.");
+		var identity = StartupScreenIdentity.FromScreen(screen);
+		var saving = SaveStartupScreenSettingsAsync(identity, cancellationToken);
+		_startupSettingsWrites.Add(saving);
+		try {
+			await saving;
+		} finally {
+			_startupSettingsWrites.Remove(saving);
+		}
+	}
+
+	internal Task CompleteStartupScreenWritesAsync() {
+		_startupSettingsFinalizing = true;
+		return Task.WhenAll(_startupSettingsWrites.ToArray());
+	}
+
+	private async Task SaveStartupScreenSettingsAsync(StartupScreenIdentity identity, CancellationToken cancellationToken) {
+		await LoadStartupScreenSettingsAsync(cancellationToken);
+		using var admission = await _startupSettingsGate.EnterScopeAsync(cancellationToken);
+		try {
+			var provider = _startupSettingsProvider ?? UserSettings.Provider;
+			await Task.Run(() => {
+				var settings = provider.Get<ApplicationStartupScreenSettings>();
+				var previous = StartupScreenIdentity.FromSettings(settings);
+				identity.CopyTo(settings);
+				try { settings.Save(); }
+				catch { previous.CopyTo(settings); throw; }
+			}, cancellationToken);
+			_startupScreenIdentity = identity;
+			LastStartupScreenSettingsError = null;
+		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+			throw;
+		} catch (Exception error) {
+			RecordStartupScreenSettingsError(error);
+			throw;
+		}
+	}
+
 	public override void RegisterScreenTypes(IWinFormsApplicationBlock Block) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
 		Guard.Ensure(!_disposing, "The screen host is disposing");
@@ -137,13 +202,17 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		_engine.InitializeState();
 		var previous = ActiveScreen;
 		EnsurePermanentScreens(definitions);
+		var rememberedStartup = previous == null || replaceEmpty ? ResolveStartupScreen(allBlocks) : null;
 		var startup = previous == null ? Tools.UI.GetDefaultScreen(allBlocks) ?? (allBlocks.FirstOrDefault() is { } first ? _engine.GetBlockDefault(first) : null) : null;
-		if (replaceEmpty)
-			ShowScreenCore(Screens.First(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton), false);
-		else if (startup != null)
-			ActivateScreenCore(_engine.GetDefinitionOwner(startup), startup.ScreenType, startup.Title, requestedDefinition: startup);
-		else if (previous != null && !ReferenceEquals(previous, ActiveScreen) && ContainsScreen(previous))
-			ShowScreen(previous);
+		var restoredStartup = rememberedStartup != null && TryActivateStartupScreen(rememberedStartup);
+		if (!restoredStartup) {
+			if (replaceEmpty)
+				ShowScreenCore(Screens.First(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton), false);
+			else if (startup != null)
+				ActivateScreenCore(_engine.GetDefinitionOwner(startup), startup.ScreenType, startup.Title, requestedDefinition: startup);
+			else if (previous != null && !ReferenceEquals(previous, ActiveScreen) && ContainsScreen(previous))
+				ShowScreen(previous);
+		}
 		SelectRemainingScreen();
 		return true;
 	}
@@ -205,7 +274,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	}
 
 	private WinFormsApplicationScreen ActivateScreenCore(IWinFormsApplicationBlock Block, Type ScreenType, string Title,
-		ApplicationScreenDefinition requestedDefinition = null, bool registerBlock = true) {
+		ApplicationScreenDefinition requestedDefinition = null, bool registerBlock = true, bool startupRestoration = false) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
 		Guard.ArgumentNotNull(ScreenType, nameof(ScreenType));
 		Tools.UI.ValidateScreenType(ScreenType, typeof(WinFormsApplicationScreen));
@@ -217,13 +286,15 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			return null;
 		var Existing = Screens.FirstOrDefault(Screen => Screen.GetType() == ScreenType && Tools.UI.IsSingleton(Screen.ActivationMode));
 		if (Existing != null)
-			return ShowScreen(Existing) ? Existing : null;
+			return (!startupRestoration || Existing.CanRestoreAtStartup) && ShowScreen(Existing) ? Existing : null;
 
 		var Created = CreateScreen(Block, ScreenType);
 		using var Cleanup = Tools.Scope.ExecuteOnDispose(() => {
 			if (!ContainsScreen(Created))
 				Created.Dispose();
 		});
+		if (startupRestoration && !Created.CanRestoreAtStartup)
+			return null;
 		Created.Block = Block;
 		Created.ScreenKind = definition?.ScreenKind ?? ScreenKind.Normal;
 		if (!string.IsNullOrWhiteSpace(Title))
@@ -504,6 +575,67 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			ExceptionDispatchInfo.Capture(errors[0]).Throw();
 		if (errors.Count > 1)
 			throw new AggregateException(errors);
+	}
+
+	private async Task LoadStartupScreenSettingsCoreAsync() {
+		try {
+			_startupSettingsProvider = UserSettings.Provider;
+			var provider = _startupSettingsProvider;
+			_startupScreenIdentity = await Task.Run(() => StartupScreenIdentity.FromSettings(provider.Get<ApplicationStartupScreenSettings>()));
+			LastStartupScreenSettingsError = null;
+		} catch (Exception error) {
+			RecordStartupScreenSettingsError(error);
+		}
+	}
+
+	private ApplicationScreenDefinition ResolveStartupScreen(IEnumerable<IWinFormsApplicationBlock> blocks) {
+		if (_startupScreenIdentity == null || string.IsNullOrEmpty(_startupScreenIdentity.ScreenTypeName))
+			return null;
+		var owners = blocks.Where(block => _startupScreenIdentity.MatchesBlock(block)).ToArray();
+		if (owners.Length != 1)
+			return null;
+		var definition = owners[0].ScreenDefinitions.FirstOrDefault(candidate => candidate.ScreenKind == ScreenKind.Normal && _startupScreenIdentity.MatchesType(candidate.ScreenType));
+		if (definition == null)
+			return null;
+		var candidate = Screens.FirstOrDefault(screen => screen.GetType() == definition.ScreenType && ReferenceEquals(screen.Block, owners[0]));
+		if (candidate != null && !candidate.CanRestoreAtStartup)
+			return null;
+		return definition;
+	}
+
+	private void RecordStartupScreenSettingsError(Exception error) {
+		LastStartupScreenSettingsError = error;
+		Tools.Exceptions.ExecuteIgnoringException(() => (ActiveBlock?.Parent?.Logger ?? SystemLog.Logger).Exception(error, "Unable to load or save the startup screen preference."));
+	}
+
+	private bool TryActivateStartupScreen(ApplicationScreenDefinition definition) {
+		try {
+			return ActivateScreenCore(_engine.GetDefinitionOwner(definition), definition.ScreenType, definition.Title, requestedDefinition: definition, startupRestoration: true) != null;
+		} catch (Exception error) {
+			RecordStartupScreenSettingsError(error);
+			return false;
+		}
+	}
+
+	private sealed record StartupScreenIdentity(string PluginName, string BlockName, string ScreenTypeName, string ScreenAssemblyName) {
+		public static StartupScreenIdentity FromScreen(WinFormsApplicationScreen screen) => new(screen.Block.Source?.Name ?? string.Empty, screen.Block.Name,
+			screen.GetType().FullName, screen.GetType().Assembly.GetName().Name);
+
+		public static StartupScreenIdentity FromSettings(ApplicationStartupScreenSettings settings) => new(settings.PluginName ?? string.Empty, settings.BlockName ?? string.Empty,
+			settings.ScreenTypeName ?? string.Empty, settings.ScreenAssemblyName ?? string.Empty);
+
+		public bool MatchesBlock(IWinFormsApplicationBlock block) => string.Equals(PluginName, block.Source?.Name ?? string.Empty, StringComparison.Ordinal)
+			&& string.Equals(BlockName, block.Name, StringComparison.Ordinal);
+
+		public bool MatchesType(Type type) => string.Equals(ScreenTypeName, type.FullName, StringComparison.Ordinal)
+			&& string.Equals(ScreenAssemblyName, type.Assembly.GetName().Name, StringComparison.Ordinal);
+
+		public void CopyTo(ApplicationStartupScreenSettings settings) {
+			settings.PluginName = PluginName;
+			settings.BlockName = BlockName;
+			settings.ScreenTypeName = ScreenTypeName;
+			settings.ScreenAssemblyName = ScreenAssemblyName;
+		}
 	}
 
 	private IDisposable EnterUpdateScope(bool repaintImmediately = true) => new ScreenTransitionScope(this, repaintImmediately);
