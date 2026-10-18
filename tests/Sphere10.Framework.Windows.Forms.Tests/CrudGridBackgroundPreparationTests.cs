@@ -325,7 +325,8 @@ public class CrudGridBackgroundPreparationTests {
 	[TestCase("multiline")]
 	public void NativeSizingKeepsTimerDispatchResponsiveAndMatchesSourceGridGeometry(string change) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
-		var rows = Enumerable.Range(0, 180).Select(index => new Row { Value = "Original row " + index }).ToArray();
+		// Exceed the bounded native-step batch even when cached font measurements finish within its elapsed-time budget.
+		var rows = Enumerable.Range(0, 400).Select(index => new Row { Value = "Original row " + index }).ToArray();
 		var source = new RecordingSource { Rows = rows };
 		crud.GridBindings = SizingColumns();
 		await crud.SetDataSource(source);

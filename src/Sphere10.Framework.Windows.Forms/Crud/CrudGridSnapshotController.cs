@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,19 +58,17 @@ public sealed class CrudGridSnapshotController<T> : ICrudGridSnapshotController 
 		if (_grid.IsDisposed)
 			return;
 		Guard.Ensure(rows != null, "Snapshot collection must return an array.");
-		var firstBinding = !_bound;
-		var previousIdentity = _grid.SelectedEntity is T previous ? _identity(previous) : null;
 		_source.ReplaceSnapshot(rows);
+		_grid.NotifyDataSourceChanged();
 		if (!_bound) {
 			await _grid.SetDataSource(_source, _source.Capabilities);
 			_bound = true;
 		}
+		// Map the latest selected instance as part of the native publication, before geometry work can yield to input.
+		_grid.ResolvePublishedEntity = ResolvePublishedEntity;
 		await _grid.RefreshGrid();
 		if (cancellationToken.IsCancellationRequested || _grid.IsDisposed)
 			return;
-		// Preparation/sizing can yield while the existing rows remain interactive. Preserve the user's latest choice.
-		var selectedIdentity = firstBinding ? previousIdentity : _grid.SelectedEntity is T selected ? _identity(selected) : null;
-		_grid.SelectedEntity = selectedIdentity == null ? null : rows.FirstOrDefault(row => Equals(selectedIdentity, _identity(row)));
 		_changed?.Invoke(_source.Snapshot);
 	}
 
@@ -82,6 +79,17 @@ public sealed class CrudGridSnapshotController<T> : ICrudGridSnapshotController 
 	}
 
 	public object CaptureSnapshot() => Rows;
+
+	private object ResolvePublishedEntity(object selected) {
+		if (selected is not T entity)
+			return null;
+		var identity = _identity(entity);
+		if (identity != null)
+			foreach (var row in _source.Snapshot)
+				if (Equals(identity, _identity(row)))
+					return row;
+		return null;
+	}
 
 	private void EnsureOwnerThread()
 		=> Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThreadId, "Refresh and configure the grid snapshot controller on its creating UI thread.");

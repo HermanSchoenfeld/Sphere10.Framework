@@ -385,7 +385,11 @@ For read-only changing collections, use the nonvisual
 designer-owned grid. It accepts an async collector, stable row identity and
 optional property-value formatter; an overload accepts an existing core
 `SnapshotDataSource<T>`. It binds once, serializes refreshes, queries the grid's
-current page and restores selection to the replacement row with that identity.
+current page and maps the latest selected identity to its replacement in the same
+native publication as the new cells, before geometry work can yield. Snapshot
+publication invalidates an older in-flight grid query so stale cells cannot be
+committed against a newer selected model. Collection and worker preparation leave
+the previous committed page available for input.
 Typed `Rows`, `Count`, `SetDefaultSort`, `RefreshAsync` and `CaptureSnapshot`
 support concrete nongeneric screen surfaces. CSV/JSON export belongs to the caller.
 Create/configure/refresh it on the grid's UI thread with its dispatcher context;
@@ -1021,6 +1025,8 @@ Legacy DES stream helpers retain their existing full-length input buffer and zer
 Application, block and screen command layers compose through `Tools.UI.MergeApplicationMenus` and `MergeApplicationToolBarItems`. Application commands survive contextual commands with the same caption; screen commands replace matching block commands. Native captions merge without mnemonic markers, including contributions to the existing File and Help headers. Exit and help commands survive screen changes, with Help last. Native presentation honors block/menu placement flags and preserves caller-owned menu and item references.
 
 `Control.EnterRenderingScope()` defers layout and native redraw across the control tree. Nested scopes, added controls, newly created handles and newly shown controls share suppression. The last scope flushes parent/child layout and performs one redraw; disposed and intentionally hidden controls remain so. Controls moved into another window receive their final full-tree invalidation at their current surviving root, including when the original root was disposed. A subtree still held by another rendering scope waits for that owner to release it. `EnterRenderingScope(repaintImmediately: false)` restores layout and native visibility synchronously but queues painting for the next normal native paint cycle, appropriate inside native input/selection callbacks. The existing no-argument overload retains immediate painting. Dispose scopes on the creating UI thread; never keep one across an await or BeginInvoke. Screen-host transitions use this scope around the form and publish one completed selection and command update.
+
+Native redraw suppression temporarily removes `WS_VISIBLE`; old pixels can remain while Windows routes mouse input to another window. An enabled control and a responsive managed message loop do not establish that its native input target remains available. Live CrudGrid publication and incremental native sizing therefore use SourceGrid's existing double buffering and managed layout suspension, without `WM_SETREDRAW`. A single-row publication explicitly invalidates the changed view, including when no row is selected. Native input regressions sample cached HWND visibility and hit-test routing from a worker during publication, rather than calling control handlers directly or observing only UI timer ticks.
 
 After native resizing and redraw restoration, the scope compares a top-aligned `TabControl`'s native `TCM_ADJUSTRECT` display area with WinForms' cached display rectangle. During toolbar restoration and undocking, managed `OnResize` can run before the native `WM_SIZE` recalculates wrapped header rows; the retained page then covers those headers. A mismatch reapplies the selected page's existing nonvirtual image metadata, whose parent update clears that cache. Its image-key/index mode, captions, custom text setters, native handles, selected page and selection events remain unchanged. This synchronization finishes before the existing final invalidation; it does not resize or recreate controls or select another page.
 

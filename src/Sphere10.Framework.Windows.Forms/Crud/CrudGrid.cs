@@ -95,6 +95,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	private IDataSource<object> _boundDataSource;
 	private ICrudGridColumn[] _boundColumns;
 	private int _sourceAssignmentVersion;
+	private int _dataPublicationVersion;
 	private IDataSource<object> _rowHeightDataSource;
 	private ICrudGridColumn[] _rowHeightBindings;
 	private int[] _rowHeightColumnWidths = Array.Empty<int>();
@@ -383,6 +384,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		}
 	}
 
+	internal Func<object, object> ResolvePublishedEntity { get; set; }
+
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IDictionary<string, CrudReferenceBinding> ReferenceBindings { get; } = new Dictionary<string, CrudReferenceBinding>(StringComparer.Ordinal);
@@ -408,6 +411,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		if (IsDisposed || Disposing || assignmentVersion != _sourceAssignmentVersion)
 			return;
 		_dataSource = projected;
+		ResolvePublishedEntity = null;
 		ResetRowHeightMeasurements();
 		_crudCapabilities = available & capabilities;
 		RestoreGridSettings();
@@ -418,6 +422,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	public void ClearDataSource() {
 		_sourceAssignmentVersion++;
 		_dataSource = null;
+		ResolvePublishedEntity = null;
 		_columnWidthOverrides.Clear();
 		ResetRowHeightMeasurements();
 	}
@@ -460,7 +465,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 		var replacement = refreshed[0];
 		var wasSelected = ReferenceEquals(_selectedEntity, entity);
-		using (this.EnterRenderingScope(repaintImmediately: false))
+		_grid.SuspendLayout();
+		using (Tools.Scope.ExecuteOnDispose(() => _grid.ResumeLayout()))
 		using (EnterVisualState(VisualState.Selecting)) {
 			if (replacement == null) {
 				foreach (var row in rows.OrderByDescending(row => row))
@@ -482,6 +488,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			if (wasSelected)
 				_selectedEntity = replacement;
 			HighlightSelectedEntity();
+			_grid.Invalidate();
 		}
 		if (wasSelected && !ReferenceEquals(entity, replacement)) {
 			RaiseEntityDeselectedEvent(entity);
@@ -644,6 +651,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		_deleteButton.Visible = _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete) && _selectedEntity != null &&
 		                       _entityToRowLookup != null && _entityToRowLookup[_selectedEntity].Any(Row => _grid.Selection.IsSelectedRow(Row));
 	}
+	internal void NotifyDataSourceChanged() => _dataPublicationVersion++;
+
 	internal void AutoSizeCells() {
 		if (_sizedColumnBindings != _columnsBindings)
 			return;
@@ -1031,6 +1040,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	/// <returns>True if search parameters changed during search, false otherwise.</returns>
 	private async Task<bool> BindInternal() {
 		var dataSource = _dataSource;
+		var dataPublicationVersion = _dataPublicationVersion;
 		var columns = _columnsBindings;
 		var searchText = _searchText;
 		var pageSize = _pageSize;
@@ -1039,7 +1049,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		var sortDirection = _sortDirection;
 		var prepareInBackground = PrepareReadOnlyCellsInBackground;
 		var referenceLookup = UseEntityReferenceForLookup;
-		bool QueryChanged() => dataSource != _dataSource || columns != _columnsBindings || searchText != _searchText || pageSize != _pageSize
+		bool QueryChanged() => dataSource != _dataSource || dataPublicationVersion != _dataPublicationVersion || columns != _columnsBindings || searchText != _searchText || pageSize != _pageSize
 			|| pageNumber != _pageNumber || sortColumnName != _sortColumnName || sortDirection != _sortDirection || prepareInBackground != PrepareReadOnlyCellsInBackground
 			|| referenceLookup != UseEntityReferenceForLookup || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead);
 		if (pageSize == 0) {
@@ -1103,6 +1113,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			|| columns.Where((column, index) => (column.DisplayType, column.DataType) != formats[index]).Any()))
 			return true;
 		data ??= readResult.Items.ToArray();
+		var previousSelection = _selectedEntity;
+		var publishedSelection = previousSelection != null && ResolvePublishedEntity != null ? ResolvePublishedEntity(previousSelection) : previousSelection;
 		var reusePreparedCells = prepared != null && _boundDataSource == dataSource && _boundColumns == columns;
 		_bindingVersion++;
 		_boundDataSource = dataSource;
@@ -1124,9 +1136,10 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		bool AcceptedBindingIsCurrent() => !IsDisposed && !Disposing && !QueryChanged() && _bindingVersion == acceptedVersion
 			&& CanPrepareReadOnlyCells(columns) && !columns.Where((column, index) => (column.DisplayType, column.DataType) != formats[index]).Any();
 
-		// Redimension the grid and bind the accepted query result.
-		using (EnterVisualState(VisualState.Selecting))
-		using (prepared == null ? null : _grid.EnterRenderingScope(repaintImmediately: false)) {
+		// SourceGrid already buffers painting. WM_SETREDRAW would remove WS_VISIBLE and make native clicks miss these committed rows.
+		// Keep its HWND visible while synchronously publishing cells, and defer layout until the publication is complete.
+		using (EnterVisualState(VisualState.Selecting)) {
+			_selectedEntity = publishedSelection;
 			if (preparedRows != null)
 				_rowToEntityMap = preparedRows;
 			else
@@ -1163,6 +1176,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 					SizeBoundRows();
 				}
 			}
+		}
+		// Replace the selected immutable row with the same identity in the same publication as its cells.
+		// Geometry can yield afterward; native selection and row commands must already refer to the published model.
+		if (!ReferenceEquals(previousSelection, publishedSelection)) {
+			if (previousSelection != null)
+				RaiseEntityDeselectedEvent(previousSelection);
+			if (publishedSelection != null)
+				RaiseEntitySelectedEvent(publishedSelection);
 		}
 		if (prepared != null) {
 			// A resize or font change invalidates native measurements, not the accepted data.
@@ -1328,7 +1349,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		using var work = steps.GetEnumerator();
 		while (!IsDisposed && !Disposing && isCurrent()) {
 			var more = true;
-			using (_grid.EnterRenderingScope(repaintImmediately: false)) {
+			{
 				var previousSizing = _sizingColumns;
 				_sizingColumns = true;
 				using var restoreSizing = Tools.Scope.ExecuteOnDispose(() => _sizingColumns = previousSizing);
