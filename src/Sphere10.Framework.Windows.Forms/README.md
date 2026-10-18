@@ -352,10 +352,16 @@ The footer keeps **Total** on the left and the page-mode dropdown, **Page Size**
 | Mode | Behavior |
 |---|---|
 | **Paged** | Manual **Page Size** label/editor and page navigator. Sizes range from **1 to 9999**, in steps of one. |
-| **Auto** | Page navigator remains available; the manual label/editor are hidden. The viewport, header, row heights and horizontal scrollbar determine how many complete rows fit, with a minimum of one. Resize, font and DPI changes recalculate capacity. |
-| **Single** | All matching rows in one vertically scrollable page. The manual size and page navigator are hidden; the source receives page zero and `int.MaxValue` page length. Search and sorting still apply. |
+| **Auto Paged** (`Auto`) | Page navigator remains available; the manual label/editor are hidden. The actual ordered row heights, header and scrollbar-adjusted viewport determine how many complete rows fit, with a minimum of one. Resize, font and DPI changes recalculate capacity. Taller individual rows do not inflate the budget for every ordinary row. |
+| **Single Paged** (`Single`) | All matching rows in one vertically scrollable page. The manual size and page navigator are hidden; the source receives page zero and `int.MaxValue` page length. Search and sorting still apply. |
 
-Switching modes starts at page zero and retains the remembered manual size for returning to **Paged**. `AutoPageSize` remains a compatibility alias: true selects **Auto**, false selects **Paged**. Sources without `CanPage` retain their existing complete-result behavior and hide the paging footer. Navigation and sorting are remembered for **Paged** and **Auto**; **Single** always uses page zero.
+Switching modes starts at page zero and retains the remembered manual size for returning to **Paged**. `AutoPageSize` remains a compatibility alias: true selects **Auto Paged**, false selects **Paged**. The enum values and stored preferences remain unchanged. Sources without `CanPage` retain their existing complete-result behavior and hide the paging footer. Navigation and sorting are remembered for **Paged** and **Auto Paged**; **Single Paged** always uses page zero.
+
+Auto paging settles both larger and smaller capacities after native measurement.
+Measured viewport/header/row dimensions already use the window's device pixels;
+only an unmeasured fallback is DPI-scaled. A bounded fitting result prevents
+repeated probes when a taller next row cannot fit. Short final pages retain
+their remaining rows without an attempt to fill from nonexistent data.
 
 For rapid live updates, set `SuppressLoadingIndicator = true`. Refresh begins immediately, without the normal stampede delay, loading animation or temporary grid disabling. It retains the logical busy state, joins an active refresh task and discards superseded query results. The default remains false for ordinary data loading. The WinForms tester's CRUD screen exposes the option for its grid and dropdown.
 

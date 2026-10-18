@@ -213,7 +213,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._pageModeComboBox.AccessibleName = "Page Mode";
 			this._pageModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._pageModeComboBox.FormattingEnabled = true;
-			this._pageModeComboBox.Items.AddRange(new object[] { "Paged", "Auto", "Single" });
+			this._pageModeComboBox.Items.AddRange(new object[] { "Paged", "Auto Paged", "Single Paged" });
 			this._pageModeComboBox.Margin = new System.Windows.Forms.Padding(3, 3, 6, 3);
 			this._pageModeComboBox.Name = "_pageModeComboBox";
 			this._pageModeComboBox.SelectedIndex = 0;
@@ -456,6 +456,8 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._grid.MouseClick += new System.Windows.Forms.MouseEventHandler(this._grid_MouseClick);
 			this._grid.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this._grid_MouseDoubleClick);
 			this._grid.SizeChanged += new System.EventHandler(this.GridViewportChanged);
+			this._grid.FontChanged += new System.EventHandler(this.GridMetricsChanged);
+			this._grid.DpiChangedAfterParent += new System.EventHandler(this.GridMetricsChanged);
 			this._grid.FontChanged += new System.EventHandler(this.GridViewportChanged);
 			// 
 			// CrudGrid
