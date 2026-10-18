@@ -1178,6 +1178,9 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool IsWindowVisible(IntPtr hWnd);
 
+		[DllImport("user32.dll", EntryPoint = "GetPropW", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		public static extern IntPtr GetProp(IntPtr window, string propertyName);
+
 		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool GetCursorPos(out POINT point);
