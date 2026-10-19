@@ -1219,6 +1219,25 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool IsIconic(IntPtr window);
 
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsZoomed(IntPtr window);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr MonitorFromWindow(IntPtr window, uint flags);
+
+		[DllImport("user32.dll", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO information);
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MONITORINFO {
+			public int Size;
+			public RECT Monitor;
+			public RECT WorkingArea;
+			public uint Flags;
+		}
+
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
