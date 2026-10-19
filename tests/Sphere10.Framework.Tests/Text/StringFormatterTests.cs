@@ -8,12 +8,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class StringFormatterTests {
+
+	[TestCase("{STARTPATH}")]
+	[TestCase("{startpath}")]
+	public void StartPath_ResolvesExecutableDirectory(string token) {
+		var expected = Path.GetDirectoryName(Tools.Runtime.GetExecutablePath());
+		Assert.That(StringFormatter.FormatEx(token), Is.EqualTo(expected));
+	}
 
 	[Test]
 	public void SimpleTest_1() {

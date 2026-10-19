@@ -235,7 +235,7 @@ public static class StringFormatter {
 			value = token.ToUpperInvariant() switch {
 				"CURRENTDATE" => $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}",
 				"CURRENTYEAR" => DateTime.Now.Year.ToString(),
-				"STARTPATH" => System.IO.Path.GetDirectoryName(Tools.FileSystem.GetParentDirectoryPath(Tools.Runtime.GetExecutablePath())),
+				"STARTPATH" => Tools.FileSystem.GetParentDirectoryPath(Tools.Runtime.GetExecutablePath()),
 				_ => null
 			};
 			return value != null;
