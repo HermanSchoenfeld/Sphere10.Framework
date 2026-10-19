@@ -12,6 +12,15 @@ Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application dev
 dotnet add package Sphere10.Framework.Windows.Forms
 ```
 
+## Local CHM help
+
+`CHMHelpProvider` opens context help on the containing form's monitor, falling
+back to `IUserInterfaceServices.PrimaryUIController` for non-control contexts.
+It preserves the CHM's navigation and window styles, uses physical coordinates
+under a temporary per-monitor DPI context, and moves an existing viewer when
+the requesting form changes monitors. A viewer already on that monitor keeps
+its current placement; a moved maximized viewer remains maximized.
+
 ## Telemetry history charts
 
 `TelemetryChart` is a designer-editable chart for captured time/value samples.
