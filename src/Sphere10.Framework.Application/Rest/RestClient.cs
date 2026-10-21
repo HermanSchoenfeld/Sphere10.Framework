@@ -17,10 +17,12 @@ using Newtonsoft.Json.Serialization;
 
 namespace Sphere10.Framework.Application;
 
-public class RestClient : IRestClient {
+public class RestClient : IRestClient, IDisposable {
 
 	private readonly ILogger _logger;
+	private readonly object _synchronization = new();
 	private HttpClient _httpClient;
+	private bool _disposed;
 
 	protected readonly JsonSerializerSettings _defaultSerializerSettings;
 
@@ -46,7 +48,7 @@ public class RestClient : IRestClient {
 		IDictionary<string, string> headers = null,
 		JsonSerializerSettings serializerSettings = null,
 		CancellationToken cancellationToken = default) {
-		var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Get, queryParams, headers, cancellationToken: cancellationToken);
+		using var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Get, queryParams, headers, cancellationToken: cancellationToken);
 		return await response.ParseStreamAsync<T>(serializerSettings);
 	}
 
@@ -56,7 +58,7 @@ public class RestClient : IRestClient {
 			httpRequest.Content = new StringContent(JsonConvert.SerializeObject(body, _defaultSerializerSettings), Encoding.UTF8, "application/json");
 		}
 
-		var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Post, queryParams, headers, AttachContent, cancellationToken: cancellationToken);
+		using var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Post, queryParams, headers, AttachContent, cancellationToken: cancellationToken);
 
 		return await response.ParseStreamAsync<T>(responseSerializerSettings);
 	}
@@ -68,14 +70,27 @@ public class RestClient : IRestClient {
 			httpRequest.Content = new StringContent(serializedBody, Encoding.UTF8, "application/json");
 		}
 
-		var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), new HttpMethod("PATCH"), queryParams, headers, AttachContent, cancellationToken: cancellationToken);
+		using var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), new HttpMethod("PATCH"), queryParams, headers, AttachContent, cancellationToken: cancellationToken);
 
 		return await response.ParseStreamAsync<T>(responseSerializerSettings);
 	}
 
 	public async Task DeleteAsync(string urlPostfix, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null,
 	                              CancellationToken cancellationToken = default) {
-		await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Delete, queryParams, headers, null, cancellationToken);
+		using var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Delete, queryParams, headers, null, cancellationToken);
+	}
+
+	public void Dispose() {
+		HttpClient client;
+		using (Tools.Threads.EnterLockScope(_synchronization)) {
+			if (_disposed)
+				return;
+			_disposed = true;
+			client = _httpClient;
+			_httpClient = null;
+		}
+		// HttpClient cancels outstanding requests and releases its owned handler.
+		client?.Dispose();
 	}
 
 	public async Task<HttpResponseMessage> SendAsync(string url,
@@ -84,7 +99,7 @@ public class RestClient : IRestClient {
 	                                                 IDictionary<string, string> headers = null,
 	                                                 Action<HttpRequestMessage> attachContent = null,
 	                                                 CancellationToken cancellationToken = default) {
-		EnsureHttpClient();
+		var httpClient = EnsureHttpClient();
 
 		url = queryParams == null ? url : Tools.Url.AddQueryString(url, queryParams);
 
@@ -98,9 +113,11 @@ public class RestClient : IRestClient {
 		}
 
 		attachContent?.Invoke(httpRequest);
-		var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
-		if (!response.IsSuccessStatusCode)
-			throw BuildException(response);
+		var response = await httpClient.SendAsync(httpRequest, cancellationToken);
+		if (!response.IsSuccessStatusCode) {
+			using (response)
+				throw BuildException(response);
+		}
 
 		return response;
 	}
@@ -115,6 +132,8 @@ public class RestClient : IRestClient {
 	}
 
 	private HttpClient EnsureHttpClient() {
+		using var scope = Tools.Threads.EnterLockScope(_synchronization);
+		ObjectDisposedException.ThrowIf(_disposed, this);
 		if (_httpClient == null) {
 			var pipeline = new LoggingHandler(_logger, LogLevel.Debug) { InnerHandler = new HttpClientHandler() };
 			_httpClient = new HttpClient(pipeline);
