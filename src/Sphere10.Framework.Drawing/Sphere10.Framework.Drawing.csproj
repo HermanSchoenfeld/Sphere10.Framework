@@ -20,6 +20,8 @@
 
 	<ItemGroup>
 	  <PackageReference Include="System.Drawing.Common" />
+	  <!-- Drawing 11 RC2 omits the serialization dependencies used by its bundled Windows Core assembly on .NET 10. -->
+	  <PackageReference Include="System.Formats.Nrbf" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -5,44 +5,45 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AngleSharp" Version="1.8.0" />
-    <PackageVersion Include="AutoFixture" Version="4.18.1" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageVersion Include="AutoFixture" Version="5.0.0-rc.1" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
     <PackageVersion Include="BouncyCastle.Cryptography" Version="2.7.0" />
-    <PackageVersion Include="FirebirdSql.Data.FirebirdClient" Version="10.3.4" />
-    <PackageVersion Include="FluentValidation" Version="11.11.0" />
-    <PackageVersion Include="FluentAssertions" Version="8.10.0" />
+    <PackageVersion Include="FirebirdSql.Data.FirebirdClient" Version="11.0.0-alpha1" />
+    <PackageVersion Include="FluentValidation" Version="12.2.0" />
+    <PackageVersion Include="FluentAssertions" Version="8.11.0" />
     <PackageVersion Include="FluentNHibernate" Version="3.5.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-    <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.0.2" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.1.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.63.0" />
-    <PackageVersion Include="Microsoft.Win32.Registry.AccessControl" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Win32.Registry.AccessControl" Version="11.0.0-rc.2.26504.105" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="Newtonsoft.Json" Version="14.0.1-beta2" />
     <PackageVersion Include="NHibernate" Version="5.7.0" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
-    <PackageVersion Include="NUnit" Version="4.6.1" />
-    <PackageVersion Include="NUnit3TestAdapter" Version="6.3.0" />
-    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
+    <PackageVersion Include="NUnit" Version="5.0.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="6.3.1" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.301" />
     <PackageVersion Include="SauceControl.Blake2Fast" Version="2.0.0" />
     <PackageVersion Include="SharpDX" Version="4.2.0" />
     <PackageVersion Include="SharpDX.DirectSound" Version="4.2.0" />
     <PackageVersion Include="SourceGear.sqlite3" Version="3.53.4" />
-    <PackageVersion Include="System.CodeDom" Version="10.0.11" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.11" />
+    <PackageVersion Include="System.CodeDom" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="11.0.0-rc.2.26504.105" />
     <PackageVersion Include="System.Data.SqlClient" Version="4.9.1" />
     <PackageVersion Include="System.Data.SQLite" Version="2.0.4" />
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="10.0.11" />
-    <PackageVersion Include="System.Drawing.Common" Version="10.0.11" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="System.Drawing.Common" Version="11.0.0-rc.2.26504.105" />
+    <PackageVersion Include="System.Formats.Nrbf" Version="11.0.0-rc.2.26504.105" />
     <PackageVersion Include="System.Linq.Async" Version="7.0.1" />
-    <PackageVersion Include="System.Management" Version="10.0.11" />
+    <PackageVersion Include="System.Management" Version="11.0.0-rc.2.26504.105" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="10.0.11" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="11.0.0-rc.2.26504.105" />
     <PackageVersion Include="WorkflowCore.Persistence.EntityFramework" Version="3.20.0" />
     <PackageVersion Include="WorkflowCore.Persistence.SqlServer" Version="3.20.0" />
   </ItemGroup>
