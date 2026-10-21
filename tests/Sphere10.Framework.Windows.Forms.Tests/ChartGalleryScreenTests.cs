@@ -145,6 +145,27 @@ public class ChartGalleryScreenTests {
 		await Task.Yield();
 	});
 
+	[TestCase(typeof(ChartGalleryScreen))]
+	[TestCase(typeof(ChartTestScreen))]
+	[TestCase(typeof(TelemetryChartTestScreen))]
+	public void ChartScreenLifecycleInitializesOnPresentationAndSurvivesDocking(Type screenType) => RunWithMessageLoop(owner => {
+		static Control[] Descendants(Control control) => new[] { control }.Concat(control.Controls.Cast<Control>().SelectMany(Descendants)).ToArray();
+		static int PointCount(Control control) => Descendants(control).OfType<Chart>().SelectMany(chart => chart.Series).Sum(series => series.Points.Count);
+		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = Sphere10.Framework.Application.UI.ScreenMode.MultiView };
+		owner.Controls.Add(host);
+		using var screen = (WinFormsApplicationScreen)Activator.CreateInstance(screenType);
+		Assert.That(PointCount(screen), Is.Zero, "Constructors create controls; sample initialization belongs to the screen lifecycle.");
+		Assert.That(host.ShowScreen(screen), Is.True);
+		var points = PointCount(screen);
+		Assert.That(points, Is.GreaterThan(0));
+		Assert.That(host.UndockScreen(screen), Is.True);
+		Assert.That(host.DockScreen(screen), Is.True);
+		Assert.That(PointCount(screen), Is.EqualTo(points), "Docking must preserve captured examples rather than seed them again.");
+		Assert.That(host.CloseScreen(screen), Is.True);
+		Assert.That(screen.IsDisposed, Is.True);
+		return Task.CompletedTask;
+	});
+
 	private static ToolStrip Commands(Control parent, string name) => Find<ToolStrip>(parent, name);
 
 	private static T Find<T>(Control parent, string name) where T : Control => parent.Controls.Find(name, true).OfType<T>().Single();

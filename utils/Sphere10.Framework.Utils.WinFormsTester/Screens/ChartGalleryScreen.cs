@@ -24,12 +24,18 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 	private ChartGallerySample _selected;
 	private int _page;
 	private bool _changing;
+	private bool _initialized;
 
 	public ChartGalleryScreen() {
 		InitializeComponent();
 		Title = "Data Visualization Gallery";
-		if (Tools.Runtime.IsDesignMode)
+	}
+
+	protected override void OnLoad(EventArgs args) {
+		base.OnLoad(args);
+		if (_initialized || Tools.Runtime.IsDesignMode)
 			return;
+		_initialized = true;
 		_tiles = new[] { _tile1, _tile2, _tile3, _tile4, _tile5, _tile6 };
 		_introduction.Text = $"{ChartGallerySamples.All.Count} Examples • Browse The Gallery, Then Explore And Customize An Example • All Datasets Are Simulated";
 		_categories.Items.Add("All Chart Families");

@@ -20,18 +20,45 @@ public partial class TelemetryChartTestScreen : WinFormsApplicationScreen {
 	private readonly List<TelemetryChartPoint> _temperatureSamples = new();
 	private long _capturedSamples;
 	private DateTime _lastCapturedAtUtc;
+	private bool _initialized;
+	private bool _finalized;
 
 	public TelemetryChartTestScreen() {
 		InitializeComponent();
 		Title = "Live Telemetry";
-		if (Tools.Runtime.IsDesignMode)
+	}
+
+	protected override void OnLoad(EventArgs args) {
+		base.OnLoad(args);
+		if (_initialized || _finalized || Tools.Runtime.IsDesignMode)
 			return;
+		_initialized = true;
 		_sampleInterval.SelectedIndex = 1;
 		// Only generated observations enter these charts; this demonstration never reads hardware or the network.
 		var firstTimestamp = DateTime.UtcNow.AddMilliseconds(-79 * _captureTimer.Interval);
 		for (var index = 0; index < 80; index++)
 			AddSample(firstTimestamp.AddMilliseconds(index * _captureTimer.Interval), false);
 		RenderSamples();
+		UpdateCaptureState();
+	}
+
+	protected override void OnShow() {
+		base.OnShow();
+		UpdateCaptureState();
+	}
+
+	protected override void OnDestroyScreen() {
+		StopCapture();
+		base.OnDestroyScreen();
+	}
+
+	private void StopCapture() {
+		if (_finalized)
+			return;
+		_finalized = true;
+		_captureTimer?.Stop();
+		if (_captureTimer != null)
+			_captureTimer.Tick -= TimerTick;
 	}
 
 	protected override void OnVisibleChanged(EventArgs args) {
@@ -45,7 +72,8 @@ public partial class TelemetryChartTestScreen : WinFormsApplicationScreen {
 	}
 
 	protected override void OnHandleDestroyed(EventArgs args) {
-		_captureTimer?.Stop();
+		if (!_finalized)
+			_captureTimer?.Stop();
 		base.OnHandleDestroyed(args);
 	}
 
@@ -91,7 +119,7 @@ public partial class TelemetryChartTestScreen : WinFormsApplicationScreen {
 	}
 
 	private void UpdateCaptureState() {
-		if (_captureTimer == null || _live == null || IsDisposed || Disposing)
+		if (!_initialized || _finalized || _captureTimer == null || _live == null || IsDisposed || Disposing)
 			return;
 		_captureTimer.Enabled = !Tools.Runtime.IsDesignMode && IsHandleCreated && Visible && _live.Checked;
 		UpdateStatus();

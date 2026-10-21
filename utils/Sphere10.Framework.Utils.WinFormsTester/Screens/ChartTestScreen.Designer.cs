@@ -47,7 +47,7 @@ partial class ChartTestScreen {
 
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
-			_ready = false;
+			StopCapture();
 			components?.Dispose();
 		}
 		base.Dispose(disposing);
