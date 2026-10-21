@@ -14,13 +14,13 @@ namespace Sphere10.Framework.Windows.Forms;
 partial class TelemetryChart {
 	private Label _title;
 	private Label _value;
-	private Sphere10.Framework.Windows.Forms.GradientPanel _plot;
+	private GraphChart _plot;
 	private ToolTip _sampleToolTip;
 
 	private void InitializeComponent() {
 		_title = new Label();
 		_value = new Label();
-		_plot = new Sphere10.Framework.Windows.Forms.GradientPanel();
+		_plot = new GraphChart();
 		_sampleToolTip = new ToolTip();
 		SuspendLayout();
 		_title.Name = "chartTitle";
@@ -36,10 +36,8 @@ partial class TelemetryChart {
 		_value.Padding = new Padding(3);
 		_value.ForeColor = Color.SteelBlue;
 		_plot.Name = "chartPlot";
-		_plot.FromColor = _plot.ToColor = SystemColors.Control;
+		_plot.PlotBackColor = SystemColors.Control;
 		_plot.Dock = DockStyle.Fill;
-		_plot.Paint += PlotPaint;
-		_plot.Resize += PlotResize;
 		_plot.MouseMove += PlotMouseMove;
 		_plot.MouseLeave += PlotMouseLeave;
 		Controls.Add(_plot);

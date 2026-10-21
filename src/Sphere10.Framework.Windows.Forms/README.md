@@ -36,9 +36,55 @@ under a temporary per-monitor DPI context, and moves an existing viewer when
 the requesting form changes monitors. A viewer already on that monitor keeps
 its current placement; a moved maximized viewer remains maximized.
 
+## Numeric charts
+
+`GraphChart` is a designer-editable numeric plotting control backed by
+`Sphere10.Framework.Windows.Forms.DataVisualization`. `Style` selects line, filled area, vertical columns
+or horizontal bars. `BarChart` provides the column-chart defaults, category
+labels and margins. The **Line And Bar Charts** screen in WinForms Tester demonstrates
+multiple series, missing observations, styles, axes and live snapshot updates.
+
+Supply captured data with `SetSeries(GraphChartSeries[])` on the owning UI
+thread. `GraphChartSeries` copies its `GraphChartPoint[]`; its `Points` and the
+control's `Series` properties return detached arrays. X coordinates must be
+finite; missing or nonfinite Y observations remain gaps. Line and area segments
+stop at gaps, while bar charts retain missing category positions. Signed numeric
+values are supported. Neither control captures data, schedules refreshes, reads
+Windows counters or retains an unbounded history.
+
+Configure `MinimumX`, `MaximumX`, `MinimumY` and `MaximumY` for explicit ranges;
+null restores automatic scaling. `XAxisTitle`, `YAxisTitle`, `XValueFormat` and
+`YValueFormat` control labels and units. `XLabelFormatter` and `YLabelFormatter`
+allow runtime label formatting. Set `ShowLegend`, `ShowAxes`, `ShowVerticalGrid`,
+`GridColor` and `PlotBackColor` as appropriate. A series can override the control's
+style, and a point's optional `Label` supplies its category caption. `NativeChart`
+exposes the owned engine for advanced configuration; the control owns disposal.
+`PlotBounds` reports the actual layout, and `TryGetPointAt` returns the nearest
+captured category or numeric X coordinate, including a missing observation.
+Empty captures display a centered **NO DATA** message, including captures with
+only unavailable values and after `Clear`. Finite zero values display normally.
+`NoDataText` changes the message; an empty string hides it. `TelemetryChart` and
+`BarChart` share the same empty-state presentation.
+
+```csharp
+var chart = new BarChart { YAxisTitle = "Temperature (°C)", MinimumY = 0 };
+chart.SetSeries(new[] {
+	new GraphChartSeries("CPU Cores", new[] {
+		new GraphChartPoint(0, 42, "Core 0"),
+		new GraphChartPoint(1, 44, "Core 1")
+	}, Color.Firebrick)
+});
+```
+
+Repeated snapshots reuse the native chart control and retained series, batch
+collection invalidations, and remove superseded series. Resizing only renders
+captured values. Both source and package builds use
+`Sphere10.Framework.Windows.Forms.DataVisualization`.
+
 ## Telemetry history charts
 
-`TelemetryChart` is a designer-editable chart for captured time/value samples.
+`TelemetryChart` adapts captured time/value samples to the same `GraphChart`
+renderer, retaining the existing telemetry API and designer layout.
 Call `SetSamples(TelemetryChartPoint[])` on its UI thread; input membership is
 copied and the returned `Points` array is detached. The chart performs no sampling,
 background scheduling or native inventory. The consumer owns capture cadence,
