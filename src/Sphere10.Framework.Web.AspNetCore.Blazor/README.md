@@ -1065,6 +1065,12 @@ Administrative `UnregisterBlockAsync` may remove the block and its permanent scr
 
 ## Screen lifecycle and unsaved changes
 
+Follow [application and screen lifetimes](../../docs/guidelines/patterns/application-ownership.md#application-and-screen-lifetimes)
+for subscriptions, cancellation and shared workers. Keep screen activity in
+activation/deactivation/disposal overrides and application-wide service startup
+and shutdown in application initializers/finalizers. A retained hidden component
+is still alive; a navigation guard only decides permission.
+
 Override `CanDeactivateAsync(CancellationToken)` to veto screen switching, closure or workspace navigation. Override `HasUnsavedChanges` to enable the browser's confirmation when leaving the page. Call the protected `NotifyScreenChanged()` after changing dirty state so the shell updates its navigation lock.
 
 Override `OnActivatedAsync`, `OnDeactivatedAsync` and `DisposeAsyncCore` for lifecycle work. If overriding `OnInitializedAsync`, await the base implementation so the component attaches to its session. The renderer creates and disposes screen components; never instantiate or dispose them through the host.

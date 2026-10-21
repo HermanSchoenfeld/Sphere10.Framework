@@ -210,6 +210,11 @@ The root's `Logger` is the framework `Sphere10.Framework.ILogger`, resolved from
 
 ## Application screen hosting
 
+Use [application and screen lifetimes](../../docs/guidelines/patterns/application-ownership.md#application-and-screen-lifetimes)
+to assign refresh work, subscriptions and capture leases. Screen overrides own
+screen work; initializers/finalizers own shared application services. In
+particular, `OnHide` is a preflight guard, not a destruction callback.
+
 `IApplicationScreenHost` in `Sphere10.Framework.Application.UI` owns available and registered blocks, active navigation, the active screen, UI services, view mode, unsaved changes and lifecycle guards. `ISingleApplicationScreenHost` adds operations on the current screen; `IMultiApplicationScreenHost` adds retained/open collections, ordering and instance operations. The native host implements both interfaces and can switch modes through the guarded `ScreenMode` setter or `TrySetScreenModeAsync`. `IUserInterfaceServices` owns dialogs, status, UI dispatch and command execution. Read them from `application.ScreenHost.UserInterfaceServices`. The application exposes live `Blocks`, successful startup `LoadedPlugins`, its host and application commands; `ScreenHost.ActiveBlock` owns the selected block.
 
 `AddMainForm<TForm>()` registers shared, typed and native hosting interfaces against the existing host of a `MainForm`; it does not create another workspace. UI services resolve the form. Inject the common host for navigation and lifecycle operations:

@@ -85,6 +85,10 @@ Actual bitmap resizing continues to use Drawing's existing API.
 
 ## Application screen hosts
 
+Use the [application and screen lifetime practice](application-ownership.md#application-and-screen-lifetimes)
+when a screen owns refresh work or observes a shared service. Lifecycle overrides
+own the work; guards only decide whether a transition is allowed.
+
 The shared `IApplicationScreenHost` and single/multi-screen contracts own logical
 selection and transitions. Adapter objects preserve the identity of the running
 application, canonical blocks, menu definitions and exact screen instances.
