@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -46,7 +47,7 @@ public class SnapshotDataSource<T> : SyncBatchDataSourceBase<T> {
 	}
 
 	public override DataSourceItems<T> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		Guard.ArgumentGT(pageLength, 0, nameof(pageLength));
 		Guard.ArgumentGTE(page, 0, nameof(page));
 		IEnumerable<T> query = Volatile.Read(ref _snapshot);

@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Diagnostics;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,7 +75,7 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 	}
 
 	public void Reload() {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		Task.Run(() => ReloadAsync()).GetAwaiter().GetResult();
 	}
 
@@ -86,7 +87,7 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 
 	private void EnsureLoaded() {
 		if (!IsLoaded) {
-			DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+			Debug.AssertNotMainThread();
 			Task.Run(() => EnsureLoadedAsync(CancellationToken.None)).GetAwaiter().GetResult();
 		}
 	}
@@ -111,7 +112,7 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 			version = _version;
 		// Even a loader with synchronous setup executes away from the asynchronous consumer's dispatcher.
 		var rows = await Task.Run(() => {
-			DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+			Debug.AssertNotMainThread();
 			return _capture(cancellationToken);
 		}, cancellationToken).ConfigureAwait(false);
 		Guard.Ensure(rows != null, "A snapshot capture must return its complete inventory.");

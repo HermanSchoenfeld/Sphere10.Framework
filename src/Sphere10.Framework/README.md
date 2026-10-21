@@ -593,7 +593,7 @@ the source's actual primitive; see the [data-source practice](../../docs/guideli
 - `ProjectedDataSource<TFrom,TTo>` adapts representations using forward/inverse maps.
 - [SnapshotDataSource<T>](DataSource/SnapshotDataSource.cs) supplies read-only atomic snapshot replacement, property-based search, raw-value sorting and clamped paging without a Windows or visual dependency.
 - [ReloadableSnapshotDataSource<T>](DataSource/ReloadableSnapshotDataSource.cs) loads through an asynchronous capture delegate on first access, then pages the published snapshot until explicitly reloaded.
-- [DataSourceThreadDiagnostics](DataSource/DataSourceThreadDiagnostics.cs) provides opt-in Debug assertions for queries, refreshes and synchronous waiting bridges on a registered UI thread. Register the foreground thread for its host lifetime; callers and workers use the same UI-neutral registry. See [foreground-thread diagnostics](../../docs/guidelines/patterns/data-sources.md#debugging-foreground-thread-data-work).
+- [DebugExtensions](Extensions/DebugExtensions.cs) adds `Debug.AssertNotMainThread()` and message/detail overloads. Set `Debug.MainThread` at the application entry point; the Debug-only check compares that captured thread with the executing thread. See [foreground-thread assertions](../../docs/guidelines/patterns/data-sources.md#debugging-foreground-thread-data-work).
 
 ```csharp
 using Sphere10.Framework;
