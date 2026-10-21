@@ -45,7 +45,7 @@ Copyright © Herman Schoenfeld 2005 - Present
   - `src/Sphere10.Framework (CrossPlatform).sln` — Cross-platform projects only
   - `src/Sphere10.Framework (Win).sln` — All projects including Windows-specific
 
-Both solutions expose shared guides, repository instructions and skills under **Agent Guidance**. The root README appears once in **Misc**, with packaging scripts under **Misc → Scripts**. Project, test and demo READMEs remain in their real projects. Solution items open the original files in Visual Studio.
+Both solutions expose architecture guides, engineering practices and reference documents under **Developer Documentation**. The root README appears once in **Misc**, with packaging scripts under **Misc → Scripts**. Project, test and demo READMEs remain in their real projects. Solution items open the original files in Visual Studio.
 
 ## :package: Installation
 
@@ -253,19 +253,7 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 
 ## :handshake: Contributing
 
-Contributions are welcome! After cloning the repository or creating a worktree,
-use PowerShell 7.2 or later to run these commands from the Framework repository root:
-
-```powershell
-pwsh -File ./scripts/setup-agent-skills.ps1
-pwsh -File ./scripts/setup-agent-skills.ps1 -Check
-```
-
-Git does not run this setup automatically on clone. It creates ignored local
-aliases so coding agents can discover the shared instructions and skills under
-`agents/`; `-Check` verifies the aliases without changing them. Rerun setup after
-moving the checkout or atomically replacing an `AGENTS.md` file. See
-[Agent Guidance](docs/agent-guidance.md#local-alias-setup) for platform details.
+Contributions are welcome!
 
 To submit a change:
 

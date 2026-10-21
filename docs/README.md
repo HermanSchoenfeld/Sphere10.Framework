@@ -11,7 +11,6 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | Resource | Description |
 |----------|-------------|
 | [**Getting Started**](start-here.md) | Quick orientation for new developers |
-| [**Agent Guidance**](agent-guidance.md) | Agent entry points, instruction precedence and task-specific skills |
 | [**Tools Reference**](tools-reference.md) | Complete catalog of `Tools.*` namespace utilities |
 | [**Real-World Examples**](real-world-usage-examples.md) | Practical patterns from the test suite |
 
@@ -39,7 +38,6 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | [Sync/async operations](guidelines/patterns/sync-async.md) | Directional bases, completion, cancellation and disposal. |
 | [Interface bridges](guidelines/patterns/interface-bridges.md) | Inline projections between specialized and base contracts. |
 | [Application ownership](guidelines/patterns/application-ownership.md) | Runtime parents, definitions, plugins and lifecycle ownership. |
-| [Agent guidance](guidelines/patterns/agent-guidance.md) | Master instruction storage, pointers and local client aliases. |
 | [WinForms designer](guidelines/patterns/winforms-designer.md) | Concrete visual bases, editable layouts and runtime composition. |
 | [Reusable WinForms controls](guidelines/patterns/winforms-controls.md) | Selectors, database provider controls, grids, editors and presentation components. |
 | [Windows API facades](guidelines/patterns/windows-interop.md) | Native bindings, ownership and application consumption. |
@@ -136,7 +134,6 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | Goal | Start Here |
 |------|------------|
 | New to the framework | [Getting Started](start-here.md) |
-| Agent-assisted repository work | [Agent Guidance](agent-guidance.md) |
 | Using Tools.* utilities | [Tools Reference](tools-reference.md) |
 | Deferred/lazy/reloadable values and projections | [Future contracts](guidelines/patterns/futures.md) |
 | Wrapping an external executable | [Process Sentries](guidelines/patterns/process-sentries.md) |
@@ -168,7 +165,6 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 docs/
 ├── README.md                 ← You are here
 ├── start-here.md             — Quick start guide
-├── agent-guidance.md         — Agent entry points and instruction discovery
 ├── tools-reference.md        — Tools.* namespace catalog
 ├── real-world-usage-examples.md — Practical examples
 ├── architecture/
@@ -185,7 +181,6 @@ docs/
         ├── sync-async.md
         ├── interface-bridges.md
         ├── application-ownership.md
-        ├── agent-guidance.md
         ├── framework-utilities.md
         ├── fluent-builders.md
         ├── serialization.md
@@ -206,7 +201,6 @@ docs/
 | Document | Description |
 |----------|-------------|
 | [start-here.md](start-here.md) | Quick start guide |
-| [agent-guidance.md](agent-guidance.md) | Agent entry points, required reading and task-specific skills |
 | [tools-reference.md](tools-reference.md) | Tools.* namespace catalog |
 | [real-world-usage-examples.md](real-world-usage-examples.md) | Practical patterns from tests |
 | [architecture/sphere10-framework.md](architecture/sphere10-framework.md) | Framework architecture |
@@ -220,7 +214,6 @@ docs/
 | [guidelines/patterns/sync-async.md](guidelines/patterns/sync-async.md) | Directional execution, completion, cancellation and disposal |
 | [guidelines/patterns/interface-bridges.md](guidelines/patterns/interface-bridges.md) | Inline specialized interface projections |
 | [guidelines/patterns/application-ownership.md](guidelines/patterns/application-ownership.md) | Runtime structure, lifecycle and ownership |
-| [guidelines/patterns/agent-guidance.md](guidelines/patterns/agent-guidance.md) | Instruction storage and client aliases |
 | [guidelines/patterns/framework-utilities.md](guidelines/patterns/framework-utilities.md) | Existing utility infrastructure |
 | [guidelines/patterns/fluent-builders.md](guidelines/patterns/fluent-builders.md) | Configuration composition and validation |
 | [guidelines/patterns/serialization.md](guidelines/patterns/serialization.md) | Serializer and endian-aware persistence contracts |

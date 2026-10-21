@@ -80,8 +80,7 @@ defines adapter ownership and the separate key/value-free reaper contract.
   dictionary still needs an inverse key conversion for lookup.
 - A **decorator** retains the exposed contract and layers behavior over it.
   Use the abstraction's existing decorator family for synchronization,
-  observation and similar behavior. See the
-  [decorator skill](../../../agents/skills/decorator-pattern/SKILL.md).
+  observation and similar behavior. See [type hierarchies](type-hierarchies.md).
 - An **inline interface bridge** forwards a specialized member through an
   inherited compatible contract on the same instance. Follow
   [interface bridges](interface-bridges.md) for those members. A representation

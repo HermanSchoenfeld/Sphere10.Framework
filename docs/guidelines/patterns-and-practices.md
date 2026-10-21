@@ -6,9 +6,7 @@ additional references selected by those topics. Re-evaluate the selection when
 the task expands. A task can require several topics.
 
 Use the [coding guide](code-styling.md) for formatting, naming, compiler conventions
-and source headers. Follow the [agent workflow](../../agents/instructions.md) and
-the matching [repository skills](../../agents/skills/README.md). The user's explicit
-instructions take precedence; these topic files hold the implementation rules.
+and source headers. These topic files describe the implementation practices.
 
 | Work being done | Read |
 |---|---|
@@ -24,9 +22,9 @@ instructions take precedence; these topic files hold the implementation rules.
 | Choosing native selectors, database connection controls, CRUD grids, editors or presentation controls | [Reusable WinForms control catalog](patterns/winforms-controls.md) |
 | Windows/native API consumption or missing bindings | [Windows API facades](patterns/windows-interop.md) |
 | Fluent configuration and nested builders | [Fluent builders](patterns/fluent-builders.md) |
-| Capturing failures as data, optional operations or exception callbacks | [Exception execution and capture](patterns/framework-utilities.md#exception-execution-and-capture) |
 | Selecting utilities, guards or cryptographic infrastructure | [Framework utilities](patterns/framework-utilities.md) |
 | Serialization, binary layouts or endian-aware I/O | [Serialization](patterns/serialization.md) |
+| Capturing failures as data, optional operations or exception callbacks | [Exception execution and capture](patterns/framework-utilities.md#exception-execution-and-capture) |
 | Selecting extended lists, dictionaries, bidirectional maps, sets or collection decorators | [Collection selection and composition](patterns/collections.md) |
 | Shared state, read/write locks, compound operations or synchronized enumeration | [Synchronization with read/write scopes](patterns/synchronization.md) |
 | Live metric summaries without retaining sample history | [Statistics without history](patterns/stateless-statistics.md) |
@@ -40,13 +38,12 @@ instructions take precedence; these topic files hold the implementation rules.
 | Background jobs or schedules | [Scheduling](patterns/scheduling.md) |
 | Dependency/runtime/host upgrades or changes to startup, resource loading or cache construction | [Startup memory regressions](patterns/testing.md#startup-memory-regressions); for grouped caches, [Sparse groups and capacity](patterns/collections.md#sparse-groups-and-capacity) |
 | Adding, changing or running NUnit fixtures | [Testing](patterns/testing.md) |
-| Agent instruction discovery, shared skills or local aliases | [Agent guidance structure](patterns/agent-guidance.md) |
 | Creating or separating an internal/client application and configuring Framework references | [Independent project setup](patterns/new-projects.md) |
 | Architectural layer boundaries | [3-Tier Architecture](3-tier-architecture.md) |
 
 Open the affected [project documentation](../README.md) for the concrete API and
 its current consumer path. The topic files describe the practice; project guides
-and selected skills supply the relevant application details.
+supply the relevant application details.
 
-Before adding, changing, renaming or retiring a topic, follow the
-[guidance maintenance workflow](../../agents/instructions.md#maintain-skills-and-patterns).
+When adding, changing, renaming or retiring a topic, update this index and its
+incoming links. Verify examples against the current implementation and consumers.

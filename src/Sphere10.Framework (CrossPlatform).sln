@@ -85,181 +85,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AA4A8AEA-0
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Agent Guidance", "Agent Guidance", "{321F7331-B86F-5EED-A811-9B04B2CAD3B4}"
-	ProjectSection(SolutionItems) = preProject
-		..\AGENTS.md = ..\AGENTS.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{016755E6-E0EF-5018-87A4-056D06B64C32}"
-	ProjectSection(SolutionItems) = preProject
-		..\.github\copilot-instructions.md = ..\.github\copilot-instructions.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{B964E1FE-D96B-50B6-8623-126359123FC0}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\README.md = ..\agents\skills\README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "builder-pattern", "builder-pattern", "{B1F6963B-6C76-587B-92B9-E9583D79B3CD}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\builder-pattern\SKILL.md = ..\agents\skills\builder-pattern\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "code-style", "code-style", "{EF6F0175-5CE5-50E5-AD79-82DF11244809}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\code-style\SKILL.md = ..\agents\skills\code-style\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "collections", "collections", "{B366FEBA-D1B8-4DB4-BB5B-C2B4633F4411}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\collections\SKILL.md = ..\agents\skills\collections\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crud-grid", "crud-grid", "{0717CA64-3518-5D33-A64D-DD16B9765634}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\crud-grid\SKILL.md = ..\agents\skills\crud-grid\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crypto", "crypto", "{4005AFE7-C941-526B-9ABF-959DBCEC8D97}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\crypto\SKILL.md = ..\agents\skills\crypto\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "data-source", "data-source", "{E215638A-258D-5CEC-8E8C-FB69C349009C}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\data-source\SKILL.md = ..\agents\skills\data-source\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "decorator-pattern", "decorator-pattern", "{7763754E-24EE-5088-9417-FD1494660211}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\decorator-pattern\SKILL.md = ..\agents\skills\decorator-pattern\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "disposable-scopes", "disposable-scopes", "{1A65B448-8BF7-5473-98D5-F3B878A525D4}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\disposable-scopes\SKILL.md = ..\agents\skills\disposable-scopes\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "guards-and-scopes", "guards-and-scopes", "{4CADCD4E-A0B7-5C9E-ADD7-F23874F4D81D}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\guards-and-scopes\SKILL.md = ..\agents\skills\guards-and-scopes\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "job-scheduler", "job-scheduler", "{D5C314FC-15D9-53D2-B3E5-5AC0AB8ABB3B}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\job-scheduler\SKILL.md = ..\agents\skills\job-scheduler\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "logging", "logging", "{71073C65-7307-5E12-A6A1-1A8DC5EE78EE}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\logging\SKILL.md = ..\agents\skills\logging\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nhibernate-dal", "nhibernate-dal", "{98E2C506-9106-5F89-9283-631EA7A09F54}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\nhibernate-dal\SKILL.md = ..\agents\skills\nhibernate-dal\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "references", "references", "{5B95DE6D-B800-5C19-AF33-EC746B93C88B}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\nhibernate-dal\references\nhibernate-runtime-contract.md = ..\agents\skills\nhibernate-dal\references\nhibernate-runtime-contract.md
-		..\agents\skills\nhibernate-dal\references\sql-dac-profile.md = ..\agents\skills\nhibernate-dal\references\sql-dac-profile.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "oo-design", "oo-design", "{F020A02C-5F8B-5AE3-BD49-C967B0E63015}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\oo-design\SKILL.md = ..\agents\skills\oo-design\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "persistence", "persistence", "{BA3776B2-22C3-40F5-9B9D-EA6E73A8B918}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\persistence\SKILL.md = ..\agents\skills\persistence\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "protocols", "protocols", "{F71ACB85-0410-5EE5-8033-5ED60C5B52F8}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\protocols\SKILL.md = ..\agents\skills\protocols\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "references", "references", "{DE4B14C8-6C9E-5DD1-8FDB-EC80008A1BB8}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\protocols\references\current-source-limitations.md = ..\agents\skills\protocols\references\current-source-limitations.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "serialization", "serialization", "{0B6FEC96-C073-5963-B353-3CCFE39EE94C}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\serialization\SKILL.md = ..\agents\skills\serialization\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "state-machines", "state-machines", "{E75609CA-50F1-5DEB-8076-0A2E95CC0F47}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\state-machines\SKILL.md = ..\agents\skills\state-machines\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools-namespace", "tools-namespace", "{5E66CC0E-A4EC-5674-BF9A-96C3FC5123B1}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\tools-namespace\SKILL.md = ..\agents\skills\tools-namespace\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unit-testing", "unit-testing", "{12CFDCDB-4B7F-5F4C-935A-9253014DB77E}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\unit-testing\SKILL.md = ..\agents\skills\unit-testing\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "user-settings", "user-settings", "{8AC37839-5D21-589E-8ADC-A54D6EAC7CA2}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\user-settings\SKILL.md = ..\agents\skills\user-settings\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "winforms-ui", "winforms-ui", "{2CDF5A22-6A70-58C3-82C8-A018A003F4F7}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\winforms-ui\SKILL.md = ..\agents\skills\winforms-ui\SKILL.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "instructions", "instructions", "{8626CD23-6F8F-4C63-A57F-2E507586439C}"
-	ProjectSection(SolutionItems) = preProject
-		..\.github\instructions\source.instructions.md = ..\.github\instructions\source.instructions.md
-		..\.github\instructions\tests.instructions.md = ..\.github\instructions\tests.instructions.md
-		..\.github\instructions\utils.instructions.md = ..\.github\instructions\utils.instructions.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{10671148-26EC-4BB5-B43C-4074AA083281}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\README.md = ..\agents\README.md
-		..\agents\instructions.md = ..\agents\instructions.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scopes", "scopes", "{B617D45C-A422-4B54-920E-30DDF19F93F0}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\scopes\source.md = ..\agents\scopes\source.md
-		..\agents\scopes\tests.md = ..\agents\scopes\tests.md
-		..\agents\scopes\utils.md = ..\agents\scopes\utils.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{9085BF67-DB78-41ED-A064-FD47F8F7BD40}"
-	ProjectSection(SolutionItems) = preProject
-		..\scripts\setup-agent-skills.ps1 = ..\scripts\setup-agent-skills.ps1
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6AEC8257-DEFA-56E9-B4AA-8316753266A6}"
-	ProjectSection(SolutionItems) = preProject
-		AGENTS.md = AGENTS.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{CE85D0EA-3692-5FA8-9D11-1D7EDE01DBFE}"
-	ProjectSection(SolutionItems) = preProject
-		.github\copilot-instructions.md = .github\copilot-instructions.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6812136E-9BC4-5552-A684-6875254945D2}"
-	ProjectSection(SolutionItems) = preProject
-		..\tests\AGENTS.md = ..\tests\AGENTS.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{BE329079-384E-5A90-8D3E-6C7E9A949DCE}"
-	ProjectSection(SolutionItems) = preProject
-		..\utils\AGENTS.md = ..\utils\AGENTS.md
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Developer Documentation", "Developer Documentation", "{321F7331-B86F-5EED-A811-9B04B2CAD3B4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Archive", "Archive", "{AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}"
 EndProject
@@ -280,7 +106,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Guides", "Guides", "{A00B71
 		..\docs\start-here.md = ..\docs\start-here.md
 		..\docs\theming-template-sources.md = ..\docs\theming-template-sources.md
 		..\docs\tools-reference.md = ..\docs\tools-reference.md
-		..\docs\agent-guidance.md = ..\docs\agent-guidance.md
 		..\.github\ci.md = ..\.github\ci.md
 	EndProjectSection
 EndProject
@@ -299,7 +124,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "guidelines", "guidelines", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "patterns", "patterns", "{AF8787FD-BDA3-4D39-8576-D17F9C718AF6}"
 	ProjectSection(SolutionItems) = preProject
-		..\docs\guidelines\patterns\agent-guidance.md = ..\docs\guidelines\patterns\agent-guidance.md
 		..\docs\guidelines\patterns\application-ownership.md = ..\docs\guidelines\patterns\application-ownership.md
 		..\docs\guidelines\patterns\collections-and-storage.md = ..\docs\guidelines\patterns\collections-and-storage.md
 		..\docs\guidelines\patterns\collections.md = ..\docs\guidelines\patterns\collections.md
@@ -368,11 +192,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Utils.Profiler", "..\utils\Sphere10.Framework.Utils.Profiler\Sphere10.Framework.Utils.Profiler.csproj", "{6D7D39BF-0064-44D5-BC2F-EB31F9B64165}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sphere10.Framework.Utils.Profiler.Tests", "..\tests\Sphere10.Framework.Utils.Profiler.Tests\Sphere10.Framework.Utils.Profiler.Tests.csproj", "{60290070-7A7F-479D-B01D-B0A0EFDC0C0E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "object-spaces", "object-spaces", "{9E54A774-508D-4DCE-88BA-1C0B00C0C1CC}"
-	ProjectSection(SolutionItems) = preProject
-		..\agents\skills\object-spaces\SKILL.md = ..\agents\skills\object-spaces\SKILL.md
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -833,8 +652,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{BA3776B2-22C3-40F5-9B9D-EA6E73A8B918} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{B366FEBA-D1B8-4DB4-BB5B-C2B4633F4411} = {B964E1FE-D96B-50B6-8623-126359123FC0}
 		{A1206153-4D43-4A74-82FE-60B1A1C00AF9} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{C5A86B37-47F8-4176-BE9A-4B16D58B6416} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{5EFC5E99-FD35-4F12-A9A1-966F40ED70B6} = {E7705E7B-D04B-488C-8442-149A029F34B8}
@@ -847,33 +664,6 @@ Global
 		{74C7F0F9-54A6-4E50-911E-D9287D02D120} = {F904F79D-75D5-4918-E32F-904F3CF671B2}
 		{8E0E6E63-FB54-46B3-BC95-2766C3BBE530} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 		{F8CC830D-08D3-45C1-821C-75175A10CC3F} = {E7705E7B-D04B-488C-8442-149A029F34B8}
-		{016755E6-E0EF-5018-87A4-056D06B64C32} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
-		{B964E1FE-D96B-50B6-8623-126359123FC0} = {10671148-26EC-4BB5-B43C-4074AA083281}
-		{B1F6963B-6C76-587B-92B9-E9583D79B3CD} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{EF6F0175-5CE5-50E5-AD79-82DF11244809} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{0717CA64-3518-5D33-A64D-DD16B9765634} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{4005AFE7-C941-526B-9ABF-959DBCEC8D97} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{E215638A-258D-5CEC-8E8C-FB69C349009C} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{7763754E-24EE-5088-9417-FD1494660211} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{1A65B448-8BF7-5473-98D5-F3B878A525D4} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{4CADCD4E-A0B7-5C9E-ADD7-F23874F4D81D} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{D5C314FC-15D9-53D2-B3E5-5AC0AB8ABB3B} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{71073C65-7307-5E12-A6A1-1A8DC5EE78EE} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{98E2C506-9106-5F89-9283-631EA7A09F54} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{5B95DE6D-B800-5C19-AF33-EC746B93C88B} = {98E2C506-9106-5F89-9283-631EA7A09F54}
-		{F020A02C-5F8B-5AE3-BD49-C967B0E63015} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{F71ACB85-0410-5EE5-8033-5ED60C5B52F8} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{DE4B14C8-6C9E-5DD1-8FDB-EC80008A1BB8} = {F71ACB85-0410-5EE5-8033-5ED60C5B52F8}
-		{0B6FEC96-C073-5963-B353-3CCFE39EE94C} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{E75609CA-50F1-5DEB-8076-0A2E95CC0F47} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{5E66CC0E-A4EC-5674-BF9A-96C3FC5123B1} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{12CFDCDB-4B7F-5F4C-935A-9253014DB77E} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{8AC37839-5D21-589E-8ADC-A54D6EAC7CA2} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{2CDF5A22-6A70-58C3-82C8-A018A003F4F7} = {B964E1FE-D96B-50B6-8623-126359123FC0}
-		{6AEC8257-DEFA-56E9-B4AA-8316753266A6} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
-		{CE85D0EA-3692-5FA8-9D11-1D7EDE01DBFE} = {6AEC8257-DEFA-56E9-B4AA-8316753266A6}
-		{6812136E-9BC4-5552-A684-6875254945D2} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
-		{BE329079-384E-5A90-8D3E-6C7E9A949DCE} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
 		{AC2B82D2-41CF-5FE1-B595-8D51040FE4FD} = {A00B713E-E41E-5464-8194-F0D0A0CE0F35}
 		{D08BEA18-AEC4-52C9-B416-9B1B75BED723} = {AC2B82D2-41CF-5FE1-B595-8D51040FE4FD}
 		{7AEA97CB-DBD7-59E3-8F35-DF222D874ADE} = {D08BEA18-AEC4-52C9-B416-9B1B75BED723}
@@ -888,12 +678,7 @@ Global
 		{D42F5158-7C65-59DC-8497-8E4B7C128546} = {9B26E23E-6790-5AA6-9063-56A40CE0D0FB}
 		{298B3A2A-3909-544C-9B59-A2C018157E50} = {AA4A8AEA-0640-4FFF-922B-AEBFC799DB85}
 		{834AFB88-1DF2-5365-9665-64A39CD49648} = {298B3A2A-3909-544C-9B59-A2C018157E50}
-		{8626CD23-6F8F-4C63-A57F-2E507586439C} = {016755E6-E0EF-5018-87A4-056D06B64C32}
-		{10671148-26EC-4BB5-B43C-4074AA083281} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
-		{9085BF67-DB78-41ED-A064-FD47F8F7BD40} = {321F7331-B86F-5EED-A811-9B04B2CAD3B4}
-		{B617D45C-A422-4B54-920E-30DDF19F93F0} = {10671148-26EC-4BB5-B43C-4074AA083281}
 		{AF8787FD-BDA3-4D39-8576-D17F9C718AF6} = {D5126186-FF36-5522-815D-A630ECE5ADAA}
-		{9E54A774-508D-4DCE-88BA-1C0B00C0C1CC} = {B964E1FE-D96B-50B6-8623-126359123FC0}
 		{6D7D39BF-0064-44D5-BC2F-EB31F9B64165} = {F904F79D-75D5-4918-E32F-904F3CF671B2}
 		{60290070-7A7F-479D-B01D-B0A0EFDC0C0E} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 	EndGlobalSection

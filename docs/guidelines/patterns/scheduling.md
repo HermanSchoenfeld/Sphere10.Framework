@@ -1,6 +1,6 @@
 # Scheduling
 
-Read the [job-scheduler skill](../../../agents/skills/job-scheduler/SKILL.md) before configuring recurring or one-shot background jobs. Use the existing framework scheduler rather than ad-hoc timers.
+Use the existing framework scheduler rather than ad-hoc timers.
 
 ## Job Scheduler
 
@@ -11,11 +11,11 @@ The framework includes a built-in `Scheduler<TJob, TJobSchedule>` for recurring 
 - **`ActionJob`** — wraps a plain `Action` as a job.
 - **`JobBuilder<T>`** / **`JobBuilder`** — fluent builder: `JobBuilder.For(action).Called("name").Repeat.OnInterval(TimeSpan).Build()`.
 - **`Scheduler<TJob, TJobSchedule>`** — manages a timeline heap, auto-reschedules based on `ReschedulePolicy`, supports sync/async via `JobPolicy`, emits `JobStatusChanged` / `StatusChanged` events.
-- The scheduler accepts an `ILogger` for diagnostics. `IJob.Execute()` is synchronous; asynchronous scheduling runs it as background work and does not await an async action. Stop/disposal do not join in-flight jobs. Follow the [scheduler skill](../../../agents/skills/job-scheduler/SKILL.md) for ownership and shutdown.
+- The scheduler accepts an `ILogger` for diagnostics. `IJob.Execute()` is synchronous; asynchronous scheduling runs it as background work and does not await an async action. Stop/disposal do not join in-flight jobs. Account for job ownership and shutdown completion in the caller.
 
 `IJob.Execute()` is the synchronous execution primitive. `JobPolicy` selects background execution of that primitive; it does not turn an `Action` into an awaited async operation. Do not supply an async lambda to `JobBuilder.For(Action)` or start unobserved work inside `Execute()`.
 
-Use the existing API spellings: `RunSyncronously`, `RunAsyncronously`, `JobPolicy.Asyncronous` and `SchedulerPolicy.ForceSyncronous`. Register jobs with `AddJob` and start the owned scheduler explicitly. Constructing a new instance does not start it; the process-global `Scheduler.Asynchronous` and `Scheduler.Synchronous` instances are started by static initialization. The skill details first-run timestamps, rescheduling anchors and failure policy.
+Use the existing API spellings: `RunSyncronously`, `RunAsyncronously`, `JobPolicy.Asyncronous` and `SchedulerPolicy.ForceSyncronous`. Register jobs with `AddJob` and start the owned scheduler explicitly. Constructing a new instance does not start it; the process-global `Scheduler.Asynchronous` and `Scheduler.Synchronous` instances are started by static initialization.
 
 `AddJob` requires the job's execution policy to match the scheduler's policy.
 A default scheduler accepts `JobPolicy.Asyncronous` jobs; a scheduler with

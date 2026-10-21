@@ -1,6 +1,6 @@
 # Binary Serialization
 
-Read the [serialization skill](../../../agents/skills/serialization/SKILL.md) when implementing serializers or choosing builder/factory configuration. The [core project guide](../../../src/Sphere10.Framework/README.md) describes the persistence consumers.
+The [core project guide](../../../src/Sphere10.Framework/README.md) describes the persistence consumers.
 
 ## Serialization
 
@@ -36,4 +36,4 @@ Reflected automatic assembly does not establish a stable wire layout. Custom fac
 
 [SerializerBuilderTests](../../../tests/Sphere10.Framework.Tests/Serialization/SerializerBuilderTests.cs) provide explicit-binding, automatic-assembly, base-member ordering, constructor, null and cyclic-reference examples. They are references for the relevant behavior, not a promise that every reflected type can be serialized automatically.
 
-See [fluent builders](fluent-builders.md), [collections and storage](collections-and-storage.md) and the [protocol skill](../../../agents/skills/protocols/SKILL.md) for the surrounding configuration and consumers.
+See [fluent builders](fluent-builders.md) and [collections and storage](collections-and-storage.md) for the surrounding configuration and consumers.

@@ -907,7 +907,7 @@ Sphere10Framework.Instance
 
 `FormWindowSettings` uses the existing `UserSettings` provider and `SettingsObject.Save()` contract. The default settings ID is `"MainForm"`; supply `SettingsID` to distinguish multiple main-window configurations. `UseMainFormSettings(false)` disables automatic persistence. Optional preference read/write failures are logged and do not prevent opening or closing the application.
 
-Other forms can keep `Tools.WinForms.AutoPersistWindowSettings(Form, SettingsID)` in a `using` scope for the window's lifetime to save once on accepted closure, or use `CaptureWindowSettings` and `RestoreWindowSettings` with their own `FormWindowSettings` instance. See the repository [user-settings skill](../../agents/skills/user-settings/SKILL.md) for settings classes, defaults, lifecycle and storage conventions.
+Other forms can keep `Tools.WinForms.AutoPersistWindowSettings(Form, SettingsID)` in a `using` scope for the window's lifetime to save once on accepted closure, or use `CaptureWindowSettings` and `RestoreWindowSettings` with their own `FormWindowSettings` instance. See the [user UI settings practice](../../docs/guidelines/patterns/user-ui-settings.md) for settings classes, defaults, lifecycle and storage conventions.
 
 ### Shared presentation contracts
 
