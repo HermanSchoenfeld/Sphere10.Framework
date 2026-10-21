@@ -159,13 +159,9 @@ public class ThreadUtil {
 
 	private static T? ReadOptional<T>(Func<T> read)
 		where T : struct {
-		try {
-			return read();
-		} catch (Win32Exception) {
-			return null;
-		} catch (InvalidOperationException) {
-			return null;
-		}
+		T? value = null;
+		Tools.Exceptions.ExecuteCapturingException(() => value = read(), out _, error => error is Win32Exception or InvalidOperationException);
+		return value;
 	}
 
 	private static long Ticks(WinAPI.KERNEL32.FILETIME value) => checked((long)(((ulong)value.DateTimeHigh << 32) | value.DateTimeLow));

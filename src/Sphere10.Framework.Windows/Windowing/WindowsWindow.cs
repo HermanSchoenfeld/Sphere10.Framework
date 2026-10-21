@@ -35,8 +35,11 @@ public static class WindowsWindow {
 		var windows = new List<WindowsWindowInfo>();
 		Exception callbackError = null;
 		WinAPI.USER32.WindowEnumCallback callback = (window, _) => {
-			try { checkpoint?.Invoke(); if (TryGetInfo(window, includeProcessDetails, out var info)) windows.Add(info); return true; }
-			catch (Exception error) { callbackError = error; return false; }
+			Tools.Exceptions.ExecuteCapturingException(() => {
+				checkpoint?.Invoke();
+				if (TryGetInfo(window, includeProcessDetails, out var info)) windows.Add(info);
+			}, out callbackError);
+			return callbackError == null;
 		};
 		Marshal.SetLastPInvokeError(0);
 		var success = WinAPI.USER32.EnumWindows(callback, IntPtr.Zero);
@@ -60,12 +63,14 @@ public static class WindowsWindow {
 		var processName = string.Empty;
 		DateTime? processStarted = null;
 		var error = string.Empty;
-		if (includeProcessDetails)
-			try {
+		if (includeProcessDetails) {
+			Tools.Exceptions.ExecuteCapturingException(() => {
 				using var process = Process.GetProcessById(checked((int)processId));
 				processName = process.ProcessName;
 				processStarted = process.StartTime.ToUniversalTime();
-			} catch (Exception failure) when (failure is Win32Exception or InvalidOperationException or ArgumentException or NotSupportedException) { error = failure.Message; }
+			}, out var failure, exception => exception is Win32Exception or InvalidOperationException or ArgumentException or NotSupportedException);
+			error = failure?.Message ?? string.Empty;
+		}
 		if (WinAPI.USER32.GetWindowThreadProcessId(handle, out var owner) != threadId || owner != processId) return false;
 		info = new WindowsWindowInfo(handle, title.ToString(), className, checked((int)processId), threadId, processName, processStarted,
 			WinAPI.USER32.IsWindowVisible(handle), error) { IsMinimized = WinAPI.USER32.IsIconic(handle) };

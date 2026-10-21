@@ -65,7 +65,7 @@ public class FileIconCache : SynchronizedObject, IDisposable {
 				if (budget.Elapsed > _loadingBudget)
 					return;
 				Image image = null;
-				try {
+				Tools.Exceptions.ExecuteCapturingException(() => {
 					// Mapped network drives can appear local; do not load their resources automatically.
 					if (new DriveInfo(Path.GetPathRoot(source.FilePath)).DriveType != DriveType.Network && IsRasterImage(source.FilePath)) {
 						// Package logos are ordinary image assets; detach their pixels so the cached image never locks the source file.
@@ -81,11 +81,10 @@ public class FileIconCache : SynchronizedObject, IDisposable {
 							image = icon.ToBitmap(_imageSize, _imageSize);
 						}
 					}
-				} catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or System.ComponentModel.Win32Exception
+				}, out _, error => error is IOException or UnauthorizedAccessException or ArgumentException or System.ComponentModel.Win32Exception
 					or System.Security.SecurityException or System.Runtime.InteropServices.ExternalException
-					|| error is OutOfMemoryException && IsRasterImage(source.FilePath)) {
-					// Cache unavailable resources as well as successful loads.
-				}
+					|| error is OutOfMemoryException && IsRasterImage(source.FilePath));
+				// Cache unavailable resources as well as successful loads.
 				using (EnterWriteScope()) {
 					if (_disposed || _images.Count >= _capacity || _images.ContainsKey(key))
 						image?.Dispose();

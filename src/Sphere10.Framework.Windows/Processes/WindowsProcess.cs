@@ -532,7 +532,9 @@ public sealed class WindowsProcess : IDisposable {
 	private static long Ticks(WinAPI.KERNEL32.FILETIME value) => unchecked((long)(((ulong)value.DateTimeHigh << 32) | value.DateTimeLow));
 
 	private static T Read<T>(Func<T> read, T fallback) {
-		try { return read(); }
-		catch (Exception error) when (error is Win32Exception or InvalidOperationException or NotSupportedException or ArgumentException or UnauthorizedAccessException or SecurityException) { return fallback; }
+		var value = fallback;
+		Tools.Exceptions.ExecuteCapturingException(() => value = read(), out _,
+			error => error is Win32Exception or InvalidOperationException or NotSupportedException or ArgumentException or UnauthorizedAccessException or SecurityException);
+		return value;
 	}
 }

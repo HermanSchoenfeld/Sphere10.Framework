@@ -29,7 +29,7 @@ public class WindowsDriveUtil {
 		foreach (var drive in DriveInfo.GetDrives()) {
 			checkpoint?.Invoke();
 			var row = new WindowsDriveInfo { Name = drive.Name };
-			try {
+			Tools.Exceptions.ExecuteCapturingException(() => {
 				row.DriveType = drive.DriveType;
 				if (probeNetworkDrives || drive.DriveType != DriveType.Network) {
 					row.IsReady = drive.IsReady;
@@ -41,9 +41,8 @@ public class WindowsDriveUtil {
 						row.AvailableBytes = drive.AvailableFreeSpace;
 					}
 				}
-			} catch (Exception error) {
-				row.ReadError = error;
-			}
+			}, out var readError);
+			row.ReadError = readError;
 			rows.Add(row);
 		}
 		checkpoint?.Invoke();
@@ -84,7 +83,8 @@ public class WindowsDriveUtil {
 			DeviceId = Text(item, "DeviceID"), DiskIndex = Number<uint>(item, "DiskIndex"), Index = Number<uint>(item, "Index"), Type = Text(item, "Type"),
 			SizeBytes = Number<ulong>(item, "Size"), StartingOffsetBytes = Number<ulong>(item, "StartingOffset"), BootPartition = Number<bool>(item, "BootPartition")
 		};
-		try {
+		var resolved = row;
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			var roots = new List<string>();
 			using var drives = item.GetRelated("Win32_LogicalDisk", "Win32_LogicalDiskToPartition", null, null, null, null, false,
 				new System.Management.EnumerationOptions { Timeout = timeout ?? TimeSpan.FromSeconds(15), Rewindable = false });
@@ -96,10 +96,9 @@ public class WindowsDriveUtil {
 						roots.Add(name + @"\");
 				}
 			}
-			return row with { DriveRoots = roots.ToArray() };
-		} catch (Exception error) when (error is not OperationCanceledException) {
-			return row with { DriveAssociationError = error };
-		}
+			resolved = row with { DriveRoots = roots.ToArray() };
+		}, out var associationError, error => error is not OperationCanceledException);
+		return associationError == null ? resolved : row with { DriveAssociationError = associationError };
 	}
 
 	private static T[] ReadHardware<T>(string query, Func<ManagementObject, T> read, Func<Exception, T> failure,
@@ -114,11 +113,9 @@ public class WindowsDriveUtil {
 		foreach (ManagementObject item in objects) {
 			using (item) {
 				checkpoint?.Invoke();
-				try {
-					result.Add(read(item));
-				} catch (Exception error) when (error is not OperationCanceledException) {
-					result.Add(failure(error));
-				}
+				Tools.Exceptions.ExecuteCapturingException(() => result.Add(read(item)), out var readError, error => error is not OperationCanceledException);
+				if (readError != null)
+					result.Add(failure(readError));
 			}
 		}
 		checkpoint?.Invoke();

@@ -152,11 +152,10 @@ public class RegistryUtil {
 		var values = new List<RegistryValue>();
 		foreach (var name in key.GetValueNames()) {
 			checkpoint?.Invoke();
-			try {
-				values.Add(ReadValue(key, address, name));
-			} catch (Exception error) when (error is IOException or UnauthorizedAccessException or SecurityException or ArgumentException) {
+			Tools.Exceptions.ExecuteCapturingException(() => values.Add(ReadValue(key, address, name)), out var error,
+				failure => failure is IOException or UnauthorizedAccessException or SecurityException or ArgumentException);
+			if (error != null)
 				values.Add(new RegistryValue(address, name, RegistryValueKind.Unknown, null, error));
-			}
 		}
 		return values.ToArray();
 	}

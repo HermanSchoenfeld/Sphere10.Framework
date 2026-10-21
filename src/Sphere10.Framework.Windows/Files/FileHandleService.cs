@@ -116,7 +116,7 @@ public sealed class FileHandleService {
 		Console.OutputEncoding = new UTF8Encoding(false);
 		// The helper remains bounded even when the parent closes before its cancellation continuation runs.
 		using var watchdog = new System.Threading.Timer(_ => Environment.Exit(3), null, TimeSpan.FromSeconds(22), Timeout.InfiniteTimeSpan);
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			Guard.Argument(args.Length >= 2, nameof(args), "A file inspection worker requires a mode.");
 			if (args[1] == "release") {
 				Guard.Argument(args.Length == 3 && args[2].Length <= 128 * 1024, nameof(args), "File-handle release requires one captured native handle.");
@@ -132,7 +132,8 @@ public sealed class FileHandleService {
 				CaptureHandles(identity);
 			}
 			WriteMessage(new WorkerMessage { Kind = "complete" });
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			WriteMessage(new WorkerMessage { Kind = "error", Message = $"{error.GetType().Name}: {error.Message}" });
 			exitCode = 1;
 		}
@@ -157,23 +158,23 @@ public sealed class FileHandleService {
 		timeout.CancelAfter(TimeSpan.FromSeconds(20));
 		await using (Tools.Scope.ExecuteOnDisposeAsync(async () => {
 			// Cleanup stops only this owned helper. Source-handle closure belongs solely to an explicit release request.
-			try {
+			var cleanupError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 				if (!worker.HasExited)
 					worker.Kill();
 				using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
 				await worker.WaitForExitAsync(cleanupTimeout.Token).ConfigureAwait(false);
-			} catch (Exception error) when (error is InvalidOperationException or Win32Exception or OperationCanceledException) {
+			}, error => error is InvalidOperationException or Win32Exception or OperationCanceledException).ConfigureAwait(false);
+			if (cleanupError != null) {
 				partial = true;
-				if (error is OperationCanceledException)
+				if (cleanupError is OperationCanceledException)
 					_unfinishedWorker = workerIdentity;
-				notes.Add($"Worker cleanup: {error.Message}");
+				notes.Add($"Worker cleanup: {cleanupError.Message}");
 			}
 			if (workerErrors != null) {
-				try {
-					await workerErrors.WaitAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
-				} catch (Exception error) when (error is OperationCanceledException or IOException or ObjectDisposedException) {
-					// Observe the redirected reader even when timeout cleanup interrupted its stream.
-				} catch (TimeoutException) {
+				// Observe the redirected reader even when timeout cleanup interrupted its stream.
+				var streamError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => workerErrors.WaitAsync(TimeSpan.FromSeconds(1)),
+					error => error is OperationCanceledException or IOException or ObjectDisposedException or TimeoutException).ConfigureAwait(false);
+				if (streamError is TimeoutException) {
 					// A driver can prevent even helper termination. Keep parent cleanup bounded and observe any later stream failure.
 					_ = workerErrors.ContinueWith(task => { _ = task.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
 					partial = true;
@@ -181,7 +182,7 @@ public sealed class FileHandleService {
 				}
 			}
 		})) {
-			try {
+			var inspectionError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 				Guard.Ensure(worker.Start(), "Unable to start the isolated file inspection worker.");
 				workerIdentity = new ProcessIdentity(worker.Id, worker.StartTime.ToUniversalTime());
 				workerErrors = worker.StandardError.ReadToEndAsync(timeout.Token);
@@ -211,12 +212,13 @@ public sealed class FileHandleService {
 				partial |= !complete || worker.ExitCode != 0;
 				if (!complete || worker.ExitCode != 0)
 					notes.Add($"The isolated worker exited with code {worker.ExitCode} before completing inspection.");
-			} catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) {
+			}, error => error is not OperationCanceledException || !cancellationToken.IsCancellationRequested).ConfigureAwait(false);
+			if (inspectionError is OperationCanceledException) {
 				partial = true;
 				notes.Add("The isolated worker reached its 20-second limit. Available rows were retained; native file name resolution may be blocked by a driver.");
-			} catch (Exception error) when (error is not OperationCanceledException) {
+			} else if (inspectionError != null) {
 				partial = true;
-				notes.Add($"File inspection: {error.GetType().Name}: {error.Message}");
+				notes.Add($"File inspection: {inspectionError.GetType().Name}: {inspectionError.Message}");
 			}
 		}
 		cancellationToken.ThrowIfCancellationRequested();
@@ -365,7 +367,7 @@ public sealed class FileHandleService {
 			availability = "The owning process creation time could not be verified.";
 		} else {
 			identity = new ProcessIdentity(processId, DateTime.FromFileTimeUtc(FileTimeTicks(creation)));
-			try {
+			Tools.Exceptions.ExecuteCapturingException<Win32Exception>(() => {
 				if (requested.HasValue && identity != requested.Value) {
 					availability = "The selected process exited or its PID was reused; replacement-process handles are omitted.";
 					identity = requested.Value;
@@ -380,7 +382,8 @@ public sealed class FileHandleService {
 					if (WinAPI.KERNEL32.QueryFullProcessImageName(handle, 0, path, ref size))
 						name = Path.GetFileNameWithoutExtension(path.ToString());
 				}
-			} catch (Win32Exception error) {
+			}, out var error);
+			if (error != null) {
 				availability = "The owning process liveness could not be verified: " + error.Message;
 			}
 		}
