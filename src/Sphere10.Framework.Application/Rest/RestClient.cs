@@ -153,13 +153,14 @@ public class RestClient : IRestClient, IDisposable {
 			_logLevel = logLevel;
 		}
 		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) {
-			_logger.Log(_logLevel, $"Request: {request}");
+			var description = $"{request.Method} {request.RequestUri?.AbsolutePath}";
+			_logger.Log(_logLevel, $"Request: {description}");
 			try {
 				var response = await base.SendAsync(request, cancellationToken);
-				_logger.Log(_logLevel, $"Response: {response}");
+				_logger.Log(_logLevel, $"Response: {description} {(int)response.StatusCode}");
 				return response;
 			} catch (Exception ex) {
-				_logger.Exception(ex);
+				_logger.Log(_logLevel, $"Request failed: {description} ({ex.GetType().Name})");
 				throw;
 			}
 		}
