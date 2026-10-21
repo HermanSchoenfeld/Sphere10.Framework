@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -20,6 +21,10 @@ public abstract class BlazorGridControllerBase<TItem> : Disposable, IBlazorGridC
 	public abstract int CurrentPage { get; }
 
 	public abstract int PageSize { get; }
+
+	public abstract int ManualPageSize { get; }
+
+	public abstract BlazorGridPageMode PageMode { get; }
 
 	public abstract int TotalCount { get; }
 
@@ -34,6 +39,8 @@ public abstract class BlazorGridControllerBase<TItem> : Disposable, IBlazorGridC
 	public abstract SortDirection SortDirection { get; }
 
 	public abstract bool IsLoading { get; }
+
+	public abstract bool IsRefreshing { get; }
 
 	public abstract bool IsSaving { get; }
 
@@ -57,11 +64,31 @@ public abstract class BlazorGridControllerBase<TItem> : Disposable, IBlazorGridC
 
 	public abstract Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize);
 
+	public abstract Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode);
+
 	public abstract Task RefreshAsync();
+
+	public abstract Task RefreshAsync(bool showLoadingIndicator);
+
+	public abstract Task<TItem[]> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default);
+
+	public abstract Task RefreshRowsAsync(IEnumerable<TItem> entities);
+
+	public abstract Task<bool> RefreshEntityAsync(TItem entity);
+
+	public abstract Task<bool> RefreshSelectedEntityAsync();
+
+	public abstract void RemoveRows(IEnumerable<TItem> entities);
 
 	public abstract Task SetPageAsync(int page);
 
 	public abstract Task SetPageSizeAsync(int pageSize);
+
+	public abstract Task SetPageModeAsync(BlazorGridPageMode pageMode);
+
+	public abstract Task SetViewportPageSizeAsync(int pageSize);
+
+	public abstract Task ApplyViewSettingsAsync(BlazorGridSettings settings);
 
 	public abstract Task SearchAsync(string searchTerm);
 
