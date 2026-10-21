@@ -99,23 +99,15 @@ public partial class BlazorGridReferencePicker<TItem> : IAsyncDisposable where T
 		if (_disposed)
 			return;
 		_disposed = true;
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			if (_initializationTask != null)
 				await _initializationTask;
-		} catch (OperationCanceledException) {
-			// Browser shutdown can cancel an import that outlives this component.
-		} catch (JSDisconnectedException) {
-			// The disconnected circuit cannot complete the pending module import.
-		}
+		}, error => error is OperationCanceledException or JSDisconnectedException);
 		_reference?.Dispose();
 		if (_module != null) {
-			try {
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 				await _module.DisposeAsync();
-			} catch (OperationCanceledException) {
-				// Cancellation during owned interop teardown is ordinary browser shutdown.
-			} catch (JSDisconnectedException) {
-				// DOM removal cleans up the popup's browser listeners.
-			}
+			}, error => error is OperationCanceledException or JSDisconnectedException);
 		}
 	}
 
@@ -132,7 +124,7 @@ public partial class BlazorGridReferencePicker<TItem> : IAsyncDisposable where T
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
 		if (_disposed)
 			return;
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			if (_open) {
 				_initializationTask ??= InitializeJavascriptAsync();
 				await _initializationTask;
@@ -142,11 +134,7 @@ public partial class BlazorGridReferencePicker<TItem> : IAsyncDisposable where T
 				_restoreFocus = false;
 				await _module.InvokeVoidAsync("Focus", _trigger);
 			}
-		} catch (OperationCanceledException) when (_disposed) {
-			// A pending render can observe cancellation after disposal has started.
-		} catch (JSDisconnectedException) {
-			// Browser work cannot continue after this circuit disconnects.
-		}
+		}, error => error is JSDisconnectedException || error is OperationCanceledException && _disposed);
 	}
 
 	private async Task InitializeJavascriptAsync() {

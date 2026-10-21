@@ -108,9 +108,8 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 	private void ObserveInteraction(Task interaction) => _ = ObserveInteractionAsync(interaction);
 
 	private async Task ObserveInteractionAsync(Task interaction) {
-		try {
-			await interaction;
-		} catch (Exception error) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => interaction);
+		if (error != null) {
 			_logger?.LogError(error, "A legacy UI interaction failed. Await the asynchronous interaction API to handle errors in the caller.");
 		}
 	}

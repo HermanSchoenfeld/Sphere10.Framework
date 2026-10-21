@@ -81,7 +81,7 @@ public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, I
 	}
 
 	private async Task EnumerateAsync(IAsyncEnumerable<TItem> source, CancellationToken cancellationToken) {
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync<OperationCanceledException>(async () => {
 			await foreach (var item in source.WithCancellation(cancellationToken)) {
 				cancellationToken.ThrowIfCancellationRequested();
 				await InvokeAsync(() => {
@@ -93,8 +93,6 @@ public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, I
 					StateHasChangedDelegate?.Invoke();
 				});
 			}
-		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
-			// Navigation, source replacement, and caller cancellation stop enumeration.
-		}
+		}, _ => cancellationToken.IsCancellationRequested);
 	}
 }

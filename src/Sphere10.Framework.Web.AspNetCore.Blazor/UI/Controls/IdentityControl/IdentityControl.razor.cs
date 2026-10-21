@@ -92,7 +92,7 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
 		if (_disposed)
 			return;
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			_initializationTask ??= InitializeJavascriptAsync();
 			await _initializationTask;
 			if (_disposed)
@@ -104,9 +104,8 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 				_focusItem = null;
 				await item.FocusAsync();
 			}
-		} catch (OperationCanceledException) when (_disposed) {
-			// An import or focus operation can outlive removal of this control.
-		} catch (JSDisconnectedException) {
+		}, exception => exception is JSDisconnectedException || exception is OperationCanceledException && _disposed);
+		if (error is JSDisconnectedException) {
 			// Retry when this circuit can render again; the owned module is released on disposal.
 			_initializationTask = null;
 		}
@@ -206,30 +205,18 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 		_open = false;
 		_focusTrigger = false;
 		_focusItem = null;
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			if (_initializationTask != null)
 				await _initializationTask;
-		} catch (OperationCanceledException) {
-			// Browser shutdown can cancel an import still owned by this control.
-		} catch (JSDisconnectedException) {
-			// No browser listeners can be reached after circuit disconnection.
-		}
+		}, error => error is OperationCanceledException or JSDisconnectedException);
 		if (_module == null)
 			return;
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			await _module.InvokeVoidAsync("Dispose", _root);
-		} catch (OperationCanceledException) {
-			// Listener teardown may race browser shutdown.
-		} catch (JSDisconnectedException) {
-			// The removed DOM node releases its listeners when disconnected.
-		}
-		try {
+		}, error => error is OperationCanceledException or JSDisconnectedException);
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			await _module.DisposeAsync();
-		} catch (OperationCanceledException) {
-			// Releasing owned interop handles may also race browser shutdown.
-		} catch (JSDisconnectedException) {
-			// The disconnected circuit has already released the browser-side handle.
-		}
+		}, error => error is OperationCanceledException or JSDisconnectedException);
 	}
 
 	private void FocusedItem(IBlazorApplicationMenuItem item) {
