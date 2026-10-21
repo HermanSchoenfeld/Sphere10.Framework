@@ -23,14 +23,42 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 	private readonly List<GraphChartPoint> _third = new();
 	private int _sample;
 	private bool _ready;
+	private bool _initialized;
+	private bool _finalized;
 
 	public ChartTestScreen() {
 		InitializeComponent();
-		if (Tools.Runtime.IsDesignMode)
+	}
+
+	protected override void OnLoad(EventArgs args) {
+		base.OnLoad(args);
+		if (_initialized || _finalized || Tools.Runtime.IsDesignMode)
 			return;
+		_initialized = true;
 		_ready = true;
 		_interval.SelectedIndex = 1;
 		_scenario.SelectedIndex = 0;
+		UpdateTimer();
+	}
+
+	protected override void OnShow() {
+		base.OnShow();
+		UpdateTimer();
+	}
+
+	protected override void OnDestroyScreen() {
+		StopCapture();
+		base.OnDestroyScreen();
+	}
+
+	private void StopCapture() {
+		if (_finalized)
+			return;
+		_finalized = true;
+		_ready = false;
+		_timer?.Stop();
+		if (_timer != null)
+			_timer.Tick -= TimerTick;
 	}
 
 	public string SelectedScenario => _scenario.SelectedItem as string;
@@ -163,7 +191,7 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 	}
 
 	private void UpdateTimer() {
-		if (_timer != null)
+		if (!_finalized && _timer != null)
 			_timer.Enabled = _ready && !IsDisposed && !Tools.Runtime.IsDesignMode && Visible && _live.Checked;
 	}
 

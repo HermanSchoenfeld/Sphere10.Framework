@@ -42,7 +42,7 @@ partial class TelemetryChartTestScreen {
 
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
-			_captureTimer?.Stop();
+			StopCapture();
 			components?.Dispose();
 		}
 		base.Dispose(disposing);

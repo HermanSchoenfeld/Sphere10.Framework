@@ -83,6 +83,13 @@ The remaining demonstrations are grouped by function as listed above and can be 
 
 ## Chart showcases
 
+All three chart screens initialize their examples through `OnLoad`, rather than
+seeding captures in constructors. The live dashboards resume through display and
+visibility overrides, pause while hidden, and stop their timers in
+`OnDestroyScreen` with an idempotent disposal fallback. Docking preserves their
+existing samples. They own no application-wide sampler; see
+[application and screen lifetimes](../../docs/guidelines/patterns/application-ownership.md#application-and-screen-lifetimes).
+
 Open **Controls > Charts** for three complementary screens. Every dataset is
 simulated; these examples do not read the computer's hardware, network or business
 records. The gallery demonstrates the native chart engine, while the two

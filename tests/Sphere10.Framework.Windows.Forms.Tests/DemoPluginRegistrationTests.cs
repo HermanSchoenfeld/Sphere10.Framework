@@ -233,6 +233,11 @@ public class DemoPluginRegistrationTests {
 	[TestCase(typeof(ChartTestScreen))]
 	[TestCase(typeof(TelemetryChartTestScreen))]
 	public async Task ChartShowcasesOpenThroughTheirActualControlsMenu(Type screenType) {
+		static Control[] Descendants(Control control) => new[] { control }.Concat(control.Controls.Cast<Control>().SelectMany(Descendants)).ToArray();
+		static int PointCount(Control control) => Descendants(control).OfType<DataVisualization.Chart>()
+			.SelectMany(chart => chart.Series).Sum(series => series.Points.Count);
+		using (var unhosted = (WinFormsApplicationScreen)Activator.CreateInstance(screenType))
+			Assert.That(PointCount(unhosted), Is.Zero, "Construction must not seed or start chart capture before the screen lifecycle begins.");
 		var form = await StartDemoAsync();
 		var block = form.RegisteredBlocks.Single(candidate => candidate.Name == "Controls");
 		var item = block.Menus.SelectMany(menu => menu.Items).OfType<IWinFormsScreenMenuItem>()
