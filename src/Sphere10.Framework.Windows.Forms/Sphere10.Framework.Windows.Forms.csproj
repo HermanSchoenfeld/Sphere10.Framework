@@ -171,10 +171,10 @@
 		<Compile Update="Controls\ServiceStatusControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
-		<Compile Update="Application\DRM\BasicContactDetailsControl.cs">
+		<Compile Update="Application\Product\Controls\BasicContactDetailsControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
-		<Compile Update="Application\DRM\BasicContactDetailsControl.designer.cs">
+		<Compile Update="Application\Product\Controls\BasicContactDetailsControl.designer.cs">
 		  <DependentUpon>BasicContactDetailsControl.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Application\DRM\DRMNagDialog.cs" />
@@ -188,10 +188,10 @@
 		<Compile Update="Application\DRM\ProductExpirationDetailsControl.Designer.cs">
 		  <DependentUpon>ProductExpirationDetailsControl.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Application\DRM\WhoAreYouControl.cs">
+		<Compile Update="Application\Product\Controls\WhoAreYouControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
-		<Compile Update="Application\DRM\WhoAreYouControl.Designer.cs">
+		<Compile Update="Application\Product\Controls\WhoAreYouControl.Designer.cs">
 		  <DependentUpon>WhoAreYouControl.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Forms\ApplicationForm.cs" />
@@ -403,7 +403,7 @@
 		  <SubType>Designer</SubType>
 		  <DependentUpon>ProductExpirationDetailsControl.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Application\DRM\WhoAreYouControl.resx">
+		<EmbeddedResource Update="Application\Product\Controls\WhoAreYouControl.resx">
 		  <SubType>Designer</SubType>
 		  <DependentUpon>WhoAreYouControl.cs</DependentUpon>
 		</EmbeddedResource>
