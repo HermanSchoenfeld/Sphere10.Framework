@@ -63,7 +63,7 @@ This notice must not be removed when duplicating this file or its contents, in w
 	outline: 2px solid var(--grid-accent);
 	outline-offset: 2px;
 }
-.sphere10-grid-viewport { min-width: 0; max-width: 100%; overflow: auto; }
+.sphere10-grid-viewport { position: relative; min-width: 0; max-width: 100%; overflow: auto; }
 .sphere10-grid-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .sphere10-grid-table th, .sphere10-grid-table td {
 	box-sizing: border-box;
@@ -85,7 +85,9 @@ This notice must not be removed when duplicating this file or its contents, in w
 .sphere10-grid-table tbody tr.sphere10-grid-selected { background: var(--sphere10-selected, #deeffd); }
 .sphere10-grid-table tbody tr.sphere10-grid-editing { background: var(--sphere10-editing, #f2f8ed); }
 .sphere10-grid-table .sphere10-grid-empty { padding: 2rem; text-align: center; color: var(--sphere10-muted, #58687b); }
-.sphere10-grid-table .sphere10-grid-sort { background: transparent; border: 0; padding: 0; box-shadow: none; text-align: left; }
+.sphere10-grid-table .sphere10-grid-sort { display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; background: transparent; border: 0; padding: 0; padding-right: 6px; box-shadow: none; text-align: left; }
+.sphere10-grid-sort > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.sphere10-grid-sort-indicator { display: inline-block; flex: 0 0 1em; width: 1em; text-align: center; }
 .sphere10-grid-resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; touch-action: none; }
 .sphere10-grid-resizer:hover { background: var(--sphere10-accent, #1263a160); }
 .sphere10-grid-pagination, .sphere10-grid-page-size { display: flex; align-items: center; gap: .4rem; }
@@ -99,7 +101,14 @@ This notice must not be removed when duplicating this file or its contents, in w
 .sphere10-grid-error { color: var(--sphere10-danger-text, var(--sphere10-danger, #a51c30)); padding: .5rem .8rem; }
 .sphere10-grid-confirm { background: var(--sphere10-warning-background, #fff6e2); }
 .sphere10-grid-edit-bar { background: var(--sphere10-hover, #eaf3fa); }
-.sphere10-grid-caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.sphere10-grid-caption { caption-side: top; padding: .5rem .6rem; font-weight: 600; color: var(--sphere10-text, inherit); text-align: left; }
+.sphere10-grid-image-frame { display: flex; width: 100%; align-items: center; overflow: hidden; }
+.sphere10-grid-image { display: block; flex: 0 0 auto; max-width: 100%; }
+.sphere10-grid-loading { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--sphere10-surface, #fff) 88%, transparent); }
+.sphere10-grid-spinner { width: 2.5rem; height: 2.5rem; border: .25rem solid var(--grid-border); border-top-color: var(--grid-accent); border-radius: 50%; animation: sphere10-grid-spin .8s linear infinite; }
+.sphere10-grid-visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@keyframes sphere10-grid-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sphere10-grid-spinner { animation-duration: 2s; } }
 .sphere10-grid ::deep .sphere10-grid-editor > input:not([type="checkbox"]), .sphere10-grid ::deep .sphere10-grid-editor > select { width: 100%; min-width: 3rem; }
 .sphere10-grid ::deep .sphere10-grid-editor > input, .sphere10-grid ::deep .sphere10-grid-editor > select { border: var(--sphere10-control-border-width, 1px) solid var(--sphere10-border-strong, #adb9c8); padding: var(--sphere10-control-padding-y, .25rem) var(--sphere10-control-padding-x, .25rem); border-radius: var(--sphere10-input-radius, var(--sphere10-control-radius, .25rem)); }
 .sphere10-grid ::deep .sphere10-grid-editor > .sphere10-grid-error { display: block; padding: .25rem 0; }

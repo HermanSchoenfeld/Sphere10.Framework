@@ -28,6 +28,122 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BlazorGridRenderingTests {
+	[TestCase(BlazorGridPageMode.Paged, true, true)]
+	[TestCase(BlazorGridPageMode.Auto, true, false)]
+	[TestCase(BlazorGridPageMode.Single, false, false)]
+	public async Task PagingModesExposeOnlyTheApplicableFooterControls(BlazorGridPageMode mode, bool navigator, bool manualSize) {
+		var parameters = GridParameters(new ProbeSource<Row>(new Row { Name = "A" }));
+		parameters[nameof(BlazorGrid<Row>.PageMode)] = mode;
+		await RenderAsync<BlazorGrid<Row>>(parameters, (grid, _, rendered) => {
+			var html = rendered.ToHtmlString();
+			Assert.That(html.Contains("aria-label=\"Grid pages\""), Is.EqualTo(navigator));
+			Assert.That(html.Contains("aria-label=\"Rows per page\""), Is.EqualTo(manualSize));
+			Assert.That(html, Does.Contain("Auto Paged").And.Contain("Single Paged"));
+			Assert.That(grid.Controller.PageMode, Is.EqualTo(mode));
+			return Task.CompletedTask;
+		});
+	}
+
+	[TestCase(BlazorGridHorizontalAlignment.Left, "left")]
+	[TestCase(BlazorGridHorizontalAlignment.Center, "center")]
+	[TestCase(BlazorGridHorizontalAlignment.Right, "right")]
+	public async Task CaptionIsVisibleWithExplicitAlignmentAndSortableHeadersReserveTheirIndicator(BlazorGridHorizontalAlignment alignment, string css) {
+		var parameters = GridParameters(new ProbeSource<Row>(new Row { Name = "A" }), BlazorGridColumn<Row>.For(row => row.Name));
+		parameters[nameof(BlazorGrid<Row>.Caption)] = "Live Processes";
+		parameters[nameof(BlazorGrid<Row>.CaptionAlignment)] = alignment;
+		await RenderAsync<BlazorGrid<Row>>(parameters, (_, _, rendered) => {
+			var html = rendered.ToHtmlString();
+			Assert.That(Regex.IsMatch(html, $"<caption(?=[^>]*class=\"sphere10-grid-caption\")(?=[^>]*style=\"text-align: {css}\")[^>]*>Live Processes</caption>"), Is.True);
+			Assert.That(html, Does.Contain("class=\"sphere10-grid-sort-indicator\" aria-hidden=\"true\""));
+			return Task.CompletedTask;
+		});
+	}
+
+	[TestCase(null, ResizeAlignment.CenterCenter, "none", "center center")]
+	[TestCase(ResizeMethod.Stretch, ResizeAlignment.TopLeft, "fill", "left top")]
+	[TestCase(ResizeMethod.AspectFill, ResizeAlignment.BottomRight, "cover", "right bottom")]
+	[TestCase(ResizeMethod.AspectFit, ResizeAlignment.TopCenter, "contain", "center top")]
+	[TestCase(ResizeMethod.AspectFitPadded, ResizeAlignment.CenterLeft, "contain", "left center")]
+	public async Task ImageCellsReuseFrameworkResizeModesAndAlignment(ResizeMethod? method, ResizeAlignment alignment, string fit, string position) {
+		var column = BlazorGridColumn<Row>.For(row => row.Name);
+		column.ImageSource = row => "/icons/" + row.Name + ".svg";
+		column.ImageAlternativeText = row => row.Name + " application";
+		column.ImageAlignment = alignment;
+		column.ImageResizeMethod = method;
+		await RenderAsync<BlazorGrid<Row>>(GridParameters(new ProbeSource<Row>(new Row { Name = "sample" }), column), (_, _, rendered) => {
+			var html = rendered.ToHtmlString();
+			Assert.That(html, Does.Contain("src=\"/icons/sample.svg\"").And.Contain("alt=\"sample application\""));
+			Assert.That(html, Does.Contain($"object-fit: {fit}; object-position: {position}"));
+			return Task.CompletedTask;
+		});
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task LoadingSurfaceCoversTheViewportInitiallyAndSuppressedRefreshLeavesRowsUsable(bool suppressIndicator) {
+		var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var first = new Row { Name = "First row" };
+		var second = new Row { Name = "Second row" };
+		var source = new ProbeSource<Row>(first, second) { ReadGate = gate.Task };
+		var parameters = GridParameters(source);
+		parameters[nameof(BlazorGrid<Row>.SuppressLoadingIndicator)] = suppressIndicator;
+		await using var provider = new ServiceCollection().AddLogging().AddSingleton<IJSRuntime>(new GalleryRenderingTests.TestJsRuntime()).BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			ComponentHost host = null;
+			var rendered = renderer.BeginRenderingComponent<ComponentHost>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(ComponentHost.ComponentType)] = typeof(BlazorGrid<Row>),
+				[nameof(ComponentHost.Parameters)] = parameters,
+				[nameof(ComponentHost.Capture)] = (Action<ComponentHost>)(value => host = value)
+			}));
+			Assert.That(rendered.ToHtmlString(), Does.Contain("class=\"sphere10-grid-loading\"").And.Contain("aria-label=\"Loading grid\""));
+			gate.SetResult();
+			await rendered.QuiescenceTask;
+			var grid = (BlazorGrid<Row>)host.Component;
+			grid.Controller.Select(first);
+			gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			source.ReadGate = gate.Task;
+			var refresh = grid.RefreshAsync();
+			var html = rendered.ToHtmlString();
+			Assert.That(html.Contains("class=\"sphere10-grid-loading\""), Is.EqualTo(!suppressIndicator));
+			Assert.That(html, Does.Contain("First row").And.Contain("Second row"));
+			if (suppressIndicator) {
+				grid.Controller.Select(second);
+				Assert.That(grid.SelectedItem, Is.SameAs(second));
+				Assert.That(html, Does.Not.Contain("aria-busy=\"true\""));
+			}
+			gate.SetResult();
+			await refresh;
+			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("class=\"sphere10-grid-loading\""));
+		});
+	}
+
+	[Test]
+	public async Task ExplicitBrowserKeyRestoresOnceAndOnlyManualActionsWritePreferences() {
+		var runtime = new GridJsRuntime();
+		runtime.Module.Behavior.StoredSettings["orders"] = new BlazorGridSettings {
+			PageMode = BlazorGridPageMode.Auto,
+			PageSize = 7,
+			PageNumber = 1
+		};
+		var parameters = GridParameters(new ProbeSource<Row>(Enumerable.Range(1, 40).Select(index => new Row { Name = "Row " + index }).ToArray()));
+		parameters[nameof(BlazorGrid<Row>.SettingsKey)] = "orders";
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
+			await grid.LoadJavascript();
+			await grid.LoadJavascript();
+			Assert.That(runtime.Module.Behavior.SettingsReads, Is.EqualTo(new[] { "orders" }));
+			Assert.That(grid.Controller.PageMode, Is.EqualTo(BlazorGridPageMode.Auto));
+			Assert.That(grid.Controller.ManualPageSize, Is.EqualTo(7));
+			Assert.That(grid.CurrentPage, Is.EqualTo(1));
+			await grid.SetViewportPageSizeAsync(4);
+			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty, "Viewport measurements must never write user preferences.");
+			await grid.SetPageModeAsync(BlazorGridPageMode.Paged);
+			Assert.That(runtime.Module.Behavior.SettingsWrites.Count, Is.EqualTo(1));
+			Assert.That(runtime.Module.Behavior.SettingsWrites[0].Key, Is.EqualTo("orders"));
+			Assert.That(runtime.Module.Behavior.SettingsWrites[0].Settings.PageSize, Is.EqualTo(7), "The saved size is the manual preference, not the automatic capacity.");
+		}, runtime);
+	}
+
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task EditActionTextCanDescribeDraftApplicationWithoutChangingDefaultBehavior(bool customizeText) {
@@ -609,6 +725,12 @@ public class BlazorGridRenderingTests {
 	}
 
 	private sealed class GridJsBehavior : IJSObjectReference {
+		public Dictionary<string, BlazorGridSettings> StoredSettings { get; } = new();
+
+		public List<string> SettingsReads { get; } = new();
+
+		public List<(string Key, BlazorGridSettings Settings)> SettingsWrites { get; } = new();
+
 		public int Updates { get; private set; }
 
 		public bool CancelDisposal { get; set; }
@@ -616,6 +738,16 @@ public class BlazorGridRenderingTests {
 		public bool Disposed { get; private set; }
 
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+			if (identifier == "Dispose")
+				return ValueTask.FromResult(default(TValue));
+			if (identifier == "ReadSettings") {
+				SettingsReads.Add((string)args[0]);
+				return ValueTask.FromResult(StoredSettings.TryGetValue((string)args[0], out var settings) ? (TValue)(object)settings : default);
+			}
+			if (identifier == "WriteSettings") {
+				SettingsWrites.Add(((string)args[0], (BlazorGridSettings)args[1]));
+				return ValueTask.FromResult(default(TValue));
+			}
 			Assert.That(identifier, Is.EqualTo("Update"));
 			Assert.That(args.Single(), Is.TypeOf<bool>());
 			Assert.That(Disposed, Is.False, "A disposed grid behavior must not receive updates.");
@@ -644,14 +776,19 @@ public class BlazorGridRenderingTests {
 
 		public Func<T, CrudAction, Result> Validation { get; set; }
 
+		public Task ReadGate { get; set; }
+
 		public DataSourceCapabilities AvailableCapabilities { get; set; } = DataSourceCapabilities.Default;
 
 		public override DataSourceCapabilities Capabilities => AvailableCapabilities;
 
 		public override Task<DataSourceCapabilities> CapabilitiesAsync => Task.FromResult(AvailableCapabilities);
 
-		public override Task<DataSourceItems<T>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) =>
-			Task.FromResult(ReadRange(searchTerm, pageLength, page, sortProperty, sortDirection));
+		public override async Task<DataSourceItems<T>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+			if (ReadGate != null)
+				await ReadGate;
+			return ReadRange(searchTerm, pageLength, page, sortProperty, sortDirection);
+		}
 
 		public override void CreateRange(IEnumerable<T> entities) {
 			var items = entities.ToArray();
