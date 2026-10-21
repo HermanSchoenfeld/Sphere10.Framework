@@ -18,6 +18,7 @@ and source headers. These topic files describe the implementation practices.
 | Deferred, lazy, reloadable, background-fetched or projected values | [Futures and deferred values](patterns/futures.md) |
 | Specialized interfaces projecting base properties | [Inline interface bridges](patterns/interface-bridges.md) |
 | Application/plugin registration, ownership graphs, screens or contextual commands | [Application ownership and platform extensions](patterns/application-ownership.md) |
+| Screen display, hiding, removal, subscriptions or workers shared across screens | [Application and screen lifetimes](patterns/application-ownership.md#application-and-screen-lifetimes) |
 | WinForms forms, user controls, hosted screens or dialogs | [Designer-editable WinForms UI](patterns/winforms-designer.md) |
 | Choosing native selectors, database connection controls, CRUD grids, editors or presentation controls | [Reusable WinForms control catalog](patterns/winforms-controls.md) |
 | Building or comparing WinForms and Blazor grids or screen hosts | [Grids and screen hosts](patterns/grids-and-screen-hosts.md) |

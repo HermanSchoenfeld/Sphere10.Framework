@@ -206,6 +206,13 @@ Exit returns `false` on refusal and remains retryable. Concurrent requests share
 
 ## Shared application screen host
 
+Application and screen lifetimes have separate owners. Start and drain shared
+workers through application initializers/finalizers; use each screen's lifecycle
+overrides for its own refreshes, subscriptions and capture leases. Hiding a
+retained screen is not removal, and a leave guard is not cleanup. See
+[application and screen lifetimes](../../docs/guidelines/patterns/application-ownership.md#application-and-screen-lifetimes)
+for both platform hook mappings, worker delivery and shutdown rules.
+
 Use `IApplicationScreenHost` for block navigation, current-screen hosting, view mode and unsaved-state checks. Use `ISingleApplicationScreenHost` to close the current screen, and `IMultiApplicationScreenHost` when working with retained collections, ordering or other tabs. Use `IUserInterfaceServices` for application interactions and menu-command execution. The Blazor and WinForms registrations expose their platform implementations through these neutral interfaces, preserving circuit or native application lifetimes. `IApplication.ScreenHost.UserInterfaceServices` exposes the host's interaction service. Resolve a platform interface when code needs component metadata, native controls or docking.
 
 `await application.ScreenHost.ShowScreenUndockedAsync(screen)` requests direct modeless detached presentation of a configured instance without changing the main-frame selection. This optional presentation capability belongs to the shared contract; the logical host and Blazor throw `NotSupportedException`. WinForms supports it in MultiView for normal nonpermanent screens, retains the same instance, and permits subsequent guarded docking. A rejected request must not transfer an unretained supplied instance to the host. Ordinary `IMultiApplicationScreenHost.ShowScreenAsync(screen)` continues to show a supplied screen through the platform's normal presentation.
