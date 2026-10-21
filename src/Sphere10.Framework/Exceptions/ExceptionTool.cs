@@ -32,12 +32,36 @@ public static class Exceptions {
 			exceptionList.Add(error);
 	}
 
-	public static void ExecuteCapturingException(Action action, out Exception caughtError) {
+	public static void ExecuteCapturingException(Action action, out Exception caughtError)
+		=> ExecuteCapturingException<Exception>(action, out caughtError);
+
+	/// <summary>Captures an exception only when the filter accepts it; otherwise the original exception propagates.</summary>
+	public static void ExecuteCapturingException(Action action, out Exception caughtError, Func<Exception, bool> exceptionFilter)
+		=> ExecuteCapturingException<Exception>(action, out caughtError, exceptionFilter);
+
+	/// <summary>Captures a matching exception accepted by the optional filter, or returns null through the out parameter on success.</summary>
+	public static void ExecuteCapturingException<TException>(Action action, out TException caughtError, Func<TException, bool> exceptionFilter = null)
+		where TException : Exception {
 		try {
 			action();
 			caughtError = null;
-		} catch (Exception error) {
+		} catch (TException error) when (exceptionFilter == null || exceptionFilter(error)) {
 			caughtError = error;
+		}
+	}
+
+	/// <summary>Awaits the entire operation and returns its captured exception, or null on success. A rejected filter preserves propagation, including cancellation.</summary>
+	public static Task<Exception> ExecuteCapturingExceptionAsync(Func<Task> action, Func<Exception, bool> exceptionFilter = null)
+		=> ExecuteCapturingExceptionAsync<Exception>(action, exceptionFilter);
+
+	/// <summary>Awaits the entire operation and captures only matching exceptions accepted by the optional filter.</summary>
+	public static async Task<TException> ExecuteCapturingExceptionAsync<TException>(Func<Task> action, Func<TException, bool> exceptionFilter = null)
+		where TException : Exception {
+		try {
+			await action().ConfigureAwait(false);
+			return null;
+		} catch (TException error) when (exceptionFilter == null || exceptionFilter(error)) {
+			return error;
 		}
 	}
 
