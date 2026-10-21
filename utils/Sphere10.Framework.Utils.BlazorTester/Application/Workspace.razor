@@ -41,7 +41,8 @@
 @inject WorkspaceStatus Status
 
 <PageTitle>@ApplicationOptions.Title</PageTitle>
-<ApplicationShell Title="@ApplicationOptions.Title" NavigationPath="application" BlockId="@_blockId" ScreenId="@_screenId" InstanceId="_instanceId" ActivateBlockOnSelection="Status.ActivateBlockOnSelection">
+<ApplicationShell Title="@ApplicationOptions.Title" NavigationPath="application" BlockId="@_blockId" ScreenId="@_screenId" InstanceId="_instanceId"
+	StartupScreenSettingsKey="Sphere10.BlazorTester.Workspace" ActivateBlockOnSelection="Status.ActivateBlockOnSelection">
 	<ToolBarContent>
 		<div class="demo-application-tools">
 			<button type="button" class="btn btn-outline-secondary" disabled="@_changingScreenMode" title="Change the screen layout"
@@ -53,7 +54,7 @@
 	</ToolBarContent>
 	<SidebarHeader><SidebarBrand /></SidebarHeader>
 	<Footer>
-		Sphere10 Framework · Local sample data · Changes stay in this browser session.
+		Sphere10 Framework · Local sample data · Rows stay in this session; preferences stay in this browser.
 		<span data-application-command-count>Commands run: @Status.ActionCount</span>
 		<span data-plugin-initializer-count>Plugins initialized: @Status.InitializedPlugins.Length</span>
 	</Footer>
@@ -97,6 +98,9 @@
 		// Compatibility routes select a registered screen; the shell owns activation, guards and canonical history.
 		var path = "/" + Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0];
 		var alias = DemoNavigation.ResolveAlias(path);
+		// The root is an implicit startup request; only explicit screen routes override the browser's saved choice.
+		if (path == "/")
+			alias = null;
 		_blockId = alias?.BlockId ?? BlockId;
 		_screenId = alias?.ScreenId ?? ScreenId;
 		_instanceId = alias == null ? InstanceId : null;

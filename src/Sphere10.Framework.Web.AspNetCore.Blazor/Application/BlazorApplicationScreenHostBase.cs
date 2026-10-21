@@ -23,6 +23,7 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 	private BlazorApplicationScreenActivation _activation;
 	private BlazorScreenMenuItem _menuItem;
 	private BlazorUserInterfaceServices _ownedUserInterface;
+	private BlazorScreenMenuItem _startupMenuItem;
 
 	protected BlazorApplicationScreenHostBase(IServiceProvider services)
 		: this(Array.Empty<IBlazorApplicationBlock>(), services) {
@@ -151,6 +152,60 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 
 	public virtual void NotifyScreenChanged(Guid id) => NotifyScreenChanged(GetScreen(id));
 
+	public virtual BlazorApplicationStartupScreen StartupScreen { get; private set; }
+
+	public virtual bool CanMakeStartupScreen(BlazorApplicationScreenSession screen) => GetStartupScreenUnavailableReason(screen) == null;
+
+	public virtual string GetStartupScreenUnavailableReason(BlazorApplicationScreenSession screen) {
+		if (screen == null || !Screens.Any(candidate => ReferenceEquals(candidate, screen)) || !ReferenceEquals(screen.Host, this))
+			return "This screen is no longer registered with the application.";
+		if (!screen.CanRestoreAtStartup)
+			return "This screen requires session-specific state and cannot be restored at startup.";
+		var identity = CreateStartupScreenIdentity(screen);
+		return ResolveStartupScreen(identity) == null ? "This screen is excluded by the application's startup policy." : null;
+	}
+
+	public virtual bool IsStartupScreen(BlazorApplicationScreenSession screen) =>
+		CanMakeStartupScreen(screen) && StartupScreen == CreateStartupScreenIdentity(screen);
+
+	public virtual BlazorApplicationStartupScreen GetStartupScreenIdentity(BlazorApplicationScreenSession screen) {
+		Guard.Ensure(CanMakeStartupScreen(screen), GetStartupScreenUnavailableReason(screen));
+		return CreateStartupScreenIdentity(screen);
+	}
+
+	/// <summary>Updates circuit-local selection after a caller loads or successfully saves browser preferences.</summary>
+	public virtual bool SetStartupScreen(BlazorApplicationStartupScreen identity) {
+		EnsureUsable();
+		StartupScreen = ResolveStartupScreen(identity) != null ? identity : null;
+		OnChanged();
+		return StartupScreen != null;
+	}
+
+	/// <summary>Override to exclude registrations requiring application-specific state before a component is constructed.</summary>
+	protected virtual bool CanRestoreScreenAtStartup(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) => definition.ScreenKind == ScreenKind.Normal;
+
+	private static BlazorApplicationStartupScreen CreateStartupScreenIdentity(BlazorApplicationScreenSession screen) => new(
+		screen.Block.Source?.Name ?? string.Empty, screen.Block.Id, screen.MenuItemId, screen.ScreenType.FullName, screen.ScreenType.Assembly.GetName().Name);
+
+	private BlazorScreenMenuItem ResolveStartupScreen(BlazorApplicationStartupScreen identity) {
+		if (identity == null || string.IsNullOrEmpty(identity.BlockId) || string.IsNullOrEmpty(identity.MenuItemId)
+			|| string.IsNullOrEmpty(identity.ScreenTypeName) || string.IsNullOrEmpty(identity.ScreenAssemblyName))
+			return null;
+		var block = Blocks.FirstOrDefault(candidate => candidate.Id == identity.BlockId && (candidate.Source?.Name ?? string.Empty) == (identity.PluginName ?? string.Empty));
+		if (block == null)
+			return null;
+		BlazorScreenMenuItem item = null;
+		Tools.Exceptions.ExecuteCapturingException<ArgumentException>(() => {
+			item = BlazorApplicationBlockSnapshot.ResolveMenuItem(block, identity.MenuItemId) as BlazorScreenMenuItem;
+		}, out var capturedError);
+		if (capturedError != null) {
+			return null;
+		}
+		return item != null && block.ScreenDefinitions.Any(definition => ReferenceEquals(definition, item.ScreenDefinition))
+			&& item.ScreenType.FullName == identity.ScreenTypeName && item.ScreenType.Assembly.GetName().Name == identity.ScreenAssemblyName
+			&& CanRestoreScreenAtStartup(block, item.ScreenDefinition) ? item : null;
+	}
+
 	protected BlazorApplicationScreenActivation CurrentActivation => _activation;
 
 	protected override BlazorApplicationScreenSession FindReusableScreen(IBlazorApplicationBlock block, ApplicationScreenDefinition definition, ApplicationScreenDefinition registration) {
@@ -187,6 +242,9 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 		BlazorApplicationBlockSnapshot.GetDefaultScreen(block)?.ScreenDefinition ?? base.GetDefaultScreen(block);
 
 	protected override ApplicationScreenDefinition GetStartupScreen() {
+		_startupMenuItem = ResolveStartupScreen(StartupScreen);
+		if (_startupMenuItem != null)
+			return _startupMenuItem.ScreenDefinition;
 		var blocks = BlazorApplicationBlockSnapshot.OrderBlocks(Services.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), Blocks);
 		return Tools.UI.GetDefaultScreen(blocks) ?? (blocks.FirstOrDefault() is { } first ? GetDefaultScreen(first) : null);
 	}
@@ -201,6 +259,11 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 	protected BlazorScreenMenuItem GetScreenMenuItem(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
 		if (_menuItem != null)
 			return _menuItem;
+		if (_startupMenuItem != null && ReferenceEquals(_startupMenuItem.ScreenDefinition, definition)) {
+			var startup = _startupMenuItem;
+			_startupMenuItem = null;
+			return startup;
+		}
 		var defaultScreen = BlazorApplicationBlockSnapshot.GetDefaultScreen(block);
 		if (ReferenceEquals(block.DefaultScreenDefinition, definition))
 			return defaultScreen;

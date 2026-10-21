@@ -42,6 +42,8 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 
 	public virtual bool HasUnsavedChanges => false;
 
+	public virtual bool CanRestoreAtStartup => true;
+
 	public virtual HelpType Type => HelpType.None;
 
 	public virtual string FileName => null;

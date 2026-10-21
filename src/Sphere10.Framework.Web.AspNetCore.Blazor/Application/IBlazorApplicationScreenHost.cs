@@ -38,4 +38,10 @@ public interface IBlazorApplicationScreenHost : ISingleApplicationScreenHost<IBl
 	Task AttachScreenAsync(Guid id, IBlazorApplicationScreen component, CancellationToken cancellationToken = default);
 	void DetachScreen(Guid id, IBlazorApplicationScreen component);
 	void NotifyScreenChanged(Guid id);
+	BlazorApplicationStartupScreen StartupScreen { get; }
+	bool CanMakeStartupScreen(BlazorApplicationScreenSession screen);
+	string GetStartupScreenUnavailableReason(BlazorApplicationScreenSession screen);
+	bool IsStartupScreen(BlazorApplicationScreenSession screen);
+	BlazorApplicationStartupScreen GetStartupScreenIdentity(BlazorApplicationScreenSession screen);
+	bool SetStartupScreen(BlazorApplicationStartupScreen identity);
 }

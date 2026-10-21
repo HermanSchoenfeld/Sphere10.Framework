@@ -37,8 +37,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class GalleryRenderingTests {
-	[TestCase("/", "workspace", "overview", "ApplicationBlock workspace")]
-	[TestCase("/application", "workspace", "overview", "ApplicationBlock workspace")]
 	[TestCase("/components/grid", "components", "gallery", "Editable grid")]
 	[TestCase("/modern", "components", "gallery", "Editable grid")]
 	[TestCase("/components/tables", "components", "tables", "Virtual paged table")]
@@ -88,6 +86,28 @@ public class GalleryRenderingTests {
 		Assert.That(html, Does.Not.Contain("class=\"demo-sidebar\"").And.Not.Contain("aria-label=\"Demo navigation\""));
 		Assert.That(html, Does.Not.Contain("modern/css/light.css").And.Not.Contain("modern/css/dark.css"));
 		Assert.That(html, Does.Not.Contain("// Copyright"), "Source notices must remain Razor comments.");
+	}
+
+	[TestCase("/")]
+	[TestCase("/application")]
+	public async Task ImplicitStartupRoutesWaitForBrowserPreferencesBeforeOpeningAnyDefaultScreen(string route) {
+		var services = new ServiceCollection().AddLogging();
+		Program.ConfigureServices(services);
+		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost" + route));
+		services.AddSingleton<IJSRuntime, TestJsRuntime>();
+		await using var provider = services.BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var html = await renderer.Dispatcher.InvokeAsync(async () => {
+			var rendered = await renderer.RenderComponentAsync<RouteView>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(RouteView.RouteData)] = new RouteData(typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace), new Dictionary<string, object>()),
+				[nameof(RouteView.DefaultLayout)] = typeof(DemoLayout)
+			}));
+			return rendered.ToHtmlString();
+		});
+
+		Assert.That(host.ActiveScreen, Is.Null, "Prerender cannot read browser-local preferences and must not briefly activate an unrelated default.");
+		Assert.That(html, Does.Contain("Loading workspace"));
 	}
 
 	[Test]

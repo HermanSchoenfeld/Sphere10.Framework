@@ -61,12 +61,20 @@
 				@if (ScreenHost.ScreenMode == ScreenMode.MultiView && ScreenHost.OpenScreens.Length > 0) {
 					<div class="sphere10-tab-strip">
 						<ApplicationScreenTabs Sessions="ScreenHost.OpenScreens" ActiveSession="ScreenHost.ActiveScreen"
-							OnSelect="ShowScreenAsync" OnClose="CloseScreensAsync" OnReorder="ReorderScreenAsync" />
+							OnSelect="ShowScreenAsync" OnClose="CloseScreensAsync" OnReorder="ReorderScreenAsync"
+							OnMakeStartup="MakeStartupScreenAsync" IsStartupScreen="ScreenHost.IsStartupScreen"
+							StartupUnavailableReason="StartupScreenUnavailableReason" SavingStartupScreen="_savingStartupScreen" />
 					</div>
 				}
 				<div class="sphere10-screen-body">
 					@if (_routeError != null) {
 						<p role="alert">@_routeError</p>
+					}
+					@if (_startupSettingsError != null) {
+						<p role="status">@_startupSettingsError</p>
+					}
+					@if (_deferredStartup) {
+						<p role="status">Loading workspace…</p>
 					}
 					<ApplicationScreenHostView />
 					@if (ScreenHost.ActiveScreen == null) {

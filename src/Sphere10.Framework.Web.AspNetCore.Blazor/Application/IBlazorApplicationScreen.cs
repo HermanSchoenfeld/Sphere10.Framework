@@ -22,6 +22,9 @@ public interface IBlazorApplicationScreen : IApplicationScreen<IBlazorApplicatio
 
 	new IBlazorApplicationBlock Block { get; set; }
 
+	/// <summary>Whether this screen can be reopened without its current session state.</summary>
+	bool CanRestoreAtStartup => true;
+
 	#region Base Interface Bridges
 
 	IApplicationScreenHost IApplicationScreen.Host {
