@@ -22,6 +22,122 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Category("Browser")]
 [NonParallelizable]
 public class BlazorGridBrowserTests {
+	[TestCase(1280, 1000, 1.25f, 1.25)]
+	[TestCase(390, 900, 1.5f, 1.0)]
+	public async Task AutoPagesFitCompleteRowsAndSilentRefreshKeepsSelectionInteractive(int width, int height, float deviceScale, double zoom) {
+		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True);
+		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
+		using var playwright = await Playwright.CreateAsync();
+		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions {
+			Headless = true,
+			ExecutablePath = string.IsNullOrWhiteSpace(executable) ? null : executable
+		});
+		await using var context = await browser.NewContextAsync(new BrowserNewContextOptions {
+			ViewportSize = new ViewportSize { Width = width, Height = height }, DeviceScaleFactor = deviceScale
+		});
+		var page = await context.NewPageAsync();
+		var errors = new List<string>();
+		page.PageError += (_, error) => errors.Add(error);
+		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
+		await page.EvaluateAsync("zoom => document.documentElement.style.zoom = String(zoom)", zoom);
+		var demo = page.Locator(".sphere10-screen:not([hidden]) [data-demo=live-grid]");
+		var grid = demo.Locator(":scope > .sphere10-grid");
+		var table = grid.Locator(":scope > .sphere10-grid-viewport > table");
+		// SSR rows are replaced when the interactive screen starts; wait for the owned browser behavior before sampling DOM identity.
+		await page.WaitForFunctionAsync("() => location.pathname === '/application' && !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=live-grid] > .sphere10-grid > .sphere10-grid-viewport > table')?.style.width");
+		await Assertions.Expect(grid).ToHaveAttributeAsync("aria-busy", "false");
+		await table.Locator(":scope > tbody > tr").Nth(2).WaitForAsync();
+		// Automatic sizing can replace the initially requested rows while its first viewport measurement settles.
+		// Observe the retained grid/table/header structure here; the checks below inspect the completed rows themselves.
+		var settled = await SampleLayoutAsync(grid, sampleRows: false);
+		Assert.That(settled.MaximumGeometryRange, Is.LessThanOrEqualTo(.25));
+		Assert.That(await grid.EvaluateAsync<bool>("""
+			root => {
+				const viewport = root.querySelector('.sphere10-grid-viewport');
+				const table = viewport.querySelector('table');
+				const scale = viewport.getBoundingClientRect().height / viewport.offsetHeight;
+				return table.tBodies[0].rows[table.tBodies[0].rows.length - 1].getBoundingClientRect().bottom
+					<= viewport.getBoundingClientRect().top + viewport.clientHeight * scale + 1;
+			}
+			"""), Is.True, "Automatic paging must fit complete rows including browser zoom, caption/header and the horizontal scrollbar.");
+		var first = table.Locator(":scope > tbody > tr").Nth(0);
+		var second = table.Locator(":scope > tbody > tr").Nth(1);
+		await first.Locator("td").First.ClickAsync();
+		await demo.GetByRole(AriaRole.Button, new() { Name = "Publish snapshot", Exact = true }).ClickAsync();
+		await second.Locator("td").First.ClickAsync();
+		await Assertions.Expect(second).ToHaveAttributeAsync("aria-selected", "true");
+		Assert.That(await demo.GetByRole(AriaRole.Button, new() { Name = "Publish snapshot", Exact = true }).IsDisabledAsync(), Is.True,
+			"The second row must become selected while the delayed source refresh is still in progress.");
+		Assert.That(await grid.Locator(".sphere10-grid-loading").CountAsync(), Is.Zero, "An actual delayed source read must not replace the interactive rows with a loading mask.");
+		await Assertions.Expect(demo.Locator("[data-testid=live-grid-status]")).ToContainTextAsync("Published");
+		await Assertions.Expect(second).ToHaveAttributeAsync("aria-selected", "true");
+		await Assertions.Expect(demo.GetByRole(AriaRole.Button, new() { Name = "Refresh selected row", Exact = true })).ToBeEnabledAsync();
+		await grid.GetByRole(AriaRole.Combobox, new() { Name = "Paging mode", Exact = true }).SelectOptionAsync("Single");
+		await Assertions.Expect(table.Locator(":scope > tbody > tr")).ToHaveCountAsync(96);
+		Assert.That(await grid.GetByRole(AriaRole.Navigation, new() { Name = "Grid pages", Exact = true }).CountAsync(), Is.Zero);
+		await grid.GetByRole(AriaRole.Combobox, new() { Name = "Paging mode", Exact = true }).SelectOptionAsync("Paged");
+		await Assertions.Expect(grid.GetByRole(AriaRole.Combobox, new() { Name = "Rows per page", Exact = true })).ToHaveValueAsync("12");
+		Assert.That(errors, Is.Empty);
+	}
+
+	[TestCase(1500, 1000, 1.0f, 1.0)]
+	[TestCase(760, 1000, 1.25f, 1.25)]
+	public async Task NaturalAndManualWidthsSurvivePagingWhileOtherPreferredColumnsStillStretch(int width, int height, float deviceScale, double zoom) {
+		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True);
+		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
+		using var playwright = await Playwright.CreateAsync();
+		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions {
+			Headless = true,
+			ExecutablePath = string.IsNullOrWhiteSpace(executable) ? null : executable
+		});
+		await using var context = await browser.NewContextAsync(new BrowserNewContextOptions {
+			ViewportSize = new ViewportSize { Width = width, Height = height },
+			DeviceScaleFactor = deviceScale
+		});
+		var page = await context.NewPageAsync();
+		var errors = new List<string>();
+		page.PageError += (_, error) => errors.Add(error);
+		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
+		await page.EvaluateAsync("zoom => document.documentElement.style.zoom = String(zoom)", zoom);
+		var grid = page.Locator(".sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid");
+		var table = grid.Locator(":scope > .sphere10-grid-viewport > table");
+		await Assertions.Expect(table.Locator(":scope > tbody > tr")).ToHaveCountAsync(10);
+		await page.WaitForFunctionAsync("() => !!document.querySelector('[data-demo=grid] > .sphere10-grid table')?.style.width");
+		var initial = await table.Locator(":scope > colgroup > col").EvaluateAllAsync<double[]>("columns => columns.map(column => parseFloat(column.style.width))");
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Next page", Exact = true }).ClickAsync();
+		await Assertions.Expect(grid.GetByRole(AriaRole.Spinbutton, new() { Name = "Current page", Exact = true })).ToHaveValueAsync("2");
+		var paged = await table.Locator(":scope > colgroup > col").EvaluateAllAsync<double[]>("columns => columns.map(column => parseFloat(column.style.width))");
+		Assert.That(paged, Is.EqualTo(initial).Within(.25), "Later-page content must not remeasure established column widths.");
+		var header = table.Locator(":scope > thead > tr > th").Nth(1);
+		var grip = header.Locator(".sphere10-grid-resizer");
+		await grip.ScrollIntoViewIfNeededAsync();
+		var handle = await grip.BoundingBoxAsync();
+		await page.Mouse.MoveAsync(handle.X + handle.Width / 2, handle.Y + handle.Height / 2);
+		await page.Mouse.DownAsync();
+		await page.Mouse.MoveAsync(handle.X + handle.Width / 2 + 65, handle.Y + handle.Height / 2, new MouseMoveOptions { Steps = 5 });
+		await page.Mouse.UpAsync();
+		await page.WaitForFunctionAsync("() => !!JSON.parse(localStorage.getItem('sphere10-grid:tester.editable-grid'))?.columnWidths?.Name");
+		var manual = await table.Locator("col[data-grid-key=Name]").EvaluateAsync<double>("column => parseFloat(column.style.width)");
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Reload", Exact = true }).ClickAsync();
+		await Assertions.Expect(grid).ToHaveAttributeAsync("aria-busy", "false");
+		Assert.That(await table.Locator("col[data-grid-key=Name]").EvaluateAsync<double>("column => parseFloat(column.style.width)"), Is.EqualTo(manual).Within(.25));
+		await page.SetViewportSizeAsync(Math.Max(width + 1600, (int)Math.Ceiling((initial.Sum() + 1000) * zoom)), height);
+		await page.WaitForFunctionAsync("() => document.querySelector('[data-demo=grid] > .sphere10-grid table').getBoundingClientRect().width > 0");
+		var expanded = await SampleLayoutAsync(grid);
+		Assert.That(expanded.MaximumGeometryRange, Is.LessThanOrEqualTo(.25));
+		Assert.That(await table.Locator("col[data-grid-key=Name]").EvaluateAsync<double>("column => parseFloat(column.style.width)"), Is.EqualTo(manual).Within(.25), "The explicit width overrides stretching only for the dragged column.");
+		var note = await table.Locator("col[data-grid-key=Note]").EvaluateAsync<double>("column => parseFloat(column.style.width)");
+		Assert.That(note, Is.GreaterThan(initial[6]), "The other preferred column must continue absorbing viewport growth.");
+		await grid.GetByRole(AriaRole.Combobox, new() { Name = "Rows per page", Exact = true }).SelectOptionAsync("5");
+		await Assertions.Expect(table.Locator(":scope > tbody > tr")).ToHaveCountAsync(5);
+		await page.ReloadAsync();
+		await Assertions.Expect(table.Locator(":scope > tbody > tr")).ToHaveCountAsync(5);
+		Assert.That(await table.Locator("col[data-grid-key=Name]").EvaluateAsync<double>("column => parseFloat(column.style.width)"), Is.EqualTo(manual).Within(.25), "Only this browser's explicitly keyed grid restores the saved width.");
+		Assert.That(errors, Is.Empty);
+	}
+
 	// Serialize frame sampling to avoid browser scheduling contention between geometry probes.
 	[TestCase(3484, 1440, 1.25f, 1.25)]
 	[TestCase(1920, 1080, 1.5f, 1.5)]
@@ -184,15 +300,15 @@ public class BlazorGridBrowserTests {
 		Assert.That(errors, Is.Empty);
 	}
 
-	private static async Task<LayoutObservation> SampleLayoutAsync(ILocator grid) {
+	private static async Task<LayoutObservation> SampleLayoutAsync(ILocator grid, bool sampleRows = true) {
 		var frames = await grid.EvaluateAsync<double[][]>("""
-			async root => {
+			async (root, sampleRows) => {
 				const grids = [root, ...root.querySelectorAll('.sphere10-grid')];
 				const targets = grids.flatMap(grid => {
 					const viewport = grid.querySelector(':scope > .sphere10-grid-viewport');
 					const table = viewport?.querySelector(':scope > table');
 					if (!viewport || !table) throw new Error('Expected a rendered grid viewport and table.');
-					return [grid, viewport, table, table.tBodies[0].rows[2], ...table.tHead.rows[0].cells].filter(Boolean);
+					return [grid, viewport, table, ...(sampleRows ? [table.tBodies[0].rows[2]] : []), ...table.tHead.rows[0].cells].filter(Boolean);
 				});
 				let styleWrites = 0;
 				let resizeEvents = 0;
@@ -202,7 +318,7 @@ public class BlazorGridBrowserTests {
 				for (const target of targets) sizes.observe(target);
 				const viewport = targets[1];
 				const table = targets[2];
-				const configuredWidth = Array.from(table.querySelector(':scope > colgroup').children)
+				const configuredWidth = parseFloat(table.style.minWidth) || Array.from(table.querySelector(':scope > colgroup').children)
 					.reduce((total, column) => total + Number(column.dataset.gridWidth), 0);
 				const frames = [];
 				try {
@@ -224,7 +340,7 @@ public class BlazorGridBrowserTests {
 					sizes.disconnect();
 				}
 			}
-			""").WaitAsync(TimeSpan.FromSeconds(20));
+			""", sampleRows).WaitAsync(TimeSpan.FromSeconds(20));
 		var tail = frames.TakeLast(60).ToArray();
 		var ranges = Enumerable.Range(3, tail[0].Length - 3).Select(index => tail.Max(frame => frame[index]) - tail.Min(frame => frame[index])).ToArray();
 		return new LayoutObservation {

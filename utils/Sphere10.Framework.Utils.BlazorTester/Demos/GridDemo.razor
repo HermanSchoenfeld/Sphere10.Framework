@@ -9,6 +9,8 @@
 *@
 
 @inject ViewService ViewService
+@using System.Threading
+@implements IAsyncDisposable
 
 <section class="demo-example" data-demo="grid">
 <h2>Editable grid</h2>
@@ -17,19 +19,84 @@
 <p>Use the arrow buttons to move between pages, or choose how many rows to show from Rows per page.</p>
 <p>Polkadot records are protected from deletion. The Active checkbox, Color list, date field, custom Note editor and Related record picker demonstrate typed editing.</p>
 <BlazorGrid TItem="TestClass" PageSize="10" PageSizeOptions="_pageSizeOptions" DataSource="_dataSource"
+	PersistSettings="true" SettingsKey="tester.editable-grid"
 	Columns="_columns" Actions="_actions" SelectedItemChanged="SelectItem" />
 <p role="status" data-testid="grid-selection">
 	@(_selectedItem == null ? "No record selected." : $"Selected: {_selectedItem.Name} (ID {_selectedItem.Id}).")
 </p>
 </section>
 
+<section class="demo-example" data-demo="live-grid">
+<h2>Live snapshots and layout</h2>
+<p>This independent read-only source publishes replacement objects with stable IDs. A simulated source read takes 350 ms;
+	keep clicking rows or changing pages while it runs. Only the initial load needs the loading surface when no-indicator updates are enabled.</p>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2" role="group" aria-label="Live grid controls">
+	<label><input type="checkbox" checked="@_liveEnabled" @onchange="LiveEnabledChangedAsync" /> Live captures</label>
+	<label><input type="checkbox" @bind="_suppressLiveIndicator" /> No-indicator updates</label>
+	<button type="button" @onclick="PublishLiveSnapshotAsync" disabled="@LiveActionsDisabled">Publish snapshot</button>
+	<button type="button" @onclick="RefreshSelectedLiveAsync" disabled="@(LiveActionsDisabled || _liveSelectedItem == null)">Refresh selected row</button>
+	<button type="button" @onclick="RemoveSelectedLiveAsync" disabled="@(LiveActionsDisabled || _liveSelectedItem == null)">Remove selected row</button>
+	<button type="button" @onclick="PreviewFilteredLiveAsync" disabled="@LiveActionsDisabled">Preview filtered snapshot</button>
+</div>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2" role="group" aria-label="Live grid layout">
+	<label>Title alignment <select @bind="_liveCaptionAlignment">
+		<option value="@BlazorGridHorizontalAlignment.Left">Left</option>
+		<option value="@BlazorGridHorizontalAlignment.Center">Center</option>
+		<option value="@BlazorGridHorizontalAlignment.Right">Right</option>
+	</select></label>
+	<label>Image alignment <select value="@_liveImageColumn.ImageAlignment" @onchange="LiveImageAlignmentChanged">
+		<option value="@ResizeAlignment.TopLeft">Top Left</option>
+		<option value="@ResizeAlignment.CenterCenter">Centered</option>
+		<option value="@ResizeAlignment.BottomRight">Bottom Right</option>
+	</select></label>
+	<label>Image layout <select value="@(_liveImageColumn.ImageResizeMethod?.ToString() ?? "None")" @onchange="LiveImageResizeChanged">
+		<option value="None">Original Size</option>
+		<option value="@ResizeMethod.AspectFit">Fit</option>
+		<option value="@ResizeMethod.AspectFill">Fill</option>
+		<option value="@ResizeMethod.Stretch">Stretch</option>
+	</select></label>
+	<label><input type="checkbox" checked="@_stretchLiveColumns" @onchange="LiveStretchChanged" /> Stretch Name and Details</label>
+</div>
+<p>Use the grid's paging mode selector to compare Paged, Auto Paged and Single Paged. Drag a header edge to give it a manual width,
+	then page, search or publish a snapshot: that width remains. Name and Details are the preferred stretch columns.</p>
+<BlazorGrid TItem="GridDemoSnapshotDataSource.Row" @ref="_liveGrid" Caption="Live Samples" DataSource="_liveDataSource"
+	Columns="_liveColumns" PageSize="12" PageSizeOptions="_pageSizeOptions" PageMode="BlazorGridPageMode.Auto" Height="360"
+	CaptionAlignment="_liveCaptionAlignment" PersistSettings="true" SettingsKey="tester.live-grid"
+	SuppressLoadingIndicator="_suppressLiveIndicator" SelectedItemChanged="SelectLiveItem" />
+<p role="status" data-testid="live-grid-status">@_liveStatus</p>
+@if (_filteredPreview != null) {
+	<details open data-testid="live-grid-export">
+		<summary>Filtered snapshot: @_filteredPreview.Length matching rows across every page</summary>
+		<pre>@string.Join(Environment.NewLine, _filteredPreview.Select(row => $"{row.Id}\t{row.Name}\t{row.Group}\tRevision {row.Revision}"))</pre>
+	</details>
+}
+</section>
+
 @code {
 	private readonly TestClassDataSource _dataSource = new();
+	private readonly GridDemoSnapshotDataSource _liveDataSource = new();
+	private readonly CancellationTokenSource _lifetime = new();
 	private readonly int[] _pageSizeOptions = { 5, 10, 25, 50, 100 };
 	private GridAction<TestClass>[] _actions = Array.Empty<GridAction<TestClass>>();
 	private BlazorGridColumn<TestClass>[] _columns = Array.Empty<BlazorGridColumn<TestClass>>();
 	private BlazorGridColumn<TestClass>[] _referenceColumns = Array.Empty<BlazorGridColumn<TestClass>>();
 	private TestClass _selectedItem;
+	private BlazorGrid<GridDemoSnapshotDataSource.Row> _liveGrid;
+	private BlazorGridColumn<GridDemoSnapshotDataSource.Row>[] _liveColumns = Array.Empty<BlazorGridColumn<GridDemoSnapshotDataSource.Row>>();
+	private BlazorGridColumn<GridDemoSnapshotDataSource.Row> _liveImageColumn;
+	private BlazorGridColumn<GridDemoSnapshotDataSource.Row> _liveNameColumn;
+	private BlazorGridColumn<GridDemoSnapshotDataSource.Row> _liveDetailsColumn;
+	private BlazorGridHorizontalAlignment _liveCaptionAlignment = BlazorGridHorizontalAlignment.Left;
+	private GridDemoSnapshotDataSource.Row[] _filteredPreview;
+	private GridDemoSnapshotDataSource.Row _liveSelectedItem;
+	private Task _liveLoop = Task.CompletedTask;
+	private bool _suppressLiveIndicator = true;
+	private bool _stretchLiveColumns = true;
+	private bool _liveEnabled;
+	private bool _publishing;
+	private bool _disposed;
+	private string _liveStatus = "Ready. Select a row to try a targeted refresh or removal.";
+	private bool LiveActionsDisabled => _liveGrid == null || _publishing || _liveGrid.Controller.IsLoading || _liveGrid.Controller.IsSaving || _liveGrid.Controller.IsRefreshing;
 
 	protected override void OnInitialized() {
 		var id = BlazorGridColumn<TestClass>.For(item => item.Id, "ID");
@@ -80,6 +147,34 @@
 		};
 		_columns = new[] { id, name, color, created, age, active, note, related, summary };
 		_actions = new[] { new GridAction<TestClass>("Details", item => item, "ℹ") { ActionWorkAsync = ShowDetailsAsync } };
+
+		// Keep bindings stable across publications so measured and manually resized widths survive.
+		_liveNameColumn = BlazorGridColumn<GridDemoSnapshotDataSource.Row>.For(row => row.Name);
+		_liveNameColumn.ExpandsToFit = true;
+		_liveDetailsColumn = BlazorGridColumn<GridDemoSnapshotDataSource.Row>.For(row => row.Details);
+		_liveDetailsColumn.Width = 240;
+		_liveDetailsColumn.ExpandsToFit = true;
+		_liveImageColumn = new BlazorGridColumn<GridDemoSnapshotDataSource.Row> {
+			ColumnName = "Icon",
+			CanEditCell = false,
+			Width = 70,
+			ImageWidth = 48,
+			ImageHeight = 24,
+			ImageSource = _ => "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%233B4149' d='M1 12h3V7H1zm5 0h3V2H6zm5 0h3V5h-3z'/%3E%3C/svg%3E",
+			ImageAlternativeText = row => $"{row.Group} sample"
+		};
+		var usage = BlazorGridColumn<GridDemoSnapshotDataSource.Row>.For(row => row.Usage, "Usage (%)");
+		usage.Format = "F1";
+		_liveColumns = new[] {
+			_liveImageColumn, BlazorGridColumn<GridDemoSnapshotDataSource.Row>.For(row => row.Id, "ID"), _liveNameColumn,
+			BlazorGridColumn<GridDemoSnapshotDataSource.Row>.For(row => row.Group),
+			BlazorGridColumn<GridDemoSnapshotDataSource.Row>.For(row => row.Revision), usage, _liveDetailsColumn
+		};
+	}
+
+	protected override void OnAfterRender(bool firstRender) {
+		if (firstRender)
+			_liveGrid.Controller.EntityComparer = new LiveRowComparer();
 	}
 
 	private static string RelatedItemText(TestClass item) => $"{item.Name} (ID {item.Id})";
@@ -87,4 +182,99 @@
 	private void SelectItem(TestClass item) => _selectedItem = item;
 
 	private Task ShowDetailsAsync(TestClass item) => ViewService.DialogAsync("Record details", item.ToString());
+
+	private void SelectLiveItem(GridDemoSnapshotDataSource.Row item) {
+		_liveSelectedItem = item;
+		_liveStatus = item == null ? "No live sample selected." : $"Selected {item.Name}, revision {item.Revision}.";
+	}
+
+	private async Task PublishLiveSnapshotAsync() {
+		if (LiveActionsDisabled || _disposed)
+			return;
+		_publishing = true;
+		_liveStatus = "Capturing a new snapshot; the existing grid remains available.";
+		try {
+			await Task.Run(() => _liveDataSource.PublishNextSnapshot(), _lifetime.Token);
+			if (_disposed)
+				return;
+			await _liveGrid.RefreshAsync();
+			_liveStatus = $"Published {_liveDataSource.Count} samples. Selection and the current query are retained.";
+		} catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) {
+		} catch (Exception error) {
+			_liveStatus = error.Message;
+		} finally {
+			_publishing = false;
+		}
+	}
+
+	private async Task RefreshSelectedLiveAsync() {
+		if (LiveActionsDisabled || _liveSelectedItem == null)
+			return;
+		await _liveGrid.RefreshRowsAsync(new[] { _liveSelectedItem });
+		_liveStatus = "Refreshed the selected row without rereading the page.";
+	}
+
+	private async Task RemoveSelectedLiveAsync() {
+		if (LiveActionsDisabled || _liveSelectedItem == null)
+			return;
+		var removed = _liveSelectedItem;
+		await Task.Run(() => _liveDataSource.Remove(removed.Id), _lifetime.Token);
+		if (_disposed)
+			return;
+		_liveGrid.RemoveRows(new[] { removed });
+		_liveStatus = $"Removed {removed.Name} from this local demo source and the visible grid.";
+	}
+
+	private async Task PreviewFilteredLiveAsync() {
+		_filteredPreview = await _liveGrid.ReadFilteredEntitiesAsync(_lifetime.Token);
+		_liveStatus = $"Captured {_filteredPreview.Length} matching rows across every page, retaining the grid's filter, sort and current page.";
+	}
+
+	private async Task LiveEnabledChangedAsync(ChangeEventArgs args) {
+		_liveEnabled = args.Value is true;
+		if (_liveEnabled && _liveLoop.IsCompleted)
+			_liveLoop = CaptureLoopAsync();
+		if (_liveEnabled)
+			await PublishLiveSnapshotAsync();
+	}
+
+	private async Task CaptureLoopAsync() {
+		using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+		try {
+			while (await timer.WaitForNextTickAsync(_lifetime.Token)) {
+				if (!_liveEnabled)
+					break;
+				await InvokeAsync(async () => {
+					await PublishLiveSnapshotAsync();
+					if (!_disposed)
+						StateHasChanged();
+				});
+			}
+		} catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) {
+		}
+	}
+
+	private void LiveImageAlignmentChanged(ChangeEventArgs args) => _liveImageColumn.ImageAlignment = Enum.Parse<ResizeAlignment>((string)args.Value);
+
+	private void LiveImageResizeChanged(ChangeEventArgs args) =>
+		_liveImageColumn.ImageResizeMethod = args.Value is "None" ? null : Enum.Parse<ResizeMethod>((string)args.Value);
+
+	private void LiveStretchChanged(ChangeEventArgs args) {
+		_stretchLiveColumns = args.Value is true;
+		_liveNameColumn.ExpandsToFit = _stretchLiveColumns;
+		_liveDetailsColumn.ExpandsToFit = _stretchLiveColumns;
+	}
+
+	public async ValueTask DisposeAsync() {
+		_disposed = true;
+		_lifetime.Cancel();
+		await _liveLoop;
+		_lifetime.Dispose();
+	}
+
+	private sealed class LiveRowComparer : IEqualityComparer<GridDemoSnapshotDataSource.Row> {
+		public bool Equals(GridDemoSnapshotDataSource.Row left, GridDemoSnapshotDataSource.Row right) => left?.Id == right?.Id;
+
+		public int GetHashCode(GridDemoSnapshotDataSource.Row row) => row.Id;
+	}
 }
