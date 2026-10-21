@@ -8,6 +8,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls;
 
@@ -142,5 +143,74 @@ public class GridDemoDataSourceTests {
 	[TestCase(-1)]
 	public void NonPositivePageLengthsAreRejected(int pageLength) {
 		Assert.That(() => new TestClassDataSource().ReadRange(null, pageLength, 0, null, SortDirection.Ascending), Throws.InstanceOf<ArgumentException>());
+	}
+
+	[Test]
+	public void ClearingTheSortRestoresSourceOrder() {
+		var source = new TestClassDataSource();
+
+		var result = source.ReadRange(null, 3, 0, nameof(TestClass.Age), SortDirection.None);
+
+		Assert.That(result.Items.Select(item => item.Id), Is.EqualTo(new[] { 1, 2, 3 }));
+	}
+
+	[Test]
+	public void LiveSnapshotPublicationReplacesInstancesAndPreservesStableMembership() {
+		var source = new GridDemoSnapshotDataSource();
+		var original = source.Snapshot;
+
+		Assert.That(source.PublishNextSnapshot(), Is.True);
+		var updated = source.Snapshot;
+
+		Assert.That(updated.Select(row => row.Id), Is.EqualTo(original.Select(row => row.Id)));
+		Assert.That(updated.Select(row => row.Revision), Is.All.EqualTo(1));
+		Assert.That(updated[0], Is.Not.SameAs(original[0]));
+		Assert.That(updated[0].Usage, Is.Not.EqualTo(original[0].Usage));
+		Assert.That(original[0].Revision, Is.Zero, "Published objects are immutable so an in-flight grid can retain its old snapshot.");
+	}
+
+	[Test]
+	public async Task LiveRowRefreshReplacesOnlyTheRequestedIdentity() {
+		var source = new GridDemoSnapshotDataSource();
+		var original = source.Snapshot;
+		var requested = new[] { original[5] };
+
+		await source.RefreshRangeAsync(requested);
+		var updated = source.Snapshot;
+
+		Assert.That(requested[0], Is.SameAs(updated[5]).And.Not.SameAs(original[5]));
+		Assert.That(updated[5].Id, Is.EqualTo(original[5].Id));
+		Assert.That(updated[5].Revision, Is.EqualTo(1));
+		Assert.That(updated[4], Is.SameAs(original[4]));
+		Assert.That(updated[6], Is.SameAs(original[6]));
+	}
+
+	[Test]
+	public async Task LiveSourceFiltersAndSortsBeforePagingAndAllMatchesRead() {
+		var source = new GridDemoSnapshotDataSource();
+
+		var page = await source.ReadRangeAsync("Network", 5, 1, nameof(GridDemoSnapshotDataSource.Row.Id), SortDirection.Descending);
+		var all = await source.ReadRangeAsync("Network", int.MaxValue, 0, nameof(GridDemoSnapshotDataSource.Row.Id), SortDirection.Descending);
+
+		Assert.That(page.TotalCount, Is.EqualTo(32));
+		Assert.That(page.Page, Is.EqualTo(1));
+		Assert.That(page.Items.Select(row => row.Id), Is.EqualTo(new[] { 81, 78, 75, 72, 69 }));
+		Assert.That(all.Items.Count(), Is.EqualTo(32));
+		Assert.That(all.Items.Skip(5).Take(5), Is.EqualTo(page.Items));
+	}
+
+	[Test]
+	public async Task RemovingALiveRowAlsoRemovesItFromFutureCapturesAndRepairsTheFilteredCount() {
+		var source = new GridDemoSnapshotDataSource();
+
+		Assert.That(source.Remove(96), Is.True);
+		Assert.That(source.PublishNextSnapshot(), Is.True);
+		var result = await source.ReadRangeAsync("Network", 5, 999, nameof(GridDemoSnapshotDataSource.Row.Id), SortDirection.Ascending);
+
+		Assert.That(source.Count, Is.EqualTo(95));
+		Assert.That(result.TotalCount, Is.EqualTo(31));
+		Assert.That(result.Page, Is.EqualTo(6));
+		Assert.That(result.Items.Select(row => row.Id), Is.EqualTo(new[] { 93 }));
+		Assert.That(source.Snapshot.Select(row => row.Id), Does.Not.Contain(96));
 	}
 }

@@ -50,7 +50,8 @@ public class TestClassDataSource : ListDataSource<TestClass> {
 			nameof(TestClass.Note) => item => item.Note,
 			_ => item => item.Id
 		};
-		query = sortDirection == SortDirection.Descending ? query.OrderByDescending(sortValue).ThenBy(item => item.Id) : query.OrderBy(sortValue).ThenBy(item => item.Id);
+		if (sortDirection != SortDirection.None)
+			query = sortDirection == SortDirection.Descending ? query.OrderByDescending(sortValue).ThenBy(item => item.Id) : query.OrderBy(sortValue).ThenBy(item => item.Id);
 		var items = query.ToArray();
 		page = Math.Clamp(page, 0, Math.Max(0, (items.Length - 1) / pageLength));
 		return new DataSourceItems<TestClass> { Items = items.Skip(page * pageLength).Take(pageLength).ToArray(), Page = page, TotalCount = items.Length };
