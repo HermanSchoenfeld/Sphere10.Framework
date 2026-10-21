@@ -24,18 +24,20 @@ public class WindowsNetworkUtil {
 	public WindowsNetworkEndpoint[] GetEndpoints(bool tcp, AddressFamily family) => GetEndpointsCore(tcp, family, null);
 
 	public Task<WindowsNetworkEndpoint[]> GetEndpointsAsync(bool tcp, AddressFamily family, CancellationToken cancellationToken = default)
-		=> Task.Run(() => GetEndpointsCore(tcp, family, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
+		=> CaptureAsync(canceled => GetEndpointsCore(tcp, family, canceled), cancellationToken);
 
-	private static WindowsNetworkEndpoint[] GetEndpointsCore(bool tcp, AddressFamily family, Action checkpoint) {
+	private static WindowsNetworkEndpoint[] GetEndpointsCore(bool tcp, AddressFamily family, Func<bool> canceled) {
 		Guard.Argument(family is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6, nameof(family), "Windows endpoint tables require IPv4 or IPv6.");
 		var nativeFamily = family == AddressFamily.InterNetwork ? WinAPI.IPHLPAPI.AF_INET : WinAPI.IPHLPAPI.AF_INET6;
-		checkpoint?.Invoke();
+		if (canceled?.Invoke() == true)
+			return null;
 		var size = 0U;
 		var error = Query(tcp, nativeFamily, IntPtr.Zero, ref size);
 		if (error != 0 && error != WinAPI.IPHLPAPI.ERROR_INSUFFICIENT_BUFFER)
 			throw new Win32Exception((int)error);
 		for (var attempt = 0; attempt < 4; attempt++) {
-			checkpoint?.Invoke();
+			if (canceled?.Invoke() == true)
+				return null;
 			Guard.Ensure(size >= 4 && size <= 64 * 1024 * 1024, "The Windows endpoint table reported an invalid buffer size.");
 			var allocated = checked((int)size);
 			using var allocation = new UnmanagedMemoryScope(allocated);
@@ -52,48 +54,61 @@ public class WindowsNetworkUtil {
 			Guard.Ensure(count >= 0 && count <= (allocated - 4) / length, "The Windows endpoint table reported an invalid row count.");
 			var rows = new WindowsNetworkEndpoint[count];
 			for (var index = 0; index < count; index++) {
-				checkpoint?.Invoke();
+				if (canceled?.Invoke() == true)
+					return null;
 				rows[index] = ReadRow(IntPtr.Add(buffer, 4 + index * length), tcp, family);
 			}
-			checkpoint?.Invoke();
+			if (canceled?.Invoke() == true)
+				return null;
 			return rows;
 		}
 		throw new Win32Exception((int)WinAPI.IPHLPAPI.ERROR_INSUFFICIENT_BUFFER, "The Windows endpoint table changed repeatedly during enumeration.");
 	}
 
-	public WindowsNetworkInterface[] GetInterfaces() => GetInterfacesCore(null);
+	public WindowsNetworkInterface[] GetInterfaces() => GetInterfacesCore(NetworkInterface.GetAllNetworkInterfaces, null);
 
 	public Task<WindowsNetworkInterface[]> GetInterfacesAsync(CancellationToken cancellationToken = default)
-		=> Task.Run(() => GetInterfacesCore(cancellationToken.ThrowIfCancellationRequested), cancellationToken);
+		=> GetInterfacesAsync(NetworkInterface.GetAllNetworkInterfaces, cancellationToken);
 
-	private static WindowsNetworkInterface[] GetInterfacesCore(Action checkpoint) {
-		checkpoint?.Invoke();
+	internal Task<WindowsNetworkInterface[]> GetInterfacesAsync(Func<NetworkInterface[]> readInterfaces, CancellationToken cancellationToken)
+		=> CaptureAsync(canceled => GetInterfacesCore(readInterfaces, canceled), cancellationToken);
+
+	private static WindowsNetworkInterface[] GetInterfacesCore(Func<NetworkInterface[]> readInterfaces, Func<bool> canceled) {
+		if (canceled?.Invoke() == true)
+			return null;
 		var rows = new List<WindowsNetworkInterface>();
-		foreach (var adapter in NetworkInterface.GetAllNetworkInterfaces()) {
-			checkpoint?.Invoke();
+		foreach (var adapter in readInterfaces()) {
+			if (canceled?.Invoke() == true)
+				return null;
 			var row = new WindowsNetworkInterface {
 				Id = adapter.Id, Name = adapter.Name, Description = adapter.Description,
 				Status = adapter.OperationalStatus, InterfaceType = adapter.NetworkInterfaceType
 			};
-			try {
+			Tools.Exceptions.ExecuteCapturingException<NetworkInformationException>(() => {
 				row.PhysicalAddress = adapter.GetPhysicalAddress().GetAddressBytes();
 				row.LinkSpeedBitsPerSecond = adapter.Speed;
-			} catch (NetworkInformationException error) {
-				row.HardwareError = error;
-			}
-			try {
+			}, out var hardwareError);
+			row.HardwareError = hardwareError;
+			Tools.Exceptions.ExecuteCapturingException(() => {
 				var properties = adapter.GetIPProperties();
 				row.Addresses = properties.UnicastAddresses.Select(address => address.Address).ToArray();
 				row.Gateways = properties.GatewayAddresses.Select(address => address.Address).ToArray();
 				row.DnsServers = properties.DnsAddresses.ToArray();
-			} catch (Exception error) {
-				row.AddressError = error;
-			}
+			}, out var addressError);
+			row.AddressError = addressError;
 			rows.Add(row);
 		}
-		checkpoint?.Invoke();
+		if (canceled?.Invoke() == true)
+			return null;
 		return rows.ToArray();
 	}
+
+	private static Task<T[]> CaptureAsync<T>(Func<Func<bool>, T[]> capture, CancellationToken cancellationToken)
+		=> Task.Run(() => {
+			var rows = capture(() => cancellationToken.IsCancellationRequested);
+			// A native call must finish and release its buffers before cancellation completes the owned operation.
+			return cancellationToken.IsCancellationRequested ? Task.FromCanceled<T[]>(cancellationToken) : Task.FromResult(rows);
+		}, cancellationToken);
 
 	public WindowsInterfaceCounters GetInterfaceCounters(Guid interfaceId) {
 		var error = WinAPI.IPHLPAPI.ConvertInterfaceGuidToLuid(ref interfaceId, out var luid);
