@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
-using Sphere10.DRM;
+
 
 namespace Sphere10.Framework.Application;
 
@@ -18,10 +18,7 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 	public override int Priority => int.MinValue; // last to execute
 
 	public override void RegisterComponents(IServiceCollection serviceCollection) {
-		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.EnableDrm))
-			EnableDRM(serviceCollection);
-		else
-			DisableDRM(serviceCollection);
+
 
 		if (!serviceCollection.HasImplementationFor<ISettingsServices>())
 			serviceCollection.AddSingleton<ISettingsServices, StandardSettingsServices>();
@@ -86,50 +83,9 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		}
 	}
 
-	private void EnableDRM(IServiceCollection serviceCollection) {
 
-		if (!serviceCollection.HasImplementationFor<IProductLicenseEnforcer>())
-			serviceCollection.AddSingleton<IProductLicenseEnforcer, ProductLicenseEnforcer>();
 
-		if (!serviceCollection.HasImplementationFor<IProductLicenseStorage>())
-			serviceCollection.AddTransient<IProductLicenseStorage, ProductLicenseSettingsStorage>();
 
-		if (!serviceCollection.HasImplementationFor<IProductLicenseProvider>())
-			serviceCollection.AddTransient<IProductLicenseProvider, ProductLicenseProvider>();
-
-		if (!serviceCollection.HasImplementationFor<IProductLicenseClient>())
-			serviceCollection.AddTransient<IProductLicenseClient, AssemblyAttributeConfiguredProductLicenseClient>();
-
-		if (!serviceCollection.HasImplementationFor<IProductLicenseActivator>())
-			serviceCollection.AddTransient<IProductLicenseActivator, ProductLicenseActivator>();
-
-		if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>())
-			serviceCollection.AddTransient<IBackgroundLicenseVerifier, ClientBackgroundLicenseVerifier>();
-
-		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.BackgroundLicenseVerify))
-			serviceCollection.AddInitializer<VerifyLicenseInitializer>();
-	}
-
-	private void DisableDRM(IServiceCollection serviceCollection) {
-		if (!serviceCollection.HasImplementationFor<IProductLicenseEnforcer>())
-			serviceCollection.AddSingleton<IProductLicenseEnforcer, NoOpProductLicenseEnforcer>();
-
-		if (!serviceCollection.HasImplementationFor<IProductLicenseStorage>())
-			serviceCollection.AddTransient<IProductLicenseStorage, NoOpProductLicenseStorage>();
-
-		if (!serviceCollection.HasImplementationFor<IProductLicenseProvider>())
-			serviceCollection.AddTransient<IProductLicenseProvider, NoOpProductLicenseProvider>();
-
-		if (!serviceCollection.HasImplementationFor<IProductLicenseClient>())
-			serviceCollection.AddTransient<IProductLicenseClient, NoOpProductLicenseClient>();
-
-		if (!serviceCollection.HasImplementationFor<IProductLicenseActivator>())
-			serviceCollection.AddTransient<IProductLicenseActivator, NoOpProductLicenseActivator>();
-
-		if (!serviceCollection.HasImplementationFor<IBackgroundLicenseVerifier>())
-			serviceCollection.AddTransient<IBackgroundLicenseVerifier, NoOpBackgroundLicenseVerifier>();
-
-	}
 
 	public override void OnInitialize(IServiceProvider serviceProvider) {
 		base.OnInitialize(serviceProvider);

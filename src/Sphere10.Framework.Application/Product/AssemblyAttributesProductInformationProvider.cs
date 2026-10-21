@@ -38,8 +38,6 @@ public class AssemblyAttributesProductInformationProvider : IProductInformationP
 			CompanyNumber = Sphere10AssemblyAttributesHelper.GetAssemblyCompanyNumber() ?? string.Empty,
 			CompanyUrl = Sphere10AssemblyAttributesHelper.GetAssemblyCompanyLink() ?? string.Empty,
 			CopyrightNotice = Sphere10AssemblyAttributesHelper.GetAssemblyCopyright() ?? string.Empty,
-			DefaultProductLicense = Sphere10AssemblyAttributesHelper.GetAssemblyDefaultProductLicenseActivation(),
-			ProductDrmApiUrl = Sphere10AssemblyAttributesHelper.GetProductDrmApi() ?? string.Empty,
 			ProductCode = Sphere10AssemblyAttributesHelper.GetAssemblyProductCode() ?? Guid.Empty,
 			ProductDescription = Sphere10AssemblyAttributesHelper.GetAssemblyDescription() ?? string.Empty,
 			ProductName = Sphere10AssemblyAttributesHelper.GetAssemblyProduct() ?? string.Empty,

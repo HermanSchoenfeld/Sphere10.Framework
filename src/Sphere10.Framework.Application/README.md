@@ -335,7 +335,7 @@ Dynamic steps implement `IWizardStep` and expose `Traits = WizardStepTraits.Assu
 
 ## Awaitable UI services
 
-`IUserInterfaceServices.ShowNagScreen`, `ShowSendCommentDialog`, `ShowSubmitBugReportDialog`, `ShowRequestFeatureDialog`, and `ShowAboutBox` return `Task`. Await them to preserve sequencing and observe errors. `IProductLicenseEnforcer.EnforceLicense(bool)` also returns `Task`, and completes after any licensing dialog closes. Implementations with no UI work return `Task.CompletedTask`.
+`IUserInterfaceServices.ShowSendCommentDialog`, `ShowSubmitBugReportDialog`, `ShowRequestFeatureDialog`, and `ShowAboutBox` return `Task`. Await them to preserve sequencing and observe errors. Implementations with no UI work return `Task.CompletedTask`.
 
 ## ⚡ Quick Start
 
@@ -770,16 +770,16 @@ Configure framework behavior with options:
 ```csharp
 Sphere10Framework.Instance
 	.Build()
-	.WithOptions(Sphere10FrameworkOptions.EnableDrm | Sphere10FrameworkOptions.BackgroundLicenseVerify | Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)
+	.WithOptions(Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)
 	.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
 	.Start();
 ```
 
 | Option | Description |
 |--------|-------------|
-| `EnableDrm` | Enable DRM/licensing support |
-| `BackgroundLicenseVerify` | Verify license in background |
 | `EnsureSystemDataDirGloballyAccessible` | Make system data dir accessible to all users |
+
+Application licensing is no longer part of Framework. License-specific DTOs, assembly attributes, services, background verification and framework-option flags have been removed. Generic hosts perform application lifecycle work without implicit license checks; applications supply their own licensing integrations. Product metadata and per-user/system usage counting remain general-purpose.
 
 ## 📖 Related Projects
 

@@ -21,10 +21,7 @@ public class ConsoleApplicationUserInterfaceServices : IUserInterfaceServices {
 
 	public string Status { get; set; } = string.Empty;
 
-	public Task ShowNagScreen(string nagMessage) {
-		Console.WriteLine(nagMessage);
-		return Task.CompletedTask;
-	}
+
 
 	public object PrimaryUIController { get; } = new object();
 

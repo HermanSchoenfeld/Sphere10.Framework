@@ -22,7 +22,6 @@ public abstract class ClientRequest {
 				CompanyName = string.Empty,
 				CompanyUrl = string.Empty,
 				CopyrightNotice = string.Empty,
-				DefaultProductLicense = null,
 				ProductCode = Guid.Empty,
 				ProductDescription = string.Empty,
 				ProductVersion = null,
