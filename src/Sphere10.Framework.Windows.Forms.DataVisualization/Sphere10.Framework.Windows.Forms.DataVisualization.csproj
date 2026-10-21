@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>$(DataVisualizationTargetFrameworks)</TargetFrameworks>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AssemblyName>Sphere10.Framework.Windows.Forms.DataVisualization</AssemblyName>
+		<PackageId>Sphere10.Framework.Windows.Forms.DataVisualization</PackageId>
+		<RootNamespace>Sphere10.Framework.Windows.Forms.DataVisualization</RootNamespace>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CLSCompliant>false</CLSCompliant>
+		<NoWarn>$(NoWarn);618</NoWarn>
+		<Platforms>AnyCPU</Platforms>
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<DebugSymbols>true</DebugSymbols>
+		<IsPackable>true</IsPackable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Authors>Microsoft; .NET Foundation; Kirsan and contributors; Herman Schoenfeld</Authors>
+		<Description>Windows Forms charting controls imported from the legacy Microsoft DataVisualization project and its maintained continuation, with line, bar, column and other charts and DPI support for modern .NET.</Description>
+		<PackageTags>sphere10;framework;winforms;windows;chart;graph;datavisualization</PackageTags>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="Tests\**;**\obj\**;**\bin\**" />
+		<InternalsVisibleTo Include="Tests" />
+		<InternalsVisibleTo Include="Sphere10.Framework.Windows.Forms.Tests" />
+		<Using Include="System" />
+		<Using Include="System.Windows.Forms" />
+		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="PROVENANCE.md" Pack="true" PackagePath="" />
+		<None Include="LICENSE.TXT" Pack="true" PackagePath="LICENSE.DataVisualization.txt" />
+		<None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="" />
+	</ItemGroup>
+	<ItemGroup Label="Embedded Resources">
+		<EmbeddedResource Update="Resources\SR.resx">
+			<LogicalName>Sphere10.Framework.Windows.Forms.DataVisualization.SR.resources</LogicalName>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\ChartControl.bmp">
+			<LogicalName>Sphere10.Framework.Windows.Forms.DataVisualization.ChartControl.bmp</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+<Project>
+	<Import Project="..\..\Directory.Build.props" />
+	<PropertyGroup>
+		<DataVisualizationBuildSdkVersion>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(MSBuildSDKsPath)'))))</DataVisualizationBuildSdkVersion>
+		<DataVisualizationTargetFrameworks Condition="'$(DataVisualizationTargetFrameworks)' == '' and $([System.Text.RegularExpressions.Regex]::IsMatch('$(DataVisualizationBuildSdkVersion)', '^\d+\.')) and $([MSBuild]::VersionGreaterThanOrEquals('$(DataVisualizationBuildSdkVersion)', '11.0'))">net10.0-windows;net11.0-windows</DataVisualizationTargetFrameworks>
+		<DataVisualizationTargetFrameworks Condition="'$(DataVisualizationTargetFrameworks)' == ''">net10.0-windows</DataVisualizationTargetFrameworks>
+	</PropertyGroup>
+</Project>

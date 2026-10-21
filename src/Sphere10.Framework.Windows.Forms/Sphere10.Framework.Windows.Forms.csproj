@@ -17,6 +17,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Sphere10.Framework.Windows.Forms.DataVisualization\Sphere10.Framework.Windows.Forms.DataVisualization.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Compile Remove="Controls\Application\**" />
 	  <EmbeddedResource Remove="Controls\Application\**" />
 	  <None Remove="Controls\Application\**" />
