@@ -211,6 +211,7 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 | Project | Purpose |
 |---------|---------|
 | [**Sphere10.Framework.Windows.Forms**](src/Sphere10.Framework.Windows.Forms/README.md) | Comprehensive Windows Forms UI framework with data binding, validation, and component library |
+| [**Sphere10.Framework.Windows.Forms.DataVisualization**](src/Sphere10.Framework.Windows.Forms.DataVisualization/README.md) | Absorbed Microsoft charting controls for modern .NET, with Sphere10 namespaces, enums and resources in one assembly; retains upstream licenses |
 | [**Sphere10.Framework.Windows.Forms.Sqlite**](src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) | Windows Forms with SQLite data binding and persistence |
 | [**Sphere10.Framework.Windows.Forms.MSSQL**](src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) | Windows Forms with SQL Server data binding and persistence |
 | [**Sphere10.Framework.Windows.Forms.Firebird**](src/Sphere10.Framework.Windows.Forms.Firebird/README.md) | Windows Forms with Firebird data binding and persistence |

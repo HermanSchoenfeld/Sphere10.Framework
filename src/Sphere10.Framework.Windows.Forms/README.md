@@ -12,6 +12,21 @@ Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application dev
 dotnet add package Sphere10.Framework.Windows.Forms
 ```
 
+## Chart Library Dependency
+
+The chart controls use
+[Sphere10.Framework.Windows.Forms.DataVisualization](../Sphere10.Framework.Windows.Forms.DataVisualization/README.md),
+which imports Microsoft's original Windows Forms charting source with the maintained
+fork's runtime fixes. Its licenses and third-party notices are retained.
+Source builds reference the project within Framework; NuGet builds use its matching
+Framework package. A separate charting checkout is not required.
+
+The library builds for .NET 10 and .NET 11 RC 2 with the .NET 11 SDK. Its .NET 10
+target is used by Framework, WinForms Tester and System Expert. A .NET 10 SDK
+consumer builds only that compatible target. Build and pack the absorbed project
+within Framework to check both targets. Runtime code, enums, helpers and resources
+are consolidated into one assembly; the legacy designer pipeline was removed.
+
 ## Local CHM help
 
 `CHMHelpProvider` opens context help on the containing form's monitor, falling

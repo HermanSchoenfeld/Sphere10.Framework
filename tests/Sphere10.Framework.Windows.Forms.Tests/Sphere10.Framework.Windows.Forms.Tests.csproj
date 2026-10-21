@@ -10,6 +10,8 @@
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
 	</ItemGroup>
 	<ItemGroup>
+		<Compile Include="../../src/Sphere10.Framework.Windows.Forms.DataVisualization/Tests/*.cs" Link="DataVisualization/%(Filename)%(Extension)" />
+		<ProjectReference Include="../../src/Sphere10.Framework.Windows.Forms.DataVisualization/Sphere10.Framework.Windows.Forms.DataVisualization.csproj" />
 		<ProjectReference Include="../../src/Sphere10.Framework.Windows.Forms/Sphere10.Framework.Windows.Forms.csproj" />
 		<ProjectReference Include="../../utils/Sphere10.Framework.Utils.WinFormsTester/Sphere10.Framework.Utils.WinFormsTester.csproj" />
 	</ItemGroup>
