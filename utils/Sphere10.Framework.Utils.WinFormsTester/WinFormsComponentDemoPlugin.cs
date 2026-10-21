@@ -58,6 +58,13 @@ public static class WinFormsComponentDemoPlugin {
 					.AddScreenItem<PadLockTestScreen>("Padlock", (Image)Resources.Generic16x16.Clone())
 					.AddScreenItem<ValidationIndicatorTestScreen>("Validation Indicator", (Image)Resources.Generic16x16.Clone())
 				)
+				.ConfigureMenu(menu => menu
+					.WithText("Charts")
+					.WithImage32x32((Image)Resources.Tests232x32.Clone())
+					.AddScreenItem<ChartGalleryScreen>("Data Visualization Gallery", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<ChartTestScreen>("Graph And Bar Charts", (Image)Resources.Generic16x16.Clone())
+					.AddScreenItem<TelemetryChartTestScreen>("Live Telemetry", (Image)Resources.Generic16x16.Clone())
+				)
 			)
 			.ConfigureBlock(block => block
 				.WithName("Data And Collections")

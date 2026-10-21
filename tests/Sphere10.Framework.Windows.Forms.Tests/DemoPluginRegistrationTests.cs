@@ -164,6 +164,8 @@ public class DemoPluginRegistrationTests {
 			"AppointmentBookScreen",
 			"BloomFilterAnalysisScreen",
 			"CBACSVConverterScreen",
+			"ChartGalleryScreen",
+			"ChartTestScreen",
 			"CommunicationsTestScreen",
 			"CompressionTestScreen",
 			"ConnectionBarTestScreen",
@@ -203,6 +205,7 @@ public class DemoPluginRegistrationTests {
 			"ScreenHostingSettingsTestScreen",
 			"SettingsTest",
 			"TabControlTestScreen",
+			"TelemetryChartTestScreen",
 			"TestArtificialKeysScreen",
 			"TestSoundsScreen",
 			"TextAreaTestsScreen",
@@ -224,6 +227,20 @@ public class DemoPluginRegistrationTests {
 		var form = await StartDemoAsync();
 		var definition = Tools.UI.GetScreenDefinitions(form.RegisteredBlocks).Single(screen => screen.ScreenType == screenType);
 		Assert.That(form.RegisteredBlocks.Single(block => block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, definition))).Name, Is.EqualTo(blockName));
+	}
+
+	[TestCase(typeof(ChartGalleryScreen))]
+	[TestCase(typeof(ChartTestScreen))]
+	[TestCase(typeof(TelemetryChartTestScreen))]
+	public async Task ChartShowcasesOpenThroughTheirActualControlsMenu(Type screenType) {
+		var form = await StartDemoAsync();
+		var block = form.RegisteredBlocks.Single(candidate => candidate.Name == "Controls");
+		var item = block.Menus.SelectMany(menu => menu.Items).OfType<IWinFormsScreenMenuItem>()
+			.Single(candidate => candidate.ScreenDefinition.ScreenType == screenType);
+		Assert.That(await form.ExecuteMenuItemAsync(item), Is.True);
+		Assert.That(form.ActiveScreen.GetType(), Is.EqualTo(screenType));
+		Assert.That(form.ActiveScreen.Block, Is.SameAs(block));
+		Assert.That(form.ActiveScreen.Host, Is.SameAs(form.ScreenHost));
 	}
 
 	[TestCase(false)]

@@ -10,7 +10,13 @@ The project references both the framework and the [WinForms tester](../../utils/
 
 | Fixture | Coverage |
 | --- | --- |
+| `ChartExampleCompilationTests` (opt-in) | Builds the exported C# factory with the installed SDK, invokes it on STA and verifies data, threshold bands, anchored annotations and PNG output. |
 | `TelemetryChartTests` | Captured-series ownership and invalid-input atomicity, Celsius ranges and invalid-value gaps, unsigned metric validation, filled-area gaps across resizing, and nearest-timestamp hover including missing readings. |
+| `GraphChartTests` | Generic snapshot ownership, rejected input, signed line/area/column/bar rendering and resizing, missing-area gaps, retained native series, horizontal category lookup, unavailable observations, and centered empty states before capture and after reset. |
+| `ChartGallerySamplesTests` | Complete coverage of all 35 native chart types in the 39-example catalog, real colored PNG rendering for every example, correct multivalue observation shapes, and the four advanced axes/areas/logarithmic/annotation compositions. |
+| `ChartGalleryScreenTests` | Actual six-preview gallery at two sizes, family filtering and paging, explorer reuse across all examples, native legend/labels/3D/palette/zoom options, PNG export, and serialized chart configuration/data/annotation recreation used by the C# factory. |
+| `ChartDemoTests` | Four-style Graph/Bar dashboard at compact and large sizes across four scenarios, shared three-series history and grouped comparisons, signed/currency values, native gaps versus real zero, formatting tools, bounded capture/reset/clear, and visible/hidden/disposed timer behavior. |
+| `TelemetryChartDemoTests` | Actual four-unit telemetry dashboard at two sizes, plotted geometry, formatted readings and shared timestamps, bounded 180-point histories, missing observations, reset/clear empty states, selected cadence and timer lifetime. |
 | `HexEditorTests` | Defensive buffer ownership, changed-event and baseline semantics, byte/range editing, invalid-input atomicity, bounded 16 MiB browsing, cross-page search, readonly tools, native cell validation/append, and accepted/canceled modal results with joined cancellation cleanup. |
 | `CrudGridRefreshTests` | Slow initial binding without designer-placeholder flashes, immediate suppressed routine refreshes, source replacement/null row refresh, preserved row selection/column widths/paging, stale-query rejection and delayed-read disposal. |
 | `ScreenWindowMenuTests` | Exact duplicate-caption and detached instance menu tracking, rename/dock/remove updates, atomic bulk-close vetoes, permanent-screen retention and Close All Others with a detached retained instance. |
@@ -31,6 +37,18 @@ Run the consumer configuration checks by themselves:
 ```powershell
 dotnet test tests/Sphere10.Framework.Windows.Forms.Tests/Sphere10.Framework.Windows.Forms.Tests.csproj -c Release -p:BuildRevision=0 --filter "FullyQualifiedName~DemoPluginRegistrationTests"
 ```
+
+Run the chart showcase fixtures separately:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Windows.Forms.Tests/Sphere10.Framework.Windows.Forms.Tests.csproj -c Release -p:BuildRevision=0 --filter "FullyQualifiedName~ChartGallerySamplesTests|FullyQualifiedName~ChartGalleryScreenTests|FullyQualifiedName~ChartDemoTests|FullyQualifiedName~TelemetryChartDemoTests"
+```
+
+Set `SPHERE10_CHART_VALIDATION_DIRECTORY` to an output directory before running
+these fixtures to retain their rendered PNGs. The tests use the real tester
+screens and chart renderer with simulated datasets; they do not collect hardware
+or network telemetry. See the [chart showcase walkthrough](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md#chart-showcases)
+for the user-facing scenarios and the full chart-family catalog.
 
 Native UI fixtures run on STA threads and avoid parallel execution when they share framework startup or native window state. They do not require external services or demo database credentials.
 
