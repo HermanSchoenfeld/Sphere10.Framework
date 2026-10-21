@@ -54,20 +54,17 @@ Single remains the explicit choice to render the complete matching collection.
 
 ## Debugging foreground-thread data work
 
-Register a UI thread for the lifetime of a Debug host with
-`using var registration = DataSourceThreadDiagnostics.Default.DisallowCurrentThreadExecution("UI Thread");`.
-The core registry has no UI dependency and tracks the exact thread, including nested
-registrations. Its default reporter uses `Debug.Assert` and includes the executing
-source, operation and managed thread ID. Tests can supply a reporting callback to
-capture violations without opening an assertion dialog. Release hosts need not
-register, and `AssertBackgroundExecution` calls are conditional on `DEBUG` in the
-assembly containing the call.
+Set `Debug.MainThread = Thread.CurrentThread` once in the application's entry
+point, then call `Debug.AssertNotMainThread()` inside actual queries, refresh
+callbacks, native worker bodies and before synchronous waiting bridges. The
+C# static extension also accepts a message and an optional detail message through
+its overloads. It compares the current thread directly with that single captured
+thread; there are no registrations, scopes or reporting callbacks. An unset
+`MainThread` leaves the check unconfigured. Calls and their arguments are omitted
+from Release consumers through `[Conditional("DEBUG")]`.
 
-Assert inside actual queries, refresh callbacks, native worker bodies and before
-synchronous waiting bridges. Do not assert merely because a UI event invokes an
-async facade: confirmation callbacks and editor draft creation belong to that
-thread. Snapshot queries and refresh, reloadable capture/loading waits, and
-async-first synchronous adapters use the shared diagnostic. Cached snapshot counts,
+Do not assert merely because a UI event invokes an async facade: confirmation
+callbacks and editor draft creation belong to that thread. Cached snapshot counts,
 capabilities and publication remain valid UI metadata operations. Successfully
 completed count/capability tasks return directly without an extra queued wait.
 

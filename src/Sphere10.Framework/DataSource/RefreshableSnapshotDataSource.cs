@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 
@@ -34,7 +35,7 @@ public class RefreshableSnapshotDataSource<T, TKey> : SnapshotDataSource<T>
 	/// that snapshot wins and the supplied array receives its current rows instead of the stale callback results.
 	/// </remarks>
 	public override void RefreshRange(T[] entities) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		Guard.ArgumentNotNull(entities, nameof(entities));
 		if (entities.Length == 0)
 			return;

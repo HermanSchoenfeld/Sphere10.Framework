@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ public class EnvironmentUtil {
 		=> Task.Run(() => ReadAllCore(scope, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
 	private static Dictionary<string, string> ReadAllCore(EnvironmentVariableTarget scope, Action checkpoint) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(typeof(EnvironmentUtil));
+		Debug.AssertNotMainThread();
 		Guard.Argument(scope is EnvironmentVariableTarget.Process or EnvironmentVariableTarget.User or EnvironmentVariableTarget.Machine,
 			nameof(scope), "Specify Process, User or Machine environment scope.");
 		checkpoint?.Invoke();
@@ -85,7 +86,7 @@ public class EnvironmentUtil {
 	}
 
 	private static string Read(string name, EnvironmentVariableTarget scope) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(typeof(EnvironmentUtil));
+		Debug.AssertNotMainThread();
 		if (scope == EnvironmentVariableTarget.Process)
 			return Environment.GetEnvironmentVariable(name, scope);
 		using var root = RegistryKey.OpenBaseKey(scope == EnvironmentVariableTarget.User ? RegistryHive.CurrentUser : RegistryHive.LocalMachine, RegistryView.Default);
@@ -94,7 +95,7 @@ public class EnvironmentUtil {
 	}
 
 	private static string Change(string name, string value, EnvironmentVariableTarget scope, string expectedOriginalValue, Action checkpoint) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(typeof(EnvironmentUtil));
+		Debug.AssertNotMainThread();
 		// Serialize changes made through this tool and recheck the original before overwriting it.
 		using var write = _writes.EnterWriteScope();
 		checkpoint?.Invoke();

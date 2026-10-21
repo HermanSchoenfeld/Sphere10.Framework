@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -72,32 +73,32 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 	// Sync batch: wraps async batch via .WaitSafe/.ResultSafe
 
 	public override void CreateRange(IEnumerable<TItem> entities) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		CreateRangeAsync(entities).WaitSafe();
 	}
 
 	public override DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		return ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection).ResultSafe();
 	}
 
 	public override void RefreshRange(TItem[] entities) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		RefreshRangeAsync(entities).WaitSafe();
 	}
 
 	public override void UpdateRange(IEnumerable<TItem> entities) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		UpdateRangeAsync(entities).WaitSafe();
 	}
 
 	public override void DeleteRange(IEnumerable<TItem> entities) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		DeleteRangeAsync(entities).WaitSafe();
 	}
 
 	public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions) {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		return ValidateRangeAsync(actions).ResultSafe();
 	}
 
@@ -107,7 +108,7 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 			if (result.IsCompletedSuccessfully)
 				return result.Result;
 			if (!result.IsCompleted)
-				DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+				Debug.AssertNotMainThread();
 			return result.ResultSafe();
 		}
 	}
@@ -118,7 +119,7 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 			if (result.IsCompletedSuccessfully)
 				return result.Result;
 			if (!result.IsCompleted)
-				DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+				Debug.AssertNotMainThread();
 			return result.ResultSafe();
 		}
 	}

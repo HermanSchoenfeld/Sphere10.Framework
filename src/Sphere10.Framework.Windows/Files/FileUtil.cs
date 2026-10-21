@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Diagnostics;
 using System;
 using System.IO;
 using System.Threading;
@@ -34,7 +35,7 @@ public class FileUtil {
 		=> WindowsFile.DeleteAlternateStreamAsync(filePath, streamName, cancellationToken);
 
 	public virtual Task<byte[]> ReadAlternateStreamAsync(string filePath, string streamName, int maximumBytes, CancellationToken cancellationToken = default) => Task.Run(async () => {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		Guard.Argument(maximumBytes > 0, nameof(maximumBytes), "Specify a positive byte limit.");
 		cancellationToken.ThrowIfCancellationRequested();
 		await using var stream = OpenAlternateStream(filePath, streamName, FileMode.Open, FileAccess.Read);
@@ -45,7 +46,7 @@ public class FileUtil {
 	}, cancellationToken);
 
 	public virtual Task WriteAlternateStreamAsync(string filePath, string streamName, byte[] data, bool createNew, CancellationToken cancellationToken = default) => Task.Run(async () => {
-		DataSourceThreadDiagnostics.Default.AssertBackgroundExecution(this);
+		Debug.AssertNotMainThread();
 		Guard.ArgumentNotNull(data, nameof(data));
 		cancellationToken.ThrowIfCancellationRequested();
 		await using var stream = OpenAlternateStream(filePath, streamName, createNew ? FileMode.CreateNew : FileMode.Truncate, FileAccess.Write);
