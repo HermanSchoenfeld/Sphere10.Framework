@@ -30,6 +30,10 @@
 		<None Include="README.md" Pack="true" PackagePath="\" />
 		<Compile Update="Charts\TelemetryChart.cs"><SubType>UserControl</SubType></Compile>
 		<Compile Update="Charts\TelemetryChart.Designer.cs"><DependentUpon>TelemetryChart.cs</DependentUpon></Compile>
+		<Compile Update="Charts\GraphChart.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Charts\GraphChart.Designer.cs"><DependentUpon>GraphChart.cs</DependentUpon></Compile>
+		<Compile Update="Charts\BarChart.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Charts\BarChart.Designer.cs"><DependentUpon>BarChart.cs</DependentUpon></Compile>
 	</ItemGroup>
 	<ItemGroup>
 		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ButtonMultiSelection.resources" />
