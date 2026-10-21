@@ -45,10 +45,14 @@ public class WindowsEventLogUtil {
 				RecordId = record.RecordId, TimeCreated = record.TimeCreated, LogName = record.LogName,
 				Provider = record.ProviderName, EventId = record.Id, Level = record.Level
 			};
-			try { row.LevelName = record.LevelDisplayName; } catch (Exception error) { row.LevelError = error; }
-			try { row.Message = record.FormatDescription(); } catch (Exception error) { row.MessageError = error; }
-			if (row.MessageError != null)
-				try { row.Xml = record.ToXml(); } catch (Exception error) { row.XmlError = error; }
+			Tools.Exceptions.ExecuteCapturingException(() => row.LevelName = record.LevelDisplayName, out var levelError);
+			row.LevelError = levelError;
+			Tools.Exceptions.ExecuteCapturingException(() => row.Message = record.FormatDescription(), out var messageError);
+			row.MessageError = messageError;
+			if (row.MessageError != null) {
+				Tools.Exceptions.ExecuteCapturingException(() => row.Xml = record.ToXml(), out var xmlError);
+				row.XmlError = xmlError;
+			}
 			yield return row;
 		}
 	}

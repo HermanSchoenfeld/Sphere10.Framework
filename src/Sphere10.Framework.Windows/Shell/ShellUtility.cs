@@ -199,8 +199,11 @@ public class ShellUtility {
 		dynamic item = native;
 		var errors = new List<string>();
 		object Property(string name) {
-			try { return item.ExtendedProperty(name); }
-			catch (Exception error) { errors.Add(name + ": " + error.Message); return null; }
+			object value = null;
+			Tools.Exceptions.ExecuteCapturingException(() => value = item.ExtendedProperty(name), out var error);
+			if (error != null)
+				errors.Add(name + ": " + error.Message);
+			return value;
 		}
 		var size = Property("System.Size");
 		var deleted = Property("System.Recycle.DateDeleted");

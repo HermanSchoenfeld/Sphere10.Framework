@@ -36,18 +36,25 @@ public sealed class WindowsProcessDataSource : ReloadableSnapshotDataSource<Wind
 				ProcessId = entry.ProcessId, ParentProcessId = entry.ParentProcessId, ExecutableName = entry.ExecutableName,
 				ThreadCount = entry.ThreadCount, CapturedAtUtc = DateTime.UtcNow
 			};
-			if (entry.ProcessId > 0)
-				try {
+			if (entry.ProcessId > 0) {
+				var replaced = false;
+				Tools.Exceptions.ExecuteCapturingException(() => {
 					using var process = WindowsProcess.Open(entry.ProcessId);
 					var counters = process.ReadCounters();
-					if (counters.Identity.StartTimeUtc > startedUtc)
-						continue;
+					if (counters.Identity.StartTimeUtc > startedUtc) {
+						replaced = true;
+						return;
+					}
 					row = row with { Counters = counters, CapturedAtUtc = DateTime.UtcNow, CounterTimestamp = Stopwatch.GetTimestamp() };
-					try { row = row with { ExecutablePath = process.ExecutablePath }; }
-					catch (Exception error) when (IsUnavailable(error)) { row = row with { ExecutablePathError = error }; }
-				} catch (Exception error) when (IsUnavailable(error)) {
-					row = row with { ReadError = error };
-				}
+					Tools.Exceptions.ExecuteCapturingException(() => row = row with { ExecutablePath = process.ExecutablePath }, out var pathError, IsUnavailable);
+					if (pathError != null)
+						row = row with { ExecutablePathError = pathError };
+				}, out var readError, IsUnavailable);
+				if (readError != null)
+					row = row with { ReadError = readError };
+				else if (replaced)
+					continue;
+			}
 			rows.Add(row);
 		}
 		cancellationToken.ThrowIfCancellationRequested();

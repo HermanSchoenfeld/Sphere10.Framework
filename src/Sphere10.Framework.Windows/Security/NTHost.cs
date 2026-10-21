@@ -48,7 +48,7 @@ public class NTHost : NTObject {
 		Addresses = hostEntry.AddressList;
 		Name = hostEntry.HostName;
 
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 
 			#region Get SID for host
 
@@ -103,9 +103,8 @@ public class NTHost : NTObject {
 
 			#endregion
 
-		} catch (OperationCanceledException) {
-			throw;
-		} catch (Exception error) {
+		}, out var error, failure => failure is not OperationCanceledException);
+		if (error != null) {
 			SID = null;
 			SidNameUsage = WinAPI.ADVAPI32.SidNameUse.Invalid;
 			SidResolutionError = error.Message;
@@ -140,12 +139,7 @@ public class NTHost : NTObject {
 	}
 
 	public static bool CanConnectTo(string hostname) {
-		try {
-			var host = new NTHost(hostname);
-		} catch {
-			return false;
-		}
-		return true;
+		return Tools.Exceptions.Execute(() => _ = new NTHost(hostname));
 	}
 
 	/// <summary>
@@ -244,14 +238,15 @@ public class NTHost : NTObject {
 		var users = NetApiEnumeration.Read<WinAPI.NETAPI32.USER_INFO_0, NTLocalUser>(
 			(out IntPtr buffer, out uint count) => WinAPI.NETAPI32.NetUserEnumPaged(NTCompatibleHostName, 0, 2, out buffer, WinAPI.NETAPI32.MAX_PREFERRED_LENGTH, out count, out _, ref resume),
 			info => {
-				try {
+				NTLocalUser result = null;
+				Tools.Exceptions.ExecuteCapturingException(() => {
 					var user = new NTLocalUser { Host = Host, Name = info.Username, Checkpoint = Checkpoint };
 					user.Refresh();
-					return user;
-				} catch (OperationCanceledException) { throw; } catch (Exception error) {
+					result = user;
+				}, out var error, failure => failure is not OperationCanceledException);
+				if (error != null)
 					failures.Add(error);
-					return null;
-				}
+				return result;
 			}, Checkpoint);
 		errors = failures.ToArray();
 		return users;
@@ -325,14 +320,15 @@ public class NTHost : NTObject {
 		var shares = NetApiEnumeration.Read<WinAPI.NETAPI32.SHARE_INFO_0, NTShare>(
 			(out IntPtr buffer, out uint count) => WinAPI.NETAPI32.NetShareEnumPaged(NTCompatibleHostName, 0, out buffer, WinAPI.NETAPI32.MAX_PREFERRED_LENGTH, out count, out _, ref resume),
 			info => {
-				try {
+				NTShare result = null;
+				Tools.Exceptions.ExecuteCapturingException(() => {
 					var share = new NTShare { Host = Host, Name = info.shi0_netname, Checkpoint = Checkpoint };
 					share.Refresh();
-					return share;
-				} catch (OperationCanceledException) { throw; } catch (Exception error) {
+					result = share;
+				}, out var error, failure => failure is not OperationCanceledException);
+				if (error != null)
 					failures.Add(error);
-					return null;
-				}
+				return result;
 			}, Checkpoint);
 		errors = failures.ToArray();
 		return shares;

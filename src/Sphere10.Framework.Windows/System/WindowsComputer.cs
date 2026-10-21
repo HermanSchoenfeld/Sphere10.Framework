@@ -276,12 +276,9 @@ public static class WindowsComputer {
 	internal static DateTime? ParseDmtfDate(string text) {
 		if (string.IsNullOrEmpty(text) || text.Contains('*'))
 			return null;
-		try {
-			return ManagementDateTimeConverter.ToDateTime(text).ToUniversalTime();
-		} catch (ArgumentException) {
-			return null;
-		} catch (FormatException) {
-			return null;
-		}
+		DateTime? value = null;
+		Tools.Exceptions.ExecuteCapturingException(() => value = ManagementDateTimeConverter.ToDateTime(text).ToUniversalTime(), out _,
+			error => error is ArgumentException or FormatException);
+		return value;
 	}
 }

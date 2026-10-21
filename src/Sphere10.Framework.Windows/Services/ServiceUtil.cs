@@ -69,31 +69,26 @@ public class ServiceUtil {
 		Guard.ArgumentNotNullOrWhitespace(name, nameof(name));
 		checkpoint?.Invoke();
 		WindowsServiceConfiguration configuration = null;
-		var configurationError = 0;
-		var statusError = 0;
-		var descriptionError = 0;
-		var dependencyError = 0;
-		try { configuration = ReadConfiguration(name); } catch (Win32Exception error) { configurationError = error.NativeErrorCode; }
+		Tools.Exceptions.ExecuteCapturingException<Win32Exception>(() => configuration = ReadConfiguration(name), out var configurationError);
 		WinAPI.ADVAPI32.SERVICE_STATUS_PROCESS? status = null;
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Win32Exception>(() => {
 			using var manager = OpenManager();
 			using var service = OpenService(manager, name, WinAPI.ADVAPI32.SERVICE_QUERY_STATUS);
 			if (!WinAPI.ADVAPI32.QueryServiceStatusEx(service.DangerousGetHandle(), 0, out var value,
 				(uint)Marshal.SizeOf<WinAPI.ADVAPI32.SERVICE_STATUS_PROCESS>(), out _))
 				throw new Win32Exception(Marshal.GetLastWin32Error());
 			status = value;
-		} catch (Win32Exception error) { statusError = error.NativeErrorCode; }
+		}, out var statusError);
 		checkpoint?.Invoke();
 		var description = string.Empty;
-		try { description = ReadDescription(name); } catch (Win32Exception error) { descriptionError = error.NativeErrorCode; }
+		Tools.Exceptions.ExecuteCapturingException<Win32Exception>(() => description = ReadDescription(name), out var descriptionError);
 		var dependents = Array.Empty<string>();
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			using var controller = new ServiceController(name);
 			var children = controller.DependentServices;
 			using var cleanup = Tools.Scope.ExecuteOnDispose(() => { foreach (var child in children) child.Dispose(); });
 			dependents = children.Select(child => child.ServiceName).ToArray();
-		} catch (Win32Exception error) { dependencyError = error.NativeErrorCode; }
-		catch (InvalidOperationException error) when (error.InnerException is Win32Exception) { dependencyError = ((Win32Exception)error.InnerException).NativeErrorCode; }
+		}, out var dependencyError, error => error is Win32Exception or InvalidOperationException { InnerException: Win32Exception });
 		checkpoint?.Invoke();
 		return new WindowsServiceInfo {
 			Name = name, DisplayName = configuration?.DisplayName ?? name, Description = description,
@@ -103,7 +98,9 @@ public class ServiceUtil {
 			CanStop = status.HasValue ? (status.Value.ControlsAccepted & 1) != 0 : null,
 			CanPause = status.HasValue ? (status.Value.ControlsAccepted & 2) != 0 : null,
 			Dependencies = configuration?.Dependencies ?? Array.Empty<string>(), DependentServices = dependents,
-			ConfigurationErrorCode = configurationError, StatusErrorCode = statusError, DescriptionErrorCode = descriptionError, DependencyErrorCode = dependencyError
+			ConfigurationErrorCode = configurationError?.NativeErrorCode ?? 0, StatusErrorCode = statusError?.NativeErrorCode ?? 0,
+			DescriptionErrorCode = descriptionError?.NativeErrorCode ?? 0,
+			DependencyErrorCode = dependencyError is Win32Exception nativeError ? nativeError.NativeErrorCode : (dependencyError?.InnerException as Win32Exception)?.NativeErrorCode ?? 0
 		};
 	}
 

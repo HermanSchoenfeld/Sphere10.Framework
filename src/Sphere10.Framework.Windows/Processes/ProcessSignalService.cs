@@ -42,14 +42,14 @@ public static class ProcessSignalService {
 		exitCode = 0;
 		if (args == null || args.Length == 0 || args[0] != WorkerArgument)
 			return false;
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			Guard.Argument(args.Length == 4, nameof(args), "Invalid signal sender arguments.");
 			var identity = new ProcessIdentity(int.Parse(args[1], CultureInfo.InvariantCulture), new DateTime(long.Parse(args[2], CultureInfo.InvariantCulture), DateTimeKind.Utc));
 			var signal = uint.Parse(args[3], CultureInfo.InvariantCulture);
 			ProcessCommandService.ExecuteAsync(identity, process => Tools.Windows.Processes.SendConsoleSignal(process.Id, signal)).GetAwaiter().GetResult();
-		} catch {
+		}, out var error);
+		if (error != null)
 			exitCode = 1;
-		}
 		return true;
 	}
 }

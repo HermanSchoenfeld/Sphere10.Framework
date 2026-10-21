@@ -148,7 +148,8 @@ public class SessionUtil {
 	private static DateTime? Time(long fileTime) {
 		if (fileTime <= 0)
 			return null;
-		try { return DateTime.FromFileTimeUtc(fileTime); }
-		catch (ArgumentOutOfRangeException) { return null; }
+		DateTime? value = null;
+		Tools.Exceptions.ExecuteCapturingException<ArgumentOutOfRangeException>(() => value = DateTime.FromFileTimeUtc(fileTime), out _);
+		return value;
 	}
 }

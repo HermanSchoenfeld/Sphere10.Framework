@@ -43,7 +43,8 @@ public static class ProcessCommandService {
 		if (handle.IsInvalid || !WinAPI.KERNEL32.GetProcessTimes(handle, out var creation, out _, out _, out _))
 			return false;
 		var started = DateTime.FromFileTimeUtc(checked((long)(((ulong)creation.DateTimeHigh << 32) | creation.DateTimeLow)));
-		try { return started == identity.StartTimeUtc && !WindowsProcess.HasSignaledExit(handle); }
-		catch (Win32Exception) { return false; }
+		var matches = false;
+		Tools.Exceptions.ExecuteCapturingException<Win32Exception>(() => matches = started == identity.StartTimeUtc && !WindowsProcess.HasSignaledExit(handle), out _);
+		return matches;
 	}
 }

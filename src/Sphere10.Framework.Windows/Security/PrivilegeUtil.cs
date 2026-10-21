@@ -25,11 +25,11 @@ public class PrivilegeUtil {
 
 	/// <summary>Attempts operation-local privilege admission. Missing privileges return false; other native failures are reported.</summary>
 	public bool TryEnterScope(string[] privileges, out IDisposable scope) {
-		try { scope = EnterScope(privileges); return true; }
-		catch (System.ComponentModel.Win32Exception error) when (error.NativeErrorCode == WinAPI.ADVAPI32.ErrorNotAllAssigned) {
-			scope = null;
-			return false;
-		}
+		IDisposable acquired = null;
+		Tools.Exceptions.ExecuteCapturingException<System.ComponentModel.Win32Exception>(() => acquired = EnterScope(privileges), out var error,
+			failure => failure.NativeErrorCode == WinAPI.ADVAPI32.ErrorNotAllAssigned);
+		scope = acquired;
+		return error == null;
 	}
 
 	public bool EnablePrivilege(string privilege) {

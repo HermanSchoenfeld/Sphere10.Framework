@@ -47,14 +47,13 @@ public class WindowsFileInspectionService {
 		var thumbprint = string.Empty;
 		var certificateError = 0;
 		if (encodedCertificate.Length > 0) {
-			try {
+			Tools.Exceptions.ExecuteCapturingException<CryptographicException>(() => {
 				using var certificate = X509CertificateLoader.LoadCertificate(encodedCertificate);
 				signer = certificate.Subject;
 				issuer = certificate.Issuer;
 				thumbprint = certificate.Thumbprint;
-			} catch (CryptographicException error) {
-				certificateError = error.HResult;
-			}
+			}, out var error);
+			certificateError = error?.HResult ?? 0;
 		}
 		checkpoint?.Invoke();
 		return new WindowsFileInspection {
