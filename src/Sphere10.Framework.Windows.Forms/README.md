@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+﻿<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 # 🖼️ Sphere10.Framework.Windows.Forms
 
@@ -325,6 +325,9 @@ It no longer clears native selection, an unsupported operation on .NET 10.
 ## 🔧 Core Components
 
 ### CrudGrid
+
+See [grids and screen hosts on both platforms](../../docs/guidelines/patterns/grids-and-screen-hosts.md)
+for the Blazor equivalents, shared contracts and platform differences.
 
 Set `GridTitle` to a meaningful content name in the designer or constructor.
 It updates the caption synchronously on the creating UI thread without requiring
@@ -924,6 +927,10 @@ Screen definitions carry activation modes for both UI hosts. The host resolves d
 `WinFormsWizardBuilder<TModel>`, `WinFormsActionWizard<TModel>`, `IWinFormsWizard<TModel>`, `WinFormsWizardScreen<TModel>` and `WinFormsWizardDialog<TModel>` replace the unprefixed native wizard names. Navigation, step membership, callbacks and completion policy use the shared `Application.UI` wizard workflow; native adapters retain control initialization, validation, presentation, sizing and disposal. Dynamically removed screens remain owned by their wizard and are disposed with it. `WizardResult`, `WizardStepUpdateType` and `ScreenMode` now come directly from the shared UI namespace.
 
 ### Multiple screens and detachable tabs
+
+The [cross-platform host guide](../../docs/guidelines/patterns/grids-and-screen-hosts.md#application-screen-hosts)
+maps these operations to Blazor, including startup preferences, retained sessions,
+close guards and the native detached-window boundary.
 
 `MainForm.ScreenMode` defaults to `ScreenMode.SingleView`, which shows one screen without a tab bar. Set it to `ScreenMode.MultiView` to keep multiple screens open in titled tabs. `BlockMainForm` inherits this property and hosts the tabs in its main content panel.
 
