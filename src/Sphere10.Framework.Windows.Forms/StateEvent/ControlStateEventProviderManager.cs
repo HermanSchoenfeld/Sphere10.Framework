@@ -16,14 +16,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class ControlStateEventProviderManager {
-	private readonly HashSet<Type> _controlStateEventProviders;
+	private readonly HashSet<string> _controlStateEventProviders;
 
 	static ControlStateEventProviderManager() {
 		Instance = new ControlStateEventProviderManager();
 	}
 
 	public ControlStateEventProviderManager() {
-		_controlStateEventProviders = new HashSet<Type>();
+		_controlStateEventProviders = new HashSet<string>(StringComparer.Ordinal);
 		Refresh();
 	}
 
@@ -32,18 +32,10 @@ public class ControlStateEventProviderManager {
 
 	public void Refresh() {
 		_controlStateEventProviders.Clear();
-		if (NamedLookupInfo.TryGetMap(typeof(IControlStateEventProvider), out var serviceMap)) {
-			foreach (var eventProvider in serviceMap) {
-				try {
-					var controlType = Tools.Object.ResolveType(eventProvider.Key);
-					_controlStateEventProviders.Add(controlType);
-				} catch (Exception) {
-					// Skip providers whose control types cannot be resolved
-					// (e.g. due to assembly load failures like System.Data.SqlClient on .NET 8)
-					SystemLog.Warning("Failed to resolve control type for IControlStateEventProvider with key '{0}'. Skipping provider.".FormatWith(eventProvider.Key));
-				}
-			}
-		}
+		// Registrations already use exact control names. Resolve the provider only when a live control requests it;
+		// enumerating unrelated assembly types here loads optional designer graphs and can disable valid providers.
+		if (NamedLookupInfo.TryGetMap(typeof(IControlStateEventProvider), out var serviceMap))
+			_controlStateEventProviders.UnionWith(serviceMap.Keys);
 	}
 
 	public bool HasControlStateProvider<TControl>() {
@@ -58,7 +50,7 @@ public class ControlStateEventProviderManager {
 		if (searchSubClasses)
 			typesToSearch = typesToSearch.Concat(controlType.GetAncestorClasses().Where(c => c.IsAssignableTo(typeof(Control)))).ToArray();
 		foreach (var type in typesToSearch) {
-			if (_controlStateEventProviders.Contains(type)) {
+			if (type != null && _controlStateEventProviders.Contains(type.FullName)) {
 				implementationForBaseType = type;
 				return true;
 			}
