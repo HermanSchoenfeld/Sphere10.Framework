@@ -70,8 +70,11 @@ public class ReviewTextDialogTests {
 				Clipboard.SetDataObject(previous, true);
 		});
 		using var dialog = new ReviewTextDialog { PreviewText = "Complete Ω漢😀 snapshot\r\n" + new string('x', 70000) };
+		var shown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		dialog.Shown += (_, _) => dialog.BeginInvoke((Action)(() => shown.TrySetResult()));
 		var showing = dialog.ShowDialogAsync(owner);
 		await WaitForDialog(owner);
+		await shown.Task.WaitAsync(TimeSpan.FromSeconds(20));
 		var preview = Find<TextBox>(dialog, "_previewTextBox");
 		var copy = Find<Button>(dialog, "_copyButton");
 		var save = Find<Button>(dialog, "_saveButton");
