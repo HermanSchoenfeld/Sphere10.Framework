@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -36,6 +37,8 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	private string _searchText = string.Empty;
 	private string _operationError;
 	private int _parameterPageSize;
+	private BlazorGridPageMode _parameterPageMode;
+	private string _settingsKey;
 	private IDataSource<TItem> _boundSource;
 	private DataSourceCapabilities _allowedCapabilities;
 
@@ -44,6 +47,19 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	[Parameter] public string Id { get; set; } = $"sphere10-grid-{Guid.NewGuid():N}";
 
 	[Parameter] public string Caption { get; set; } = "Data grid";
+
+	[Parameter] public BlazorGridHorizontalAlignment CaptionAlignment { get; set; } = BlazorGridHorizontalAlignment.Left;
+
+	/// <summary>Measures natural column widths once for each column definition set, then retains them across query changes.</summary>
+	[Parameter] public bool AutoSizeColumns { get; set; } = true;
+
+	/// <summary>Keeps completed rows interactive during refresh. The first read always displays the loading surface.</summary>
+	[Parameter] public bool SuppressLoadingIndicator { get; set; }
+
+	/// <summary>Persists explicit preferences in this browser only when an application-defined SettingsKey is supplied.</summary>
+	[Parameter] public bool PersistSettings { get; set; } = true;
+
+	[Parameter] public string SettingsKey { get; set; }
 
 	[Parameter] public string EmptyText { get; set; } = "No items found.";
 
@@ -67,6 +83,8 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	[Parameter] public bool AllowCellEditing { get; set; } = true;
 
 	[Parameter] public bool LeftClickToDeselect { get; set; } = true;
+
+	[Parameter] public BlazorGridPageMode PageMode { get; set; } = BlazorGridPageMode.Paged;
 
 	[Parameter] public bool AutoPageSize { get; set; }
 
@@ -106,22 +124,58 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	private int ColumnCount => Math.Max(1, _columns.Length + ColumnDefinitions.Length + (ShowActions ? 1 : 0));
 
+	private bool UsesViewportPageSize => Controller.PageMode == BlazorGridPageMode.Auto && Can(DataSourceCapabilities.CanPage);
+
+	private string ViewportStyle => UsesViewportPageSize || Controller.PageMode == BlazorGridPageMode.Single
+		? $"height: {Height}px" : $"max-height: {Height}px;{(Controller.IsLoading && Controller.Items.Length == 0 ? $" min-height: {Height}px;" : null)}";
+
 	private long MinimumTableWidth => Math.Max(40L, _columns.Sum(column => (long)Math.Max(40, column.Width)) + ColumnDefinitions.Length * 140L + (ShowActions ? 120 : 0));
 
-	public async Task RefreshAsync() {
+	public Task RefreshAsync() => RefreshAsync(!SuppressLoadingIndicator);
+
+	public async Task RefreshAsync(bool showLoadingIndicator) {
 		_operationError = null;
-		await Controller.RefreshAsync();
+		await Controller.RefreshAsync(showLoadingIndicator);
 		await NotifySelectionAsync();
+	}
+
+	public Task<TItem[]> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default) => Controller.ReadFilteredEntitiesAsync(cancellationToken);
+
+	public async Task RefreshRowsAsync(IEnumerable<TItem> entities) {
+		await Controller.RefreshRowsAsync(entities);
+		await NotifySelectionAsync();
+	}
+
+	public async Task<bool> RefreshEntityAsync(TItem entity) {
+		var refreshed = await Controller.RefreshEntityAsync(entity);
+		await NotifySelectionAsync();
+		return refreshed;
+	}
+
+	public async Task<bool> RefreshSelectedEntityAsync() {
+		var refreshed = await Controller.RefreshSelectedEntityAsync();
+		await NotifySelectionAsync();
+		return refreshed;
+	}
+
+	public void RemoveRows(IEnumerable<TItem> entities) => Controller.RemoveRows(entities);
+
+	public async Task SetPageModeAsync(BlazorGridPageMode mode) {
+		await Controller.SetPageModeAsync(mode);
+		await NotifySelectionAsync();
+		await SaveSettingsAsync();
 	}
 
 	public async Task SetPageAsync(int page) {
 		await Controller.SetPageAsync(Math.Clamp(page, 0, TotalPages - 1));
 		await NotifySelectionAsync();
+		await SaveSettingsAsync();
 	}
 
 	public async Task SetPageSizeAsync(int pageSize) {
 		await Controller.SetPageSizeAsync(pageSize);
 		await NotifySelectionAsync();
+		await SaveSettingsAsync();
 	}
 
 	public void BeginCreate() {
@@ -165,15 +219,26 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 			_reference = null;
 			throw;
 		}
-		if (_behavior != null && !_disposed)
-			await _behavior.InvokeVoidAsync("Update", AutoPageSize && Can(DataSourceCapabilities.CanPage) && !NavigationDisabled);
+		if (_behavior != null && !_disposed) {
+			var settingsKey = PersistSettings && !string.IsNullOrWhiteSpace(SettingsKey) ? SettingsKey : null;
+			if (_settingsKey != settingsKey) {
+				_settingsKey = settingsKey;
+				var settings = await _behavior.InvokeAsync<BlazorGridSettings>("ReadSettings", settingsKey, CaptureSettings());
+				if (!_disposed && settings != null && !Controller.IsEditing) {
+					await Controller.ApplyViewSettingsAsync(settings);
+					await NotifySelectionAsync();
+				}
+			}
+			await _behavior.InvokeVoidAsync("Update", UsesViewportPageSize && !NavigationDisabled);
+		}
 	}
 
 	[JSInvokable]
 	public async Task SetViewportPageSizeAsync(int pageSize) {
-		if (_disposed || !AutoPageSize || NavigationDisabled || !Can(DataSourceCapabilities.CanPage) || pageSize == Controller.PageSize)
+		if (_disposed || !UsesViewportPageSize || NavigationDisabled || pageSize == Controller.PageSize)
 			return;
-		await SetPageSizeAsync(Math.Clamp(pageSize, 1, 9999));
+		await Controller.SetViewportPageSizeAsync(Math.Clamp(pageSize, 1, 9999));
+		await NotifySelectionAsync();
 	}
 
 	public async ValueTask DisposeAsync() {
@@ -183,24 +248,18 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		Controller.Changed -= HandleChanged;
 		Controller.Dispose();
 		using var referenceScope = Tools.Scope.ExecuteOnDispose(() => _reference?.Dispose());
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			if (_initializationTask != null)
 				await _initializationTask;
-		} catch (OperationCanceledException) {
-			// Browser shutdown can cancel initialization during disposal.
-		} catch (JSDisconnectedException) {
-			// Initialization can outlive the circuit.
-		}
+		}, error => error is OperationCanceledException or JSDisconnectedException);
 		foreach (var reference in new[] { _behavior, _module }) {
 			if (reference == null)
 				continue;
-			try {
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+				if (ReferenceEquals(reference, _behavior))
+					await reference.InvokeVoidAsync("Dispose");
 				await reference.DisposeAsync();
-			} catch (OperationCanceledException) {
-				// Cancellation while releasing owned browser objects is ordinary teardown.
-			} catch (JSDisconnectedException) {
-				// The browser-side observer releases listeners when the grid leaves the DOM.
-			}
+			}, error => error is OperationCanceledException or JSDisconnectedException);
 		}
 	}
 	protected override void OnInitialized() => Controller.Changed += HandleChanged;
@@ -213,28 +272,36 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		Guard.Argument(ColumnDefinitions.All(column => column is IBlazorGridLegacyColumn), nameof(ColumnDefinitions), "Legacy columns must implement IBlazorGridLegacyColumn.");
 		Guard.ArgumentInRange(PageSize, 1, 9999, nameof(PageSize));
 		Guard.ArgumentGT(Height, 0, nameof(Height));
+		Guard.Argument(Enum.IsDefined(CaptionAlignment), nameof(CaptionAlignment), "Select a supported caption alignment.");
+		Guard.Argument(Enum.IsDefined(PageMode), nameof(PageMode), "Select a supported page mode.");
+		var requestedPageMode = AutoPageSize ? BlazorGridPageMode.Auto : PageMode;
 		Controller.Columns = Columns ?? (AutoGenerateColumns ? _autoColumns ??= BlazorGridColumn<TItem>.AutoGenerate() : Array.Empty<BlazorGridColumn<TItem>>());
 		_columns = Controller.Columns;
+		foreach (var column in _columns) {
+			Guard.ArgumentGT(column.ImageWidth, 0, nameof(column.ImageWidth));
+			Guard.ArgumentGT(column.ImageHeight, 0, nameof(column.ImageHeight));
+			Guard.Argument(Enum.IsDefined(column.ImageAlignment), nameof(column.ImageAlignment), "Select a supported image alignment.");
+			Guard.Argument(!column.ImageResizeMethod.HasValue || Enum.IsDefined(column.ImageResizeMethod.Value), nameof(column.ImageResizeMethod), "Select a supported image resize method.");
+		}
 		if (!ReferenceEquals(_boundSource, DataSource) || _allowedCapabilities != AllowedCapabilities || _parameterPageSize != PageSize) {
 			_boundSource = DataSource;
 			_allowedCapabilities = AllowedCapabilities;
 			_parameterPageSize = PageSize;
+			_parameterPageMode = requestedPageMode;
 			_confirmDelete = false;
 			ResetEditor();
-			await Controller.BindAsync(DataSource, AllowedCapabilities, PageSize);
+			await Controller.BindAsync(DataSource, AllowedCapabilities, PageSize, requestedPageMode);
 			_searchText = Controller.SearchTerm;
 			await NotifySelectionAsync();
+		} else if (_parameterPageMode != requestedPageMode) {
+			_parameterPageMode = requestedPageMode;
+			await SetPageModeAsync(requestedPageMode);
 		}
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
-		try {
-			await LoadJavascript();
-		} catch (OperationCanceledException) when (_disposed) {
-			// A pending render can observe browser teardown cancellation.
-		} catch (JSDisconnectedException) {
-			// No interop work can continue after the circuit disconnects.
-		}
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(LoadJavascript,
+			error => error is JSDisconnectedException || error is OperationCanceledException && _disposed);
 	}
 
 	private async Task InitializeJavascriptAsync() {
@@ -251,14 +318,17 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	private void HandleChanged() {
 		if (!_disposed)
-			_ = InvokeAsync(() => {
-				if (!_disposed)
+			_ = InvokeAsync(async () => {
+				if (!_disposed) {
 					StateHasChanged();
+					await NotifySelectionAsync();
+				}
 			});
 	}
 
 	private async Task NotifySelectionAsync() {
-		if (_disposed || (_wasSelected == Controller.HasSelection && (!_wasSelected || Controller.EntityComparer.Equals(_lastSelection, Controller.SelectedItem))))
+		if (_disposed || (_wasSelected == Controller.HasSelection && (!_wasSelected || (typeof(TItem).IsValueType
+			? Controller.EntityComparer.Equals(_lastSelection, Controller.SelectedItem) : ReferenceEquals(_lastSelection, Controller.SelectedItem)))))
 			return;
 		_wasSelected = Controller.HasSelection;
 		_lastSelection = Controller.SelectedItem;
@@ -331,14 +401,37 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	private Task SearchKeyDownAsync(KeyboardEventArgs args) => args.Key == "Enter" && !NavigationDisabled ? SearchAsync() : Task.CompletedTask;
 
 	private async Task SortAsync(BlazorGridColumn<TItem> column) {
-		var direction = Controller.SortProperty == column.SortName && Controller.SortDirection == SortDirection.Ascending
-			? SortDirection.Descending : SortDirection.Ascending;
+		var direction = Controller.SortProperty != column.SortName ? SortDirection.Ascending : Controller.SortDirection switch {
+			SortDirection.Ascending => SortDirection.Descending,
+			SortDirection.Descending => SortDirection.None,
+			_ => SortDirection.Ascending
+		};
 		await Controller.SortAsync(column.SortName, direction);
 		await NotifySelectionAsync();
+		await SaveSettingsAsync();
 	}
+
+	private async Task SaveSettingsAsync() {
+		if (_disposed || _behavior == null || _settingsKey == null || !PersistSettings || Controller.ErrorMessage != null || Controller.IsEditing)
+			return;
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => {
+			await _behavior.InvokeVoidAsync("WriteSettings", _settingsKey, CaptureSettings());
+		});
+	}
+
+	private BlazorGridSettings CaptureSettings() => new() {
+		PageMode = Controller.PageMode,
+		PageSize = Controller.ManualPageSize,
+		PageNumber = Controller.CurrentPage,
+		SortColumnName = Controller.SortProperty,
+		SortDirection = Controller.SortDirection
+	};
 
 	private Task ChangePageAsync(ChangeEventArgs args) =>
 		int.TryParse(args.Value?.ToString(), out var page) ? SetPageAsync(page > 0 ? page - 1 : 0) : Task.CompletedTask;
+
+	private Task ChangePageModeAsync(ChangeEventArgs args) =>
+		Enum.TryParse<BlazorGridPageMode>(args.Value?.ToString(), out var mode) ? SetPageModeAsync(mode) : Task.CompletedTask;
 
 	private async Task PerformActionAsync(GridAction<TItem> action, TItem item) {
 		if (NavigationDisabled || !(action.IsActionAvailable?.Invoke(item) ?? true))
@@ -346,14 +439,15 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		_performingAction = true;
 		_operationError = null;
 		using var scope = Tools.Scope.ExecuteOnDispose(() => _performingAction = false);
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (action.ActionWorkAsync != null)
 				await action.ActionWorkAsync(item);
 			else
 				action.ActionWork?.Invoke(item);
 			if (!_disposed)
 				await RefreshAsync();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			if (!_disposed)
 				_operationError = error.Message;
 		}
@@ -367,10 +461,11 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	private Task SetEditValueAsync(BlazorGridColumn<TItem> column, object value) {
 		if (_disposed || !Controller.IsEditing || Controller.IsSaving)
 			return Task.CompletedTask;
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			Controller.SetEditValue(column, Tools.BlazorGrid.ParseValue(value, column.DataType));
 			_editErrors.Remove(column);
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			_editErrors[column] = error.Message;
 		}
 		StateHasChanged();
@@ -412,8 +507,35 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	private static string ColumnStyle(BlazorGridColumn<TItem> column) => $"width: {Math.Max(40, column.Width)}px";
 
+	private static string ImagePosition(ResizeAlignment alignment) => alignment switch {
+		ResizeAlignment.TopLeft => "left top",
+		ResizeAlignment.TopCenter => "center top",
+		ResizeAlignment.TopRight => "right top",
+		ResizeAlignment.CenterLeft => "left center",
+		ResizeAlignment.CenterRight => "right center",
+		ResizeAlignment.BottomLeft => "left bottom",
+		ResizeAlignment.BottomCenter => "center bottom",
+		ResizeAlignment.BottomRight => "right bottom",
+		_ => "center center"
+	};
+
+	private static string ImageVerticalAlignment(ResizeAlignment alignment) => alignment switch {
+		ResizeAlignment.TopLeft or ResizeAlignment.TopCenter or ResizeAlignment.TopRight => "top",
+		ResizeAlignment.BottomLeft or ResizeAlignment.BottomCenter or ResizeAlignment.BottomRight => "bottom",
+		_ => "middle"
+	};
+
+	private static string ImageFit(ResizeMethod? fit) => fit switch {
+		ResizeMethod.Stretch => "fill",
+		ResizeMethod.AspectFill => "cover",
+		ResizeMethod.AspectFit or ResizeMethod.AspectFitPadded => "contain",
+		_ => "none"
+	};
+
+	private static bool HasImage(TItem item, BlazorGridColumn<TItem> column) => column.ImageSource != null && (column.PropertyHasValue?.Invoke(item) ?? true);
+
 	private string GetAriaSort(BlazorGridColumn<TItem> column) =>
-		Controller.SortProperty != column.SortName || string.IsNullOrEmpty(column.SortName) ? null
+		Controller.SortProperty != column.SortName || string.IsNullOrEmpty(column.SortName) || Controller.SortDirection == SortDirection.None ? null
 			: Controller.SortDirection == SortDirection.Ascending ? "ascending" : "descending";
 
 	private static string FormatCell(TItem item, BlazorGridColumn<TItem> column) {

@@ -10,7 +10,8 @@
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Grids
 @typeparam TItem
 
-<div class="sphere10-grid" @ref="_element" aria-busy="@IsBusy.ToString().ToLowerInvariant()">
+<div class="sphere10-grid" @ref="_element" aria-busy="@IsBusy.ToString().ToLowerInvariant()" data-grid-auto-size="@AutoSizeColumns.ToString().ToLowerInvariant()"
+	data-grid-page-size="@Controller.PageSize" data-grid-page-identity="@(Controller.CurrentPage + ":" + Controller.SearchTerm + ":" + Controller.SortProperty + ":" + Controller.SortDirection)">
 	<div class="sphere10-grid-toolbar">
 		@if (Can(DataSourceCapabilities.CanSearch)) {
 			<label for="@(Id)-search">Search</label>
@@ -54,12 +55,13 @@
 			<span>@EditNotice</span>
 		</div>
 	}
-	<div class="sphere10-grid-viewport" style="@(AutoPageSize ? $"height: {Height}px" : null)">
+	<div class="sphere10-grid-viewport" style="@ViewportStyle">
 		<table id="@Id" class="sphere10-grid-table" style="min-width: @(MinimumTableWidth)px">
-			<caption class="sphere10-grid-caption">@Caption</caption>
+			<caption class="sphere10-grid-caption" style="text-align: @CaptionAlignment.ToString().ToLowerInvariant()">@Caption</caption>
 			<colgroup>
 				@foreach (var column in _columns) {
-					<col @key="column" data-grid-width="@Math.Max(40, column.Width)" data-grid-expands="@column.ExpandsToFit.ToString().ToLowerInvariant()" style="@ColumnStyle(column)" />
+					<col @key="column" data-grid-width="@Math.Max(40, column.Width)" data-grid-expands="@column.ExpandsToFit.ToString().ToLowerInvariant()"
+						data-grid-key="@(column.PropertyName ?? column.SortName ?? column.ColumnName)" style="@ColumnStyle(column)" />
 				}
 				@foreach (var column in ColumnDefinitions) {
 					<col @key="column" data-grid-width="140" style="width: 140px" />
@@ -75,10 +77,8 @@
 						<th scope="col" aria-sort="@GetAriaSort(column)">
 							@if (Can(DataSourceCapabilities.CanSort) && !string.IsNullOrEmpty(column.SortName)) {
 								<button type="button" class="sphere10-grid-sort" @onclick="() => SortAsync(column)" disabled="@NavigationDisabled">
-									@column.ColumnName
-									@if (Controller.SortProperty == column.SortName) {
-										<span aria-hidden="true">@(Controller.SortDirection == SortDirection.Ascending ? "▲" : "▼")</span>
-									}
+									<span>@column.ColumnName</span>
+									<span class="sphere10-grid-sort-indicator" aria-hidden="true">@(Controller.SortProperty == column.SortName ? Controller.SortDirection == SortDirection.Ascending ? "▲" : Controller.SortDirection == SortDirection.Descending ? "▼" : null : null)</span>
 								</button>
 							} else {
 								@column.ColumnName
@@ -111,11 +111,16 @@
 					<tr class="@(selected ? "sphere10-grid-selected" : null)" aria-selected="@selected.ToString().ToLowerInvariant()"
 						tabindex="0" @onclick="args => SelectRowAsync(item, args)" @ondblclick="() => BeginInlineEditAsync(item)" @onkeydown="args => RowKeyDownAsync(item, args)">
 						@foreach (var column in _columns) {
-							<td>
+							<td style="@(column.ImageSource == null ? null : $"vertical-align: {ImageVerticalAlignment(column.ImageAlignment)}")">
 								@if (editing && column.CanEdit(item)) {
 									@RenderEditor(column)
 								} else if (column.Template != null) {
 									@column.Template(item)
+								} else if (HasImage(item, column)) {
+									<span class="sphere10-grid-image-frame" style="height: @(column.ImageHeight)px; justify-content: @(ImagePosition(column.ImageAlignment).StartsWith("left") ? "flex-start" : ImagePosition(column.ImageAlignment).StartsWith("right") ? "flex-end" : "center")">
+										<img class="sphere10-grid-image" src="@column.ImageSource(item)" alt="@(column.ImageAlternativeText?.Invoke(item) ?? string.Empty)"
+											style="width: @(column.ImageWidth)px; height: @(column.ImageHeight)px; object-fit: @ImageFit(column.ImageResizeMethod); object-position: @ImagePosition(column.ImageAlignment)" />
+									</span>
 								} else {
 									@FormatCell(item, column)
 								}
@@ -136,14 +141,27 @@
 					</tr>
 				}
 				@if (Controller.Items.Length == 0 && !Controller.IsNewItem) {
-					<tr><td colspan="@ColumnCount" class="sphere10-grid-empty">@(Controller.IsLoading ? "Loading…" : EmptyText)</td></tr>
+					<tr><td colspan="@ColumnCount" class="sphere10-grid-empty">@(Controller.IsLoading ? string.Empty : EmptyText)</td></tr>
 				}
 			</tbody>
 		</table>
+		@if (Controller.IsLoading) {
+			<div class="sphere10-grid-loading" role="status" aria-label="Loading grid">
+				<span class="sphere10-grid-spinner" aria-hidden="true"></span>
+				<span class="sphere10-grid-visually-hidden">Loading…</span>
+			</div>
+		}
 	</div>
 	<div class="sphere10-grid-footer">
 		<span role="status">@(Controller.IsLoading ? "Loading…" : $"{TotalDataCount} items")</span>
 		@if (Can(DataSourceCapabilities.CanPage)) {
+			<label class="sphere10-grid-visually-hidden" for="@(Id)-page-mode">Paging mode</label>
+			<select id="@(Id)-page-mode" aria-label="Paging mode" value="@Controller.PageMode" @onchange="ChangePageModeAsync" disabled="@NavigationDisabled">
+				<option value="@BlazorGridPageMode.Paged">Paged</option>
+				<option value="@BlazorGridPageMode.Auto">Auto Paged</option>
+				<option value="@BlazorGridPageMode.Single">Single Paged</option>
+			</select>
+			@if (Controller.PageMode != BlazorGridPageMode.Single) {
 			<nav class="sphere10-grid-pagination" aria-label="Grid pages">
 				<button type="button" class="sphere10-grid-page-button" aria-label="First page" title="First page"
 					disabled="@(NavigationDisabled || CurrentPage == 0)" @onclick="() => SetPageAsync(0)">
@@ -166,10 +184,11 @@
 					<svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="18" height="18"><path d="m6 4 6 6-6 6m9-12v12" /></svg>
 				</button>
 			</nav>
-			@if (!AutoPageSize) {
+			}
+			@if (Controller.PageMode == BlazorGridPageMode.Paged) {
 				<div class="sphere10-grid-page-size">
 					<label for="@(Id)-page-size">Rows per page</label>
-					<PageSizeSelector Id="@(Id + "-page-size")" Value="Controller.PageSize" ValueExpression="() => Controller.PageSize"
+					<PageSizeSelector Id="@(Id + "-page-size")" Value="Controller.ManualPageSize" ValueExpression="() => Controller.ManualPageSize"
 						ValueChanged="SetPageSizeAsync" PageSizeOptions="PageSizeOptions" Disabled="NavigationDisabled" />
 				</div>
 			}

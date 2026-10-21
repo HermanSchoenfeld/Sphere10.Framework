@@ -44,6 +44,19 @@ public class BlazorGridColumn<T> {
 
 	public bool ExpandsToFit { get; set; }
 
+	/// <summary>Optional browser image URL. Images are presented in CSS without desktop drawing dependencies.</summary>
+	public Func<T, string> ImageSource { get; set; }
+
+	public Func<T, string> ImageAlternativeText { get; set; }
+
+	public int ImageWidth { get; set; } = 24;
+
+	public int ImageHeight { get; set; } = 24;
+
+	public ResizeMethod? ImageResizeMethod { get; set; }
+
+	public ResizeAlignment ImageAlignment { get; set; } = ResizeAlignment.CenterCenter;
+
 	public RenderFragment<T> Template { get; set; }
 
 	public RenderFragment<BlazorGridCellEditContext<T>> EditorTemplate { get; set; }
