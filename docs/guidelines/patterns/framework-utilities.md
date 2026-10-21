@@ -18,6 +18,7 @@ Static utility/tool classes live in the **`Tools`** global namespace so consumer
 - **`Tools.FileSystem`** — temp files, read/write, directory management.
 - **`Tools.Streams`** — routing, `ReadByteArray`, writing streams to files, compression and encryption.
 - **`Tools.Scope`** — cleanup delegates and file/directory lifetime scopes; use the concrete transaction scopes for backend transactions.
+- **`Tools.Exceptions`** — execution with captured failures, selected exception handling and intentional best-effort operations.
 - **`Tools.Sqlite`** / **`Tools.MSSQL`** — provider-specific helpers; the Firebird project exposes `FirebirdDAC`, not a `Tools.Firebird` facade.
 - **`Tools.NUnit`** — test utilities (e.g., 2D array formatting).
 
@@ -36,6 +37,67 @@ general OS/version detection from those helpers.
 Observe stream ownership flags: `ReadByteArray` defaults to closing its input,
 and `WriteStreamToFile` defaults `closeReadStream` to `true`. Supply the relevant
 `false` flag when the caller retains ownership of a reusable stream.
+
+## Exception execution and capture
+
+Use `Tools.Exceptions.Execute*` when a failure is deliberately captured as data,
+stored on an inventory row, translated to an availability message, reported to a
+callback, or ignored by a best-effort operation. Do not repeat an ad-hoc
+`try/catch` whose only purpose is that capture or handling. Prefer a nonthrowing
+API such as `TryParse` when one already represents the expected result.
+
+Choose the helper for the actual failure contract:
+
+- `ExecuteCapturingException(action, out error)` captures an exception or assigns
+  `null` on success. Its collection overload appends failures for later reporting.
+- `ExecuteCapturingException<TException>(action, out error, exceptionFilter)` catches
+  only that exception type and its subtypes. The optional filter further narrows
+  the match; other exceptions propagate with their original identity and stack.
+  The broad overload also accepts an explicit filter.
+- `await ExecuteCapturingExceptionAsync(action, exceptionFilter)` returns the
+  captured exception or `null`. A typed overload narrows the exception type.
+  Always await it; never pass an async lambda to a synchronous `Action` helper.
+- `Execute(action, handler)` returns success and invokes the handler on failure;
+  a handler failure propagates. `ExecuteWithExceptionHandler` deliberately
+  suppresses handler failures, so use it only when that best-effort behavior is
+  intended.
+- `ExecuteIgnoringException(action)` is for an explicitly optional operation
+  whose failure must not replace the primary result. `TryOrDefault` is available
+  when deliberately discarding the error and returning a fallback value.
+
+Preserve the original exception type/filter, partial assignments, fallback value,
+notification behavior and thread ownership. Broad capture helpers include
+`OperationCanceledException`; exclude it explicitly when cancellation belongs to
+the caller or the owning lifecycle. The async helper awaits the supplied work;
+it does not establish a background-worker boundary. Native resource work still
+needs its existing worker dispatch.
+
+Complete an operation's externally observed task only after its cleanup scopes
+have restored command state and released ownership. Do not signal completion
+inside a captured delegate while that cleanup remains outside the async helper.
+
+```csharp
+Tools.Exceptions.ExecuteCapturingException<NetworkInformationException>(() => {
+	row.PhysicalAddress = adapter.GetPhysicalAddress().GetAddressBytes();
+	row.LinkSpeedBitsPerSecond = adapter.Speed;
+}, out var hardwareError);
+row.HardwareError = hardwareError;
+
+var captureError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+	readings = await collector.CaptureAsync(cancellationToken);
+}, error => error is not OperationCanceledException);
+if (captureError != null)
+	status = captureError.Message;
+```
+
+Keep an explicit `try/catch` where it implements a real recovery, retry,
+rollback/rethrow, task-completion bridge or cancellation-ownership protocol that
+cannot be expressed by the helper without changing control flow. Use the
+[resource-scope practice](resource-scopes.md) for cleanup, and keep application
+policy at its owning boundary. A ref-like input that cannot be captured by a
+delegate can also require a narrow local handler; do not copy it or alter its
+lifetime solely to fit a wrapper. Do not broaden a narrow catch or turn cancellation
+into a successful empty inventory merely to shorten the code.
 
 ## Windows utility facade and source folders
 
@@ -153,6 +215,7 @@ Use the chosen scheme's digest length and signer nonce contract.
 | `Activator.CreateInstance` (complex) | `TypeActivator.ActivateWithCompatibleArgs(type, args)` or `type.ActivateWithCompatibleArgs(args)` |
 | `Console.WriteLine` (logging) | `SystemLog.Info(...)` |
 | inline `if/throw` for args | `Guard.*` |
+| ad-hoc capture/ignore/report-only `try/catch` | `Tools.Exceptions.Execute*` |
 | ad-hoc `EqualityComparer<T>` | `ComparerFactory.Default.GetEqualityComparer<T>()` |
 
 Check the actual method and its owning project before using a facade. Provider, Windows and NUnit tools require their corresponding project or package references. `Tools.FileSystem` has no `ReadAllBytes` method; do not invent that member. Activation belongs to `TypeActivator` and its `Type` extensions, rather than `Tools.Reflection`.

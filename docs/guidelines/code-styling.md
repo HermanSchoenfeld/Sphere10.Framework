@@ -444,6 +444,13 @@ public enum SomeEnum {
 
 
 
+### Capturing failures
+
+For failure capture, optional execution and exception callbacks, follow
+[Exception execution and capture](patterns/framework-utilities.md#exception-execution-and-capture)
+and use the matching `Tools.Exceptions.Execute*` helper instead of repeating a
+capture/ignore/report-only `try/catch`.
+
 ### Code Comments & Vertical Spaces
 
 Developers should add code-comments inside their code so as to assist auditors on what the purpose of the code is. XMLDOC code comments need not be done during development but can be retrofitted later using tooling. Spaces between lines of code should **only** be used to group the "logical segments" of the code block. All code within a "logical segment" should have no spaces. Each logical segment should have a comment. A fluent builder invocation and its nested child builders form one continuous logical segment, with no blank separator lines.

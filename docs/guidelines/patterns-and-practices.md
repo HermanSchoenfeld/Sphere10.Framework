@@ -24,6 +24,7 @@ instructions take precedence; these topic files hold the implementation rules.
 | Choosing native selectors, database connection controls, CRUD grids, editors or presentation controls | [Reusable WinForms control catalog](patterns/winforms-controls.md) |
 | Windows/native API consumption or missing bindings | [Windows API facades](patterns/windows-interop.md) |
 | Fluent configuration and nested builders | [Fluent builders](patterns/fluent-builders.md) |
+| Capturing failures as data, optional operations or exception callbacks | [Exception execution and capture](patterns/framework-utilities.md#exception-execution-and-capture) |
 | Selecting utilities, guards or cryptographic infrastructure | [Framework utilities](patterns/framework-utilities.md) |
 | Serialization, binary layouts or endian-aware I/O | [Serialization](patterns/serialization.md) |
 | Selecting extended lists, dictionaries, bidirectional maps, sets or collection decorators | [Collection selection and composition](patterns/collections.md) |

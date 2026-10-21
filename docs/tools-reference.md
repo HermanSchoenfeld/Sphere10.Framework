@@ -146,7 +146,7 @@ when the caller needs completion and failure propagation.
 
 | Facade | Existing entrypoints | Implementation |
 |---|---|---|
-| `Tools.Exceptions` | `ExecuteCapturingException`, `ExecuteIgnoringException`, `TryOrDefault` | [ExceptionTool.cs](../src/Sphere10.Framework/Exceptions/ExceptionTool.cs) |
+| `Tools.Exceptions` | `ExecuteCapturingException` (typed/filter overloads), `ExecuteCapturingExceptionAsync`, `Execute`, `ExecuteIgnoringException`, `TryOrDefault`; see [execution/capture practice](guidelines/patterns/framework-utilities.md#exception-execution-and-capture) | [ExceptionTool.cs](../src/Sphere10.Framework/Exceptions/ExceptionTool.cs) |
 | `Tools.Scope` | `ExecuteOnDispose`, `ExecuteOnDisposeAsync`, file/directory cleanup scopes | [ScopeTool.cs](../src/Sphere10.Framework/Scopes/ScopeTool.cs) |
 
 `Tools.Scope` supplies cleanup factories. Transaction begin/commit/rollback
