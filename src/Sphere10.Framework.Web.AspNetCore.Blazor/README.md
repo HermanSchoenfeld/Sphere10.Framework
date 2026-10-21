@@ -441,11 +441,20 @@ For a plain `ListDataSource<T>` without custom searching/sorting, use a positive
 | `PropertyHasValue` | Per-row availability predicate; false also suppresses the default display value. |
 | `Template` / `EditorTemplate` | Typed display and buffered editor fragments. |
 | `Format` | Display format for `IFormattable` values; it does not change editor parsing. |
-| `Width` / `ExpandsToFit` | Initial pixel width and whether the column can share spare space. Narrow viewports scroll horizontally instead of collapsing configured columns. |
+| `Width` / `ExpandsToFit` | Initial/minimum pixel width and whether the column shares spare viewport space. No column stretches implicitly. |
+| `ImageSource` / `ImageAlternativeText` | Optional image URL and accessible alternative text; ordinary display templates remain available. |
+| `ImageWidth` / `ImageHeight` | Image presentation box in CSS pixels (24 × 24 by default). |
+| `ImageAlignment` / `ImageResizeMethod` | Shared `ResizeAlignment` (default `CenterCenter`) and optional `ResizeMethod`; null retains original-size presentation. |
 
 Explicit `Columns` replace automatic generation. Without them, `AutoGenerateColumns` defaults to true and reflects readable public instance properties, excluding indexers and `[Browsable(false)]` members. Generated definitions honor `[DisplayName]`, `[ReadOnly]`, private setters and init-only properties. Complex values remain read-only unless you configure an editor.
 
-Create column definitions once, for example in a field or `OnInitialized`. Replacing column instances during an edit cancels that draft. `PropertyHasValue = false` makes a value unavailable for editing; do not use it merely because an editable reference is currently null.
+Create column definitions once, for example in a field or `OnInitialized`. Replacing column instances during an edit cancels that draft and starts a new column-layout measurement. `PropertyHasValue = false` makes a value unavailable for editing; do not use it merely because an editable reference is currently null.
+
+`AutoSizeColumns` defaults to true. The first nonempty rendered result establishes natural widths, including header text and reserved sort-indicator space. Paging, filtering, sorting and refresh retain those widths; a longer value on a later page does not change the table layout. Header-edge dragging establishes a manual width that takes precedence over automatic stretching. Only columns marked `ExpandsToFit` share spare viewport width, and a manually resized stretch column keeps its chosen width. Narrow viewports scroll horizontally rather than collapsing those minimums. Set `AutoSizeColumns="false"` to start from configured `Width` values without measuring cell content.
+
+`Caption` is the visible table title and accessible caption. `CaptionAlignment` uses `BlazorGridHorizontalAlignment.Left`, `Center` or `Right`, with Left as the default. It does not reserve space for absent toolbar buttons.
+
+Image columns use the same portable `Sphere10.Framework.ResizeAlignment` and `ResizeMethod` enums as Drawing. The browser maps those values to image-box fit and position; it does not load `System.Drawing`, resample server-side bitmaps or assume ownership of the URL's underlying resource. Use `ImageResizeMethod = ResizeMethod.AspectFit` for proportional fitting, `AspectFill` for cropping or `Stretch` to fill the box. `AspectFitPadded` fits within the presentation box. Supply trusted application image URLs and meaningful alternative text when the image conveys information.
 
 Default editors support strings/chars, booleans (including nullable tri-state values), numeric types, enums, GUIDs, `DateOnly`, `TimeOnly`, `DateTime`, `DateTimeOffset` and `TimeSpan`. Dates/times use the appropriate HTML inputs; offset timestamps and durations use text to preserve their full values. Built-in editor conversions use invariant culture, while default cell display uses the current culture. `Tools.BlazorGrid` provides the underlying conversion helpers.
 
@@ -457,13 +466,17 @@ Default editors support strings/chars, booleans (including nullable tri-state va
 - Save applies changed values, calls `ValidateAsync`, then calls `CreateAsync` or `UpdateAsync`. Rejected validation or failed persistence restores changed fields and keeps the draft for correction/retry.
 - Setters must support restoring the original value. Custom editors must publish replacements through `ValueChanged`, rather than mutating `Item` or a referenced object directly. This rollback is not a transaction for external side effects inside a setter or source.
 - Delete validates `CrudAction.Delete` before calling `DeleteAsync`. Built-in mutation events fire after successful persistence. A later refresh can fail independently; inspect `ErrorMessage` when handling such a result.
-- Paging, search and other grid commands are disabled during editing or an active operation. Replacing the source, permission mask, page-size parameter or column definitions discards a pending draft.
+- Paging, search and other grid commands are disabled during editing or a foreground operation. An explicitly suppressed background refresh retains usable rows and navigation until its replacement is ready. Replacing the source, permission mask, page-size parameter or column definitions discards a pending draft.
 
 `SelectedItemChanged`, `ItemCreated`, `ItemUpdated` and `ItemDeleted` are `EventCallback<TItem>` parameters. Selection clearing passes the default value, normally null for entity classes. Async handlers should return `Task`.
 
 ### Paging and external refresh
 
-`PageSize` defaults to 10 and accepts 1–9999. The pager uses accessible First/Previous/Next/Last icon buttons with tooltips and a **Rows per page** dropdown. `PageSizeOptions="new[] { 5, 10, 25, 50, 100 }"` customizes the choices; those are also the defaults. The active size is included automatically even when it is not listed (for example, `PageSize="6"`). Paging and page-size changes remain disabled during editing/loading. Automatic page sizing hides the dropdown. `CurrentPage` and `SetPageAsync` are **zero-based**; the visible pager starts at one. The source returns the actual zero-based `DataSourceItems.Page` and the filtered `TotalCount`, not the count of items on that page. Filter and sort before paging.
+`PageMode` selects `BlazorGridPageMode.Paged`, `Auto` or `Single`; the footer presents **Paged**, **Auto Paged** and **Single Paged**. Paged uses the remembered manual size. Auto measures the viewport, headers, row heights and scrollbar space to fit complete rows while keeping navigation. Single asks for page zero and `int.MaxValue` page length, showing every matching row with vertical scrolling and no navigator. Sources without `CanPage` retain complete-result behavior and hide the paging controls. Search and sorting apply in every mode. `AutoPageSize` remains a compatibility alias: true selects Auto; false selects Paged.
+
+`PageSize` defaults to 10 and accepts 1–9999. Paged uses accessible First/Previous/Next/Last icon buttons with tooltips and a **Rows per page** dropdown. `PageSizeOptions="new[] { 5, 10, 25, 50, 100 }"` customizes the choices; those are also the defaults. The active size is included automatically even when it is not listed (for example, `PageSize="6"`). Auto and Single preserve the manual size for returning to Paged; they hide its editor. Paging and page-size changes remain disabled during editing/foreground loading. `CurrentPage` and `SetPageAsync` are **zero-based**; the visible pager starts at one. The source returns the actual zero-based `DataSourceItems.Page` and filtered `TotalCount`, not the count on that page. Filter and sort before slicing. A source may collect its full inventory once and still implement paging over that published snapshot; changing pages must not recollect it.
+
+Sortable headers cycle **Ascending → Descending → None**, then ascending again. None requests the source's natural order with `SortDirection.None`; sources must implement that value rather than treating it as Ascending. Changing to another column starts ascending. Sorting retains established column widths.
 
 Add `@ref="_grid"` to a grid to call its public component methods from the owning renderer context:
 
@@ -477,16 +490,27 @@ private async Task RefreshPeopleAsync() {
 }
 ```
 
-This fragment belongs in the page's `@code` block and requires `@using System.Threading.Tasks`. The component also exposes `SetPageAsync(int)`, `SetPageSizeAsync(int)`, `BeginCreate()`, `BeginEdit(item)`, `CancelEdit()` and `SaveAsync()`; Save returns a boolean.
+This fragment belongs in the page's `@code` block and requires `@using System.Threading.Tasks`. The component also exposes `SetPageAsync(int)`, `SetPageSizeAsync(int)`, `SetPageModeAsync(mode)`, `BeginCreate()`, `BeginEdit(item)`, `CancelEdit()` and `SaveAsync()`; Save returns a boolean.
 
 For a grid sized to its viewport:
 
 ```razor
 <BlazorGrid TItem="Person" DataSource="_source" Columns="_columns"
-	AutoPageSize="true" Height="420" />
+	PageMode="BlazorGridPageMode.Auto" Height="420" />
 ```
 
-Automatic sizing measures the header and rows within the fixed-height viewport, hides the manual page-size input and uses a conservative row height to avoid repeated changes in page capacity. Column widths can be changed by dragging their header edges.
+Automatic sizing measures the header and rows within the fixed-height viewport, hides the manual page-size input and uses a conservative row height to avoid repeated changes in page capacity. Browser measurements use CSS pixels, including fractional zoom and device scaling. Resizing requests another page only when capacity changes; it does not start an independent refresh loop.
+
+For periodic or event-driven snapshots, set `SuppressLoadingIndicator="true"`, or call `RefreshAsync(showLoadingIndicator: false)` for an individual refresh. The initial binding retains the full-table loading surface; later suppressed reads retain the previous rows, selection and usable query controls while the source is awaited. `Controller.IsRefreshing` tracks all refresh work, while `IsLoading` identifies foreground loading. Reads still share serialization/coalescing and reject stale results after a newer query, source replacement or disposal. A plain `RefreshAsync()` follows the component's suppression setting. Source work must use its native asynchronous API or the framework's synchronous-source worker adapter; wrapping a blocking query in an async method alone does not move its synchronous prefix off the renderer.
+
+For a row action, await `RefreshRowsAsync(rows)`, `Controller.RefreshEntityAsync(entity)` or `Controller.RefreshSelectedEntityAsync()` rather than rereading the entire page. The source's `RefreshRangeAsync` returns fresh objects through its supplied array; null removes a row that disappeared. Core's `RefreshableSnapshotDataSource<T,TKey>` provides this behavior over an atomically published snapshot. An ordinary `SnapshotDataSource<T>` does not implement row refresh. Set `Controller.EntityComparer` to stable identity when replacement objects should retain selection. `RemoveRows(rows)` removes caller-known rows from the displayed collection; update the caller-owned source too so its next read does not restore them. Row updates retain the query, unaffected rows and established widths.
+
+`await grid.ReadFilteredEntitiesAsync(cancellationToken)` captures all matching rows across pages in the current sort order. It asks the bound source for page zero and `int.MaxValue`, without recollecting a snapshot, changing the visible page/filter/selection or starting a loading indicator. The typed array is suitable for the caller's CSV/JSON/export policy; reporting and download UI remain with the application. Cancellation stops waiting for the result; the existing `IDataSource<T>` call itself has no cancellation-token contract.
+
+Opt into browser preferences with `PersistSettings="true"` and a stable `SettingsKey`, distinct for independent tables. The browser retains paging mode, manual page size, page number, sort state and explicit column widths under that key. Search text is not saved. Auto viewport measurements do not overwrite the remembered manual size or continuously save preferences during resize. Storage is local to that browser and origin; the application still owns account-level preferences. Persistence is optional, so isolated or short-lived grids can leave it disabled.
+
+See [grids and screen hosts on both platforms](../../docs/guidelines/patterns/grids-and-screen-hosts.md)
+for the WinForms API mapping and native/browser differences.
 
 Each grid owns its controller and browser subscriptions, but **does not own the data source**. If you supply a disposable source, its creator or DI scope must dispose it. Reads are serialized/coalesced and stale results are ignored after a newer request, source replacement or disposal. `IDataSource<T>` does not expose read cancellation tokens, so an already-running source call may still finish.
 
@@ -585,7 +609,7 @@ Both the WinForms `CrudGrid` and Blazor grid consume the same core `IDataSource<
 
 Sequence-valued data properties use arrays: grid `Columns`, `Actions`, `ColumnDefinitions`, controller `Items` and `ValidationErrors`, application block `Menus`, menu `Items`, UI-service/host collections, table `Items`/`Page`, and `ItemsResponse<T>.Items`. Materialize queries with `.ToArray()` before assigning them. Controller and registered application collections return array snapshots; replacing entries in a returned array does not change stored membership. Use configuration setters, builders or host operations to make changes.
 
-`grid.Controller` exposes additional query/edit operations, current items, validation errors and custom entity comparison. Calls made directly on it bypass the component's mutation/selection callbacks and its delete-confirmation UI. Use component methods and controls when you need those behaviors. The component creates and disposes its own controller; do not dispose that instance or share it between grids.
+`grid.Controller` exposes additional query/edit operations, current items, validation errors and custom entity comparison. Direct mutation calls bypass the component's create/update/delete callbacks and its delete-confirmation UI; selection changes are still observed through the controller's change notifications. Use component methods and controls when you need the complete interaction. The component creates and disposes its own controller; do not dispose that instance or share it between grids.
 
 
 ## ApplicationBlock architecture
@@ -912,7 +936,7 @@ Configuration runs once per scope. The callback configures that scope's applicat
 
 Keep commands shared by every workspace at application level. A block command belongs to the active screen's owning block; a screen command disappears when that screen is deactivated. Browsing another sidebar does not change the displayed screen's command context. Within the contextual layer, matching uses local IDs and a narrower action group replaces the matching block group as one command. Application groups remain separate. `ApplicationCommandBar.CommandKeySelector` lets independent layouts namespace renderer identities when different levels share an ID; the shell supplies this automatically without changing command registrations. Hidden items remain registered but are omitted from rendered controls, and menus containing only hidden items are omitted.
 
-Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` and call `NotifyScreenChanged()` to update a tab's caption. Long titles are clipped with an ellipsis and retain a full tooltip; dirty screens display an indicator.
+Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` and call `NotifyScreenChanged()` to update a tab's caption. Registered icons, long-title ellipsis/full tooltips and dirty indicators retain their separate space. The **Open Screens** selector lists exact open sessions, including permanent screens, and disambiguates duplicate titles with occurrence numbers. Choosing one calls the normal guarded selection path without opening another instance; hidden retained and Empty sessions are excluded.
 
 The host defaults to `ScreenMode.MultiView`. The tester's toolbar toggle and View menu await `TrySetScreenModeAsync`; `ApplicationShell.ShowScreenModeSelector` provides an optional header selector. Entering `SingleView` preflights every ordinary tab that would close before removing any; permanent sessions are retained. The synchronous `ScreenMode` setter accepts transitions requiring no closures and rejects transitions requiring async guards; use the awaited method for runtime changes. During single-view navigation, hidden single-instance screens remain mounted and multi-instance screens are released. The multi-screen contract's `Screens` includes retained hidden sessions and `OpenScreens` supplies normal tab membership in presentation order; empty screens are excluded. `MoveScreenAsync` changes that order. `CloseScreensAsync` preflights a batch and preserves every screen if a guard rejects it. Components remain owned by the renderer. Docking is not part of the Blazor host.
 
@@ -986,6 +1010,49 @@ plugin
 `WithDefaultScreen<TScreen>(title, activationMode, screenKind)` marks that block's default. When the same type already has a menu item in the block, its lifetime and kind are inherited unless explicitly supplied; conflicting settings are rejected. A default without a matching menu and without an explicit lifetime uses `MultiInstance`, just like an ordinary screen registration. `AsDefault()` marks a menu definition without needing `WithDefaultScreen`.
 
 `ScreenHost.InitializeAsync` opens all permanent sessions once and chooses the first marked default in plugin registration order, then each plugin's block array order, then menu order. Directly registered blocks follow plugin-owned blocks. If no definition is marked, the first block's legacy default remains the fallback. This startup order is independent of `Position`, which still controls the visible block list. An explicit bookmark is selected before host initialization, so opening a bookmark does not add an unrelated startup-default tab. `ApplicationShell` initializes the host; custom shells should await `ScreenHost.InitializeAsync` themselves. This is separate from the circuit's application task initialization. Later block registration opens its permanent screens without rerunning startup default selection or replacing an active normal screen.
+
+### Remembering the startup screen
+
+Set an explicit application-qualified browser key to enable the tab context
+command **Make Startup Screen**:
+
+```razor
+<ApplicationShell Title="My Application"
+                  StartupScreenSettingsKey="MyCompany.MyApplication.Workspace"
+                  BlockId="@BlockId" ScreenId="@ScreenId" InstanceId="@InstanceId" />
+```
+
+An ordinary root/blank route reads browser storage at the first interactive
+render before choosing its default. Prerendering displays the workspace loading
+content until storage is available. A route that explicitly specifies a screen
+wins over the saved preference. Pass no implicit screen target for your root
+route if it should honor the saved choice. Permanent screens still initialize.
+Without a key the existing startup behavior is unchanged.
+
+`BlazorApplicationStartupScreen` stores plugin name, stable block/menu identity,
+full screen type and simple assembly name. The host resolves this only against
+its current registered definitions; it never loads a type from preference text.
+Missing/obsolete records fall back without overwriting the browser's choice.
+Storage failures are shown in the shell and do not replace an accepted choice.
+This setting is local to the browser/origin, not a server-global user setting or
+a saved copy of the component's fields.
+
+`BlazorApplicationScreen.CanRestoreAtStartup` can veto choosing a live screen.
+Runtime activation parameters, keyed sessions, Empty screens and unattached
+components are excluded automatically; registered menu parameters remain part
+of the definition. Override the host's protected
+`CanRestoreScreenAtStartup(block, definition)` when a definition must also be
+excluded before constructing its renderer component, for example after an
+application upgrade makes it require transient arguments. Custom hosts can use
+`GetStartupScreenIdentity`, `SetStartupScreen`, `CanMakeStartupScreen`,
+`GetStartupScreenUnavailableReason` and `IsStartupScreen` without adding another
+screen registry. `ApplicationShell.MakeStartupScreenAsync(sessionId)` saves
+through the same browser path as the context command.
+
+The [cross-platform guide](../../docs/guidelines/patterns/grids-and-screen-hosts.md#application-screen-hosts)
+maps all screen lifetimes, tabs, startup preferences and close/exit behavior to
+WinForms. Native detached-window ownership and drag docking remain WinForms
+features; Blazor retains components in its current document/circuit.
 
 Permanent tabs have no close button; middle-click, Delete and tab context close commands preserve them. A direct `CloseScreenAsync`/`CloseScreensAsync` request containing a permanent session returns false without removing any session. Application-level Close all commands should select only closable normal sessions:
 

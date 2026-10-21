@@ -40,6 +40,7 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | [Application ownership](guidelines/patterns/application-ownership.md) | Runtime parents, definitions, plugins and lifecycle ownership. |
 | [WinForms designer](guidelines/patterns/winforms-designer.md) | Concrete visual bases, editable layouts and runtime composition. |
 | [Reusable WinForms controls](guidelines/patterns/winforms-controls.md) | Selectors, database provider controls, grids, editors and presentation components. |
+| [Grids and screen hosts](guidelines/patterns/grids-and-screen-hosts.md) | WinForms/Blazor feature mapping, paging, live refresh, retained layouts, tabs and startup choices. |
 | [Windows API facades](guidelines/patterns/windows-interop.md) | Native bindings, ownership and application consumption. |
 | [Framework utilities](guidelines/patterns/framework-utilities.md) | Existing Tools, validation, conversion, crypto and comparer infrastructure. |
 | [Fluent builders](guidelines/patterns/fluent-builders.md) | Configuration composition, validation and product ownership. |

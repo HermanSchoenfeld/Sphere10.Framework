@@ -20,11 +20,12 @@ and source headers. These topic files describe the implementation practices.
 | Application/plugin registration, ownership graphs, screens or contextual commands | [Application ownership and platform extensions](patterns/application-ownership.md) |
 | WinForms forms, user controls, hosted screens or dialogs | [Designer-editable WinForms UI](patterns/winforms-designer.md) |
 | Choosing native selectors, database connection controls, CRUD grids, editors or presentation controls | [Reusable WinForms control catalog](patterns/winforms-controls.md) |
+| Building or comparing WinForms and Blazor grids or screen hosts | [Grids and screen hosts](patterns/grids-and-screen-hosts.md) |
 | Windows/native API consumption or missing bindings | [Windows API facades](patterns/windows-interop.md) |
 | Fluent configuration and nested builders | [Fluent builders](patterns/fluent-builders.md) |
 | Selecting utilities, guards or cryptographic infrastructure | [Framework utilities](patterns/framework-utilities.md) |
-| Serialization, binary layouts or endian-aware I/O | [Serialization](patterns/serialization.md) |
 | Capturing failures as data, optional operations or exception callbacks | [Exception execution and capture](patterns/framework-utilities.md#exception-execution-and-capture) |
+| Serialization, binary layouts or endian-aware I/O | [Serialization](patterns/serialization.md) |
 | Selecting extended lists, dictionaries, bidirectional maps, sets or collection decorators | [Collection selection and composition](patterns/collections.md) |
 | Shared state, read/write locks, compound operations or synchronized enumeration | [Synchronization with read/write scopes](patterns/synchronization.md) |
 | Live metric summaries without retaining sample history | [Statistics without history](patterns/stateless-statistics.md) |
