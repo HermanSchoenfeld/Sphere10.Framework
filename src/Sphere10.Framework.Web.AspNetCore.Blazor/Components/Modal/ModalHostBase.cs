@@ -47,14 +47,10 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 		_lifetimeCancellation.Dispose();
 		if (_moduleTask == null)
 			return;
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 			var module = await _moduleTask;
 			await module.DisposeAsync();
-		} catch (OperationCanceledException) {
-			// Disposing the host cancels a pending JavaScript import.
-		} catch (JSDisconnectedException) {
-			// The browser observer removes the backdrop when the host leaves the DOM.
-		}
+		}, error => error is OperationCanceledException or JSDisconnectedException);
 	}
 
 	protected Task<TResult> ShowCoreAsync<T>(IDictionary<string, object> parameters)
@@ -78,14 +74,11 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 				await InvokeAsync(StateHasChanged);
 		});
 		await using var visibilityCleanup = Tools.Scope.ExecuteOnDisposeAsync(async () => {
-			try {
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 				if (module != null && !_disposed)
 					await module.InvokeVoidAsync("Hide", ModalElement);
-			} catch (OperationCanceledException) when (lifetimeCancellationToken.IsCancellationRequested || callerCancellationToken.IsCancellationRequested) {
-				// Teardown can interrupt an in-flight hide request.
-			} catch (JSDisconnectedException) {
-				// A disconnected circuit cannot perform browser cleanup.
-			}
+			}, error => error is JSDisconnectedException || error is OperationCanceledException
+				&& (lifetimeCancellationToken.IsCancellationRequested || callerCancellationToken.IsCancellationRequested));
 		});
 		var rendered = new TaskCompletionSource<TComponent>(TaskCreationOptions.RunContinuationsAsynchronously);
 		async Task<bool> CloseAsync() {

@@ -36,9 +36,8 @@ public abstract class ExtendedComponentViewModel : ComponentViewModelBase {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	private async void OnEndpointChanged(object? sender, EventArgs e) {
-		try {
-			await InitCoreAsync();
-		} catch (Exception exception) {
+		var exception = await Tools.Exceptions.ExecuteCapturingExceptionAsync(InitCoreAsync);
+		if (exception != null) {
 			// Do something, show error notification / message. 
 			Console.WriteLine(exception);
 		}

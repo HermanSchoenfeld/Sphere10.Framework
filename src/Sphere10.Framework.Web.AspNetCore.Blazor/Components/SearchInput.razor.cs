@@ -73,25 +73,28 @@ public partial class SearchInput : IDisposable {
 		_activeSearches++;
 		using var requestScope = Tools.Scope.ExecuteOnDispose(EndSearch);
 		try {
-			await InvokeAsync(StateHasChanged);
-			await _throttleGate.WaitAsync(cancellationToken);
-			using (Tools.Scope.ExecuteOnDispose(() => _throttleGate.Release())) {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+				await InvokeAsync(StateHasChanged);
+				await _throttleGate.WaitAsync(cancellationToken);
+				using (Tools.Scope.ExecuteOnDispose(() => _throttleGate.Release())) {
+					if (!IsCurrent(requestVersion))
+						return;
+					await throttle.WaitAsync().WaitAsync(cancellationToken);
+				}
 				if (!IsCurrent(requestVersion))
 					return;
-				await throttle.WaitAsync().WaitAsync(cancellationToken);
+				var results = await provider(searchTerm).WaitAsync(cancellationToken);
+				if (!IsCurrent(requestVersion))
+					return;
+				Results = (results ?? Array.Empty<SearchResult>()).Where(result => result != null).Take(ResultsCount).ToArray();
+			}, exception => exception is not OperationCanceledException || !(cancellationToken.IsCancellationRequested || !IsCurrent(requestVersion)));
+			if (error != null) {
+				if (!IsCurrent(requestVersion))
+					return;
+				_error = "Unable to search. Please try again.";
 			}
-			if (!IsCurrent(requestVersion))
-				return;
-			var results = await provider(searchTerm).WaitAsync(cancellationToken);
-			if (!IsCurrent(requestVersion))
-				return;
-			Results = (results ?? Array.Empty<SearchResult>()).Where(result => result != null).Take(ResultsCount).ToArray();
 		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || !IsCurrent(requestVersion)) {
 			return;
-		} catch (Exception) {
-			if (!IsCurrent(requestVersion))
-				return;
-			_error = "Unable to search. Please try again.";
 		}
 		if (IsCurrent(requestVersion)) {
 			_isSearching = false;
