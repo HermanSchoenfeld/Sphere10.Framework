@@ -1,6 +1,6 @@
 # Resource Scopes
 
-Read the [disposable-scopes skill](../../../agents/skills/disposable-scopes/SKILL.md) and [guards-and-scopes skill](../../../agents/skills/guards-and-scopes/SKILL.md). Reuse the scope that owns resource release, state exit or lock release.
+Reuse the scope that owns resource release, state exit or lock release.
 
 ## Scope-Based Patterns
 
@@ -21,7 +21,7 @@ using (collection.EnterWriteScope()) {
 }
 ```
 
-If an operation acquires a resource, enters a state, or needs guaranteed cleanup, wrap it in the existing scope that expresses that acquire/release contract. Do not reproduce its machinery with a bare `try/finally`. Exception handling and multi-step lifecycle coordination can still require `try`/`catch`/`finally`; preserve their ownership and failure behavior, as described in the disposable-scopes skill.
+If an operation acquires a resource, enters a state, or needs guaranteed cleanup, wrap it in the existing scope that expresses that acquire/release contract. Do not reproduce its machinery with a bare `try/finally`. Exception handling and multi-step lifecycle coordination can still require `try`/`catch`/`finally`; preserve their ownership and failure behavior and match the underlying scope contract.
 
 ## Cleanup review and domain scopes
 

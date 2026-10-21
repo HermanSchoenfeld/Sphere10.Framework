@@ -1,7 +1,5 @@
 # Testing
 
-Read the [unit-testing skill](../../../agents/skills/unit-testing/SKILL.md) for fixture structure, resource lifetimes, async assertions and meaningful coverage.
-
 ## Framework & Conventions
 
 - Use **NUnit** as the test framework.
@@ -44,7 +42,7 @@ Await the operation, assert its precise failure, then continue on the same live
 dispatcher. NUnit documents the move from sync-over-async to awaitable constraints
 in [its NUnit 4 guidance](https://docs.nunit.org/articles/nunit/Towards-NUnit4.html#proper-asyncawait-you-can-now-await-the-asserts).
 
-Test changed behavior and contracts, including material rejection, cancellation, ownership and completion paths. Avoid tests that mirror private implementation details or only repeat assignments. Run affected fixtures and required checks; broaden or repeat for a new change, failure or unresolved concern, and report what actually ran. The skill distinguishes opt-in live-service integration fixtures from ordinary unit/integration coverage.
+Test changed behavior and contracts, including material rejection, cancellation, ownership and completion paths. Avoid tests that mirror private implementation details or only repeat assignments. Run affected fixtures and required checks; broaden or repeat for a new change, failure or unresolved concern, and report what actually ran. Keep opt-in live-service integration fixtures distinct from ordinary unit/integration coverage.
 
 See [sync/async hierarchies](sync-async.md) for opposite-direction adapter checks and [application ownership](application-ownership.md) for lifecycle and cleanup contracts. New test source files follow [Code Styling](../code-styling.md).
 

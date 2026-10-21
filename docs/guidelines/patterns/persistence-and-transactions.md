@@ -273,11 +273,10 @@ transactions have different owners: follow the [DAC guide](../../../src/Sphere10
 for provider support, isolation and enlistment instead of mixing their completion
 methods. The concrete core scopes are `DACScope` and NHibernate `DataAccessScope`;
 both require an explicit transaction begin. An application's `DataScope` is its
-DAL facade/convention. The existing [NHibernate DAL skill](../../../agents/skills/nhibernate-dal/SKILL.md#datascope-and-business-operations)
-defines a runtime scaffold whose default constructor obtains the application
-session and starts a transaction. It needs no second `BeginTransaction()` call
-and is not a drop-in alias for core `DataAccessScope`. Follow that skill for
-factory/session ownership and the existing application's nesting behavior.
+DAL facade/convention. An application may define a `DataScope` whose constructor
+obtains its session and starts a transaction. That wrapper needs no second
+`BeginTransaction()` call and is not a drop-in alias for core `DataAccessScope`.
+Verify its factory/session ownership and the existing application's nesting behavior.
 
 ## File and collection ownership
 

@@ -1,12 +1,12 @@
 # Data Sources
 
-Read the [data-source skill](../../../agents/skills/data-source/SKILL.md) and the [current interface](../../../src/Sphere10.Framework/DataSource/IDataSource.cs) before implementing a source. Choose an existing item-first or batch-first base matching the backend's real primitive.
+Read the [current interface](../../../src/Sphere10.Framework/DataSource/IDataSource.cs) before implementing a source. Choose an existing item-first or batch-first base matching the backend's real primitive.
 
 ## DataSource Pattern (Sync/Async Hierarchy)
 
 `IDataSource<T>` provides item and batch CRUD, refresh, validation, paging, count and capability APIs. Most operations have synchronous and asynchronous forms; `New` and `NewRange` are synchronous only. The abstract implementation hierarchy avoids duplication:
 
-- **`IDataSource<T>`** — item methods are `New`, `Create`, `Refresh`, `Update`, `Delete` and `Validate`; batch methods are `NewRange`, `CreateRange`, `ReadRange`, `RefreshRange`, `UpdateRange`, `DeleteRange` and `ValidateRange`. There is no item `Read` method. Batch async names put `Range` before `Async`; count/capabilities also have task-valued properties. See the [data-source skill](../../../agents/skills/data-source/SKILL.md) for item-first and batch-first base choices.
+- **`IDataSource<T>`** — item methods are `New`, `Create`, `Refresh`, `Update`, `Delete` and `Validate`; batch methods are `NewRange`, `CreateRange`, `ReadRange`, `RefreshRange`, `UpdateRange`, `DeleteRange` and `ValidateRange`. There is no item `Read` method. Batch async names put `Range` before `Async`; count/capabilities also have task-valued properties.
 - **[DataSourceBase<T>](../../../src/Sphere10.Framework/DataSource/DataSourceBase.cs)** — declares item/range operations and properties abstract.
 - **[SyncBatchDataSourceBase<T>](../../../src/Sphere10.Framework/DataSource/SyncBatchDataSourceBase.cs)** — implement synchronous range primitives, including `NewRange`, and `Count`/`Capabilities`. Item operations derive from ranges; async adapters return `Task.Run` tasks for the sync work.
 - **[AsyncBatchDataSourceBase<T>](../../../src/Sphere10.Framework/DataSource/AsyncBatchDataSourceBase.cs)** — implement async range primitives, task-valued `CountAsync`/`CapabilitiesAsync`, and synchronous `NewRange`. Async item operations await ranges; existing sync operations use `ResultSafe`/`WaitSafe`.
@@ -35,7 +35,7 @@ UI busy/selection state does not replace the source's permission enforcement.
 
 In the current [TaskExtensions](../../../src/Sphere10.Framework/Extensions/TaskExtensions.cs), `WaitSafe` queues `task.Wait` with `Task.Run` and returns without joining the worker. A sync mutation using it can return before completion and cannot synchronously propagate the pending failure. `ResultSafe` does block through the worker task's `.Result`, but the original operation has already started on the caller's context; this does not prevent a dispatcher deadlock, and `.Result` affects exception propagation. These are legacy caveats, not the intended adapter contract. Read [sync/async completion rules](sync-async.md#adapter-completion-and-cancellation) when changing a bridge, and prefer the native async operations on async consumers.
 
-See [collections and storage](collections-and-storage.md), [fluent builders](fluent-builders.md) and the [CRUD grid skill](../../../agents/skills/crud-grid/SKILL.md) for consumers.
+See [collections and storage](collections-and-storage.md), [fluent builders](fluent-builders.md) and the [WinForms project guide](../../../src/Sphere10.Framework.Windows.Forms/README.md) for CRUD grid consumers.
 
 WinForms snapshot grids reuse the nonvisual
 [CrudGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGridSnapshotController.cs)

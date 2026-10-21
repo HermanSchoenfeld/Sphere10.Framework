@@ -1,6 +1,6 @@
 # Logging
 
-Read the [logging skill](../../../agents/skills/logging/SKILL.md) for logger APIs, sink behavior and current source limitations. The [application ownership guide](application-ownership.md) explains runtime and dependency ownership.
+The [application ownership guide](application-ownership.md) explains runtime and dependency ownership.
 
 ## Logging
 
@@ -24,7 +24,7 @@ assignment. Configure each new sink's options explicitly. The current
 `SystemLog.Exception(componentName, methodName, exception)` overload reads that
 unsupported getter; use `SystemLog.Exception(exception, message)` for context.
 
-`AsyncLogger` returns before writes finish and currently has no flush/drain or disposal contract. Application finalization does not imply that queued diagnostics have persisted. `TextBoxLogger` uses asynchronous composition, so detach its registration before the owning control is disposed. Follow the skill for decorator disposal and `MulticastLogger.Options` limitations.
+`AsyncLogger` returns before writes finish and currently has no flush/drain or disposal contract. Application finalization does not imply that queued diagnostics have persisted. `TextBoxLogger` uses asynchronous composition, so detach its registration before the owning control is disposed. Inspect decorator disposal and `MulticastLogger.Options` limitations before composing sinks.
 
 Use [resource scopes](resource-scopes.md) for registration cleanup and [scheduling](scheduling.md) for background job diagnostics. The [framework utility guidance](framework-utilities.md) keeps logging output separate from ordinary command-line results.
 

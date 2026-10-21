@@ -1,6 +1,6 @@
 # Object Spaces
 
-Use these practices when modeling, querying, hosting or profiling `Sphere10.Framework.ObjectSpaces`. Read the [project guide](../../../src/Sphere10.Framework/ObjectSpaces/README.md) for current APIs and limitations, and the [object-spaces skill](../../../agents/skills/object-spaces/SKILL.md) for task-specific source and validation paths. Select [serialization](serialization.md), [collections/storage](collections-and-storage.md), [resource scopes](resource-scopes.md) and [data sources](data-sources.md) as the work requires.
+Use these practices when modeling, querying, hosting or profiling `Sphere10.Framework.ObjectSpaces`. Read the [project guide](../../../src/Sphere10.Framework/ObjectSpaces/README.md) for current APIs, limitations and validation paths. Select [serialization](serialization.md), [collections/storage](collections-and-storage.md), [resource scopes](resource-scopes.md) and [data sources](data-sources.md) as the work requires.
 
 ## Model a reproducible store
 

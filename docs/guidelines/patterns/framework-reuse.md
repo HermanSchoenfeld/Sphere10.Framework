@@ -6,7 +6,7 @@ code, patterns and architecture, and its own development must use those foundati
 Use existing Sphere10 abstractions and utilities before introducing another
 implementation. Trace the real consumers and registration path, then extend
 the layer that owns the behavior. Apply the [coding guide](../code-styling.md)
-and the matching [repository skills](../../../agents/skills/README.md).
+and the relevant [engineering practices](../patterns-and-practices.md).
 
 - Before implementing anything, find and understand the existing code,
   abstractions, utilities, patterns and architecture that address the problem.

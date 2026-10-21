@@ -1,6 +1,6 @@
 # Framework Utilities
 
-Use the existing framework utility that covers the required semantics. Read the [tools skill](../../../agents/skills/tools-namespace/SKILL.md), [guard skill](../../../agents/skills/guards-and-scopes/SKILL.md) or [crypto skill](../../../agents/skills/crypto/SKILL.md) for the selected domain. The [framework reuse guide](framework-reuse.md) explains adoption of existing framework code.
+Use the existing framework utility that covers the required semantics. Read the [Tools reference](../../tools-reference.md) and [resource-scope practice](resource-scopes.md) for the selected domain. The [framework reuse guide](framework-reuse.md) explains adoption of existing framework code.
 
 ## Tools Namespace (Maximal Use)
 
@@ -186,7 +186,7 @@ if (buffer.Length < MinSize) throw new ArgumentException("Buffer too small");
 The framework provides its own crypto infrastructure in `Sphere10.Framework` (core) and `Sphere10.Framework.CryptoEx` (extended). **Prefer framework crypto over raw BCL crypto.**
 
 - **Hashing** — use `Hashers.Hash(CHF.SHA2_256, data)` or other `CHF` enum values. `Hashers` pools registered `IHashFunction` implementations for concurrent hashing. Register algorithms before hashing starts; registry replacement is not coordinated with concurrent hashing. Never use `System.Security.Cryptography.SHA256.Create()` directly in framework consumers.
-- **`CHF` enum** — canonical hash function identifiers: `SHA2_256`, `SHA2_512`, `Blake2b_256`, `Blake2b_128`, `SHA3_256`, etc. Enum membership does not guarantee an implementation is registered; extended algorithms require the owning module or an explicit registration. See the [crypto skill](../../../agents/skills/crypto/SKILL.md).
+- **`CHF` enum** — canonical hash function identifiers: `SHA2_256`, `SHA2_512`, `Blake2b_256`, `Blake2b_128`, `SHA3_256`, etc. Enum membership does not guarantee an implementation is registered; extended algorithms require the owning module or an explicit registration. See the [Tools reference](../../tools-reference.md).
 - **`Tools.Crypto`** — static tool for random bytes (`GenerateCryptographicallyRandomBytes`), password hashing, AES encryption, secure erase (`SecureErase`).
 - **Digital signatures** — `IDigitalSignatureScheme` / `StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey>` are in core `Sphere10.Framework`. Implementations: `Schnorr`, `ECDSA` (various curves), etc.
 - **Key derivation** — seeded key generation must remain deterministic (same seed → same key). Preserve the chosen scheme's existing derivation; ECDSA/Schnorr use `DigestRandomGenerator` seeded exclusively with the provided seed. The non-generic contract exposes `CreatePrivateKey`; generic schemes expose `GeneratePrivateKey`. Parameterless generation uses system entropy.

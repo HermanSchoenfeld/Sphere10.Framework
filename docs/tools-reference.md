@@ -275,8 +275,8 @@ public static class BorrowedStreamExample {
 
 ## Adding New Tools (For Contributors)
 
-Read the [tools-namespace skill](../agents/skills/tools-namespace/SKILL.md) and
-[Code Styling](guidelines/code-styling.md) before changing a utility.
+Read [Code Styling](guidelines/code-styling.md) and the
+[utility practice](guidelines/patterns/framework-utilities.md) before changing a utility.
 
 - Inspect the existing facade and its consumers first; extend it when it already
   owns the responsibility.
