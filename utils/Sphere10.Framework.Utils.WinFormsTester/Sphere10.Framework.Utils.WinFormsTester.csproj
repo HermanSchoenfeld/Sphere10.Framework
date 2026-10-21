@@ -40,6 +40,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="Screens\ChartGalleryScreen.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Screens\ChartGalleryScreen.Designer.cs"><DependentUpon>ChartGalleryScreen.cs</DependentUpon></Compile>
+		<Compile Update="Screens\ChartTestScreen.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Screens\ChartTestScreen.Designer.cs"><DependentUpon>ChartTestScreen.cs</DependentUpon></Compile>
+		<Compile Update="Screens\TelemetryChartTestScreen.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Screens\TelemetryChartTestScreen.Designer.cs"><DependentUpon>TelemetryChartTestScreen.cs</DependentUpon></Compile>
+		<Compile Update="Screens\Charts\ChartGalleryTile.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Screens\Charts\ChartGalleryTile.Designer.cs"><DependentUpon>ChartGalleryTile.cs</DependentUpon></Compile>
 		<Compile Update="Properties\Resources.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
