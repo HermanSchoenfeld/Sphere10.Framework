@@ -218,8 +218,6 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 
 	#region Form Properties
 
-	[Browsable(false)] protected ToolStripMenuItem PurchaseFullVersionToolStripMenuItem { get; private set; }
-
 	[Browsable(false)] protected ToolStripMenuItem HelpToolStripMenuItem { get; private set; }
 
 	[Browsable(false)] protected ToolStripMenuItem ScreensToolStripMenuItem => _screensMenuItem;
@@ -234,25 +232,7 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 
 	#region Form Methods
 
-	protected override void OnFirstActivated() {
-		base.OnFirstActivated();
-		if (!Tools.Runtime.IsDesignMode && !ApplicationExiting) {
-			try {
-				var licenseProvider = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseProvider>();
-				// Show/Hide register menu item based on what's happened with the user nag screen
-				if (licenseProvider.TryGetLicense(out var license) && license.License.Item.FeatureLevel == ProductLicenseFeatureLevelDTO.Free) {
-					if (PurchaseFullVersionToolStripMenuItem != null)
-						PurchaseFullVersionToolStripMenuItem.Visible = true;
-				} else {
-					if (PurchaseFullVersionToolStripMenuItem != null)
-						PurchaseFullVersionToolStripMenuItem.Visible = false;
-				}
-			} catch (ProductLicenseTamperedException error) {
-				ReportError(error);
-				Exit(true);
-			}
-		}
-	}
+
 
 	#endregion
 
@@ -344,16 +324,7 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 		}
 	}
 
-	protected virtual async void PurchaseFullVersion_Click(object sender, EventArgs e) {
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			var productLicenseEnforcer = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
-			productLicenseEnforcer.CalculateRights(out var nagMessage);
-			await ShowNagScreen(nagMessage);
-		}, out var error);
-		if (error != null) {
-			ReportError(error);
-		}
-	}
+
 
 	protected virtual void Exit_Click(object sender, EventArgs e) {
 		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
@@ -365,10 +336,11 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	}
 
 	protected virtual void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 			helpServices.ShowHelp();
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			ReportError(error);
 		}
 	}

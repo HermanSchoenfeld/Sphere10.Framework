@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -18,8 +18,8 @@
 
 //	public class WinFormsWinFormsApplicationProvider : ApplicationProvider, IApplicationIconProvider{
 
-//		public WinFormsWinFormsApplicationProvider(IProductInformationProvider productInformationProvider, IProductUsageServices productUsageServices, IProductInstancesCounter productInstancesCounter, ISettingsServices settingsServices, /*ILicenseServices licenseServices, IProductLicenseEnforcer productLicenseEnforcer,*/ IHelpServices helpServices, IUserInterfaceServices userInterfaceServices, IUserNotificationServices userNotificationServices, IWebsiteLauncher websiteLauncher, IAutoRunServices autoRunServices, IApplicationIconProvider applicationIconProvider)
-//			: base(productInformationProvider, productUsageServices, productInstancesCounter, settingsServices,/* licenseServices, productLicenseEnforcer,*/ helpServices, userInterfaceServices, userNotificationServices, websiteLauncher, autoRunServices) {
+//		public WinFormsWinFormsApplicationProvider(IProductInformationProvider productInformationProvider, IProductUsageServices productUsageServices, IProductInstancesCounter productInstancesCounter, ISettingsServices settingsServices, IHelpServices helpServices, IUserInterfaceServices userInterfaceServices, IUserNotificationServices userNotificationServices, IWebsiteLauncher websiteLauncher, IAutoRunServices autoRunServices, IApplicationIconProvider applicationIconProvider)
+//			: base(productInformationProvider, productUsageServices, productInstancesCounter, settingsServices,helpServices, userInterfaceServices, userNotificationServices, websiteLauncher, autoRunServices) {
 //			ApplicationIconProvider = applicationIconProvider;
 //		}
 

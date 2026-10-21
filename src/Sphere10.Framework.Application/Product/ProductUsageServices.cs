@@ -13,8 +13,6 @@ using System.ComponentModel;
 namespace Sphere10.Framework.Application;
 
 public class ProductUsageServices : IProductUsageServices {
-	private const string TamperCheckKey = "Alpha";
-	private const string TamperCheckValue = "CBAEA9E8-B883-4C38-80A2-E70973D4C273";
 
 
 	private readonly UsageSettings _userSettings;
@@ -28,8 +26,8 @@ public class ProductUsageServices : IProductUsageServices {
 		SettingsServices = settingsServices;
 		_userSettings = SettingsServices.UserSettings.Get<UsageSettings>();
 		_systemSettings = SettingsServices.SystemSettings.Get<UsageSettings>();
-		_userPropertiesFuture = Tools.Values.Future.LazyLoad(() => TamperCheckLoad(_userSettings.EncryptedPropertiesJson));
-		_systemPropertiesFuture = Tools.Values.Future.LazyLoad(() => TamperCheckLoad(_systemSettings.EncryptedPropertiesJson));
+		_userPropertiesFuture = Tools.Values.Future.LazyLoad(() => LoadEncryptedProperties(_userSettings.EncryptedPropertiesJson));
+		_systemPropertiesFuture = Tools.Values.Future.LazyLoad(() => LoadEncryptedProperties(_systemSettings.EncryptedPropertiesJson));
 	}
 
 	public ISettingsServices SettingsServices { get; set; }
@@ -107,21 +105,11 @@ public class ProductUsageServices : IProductUsageServices {
 		}
 	}
 
-	private IDictionary<string, object> TamperCheckLoad(string encryptedJson) {
 
-		// Removed 2024-02-29: causes license failures on edge-case scenarios involving usage of system > 1 but no encrypted settings written before
-		//if (string.IsNullOrWhiteSpace(encryptedJson))
-		//	if (NumberOfUsesBySystem > 1)
-		//		throw new ProductLicenseTamperedException();
 
-		var dict = encryptedJson != null ? Tools.Json.ReadFromString<IDictionary<string, object>>(encryptedJson) : new Dictionary<string, object> { [TamperCheckKey] = TamperCheckValue };
 
-		if (!dict.TryGetValue(TamperCheckKey, out var value) || !StringComparer.InvariantCulture.Equals(value, TamperCheckValue))
-			throw new ProductLicenseTamperedException();
-
-		return dict;
-	}
-
+	protected virtual IDictionary<string, object> LoadEncryptedProperties(string encryptedJson)
+		=> encryptedJson != null ? Tools.Json.ReadFromString<IDictionary<string, object>>(encryptedJson) : new Dictionary<string, object>();
 
 	public class UsageSettings : SettingsObject {
 		[DefaultValue(null)] public DateTime? FirstRunDate { get; set; }

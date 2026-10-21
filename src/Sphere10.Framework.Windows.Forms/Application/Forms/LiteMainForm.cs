@@ -42,7 +42,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	public LiteMainForm() {
 		System.Windows.Forms.Application.ThreadException += ApplicationOnThreadException;
 		InitializeComponent();
-		Nagged = false;
+		FirstActivationRaised = false;
 		NumberActivations = 0;
 	}
 
@@ -54,17 +54,17 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	#region Form Methods
 
-	protected virtual async void OnFirstActivated() {
-		if (!Tools.Runtime.IsDesignMode)
-			await EnforceLicense();
+
+
+	protected virtual void OnFirstActivated() {
 	}
 
 	// Shown every time window becomes active window
 	protected override void OnActivated(EventArgs e) {
 		NumberActivations++;
 		base.OnActivated(e);
-		if (!Nagged) {
-			Nagged = true;
+		if (!FirstActivationRaised) {
+			FirstActivationRaised = true;
 			if (!ApplicationExiting)
 				FireFirstActivatedEvent();
 		}
@@ -272,7 +272,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	private int NumberActivations { get; set; }
 
-	private bool Nagged { get; set; }
+	private bool FirstActivationRaised { get; set; }
 
 	#endregion
 
@@ -360,14 +360,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		}
 	}
 
-	public virtual Task ShowNagScreen(string nagMessage)
-		=> this.InvokeAsyncEx(async _ => {
-			var nagDialogInstance = Sphere10Framework.Instance.ServiceProvider.GetService<INagDialog>();
-			if (WindowState == FormWindowState.Minimized)
-				nagDialogInstance.StartPosition = FormStartPosition.CenterScreen;
-			nagDialogInstance.NagMessage = nagMessage;
-			await nagDialogInstance.ShowDialogAsync(this);
-		});
+
 
 
 	public virtual object PrimaryUIController {
@@ -450,10 +443,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	#region Auxillary Methods
 
-	private async Task EnforceLicense() {
-		var licenseEnforcer = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
-		await licenseEnforcer.EnforceLicense(false);
-	}
+
 
 	private void FireFirstActivatedEvent() {
 		OnFirstActivated();

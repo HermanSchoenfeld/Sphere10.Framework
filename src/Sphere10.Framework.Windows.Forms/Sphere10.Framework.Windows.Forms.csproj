@@ -152,7 +152,6 @@
 		<Compile Update="Controls\Logging\LogOutputReviewWizardScreen.Designer.cs">
 			<DependentUpon>LogOutputReviewWizardScreen.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Application\DRM\DRMAboutBox.cs" />
 		<Compile Update="Common\ImageAttachmentSelectorControl.cs" />
 		<Compile Update="Common\ImageAttachmentSelectorControl.Designer.cs">
 			<DependentUpon>ImageAttachmentSelectorControl.cs</DependentUpon>
@@ -177,17 +176,9 @@
 		<Compile Update="Application\Product\Controls\BasicContactDetailsControl.designer.cs">
 		  <DependentUpon>BasicContactDetailsControl.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Application\DRM\DRMNagDialog.cs" />
-		<Compile Update="Application\DRM\DRMProductActivationForm.cs" />
 		<Compile Update="Application\Product\ProductProductReportBugDialog.cs" />
 		<Compile Update="Application\Product\ProductProductRequestFeatureDialog.cs" />
 		<Compile Update="Application\Product\ProductProductSendCommentsDialog.cs" />
-		<Compile Update="Application\DRM\ProductExpirationDetailsControl.cs">
-		  <SubType>UserControl</SubType>
-		</Compile>
-		<Compile Update="Application\DRM\ProductExpirationDetailsControl.Designer.cs">
-		  <DependentUpon>ProductExpirationDetailsControl.cs</DependentUpon>
-		</Compile>
 		<Compile Update="Application\Product\Controls\WhoAreYouControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
@@ -199,10 +190,6 @@
 		<Compile Update="Forms\LiteMainForm.cs" />
 		<Compile Update="Forms\LiteMainForm.Designer.cs">
 			<DependentUpon>LiteMainForm.cs</DependentUpon>
-		</Compile>
-		<Compile Update="Forms\ProductActivationForm.cs" />
-		<Compile Update="Forms\ProductActivationForm.Designer.cs">
-			<DependentUpon>ProductActivationForm.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Forms\ServerPostBackForm.cs" />
 		<Compile Update="Forms\ServerPostBackForm.Designer.cs">
@@ -399,20 +386,12 @@
 			<SubType>Designer</SubType>
 			<DependentUpon>ApplicationBanner.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Application\DRM\ProductExpirationDetailsControl.resx">
-		  <SubType>Designer</SubType>
-		  <DependentUpon>ProductExpirationDetailsControl.cs</DependentUpon>
-		</EmbeddedResource>
 		<EmbeddedResource Update="Application\Product\Controls\WhoAreYouControl.resx">
 		  <SubType>Designer</SubType>
 		  <DependentUpon>WhoAreYouControl.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\LiteMainForm.resx">
 			<DependentUpon>LiteMainForm.cs</DependentUpon>
-		</EmbeddedResource>
-		<EmbeddedResource Update="Forms\ProductActivationForm.resx">
-			<SubType>Designer</SubType>
-			<DependentUpon>ProductActivationForm.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\ServerPostBackForm.resx">
 			<SubType>Designer</SubType>

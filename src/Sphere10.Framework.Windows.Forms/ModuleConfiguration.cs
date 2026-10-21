@@ -14,10 +14,8 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public class ModuleConfiguration : ModuleConfigurationBase {
 	public override void RegisterComponents(IServiceCollection serviceCollection) {
-		if (Sphere10Framework.Instance.Options.HasFlag(Sphere10FrameworkOptions.EnableDrm))
-			EnableDRM(serviceCollection);
-		else
-			DisableDRM(serviceCollection);
+		if (!serviceCollection.HasImplementationFor<IAboutBox>())
+			serviceCollection.AddTransient<IAboutBox, ProductAboutBox>();
 
 
 		// EnableHooks(serviceCollection);
@@ -101,18 +99,8 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 			serviceCollection.AddSingleton<IKeyboardHook, WindowsKeyboardHook>();
 	}
 
-	private void EnableDRM(IServiceCollection serviceCollection) {
 
-		if (!serviceCollection.HasImplementationFor<IAboutBox>())
-			serviceCollection.AddTransient<IAboutBox, DRMAboutBox>();
 
-		if (!serviceCollection.HasImplementationFor<INagDialog>())
-			serviceCollection.AddTransient<INagDialog, DRMNagDialog>();
-	}
 
-	private void DisableDRM(IServiceCollection serviceCollection) {
-		if (!serviceCollection.HasImplementationFor<IAboutBox>())
-			serviceCollection.AddTransient<IAboutBox, ProductAboutBox>();
-	}
 }
 

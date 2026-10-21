@@ -83,19 +83,11 @@ internal static class Sphere10AssemblyAttributesHelper {
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().CompanyNumber);
 	}
 
-	public static bool HasAssemblyDefaultProductKey() {
-		return Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductLicenseAttribute>(false).Any();
-	}
 
-	public static ProductLicenseActivationDTO GetAssemblyDefaultProductLicenseActivation() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductLicenseAttribute>(false);
-		return !attributes.Any() ? null : attributes.First().License;
-	}
 
-	public static string GetProductDrmApi() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductDrmApi>(false);
-		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().ApiUrl);
-	}
+
+
+
 
 
 	//public static int GetHelpTopic(ApplicationScreen screen) {

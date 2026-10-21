@@ -114,27 +114,7 @@ public class ApplicationTaskBaseTests {
 		Assert.That(actual, Is.SameAs(failure));
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public async Task LicenseInitializerWaitsForTheActualVerifier(bool synchronous) {
-		var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		using var cleanup = Tools.Scope.ExecuteOnDispose(() => release.TrySetResult());
-		using var cancellation = new CancellationTokenSource();
-		var verifier = new LicenseVerifier(token => {
-			Assert.That(token, Is.EqualTo(synchronous ? CancellationToken.None : cancellation.Token));
-			started.SetResult();
-			return release.Task;
-		});
-		var initializer = new VerifyLicenseInitializer(verifier, null);
-		var operation = synchronous ? Task.Run(initializer.Initialize) : initializer.InitializeAsync(cancellation.Token);
-		await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		Assert.That(operation.IsCompleted, Is.False);
-		Assert.That(initializer.Priority, Is.EqualTo(int.MaxValue));
-		Assert.That(initializer.Parallelizable, Is.True);
-		release.SetResult();
-		await operation.WaitAsync(TimeSpan.FromSeconds(5));
-	}
+
 
 	private static void ExecuteSync(bool finalizer, Action action) {
 		if (finalizer)
@@ -171,9 +151,7 @@ public class ApplicationTaskBaseTests {
 		public override Task FinalizeAsync(CancellationToken cancellationToken = default) => action(cancellationToken);
 	}
 
-	private sealed class LicenseVerifier(Func<CancellationToken, Task> action) : IBackgroundLicenseVerifier {
-		public Task VerifyLicense(CancellationToken cancellationToken) => action(cancellationToken);
-	}
+
 
 	private sealed class RejectingSynchronizationContext : SynchronizationContext {
 		public override void Post(SendOrPostCallback callback, object state)

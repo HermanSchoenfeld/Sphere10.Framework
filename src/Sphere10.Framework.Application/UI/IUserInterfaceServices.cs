@@ -28,8 +28,6 @@ public interface IUserInterfaceServices {
 
 	string Status { get; set; }
 
-	Task ShowNagScreen(string nagMessage);
-
 	object PrimaryUIController { get; }
 
 	Task ShowSendCommentDialog();

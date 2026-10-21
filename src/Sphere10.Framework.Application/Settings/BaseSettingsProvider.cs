@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using static Sphere10.Framework.Application.ProductLicenseEnforcer;
+
 
 namespace Sphere10.Framework.Application;
 

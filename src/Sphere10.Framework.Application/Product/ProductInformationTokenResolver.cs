@@ -32,8 +32,6 @@ public class ProductInformationTokenResolver : ITokenResolver {
 			"COMPANYURL" => info.CompanyUrl,
 			"PRODUCTURL" => info.ProductUrl,
 			"PRODUCTPURCHASEURL" => info.ProductPurchaseUrl,
-			"PRODUCTDRMAPIURL" => info.ProductDrmApiUrl,
-			"DEFAULTPRODUCTKEY" => info.DefaultProductLicense?.License?.Item?.ProductKey,
 			_ => null
 		};
 		return value != null;

@@ -12,8 +12,6 @@ namespace Sphere10.Framework.Application;
 
 [Flags]
 public enum Sphere10FrameworkOptions {
-	EnableDrm = 1 << 0,
-	BackgroundLicenseVerify = 1 << 1,
 	EnsureSystemDataDirGloballyAccessible = 1 << 2,
 	Default = 0,
 }

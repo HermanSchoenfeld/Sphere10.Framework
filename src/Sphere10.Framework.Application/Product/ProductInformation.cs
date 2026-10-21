@@ -26,8 +26,6 @@ public class ProductInformation : SettingsObject {
 	public string AuthorName { get; set; }
 	public string AuthorEmail { get; set; }
 	public string ProductPurchaseUrl { get; set; }
-	public ProductLicenseActivationDTO DefaultProductLicense { get; set; }
-	public string ProductDrmApiUrl { get; set; }
 	public ICollection<Tuple<HelpType, string>> HelpResources;
 }
 

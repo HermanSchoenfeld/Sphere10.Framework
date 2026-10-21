@@ -47,8 +47,6 @@ public abstract class UserInterfaceServicesDecorator<TConcrete> : IUserInterface
 
 	public virtual void Exit(bool force = false) => InternalServices.Exit(force);
 
-	public virtual Task ShowNagScreen(string nagMessage) => InternalServices.ShowNagScreen(nagMessage);
-
 	public virtual Task ShowSendCommentDialog() => InternalServices.ShowSendCommentDialog();
 
 	public virtual Task ShowSubmitBugReportDialog() => InternalServices.ShowSubmitBugReportDialog();

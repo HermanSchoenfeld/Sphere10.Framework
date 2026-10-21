@@ -99,7 +99,6 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 	}
 
 	public virtual void Exit(bool force = false) => throw new NotSupportedException("The platform must implement application exit.");
-	public virtual Task ShowNagScreen(string nagMessage) => throw new NotSupportedException();
 	public virtual Task ShowSendCommentDialog() => throw new NotSupportedException();
 	public virtual Task ShowSubmitBugReportDialog() => throw new NotSupportedException();
 	public virtual Task ShowRequestFeatureDialog() => throw new NotSupportedException();
