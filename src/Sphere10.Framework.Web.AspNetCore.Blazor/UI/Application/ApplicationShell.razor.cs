@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -23,7 +24,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 /// Renders a circuit-scoped application workspace. Pass query parameters from the containing routable page
 /// to support bookmarks and browser history. Component instances stay mounted until their screens close.
 /// </summary>
-public partial class ApplicationShell : ComponentBase, IDisposable {
+public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDisposable {
 	private (string BlockId, string ScreenId, Guid? InstanceId)? _lastRequest;
 	private readonly CancellationTokenSource _lifetimeCancellation = new();
 	private CancellationTokenSource _routeCancellation;
@@ -40,6 +41,14 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	private bool _navigationOpen;
 	private bool _focusNavigationToggle;
 	private IDisposable _controllerScope;
+	private IJSObjectReference _startupSettingsModule;
+	private string _startupSettingsKey;
+	private bool _startupSettingsLoaded;
+	private bool _readingStartupSettings;
+	private bool _deferredStartup;
+	private bool _savingStartupScreen;
+	private string _startupSettingsError;
+	private Task _startupSettingsLoad = Task.CompletedTask;
 
 	[Inject] public IBlazorApplication Application { get; set; }
 
@@ -52,6 +61,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 
 	[Inject] public NavigationManager Navigation { get; set; }
 
+	[Inject] public IJSRuntime JSRuntime { get; set; }
+
 	[Parameter] public bool ShowScreenModeSelector { get; set; }
 
 	/// <summary>Activates a block's default screen when its dock button is selected; false only browses that block's navigation.</summary>
@@ -61,6 +72,9 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	[Parameter] public string Title { get; set; } = "Application";
 
 	[Parameter] public string NavigationPath { get; set; } = "application";
+
+	/// <summary>Optional stable application-qualified key for this browser's startup screen preference. No key leaves startup unchanged.</summary>
+	[Parameter] public string StartupScreenSettingsKey { get; set; }
 
 	/// <summary>Optional selected command in the active block's sidebar; null uses the active screen registration.</summary>
 	/// <remarks>Use this for guarded subviews within a retained screen. Update it only after a subview transition succeeds.</remarks>
@@ -100,6 +114,13 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		if (Application?.IsExiting == true || Application?.HasExited == true)
 			return;
 		ResolveNavigationPath(NavigationPath, nameof(NavigationPath));
+		var settingsKey = string.IsNullOrWhiteSpace(StartupScreenSettingsKey) ? null : StartupScreenSettingsKey;
+		if (_startupSettingsKey != settingsKey) {
+			_startupSettingsKey = settingsKey;
+			_startupSettingsLoaded = settingsKey == null;
+			_startupSettingsError = null;
+			ScreenHost.SetStartupScreen(null);
+		}
 		var request = (BlockId, ScreenId, InstanceId);
 		if (_lastRequest == request)
 			return;
@@ -111,22 +132,25 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		_routeCancellation = new CancellationTokenSource();
 		var token = _routeCancellation.Token;
 		var version = _navigationVersion;
+		_deferredStartup = false;
 
 		if (string.IsNullOrEmpty(request.BlockId) && string.IsNullOrEmpty(request.ScreenId) && !request.InstanceId.HasValue) {
-			try {
+			if (_startupSettingsKey != null && !_startupSettingsLoaded) {
+				_deferredStartup = true;
+				return;
+			}
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync<OperationCanceledException>(async () => {
 				await ScreenHost.InitializeAsync(token);
 				if (!_disposed && !token.IsCancellationRequested && version == _navigationVersion)
 					_synchronizeLocation = true;
-			} catch (OperationCanceledException) when (token.IsCancellationRequested) {
-				// A newer route superseded startup.
-			}
+			}, _ => token.IsCancellationRequested);
 			return;
 		}
 
 		var block = string.IsNullOrEmpty(request.BlockId)
 			? ActiveBlock ?? Blocks.FirstOrDefault()
 			: Blocks.FirstOrDefault(candidate => candidate.Id == request.BlockId);
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync<OperationCanceledException>(async () => {
 			if (block == null) {
 				await ScreenHost.InitializeAsync(token);
 				if (!_disposed && !token.IsCancellationRequested && version == _navigationVersion && !string.IsNullOrEmpty(request.BlockId))
@@ -153,13 +177,21 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 			await ScreenHost.InitializeAsync(token);
 			if (!_disposed && !token.IsCancellationRequested && version == _navigationVersion)
 				_synchronizeLocation = true;
-		} catch (OperationCanceledException) when (token.IsCancellationRequested) {
-			// A newer browser navigation superseded this request, or the shell was disposed.
-		}
+		}, capturedException => token.IsCancellationRequested);
 	}
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
 		if (Application?.IsExiting == true || Application?.HasExited == true)
 			return;
+		if (!_startupSettingsLoaded && !_readingStartupSettings && _startupSettingsKey != null) {
+			_startupSettingsLoad = LoadStartupScreenAsync();
+			await _startupSettingsLoad;
+			if (_disposed)
+				return;
+			if (!_startupSettingsLoaded && _startupSettingsKey != null) {
+				StateHasChanged();
+				return;
+			}
+		}
 		if (_synchronizeLocation) {
 			_synchronizeLocation = false;
 			SynchronizeLocation(_replaceSynchronizedLocation);
@@ -171,12 +203,89 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 	}
 
 	public void Dispose() {
+		if (_disposed)
+			return;
 		_disposed = true;
 		_lifetimeCancellation.Cancel();
 		_lifetimeCancellation.Dispose();
 		CancelRouteRequest();
 		Application.Changed -= OnHostChanged;
 		_controllerScope?.Dispose();
+	}
+
+	public async ValueTask DisposeAsync() {
+		Dispose();
+		await _startupSettingsLoad;
+		if (_startupSettingsModule != null)
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => {
+				await _startupSettingsModule.DisposeAsync();
+			});
+	}
+
+	private async Task LoadStartupScreenAsync() {
+		_readingStartupSettings = true;
+		var key = _startupSettingsKey;
+		var superseded = false;
+		try {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+				_startupSettingsModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/UI/Application/ApplicationShell.razor.js");
+				if (_disposed || key != _startupSettingsKey) {
+					superseded = true;
+					return;
+				}
+				var identity = await _startupSettingsModule.InvokeAsync<BlazorApplicationStartupScreen>("ReadStartupScreen", key);
+				if (!_disposed && key == _startupSettingsKey)
+					ScreenHost.SetStartupScreen(identity);
+			}, exception => exception is JSException or InvalidOperationException);
+			if (error != null && !_disposed)
+				_startupSettingsError = "The startup screen preference could not be read. The application's default screen will be used.";
+		} finally {
+			_readingStartupSettings = false;
+			if (key == _startupSettingsKey)
+				_startupSettingsLoaded = true;
+		}
+		if (superseded || _disposed || Application?.IsExiting == true || Application?.HasExited == true)
+			return;
+		if (_deferredStartup) {
+			_deferredStartup = false;
+			try {
+				await ScreenHost.InitializeAsync(_lifetimeCancellation.Token);
+			} catch (OperationCanceledException) when (_disposed) {
+				return;
+			}
+			_synchronizeLocation = true;
+		}
+		StateHasChanged();
+	}
+
+	private string StartupScreenUnavailableReason(BlazorApplicationScreenSession screen) => _startupSettingsKey == null
+		? "Startup preferences are not enabled for this application."
+		: !_startupSettingsLoaded ? "Startup preferences are still loading."
+		: _startupSettingsModule == null ? "This browser cannot store startup screen preferences." : ScreenHost.GetStartupScreenUnavailableReason(screen);
+
+	/// <summary>Saves a restorable retained screen as this browser's startup choice, retaining the previous choice if storage fails.</summary>
+	public async Task MakeStartupScreenAsync(Guid id) {
+		var screen = ScreenHost.Screens.FirstOrDefault(candidate => candidate.Id == id);
+		if (_disposed || _savingStartupScreen || StartupScreenUnavailableReason(screen) != null)
+			return;
+		_savingStartupScreen = true;
+		var key = _startupSettingsKey;
+		var identity = ScreenHost.GetStartupScreenIdentity(screen);
+		try {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+				await _startupSettingsModule.InvokeVoidAsync("WriteStartupScreen", key, identity);
+				if (!_disposed && key == _startupSettingsKey) {
+					ScreenHost.SetStartupScreen(identity);
+					_startupSettingsError = null;
+				}
+			}, exception => exception is JSException or InvalidOperationException);
+			if (error != null && !_disposed)
+				_startupSettingsError = "The startup screen preference could not be saved. The previous choice is unchanged.";
+		} finally {
+			_savingStartupScreen = false;
+			if (!_disposed)
+				StateHasChanged();
+		}
 	}
 
 	private void ToggleNavigation() => _navigationOpen = !_navigationOpen;
@@ -203,13 +312,11 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		}
 		CancelRouteRequest();
 		var token = _lifetimeCancellation.Token;
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync<OperationCanceledException>(async () => {
 			await ScreenHost.SelectBlockAsync(block.Id, token);
 			if (!_disposed)
 				_routeError = null;
-		} catch (OperationCanceledException) when (token.IsCancellationRequested) {
-			// Closing the shell cancels pending navigation selection.
-		}
+		}, capturedException => token.IsCancellationRequested);
 	}
 
 	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) => RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
@@ -259,15 +366,13 @@ public partial class ApplicationShell : ComponentBase, IDisposable {
 		CancelRouteRequest();
 		var version = _navigationVersion;
 		var token = _lifetimeCancellation.Token;
-		try {
+		await Tools.Exceptions.ExecuteCapturingExceptionAsync<OperationCanceledException>(async () => {
 			if (await action(token) && !_disposed && version == _navigationVersion) {
 				_routeError = null;
 				_navigationOpen = false;
 				SynchronizeLocation(replace);
 			}
-		} catch (OperationCanceledException) when (token.IsCancellationRequested) {
-			// Disposing the workspace cancels pending menu actions without reopening its route.
-		}
+		}, capturedException => token.IsCancellationRequested);
 	}
 	private void SynchronizeLocation(bool replace) {
 		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)

@@ -84,7 +84,7 @@ public class DemoPluginLifecycleTests {
 				var rendered = await renderer.RenderComponentAsync<Workspace>();
 				return rendered.ToHtmlString();
 			});
-			Assert.That(html, Does.Contain("ApplicationBlock workspace"));
+			Assert.That(html, Does.Contain("Loading workspace"), "Prerender defers default-screen selection until browser startup preferences can be read.");
 			Assert.That(html, Does.Match("data-plugin-initializer-count[^>]*>Plugins initialized: 0</span>"));
 			Assert.That(application.IsInitialized, Is.False);
 			Assert.That(status.InitializedPlugins, Is.Empty);

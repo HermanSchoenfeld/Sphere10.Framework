@@ -26,6 +26,7 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 	private readonly List<IBlazorApplicationMenu> _ownedMenus = new();
 	private readonly List<IBlazorApplicationMenuItem> _componentToolBarItems = new();
 	private BlazorApplicationMenu _toolbarOwner;
+	private readonly bool _hasActivationState;
 
 	internal BlazorApplicationScreenSession(IBlazorApplicationBlock block, BlazorScreenMenuItem menuItem, ApplicationScreenDefinition definition, BlazorApplicationScreenActivation activation = null) {
 		Guard.ArgumentNotNull(block, nameof(block));
@@ -42,6 +43,7 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 				parameters[parameter.Key] = parameter.Value;
 		Parameters = new ReadOnlyDictionary<string, object>(parameters);
 		InstanceKey = ActivationMode == ScreenActivationMode.MultiInstance ? activation?.InstanceKey : null;
+		_hasActivationState = activation != null && (activation.Parameters.Count > 0 || !string.IsNullOrEmpty(activation.InstanceKey));
 	}
 
 	public Guid Id { get; }
@@ -71,6 +73,10 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 	public string Title => Screen?.Title ?? _registeredTitle;
 
 	public bool HasUnsavedChanges => Screen?.HasUnsavedChanges ?? false;
+
+	public bool CanRestoreAtStartup => !_hasActivationState && ScreenKind == ScreenKind.Normal && (Screen?.CanRestoreAtStartup ?? false);
+
+	public string Icon => MenuItem.Icon;
 
 	public IBlazorApplicationMenu[] Menus {
 		get {

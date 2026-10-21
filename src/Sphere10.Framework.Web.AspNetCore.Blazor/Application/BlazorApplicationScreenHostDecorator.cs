@@ -43,6 +43,12 @@ public abstract class BlazorApplicationScreenHostDecorator<TConcrete> : MultiApp
 	public virtual Task AttachScreenAsync(Guid id, IBlazorApplicationScreen component, CancellationToken cancellationToken = default) => InternalHost.AttachScreenAsync(id, component, cancellationToken);
 	public virtual void DetachScreen(Guid id, IBlazorApplicationScreen component) => InternalHost.DetachScreen(id, component);
 	public virtual void NotifyScreenChanged(Guid id) => InternalHost.NotifyScreenChanged(id);
+	public virtual BlazorApplicationStartupScreen StartupScreen => InternalHost.StartupScreen;
+	public virtual bool CanMakeStartupScreen(BlazorApplicationScreenSession screen) => InternalHost.CanMakeStartupScreen(screen);
+	public virtual string GetStartupScreenUnavailableReason(BlazorApplicationScreenSession screen) => InternalHost.GetStartupScreenUnavailableReason(screen);
+	public virtual bool IsStartupScreen(BlazorApplicationScreenSession screen) => InternalHost.IsStartupScreen(screen);
+	public virtual BlazorApplicationStartupScreen GetStartupScreenIdentity(BlazorApplicationScreenSession screen) => InternalHost.GetStartupScreenIdentity(screen);
+	public virtual bool SetStartupScreen(BlazorApplicationStartupScreen identity) => InternalHost.SetStartupScreen(identity);
 }
 
 public abstract class BlazorApplicationScreenHostDecorator : BlazorApplicationScreenHostDecorator<IBlazorApplicationScreenHost> {

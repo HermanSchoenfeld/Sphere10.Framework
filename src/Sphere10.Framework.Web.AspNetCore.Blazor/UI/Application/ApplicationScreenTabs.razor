@@ -19,7 +19,10 @@
 					tabindex="@(session == ActiveSession || ActiveSession == null && session == Sessions.FirstOrDefault() ? 0 : -1)"
 					disabled="@_closing" @onclick="() => SelectAsync(session.Id)" @onkeydown="args => KeyDownAsync(session.Id, args)"
 					@onmouseup="args => AuxiliaryClickAsync(session.Id, args)" @onmouseup:preventDefault="true">
-					<span>@session.Title</span>
+					@if (!string.IsNullOrEmpty(session.Icon)) {
+						<span class="sphere10-tab-icon @session.Icon" aria-hidden="true"></span>
+					}
+					<span class="sphere10-tab-title">@session.Title</span>
 					@if (session.Screen?.HasUnsavedChanges == true) {
 						<span class="sphere10-tab-dirty" aria-hidden="true" title="Unsaved changes">●</span>
 					}
@@ -33,8 +36,22 @@
 			</div>
 		}
 	</div>
+	<label class="sphere10-open-screens">Open Screens
+		<select @key="_openScreenSelectionVersion" aria-label="Open Screens" value="@(ActiveSession?.Id.ToString() ?? string.Empty)" @onchange="SelectOpenScreenAsync" disabled="@_closing">
+			@if (ActiveSession == null) {
+				<option value="" disabled>Select an open screen</option>
+			}
+			@foreach (var option in GetOpenScreenOptions()) {
+				<option value="@option.Screen.Id">@option.Title</option>
+			}
+		</select>
+	</label>
 	@if (_context.HasValue && Sessions.Any(session => session.Id == _context.Value)) {
 		<div class="sphere10-tab-context" role="group" aria-label="Tab commands" @onkeydown="DismissContext">
+			@{ var contextSession = Sessions.First(session => session.Id == _context.Value); }
+			<button type="button" role="menuitemcheckbox" aria-checked="@(IsStartupScreen?.Invoke(contextSession) == true ? "true" : "false")"
+				title="@(StartupUnavailableReason?.Invoke(contextSession))" disabled="@(_closing || SavingStartupScreen || StartupUnavailableReason == null || StartupUnavailableReason(contextSession) != null)"
+				@onclick="() => MakeStartupAsync(contextSession.Id)">@(IsStartupScreen?.Invoke(contextSession) == true ? "✓ " : string.Empty)Make Startup Screen</button>
 			<button type="button" disabled="@(_closing || Sessions.Any(session => session.Id == _context.Value && session.IsPermanent))" @onclick="() => CloseAsync(new[] { _context.Value })">Close</button>
 			<button type="button" disabled="@_closing" @onclick="() => CloseAsync(Sessions.Where(session => session.Id != _context.Value).Select(session => session.Id).ToArray())">Close other screens</button>
 			<button type="button" disabled="@_closing" @onclick="() => CloseAsync(Sessions.Select(session => session.Id).ToArray())">Close all screens</button>
@@ -49,6 +66,7 @@
 	private Guid? _context;
 	private bool _focusSelection;
 	private bool _closing;
+	private int _openScreenSelectionVersion;
 
 	[Parameter] public BlazorApplicationScreenSession[] Sessions { get; set; } = Array.Empty<BlazorApplicationScreenSession>();
 
@@ -59,6 +77,14 @@
 	[Parameter] public EventCallback<Guid[]> OnClose { get; set; }
 
 	[Parameter] public EventCallback<(Guid SessionId, int Index)> OnReorder { get; set; }
+
+	[Parameter] public EventCallback<Guid> OnMakeStartup { get; set; }
+
+	[Parameter] public Func<BlazorApplicationScreenSession, bool> IsStartupScreen { get; set; }
+
+	[Parameter] public Func<BlazorApplicationScreenSession, string> StartupUnavailableReason { get; set; }
+
+	[Parameter] public bool SavingStartupScreen { get; set; }
 
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Sessions, nameof(Sessions));
@@ -78,6 +104,37 @@
 		if (_closing)
 			return;
 		await OnSelect.InvokeAsync(id);
+		_focusSelection = true;
+	}
+
+	private (BlazorApplicationScreenSession Screen, string Title)[] GetOpenScreenOptions() {
+		var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
+		return Sessions.Where(screen => screen.ScreenKind == Sphere10.Framework.Application.UI.ScreenKind.Normal).Select(screen => {
+			var title = string.IsNullOrWhiteSpace(screen.Title) ? "Untitled Screen" : screen.Title;
+			occurrences.TryGetValue(title, out var count);
+			occurrences[title] = ++count;
+			return (screen, count == 1 ? title : $"{title} ({count})");
+		}).ToArray();
+	}
+
+	private async Task SelectOpenScreenAsync(ChangeEventArgs args) {
+		if (!Guid.TryParse(args.Value?.ToString(), out var id)
+			|| !Sessions.Any(screen => screen.Id == id && screen.ScreenKind == Sphere10.Framework.Application.UI.ScreenKind.Normal))
+			return;
+		try {
+			await SelectAsync(id);
+		} finally {
+			// A veto keeps the same model value, but the browser has already selected the attempted option.
+			_openScreenSelectionVersion++;
+			StateHasChanged();
+		}
+	}
+
+	private async Task MakeStartupAsync(Guid id) {
+		if (_closing || SavingStartupScreen)
+			return;
+		await OnMakeStartup.InvokeAsync(id);
+		_context = null;
 		_focusSelection = true;
 	}
 

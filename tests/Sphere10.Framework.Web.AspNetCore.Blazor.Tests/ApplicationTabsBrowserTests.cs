@@ -66,6 +66,29 @@ public class ApplicationTabsBrowserTests {
 	}
 
 	[Test]
+	public async Task OpenScreensSelectorRestoresItsSelectedOptionWhenTheScreenRejectsNavigation() {
+		var menu = _page.GetByRole(AriaRole.Navigation, new() { Name = "Workspace menus", Exact = true });
+		await menu.GetByRole(AriaRole.Button, new() { Name = "Single-instance screen", Exact = true }).ClickAsync();
+		var editor = _page.GetByRole(AriaRole.Tab, new() { Name = "Single-instance screen", Exact = true });
+		await Assertions.Expect(editor).ToHaveAttributeAsync("aria-selected", "true");
+		var selector = _page.GetByRole(AriaRole.Combobox, new() { Name = "Open Screens", Exact = true });
+		var originalValue = await selector.InputValueAsync();
+		await _page.GetByRole(AriaRole.Textbox, new() { Name = "Session note", Exact = true }).FillAsync("Keep this guarded screen selected");
+		await _page.GetByText("Unsaved changes — navigation is blocked.", new() { Exact = true }).WaitForAsync();
+
+		await selector.SelectOptionAsync(new SelectOptionValue { Label = "Overview" });
+
+		await Assertions.Expect(editor).ToHaveAttributeAsync("aria-selected", "true");
+		await Assertions.Expect(selector).ToHaveValueAsync(originalValue);
+		await _page.GetByRole(AriaRole.Tabpanel, new() { Name = "Single-instance screen", Exact = true })
+			.GetByRole(AriaRole.Button, new() { Name = "Discard changes", Exact = true }).ClickAsync();
+		await _page.GetByText("No unsaved changes.", new() { Exact = true }).WaitForAsync();
+		await selector.SelectOptionAsync(new SelectOptionValue { Label = "Overview" });
+		await Assertions.Expect(_page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+		Assert.That(await selector.InputValueAsync(), Is.Not.EqualTo(originalValue));
+	}
+
+	[Test]
 	public async Task CommandsMergeTabsRetainStateAndBatchCloseHonorsGuard() {
 		var toolbar = _page.GetByRole(AriaRole.Toolbar, new() { Name = "Application toolbar" });
 		var workspaceMenu = _page.GetByRole(AriaRole.Navigation, new() { Name = "Workspace menus", Exact = true });
