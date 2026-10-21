@@ -10,7 +10,9 @@ using System;
 using Win32Exception = System.ComponentModel.Win32Exception;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,7 +76,55 @@ public class WindowsNetworkUtilTests {
 	public async Task CancellationStopsBeforeNativeEndpointOrAdapterReads() {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		await Assert.ThatAsync(async () => await Tools.Windows.Network.GetEndpointsAsync(true, AddressFamily.InterNetwork, cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
-		await Assert.ThatAsync(async () => await Tools.Windows.Network.GetInterfacesAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		var endpoints = Tools.Windows.Network.GetEndpointsAsync(true, AddressFamily.InterNetwork, cancellation.Token);
+		var interfaces = Tools.Windows.Network.GetInterfacesAsync(cancellation.Token);
+		await Assert.ThatAsync(async () => await endpoints, Throws.InstanceOf<OperationCanceledException>().With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cancellation.Token));
+		await Assert.ThatAsync(async () => await interfaces, Throws.InstanceOf<OperationCanceledException>().With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cancellation.Token));
+		Assert.That(endpoints.Status, Is.EqualTo(TaskStatus.Canceled), "Canceling enumeration must not report success or turn expected cancellation into a fault.");
+		Assert.That(interfaces.Status, Is.EqualTo(TaskStatus.Canceled), "The caller must receive cancellation rather than an empty interface inventory.");
+	}
+
+	[Test]
+	public async Task CancellationDuringANativeReadWaitsForCleanupAndDoesNotThrowInTheWorker() {
+		using var cancellation = new CancellationTokenSource();
+		using var release = new ManualResetEventSlim();
+		using var finishRead = Tools.Scope.ExecuteOnDispose(release.Set);
+		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var workerThread = 0;
+		var workerCancellationExceptions = 0;
+		var cleanedUp = false;
+		EventHandler<FirstChanceExceptionEventArgs> observe = (_, args) => {
+			if (args.Exception is OperationCanceledException && Environment.CurrentManagedThreadId == Volatile.Read(ref workerThread))
+				Interlocked.Increment(ref workerCancellationExceptions);
+		};
+		Task<WindowsNetworkInterface[]> pending;
+		AppDomain.CurrentDomain.FirstChanceException += observe;
+		using (Tools.Scope.ExecuteOnDispose(() => AppDomain.CurrentDomain.FirstChanceException -= observe)) {
+			pending = new WindowsNetworkUtil().GetInterfacesAsync(() => {
+				Volatile.Write(ref workerThread, Environment.CurrentManagedThreadId);
+				using var cleanup = Tools.Scope.ExecuteOnDispose(() => cleanedUp = true);
+				entered.TrySetResult();
+				release.Wait();
+				return Array.Empty<NetworkInterface>();
+			}, cancellation.Token);
+			await entered.Task.WaitAsync(TimeSpan.FromSeconds(20));
+			cancellation.Cancel();
+			Assert.That(pending.IsCompleted, Is.False, "Cancellation cannot finish the operation while its synchronous native read still owns work.");
+			release.Set();
+			Assert.That(await Task.WhenAny(pending, Task.Delay(TimeSpan.FromSeconds(20))), Is.SameAs(pending));
+			Assert.That(pending.Status, Is.EqualTo(TaskStatus.Canceled));
+			Assert.That(cleanedUp, Is.True);
+			Assert.That(workerCancellationExceptions, Is.Zero, "Expected cancellation must not throw from the synchronous enumeration worker.");
+		}
+		await Assert.ThatAsync(async () => await pending, Throws.InstanceOf<OperationCanceledException>()
+			.With.Property(nameof(OperationCanceledException.CancellationToken)).EqualTo(cancellation.Token));
+	}
+
+	[Test]
+	public async Task NativeReadFailuresRemainFaultedWithTheOriginalException() {
+		var expected = new NetworkInformationException(5);
+		var pending = new WindowsNetworkUtil().GetInterfacesAsync(() => throw expected, CancellationToken.None);
+		await Assert.ThatAsync(async () => await pending, Throws.Exception.SameAs(expected));
+		Assert.That(pending.Status, Is.EqualTo(TaskStatus.Faulted));
 	}
 }
