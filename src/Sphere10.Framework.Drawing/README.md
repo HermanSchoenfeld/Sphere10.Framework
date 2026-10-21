@@ -6,6 +6,12 @@
 
 Color and rectangle geometry helpers can be used across platforms. Image, icon, graphics-path, codec, and GDI+ drawing operations depend on Windows through System.Drawing.Common and declare that requirement with SupportedOSPlatform attributes. Image-header detection handles streams that return fewer bytes per read.
 
+The pure `ResizeAlignment` and `ResizeMethod` enums are defined in Core in the
+existing `Sphere10.Framework` namespace. Drawing forwards their former assembly
+identity for existing consumers. Browser controls can therefore reuse the same
+layout vocabulary without referencing `System.Drawing`; bitmap resizing still
+uses Drawing's existing image APIs.
+
 ## 📦 Installation
 
 ```bash
