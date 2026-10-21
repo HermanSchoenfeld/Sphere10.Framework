@@ -103,9 +103,10 @@ public class CrudReferencePicker : UserControl {
 	private async Task LoadItemsInternalAsync() {
 		_loading = true;
 		using var LoadingScope = Tools.Scope.ExecuteOnDispose(() => _loading = false);
-		try {
+		var Error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await _binding.BindAsync(Grid);
-		} catch (Exception Error) {
+		});
+		if (Error != null) {
 			LoadError = Error;
 			if (!IsDisposed)
 				_status.Text = $"Unable to load records: {Error.Message}";

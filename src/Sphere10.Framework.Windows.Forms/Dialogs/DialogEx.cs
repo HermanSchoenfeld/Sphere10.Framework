@@ -220,37 +220,29 @@ public partial class DialogEx : FormEx {
 	}
 
 	private async void button1_Click(object sender, EventArgs e) {
-		try {
+		var capturedError = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await OnProcessButtonAsync(DialogExResult.Button1);
-		} catch (Exception) {
-			//
-		}
+		});
 	}
 
 	private async void button2_Click(object sender, EventArgs e) {
-		try {
+		var capturedError = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await OnProcessButtonAsync(DialogExResult.Button2);
-		} catch (Exception) {
-			//
-		}
+		});
 
 	}
 
 	private async void button3_Click(object sender, EventArgs e) {
-		try {
+		var capturedError = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await OnProcessButtonAsync(DialogExResult.Button3);
-		} catch (Exception) {
-			//
-		}
+		});
 
 	}
 
 	private async void button4_Click(object sender, EventArgs e) {
-		try {
+		var capturedError = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await OnProcessButtonAsync(DialogExResult.Button4);
-		} catch (Exception) {
-			//
-		}
+		});
 
 	}
 

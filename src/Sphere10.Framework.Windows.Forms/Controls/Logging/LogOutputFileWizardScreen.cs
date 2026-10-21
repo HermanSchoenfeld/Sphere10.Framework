@@ -15,15 +15,13 @@ public partial class LogOutputFileWizardScreen : LogOutputWizardScreen {
 	public LogOutputFileWizardScreen() => InitializeComponent();
 
 	public override Task<Result> Validate() {
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			var proposed = Model.Clone();
 			proposed.FilePath = _fileSelector.Path;
 			proposed.RollingEnabled = false;
 			_ = proposed.ValidateAndNormalize();
-			return Task.FromResult(Result.Success);
-		} catch (Exception error) {
-			return Task.FromResult(Result.Error(error.Message));
-		}
+		}, out var error);
+		return Task.FromResult(error == null ? Result.Success : Result.Error(error.Message));
 	}
 
 	public override Task OnNext() {

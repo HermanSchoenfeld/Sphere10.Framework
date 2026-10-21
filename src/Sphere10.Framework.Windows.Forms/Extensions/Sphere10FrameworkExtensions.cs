@@ -262,7 +262,7 @@ public static class Sphere10FrameworkExtensions {
 		var Version = ApplicationVersion.TryParse(Sphere10AssemblyAttributesHelper.GetAssemblyVersion(), out var AppVersion) ? $"{AppVersion.Major}.{AppVersion.Minor}.{AppVersion.Build}" : string.Empty;
 
 		// App icon (centered, drop shadow)
-		try {
+		Tools.Exceptions.ExecuteCapturingException<System.Exception>(() => {
 			var AppIcon = _appIcon ?? Icon.ExtractAssociatedIcon(EntryAsm.Location);
 			if (AppIcon != null) {
 				var IconSize = 72;
@@ -278,7 +278,7 @@ public static class Sphere10FrameworkExtensions {
 				}
 				G.DrawIcon(AppIcon, new Rectangle(IconX, IconY, IconSize, IconSize));
 			}
-		} catch { /* ignore icon errors */ }
+		}, out var capturedError);
 
 		// Product name (centered, drop shadow)
 		using (var NameFont = new Font("Segoe UI", 28f, FontStyle.Bold))

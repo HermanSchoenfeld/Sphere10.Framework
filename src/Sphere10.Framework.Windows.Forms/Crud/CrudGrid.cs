@@ -1742,11 +1742,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 				throw new ArgumentException(string.Format("Invalid command '{0}'", action), "action");
 		}
 		return CreateButtonCell(columnBinding, entity, string.Empty, image, async Entity => {
-			try {
-				await callback(Entity);
-			} catch (Exception Error) {
-				await ExceptionDialog.ShowAsync(this, Error);
-			}
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => callback(Entity));
+			if (error != null)
+				await ExceptionDialog.ShowAsync(this, error);
 		});
 	}
 
@@ -1876,7 +1874,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	private async void RefreshAutoPageSize(bool forceRefresh = false) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (_grid == null || _dataSource == null || IsDisposed || Disposing || DesignMode || Tools.Runtime.IsDesignMode)
 				return;
 			if (_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage) && AutoPageSize) {
@@ -1891,14 +1889,15 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			// A pending read detects the new page size and binds again when its result arrives.
 			if (State == VisualState.Normal || _awaitingInitialBinding && !_refreshing)
 				await RefreshGrid();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			if (!IsDisposed && !Disposing)
 				await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	internal async void _grid_SortColumnPressed(int col) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (!_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort) || _columnsBindings == null || col < 0 || col >= _columnsBindings.Length || string.IsNullOrEmpty(_columnsBindings[col].SortName))
 				return;
 
@@ -1913,111 +1912,121 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			_sortColumnName = _sortDirection == SortDirection.None ? null : _columnsBindings[col].SortName;
 			await RefreshGrid();
 			SaveGridSettings(true);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _pageSizeUpDown_ValueChanged(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (_restoringGridSettings || _updatingPageSizeDisplay || PageMode != CrudGridPageMode.Paged || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage))
 				return;
 			_manualPageSize = _pageSize = (int)_pageSizeUpDown.Value;
 			await RefreshGrid();
 			SaveGridSettings(true);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _searchTextBox_TextChanged(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			_searchText = _searchTextBox.Text;
 			await ChangePageNumberAsync(0);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _firstPageButton_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (!CanInteractWithCommittedRows)
 				return;
 
 			await ChangePageNumberAsync(0);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _previousPageButton_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (!CanInteractWithCommittedRows)
 				return;
 
 			await ChangePageNumberAsync(_pageNumber - 1);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _nextPageButton_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (!CanInteractWithCommittedRows)
 				return;
 
 			await ChangePageNumberAsync(_pageNumber + 1);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _lastPageButton_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (!CanInteractWithCommittedRows)
 				return;
 
 			await ChangePageNumberAsync(_endPageNumber);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _pageNumberBox_ValueChanged(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (_updatingPageNumberText || State == VisualState.Selecting)
 				return;
 
 			await ChangePageNumberAsync(GetVisiblePageNumberText());
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _createButton_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (State != VisualState.Normal)
 				return;
 
 			await CreateNewRecord();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _deleteButton_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (State != VisualState.Normal)
 				return;
 
 			await DeleteSelectedRecord();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _grid_Selection_SelectionChanged(object sender, SourceGrid.RangeRegionChangedEventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (!CanInteractWithCommittedRows)
 				return;
 
@@ -2032,20 +2041,22 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 				RaiseEntityDeselectedEvent(PreviousEntity);
 			if (Entity != null)
 				RaiseEntitySelectedEvent(Entity);
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _grid_Selection_CellGotFocus(SourceGrid.Selection.SelectionBase sender, SourceGrid.ChangeActivePositionEventArgs e) {
-		try {
-		} catch (Exception error) {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+		}, out var error);
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _grid_MouseDoubleClick(object sender, MouseEventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (!CanInteractWithCommittedRows)
 				return;
 			if (LeftClickToDeselect && e.Button == MouseButtons.Left) {
@@ -2053,13 +2064,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 					ToggleRowSelection(e);
 			} else if (!LeftClickToDeselect)
 				await EditSelectedEntity();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _grid_MouseDown(object Sender, MouseEventArgs Event) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			_selectedRowOnMouseDown = -1;
 			if (!CanInteractWithCommittedRows)
 				return;
@@ -2078,13 +2090,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 				_selectedRowOnMouseDown = Position.Row;
 			if (Event.Button == MouseButtons.Right || LeftClickToDeselect && Event.Button == MouseButtons.Left && !SelectOnMouseUp)
 				_grid.Selection.SelectRow(Position.Row, true);
-		} catch (Exception Error) {
+		}, out var Error);
+		if (Error != null) {
 			await ExceptionDialog.ShowAsync(this, Error);
 		}
 	}
 
 	private async void _grid_MouseClick(object sender, MouseEventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			switch (e.Button) {
 				case MouseButtons.Left:
 					if (LeftClickToDeselect)
@@ -2097,13 +2110,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 						_selectionContextMenuStrip.Show(_grid.PointToScreen(e.Location));
 					break;
 			}
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _grid_KeyDown(object Sender, KeyEventArgs Event) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (!LeftClickToDeselect || !AllowCellEditing || Event.KeyCode != Keys.F2)
 				return;
 
@@ -2119,7 +2133,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			}
 			Event.Handled = TryStartCellEdit(Position);
 			Event.SuppressKeyPress = Event.Handled;
-		} catch (Exception Error) {
+		}, out var Error);
+		if (Error != null) {
 			await ExceptionDialog.ShowAsync(this, Error);
 		}
 	}
@@ -2163,25 +2178,28 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	private async void _deselectToolStripMenuItem_Click(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			_grid.Selection.ResetSelection(false);
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _editToolStripMenuItem_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await EditSelectedEntity();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void _deleteToolStripMenuItem_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await DeleteSelectedRecord();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
@@ -2259,17 +2277,18 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		var key = ResolveSettingsKey();
 		if (key == null)
 			return;
-		ISettingsProvider provider;
-		try {
+		ISettingsProvider provider = null;
+		Tools.Exceptions.ExecuteCapturingException<InvalidOperationException>(() => {
 			provider = UserSettings.Provider;
-		} catch (InvalidOperationException) {
+		}, out var capturedError);
+		if (capturedError != null) {
 			// A standalone control can be created before framework initialization; retry on its next explicit refresh.
 			return;
 		}
 		_settingsLogger = ResolveSettingsLogger();
 		_restoringGridSettings = true;
 		using var restoreFlag = Tools.Scope.ExecuteOnDispose(() => _restoringGridSettings = false);
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			var exists = UserSettings.Has<CrudGridSettings>(key);
 			_gridSettings = UserSettings.Get<CrudGridSettings>(key);
 			if (!exists) {
@@ -2310,15 +2329,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			}
 			// Validate this instance's controls without changing a cached settings object shared with another instance.
 			_savedPreferenceState = CapturePreferenceState();
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			_settingsLogger.Exception(error, "Could not restore CRUD grid preferences.");
-			try {
+			Tools.Exceptions.Execute(() => {
 				_gridSettings = (CrudGridSettings)provider.NewSetting(typeof(CrudGridSettings), key);
 				CaptureGridSettings(_gridSettings);
 				_savedPreferenceState = CapturePreferenceState();
-			} catch (Exception recoveryError) {
-				_settingsLogger.Exception(recoveryError, "Could not initialize CRUD grid preferences.");
-			}
+			}, recoveryError => _settingsLogger.Exception(recoveryError, "Could not initialize CRUD grid preferences."));
 		}
 	}
 
@@ -2332,13 +2350,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			return;
 		_savingGridSettings = true;
 		using var restoreFlag = Tools.Scope.ExecuteOnDispose(() => _savingGridSettings = false);
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			CaptureGridSettings(_gridSettings);
 			_gridSettings.Save();
 			_settingsSaveFailed = false;
 			_gridSettingsDirty = false;
 			_savedPreferenceState = preferences;
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			_settingsSaveFailed = true;
 			(_settingsLogger ?? SystemLog.Logger).Exception(error, "Could not save CRUD grid preferences.");
 		}

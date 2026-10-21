@@ -149,7 +149,7 @@ public class PropertyGridEx : PropertyGrid {
 			return;
 		_sizingLabelColumn = true;
 		using var restoreSizing = Tools.Scope.ExecuteOnDispose(() => _sizingLabelColumn = false);
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			// SelectedObjectsChanged can run between disposal of the old entries and publication of the new root.
 			// Traverse only inside the reentrancy/error boundary; a later native selection/layout retries stale entries.
 			var root = SelectedGridItem;
@@ -167,13 +167,11 @@ public class PropertyGridEx : PropertyGrid {
 			_lastSizedWidth = _nativeGrid.ClientSize.Width;
 			_lastAutomaticLabelWidth = (int)_nativeLabelWidth.GetValue(_nativeGrid);
 			_labelSizingDirty = false;
-		} catch (ObjectDisposedException) {
+		}, out var error, exception => exception is ObjectDisposedException or MemberAccessException or TargetInvocationException or ArgumentException or NotSupportedException);
+		if (error is ObjectDisposedException || error is TargetInvocationException { InnerException: ObjectDisposedException })
 			_labelSizingDirty = true;
-		} catch (TargetInvocationException error) when (error.InnerException is ObjectDisposedException) {
-			_labelSizingDirty = true;
-		} catch (Exception error) when (error is MemberAccessException or TargetInvocationException or ArgumentException or NotSupportedException) {
+		else if (error != null)
 			_labelSizingUnsupported = true;
-		}
 	}
 
 	private int MeasureLabels(GridItem parent, int depth, Font bold) {
@@ -255,12 +253,10 @@ public class PropertyGridEx : PropertyGrid {
 			ObserveKeyboardControl(child);
 		// The native list is reparented into a popup rather than added to the grid's Controls.
 		// Inspect only the already-created owned field when focus transfers; never create a lazy editor here.
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (_nativeListBox?.GetValue(_nativeGrid) is Control list)
 				ObserveKeyboardControl(list);
-		} catch (Exception error) when (error is MemberAccessException or ArgumentException or NotSupportedException) {
-			// The optional child adapter is unavailable on this runtime; normal native editors remain usable.
-		}
+		}, out var error, capturedException => capturedException is MemberAccessException or ArgumentException or NotSupportedException);
 	}
 
 	private void ObserveKeyboardControl(Control child) {
@@ -291,13 +287,15 @@ public class PropertyGridEx : PropertyGrid {
 		width = -1;
 		if (_labelSizingUnsupported || view.IsDisposed || !view.IsHandleCreated)
 			return false;
-		try {
-			width = (int)_nativeLabelWidth.GetValue(view);
-			return true;
-		} catch (Exception error) when (error is MemberAccessException or TargetInvocationException or ArgumentException or NotSupportedException) {
+		var measured = -1;
+		Tools.Exceptions.ExecuteCapturingException(() => measured = (int)_nativeLabelWidth.GetValue(view), out var error,
+			exception => exception is MemberAccessException or TargetInvocationException or ArgumentException or NotSupportedException);
+		if (error != null) {
 			_labelSizingUnsupported = true;
 			return false;
 		}
+		width = measured;
+		return true;
 	}
 
 	private sealed class LabelColumnInputWindow : NativeWindow {

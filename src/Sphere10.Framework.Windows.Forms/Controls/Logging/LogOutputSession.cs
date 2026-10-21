@@ -105,24 +105,20 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 			if (_ownedSink == null) {
 				borrowedSink = _sink;
 			} else {
-				try {
-					write(_sink, options);
-				} catch (Exception error) {
-					failure = error;
-					try { CloseSink(); } catch { /* Preserve the failed write as the primary failure. */ }
-				}
+				Tools.Exceptions.ExecuteCapturingException(() => write(_sink, options), out failure);
+				if (failure != null)
+					Tools.Exceptions.ExecuteIgnoringException(CloseSink);
 			}
 		}
 		// External loggers may synchronously dispatch to this control's UI thread. Never hold our
 		// lifetime scope across borrowed code; its actual owner controls completion and disposal.
-		if (borrowedSink != null)
-			try {
-				write(borrowedSink, options);
-			} catch (Exception error) {
-				failure = error;
+		if (borrowedSink != null) {
+			Tools.Exceptions.ExecuteCapturingException(() => write(borrowedSink, options), out failure);
+			if (failure != null) {
 				using var scope = EnterWriteScope();
 				CloseSink();
 			}
+		}
 		if (failure == null)
 			return;
 		LoggingFailed?.Invoke(failure);

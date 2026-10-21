@@ -115,7 +115,8 @@ public partial class ReviewTextDialog : Form {
 		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
 			// Disposal ends the owned dialog, but native modality restores its owner when the show task unwinds.
 			dialog.Dispose();
-			try { await showing; } catch (ObjectDisposedException) { /* Cancellation can precede the posted native show. */ }
+			// Cancellation can precede the posted native show.
+			_ = await Tools.Exceptions.ExecuteCapturingExceptionAsync<ObjectDisposedException>(() => showing);
 			throw;
 		}
 	}
@@ -138,7 +139,7 @@ public partial class ReviewTextDialog : Form {
 		SetSavingState();
 		using var saveLifetime = Tools.Scope.ExecuteOnDispose(() => {
 			if (temporary != null && temporaryCreated)
-				try { File.Delete(temporary); } catch (Exception error) { LogSaveFailure(logger, error); }
+				Tools.Exceptions.Execute(() => File.Delete(temporary), error => LogSaveFailure(logger, error));
 			_saving = false;
 			if (!IsDisposed && !Disposing)
 				SetSavingState();
@@ -208,13 +209,14 @@ public partial class ReviewTextDialog : Form {
 	}
 
 	private static void LogSaveFailure(ILogger logger, Exception error) {
-		try { logger.Exception(error, "Could not save reviewed text."); } catch { /* Preserve the save failure if a borrowed logger also fails. */ }
+		Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(error, "Could not save reviewed text."));
 	}
 
 	private async void CopyButtonClick(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			CopyToClipboard();
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			if (!IsDisposed && !Disposing)
 				await DialogEx.ShowAsync(this, SystemIconType.Error, "Copy Reviewed Text", error.Message, "OK");
 		}
