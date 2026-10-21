@@ -284,9 +284,9 @@ than querying the filesystem during cell painting. The reusable Windows
 [FileIconCache](../Sphere10.Framework.Windows/Shell/FileIconCache.cs)
 returns borrowed images; keep its lifetime longer than the cells displaying them.
 
-Image columns use `ImageAlignment` from Drawing's `Sphere10.Framework.ResizeAlignment`,
+Image columns use `ImageAlignment` from Core's `Sphere10.Framework.ResizeAlignment`,
 defaulting to `CenterCenter` at the original image size. Set `ImageResizeMethod`
-to Drawing's `ResizeMethod.AspectFit`, `AspectFitPadded`, `AspectFill` or `Stretch`
+to `ResizeMethod.AspectFit`, `AspectFitPadded`, `AspectFill` or `Stretch`
 to scale within the cell content area. Null uses native-size placement with
 SourceGrid's existing clamping when the cell is smaller than the image. Fit leaves the
 remaining cell background visible; alignment also controls padded placement and
