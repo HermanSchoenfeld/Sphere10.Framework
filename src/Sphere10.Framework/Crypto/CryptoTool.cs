@@ -32,6 +32,11 @@ public class Crypto {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static byte[] GenerateCryptographicallyRandomBytes(int count) => new SystemCRNG().NextBytes(count);
 
+	/// <summary>Compares equal-length secret values without branching on their contents. Length differences may return immediately.</summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+		=> CryptographicOperations.FixedTimeEquals(left, right);
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static string PasswordHash(string password)
 		=> PasswordHasher.CreateHash(password);
