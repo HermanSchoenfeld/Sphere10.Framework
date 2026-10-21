@@ -25,33 +25,16 @@ public partial class ProductProductSendCommentsDialog : ApplicationForm, IProduc
 		Close();
 	}
 
-	private void _sendButton_Click(object sender, EventArgs e) {
-		bool close = true;
-		try {
-			throw new NotImplementedException();
-			// HS: 2019-02-24 need updating
-			//ISphere10SoftwareService2 webService = Sphere10Framework.Instance.ServiceProvider.GetService<ISphere10SoftwareService2>();
-			//            string email = _basicContactDetailsControl.ContactEmail;
-			//            if (email.ToUpper() != "ANONYMOUS" && !Tools.Mail.IsValidEmail(email)) {
-			//	WinFormsWinFormsApplicationProvider.ReportError("Malformed Email", "Please enter a correct email");
-			//                close = false;
-			//                return;
-			//            }
-			//            webService.SendComment(
-			//	new ProductComment(
-			//		_whoAreYouControl.UserType,
-			//		email,
-			//		WinFormsWinFormsApplicationProvider.ProductInformation,
-			//		_commentTextBox.Text
-			//	)
-			//);
-		} catch (Exception error) {
+	private async void _sendButton_Click(object sender, EventArgs e) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			var product = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IProductInformationProvider>().ProductInformation;
+			await ProductSupportSubmission.SendAsync(this, _sendButton, UserInterfaceServices,
+				new ProductComment(_whoAreYouControl.UserType, _basicContactDetailsControl.ContactEmail, product, _commentTextBox.Text),
+				(service, request, cancellationToken) => service.SendCommentAsync(request, cancellationToken)
+			);
+		});
+		if (error != null) {
 			UserInterfaceServices.ReportError(error);
-		} finally {
-			if (close) {
-				Close();
-			}
 		}
 	}
 }
-
