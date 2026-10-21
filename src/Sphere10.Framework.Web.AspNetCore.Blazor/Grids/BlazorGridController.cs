@@ -30,14 +30,19 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	private TItem _selectedItem;
 	private bool _hasSelection;
 	private bool _isLoading;
+	private bool _isRefreshing;
+	private bool _hasLoaded;
 	private bool _isSaving;
 	private bool _disposed;
 	private int _currentPage;
-	private int _pageSize = 10;
+	private int _manualPageSize = 10;
+	private int _viewportPageSize = 10;
+	private BlazorGridPageMode _pageMode;
 	private int _totalCount;
 	private long _queryVersion;
 	private long _configurationVersion;
 	private long _writeVersion;
+	private long _viewVersion;
 	private string _searchTerm = string.Empty;
 	private string _sortProperty;
 	private SortDirection _sortDirection;
@@ -47,11 +52,16 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 
 	public override int CurrentPage => _currentPage;
 
-	public override int PageSize => _pageSize;
+	public override int PageSize => !UsesPages ? int.MaxValue : _pageMode == BlazorGridPageMode.Auto ? _viewportPageSize : _manualPageSize;
+
+	public override int ManualPageSize => _manualPageSize;
+
+	public override BlazorGridPageMode PageMode => _pageMode;
 
 	public override int TotalCount => _totalCount;
 
-	public override int TotalPages => HasCapability(DataSourceCapabilities.CanPage) ? Math.Max(1, (int)(((long)_totalCount + _pageSize - 1) / _pageSize)) : 1;
+	// A targeted removal retains the current page until the next complete query can load its replacement.
+	public override int TotalPages => UsesPages ? Math.Max(_currentPage + 1, Math.Max(1, (int)(((long)_totalCount + PageSize - 1) / PageSize))) : 1;
 
 	public override DataSourceCapabilities Capabilities => _capabilities;
 
@@ -62,6 +72,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	public override SortDirection SortDirection => _sortDirection;
 
 	public override bool IsLoading => _isLoading;
+
+	public override bool IsRefreshing => _isRefreshing;
 
 	public override bool IsSaving => _isSaving;
 
@@ -105,14 +117,22 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		}
 	}
 
-	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize) {
+	private bool UsesPages => HasCapability(DataSourceCapabilities.CanPage) && _pageMode != BlazorGridPageMode.Single;
+
+	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize) => BindAsync(source, allowedCapabilities, pageSize, _pageMode);
+
+	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode) {
 		EnsureUsable();
 		Guard.ArgumentInRange(pageSize, 1, 9999, nameof(pageSize));
-		if (ReferenceEquals(_source, source) && _allowedCapabilities == allowedCapabilities && _pageSize == pageSize)
+		ValidatePageMode(pageMode);
+		if (ReferenceEquals(_source, source) && _allowedCapabilities == allowedCapabilities && _manualPageSize == pageSize && _pageMode == pageMode)
 			return _pendingRead;
 		_source = source;
 		_allowedCapabilities = allowedCapabilities;
-		_pageSize = pageSize;
+		_manualPageSize = pageSize;
+		_viewportPageSize = pageSize;
+		_pageMode = pageMode;
+		_hasLoaded = false;
 		_capabilities = 0;
 		_currentPage = 0;
 		_totalCount = 0;
@@ -125,15 +145,17 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		return QueueReadAsync();
 	}
 
-	public override Task RefreshAsync() {
+	public override Task RefreshAsync() => RefreshAsync(true);
+
+	public override Task RefreshAsync(bool showLoadingIndicator) {
 		EnsureNoDraft();
-		return QueueReadAsync();
+		return QueueReadAsync(showLoadingIndicator);
 	}
 
 	public override Task SetPageAsync(int page) {
 		EnsureNoDraft();
 		Guard.ArgumentGTE(page, 0, nameof(page));
-		if (!RequireCapability(DataSourceCapabilities.CanPage))
+		if (!RequireCapability(DataSourceCapabilities.CanPage) || !UsesPages)
 			return Task.CompletedTask;
 		_currentPage = Math.Min(page, TotalPages - 1);
 		ClearVisibleItems();
@@ -143,10 +165,118 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	public override Task SetPageSizeAsync(int pageSize) {
 		EnsureNoDraft();
 		Guard.ArgumentInRange(pageSize, 1, 9999, nameof(pageSize));
-		_pageSize = pageSize;
+		if (_manualPageSize == pageSize)
+			return _pendingRead;
+		_manualPageSize = pageSize;
+		if (_pageMode != BlazorGridPageMode.Paged || !UsesPages) {
+			OnChanged();
+			return Task.CompletedTask;
+		}
 		_currentPage = 0;
 		ClearVisibleItems();
 		return QueueReadAsync();
+	}
+
+	public override Task SetPageModeAsync(BlazorGridPageMode pageMode) {
+		EnsureNoDraft();
+		ValidatePageMode(pageMode);
+		if (_pageMode == pageMode)
+			return _pendingRead;
+		_pageMode = pageMode;
+		_currentPage = 0;
+		ClearVisibleItems();
+		return QueueReadAsync();
+	}
+
+	public override Task SetViewportPageSizeAsync(int pageSize) {
+		EnsureNoDraft();
+		Guard.ArgumentInRange(pageSize, 1, 9999, nameof(pageSize));
+		if (_viewportPageSize == pageSize)
+			return _pendingRead;
+		var firstItem = (long)_currentPage * PageSize;
+		_viewportPageSize = pageSize;
+		if (_pageMode != BlazorGridPageMode.Auto || !UsesPages)
+			return Task.CompletedTask;
+		_currentPage = (int)Math.Min(int.MaxValue, firstItem / pageSize);
+		// A viewport measurement is a silent query: keep committed rows and their latest selection available until publication.
+		return QueueReadAsync(false);
+	}
+
+	public override Task ApplyViewSettingsAsync(BlazorGridSettings settings) {
+		EnsureNoDraft();
+		Guard.ArgumentNotNull(settings, nameof(settings));
+		// Treat browser-stored values as untrusted preferences, then apply the query in one read.
+		_manualPageSize = Math.Clamp(settings.PageSize, 1, 9999);
+		_pageMode = settings.PageMode is BlazorGridPageMode.Paged or BlazorGridPageMode.Auto or BlazorGridPageMode.Single ? settings.PageMode : BlazorGridPageMode.Paged;
+		_currentPage = UsesPages ? Math.Clamp(settings.PageNumber, 0, int.MaxValue - 1) : 0;
+		var sort = HasCapability(DataSourceCapabilities.CanSort)
+			&& !string.IsNullOrWhiteSpace(settings.SortColumnName)
+			&& _columns.Any(column => column.SortName == settings.SortColumnName)
+			&& settings.SortDirection is SortDirection.Ascending or SortDirection.Descending;
+		_sortProperty = sort ? settings.SortColumnName : null;
+		_sortDirection = sort ? settings.SortDirection : SortDirection.None;
+		ClearVisibleItems();
+		return QueueReadAsync();
+	}
+
+	public override async Task<TItem[]> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default) {
+		EnsureUsable();
+		cancellationToken.ThrowIfCancellationRequested();
+		var source = _source;
+		var search = _searchTerm;
+		var sort = _sortProperty;
+		var direction = _sortDirection;
+		var allowed = _allowedCapabilities;
+		var configuration = _configurationVersion;
+		if (source == null || !HasCapability(DataSourceCapabilities.CanRead))
+			return Array.Empty<TItem>();
+		await _operations.WaitAsync(cancellationToken);
+		using var operation = Tools.Scope.ExecuteOnDispose(() => _operations.Release());
+		EnsureBindingCurrent();
+		var available = await source.CapabilitiesAsync;
+		EnsureBindingCurrent();
+		if ((available & allowed & DataSourceCapabilities.CanRead) != DataSourceCapabilities.CanRead)
+			return Array.Empty<TItem>();
+		var result = await source.ReadRangeAsync(search, int.MaxValue, 0, sort, direction);
+		EnsureBindingCurrent();
+		var items = (result.Items ?? Array.Empty<TItem>()).ToArray();
+		EnsureBindingCurrent();
+		return items;
+
+		void EnsureBindingCurrent() {
+			cancellationToken.ThrowIfCancellationRequested();
+			if (!IsCurrentConfiguration(configuration) || !ReferenceEquals(_source, source))
+				throw new OperationCanceledException("The grid's data binding changed or the grid was disposed before the filtered read completed.");
+		}
+	}
+
+	/// <summary>Refreshes visible rows in place through the source. Null replacements remove their rows without deleting from the source.</summary>
+	public override Task RefreshRowsAsync(IEnumerable<TItem> entities) => RefreshRowsCoreAsync(entities);
+
+	public override Task<bool> RefreshEntityAsync(TItem entity) {
+		Guard.Argument(entity is not null, nameof(entity), "An entity is required.");
+		return RefreshRowsCoreAsync(new[] { entity });
+	}
+
+	public override Task<bool> RefreshSelectedEntityAsync() {
+		EnsureNoDraft();
+		return _hasSelection ? RefreshEntityAsync(_selectedItem) : Task.FromResult(false);
+	}
+
+	/// <summary>Removes matching visible rows without invoking source persistence or requerying the page.</summary>
+	public override void RemoveRows(IEnumerable<TItem> entities) {
+		EnsureNoDraft();
+		Guard.ArgumentNotNull(entities, nameof(entities));
+		var removed = entities.ToArray();
+		Guard.Argument(removed.All(entity => entity is not null), nameof(entities), "Entities cannot contain null.");
+		var retained = _items.Where(item => !removed.Any(entity => _entityComparer.Equals(item, entity))).ToArray();
+		if (retained.Length == _items.Length)
+			return;
+		_totalCount = Math.Max(0, _totalCount - (_items.Length - retained.Length));
+		_items = retained;
+		_viewVersion++;
+		ReconcileSelection();
+		OnChanged();
 	}
 
 	public override Task SearchAsync(string searchTerm) {
@@ -167,7 +297,6 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		Guard.Argument(direction == SortDirection.None || !string.IsNullOrWhiteSpace(property), nameof(property), "A sort property is required.");
 		_sortProperty = direction == SortDirection.None ? null : property;
 		_sortDirection = direction;
-		_currentPage = 0;
 		ClearVisibleItems();
 		return QueueReadAsync();
 	}
@@ -255,15 +384,15 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				if (!committed)
 					RestoreValues(edit, applied);
 			});
-			try {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 				var available = await source.CapabilitiesAsync;
 				if (!IsCurrentEdit(edit, configuration))
-					return false;
+					return;
 				_capabilities = available & _allowedCapabilities;
 				if (!RequireCapability(edit.IsNew ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate)) {
 					InvalidateEdit();
 					OnChanged();
-					return false;
+					return;
 				}
 				// Apply only changed buffered values; referenced objects retain their identity.
 				foreach (var value in edit.Values.Where(value => ValuesDiffer(edit.OriginalValues[value.Key], value.Value))) {
@@ -273,16 +402,16 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				}
 				var validation = await source.ValidateAsync(edit.Item, edit.IsNew ? CrudAction.Create : CrudAction.Update);
 				if (!IsCurrentEdit(edit, configuration))
-					return false;
+					return;
 				if (!AcceptValidation(validation))
-					return false;
+					return;
 				var currentCapabilities = await source.CapabilitiesAsync;
 				if (!IsCurrentEdit(edit, configuration))
-					return false;
+					return;
 				_capabilities = currentCapabilities & _allowedCapabilities;
 				if (!RequireCapability(edit.IsNew ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate)) {
 					_edit = null;
-					return false;
+					return;
 				}
 				if (edit.IsNew)
 					await source.CreateAsync(edit.Item);
@@ -290,10 +419,11 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 					await source.UpdateAsync(edit.Item);
 				committed = true;
 				if (!IsCurrentEdit(edit, configuration))
-					return false;
+					return;
 				_edit = null;
 				saved = true;
-			} catch (Exception error) {
+			});
+			if (error != null) {
 				if (IsCurrentEdit(edit, configuration))
 					_errorMessage = error.Message;
 			}
@@ -317,28 +447,29 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 			using var operation = Tools.Scope.ExecuteOnDispose(() => _operations.Release());
 			if (!IsCurrentConfiguration(configuration))
 				return false;
-			try {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 				var available = await source.CapabilitiesAsync;
 				if (!IsCurrentConfiguration(configuration))
-					return false;
+					return;
 				_capabilities = available & _allowedCapabilities;
 				if (!RequireCapability(DataSourceCapabilities.CanDelete))
-					return false;
+					return;
 				var validation = await source.ValidateAsync(item, CrudAction.Delete);
 				if (!IsCurrentConfiguration(configuration) || !AcceptValidation(validation))
-					return false;
+					return;
 				var currentCapabilities = await source.CapabilitiesAsync;
 				if (!IsCurrentConfiguration(configuration))
-					return false;
+					return;
 				_capabilities = currentCapabilities & _allowedCapabilities;
 				if (!RequireCapability(DataSourceCapabilities.CanDelete))
-					return false;
+					return;
 				await source.DeleteAsync(item);
 				if (!IsCurrentConfiguration(configuration))
-					return false;
+					return;
 				ClearSelectionCore();
 				deleted = true;
-			} catch (Exception error) {
+			});
+			if (error != null) {
 				if (IsCurrentConfiguration(configuration))
 					_errorMessage = error.Message;
 			}
@@ -357,6 +488,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		_source = null;
 		_items = Array.Empty<TItem>();
 		_isLoading = false;
+		_isRefreshing = false;
 		ClearSelectionCore();
 		// Outstanding source calls cannot be cancelled; their completions release the gate and are ignored.
 	}
@@ -366,9 +498,10 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		return ValueTask.CompletedTask;
 	}
 
-	private Task QueueReadAsync() {
+	private Task QueueReadAsync(bool showLoadingIndicator = true) {
 		_queryVersion++;
-		_isLoading = true;
+		_isLoading |= showLoadingIndicator || !_hasLoaded;
+		_isRefreshing = true;
 		ClearProblems();
 		if (_readCompletion == null) {
 			_readCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -384,7 +517,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 
 	private async Task DrainReadsAsync(TaskCompletionSource completion) {
 		try {
-			while (!_disposed) {
+			while (!_disposed && _edit == null) {
 				var version = _queryVersion;
 				await ReadAsync(version);
 				if (version == _queryVersion)
@@ -392,12 +525,14 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 			}
 			_readCompletion = null;
 			_isLoading = false;
+			_isRefreshing = false;
 			if (!_disposed)
 				OnChanged();
 			completion.TrySetResult();
 		} catch (Exception error) {
 			_readCompletion = null;
 			_isLoading = false;
+			_isRefreshing = false;
 			completion.TrySetException(error);
 		}
 	}
@@ -409,9 +544,10 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		if (!IsCurrentQuery(version))
 			return;
 		var source = _source;
+		var view = _viewVersion;
 		if (source == null)
 			return;
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			var capabilities = await source.CapabilitiesAsync;
 			if (!IsCurrentQuery(version))
 				return;
@@ -420,6 +556,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				ClearVisibleItems();
 				_totalCount = 0;
 				_currentPage = 0;
+				_hasLoaded = true;
 				return;
 			}
 			if (!HasCapability(DataSourceCapabilities.CanSearch))
@@ -428,40 +565,102 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				_sortProperty = null;
 				_sortDirection = SortDirection.None;
 			}
-			var canPage = HasCapability(DataSourceCapabilities.CanPage);
+			var canPage = UsesPages;
 			var page = canPage ? _currentPage : 0;
-			var pageSize = canPage ? _pageSize : int.MaxValue;
+			var pageSize = PageSize;
 			var result = await source.ReadRangeAsync(_searchTerm, pageSize, page, _sortProperty, _sortDirection);
-			if (!IsCurrentQuery(version))
+			if (!IsCurrentQuery(version) || _edit != null || view != _viewVersion)
 				return;
 			Guard.Ensure(result.TotalCount >= 0, "The data source returned a negative total count.");
-			var totalPages = canPage ? Math.Max(1, (int)(((long)result.TotalCount + _pageSize - 1) / _pageSize)) : 1;
+			var totalPages = canPage ? Math.Max(1, (int)(((long)result.TotalCount + pageSize - 1) / pageSize)) : 1;
 			var lastPage = totalPages - 1;
 			// Some sources report an empty obsolete page after the last row is deleted.
 			if (canPage && result.TotalCount > 0 && result.Page > lastPage) {
 				result = await source.ReadRangeAsync(_searchTerm, pageSize, lastPage, _sortProperty, _sortDirection);
-				if (!IsCurrentQuery(version))
+				if (!IsCurrentQuery(version) || _edit != null || view != _viewVersion)
 					return;
 			}
 			_items = (result.Items ?? Array.Empty<TItem>()).ToArray();
 			_totalCount = Math.Max(0, result.TotalCount);
-			_currentPage = canPage ? Math.Clamp(result.Page, 0, TotalPages - 1) : 0;
+			var actualPages = canPage ? Math.Max(1, (int)(((long)_totalCount + pageSize - 1) / pageSize)) : 1;
+			_currentPage = canPage ? Math.Clamp(result.Page, 0, actualPages - 1) : 0;
+			_hasLoaded = true;
+			_viewVersion++;
 			ReconcileSelection();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			if (IsCurrentQuery(version))
 				_errorMessage = error.Message;
 		}
 	}
 
+	private async Task<bool> RefreshRowsCoreAsync(IEnumerable<TItem> entities) {
+		EnsureNoDraft();
+		Guard.ArgumentNotNull(entities, nameof(entities));
+		if (!HasCapability(DataSourceCapabilities.CanRead) || _source == null)
+			return false;
+		var requested = entities.ToArray();
+		Guard.Argument(requested.All(entity => entity is not null), nameof(entities), "Entities cannot contain null.");
+		var rows = _items.Where(item => requested.Any(entity => _entityComparer.Equals(item, entity))).ToArray();
+		if (rows.Length == 0)
+			return false;
+		var source = _source;
+		var version = _queryVersion;
+		var view = _viewVersion;
+		await _operations.WaitAsync();
+		using var operation = Tools.Scope.ExecuteOnDispose(() => _operations.Release());
+		if (!IsCurrentQuery(version) || _edit != null || view != _viewVersion)
+			return false;
+		var succeeded = false;
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+			var available = await source.CapabilitiesAsync;
+			if (!IsCurrentQuery(version) || _edit != null || view != _viewVersion)
+				return;
+			_capabilities = available & _allowedCapabilities;
+			if (!RequireCapability(DataSourceCapabilities.CanRead))
+				return;
+			var refreshed = Tools.Array.Clone(rows);
+			await source.RefreshRangeAsync(refreshed);
+			if (!IsCurrentQuery(version) || _edit != null || view != _viewVersion)
+				return;
+			// Match against the captured visible identities, retaining the other rows and current query.
+			var replacements = new List<TItem>(_items.Length);
+			foreach (var item in _items) {
+				var index = System.Array.FindIndex(rows, row => _entityComparer.Equals(row, item));
+				if (index < 0)
+					replacements.Add(item);
+				else if (refreshed[index] is not null)
+					replacements.Add(refreshed[index]);
+			}
+			_totalCount = Math.Max(0, _totalCount - (_items.Length - replacements.Count));
+			_items = replacements.ToArray();
+			_viewVersion++;
+			ReconcileSelection();
+			ClearProblems();
+			OnChanged();
+			succeeded = true;
+		});
+		if (error != null) {
+			if (IsCurrentQuery(version) && view == _viewVersion) {
+				_errorMessage = error.Message;
+				OnChanged();
+			}
+		}
+		return succeeded;
+	}
+
 	private void BeginEditCore(Func<TItem> getItem, bool isNew) {
 		ClearProblems();
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			Guard.Ensure(!typeof(TItem).IsValueType, "Editable rows must be reference types.");
 			var item = getItem();
 			Guard.Ensure(item is not null, "The data source returned an empty new item.");
 			var values = _columns.Where(column => column.CanEdit(item)).ToDictionary(column => column, column => column.PropertyValue(item));
 			_edit = new EditSession(item, isNew, values);
-		} catch (Exception error) {
+			// A silent read must not publish a replacement over a newly started draft.
+			_queryVersion++;
+		}, out var error);
+		if (error != null) {
 			_errorMessage = error.Message;
 		}
 		OnChanged();
@@ -486,9 +685,10 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 
 	private void RestoreValues(EditSession edit, List<BlazorGridColumn<TItem>> applied) {
 		foreach (var column in applied.AsEnumerable().Reverse()) {
-			try {
+			Tools.Exceptions.ExecuteCapturingException(() => {
 				column.SetPropertyValue(edit.Item, edit.OriginalValues[column]);
-			} catch (Exception error) {
+			}, out var error);
+			if (error != null) {
 				if (!_disposed && ReferenceEquals(_edit, edit))
 					_errorMessage = $"Could not restore {column.ColumnName}: {error.Message}";
 			}
@@ -571,6 +771,10 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	}
 
 	private void EnsureUsable() => Guard.Ensure(!_disposed, "The grid controller has been disposed.");
+
+	private static void ValidatePageMode(BlazorGridPageMode pageMode) => Guard.Argument(
+		pageMode is BlazorGridPageMode.Paged or BlazorGridPageMode.Auto or BlazorGridPageMode.Single, nameof(pageMode), "Unknown page mode."
+	);
 
 	private sealed class EditSession {
 		public EditSession(TItem item, bool isNew, Dictionary<BlazorGridColumn<TItem>, object> values) {

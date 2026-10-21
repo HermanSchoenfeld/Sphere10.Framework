@@ -8,11 +8,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class BlazorGridControllerDecorator<TItem, TConcrete> : IBlazorGridController<TItem> where TConcrete : IBlazorGridController<TItem> {
+public abstract class BlazorGridControllerDecorator<TItem, TConcrete> : IBlazorGridController<TItem>
+	where TConcrete : IBlazorGridController<TItem> {
 	public event EventHandlerEx Changed {
 		add => InternalController.Changed += value;
 		remove => InternalController.Changed -= value;
@@ -31,6 +33,10 @@ public abstract class BlazorGridControllerDecorator<TItem, TConcrete> : IBlazorG
 
 	public virtual int PageSize => InternalController.PageSize;
 
+	public virtual int ManualPageSize => InternalController.ManualPageSize;
+
+	public virtual BlazorGridPageMode PageMode => InternalController.PageMode;
+
 	public virtual int TotalCount => InternalController.TotalCount;
 
 	public virtual int TotalPages => InternalController.TotalPages;
@@ -44,6 +50,8 @@ public abstract class BlazorGridControllerDecorator<TItem, TConcrete> : IBlazorG
 	public virtual SortDirection SortDirection => InternalController.SortDirection;
 
 	public virtual bool IsLoading => InternalController.IsLoading;
+
+	public virtual bool IsRefreshing => InternalController.IsRefreshing;
 
 	public virtual bool IsSaving => InternalController.IsSaving;
 
@@ -73,11 +81,31 @@ public abstract class BlazorGridControllerDecorator<TItem, TConcrete> : IBlazorG
 
 	public virtual Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize) => InternalController.BindAsync(source, allowedCapabilities, pageSize);
 
+	public virtual Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode) => InternalController.BindAsync(source, allowedCapabilities, pageSize, pageMode);
+
 	public virtual Task RefreshAsync() => InternalController.RefreshAsync();
+
+	public virtual Task RefreshAsync(bool showLoadingIndicator) => InternalController.RefreshAsync(showLoadingIndicator);
+
+	public virtual Task<TItem[]> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default) => InternalController.ReadFilteredEntitiesAsync(cancellationToken);
+
+	public virtual Task RefreshRowsAsync(IEnumerable<TItem> entities) => InternalController.RefreshRowsAsync(entities);
+
+	public virtual Task<bool> RefreshEntityAsync(TItem entity) => InternalController.RefreshEntityAsync(entity);
+
+	public virtual Task<bool> RefreshSelectedEntityAsync() => InternalController.RefreshSelectedEntityAsync();
+
+	public virtual void RemoveRows(IEnumerable<TItem> entities) => InternalController.RemoveRows(entities);
 
 	public virtual Task SetPageAsync(int page) => InternalController.SetPageAsync(page);
 
 	public virtual Task SetPageSizeAsync(int pageSize) => InternalController.SetPageSizeAsync(pageSize);
+
+	public virtual Task SetPageModeAsync(BlazorGridPageMode pageMode) => InternalController.SetPageModeAsync(pageMode);
+
+	public virtual Task SetViewportPageSizeAsync(int pageSize) => InternalController.SetViewportPageSizeAsync(pageSize);
+
+	public virtual Task ApplyViewSettingsAsync(BlazorGridSettings settings) => InternalController.ApplyViewSettingsAsync(settings);
 
 	public virtual Task SearchAsync(string searchTerm) => InternalController.SearchAsync(searchTerm);
 
