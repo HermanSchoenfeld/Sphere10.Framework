@@ -381,17 +381,19 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	public override bool CloseScreen(WinFormsApplicationScreen Screen) => CloseScreens(new[] { Screen });
 
 	private async void CloseAllRequested() {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await CloseAllScreensAsync();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void CloseOthersRequested(WinFormsApplicationScreen screen) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await CloseAllOtherScreensAsync(screen);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
@@ -578,12 +580,13 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	}
 
 	private async Task LoadStartupScreenSettingsCoreAsync() {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			_startupSettingsProvider = UserSettings.Provider;
 			var provider = _startupSettingsProvider;
 			_startupScreenIdentity = await Task.Run(() => StartupScreenIdentity.FromSettings(provider.Get<ApplicationStartupScreenSettings>()));
 			LastStartupScreenSettingsError = null;
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			RecordStartupScreenSettingsError(error);
 		}
 	}
@@ -609,12 +612,10 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	}
 
 	private bool TryActivateStartupScreen(ApplicationScreenDefinition definition) {
-		try {
-			return ActivateScreenCore(_engine.GetDefinitionOwner(definition), definition.ScreenType, definition.Title, requestedDefinition: definition, startupRestoration: true) != null;
-		} catch (Exception error) {
-			RecordStartupScreenSettingsError(error);
-			return false;
-		}
+		var activated = false;
+		Tools.Exceptions.Execute(() => activated = ActivateScreenCore(_engine.GetDefinitionOwner(definition), definition.ScreenType, definition.Title,
+			requestedDefinition: definition, startupRestoration: true) != null, RecordStartupScreenSettingsError);
+		return activated;
 	}
 
 	private sealed record StartupScreenIdentity(string PluginName, string BlockName, string ScreenTypeName, string ScreenAssemblyName) {

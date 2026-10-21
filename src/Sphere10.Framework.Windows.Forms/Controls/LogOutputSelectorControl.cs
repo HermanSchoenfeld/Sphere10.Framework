@@ -207,13 +207,10 @@ public partial class LogOutputSelectorControl : UserControlEx {
 			.AddScreen(new LogOutputFormattingWizardScreen())
 			.AddScreen(new LogOutputReviewWizardScreen())
 			.OnFinished(selected => {
-				try {
-					ApplyConfiguration(selected);
-					return Task.FromResult(Result.Success);
-				} catch (Exception error) {
+				Tools.Exceptions.ExecuteCapturingException(() => ApplyConfiguration(selected), out var error);
+				if (error != null)
 					LoggingFailed?.Invoke(error);
-					return Task.FromResult(Result.Error(error.Message));
-				}
+				return Task.FromResult(error == null ? Result.Success : Result.Error(error.Message));
 			})
 			.OnCancelled(_ => Result.Success)
 			.Build();
@@ -248,7 +245,7 @@ public partial class LogOutputSelectorControl : UserControlEx {
 			return;
 		var requested = _loggingCheckBox.Checked;
 		UpdateUiState();
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (requested) {
 				if (_hasConfiguration)
 					StartLogging();
@@ -256,7 +253,8 @@ public partial class LogOutputSelectorControl : UserControlEx {
 					await ConfigureAsync();
 			} else
 				StopLogging();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			Volatile.Write(ref _lastError, error);
 			UpdateUiState();
 			LoggingFailed?.Invoke(error);
@@ -265,9 +263,10 @@ public partial class LogOutputSelectorControl : UserControlEx {
 	}
 
 	private async void ConfigureButtonClick(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await ShowConfigurationAsync();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			Volatile.Write(ref _lastError, error);
 			UpdateUiState();
 			LoggingFailed?.Invoke(error);
@@ -282,8 +281,11 @@ public partial class LogOutputSelectorControl : UserControlEx {
 		Interlocked.Exchange(ref _pendingFailure, error);
 		if (Environment.CurrentManagedThreadId == _ownerThreadId)
 			NotifyPendingFailure();
-		else if (IsHandleCreated && Interlocked.CompareExchange(ref _failureNotificationQueued, 1, 0) == 0)
-			try { BeginInvoke((Action)NotifyPendingFailure); } catch (InvalidOperationException) { Interlocked.Exchange(ref _failureNotificationQueued, 0); }
+		else if (IsHandleCreated && Interlocked.CompareExchange(ref _failureNotificationQueued, 1, 0) == 0) {
+			Tools.Exceptions.ExecuteCapturingException<InvalidOperationException>(() => BeginInvoke((Action)NotifyPendingFailure), out var dispatchError);
+			if (dispatchError != null)
+				Interlocked.Exchange(ref _failureNotificationQueued, 0);
+		}
 	}
 
 	private void NotifyPendingFailure() {
@@ -413,22 +415,16 @@ public partial class LogOutputSelectorControl : UserControlEx {
 			_hasConfiguration = true;
 			_rememberedEnabled = _outputSettings.IsLogging;
 			if (_rememberedEnabled)
-				try {
-					StartLogging();
-				} catch (Exception error) {
-					LoggingFailed?.Invoke(error);
-				}
+				Tools.Exceptions.Execute(StartLogging, error => LoggingFailed?.Invoke(error));
 			UpdateUiState();
 			return true;
 		} catch (Exception error) {
 			_restoreCompleted = true;
 			RecordSettingsFailure(error, "Could not restore logging preferences.");
 			if (_outputSettings == null)
-				try {
+				Tools.Exceptions.Execute(() => {
 					_outputSettings = (LogOutputSelectorSettings)provider.NewSetting(typeof(LogOutputSelectorSettings), key);
-				} catch (Exception recoveryError) {
-					RecordSettingsFailure(recoveryError, "Could not initialize logging preferences.");
-				}
+				}, recoveryError => RecordSettingsFailure(recoveryError, "Could not initialize logging preferences."));
 			UpdateUiState();
 			return true;
 		}
@@ -447,7 +443,7 @@ public partial class LogOutputSelectorControl : UserControlEx {
 		var key = ResolveLogSettingsKey();
 		if (key == null)
 			return;
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (_outputSettings == null) {
 				if (!TryGetSettingsProvider(out var provider))
 					return;
@@ -467,19 +463,17 @@ public partial class LogOutputSelectorControl : UserControlEx {
 			}
 			_settingsDirty = false;
 			_lastSettingsError = null;
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			RecordSettingsFailure(error, "Could not save logging preferences.");
 		}
 	}
 
 	private static bool TryGetSettingsProvider(out ISettingsProvider provider) {
-		try {
-			provider = UserSettings.Provider;
-			return true;
-		} catch (InvalidOperationException) {
-			provider = null;
-			return false;
-		}
+		ISettingsProvider resolved = null;
+		Tools.Exceptions.ExecuteCapturingException<InvalidOperationException>(() => resolved = UserSettings.Provider, out var error);
+		provider = resolved;
+		return error == null;
 	}
 
 	private string ResolveLogSettingsKey() {
@@ -502,10 +496,8 @@ public partial class LogOutputSelectorControl : UserControlEx {
 
 	private void RecordSettingsFailure(Exception error, string message) {
 		_lastSettingsError = error;
-		try {
+		Tools.Exceptions.ExecuteCapturingException<System.Exception>(() => {
 			(ApplicationLogger ?? SystemLog.Logger).Exception(error, message);
-		} catch {
-			// Optional preferences must not make the logging control unusable if the host logger also fails.
-		}
+		}, out var capturedError);
 	}
 }

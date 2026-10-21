@@ -256,7 +256,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	public virtual IWinFormsApplicationBlock[] RegisteredBlocks => ScreenHost.Blocks;
 
 	public virtual void ExecuteMenuItem(IWinFormsApplicationMenuItem menuItem) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (menuItem is IWinFormsControlMenuItem) {
 				ExecuteControlMenuItem(menuItem as IWinFormsControlMenuItem);
 			} else if (menuItem is IWinFormsScreenMenuItem) {
@@ -264,7 +264,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			} else if (menuItem is IWinFormsLinkMenuItem) {
 				ExecuteLinkMenuItem(menuItem as IWinFormsLinkMenuItem);
 			}
-		} catch (Exception e) {
+		}, out var e);
+		if (e != null) {
 			_ = ExceptionDialog.ShowAsync(e);
 		}
 	}

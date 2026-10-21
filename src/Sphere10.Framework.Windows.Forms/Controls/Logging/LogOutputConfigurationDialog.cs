@@ -47,9 +47,10 @@ public partial class LogOutputConfigurationDialog : Form {
 				UpdateDetails();
 			}
 		});
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await _selector.ConfigureAsync(this);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			if (!IsDisposed)
 				await DialogEx.ShowAsync(this, SystemIconType.Error, "Logging Configuration", error.Message, "OK");
 		}

@@ -40,7 +40,8 @@ public partial class HexEditorDialog : Form {
 			return result == DialogResult.OK ? dialog.Bytes : null;
 		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
 			dialog.Dispose();
-			try { await showing; } catch (ObjectDisposedException) { /* Cancellation may precede the posted native show. */ }
+			// Cancellation may precede the posted native show.
+			_ = await Tools.Exceptions.ExecuteCapturingExceptionAsync<ObjectDisposedException>(() => showing);
 			throw;
 		}
 	}

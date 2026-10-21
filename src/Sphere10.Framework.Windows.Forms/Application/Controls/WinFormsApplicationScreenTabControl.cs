@@ -92,9 +92,10 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	private async void MakeStartupMenuClicked(object sender, EventArgs args) {
 		if (_contextTab?.Tag is not WinFormsApplicationScreen screen || screen.Host is not WinFormsApplicationScreenHost host)
 			return;
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await host.MakeStartupScreenAsync(screen);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, "Make Startup Screen", error);
 		}
 	}

@@ -373,10 +373,11 @@ public partial class HexEditorControl : UserControl {
 	});
 
 	private async Task RunCommandAsync(Func<Task> action) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (CommitEdit())
 				await action();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			if (!IsDisposed && !Disposing)
 				await DialogEx.ShowAsync(this, SystemIconType.Error, "Hex Editor", error.Message, "OK");
 		}

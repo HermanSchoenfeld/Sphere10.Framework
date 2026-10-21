@@ -26,12 +26,10 @@ internal sealed class CrudGridPreparedTextEditor : EditorBase {
 	}
 
 	public string PrepareValue(object value) {
-		try {
-			return base.ValueToDisplayString(value);
-		} catch (Exception error) {
-			// Match CellContext.DisplayText's normal presentation of a failed conversion.
-			return "Error:" + error.Message;
-		}
+		string text = null;
+		Tools.Exceptions.ExecuteCapturingException(() => text = base.ValueToDisplayString(value), out var error);
+		// Match CellContext.DisplayText's normal presentation of a failed conversion.
+		return error == null ? text : "Error:" + error.Message;
 	}
 
 	public CrudGridPreparedTextEditor CopyForValue(object value, string displayText) {

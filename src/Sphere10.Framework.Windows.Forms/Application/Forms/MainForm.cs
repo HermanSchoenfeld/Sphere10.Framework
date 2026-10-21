@@ -109,30 +109,33 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 		? _menuSelectedScreen : ActiveScreen;
 
 	private async void OpenScreenMenuClicked(object sender, EventArgs args) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (sender is ToolStripMenuItem { Tag: WinFormsApplicationScreen screen } && ScreenHost.OpenScreens.Contains(screen, ReferenceEqualityComparer.Instance)
 				&& await ScreenHost.ShowScreenAsync(screen)) {
 				_menuSelectedScreen = screen;
 				RebuildScreensMenu();
 			}
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void CloseAllScreensClicked(object sender, EventArgs args) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await ScreenHost.CloseAllScreensAsync();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
 	private async void CloseOtherScreensClicked(object sender, EventArgs args) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (GetScreensMenuSelection() is { } screen)
 				await ScreenHost.CloseAllOtherScreensAsync(screen);
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
@@ -286,69 +289,77 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	#region Event Handlers
 
 	protected virtual async void RequestAFeature_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await ShowRequestFeatureDialog();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			ReportError(error);
 		}
 	}
 
 	protected virtual async void SendComment_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await ShowSendCommentDialog();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			ReportError(error);
 		}
 	}
 
 	protected virtual async void ReportABug_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await ShowSubmitBugReportDialog();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			ReportError(error);
 		}
 	}
 
 	protected virtual async void About_Click(object sender, EventArgs e) {
-		try {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await ShowAboutBox();
-		} catch (Exception error) {
+		});
+		if (error != null) {
 			ReportError(error);
 		}
 	}
 
 	protected virtual void ContextHelp_Click(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 			helpServices.ShowHelp();
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			ReportError(error);
 		}
 	}
 
 	protected virtual void UserGuide_Click(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
 			helpServices.ShowHelp();
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			ReportError(error);
 		}
 	}
 
 	protected virtual async void PurchaseFullVersion_Click(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			var productLicenseEnforcer = Sphere10Framework.Instance.ServiceProvider.GetService<IProductLicenseEnforcer>();
 			productLicenseEnforcer.CalculateRights(out var nagMessage);
 			await ShowNagScreen(nagMessage);
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			ReportError(error);
 		}
 	}
 
 	protected virtual void Exit_Click(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			Exit(false);
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			ReportError(error);
 		}
 	}

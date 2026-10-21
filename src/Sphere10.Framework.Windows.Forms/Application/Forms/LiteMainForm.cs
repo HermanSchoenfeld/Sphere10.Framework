@@ -142,12 +142,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				Enabled = false;
 				// Let the cancelled native close unwind before requesting the final close, even for synchronous tasks.
 				await Task.Yield();
-				Exception shutdownError = null;
-				try {
-					await shutdown();
-				} catch (Exception error) {
-					shutdownError = error;
-				}
+				var shutdownError = await Tools.Exceptions.ExecuteCapturingExceptionAsync(shutdown);
 				_finalClose = true;
 				Close();
 				// Closing the last window can uninstall its context; finish the approved exit inline before its message loop ends.
@@ -511,11 +506,9 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	}
 
 	private void ApplicationOnThreadException(object sender, ThreadExceptionEventArgs threadExceptionEventArgs) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<System.Exception>(() => {
 			this.ReportError(threadExceptionEventArgs.Exception);
-		} catch {
-			// ignored
-		}
+		}, out var capturedError);
 	}
 
 	#endregion

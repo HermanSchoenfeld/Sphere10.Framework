@@ -103,9 +103,10 @@ public sealed class GlobalHotKey : SyncDisposable, IGlobalHotKey {
 	private void OnPressed(int id) {
 		if (_disposed || id != _registeredId)
 			return;
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			Pressed?.Invoke(this, EventArgs.Empty);
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			// Subscriber failures must not cross the native window-procedure boundary.
 			Tools.Exceptions.ExecuteIgnoringException(() => SystemLog.Exception(error));
 		}

@@ -121,17 +121,18 @@ public partial class PathSelectorControl : UserControlEx {
 	#region Event Handlers
 
 	private async void _filenameTextBox_Enter(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (_textOnEnter == null)
 				_textOnEnter = this._filenameTextBox.Text;
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			SystemLog.Exception(error);
 			await ExceptionDialog.ShowAsync(error);
 		}
 	}
 
 	private async void _filenameTextBox_Validating(object sender, CancelEventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			var textOnLeave = _filenameTextBox.Text;
 			if (!string.IsNullOrEmpty(textOnLeave) && _textOnEnter != textOnLeave && ForcePathExists) {
 				if (Mode.IsIn(PathSelectionMode.Folder)) {
@@ -147,22 +148,24 @@ public partial class PathSelectorControl : UserControlEx {
 				NotifyPathChanged();
 			}
 			_textOnEnter = null;
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			SystemLog.Exception(error);
 			await ExceptionDialog.ShowAsync(error);
 		}
 	}
 
 	private async void _filenameTextBox_Validated(object sender, EventArgs e) {
-		try {
-		} catch (Exception error) {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+		}, out var error);
+		if (error != null) {
 			SystemLog.Exception(error);
 			await ExceptionDialog.ShowAsync(error);
 		}
 	}
 
 	private async void _fileSelectorButton_Click(object sender, EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			switch (Mode) {
 				case PathSelectionMode.OpenFile:
 					ShowOpenDialog();
@@ -177,18 +180,20 @@ public partial class PathSelectorControl : UserControlEx {
 					ShowSelectFolderDialog();
 					break;
 			}
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			SystemLog.Exception(error);
 			await ExceptionDialog.ShowAsync(error);
 		}
 	}
 
 	protected override async void OnEnabledChanged(EventArgs e) {
-		try {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			base.OnEnabledChanged(e);
 			_filenameTextBox.Enabled =
 				_fileSelectorButton.Enabled = this.Enabled;
-		} catch (Exception error) {
+		}, out var error);
+		if (error != null) {
 			SystemLog.Exception(error);
 			await ExceptionDialog.ShowAsync(error);
 		}
