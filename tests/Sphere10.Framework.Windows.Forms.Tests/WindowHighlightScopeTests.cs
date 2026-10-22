@@ -133,6 +133,37 @@ public class WindowHighlightScopeTests {
 		return Task.CompletedTask;
 	});
 
+	[Test, Combinatorial]
+	public void VisiblePhysicalBoundsFollowDwmFrameWithoutResizeMarginsOrCallerDpiScaling(
+		[Values(DpiAwarenessContext.Unaware, DpiAwarenessContext.SystemAware, DpiAwarenessContext.PerMonitorAwareV2)] DpiAwarenessContext callerContext,
+		[Values(FormBorderStyle.Sizable, FormBorderStyle.None)] FormBorderStyle borderStyle
+	) => RunWithMessageLoop(owner => {
+		using var target = new Form {
+			AutoScaleMode = AutoScaleMode.None, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual,
+			FormBorderStyle = borderStyle, Bounds = new Rectangle(-18000, -18000, 360, 220)
+		};
+		target.Show(owner);
+		Assert.That(WindowsWindow.TryGetInfo(target.Handle, out var snapshot), Is.True);
+		var outer = ReadNativePhysicalBounds(target.Handle);
+		var result = WinAPI.DWMAPI.DwmGetWindowAttribute(target.Handle, WinAPI.DWMAPI.DWMWA_EXTENDED_FRAME_BOUNDS,
+			out var nativeFrame, (uint)Marshal.SizeOf<WinAPI.RECT>());
+		var expected = result >= 0 && nativeFrame.Right > nativeFrame.Left && nativeFrame.Bottom > nativeFrame.Top
+			? Rectangle.FromLTRB(nativeFrame.Left, nativeFrame.Top, nativeFrame.Right, nativeFrame.Bottom) : outer;
+		using (new ThreadDpiAwarenessScope(callerContext)) {
+			var before = WinAPI.USER32.GetThreadDpiAwarenessContext();
+			var visible = WindowsWindow.GetVisiblePhysicalBounds(snapshot);
+			Assert.That(visible, Is.EqualTo(expected), "Use DWM's visible frame rather than expanding to the invisible resize margins.");
+			using var highlight = new WindowHighlightScope(visible, Color.Red, 6);
+			var frame = FormsApplication.OpenForms.Cast<Form>().Single(form => form.Name == "WindowHighlightForm");
+			Assert.That(ReadNativePhysicalBounds(frame.Handle), Is.EqualTo(expected));
+			Assert.That(frame.Region.IsVisible(new Point(5, frame.Height / 2)), Is.True);
+			Assert.That(frame.Region.IsVisible(new Point(6, frame.Height / 2)), Is.False);
+			Assert.That(WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetThreadDpiAwarenessContext(), before), Is.True);
+		}
+		Assert.That(ReadNativePhysicalBounds(target.Handle), Is.EqualTo(outer), "Reading and highlighting must leave target geometry untouched.");
+		return Task.CompletedTask;
+	});
+
 	[Test]
 	public void ActualFrameReceivesNoActivationOrFocusOnFirstShowResizeAndReshow() => RunWithMessageLoop(async owner => {
 		var type = typeof(WindowHighlightScope).Assembly.GetType("Sphere10.Framework.Windows.Forms.WindowHighlightForm", throwOnError: true);
@@ -174,6 +205,7 @@ public class WindowHighlightScopeTests {
 		};
 		Assert.That(() => WindowsWindow.GetBounds(stale), Throws.InvalidOperationException);
 		Assert.That(() => WindowsWindow.GetPhysicalBounds(stale), Throws.InvalidOperationException);
+		Assert.That(() => WindowsWindow.GetVisiblePhysicalBounds(stale), Throws.InvalidOperationException);
 		Assert.That(() => WindowMessageSender.Send(stale, 0, UIntPtr.Zero, IntPtr.Zero, WinAPI.USER32.SendMessageTimeoutFlags.AbortIfHung, 500),
 			Throws.InvalidOperationException);
 		Assert.That(WindowMessageSender.Send(snapshot, 0, UIntPtr.Zero, IntPtr.Zero, WinAPI.USER32.SendMessageTimeoutFlags.AbortIfHung, 500).Succeeded, Is.True,
@@ -188,9 +220,11 @@ public class WindowHighlightScopeTests {
 		Assert.That(WindowsWindow.TryGetInfo(target.Handle, out var snapshot), Is.True);
 		Assert.That(() => WindowsWindow.GetBounds(snapshot with { ProcessStartTimeUtc = null }), Throws.ArgumentException);
 		Assert.That(() => WindowsWindow.GetPhysicalBounds(snapshot with { ProcessStartTimeUtc = null }), Throws.ArgumentException);
+		Assert.That(() => WindowsWindow.GetVisiblePhysicalBounds(snapshot with { ProcessStartTimeUtc = null }), Throws.ArgumentException);
 		target.Dispose();
 		Assert.That(() => WindowsWindow.GetBounds(snapshot), Throws.InvalidOperationException);
 		Assert.That(() => WindowsWindow.GetPhysicalBounds(snapshot), Throws.InvalidOperationException);
+		Assert.That(() => WindowsWindow.GetVisiblePhysicalBounds(snapshot), Throws.InvalidOperationException);
 		return Task.CompletedTask;
 	});
 
