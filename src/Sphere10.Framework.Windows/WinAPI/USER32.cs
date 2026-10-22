@@ -1359,6 +1359,9 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool GetKeyboardState(byte[] lpKeyState);
 
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern short GetAsyncKeyState(int virtualKey);
+
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern UInt32 SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
 
