@@ -31,9 +31,10 @@ public sealed class LogOutputConfiguration {
 			LogOutputDestination.File => $"File: {FilePath}{Environment.NewLine}" + (RollingEnabled
 				? $"Rolling: {MaxFiles:N0} files including the active file; {MaxFileSizeBytes:N0} bytes per file"
 				: "Append to the existing file"),
-			LogOutputDestination.Application => "Application logger",
+			LogOutputDestination.Application => "Windows Application Log",
 			LogOutputDestination.StandardOutput => "Standard output",
 			LogOutputDestination.StandardError => "Standard error",
+			LogOutputDestination.Screen => "Log output screen",
 			_ => "Unknown output"
 		};
 		return $"{output}{Environment.NewLine}Levels: {Options}{Environment.NewLine}Timestamp: {(TimestampEnabled ? "On" : "Off")}"

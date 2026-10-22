@@ -824,7 +824,8 @@ public class LogOutputSelectorControlTests {
 		using var formatting = new LogOutputFormattingWizardScreen();
 		using var review = new LogOutputReviewWizardScreen();
 		using var configuration = new LogOutputConfigurationDialog();
-		Assert.That(destination.Controls.OfType<RadioButton>().ToArray(), Has.Length.EqualTo(4));
+		Assert.That(new[] { "_fileRadioButton", "_applicationRadioButton", "_standardOutputRadioButton", "_standardErrorRadioButton", "_screenRadioButton" }
+			.Select(name => FindControl<RadioButton>(destination, name)).ToArray(), Has.Length.EqualTo(5));
 		Assert.That(FindControl<PathSelectorControl>(file, "_fileSelector").OverwritePrompt, Is.False);
 		Assert.That(FindControl<NumericUpDown>(rolling, "_maxFilesNumber").Maximum, Is.EqualTo(9999));
 		Assert.That(FindControl<ComboBox>(formatting, "_encodingComboBox").Items.Count, Is.EqualTo(3));
@@ -832,6 +833,304 @@ public class LogOutputSelectorControlTests {
 		Assert.That(FindControl<CheckBox>(formatting, "_rememberAfterCloseCheckBox").Text, Is.EqualTo("Remember After Close"));
 		Assert.That(FindControl<Button>(configuration, "_changeButton").Text, Is.EqualTo("Change..."));
 		Assert.That(Directory.GetFiles(_directory), Is.Empty);
+	}
+
+	[Test]
+	public void ScreenDestinationPreservesPersistedDestinationValues() {
+		Assert.That((int)LogOutputDestination.File, Is.EqualTo(0));
+		Assert.That((int)LogOutputDestination.Application, Is.EqualTo(1));
+		Assert.That((int)LogOutputDestination.StandardOutput, Is.EqualTo(2));
+		Assert.That((int)LogOutputDestination.StandardError, Is.EqualTo(3));
+		Assert.That((int)LogOutputDestination.Screen, Is.EqualTo(4));
+		Assert.That(new LogOutputConfiguration { Destination = LogOutputDestination.Screen }.Describe(), Does.StartWith("Log output screen"));
+	}
+
+	[Test]
+	public void HostedScreenReceivesWorkerMessagesAndRemainsInspectableAfterOriginCloses() => RunWithMessageLoop(async owner => {
+		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		owner.Controls.Add(host);
+		var origin = new WinFormsApplicationScreen { Title = "Origin" };
+		var control = new LogOutputSelectorControl { ScreenTitle = "Captured Measurements" };
+		origin.Controls.Add(control);
+		Assert.That(host.ShowScreen(origin), Is.True);
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
+		var output = host.OpenScreens.OfType<LogScreen>().Single();
+		var text = FindControl<TextBox>(output, "_outputTextBox");
+		Assert.That(host.IsScreenUndocked(output), Is.True);
+		Assert.That(host.ActiveScreen, Is.SameAs(origin));
+		Assert.That(output.Title, Is.EqualTo("Log Output - Captured Measurements"));
+		Assert.That(output.FindForm().Text, Is.EqualTo(output.Title));
+		Assert.That(output.CanRestoreAtStartup, Is.False);
+		var captured = control.Logger;
+		var worker = Task.Run(() => captured.Info("From worker"));
+		Assert.That(worker.Wait(TimeSpan.FromSeconds(2)), Is.True, "Posting screen output must not require the UI thread to pump a worker's synchronous Invoke.");
+		await WaitForAsync(() => text.Text.Contains("From worker"));
+		Assert.That(text.Text, Is.EqualTo("[Info] From worker" + Environment.NewLine), "The view must not force its own timestamp on timestamp-disabled output.");
+		SaveScreenshot(output.FindForm(), "log-output-screen.png");
+		await control.StopLoggingAsync();
+		captured.Info("After Stop");
+		Assert.That(output.IsDisposed, Is.False);
+		Assert.That(text.Text, Does.Not.Contain("After Stop"));
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
+		var final = host.OpenScreens.OfType<LogScreen>().Single(screen => !ReferenceEquals(screen, output));
+		Assert.That(control.EnqueueInfo("Final capture"), Is.True);
+		await control.FlushLoggingAsync();
+		await WaitForAsync(() => FindControl<TextBox>(final, "_outputTextBox").Text.Contains("Final capture"));
+		Assert.That(host.CloseScreen(origin), Is.True);
+		Assert.That(control.IsDisposed, Is.True);
+		Assert.That(host.OpenScreens, Does.Contain(output).And.Contain(final));
+		Assert.That(final.IsDisposed, Is.False, "The application host owns the finished log view, independently of its originating selector.");
+	});
+
+	[TestCase(null, "Capture Source")]
+	[TestCase("Log Output", "Capture Source")]
+	[TestCase(" Custom Capture ", "Custom Capture")]
+	[TestCase("Log Output - Custom Capture", "Custom Capture")]
+	[TestCase("Log Output - Log Output - Custom Capture", "Custom Capture")]
+	public void ScreenOutputUsesOnePrefixAndTheSourceNameThroughDocking(string sourceName, string expectedSource) => RunWithMessageLoop(async owner => {
+		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		owner.Controls.Add(host);
+		var source = new WinFormsApplicationScreen { Title = "Capture Source" };
+		var control = new LogOutputSelectorControl { ScreenTitle = sourceName };
+		source.Controls.Add(control);
+		Assert.That(host.ShowScreen(source), Is.True);
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
+		var output = host.OpenScreens.OfType<LogScreen>().Single();
+		var expected = "Log Output - " + expectedSource;
+		Assert.That(output.Title, Is.EqualTo(expected));
+		Assert.That(output.FindForm().Text, Is.EqualTo(expected), "The detached window must identify its source.");
+		Assert.That(host.DockScreen(output), Is.True);
+		Assert.That(host.TabControl.TabPages.Cast<TabPage>().Single(page => ReferenceEquals(page.Tag, output)).Text, Is.EqualTo(expected));
+		Assert.That(host.UndockScreen(output), Is.True);
+		Assert.That(output.FindForm().Text, Is.EqualTo(expected), "Undocking again must preserve the same source name.");
+		await control.StopLoggingAsync();
+	});
+
+	[Test]
+	public void ClosingTheActiveHostedLogScreenStopsItsSelector() => RunWithMessageLoop(async owner => {
+		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		owner.Controls.Add(host);
+		using var control = new LogOutputSelectorControl { ScreenHost = host };
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
+		var output = host.OpenScreens.OfType<LogScreen>().Single();
+		var captured = control.Logger;
+		Assert.That(host.CloseScreen(output), Is.True);
+		Assert.That(control.IsLogging, Is.False);
+		Assert.That(control.Logger, Is.TypeOf<NoOpLogger>());
+		Assert.That(control.EnqueueInfo("Closed"), Is.False);
+		await Task.Run(() => captured.Info("Late worker"));
+		await control.FlushLoggingAsync();
+		Assert.That(control.LastError, Is.Null);
+	});
+
+	[Test]
+	public void ToolStripHostedSelectorResolvesTheRealFormScreenHost() => RunWithMessageLoop(async owner => {
+		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var strip = new ToolStrip { Dock = DockStyle.Top };
+		using var control = new LogOutputSelectorControl();
+		using var item = new ToolStripControlHost(control);
+		owner.Controls.Add(host);
+		owner.Controls.Add(strip);
+		strip.Items.Add(item);
+		var source = new WinFormsApplicationScreen { Title = "Active Hardware Capture" };
+		Assert.That(host.ShowScreen(source), Is.True);
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
+		var output = host.OpenScreens.OfType<LogScreen>().Single();
+		Assert.That(output.Host, Is.SameAs(host));
+		Assert.That(host.IsScreenUndocked(output), Is.True);
+		Assert.That(output.FindForm().Text, Is.EqualTo("Log Output - Active Hardware Capture"));
+		await control.StopLoggingAsync();
+	});
+
+	[TestCase(null, "Capture")]
+	[TestCase("Standalone Measurements", "Standalone Measurements")]
+	public void StandaloneSelectorUsesARealDetachedHostAndOwnsItsFallbackLifetime(string windowTitle, string expectedSource) => RunWithMessageLoop(async owner => {
+		owner.Text = windowTitle;
+		using var control = new LogOutputSelectorControl();
+		owner.Controls.Add(control);
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
+		var output = owner.OwnedForms.OfType<WinFormsApplicationScreenForm>().Single().Screen as LogScreen;
+		Assert.That(output, Is.Not.Null);
+		Assert.That(output.FindForm().Text, Is.EqualTo("Log Output - " + expectedSource));
+		Assert.That(output.Host.IsScreenUndocked(output), Is.True);
+		await Task.Run(() => control.Logger.Info("Standalone"));
+		await WaitForAsync(() => FindControl<TextBox>(output, "_outputTextBox").Text.Contains("Standalone"));
+		await control.StopLoggingAsync();
+		Assert.That(output.IsDisposed, Is.False);
+		await control.DisposeAsync();
+		Assert.That(output.IsDisposed, Is.True);
+	});
+
+	[Test]
+	public void LogScreenContinuesAfterDockUndockAndTemporaryHandleRecreation() => RunWithMessageLoop(async owner => {
+		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		owner.Controls.Add(host);
+		using var control = new LogOutputSelectorControl { ScreenHost = host };
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
+		var output = host.OpenScreens.OfType<LogScreen>().Single();
+		var text = FindControl<TextBox>(output, "_outputTextBox");
+		await Task.Run(() => control.Logger.Info("Before docking"));
+		await WaitForAsync(() => text.Text.Contains("Before docking"));
+		Assert.That(host.DockScreen(output), Is.True);
+		await Task.Run(() => control.Logger.Info("Docked"));
+		await WaitForAsync(() => text.Text.Contains("Docked"));
+		Assert.That(host.UndockScreen(output), Is.True);
+		typeof(Control).GetMethod("DestroyHandle", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(output, null);
+		Assert.That(output.IsHandleCreated, Is.False);
+		await Task.Run(() => control.Logger.Info("During handle transition"));
+		typeof(Control).GetMethod("CreateHandle", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(output, null);
+		await Task.Run(() => control.Logger.Info("After undocking"));
+		await WaitForAsync(() => text.Text.Contains("After undocking"));
+		Assert.That(text.Text, Does.Contain("During handle transition").And.Contain("Before docking").And.Contain("Docked"));
+		Assert.That(control.LastError, Is.Null);
+		await control.StopLoggingAsync();
+	});
+
+	[Test]
+	public void ScreenDestinationUsesTheSharedWizardWithoutFileSteps() => RunWithMessageLoop(async owner => {
+		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		owner.Controls.Add(host);
+		using var control = new LogOutputSelectorControl { ScreenHost = host };
+		owner.Controls.Add(control);
+		var pending = control.ConfigureAsync(owner);
+		var dialog = await WaitForDialog(owner);
+		FindControl<RadioButton>(dialog, "_screenRadioButton").Checked = true;
+		SaveScreenshot(dialog, "log-output-wizard.png");
+		await dialog.WizardManager.MoveNextAsync();
+		Assert.That(dialog.WizardManager.Steps, Has.Length.EqualTo(3));
+		Assert.That(dialog.WizardManager.CurrentStep, Is.TypeOf<LogOutputFormattingWizardScreen>());
+		await dialog.WizardManager.MoveNextAsync();
+		Assert.That((await dialog.WizardManager.FinishAsync()).IsSuccess, Is.True);
+		Assert.That(await pending, Is.True);
+		Assert.That(control.Configuration.Destination, Is.EqualTo(LogOutputDestination.Screen));
+		Assert.That(host.OpenScreens.OfType<LogScreen>().Count(), Is.EqualTo(1));
+	});
+
+	[Test]
+	public void CapturedRecordsKeepTheirOwnTimestampWithoutChangingOrdinaryMessageFormatting() => RunWithMessageLoop(async owner => {
+		var messages = new List<string>();
+		using var control = new LogOutputSelectorControl { ApplicationLogger = new ActionLogger(messages.Add) { Options = LogOptions.VerboseProfile } };
+		owner.Controls.Add(control);
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Application, TimestampEnabled = true });
+		const string captured = "2026-10-22 01:02:03.456 Memory Activity — Memory Usage: 42.5 %";
+		Assert.That(control.EnqueueInfo(captured, includesTimestamp: true), Is.True);
+		Assert.That(control.EnqueueInfo("Ordinary Event"), Is.True);
+		await control.FlushLoggingAsync();
+		Assert.That(messages[0], Is.EqualTo(captured));
+		Assert.That(messages[1], Does.EndWith("Ordinary Event").And.Not.EqualTo("Ordinary Event"));
+		await control.StopLoggingAsync();
+	});
+
+	[Test]
+	public void AcceptedQueuedFileMessagesDrainBeforeUserOffClosesOutput() => RunWithMessageLoop(async owner => {
+		using var control = new LogOutputSelectorControl();
+		owner.Controls.Add(control);
+		var configuration = FileConfiguration("queued-off.log");
+		control.StartLogging(configuration);
+		var accepted = new List<string>();
+		for (var index = 0; index < 2000; index++) {
+			var message = $"Captured {index}";
+			if (control.EnqueueInfo(message))
+				accepted.Add("[Info] " + message);
+		}
+		FindControl<CheckBox>(control, "_loggingCheckBox").Checked = false;
+		Assert.That(control.IsLogging, Is.False);
+		Assert.That(control.EnqueueInfo("After Off"), Is.False);
+		await control.FlushLoggingAsync();
+		Assert.That(File.ReadAllLines(configuration.FilePath), Is.EqualTo(accepted));
+		using var exclusive = new FileStream(configuration.FilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+	});
+
+	[Test]
+	public void QueueIsBoundedAndAsyncStopDrainsAcceptedMessagesWithoutBlockingTheUi() => RunWithMessageLoop(async owner => {
+		using var entered = new ManualResetEventSlim();
+		using var release = new ManualResetEventSlim();
+		using var unblock = Tools.Scope.ExecuteOnDispose(() => release.Set());
+		var messages = new List<string>();
+		var application = new CallbackLogger(() => { entered.Set(); release.Wait(); }) { Options = LogOptions.VerboseProfile };
+		var recording = new ActionLogger(messages.Add) { Options = LogOptions.VerboseProfile };
+		var sinks = new MulticastLogger();
+		sinks.Add(application);
+		sinks.Add(recording);
+		using var control = new LogOutputSelectorControl { ApplicationLogger = sinks };
+		owner.Controls.Add(control);
+		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Application, TimestampEnabled = false });
+		Assert.That(control.EnqueueInfo("First"), Is.True);
+		Assert.That(entered.Wait(TimeSpan.FromSeconds(2)), Is.True);
+		var accepted = 1;
+		for (var index = 0; index < 2000; index++)
+			if (control.EnqueueInfo("Buffered " + index))
+				accepted++;
+		Assert.That(accepted, Is.InRange(2, 1024), "A blocked output must retain a bounded backlog and reject overflow.");
+		var stopped = control.StopLoggingAsync();
+		Assert.That(control.IsLogging, Is.False);
+		Assert.That(stopped.IsCompleted, Is.False);
+		release.Set();
+		await stopped;
+		Assert.That(messages, Has.Count.EqualTo(accepted));
+	});
+
+	[Test]
+	public void ConfigurationDetailsCanStopAndRestartAcceptedOutputWithoutAnotherWizard() => RunWithMessageLoop(async owner => {
+		using var control = new LogOutputSelectorControl();
+		owner.Controls.Add(control);
+		control.StartLogging(FileConfiguration("details-toggle.log"));
+		var pending = control.ShowConfigurationAsync(owner);
+		var dialog = await WaitForConfigurationDialog(owner);
+		var toggle = FindControl<Button>(dialog, "_toggleButton");
+		Assert.That(toggle.Text, Is.EqualTo("Stop Logging"));
+		SaveScreenshot(dialog, "log-output-details.png");
+		toggle.PerformClick();
+		await WaitForAsync(() => !control.IsLogging && toggle.Enabled);
+		Assert.That(toggle.Text, Is.EqualTo("Start Logging"));
+		toggle.PerformClick();
+		await WaitForAsync(() => control.IsLogging && toggle.Enabled);
+		Assert.That(owner.OwnedForms.OfType<WinFormsWizardDialog<LogOutputConfiguration>>(), Is.Empty);
+		dialog.Close();
+		await pending;
+	});
+
+	[Test]
+	public void AsyncDisposalPreservesEnabledPreferencesAndCompletesAfterTheRealMessageLoopEnds() {
+		using var entered = new ManualResetEventSlim();
+		using var release = new ManualResetEventSlim();
+		using var unblock = Tools.Scope.ExecuteOnDispose(() => release.Set());
+		var previousContext = SynchronizationContext.Current;
+		using var context = new WindowsFormsSynchronizationContext();
+		using var restore = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(previousContext));
+		SynchronizationContext.SetSynchronizationContext(context);
+		using var owner = new Form { ShowInTaskbar = false, Location = new Point(-20000, -20000), StartPosition = FormStartPosition.Manual };
+		var control = new LogOutputSelectorControl { SettingsKey = "Async-close", ApplicationLogger = new CallbackLogger(() => { entered.Set(); release.Wait(); }) { Options = LogOptions.VerboseProfile } };
+		owner.Controls.Add(control);
+		Task completion = null;
+		Exception failure = null;
+		owner.Shown += (_, _) => {
+			using var close = Tools.Scope.ExecuteOnDispose(owner.Close);
+			Tools.Exceptions.ExecuteCapturingException(() => {
+				control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Application, RememberAfterClose = true, TimestampEnabled = false });
+				Assert.That(control.EnqueueInfo("Final accepted entry"), Is.True);
+				Assert.That(entered.Wait(TimeSpan.FromSeconds(2)), Is.True);
+				completion = control.DisposeAsync().AsTask();
+				Assert.That(control.IsDisposed, Is.True);
+				Assert.That(completion.IsCompleted, Is.False);
+				Assert.That(control.FlushLoggingAsync(), Is.SameAs(completion));
+			}, out failure);
+		};
+		FormsApplication.Run(owner);
+		release.Set();
+		Assert.That(failure, Is.Null, failure?.ToString());
+		Assert.That(completion.Wait(TimeSpan.FromSeconds(5)), Is.True, "The returned cleanup must finish after the native dispatcher has closed.");
+		Assert.That(UserSettings.Get<LogOutputSelectorSettings>("Async-close").IsLogging, Is.True);
+	}
+
+	private static void SaveScreenshot(Control control, string filename) {
+		var directory = Environment.GetEnvironmentVariable("SPHERE10_LOG_OUTPUT_SCREENSHOTS");
+		if (string.IsNullOrWhiteSpace(directory))
+			return;
+		Directory.CreateDirectory(directory);
+		using var bitmap = new Bitmap(control.Width, control.Height);
+		control.DrawToBitmap(bitmap, new Rectangle(Point.Empty, control.Size));
+		bitmap.Save(Path.Combine(directory, filename));
 	}
 
 	private LogOutputConfiguration FileConfiguration(string name) => new() { FilePath = Path.Combine(_directory, name), TimestampEnabled = false };

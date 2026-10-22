@@ -20,6 +20,7 @@ partial class LogOutputConfigurationDialog {
 	private FlowLayoutPanel _buttonsPanel;
 	private Button _closeButton;
 	private Button _changeButton;
+	private Button _toggleButton;
 
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
@@ -37,6 +38,7 @@ partial class LogOutputConfigurationDialog {
 		_buttonsPanel = new FlowLayoutPanel();
 		_closeButton = new Button();
 		_changeButton = new Button();
+		_toggleButton = new Button();
 		_layoutPanel.SuspendLayout();
 		_buttonsPanel.SuspendLayout();
 		SuspendLayout();
@@ -72,6 +74,7 @@ partial class LogOutputConfigurationDialog {
 		_buttonsPanel.WrapContents = false;
 		_buttonsPanel.Controls.Add(_closeButton);
 		_buttonsPanel.Controls.Add(_changeButton);
+		_buttonsPanel.Controls.Add(_toggleButton);
 		_closeButton.DialogResult = DialogResult.OK;
 		_closeButton.Name = "_closeButton";
 		_closeButton.Size = new Size(90, 28);
@@ -84,6 +87,13 @@ partial class LogOutputConfigurationDialog {
 		_changeButton.TabIndex = 0;
 		_changeButton.UseVisualStyleBackColor = true;
 		_changeButton.Click += ChangeClick;
+		_toggleButton.Name = "_toggleButton";
+		_toggleButton.Size = new Size(130, 28);
+		_toggleButton.Text = "Start Logging";
+		_toggleButton.AccessibleName = "Start Or Stop Logging";
+		_toggleButton.TabIndex = 2;
+		_toggleButton.UseVisualStyleBackColor = true;
+		_toggleButton.Click += ToggleLoggingClick;
 		AcceptButton = _closeButton;
 		CancelButton = _closeButton;
 		AutoScaleDimensions = new SizeF(7F, 15F);

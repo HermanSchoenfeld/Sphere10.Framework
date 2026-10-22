@@ -12,5 +12,6 @@ public enum LogOutputDestination {
 	File,
 	Application,
 	StandardOutput,
-	StandardError
+	StandardError,
+	Screen
 }

@@ -38,11 +38,13 @@ public partial class LogOutputConfigurationDialog : Form {
 			return;
 		_changing = true;
 		_changeButton.Enabled = false;
+		_toggleButton.Enabled = false;
 		_closeButton.Enabled = false;
 		using var configurationState = Tools.Scope.ExecuteOnDispose(() => {
 			_changing = false;
 			if (!IsDisposed) {
 				_changeButton.Enabled = true;
+				_toggleButton.Enabled = true;
 				_closeButton.Enabled = true;
 				UpdateDetails();
 			}
@@ -56,6 +58,30 @@ public partial class LogOutputConfigurationDialog : Form {
 		}
 	}
 
+	private async void ToggleLoggingClick(object sender, EventArgs args) {
+		if (_selector == null || _changing)
+			return;
+		_changing = true;
+		_changeButton.Enabled = _toggleButton.Enabled = _closeButton.Enabled = false;
+		using var state = Tools.Scope.ExecuteOnDispose(() => {
+			_changing = false;
+			if (!IsDisposed) {
+				_changeButton.Enabled = _toggleButton.Enabled = _closeButton.Enabled = true;
+				UpdateDetails();
+			}
+		});
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (_selector.IsLogging)
+				await _selector.StopLoggingAsync();
+			else if (_selector.HasConfiguration)
+				_selector.StartLogging();
+			else
+				await _selector.ConfigureAsync(this);
+		});
+		if (error != null && !IsDisposed)
+			await DialogEx.ShowAsync(this, SystemIconType.Error, "Logging Configuration", error.Message, "OK");
+	}
+
 	private void LoggingStateChanged() => UpdateDetails();
 
 	private void LoggingFailed(Exception error) => UpdateDetails();
@@ -65,6 +91,7 @@ public partial class LogOutputConfigurationDialog : Form {
 			return;
 		_detailsTextBox.Text = _selector.GetDetailsText();
 		_stateLabel.Text = _selector.IsLogging ? "Output Is Active" : "Output Is Off";
+		_toggleButton.Text = _selector.IsLogging ? "Stop Logging" : "Start Logging";
 	}
 
 	private void DetachSelector() {

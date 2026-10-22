@@ -48,6 +48,7 @@ public partial class LogOutputFormattingWizardScreen : LogOutputWizardScreen {
 		_encodingComboBox.Enabled = Model.Destination == LogOutputDestination.File;
 		_encodingExplanationLabel.Text = Model.Destination == LogOutputDestination.File
 			? "UTF-8 has no byte-order mark. Encoding is applied when the file is opened."
+			: Model.Destination == LogOutputDestination.Screen ? "Screen output displays messages with the selected formatting."
 			: "Application and standard-stream output use their host's encoding and existing filtering.";
 	}
 }
