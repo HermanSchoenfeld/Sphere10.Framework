@@ -258,7 +258,8 @@ public class CrudGridBackgroundPreparationTests {
 		crud.AllowCellEditing = true;
 		Assert.That(native[1, 0], Is.SameAs(cell));
 		var context = new CellContext(native, new Position(1, 0));
-		context.StartEdit();
+		crud.SelectedEntity = row;
+		typeof(GridVirtual).GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(native, new object[] { new KeyEventArgs(Keys.F2) });
 		Assert.That(context.IsEditing(), Is.True);
 		((GridTextBox)cell.Editor).Control.Text = "Edited";
 		var updated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

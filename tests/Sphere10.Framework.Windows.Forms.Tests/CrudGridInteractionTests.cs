@@ -30,7 +30,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void EnablingCellEditingAfterBindingAllowsTextEditsAndPersistsChanges(bool InitiallyEmpty) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = false };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud, InitialAddress: InitiallyEmpty ? null : "1 Original Street");
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -76,7 +76,8 @@ public class CrudGridInteractionTests {
 		await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
 		var Context = new CellContext(Grid, new Position(1, 0));
-		Context.StartEdit();
+		await ClickCell(Grid, 1);
+		RaiseKeyDown(Grid, Keys.F2);
 		Assert.That(Context.IsEditing(), Is.True);
 		if (RevokeCapability)
 			Crud.Capabilities = DataSourceCapabilities.CanRead;
@@ -93,11 +94,10 @@ public class CrudGridInteractionTests {
 	[TestCase(true, 0)]
 	[TestCase(false, 100)]
 	[TestCase(true, 100)]
-	public void LeftClickSelectsUnselectedRowsAndDeselectsSelectedRows(bool SelectOnMouseUp, int HoldMilliseconds) => RunWithMessageLoop(async Owner => {
+	public void DefaultLeftClickSelectsUnselectedRowsAndDeselectsSelectedRows(bool SelectOnMouseUp, int HoldMilliseconds) => RunWithMessageLoop(async Owner => {
 		using var Crud = new CrudGrid { Dock = DockStyle.Fill, SelectOnMouseUp = SelectOnMouseUp };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
-		Crud.LeftClickToDeselect = true;
 		var Grid = FindControl<Grid>(Crud, "_grid");
 		var Selected = new List<object>();
 		var Deselected = new List<object>();
@@ -257,7 +257,7 @@ public class CrudGridInteractionTests {
 
 	[Test]
 	public void EnablingDeselectModePreservesAnActiveTextEditor() => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true };
+		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = false };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");

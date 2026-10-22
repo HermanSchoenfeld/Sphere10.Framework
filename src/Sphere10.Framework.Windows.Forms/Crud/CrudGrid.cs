@@ -145,7 +145,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			_entityEditorAdapter = new CrudEntityEditorAdapter<object>();
 			_entityEditorType = typeof(DefaultCrudEntityEditor);
 			_gridContainerPanel.Resize += new EventHandler(_gridContainerPanel_Resize);
-			LeftClickToDeselect = false;
+			LeftClickToDeselect = true;
 			RightClickForContextMenu = true;
 			UseEntityReferenceForLookup = false;
 			AutoSelectOnCreate = false;
@@ -180,7 +180,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	[Description("A single click toggles row selection. When AllowCellEditing is enabled, double-click an editable cell or press F2 to edit without deselecting the row.")]
 	[Category("Behavior")]
-	[DefaultValue(false)]
+	[DefaultValue(true)]
 	public bool LeftClickToDeselect {
 		get => _leftClickToDeselect;
 		set {

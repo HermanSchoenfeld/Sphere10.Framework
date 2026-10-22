@@ -228,7 +228,8 @@ public class CrudGridReadOnlyCellTests {
 		Assert.That(native[1, 1].Editor, Is.Not.InstanceOf<EditorControlBase>(), "A per-column restriction still wins over the newly granted permission.");
 		Assert.That(HasPersistenceController(native[1, 1]), Is.False);
 		var context = new CellContext(native, new Position(1, 0));
-		context.StartEdit();
+		crud.SelectedEntity = row;
+		typeof(GridVirtual).GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(native, new object[] { new KeyEventArgs(Keys.F2) });
 		Assert.That(context.IsEditing(), Is.True);
 		((GridTextBox)cell.Editor).Control.Text = "Updated";
 		var updated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -251,7 +252,8 @@ public class CrudGridReadOnlyCellTests {
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
 		var context = new CellContext(native, new Position(1, 0));
-		context.StartEdit();
+		crud.SelectedEntity = row;
+		typeof(GridVirtual).GetMethod("OnKeyDown", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(native, new object[] { new KeyEventArgs(Keys.F2) });
 		Assert.That(context.IsEditing(), Is.True);
 		var editor = (GridTextBox)context.Cell.Editor;
 		editor.Control.Text = "Unaccepted draft";
