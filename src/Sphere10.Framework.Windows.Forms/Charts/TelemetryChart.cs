@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -24,12 +25,19 @@ public partial class TelemetryChart : UserControl {
 	private bool _compact;
 	private bool _showHeader = true;
 	private int _hoveredIndex = -1;
+	private string _logSeriesName = string.Empty;
 
 	public TelemetryChart() {
 		InitializeComponent();
 		_plot.ShowToolTips = false;
 		_plot.YLabelFormatter = FormatValue;
 		_plot.XLabelFormatter = value => Math.Abs(value) < 0.0001 ? "Now" : $"{-value:N0}s Ago";
+		_plot.LogSampleProvider = () => _points.Select(point => new ChartLogSample(ResolvedLogSeriesName,
+			point.CapturedAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
+			string.Empty, new[] { point.Value?.ToString("R", CultureInfo.InvariantCulture) ?? "Unavailable" }) {
+			CapturedAtUtc = point.CapturedAtUtc,
+			Units = Unit switch { TelemetryChartUnit.Bytes => "B", TelemetryChartUnit.BytesPerSecond => "B/s", TelemetryChartUnit.Celsius => "°C", _ => "%" }
+		}).ToArray();
 		PublishSamples();
 	}
 
@@ -95,6 +103,22 @@ public partial class TelemetryChart : UserControl {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public TelemetryChartPoint[] Points => (TelemetryChartPoint[])_points.Clone();
 
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public LogOutputSelectorControl LogOutput => _plot.LogOutput;
+
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public ChartLogOutputBehavior LogOutputBehavior => _plot.LogOutputBehavior;
+
+	[Category("Behavior"), DefaultValue("")]
+	public string LogTitle { get => _plot.LogTitle; set => _plot.LogTitle = value; }
+
+	/// <summary>Optional descriptive measurement name; empty uses the chart heading or surrounding group caption.</summary>
+	[Category("Behavior"), DefaultValue("")]
+	public string LogSeriesName { get => _logSeriesName; set => _logSeriesName = value ?? string.Empty; }
+
+	private string ResolvedLogSeriesName => !string.IsNullOrWhiteSpace(_logSeriesName) ? _logSeriesName
+		: ChartLogOutputBehavior.IsDescriptive(ChartTitle) ? ChartTitle : ChartLogOutputBehavior.ResolveGroupTitle(this) ?? _plot.ResolvedLogTitle;
+
 	public void SetSamples(TelemetryChartPoint[] points) {
 		Guard.ArgumentNotNull(points, nameof(points));
 		// Normalize captured observations before replacing the currently displayed snapshot.
@@ -134,9 +158,20 @@ public partial class TelemetryChart : UserControl {
 	}
 
 	protected override void Dispose(bool disposing) {
-		if (disposing)
+		if (disposing) {
+			_points = Array.Empty<TelemetryChartPoint>();
 			_sampleToolTip?.Dispose();
+		}
 		base.Dispose(disposing);
+	}
+
+	protected override void OnHandleCreated(EventArgs args) {
+		base.OnHandleCreated(args);
+		if (Tools.Runtime.IsDesignMode)
+			return;
+		LogOutputBehavior.AttachSurface(this);
+		LogOutputBehavior.AttachSurface(_title);
+		LogOutputBehavior.AttachSurface(_value);
 	}
 
 	private void PublishSamples() {

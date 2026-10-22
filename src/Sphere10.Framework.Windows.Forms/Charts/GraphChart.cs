@@ -19,6 +19,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>A reusable DataVisualization surface for captured numeric line, area and bar series.</summary>
 public partial class GraphChart : UserControl {
 	private static readonly Color[] DefaultColors = { Color.SteelBlue, Color.Firebrick, Color.SeaGreen, Color.DarkOrange, Color.MediumPurple, Color.Teal };
+	private readonly int _ownerThreadId = Environment.CurrentManagedThreadId;
 	private GraphChartSeries[] _series = Array.Empty<GraphChartSeries>();
 	private GraphChartStyle _style;
 	private double? _minimumX;
@@ -30,6 +31,9 @@ public partial class GraphChart : UserControl {
 	private bool _hasRendered;
 	private Func<double, string> _xLabelFormatter;
 	private Func<double, string> _yLabelFormatter;
+	private ChartLogOutputBehavior _logOutputBehavior;
+	private string _logTitle = string.Empty;
+	private string _logUnit = string.Empty;
 
 	public GraphChart() {
 		InitializeComponent();
@@ -125,6 +129,37 @@ public partial class GraphChart : UserControl {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Chart NativeChart => _chart;
 
+	/// <summary>Optional output title; empty derives the native title or owning screen/group context.</summary>
+	[Category("Behavior"), DefaultValue("")]
+	public string LogTitle { get => _logTitle; set => _logTitle = value ?? string.Empty; }
+
+	/// <summary>Optional units for numeric log values; empty derives the Y-axis title.</summary>
+	[Category("Behavior"), DefaultValue("")]
+	public string LogUnit { get => _logUnit; set => _logUnit = value ?? string.Empty; }
+
+	/// <summary>The shared output selector used by this chart's Log Output context command.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public LogOutputSelectorControl LogOutput => LogOutputBehavior.OutputSelector;
+
+	/// <summary>Coordinates optional capture and the selector's output queue. A caller may bind a borrowed shared selector.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public ChartLogOutputBehavior LogOutputBehavior {
+		get {
+			Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThreadId, "Configure chart logging on the chart's creating UI thread.");
+			ObjectDisposedException.ThrowIf(IsDisposed || Disposing, this);
+			if (_logOutputBehavior == null) {
+				_logOutputBehavior = new ChartLogOutputBehavior(this, () => LogSampleProvider?.Invoke() ?? ReadLogSamples(), () => ResolvedLogTitle);
+				_logOutputBehavior.AttachSurface(_chart);
+				_logOutputBehavior.AttachSurface(_emptyState);
+			}
+			return _logOutputBehavior;
+		}
+	}
+
+	internal Func<ChartLogSample[]> LogSampleProvider { get; set; }
+
+	internal string ResolvedLogTitle => string.IsNullOrWhiteSpace(_logTitle) ? ChartLogOutputBehavior.ResolveTitle(this) : _logTitle;
+
 	/// <summary>The actual plot rectangle, in this control's coordinates, after chart layout.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public RectangleF PlotBounds {
@@ -150,6 +185,7 @@ public partial class GraphChart : UserControl {
 		}
 		_series = (GraphChartSeries[])series.Clone();
 		PublishSeries();
+		_logOutputBehavior?.Capture();
 	}
 
 	public void Clear() => SetSeries(Array.Empty<GraphChartSeries>());
@@ -188,6 +224,28 @@ public partial class GraphChart : UserControl {
 		_chart.Legends[0].Font = Font;
 	}
 
+	protected override void OnHandleCreated(EventArgs args) {
+		base.OnHandleCreated(args);
+		if (!Tools.Runtime.IsDesignMode)
+			_ = LogOutputBehavior;
+	}
+
+	protected override void OnLoad(EventArgs args) {
+		base.OnLoad(args);
+		if (!Tools.Runtime.IsDesignMode)
+			LogOutputBehavior.RestoreSettings();
+	}
+
+	protected override void Dispose(bool disposing) {
+		if (disposing) {
+			_series = Array.Empty<GraphChartSeries>();
+			LogSampleProvider = null;
+			_logOutputBehavior?.Dispose();
+			_chart?.Series.Clear();
+		}
+		base.Dispose(disposing);
+	}
+
 	protected override void OnForeColorChanged(EventArgs args) {
 		base.OnForeColorChanged(args);
 		if (_chart == null)
@@ -200,6 +258,24 @@ public partial class GraphChart : UserControl {
 		Guard.Argument(!minimum.HasValue || double.IsFinite(minimum.Value), nameof(minimum), "Axis bounds must be finite");
 		Guard.Argument(!maximum.HasValue || double.IsFinite(maximum.Value), nameof(maximum), "Axis bounds must be finite");
 		Guard.Argument(!minimum.HasValue || !maximum.HasValue || minimum.Value < maximum.Value, nameof(maximum), "Maximum must exceed minimum");
+	}
+
+	private ChartLogSample[] ReadLogSamples() {
+		var samples = new List<ChartLogSample>();
+		foreach (var series in _series) {
+			var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
+			foreach (var point in series.GetPoints()) {
+				var position = point.Label ?? point.X.ToString("R", CultureInfo.InvariantCulture);
+				occurrences.TryGetValue(position, out var occurrence);
+				occurrences[position] = occurrence + 1;
+				samples.Add(new ChartLogSample(series.Name, position + ":" + occurrence, position,
+					new[] { point.Y?.ToString("R", CultureInfo.InvariantCulture) ?? "Unavailable" }) {
+					Units = string.IsNullOrWhiteSpace(_logUnit) ? ChartLogOutputBehavior.ExtractUnits(YAxisTitle) : _logUnit,
+					PositionLabel = !string.IsNullOrWhiteSpace(XAxisTitle) ? XAxisTitle : point.Label == null ? "X" : "Category"
+				});
+			}
+		}
+		return samples.ToArray();
 	}
 
 	private void UpdateAxes() {
