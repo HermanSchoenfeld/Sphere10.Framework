@@ -184,6 +184,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			// _leftClickCheckBox
 			// 
 			_leftClickCheckBox.AutoSize = true;
+			_leftClickCheckBox.Checked = true;
 			_leftClickCheckBox.Location = new System.Drawing.Point(19, 328);
 			_leftClickCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_leftClickCheckBox.Name = "_leftClickCheckBox";
@@ -450,6 +451,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_liveToggleSelectionCheckBox.Name = "_liveToggleSelectionCheckBox";
 			_liveToggleSelectionCheckBox.Text = "Left Click To Deselect";
 			_liveToggleSelectionCheckBox.AutoSize = true;
+			_liveToggleSelectionCheckBox.Checked = true;
 			_liveToggleSelectionCheckBox.CheckedChanged += LivePresentationChanged;
 			_liveOptions.Controls.Add(_livePageModeLabel);
 			_liveOptions.Controls.Add(_livePageMode);
