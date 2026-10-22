@@ -6,11 +6,38 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework;
 
 public static class ComboBoxExtensions {
+	/// <summary>Uses a grey, non-editable selection field without a text-selection highlight when the closed control has focus.</summary>
+	public static void UseSelectionOnlyAppearance(this ComboBox combo) {
+		Guard.ArgumentNotNull(combo, nameof(combo));
+		combo.DropDownStyle = ComboBoxStyle.DropDownList;
+		combo.FlatStyle = FlatStyle.Flat;
+		combo.BackColor = SystemColors.Control;
+		combo.ForeColor = SystemColors.ControlText;
+		combo.DrawMode = DrawMode.OwnerDrawFixed;
+		combo.DrawItem -= DrawSelectionOnlyItem;
+		combo.DrawItem += DrawSelectionOnlyItem;
+	}
+
+	private static void DrawSelectionOnlyItem(object sender, DrawItemEventArgs args) {
+		var combo = (ComboBox)sender;
+		var collapsed = (args.State & DrawItemState.ComboBoxEdit) != 0;
+		var selected = !collapsed && (args.State & DrawItemState.Selected) != 0;
+		var background = selected ? SystemColors.Highlight : combo.BackColor;
+		var foreground = !combo.Enabled ? SystemColors.GrayText : selected ? SystemColors.HighlightText : combo.ForeColor;
+		using var brush = new SolidBrush(background);
+		args.Graphics.FillRectangle(brush, args.Bounds);
+		if (args.Index >= 0 && args.Index < combo.Items.Count)
+			TextRenderer.DrawText(args.Graphics, combo.GetItemText(combo.Items[args.Index]), args.Font, args.Bounds, foreground, background,
+				TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
+		if (!collapsed)
+			args.DrawFocusRectangle();
+	}
 
 	/// <summary>
 	/// Selects the item in the combo box which matches the given text.
