@@ -15,6 +15,14 @@ public static class HooksTool {
 
 	internal const int MaxExceptionsBeforeAbort = 20;
 
+	/// <summary>Checks current physical button state independently of the calling thread's message queue.</summary>
+	public static bool IsAnyMouseButtonDown() =>
+		WinAPI.USER32.GetAsyncKeyState((int)VirtualKey.LButton) < 0 ||
+		WinAPI.USER32.GetAsyncKeyState((int)VirtualKey.RButton) < 0 ||
+		WinAPI.USER32.GetAsyncKeyState((int)VirtualKey.MButton) < 0 ||
+		WinAPI.USER32.GetAsyncKeyState((int)VirtualKey.XButton1) < 0 ||
+		WinAPI.USER32.GetAsyncKeyState((int)VirtualKey.XButton2) < 0;
+
 	public static void SimulateKeyboardDeviceAction(ScanCode scanCode, KeyState keyState) {
 		var inputs = new WinAPI.USER32.INPUT[] {
 			new WinAPI.USER32.INPUT {
