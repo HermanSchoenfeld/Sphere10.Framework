@@ -29,6 +29,9 @@ public static class Windows {
 	[ThreadStatic] private static ComputerUtil _computer;
 	public static ComputerUtil Computer => _computer ??= new();
 
+	[ThreadStatic] private static WindowsDisplayUtil _display;
+	public static WindowsDisplayUtil Display => _display ??= new();
+
 	[ThreadStatic] private static PerformanceCounterUtil _performanceCounters;
 	public static PerformanceCounterUtil PerformanceCounters => _performanceCounters ??= new();
 
