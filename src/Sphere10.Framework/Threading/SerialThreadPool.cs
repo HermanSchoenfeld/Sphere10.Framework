@@ -8,8 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 namespace Sphere10.Framework;
 
@@ -21,15 +19,21 @@ public class SerialThreadPool {
 	private readonly SynchronizedQueue<Action> _inputQueue;
 	private readonly Queue<Action> _executionQueue;
 	private readonly Action<Exception> _errorHandler;
-	private readonly object _lock;
+	private readonly Action<Action> _queueAction;
+	private bool _processing;
 	public SerialThreadPool(Action<Exception> errorHandler = null) : this(new QueueAdapter<Action>(), errorHandler) {
 	}
 
-	public SerialThreadPool(IQueue<Action> inputQueueImpl, Action<Exception> errorHandler = null) {
+	public SerialThreadPool(IQueue<Action> inputQueueImpl, Action<Exception> errorHandler = null)
+		: this(inputQueueImpl, errorHandler, Tools.Threads.QueueAction) {
+	}
+
+	internal SerialThreadPool(IQueue<Action> inputQueueImpl, Action<Exception> errorHandler, Action<Action> queueAction) {
+		Guard.ArgumentNotNull(queueAction, nameof(queueAction));
 		_inputQueue = new SynchronizedQueue<Action>(inputQueueImpl);
 		_executionQueue = new Queue<Action>();
 		_errorHandler = errorHandler ?? (_ => { });
-		_lock = new object();
+		_queueAction = queueAction;
 	}
 
 	public SerialThreadPoolPolicy Policy { get; init; } = SerialThreadPoolPolicy.Burst;
@@ -39,53 +43,63 @@ public class SerialThreadPool {
 
 	public void QueueUserWorkItem(Action action) {
 		using (_inputQueue.EnterWriteScope()) {
-			_inputQueue.Add(action); // the input queue can be added to whilst background thread is processing
-			if (_inputQueue.Count == 1 && !Monitor.IsEntered(_lock))
-				// Background execution thread is started only when input queue is 1 and execution queue is 0
-				// Since this is the only condition when ProcessInBurst is not running and not scheduled to run.
-				Tools.Threads.QueueAction(
-					Policy switch {
-						SerialThreadPoolPolicy.Burst => ProcessInBurst,
-						_ => throw new NotImplementedException($"{Policy}")
-					}
-				);
+			// Enqueue and claim the sole drainer atomically, including while its current callback is running.
+			_inputQueue.Add(action);
+			if (!_processing)
+				ScheduleProcessing();
 		}
 	}
 
 	private void ProcessInBurst() {
-		// Gadget 1: This ensures only 1 ProcessInBurst is ever entered (even if multiple get scheduled)
-		if (!Monitor.TryEnter(_lock))
-			return;
-
-		try {
-			// Gadget 2: In the below condition, _inputQueue.Count enters into a read-lock before Count is evaluated. As a result, any simultaneous
-			// QueueUserWorkItem calls must necessarily complete before Count is evaluated since QueueUserWorkItem enters _inputQueue into a write-lock.
-			// This gadget ensures the loop never leaves with an item in the _inputQueue.
-			while (_inputQueue.Count > 0) {
-				// transfer input queue into execution queue
-				using (_inputQueue.EnterWriteScope()) {
-					if (!_inputQueue.Any())
+		while (true) {
+			// Publish the idle transition under the same scope as enqueue, so the next producer cannot lose its scheduling credit.
+			using (_inputQueue.EnterWriteScope()) {
+				if (_executionQueue.Count == 0) {
+					if (_inputQueue.Count == 0) {
+						_processing = false;
 						return;
+					}
 					foreach (var action in _inputQueue)
 						_executionQueue.Enqueue(action);
 					_inputQueue.Clear();
 				}
+			}
 
-				// process the execution queue serially
-				while (_executionQueue.Count > 0) {
-					var action = _executionQueue.Dequeue();
+			// Callbacks run outside the input scope; producers only append to the next batch.
+			while (_executionQueue.Count > 0) {
+				var action = _executionQueue.Dequeue();
+				try {
+					action();
+				} catch (Exception error) {
 					try {
-						action();
-					} catch (Exception error) {
 						_errorHandler(error);
+					} catch {
+						// Preserve the handler failure without stranding the remaining batch or retaining a false running state.
+						using (_inputQueue.EnterWriteScope()) {
+							_processing = false;
+							if (_executionQueue.Count > 0 || _inputQueue.Count > 0)
+								ScheduleProcessing();
+						}
+						throw;
 					}
 				}
 			}
-		} finally {
-			Monitor.Exit(_lock);
 		}
+	}
 
-
+	private void ScheduleProcessing() {
+		_processing = true;
+		try {
+			_queueAction(
+				Policy switch {
+					SerialThreadPoolPolicy.Burst => ProcessInBurst,
+					_ => throw new NotImplementedException($"{Policy}")
+				}
+			);
+		} catch {
+			_processing = false;
+			throw;
+		}
 	}
 }
 
