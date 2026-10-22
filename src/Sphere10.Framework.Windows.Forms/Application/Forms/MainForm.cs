@@ -27,9 +27,12 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 	private ToolStripMenuItem? _screenMenu;
 	private bool _ownsScreenMenu;
 	private bool _screenToolBarVisible;
+	private readonly ToolStripStableHeightBehavior _toolStripHeight;
 
 	public MainForm() {
 		InitializeComponent();
+		_toolStripHeight = new ToolStripStableHeightBehavior(ToolStrip);
+		Disposed += (_, _) => _toolStripHeight.Dispose();
 		HelpToolStripMenuItem = new ToolStripMenuItem("Help");
 		HelpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
 			_userguideToolStripMenuItem, _contextHelpToolStripMenuItem, toolStripSeparator1,
