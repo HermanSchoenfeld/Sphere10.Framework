@@ -9,29 +9,41 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Threading.Tasks;
+using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class LoggingTestScreen : WinFormsApplicationScreen {
-	private readonly ILogger _previewLogger;
+	private ILogger _previewLogger;
+	private Task _outputCompletion = Task.CompletedTask;
+	private bool _screenClosed;
+	private IDisposable _outputLifetime;
 
 	public LoggingTestScreen() {
 		InitializeComponent();
-		if (Tools.Runtime.IsDesignMode)
-			return;
-		_previewLogger = new TextBoxLogger(_preview) { Options = LogOptions.VerboseProfile };
-		_level.SelectedIndex = 1;
-		UpdateLoggingStatus();
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public LogOutputSelectorControl OutputSelector => _logOutputSelector;
 
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public Task OutputCompletion => _outputCompletion;
+
 	protected override void OnLoad(EventArgs args) {
 		base.OnLoad(args);
 		if (!Tools.Runtime.IsDesignMode) {
+			_outputLifetime ??= DemoLogOutputLifetime.RegisterCurrent(this, () => {
+				CloseOutput();
+				return OutputCompletion;
+			});
+			if (_previewLogger == null) {
+				_previewLogger = new TextBoxLogger(_preview) { Options = LogOptions.VerboseProfile };
+				_level.SelectedIndex = 1;
+			}
 			_logOutputSelector.ApplicationLogger = Block?.Parent?.Logger ?? SystemLog.Logger;
+			_logOutputSelector.ScreenHost = Host;
 			_logOutputSelector.RestoreSettings();
 			UpdateLoggingStatus();
 		}
@@ -40,8 +52,28 @@ public partial class LoggingTestScreen : WinFormsApplicationScreen {
 	protected override void OnShow() {
 		base.OnShow();
 		_logOutputSelector.ApplicationLogger = Block?.Parent?.Logger ?? SystemLog.Logger;
+		_logOutputSelector.ScreenHost = Host;
 		_logOutputSelector.RestoreSettings();
 		UpdateLoggingStatus();
+	}
+
+	protected override void OnDestroyScreen() {
+		_outputLifetime?.Dispose();
+		CloseOutput();
+		base.OnDestroyScreen();
+	}
+
+	private void CloseOutput() {
+		if (_screenClosed)
+			return;
+		_screenClosed = true;
+		_outputCompletion = ObserveOutputCompletionAsync(_logOutputSelector.DisposeAsync().AsTask());
+	}
+
+	private static async Task ObserveOutputCompletionAsync(Task completion) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => await completion.ConfigureAwait(false)).ConfigureAwait(false);
+		if (error != null)
+			SystemLog.Exception(error, "Could not close the logging demonstration output.");
 	}
 
 	private void LoggingStateChanged() => UpdateLoggingStatus();
@@ -58,7 +90,7 @@ public partial class LoggingTestScreen : WinFormsApplicationScreen {
 	}
 
 	private async void SendClick(object sender, EventArgs args) {
-		if (_previewLogger == null)
+		if (_previewLogger == null || _screenClosed)
 			return;
 		try {
 			var selected = _level.SelectedItem as string ?? "Info";

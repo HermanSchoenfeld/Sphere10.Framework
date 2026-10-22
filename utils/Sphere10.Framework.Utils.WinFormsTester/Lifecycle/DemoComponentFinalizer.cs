@@ -16,11 +16,16 @@ namespace Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 /// <summary>Shows shutdown progress for this plugin's demonstrations.</summary>
 public sealed class DemoComponentFinalizer : AsyncApplicationFinalizerBase {
 	private readonly IApplication _application;
+	private readonly DemoLogOutputLifetime _outputs;
 
-	public DemoComponentFinalizer(IApplication application) => _application = application;
+	public DemoComponentFinalizer(IApplication application, DemoLogOutputLifetime outputs) {
+		_application = application;
+		_outputs = outputs;
+	}
 
 	public override async Task FinalizeAsync(CancellationToken cancellationToken = default) {
 		_application.Logger.Info("Component plugin: finalizing controls and collections...");
+		await _outputs.CompleteAsync();
 		await Task.Delay(250, cancellationToken);
 		_application.Logger.Info("Component plugin: controls and collections are finalized.");
 	}

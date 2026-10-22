@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
@@ -22,6 +23,7 @@ public partial class TelemetryChartTestScreen : WinFormsApplicationScreen {
 	private DateTime _lastCapturedAtUtc;
 	private bool _initialized;
 	private bool _finalized;
+	private IDisposable _logOutputs;
 
 	public TelemetryChartTestScreen() {
 		InitializeComponent();
@@ -33,6 +35,8 @@ public partial class TelemetryChartTestScreen : WinFormsApplicationScreen {
 		if (_initialized || _finalized || Tools.Runtime.IsDesignMode)
 			return;
 		_initialized = true;
+		_logOutputs = DemoLogOutputLifetime.RegisterCurrent(this,
+			_cpuChart.LogOutputBehavior, _memoryChart.LogOutputBehavior, _throughputChart.LogOutputBehavior, _temperatureChart.LogOutputBehavior);
 		_sampleInterval.SelectedIndex = 1;
 		// Only generated observations enter these charts; this demonstration never reads hardware or the network.
 		var firstTimestamp = DateTime.UtcNow.AddMilliseconds(-79 * _captureTimer.Interval);
@@ -56,6 +60,7 @@ public partial class TelemetryChartTestScreen : WinFormsApplicationScreen {
 		if (_finalized)
 			return;
 		_finalized = true;
+		_logOutputs?.Dispose();
 		_captureTimer?.Stop();
 		if (_captureTimer != null)
 			_captureTimer.Tick -= TimerTick;

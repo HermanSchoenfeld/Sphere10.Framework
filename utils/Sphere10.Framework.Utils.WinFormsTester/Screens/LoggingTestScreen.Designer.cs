@@ -27,8 +27,10 @@ partial class LoggingTestScreen {
 	private System.Windows.Forms.Button _clearPreview;
 
 	protected override void Dispose(bool disposing) {
-		if (disposing)
+		if (disposing) {
+			CloseOutput();
 			_components?.Dispose();
+		}
 		base.Dispose(disposing);
 	}
 
@@ -79,7 +81,7 @@ partial class LoggingTestScreen {
 		//
 		_instructions.Dock = System.Windows.Forms.DockStyle.Fill;
 		_instructions.Name = "instructions";
-		_instructions.Text = "Choose File (append or rolling), Application, Standard Output or Standard Error in the Log Output wizard. Every Send also goes to the TextBoxLogger preview below, even while output is off. The selected output applies its own level and timestamp options.";
+		_instructions.Text = "Choose File (append or rolling), Application, Screen, Standard Output or Standard Error in the Log Output wizard. Screen opens a detachable log view that stays available after output stops. Every Send also goes to the TextBoxLogger preview below. The selected output applies its own level and timestamp options.";
 		//
 		// _outputRow
 		//

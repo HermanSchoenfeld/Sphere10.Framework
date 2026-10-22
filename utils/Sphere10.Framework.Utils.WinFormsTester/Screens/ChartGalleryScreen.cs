@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.DataVisualization;
 
@@ -25,6 +26,8 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 	private int _page;
 	private bool _changing;
 	private bool _initialized;
+	private ChartLogOutputBehavior _chartLogOutput;
+	private IDisposable _logOutputLifetime;
 
 	public ChartGalleryScreen() {
 		InitializeComponent();
@@ -43,6 +46,15 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		_palette.Items.AddRange(new object[] { "Example Colors", "Bright Pastel", "Pastel", "Earth Tones", "Berry", "Sea Green" });
 		_palette.SelectedIndex = 0;
 		_categories.SelectedIndex = 0;
+		_chartLogOutput = new ChartLogOutputBehavior(_chart);
+		_logOutputLifetime = DemoLogOutputLifetime.RegisterCurrent(this, _chartLogOutput);
+		_chartLogOutput.RestoreSettings();
+	}
+
+	protected override void OnDestroyScreen() {
+		_logOutputLifetime?.Dispose();
+		_chartLogOutput?.Dispose();
+		base.OnDestroyScreen();
 	}
 
 	public ChartGallerySample SelectedExample => _selected;
