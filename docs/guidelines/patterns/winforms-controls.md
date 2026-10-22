@@ -26,13 +26,14 @@ worker.
 | Requirement | Existing entry point |
 |---|---|
 | Choose a file, save destination or directory | `PathSelectorControl` |
-| Choose optional file/application/stdout/stderr logging, options and rolling output | `LogOutputSelectorControl` |
+| Choose optional file/application/screen/stdout/stderr logging, options and rolling output | `LogOutputSelectorControl` |
 | Choose a database engine and edit its connection | `DatabaseConnectionPanel` or `DatabaseConnectionBar`, with provider modules registered |
 | Edit a specific SQL Server, SQLite or Firebird connection | The matching concrete provider panel/bar |
 | Display/search/page/edit entity records | `CrudGrid` with `IDataSource<T>` |
 | Choose an existing related record | `CrudReferenceBinding<T>` and its `CrudReferencePicker` |
 | Show a grid in a dropdown | `CrudComboBox` |
 | Select an enum or combined flags | `EnumComboBox` or `FlagsCheckedListBox` |
+| Choose a fixed toolbar value through a checked menu | `ToolStripChoiceSelector` |
 | Show progress or scoped busy state | `ProgressBarEx` or `LoadingCircle` |
 | Host plugin blocks and screens | `BlockMainForm`, `WinFormsApplicationScreen` and the application screen host |
 | Present a question, text, password or authentication dialog | Existing async dialog helpers |
@@ -48,7 +49,7 @@ worker.
 | Component | Actual API and use |
 |---|---|
 | [PathSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Controls/PathSelectorControl.cs) | `Path`, `Mode`, `Editable`, `ForcePathExists`, `PlaceHolderText`, `OverwritePrompt` and parameterless `PathChanged`. [PathSelectionMode](../../../src/Sphere10.Framework.Windows.Forms/Controls/PathSelectionMode.cs) supplies `OpenFile`, `SaveFile`, `File` and `Folder`. Selection does not itself open an application resource. Disable `OverwritePrompt` for append-only use; the logger selector already does so. |
-| [LogOutputSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Controls/LogOutputSelectorControl.cs) | Compact **Log Output** checkbox and **...** (Configure Log Output) button. First On opens the wizard; later On reuses accepted options. `ShowConfigurationAsync(owner)` shows current details with Change launching `ConfigureAsync(owner)`. `Configuration` is a defensive snapshot; `ApplicationLogger` is borrowed. `Logger` is a `NoOpLogger` while off. File output includes rolling/encoding options; `MaxFiles` includes the active file. `RestoreSettings()` restores optional Remember After Close preferences once logger/hooks are bound. |
+| [LogOutputSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Controls/LogOutputSelectorControl.cs) | Compact **Log Output** checkbox and **...** (Configure Log Output) button. First On opens the wizard; later On reuses accepted options. `ShowConfigurationAsync(owner)` shows details, Start/Stop and Change launching `ConfigureAsync(owner)`. `Configuration` is a defensive snapshot; `ApplicationLogger` and optional `ScreenHost` are borrowed. `Logger` is a `NoOpLogger` while off; `EnqueueInfo` provides bounded worker output, with `FlushLoggingAsync`, `StopLoggingAsync` and owner-thread `DisposeAsync` for draining. Screen output opens the host-owned `LogScreen` undocked. File output includes rolling/encoding options; `MaxFiles` includes the active file. `RestoreSettings()` restores optional Remember After Close preferences once logger/hooks are bound. |
 | [ImageAttachmentSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Common/ImageAttachmentSelectorControl.cs) | Choose `None`, `Clipboard` or `File` through `AttachmentSource`; inspect `Filename`/`HasSelectedImage` and call `TryGetSelectedImage(out Image)`. A successful call returns a newly obtained image to be disposed by its consumer. File-backed images can retain a file lock until disposed. |
 | [TextBoxWriter](../../../src/Sphere10.Framework.Windows.Forms/TextBox/TextBoxWriter.cs) and [TextBoxLogger](../../../src/Sphere10.Framework.Windows.Forms/TextBox/TextBoxLogger.cs) | Adapt an existing `TextBox` to a writer/logger. `TextBoxWriter` dispatches appends to the UI; `TextBoxLogger` composes timestamping and the existing asynchronous logger. Its returned log call does not imply persisted/drained output; use the [logging ownership guidance](logging.md). |
 
@@ -178,6 +179,11 @@ reference identity, editor commit/undo and fixed dropdown sizing. Use an existin
 CrudGrid with restricted capabilities. `VisibleEntities` represents the current
 page, not the full collection.
 
+For grid-driven screens, follow the [row-action toolbar/context-menu rule](winforms-designer.md#row-actions-on-grid-screens).
+Expose custom row tools in the screen toolbar as well as by right-click, sharing
+their handlers and selection-dependent availability. Standard CRUD actions may
+remain in the grid/context menu according to the screen's workflow.
+
 The [CrudTestScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/CrudTestScreen.cs)
 demonstrates the complete editing path. Core's
 [SnapshotDataSource<T>](../../../src/Sphere10.Framework/DataSource/SnapshotDataSource.cs)
@@ -215,6 +221,7 @@ behind a concrete nongeneric designer surface.
 | [TelemetryChart](../../../src/Sphere10.Framework.Windows.Forms/Charts/TelemetryChart.cs) | Captured-history adapter over `GraphChart` with copied `TelemetryChartPoint[]`, percent/byte/rate/Celsius scales, missing-value gaps and nearest-timestamp hover. `SetSamples` accepts captured data; the control has no sampler, timer or application service dependency. All System Expert history views, including the embedded Core Temperatures history, consume this control. See the [chart guide](../../../src/Sphere10.Framework.Windows.Forms/README.md#telemetry-history-charts) for presentation options and UI-thread ownership. |
 | [PanelEx](../../../src/Sphere10.Framework.Windows.Forms/Panels/PanelEx.cs) | UserControlEx surface with no extra domain behavior. |
 | [ExpandingCircle](../../../src/Sphere10.Framework.Windows.Forms/Controls/ExpandingCircle.cs), [PerPixelAlphaForm](../../../src/Sphere10.Framework.Windows.Forms/Forms/PerPixelAlphaForm.cs) | Specialized overlay animation and alpha-layered bitmap forms; use only when that presentation is required. |
+| [ToolStripChoiceSelector](../../../src/Sphere10.Framework.Windows.Forms/Controls/ToolStripChoiceSelector.cs) | `ToolStripDropDownButton` with checked menu choices. Use `SetItems(IEnumerable<object>)`, `SelectedItem`, `SelectedIndex` and `SelectedIndexChanged`; `Items` returns copied array membership retaining original object identity. `ItemTextProvider` formats captions and `EmptyText` labels no selection. Native click/keyboard paths share selection, and disposal releases menu references while borrowing the data objects. Use for fixed toolbar choices; retain editable path fields and complex CRUD pickers for their separate contracts. |
 | [SplitButton](../../../src/Sphere10.Framework.Windows.Forms/Buttons/SplitButton.cs) | Primary button plus `SplitMenuStrip`, with `ShowSplit`. |
 | [PadLockButton](../../../src/Sphere10.Framework.Windows.Forms/Buttons/PadLockButton.cs) | `LockState`, `ToggleLockState` and `PadLockStateChanged` for a visual locked/unlocked choice. The icon alone does not enforce a permission. |
 | [SquareButton](../../../src/Sphere10.Framework.Windows.Forms/Buttons/SquareButton.cs), [BitmapButton](../../../src/Sphere10.Framework.Windows.Forms/Buttons/BitmapButton.cs) | Gradient/pressed navigation button and bitmap state-strip button respectively. BitmapButton expects tiled up/down/focused/hover/disabled images. |

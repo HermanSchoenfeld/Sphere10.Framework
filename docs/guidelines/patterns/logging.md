@@ -52,10 +52,12 @@ for an application example; these links require the sibling checkout.
 For optional output in a native form, reuse the public
 [LogOutputSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Controls/LogOutputSelectorControl.cs).
 Its checkbox opens the shared wizard on first activation to select File,
-Application, Standard Output or Standard Error, followed by applicable options.
+Windows Application Log, Screen, Standard Output or Standard Error, followed by applicable options.
+Destination names are bold with explanatory text beside them. Windows Application
+Log forwards to the running application's supplied diagnostics logger.
 Finish validates and opens the output before activating the checkbox. Later
 activation reuses the accepted options. **...** (Configure Log Output) opens a designer-editable
-details dialog whose **Change** button launches that same wizard. Cancellation
+details dialog with **Start Logging** / **Stop Logging** and a **Change** button that launches that same wizard. Cancellation
 preserves the current output, including an output already active while editing.
 
 `Logger` returns `NoOpLogger` while off and changes to the accepted session when
@@ -68,6 +70,47 @@ outside the session scope, allowing synchronous UI dispatch without deadlocking
 UI state reads/Stop. Their actual owner controls completion of dispatched writes.
 The control owns file writers and rolling sinks, but borrows the application
 logger and console writers. It must not dispose or globally reconfigure them.
+
+For UI capture, use `EnqueueInfo(message)` to send through the session's bounded
+worker queue instead of doing file IO on the caller. It returns false when off,
+full (512 entries or 1 MiB of pending message characters), or closed. Workers can
+use the same API. `FlushLoggingAsync()` joins already accepted entries; native Off
+and Change actions drain the session before closing its sink. Prefer
+`StopLoggingAsync()` for user Off and begin `DisposeAsync()` on the UI thread for
+owner cleanup. Async disposal preserves remembered enabled preferences, disposes
+the native control immediately and returns a drain with no later UI continuation.
+Retain or await that task in the actual owner. Do not add another capture queue
+that retains logger sessions past the selector's stop boundary.
+
+Use `EnqueueInfo(message, includesTimestamp: true)` for a record that already
+includes its capture timestamp. It bypasses the optional processing-time prefix
+for that record without changing ordinary messages or the user's timestamp choice.
+
+Related telemetry measurements from one sample belong in one log entry: one
+capture timestamp and source title, followed by every related metric's readable
+name, value and units, with device identities when needed. Group multi-series
+chart observations by captured time or their shared numeric/category identity.
+Keep different samples separate. Rendering, retained history and polling of an
+unchanged observation must not duplicate capture output.
+
+Screen output reuses `LogScreen` and the actual `IWinFormsApplicationScreenHost`.
+Assign the borrowed `ScreenHost` when toolbar composition removes the selector
+from its screen's parent chain; the containing native frame is also resolved.
+`ScreenTitle` names the source, producing `Log Output - <NAME>` in both detached
+windows and docked tabs. Generic names derive from the owning screen or window;
+an existing prefix is not duplicated. Chart-owned selectors use the resolved
+chart title, while borrowed selectors keep their caller's source name.
+It opens undocked. The application host owns its displayed view until it closes,
+so those logs remain readable after Stop or origin disposal. A host restricted
+to a single view uses an independent detached host rather than replacing the
+originating screen. A standalone selector owns its fallback screen host, which
+closes with the selector. Closing the active view disables its selector.
+The screen's bounded writer posts asynchronously, survives native handle
+recreation, and drops writes after actual screen destruction. Its
+`TextWriterLogger` composition adds no forced timestamp or unowned worker.
+The view retains its originating navigation block when hosted. Its text buffers
+are capped at 1,048,576 displayed characters and 262,144 pending characters;
+destruction or direct disposal clears both.
 
 Configure/start/stop on the UI thread; `Logger` reads and log calls support workers.
 Use `LoggingStarting(configuration)` for consumer validation before file IO.

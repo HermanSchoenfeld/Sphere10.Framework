@@ -61,9 +61,40 @@ Put a screen's primary workflow action beside its inputs in the screen body:
 Copy, Generate Report, Search, Send and Start Monitoring are ordinary buttons.
 Keep those buttons with the screen when the host lifts or composes its toolbar.
 Use the toolbar for tools such as Refresh, Export, Review, inspection and selected
-row utilities; applicable row tools also belong in the row context menu. Bind
+row utilities; grid row commands follow the toolbar/context-menu rule below. Bind
 each command to one behavior path, retaining its validation, busy state and
 permissions when its presentation moves.
+
+### Row actions on grid screens
+
+Expose custom row context-menu actions through the screen's toolbar too, such as
+resource inspection, opening, copying, monitoring or domain-specific operations.
+A toolbar dropdown can retain the same grouped commands or submenu hierarchy.
+Right-click should provide a shortcut to visible custom screen tools, rather than
+reveal otherwise undiscoverable capabilities. Standard CRUD actions such as Edit
+and Delete may remain in the grid/context menu; add toolbar counterparts when they
+help that screen's workflow rather than duplicating them mechanically. Put custom
+commands on the active grid's screen or tab toolbar, including when undocked.
+
+Keep row-dependent toolbar commands visible and disabled when there is no selected
+row. Enable them when the required selection exists and the existing capability,
+availability and busy-state checks permit the operation. A selected row does not
+override those checks. Multi-row operations use the grid's actual selection and
+their documented count requirements. Grid-wide tools such as Refresh, filtering,
+Export and creating a record retain their independent availability.
+
+Use one command behavior and one availability decision for both presentations.
+Define the actual toolbar items on the concrete designer surface and project or
+bind the context menu to them. A native `ToolStripItem` has one owner, so a context
+presentation must forward to the same command rather than steal its toolbar item
+or implement a second handler. Preserve images, captions, checked state and grouped
+children. Recheck the command's enabled state and target before executing it.
+
+Update toolbar state on selection and deselection, including after refresh,
+filtering, paging, removal and active-tab changes. Right-click selects its target
+row before commands inspect it; blank areas and headers are not row targets.
+Verify no selection, an eligible row, an ineligible/busy row and loss of selection,
+as well as matching toolbar/context behavior and real docking transitions.
 
 When modernizing an imported application, retain its original designer layout,
 grouping, labels, images, default choices, tab order and primary action placement
