@@ -36,6 +36,8 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	private bool _destroyed;
 	private ScreenActivationMode _activationMode = ScreenActivationMode.MultiInstance;
 	private readonly List<ToolStripItem> _menuStripItems;
+	private ToolStrip _toolBar;
+	private ToolStripStableHeightBehavior _toolBarHeight;
 
 	public WinFormsApplicationScreen()
 		: this(null) {
@@ -114,7 +116,16 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	/// The toolbar associated with this screen.
 	/// </summary>
 	[Browsable(true), Category("Behavior"), Description("The toolbar associated with this screen.")]
-	public ToolStrip ToolBar { get; set; }
+	public ToolStrip ToolBar {
+		get => _toolBar;
+		set {
+			if (ReferenceEquals(_toolBar, value))
+				return;
+			_toolBarHeight?.Dispose();
+			_toolBar = value;
+			_toolBarHeight = value == null ? null : new ToolStripStableHeightBehavior(value);
+		}
+	}
 
 	/// <summary>Screen commands contributed to the shared application menu layers.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -155,6 +166,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 			foreach (var Item in _menuStripItems)
 				Item.Dispose();
 			ToolBar?.Dispose();
+			_toolBarHeight?.Dispose();
 		}
 		base.Dispose(Disposing);
 	}
