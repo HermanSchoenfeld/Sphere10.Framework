@@ -9,6 +9,7 @@
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
 using Sphere10.Framework.Windows.Forms;
@@ -22,6 +23,7 @@ public static class WinFormsComponentDemoPlugin {
 		// Native definitions own their images independently of the workspace plugin.
 		plugin
 			.WithName("Component demonstrations")
+			.ConfigureServices(services => services.AddSingleton<DemoLogOutputLifetime>())
 			.RegisterInitializer<DemoComponentInitializer>()
 			.RegisterInitializer<DemoIntegrationInitializer>()
 			.RegisterFinalizer<DemoComponentFinalizer>()

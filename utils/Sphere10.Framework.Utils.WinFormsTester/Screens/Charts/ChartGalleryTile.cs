@@ -8,10 +8,15 @@
 
 using System;
 using System.Windows.Forms;
+using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
+using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public partial class ChartGalleryTile : UserControl {
+	private ChartLogOutputBehavior _logOutput;
+	private IDisposable _logOutputLifetime;
+
 	public ChartGalleryTile() {
 		InitializeComponent();
 	}
@@ -19,6 +24,15 @@ public partial class ChartGalleryTile : UserControl {
 	public event EventHandler ExploreRequested;
 
 	public ChartGallerySample Sample { get; private set; }
+
+	protected override void OnLoad(EventArgs args) {
+		base.OnLoad(args);
+		if (!Tools.Runtime.IsDesignMode) {
+			_logOutput ??= new ChartLogOutputBehavior(_chart);
+			_logOutputLifetime ??= DemoLogOutputLifetime.RegisterCurrent(this, _logOutput);
+			_logOutput.RestoreSettings();
+		}
+	}
 
 	public void ShowSample(ChartGallerySample sample) {
 		Sample = sample;
@@ -31,4 +45,9 @@ public partial class ChartGalleryTile : UserControl {
 	}
 
 	private void ExploreClicked(object sender, EventArgs args) => ExploreRequested?.Invoke(this, EventArgs.Empty);
+
+	private void ChartClicked(object sender, MouseEventArgs args) {
+		if (args.Button == MouseButtons.Left)
+			ExploreClicked(sender, args);
+	}
 }

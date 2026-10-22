@@ -33,7 +33,7 @@ partial class ChartGalleryTile {
 		_chart.MinimumSize = new Size(1, 1);
 		_chart.Dock = DockStyle.Fill;
 		_chart.BackColor = Color.White;
-		_chart.Click += ExploreClicked;
+		_chart.MouseClick += ChartClicked;
 		_explore.Name = "galleryTileExplore";
 		_explore.Dock = DockStyle.Bottom;
 		_explore.Height = 30;

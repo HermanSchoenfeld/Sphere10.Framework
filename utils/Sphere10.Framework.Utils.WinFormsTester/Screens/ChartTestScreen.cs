@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
@@ -25,6 +26,7 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 	private bool _ready;
 	private bool _initialized;
 	private bool _finalized;
+	private IDisposable _logOutputs;
 
 	public ChartTestScreen() {
 		InitializeComponent();
@@ -35,6 +37,7 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 		if (_initialized || _finalized || Tools.Runtime.IsDesignMode)
 			return;
 		_initialized = true;
+		_logOutputs = DemoLogOutputLifetime.RegisterCurrent(this, _line.LogOutputBehavior, _area.LogOutputBehavior, _columns.LogOutputBehavior, _bars.LogOutputBehavior);
 		_ready = true;
 		_interval.SelectedIndex = 1;
 		_scenario.SelectedIndex = 0;
@@ -55,6 +58,7 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 		if (_finalized)
 			return;
 		_finalized = true;
+		_logOutputs?.Dispose();
 		_ready = false;
 		_timer?.Stop();
 		if (_timer != null)

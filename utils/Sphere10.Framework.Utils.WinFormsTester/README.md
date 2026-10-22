@@ -101,6 +101,20 @@ dashboards demonstrate reusable Framework controls over application-owned data.
 | **Graph And Bar Charts** | A four-chart dashboard comparing the same three series as lines, translucent areas, grouped columns and horizontal bars. |
 | **Live Telemetry** | Timestamped percent, bytes, bytes-per-second and Celsius histories, with different chart presentations and a shared simulated capture. |
 
+Right-click any dashboard plot, an empty chart, a gallery preview or the gallery
+explorer and choose **Log Output**. Use the shared wizard to select an output;
+reopen the command to inspect or change its configuration. Live snapshots append
+new or revised observations rather than repeating the retained history. Each
+chart owns an independent output unless its application explicitly supplies a
+shared selector. Enabling **Remember After Close** restores that chart's accepted
+choice when its hosting screen loads again.
+
+Chart entries use readable text beginning with the UTC capture/publication
+date and time, without a timezone suffix, followed immediately by the chart
+title, measurement name, values and units. Telemetry logs its original capture
+timestamps. Clearing or closing a chart releases its captured records and
+deduplication metadata; the visible log itself keeps a bounded text history.
+
 ### Data Visualization Gallery
 
 The **Gallery** tab displays six actual chart previews per page. The first page
@@ -246,13 +260,15 @@ Open a record's edit dialog and expand **Address** to edit Street, City, State, 
 
 ## Logging output walkthrough
 
-Choose **Utilities > Application Utilities > Logging**. On first use the compact **Log Output** checkbox starts unchecked and exposes a `NoOpLogger` while off. Checking it opens a wizard: select **File**, **Application**, **Standard Output** or **Standard Error**, configure the applicable file/rolling options and log formatting, then review and Finish. Cancellation leaves output unchanged and creates no new output file. Uncheck to stop; check again to reuse the accepted configuration. **...** (Configure Log Output) opens a details dialog, and **Change** launches the wizard without stopping output just to edit its options.
+Choose **Utilities > Application Utilities > Logging**. On first use the compact **Log Output** checkbox starts unchecked and exposes a `NoOpLogger` while off. Checking it opens a wizard: select **File**, **Application**, **Screen**, **Standard Output** or **Standard Error**, configure the applicable file/rolling options and log formatting, then review and Finish. Screen output opens a detachable `LogScreen` that remains available for review after logging stops or the demo closes. Cancellation leaves output unchanged and creates no new output file. Uncheck to stop; check again to reuse the accepted configuration. **...** (Configure Log Output) opens details with Start/Stop controls, and **Change** launches the wizard without stopping output just to edit its options.
 
 Choose **Remember After Close** in the formatting step to restore the accepted configuration and enabled choice the next time this screen opens. Unchecking Log Output before closing remembers Off while retaining those options. Leaving it on remembers On; the screen binds its application logger before explicitly restoring the selected output. Disabling Remember deletes only this logging selector's preferences. File output that cannot be reopened stays off and exposes the failure so the **...** button can repair it.
 
 Choose a level (**Debug**, **Info**, **Warning**, **Error** or **Exception**), enter a message and click **Send**. The selected output receives the message according to its configured level filters. **Application** uses the actual owning application's logger. Standard streams are visible when the process has a console or redirected stream. File output appends to the chosen file; rolling output retains the selected total file count, including the active file.
 
 The **TextBoxLogger Preview** receives each sent message independently of the output checkbox. It demonstrates the existing timestamped asynchronous `TextBoxLogger` alongside the new reusable selector. **Clear Preview** clears only that textbox. Unchecking Log Output completes file writes and closes its owned file; the preview continues to work. Closing the screen disposes the selected output. The same public `LogOutputSelectorControl` is available from the WinForms library to other applications.
+
+The component plugin's finalizer closes any remaining logging and chart outputs and awaits their accepted queued writes before application shutdown. Closing a screen or gallery preview starts its output disposal immediately; the plugin retains only unfinished drains, so already-closed demonstrations also finish writing before the process exits. Borrowed application loggers keep their own lifetime.
 
 ## Demo Wizard walkthrough
 
