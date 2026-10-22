@@ -15,6 +15,7 @@ public interface IMouseHook : IDeviceHook {
 	event EventHandler<MouseMoveEvent> Motion;
 	event EventHandler<MouseMoveEvent> MotionStop;
 	event EventHandler<MouseClickEvent> Click;
+	event EventHandler<MouseWheelEvent> Scroll;
 	event EventHandler<MouseEvent> Activity;
 
 	int CurrentMouseX { get; }
