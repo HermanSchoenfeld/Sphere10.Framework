@@ -79,7 +79,9 @@ public static class WindowsWindow {
 
 	/// <summary>Reads screen-coordinate bounds after verifying the captured process, native thread and window class.</summary>
 	/// <remarks>Coordinates follow GetWindowRect's caller DPI context and may include invisible resize borders. No target window is activated or changed.</remarks>
-	public static Rectangle GetBounds(WindowsWindowInfo expected) {
+	public static Rectangle GetBounds(WindowsWindowInfo expected) => GetBoundsCore(expected, false);
+
+	private static Rectangle GetBoundsCore(WindowsWindowInfo expected, bool visibleFrame) {
 		Guard.ArgumentNotNull(expected, nameof(expected));
 		Guard.Argument(expected.Handle != IntPtr.Zero && expected.Handle != new IntPtr(0xFFFF) && expected.ProcessId > 0
 			&& expected.ThreadId > 0 && expected.ProcessStartTimeUtc.HasValue, nameof(expected), "A specific window and verified process identity are required.");
@@ -89,7 +91,13 @@ public static class WindowsWindow {
 		var started = DateTime.FromFileTimeUtc(checked((long)(((ulong)creation.DateTimeHigh << 32) | creation.DateTimeLow)));
 		Guard.Ensure(started == expected.ProcessStartTimeUtc && !WindowsProcess.HasSignaledExit(process), "The original process exited or its PID was reused.");
 		VerifyWindow(expected);
-		if (!WinAPI.USER32.GetWindowRect(expected.Handle, out var rectangle))
+		WinAPI.RECT rectangle = default;
+		// DWM excludes the invisible sizing margins and already returns physical pixels.
+		var hasVisibleFrame = visibleFrame
+			&& WinAPI.DWMAPI.DwmGetWindowAttribute(expected.Handle, WinAPI.DWMAPI.DWMWA_EXTENDED_FRAME_BOUNDS,
+				out rectangle, (uint)Marshal.SizeOf<WinAPI.RECT>()) >= 0
+			&& rectangle.Right > rectangle.Left && rectangle.Bottom > rectangle.Top;
+		if (!hasVisibleFrame && !WinAPI.USER32.GetWindowRect(expected.Handle, out rectangle))
 			throw new Win32Exception(Marshal.GetLastPInvokeError(), "The window bounds are unavailable.");
 		VerifyWindow(expected);
 		return Rectangle.FromLTRB(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
@@ -100,6 +108,13 @@ public static class WindowsWindow {
 	public static Rectangle GetPhysicalBounds(WindowsWindowInfo expected) {
 		using var dpi = new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2);
 		return GetBounds(expected);
+	}
+
+	/// <summary>Reads verified visible frame bounds in physical desktop pixels, excluding invisible resize margins when DWM supplies them.</summary>
+	/// <remarks>Falls back to physical outer bounds when composition does not provide a usable frame. Preserves the caller's DPI context and target window.</remarks>
+	public static Rectangle GetVisiblePhysicalBounds(WindowsWindowInfo expected) {
+		using var dpi = new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2);
+		return GetBoundsCore(expected, true);
 	}
 
 	private static void VerifyWindow(WindowsWindowInfo expected) {
