@@ -16,6 +16,133 @@ namespace Sphere10.Framework.Windows;
 public static partial class WinAPI {
 
 	public static partial class USER32 {
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern int GetDisplayConfigBufferSizes(uint flags, out uint pathCount, out uint modeCount);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern int QueryDisplayConfig(uint flags, ref uint pathCount, [Out] DISPLAYCONFIG_PATH_INFO[] paths,
+			ref uint modeCount, [Out] DISPLAYCONFIG_MODE_INFO[] modes, IntPtr topology);
+
+		[DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo", ExactSpelling = true)]
+		public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_SOURCE_DEVICE_NAME request);
+
+		[DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo", ExactSpelling = true)]
+		public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_TARGET_DEVICE_NAME request);
+
+		[DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo", ExactSpelling = true)]
+		public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_ADAPTER_NAME request);
+
+		[DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo", ExactSpelling = true)]
+		public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_TARGET_PREFERRED_MODE request);
+
+		[DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo", ExactSpelling = true)]
+		public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO request);
+
+		[DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo", ExactSpelling = true)]
+		public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 request);
+
+		[DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo", ExactSpelling = true)]
+		public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_SDR_WHITE_LEVEL request);
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool EnumDisplaySettingsExW(string deviceName, int modeNumber, ref DISPLAY_DEVMODE mode, uint flags);
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_RATIONAL { public uint Numerator, Denominator; }
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_SOURCE_MODE { public uint Width, Height, PixelFormat; public int X, Y; }
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_VIDEO_SIGNAL_INFO {
+			public ulong PixelRate;
+			public DISPLAYCONFIG_RATIONAL HorizontalSync, VerticalSync;
+			public uint ActiveWidth, ActiveHeight, TotalWidth, TotalHeight, VideoStandard, ScanLineOrdering;
+		}
+
+		[StructLayout(LayoutKind.Explicit, Size = 64)]
+		public struct DISPLAYCONFIG_MODE_INFO {
+			[FieldOffset(0)] public uint InfoType;
+			[FieldOffset(4)] public uint Id;
+			[FieldOffset(8)] public ADVAPI32.LUID AdapterId;
+			[FieldOffset(16)] public DISPLAYCONFIG_SOURCE_MODE Source;
+			[FieldOffset(16)] public DISPLAYCONFIG_VIDEO_SIGNAL_INFO Signal;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_PATH_SOURCE_INFO { public ADVAPI32.LUID AdapterId; public uint Id, ModeInfoIndex, StatusFlags; }
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_PATH_TARGET_INFO {
+			public ADVAPI32.LUID AdapterId;
+			public uint Id, ModeInfoIndex;
+			public int OutputTechnology;
+			public uint Rotation, Scaling;
+			public DISPLAYCONFIG_RATIONAL RefreshRate;
+			public uint ScanLineOrdering;
+			public int TargetAvailable;
+			public uint StatusFlags;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_PATH_INFO { public DISPLAYCONFIG_PATH_SOURCE_INFO Source; public DISPLAYCONFIG_PATH_TARGET_INFO Target; public uint Flags; }
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_DEVICE_INFO_HEADER { public uint Type, Size; public ADVAPI32.LUID AdapterId; public uint Id; }
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct DISPLAYCONFIG_SOURCE_DEVICE_NAME {
+			public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string Name;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct DISPLAYCONFIG_TARGET_DEVICE_NAME {
+			public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
+			public uint Flags;
+			public int OutputTechnology;
+			public ushort ManufactureId, ProductCode;
+			public uint ConnectorInstance;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)] public string Name;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string DevicePath;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct DISPLAYCONFIG_ADAPTER_NAME {
+			public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string DevicePath;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_TARGET_PREFERRED_MODE {
+			public DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
+			public uint Width, Height;
+			public DISPLAYCONFIG_VIDEO_SIGNAL_INFO Signal;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO { public DISPLAYCONFIG_DEVICE_INFO_HEADER Header; public uint Flags, ColorEncoding, BitsPerColorChannel; }
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 { public DISPLAYCONFIG_DEVICE_INFO_HEADER Header; public uint Flags, ColorEncoding, BitsPerColorChannel, ActiveColorMode; }
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct DISPLAYCONFIG_SDR_WHITE_LEVEL { public DISPLAYCONFIG_DEVICE_INFO_HEADER Header; public uint WhiteLevel; }
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+		public struct DISPLAY_DEVMODE {
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string DeviceName;
+			public ushort SpecVersion, DriverVersion, Size, DriverExtra;
+			public uint Fields;
+			public int X, Y;
+			public uint Orientation, FixedOutput;
+			public short Color, Duplex, YResolution, TTOption, Collate;
+			[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string FormName;
+			public ushort LogPixels;
+			public uint BitsPerPixel, Width, Height, DisplayFlags, Frequency, IcmMethod, IcmIntent, MediaType, DitherType, Reserved1, Reserved2, PanningWidth, PanningHeight;
+		}
+
 		[DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool ExitWindowsEx(uint flags, uint reason);
