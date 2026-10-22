@@ -575,7 +575,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	protected override void OnActiveScreenChanged(WinFormsApplicationScreen? Screen) {
 		if (Screen != null) {
-			ActiveBlock = Screen.Block;
+			if (Screen.Block != null)
+				ActiveBlock = Screen.Block;
 			if (Screen.DisplayMode == ScreenDisplayMode.Maximized || Screen.DisplayMode == ScreenDisplayMode.FilledAndMaximized)
 				WindowState = FormWindowState.Maximized;
 		}
