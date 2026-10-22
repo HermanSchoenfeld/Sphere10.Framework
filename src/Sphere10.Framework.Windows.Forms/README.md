@@ -41,7 +41,7 @@ its current placement; a moved maximized viewer remains maximized.
 `GraphChart` is a designer-editable numeric plotting control backed by
 `Sphere10.Framework.Windows.Forms.DataVisualization`. `Style` selects line, filled area, vertical columns
 or horizontal bars. `BarChart` provides the column-chart defaults, category
-labels and margins. The **Line And Bar Charts** screen in WinForms Tester demonstrates
+labels and margins. The **Graph And Bar Charts** screen in WinForms Tester demonstrates
 multiple series, missing observations, styles, axes and live snapshot updates.
 
 Supply captured data with `SetSeries(GraphChartSeries[])` on the owning UI
@@ -118,9 +118,74 @@ chart.SetSamples(new[] {
 });
 ```
 
+## Chart Log Output
+
+Right-click a `GraphChart`, `BarChart` or `TelemetryChart`, including its empty
+surface, and choose **Log Output**. The command uses the shared
+`LogOutputSelectorControl` wizard and configuration dialog. Hosted charts bind
+their owning application's logger and restore their own named preferences after
+host attachment. An early child Load waits for the screen's display notification
+and retries once its application logger and screen host are available. Existing
+context-menu commands are preserved.
+
+`chart.LogOutput` exposes the selector. `chart.LogOutputBehavior.OutputSelector`
+can borrow a selector already owned by the containing screen. Set
+`CaptureEnabled = false` when that selector receives raw observations from an
+application-owned sampler; this keeps the same configuration command without
+also logging chart history. Borrowed selectors retain their owner's lifetime.
+
+Ordinary chart capture logs its current observations once when enabled, then
+only appended or revised values. Graph observations use series and category/X
+identity; telemetry uses the original UTC capture timestamp, so moving the
+relative time axis does not repeat history. Entries are descriptive text with
+invariant values, measurement names and units, for example
+`2026-10-22 01:02:03.456 Memory Activity — Memory Usage: 42.5 %`.
+The date/time is UTC without a timezone suffix or offset. Telemetry retains the
+original capture time; ordinary numeric/native charts use the UTC publication
+time. The chart title immediately follows that date/time. Already timestamped
+chart entries bypass the selector's additional timestamp decorator, including
+when its accepted timestamp option is enabled.
+
+Related series at one captured time share one entry with every metric and unit;
+numeric/native series without capture times group by their shared observation
+identity. The timestamp and chart title appear once. A revised metric republishes
+the complete related sample, while unchanged history and redraws add no entries.
+
+`LogTitle` supplies an explicit chart title; empty derives native chart titles,
+the owning screen, a descriptive telemetry heading or its surrounding group.
+Chart-owned log screens use that resolved name as `Log Output - <NAME>`.
+`TelemetryChart.LogSeriesName` can name a measurement independently of a hidden
+header. `GraphChart.LogUnit` can override units inferred from its Y-axis title.
+Native adapter entries include every Y value and the category/X-axis position.
+`ChartLogSample` supports optional `CapturedAtUtc`, `Units` and `PositionLabel`
+metadata for custom providers without changing its four-argument constructor.
+
+The selector's bounded queue performs output IO on its worker.
+`DroppedSamples` reports rejected entries while the queue is full; retained
+revisions can be retried on the next capture.
+
+Charts retain the caller's current snapshot. The logger tracks only identities
+in that snapshot, exposed by `RetainedSampleCount`; it does not accumulate older
+windows. Clear and disposal release captured records and deduplication metadata.
+The caller still chooses active chart history length. The shared output queue
+is limited to 512 entries and 1,048,576 pending message characters. The log view
+retains at most 262,144 pending characters and 1,048,576 displayed characters,
+removing older text as those limits are reached.
+
+For a native DataVisualization `Chart`, create a `ChartLogOutputBehavior(chart)`
+in its owner's load lifecycle and call `RestoreSettings()` after its host is
+attached. The adapter coalesces native invalidations and supports every native
+series type and all of a point's Y values. Dispose the adapter when that surface
+is removed; it also observes the chart's disposal. `FlushAsync()` awaits accepted
+output while leaving capture enabled. `DisposeAsync()`/`Completion` observe its
+owned output drain without blocking the UI; failures remain available through
+`LastError`. Await completion before ending an
+owning standalone message loop. These helpers belong to Framework WinForms and
+add no logging dependencies to the chart engine assembly.
+
 ## Scoped window outlines
 
-`WindowHighlightScope` owns a hollow, nonactivating, click-through frame over caller-supplied **physical desktop pixel bounds**. Supply its color and physical-pixel thickness; update `Bounds` to follow a target, then dispose the scope to remove every overlay pixel. Create, update and dispose on the same STA UI thread. The frame uses a layered input-transparent window, leaving the target's device context and foreground activation untouched. The application owns target identity checks, timeout and selection policy; `WindowsWindow.GetPhysicalBounds` supplies verified geometry independently of the querying thread's DPI awareness. Outer bounds include invisible resize borders, as with GetWindowRect. No monitoring or timeout starts in the generic scope.
+`WindowHighlightScope` owns a hollow, nonactivating, click-through frame over caller-supplied **physical desktop pixel bounds**. Supply its color and physical-pixel thickness; update `Bounds` to follow a target, then dispose the scope to remove every overlay pixel. Create, update and dispose on the same STA UI thread. The frame uses a layered input-transparent window, leaving the target's device context and foreground activation untouched. The application owns target identity checks, timeout and selection policy. `WindowsWindow.GetVisiblePhysicalBounds` supplies verified geometry excluding invisible resize margins when DWM reports a visible frame; use it for an outline flush with the visible window. `GetPhysicalBounds` retains the outer GetWindowRect geometry including those margins. Both preserve the querying thread's DPI context. The frame draws inward from the supplied rectangle without adding an offset. No monitoring or timeout starts in the generic scope.
 
 The frame's HWND is created and updated under a scoped per-monitor V2 awareness
 context. Native geometry and placement therefore use the same physical coordinate
@@ -371,7 +436,7 @@ precedence. SourceGrid's `SortIndicator.ReserveSpaceWhenUnsorted` defaults to tr
 
 `CrudGrid` hides the create and delete buttons when their respective capabilities are unavailable. Delete is also hidden unless a visible row is selected. Toolbar and paging controls size to their contents, including scaled fonts and DPI.
 
-Set `AllowCellEditing = true` to edit columns with `CanEditCell = true` and a `SetPropertyValue` binding; `CanUpdate` must also be enabled. Changing the editing setting updates existing cells immediately. `LeftClickToDeselect` toggles a row on successive single clicks, including Ctrl-clicks. When both settings are enabled, double-click an editable cell or press **F2** to edit while keeping its row selected; checkbox values also change only through that explicit edit gesture. These selection modes also support `SelectOnMouseUp`.
+Set `AllowCellEditing = true` to edit columns with `CanEditCell = true` and a `SetPropertyValue` binding; `CanUpdate` must also be enabled. Changing the editing setting updates existing cells immediately. `LeftClickToDeselect` defaults to `true` and toggles a row on successive single clicks, including Ctrl-clicks. When both settings are enabled, double-click an editable cell or press **F2** to edit while keeping its row selected; checkbox values also change only through that explicit edit gesture. Set `LeftClickToDeselect = false` to retain selection on repeated clicks and enable single-click editing. These selection modes also support `SelectOnMouseUp`.
 
 Read-only text cells retain type conversion through SourceGrid's nonvisual
 `EditorBase`, without constructing a WinForms editor control or attaching a
@@ -592,13 +657,13 @@ string selectedPath = pathSelector.Path;
 
 `LogOutputSelectorControl` is a public, designer-editable control in `Sphere10.Framework.Windows.Forms`. It presents a compact **Log Output** checkbox and **...** (Configure Log Output) button, and can be used without depending on SystemExpert.
 
-Checking it for the first time opens the WinForms wizard: choose **File**, **Application**, **Standard Output** or **Standard Error**, then configure the applicable destination, levels, timestamping and **Remember After Close** option. File output supports append/rolling files, encoding, retained file count and maximum encoded bytes. The checkbox turns on only after Finish validates and opens the selected output. After acceptance, unchecking stops output and checking again reuses those options. **...** (Configure Log Output) opens `LogOutputConfigurationDialog`, showing the current details with a **Change** button to launch the wizard. Cancelling a change preserves the current output; a failed Finish attempts to recover the old output when reopening it is possible.
+Checking it for the first time opens the WinForms wizard: choose **File**, **Windows Application Log**, **Screen**, **Standard Output** or **Standard Error**, then configure the applicable destination, levels, timestamping and **Remember After Close** option. Each bold destination name has an adjacent explanation. Windows Application Log uses the running application's supplied diagnostics logger. File output supports append/rolling files, encoding, retained file count and maximum encoded bytes. The checkbox turns on only after Finish validates and opens the selected output. After acceptance, unchecking stops output and checking again reuses those options. **...** (Configure Log Output) opens `LogOutputConfigurationDialog`, showing the current details, **Start Logging** / **Stop Logging**, and **Change** to launch the wizard. Cancelling a change preserves the current output; a failed Finish attempts to recover the old output when reopening it is possible.
 
 ```csharp
 using Sphere10.Framework;
 using Sphere10.Framework.Windows.Forms;
 
-// Supply the owning application's borrowed logger for the Application option.
+// Supply the owning application's borrowed logger for Windows Application Log.
 logOutputSelector.ApplicationLogger = application.Logger;
 // Bind LoggingStarting/LoggingFailed before restoring a possibly enabled output.
 logOutputSelector.RestoreSettings();
@@ -607,16 +672,36 @@ await logOutputSelector.ConfigureAsync(this);
 // Resolve the current logger for each write; inactive output is a NoOpLogger.
 logOutputSelector.Logger.Info("Monitoring started"); // Also safe from workers.
 
-logOutputSelector.StopLogging();
+await logOutputSelector.StopLoggingAsync();
 ```
 
 `Logger` returns a `NoOpLogger` while off and changes to the accepted session when on. Retrieve it per write or supply a callback to a long-lived service; a logger captured while off remains inactive. Closed sessions safely ignore late calls. File writers/sinks are owned and writes join before disposal. Application loggers and console writers are borrowed and retain their existing owners/options; their callbacks run outside the session scope and their owner controls in-flight completion. Reading the property, construction and design-mode loading perform no file IO.
+
+For capture on a UI thread, `EnqueueInfo(message)` queues output without file IO or a UI dispatch wait. It is also safe from workers. It returns false while off or when its session's backlog reaches 512 entries or 1 MiB of message characters; callers can count rejected captures. `FlushLoggingAsync()` joins entries already accepted by the current output. The checkbox's Off action, wizard changes and `StopLoggingAsync()` drain accepted queued entries before closing owned output. `DisposeAsync()` must begin on the UI thread: it detaches the sink and disposes the control immediately, preserving the remembered enabled choice, and returns a drain that completes independently of a later native message loop. Await or retain that completion in the owner's cleanup path. Synchronous `StopLogging()` / `Dispose()` retain their compatibility behavior of joining owned file IO without joining borrowed UI callbacks.
+
+For records that already contain their capture timestamp, use `EnqueueInfo(message, includesTimestamp: true)`. This bypasses the optional session processing-time prefix for that record; ordinary messages still follow the selected timestamp option.
+
+**Screen** opens the reusable `LogScreen` through the actual application screen host, undocked by default. A host restricted to a single view uses an independent detached host to preserve the originating screen. `ScreenHost` can supply a borrowed host explicitly, including for controls contributed through a `ToolStripControlHost`; ordinary hosted controls resolve their screen or containing frame. `ScreenTitle` supplies the source name for the title `Log Output - <NAME>`; empty or generic names derive from the owning screen, active host screen or window, with `Capture` as the standalone fallback. An existing `Log Output - ` prefix is not repeated. A standalone control also uses its own native screen host and detached window. Stopping output leaves the log readable; closing the active log view stops that selection. Hosted log views remain owned by their host after the originating selector closes. The standalone fallback closes with its selector. The bounded screen writer posts to its UI without synchronous dispatch or a permanent worker, drops after destruction, survives docking/handle recreation, and adds no timestamp beyond the selected formatting.
+
+Hosted log views retain the originating navigation block, including after the source closes. Selecting an auxiliary screen without a block preserves the current navigation pane. Each log view retains at most 1,048,576 displayed characters and 262,144 pending characters, removing older text as needed. Destruction or direct disposal clears both buffers.
 
 `Configuration` is a defensive `LogOutputConfiguration` snapshot. Configure/start/stop on the creating UI thread. `StartLogging()` accepts its already configured values for programmatic consumers; `ConfigureAsync(owner)` supplies the wizard and `ShowConfigurationAsync(owner)` supplies the details dialog. `LoggingStarting(configuration)` can veto before IO, including during restoration. `LoggingStateChanged`, `LoggingFailed`, `HasConfiguration`, `IsLogging` and `LastError` expose state and failures. Do not separately dispose the selected session or register it as another global owner.
 
 With **Remember After Close**, `LogOutputSelectorSettings` persists the accepted configuration and enabled choice through `UserSettings`. Call `RestoreSettings()` explicitly after the application logger and consumer hooks are ready. Construction/handle creation never read preferences or open output. The method returns false while a stable owner/provider is unavailable and can then be retried; completed restoration is idempotent. `SettingsKey` can supply an explicit stable ID; otherwise the owning screen/control type and named child path identify this selector independently of captions or docking. Set the key before restoring or accepting output. Restoration and unchanged disposal do not write preferences, and disposal closes a remembered active sink without changing its saved enabled choice. Turning Remember off deletes only that selector's stored preferences, including its cached record. Optional preference failures appear in `LastSettingsError`; output remains usable and failed accepted saves retry on disposal. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md#reusable-logging-preferences).
 
 SystemExpert's watcher passes `eventLoggerProvider: () => logOutputSelector.Logger`, so output changes take effect without restarting monitoring. Every accepted event is independent of display filters, pause and retention; file paths inside the watched tree are rejected before IO. WinFormsTester's **Logging** screen demonstrates the selector alongside a TextBoxLogger preview. See the [reusable controls catalog](../../docs/guidelines/patterns/winforms-controls.md).
+
+### ToolStripChoiceSelector
+
+`ToolStripChoiceSelector` displays a fixed set of toolbar choices as a native
+button and checked menu, without an editable text field. Call `SetItems` with the
+original data objects, set `SelectedItem` or `SelectedIndex`, and handle
+`SelectedIndexChanged`. `Items` returns copied array membership; menu tags and the
+selection retain the original objects. Replacement preserves a matching reference
+before falling back to value equality. `ItemTextProvider` formats captions and
+`EmptyText` names the unselected state. Menu click and keyboard selection use the
+same event path. The selector owns its menu items and borrows the data objects;
+disposal clears its retained choices without disposing them.
 
 ### ProgressBarEx
 
@@ -723,6 +808,7 @@ editors, registration requirements, ownership and current limitations.
 | `ApplicationBannerHost` | Stock designer preview with a registered transient banner at runtime |
 | `PathSelectorControl` | File/folder path selection |
 | `LogOutputSelectorControl` | Optional wizard-configured file/application/stdout/stderr output, configuration details dialog and remembered preferences |
+| `ToolStripChoiceSelector` | Fixed toolbar choice through a checked native menu, retaining original data objects |
 | `ProgressBarEx` | Progress bar with text display |
 | `PropertyGridEx` | Enhanced property grid |
 | `RadioGroupBox` | Radio button group container |
@@ -986,6 +1072,8 @@ Screen builders declare the type's instance policy with `.AsSingleInstance()` or
 Tab widths grow with their titles up to `WinFormsApplicationScreenTabControl.MaximumTabWidth`, which defaults to 320 logical pixels. Native caption measurements reserve room for the owner-drawn icon, its spacing and the close action, including when the image list retains its original pixel size on a higher-DPI monitor. Longer titles display an ellipsis, with the full title available on hover. Tab spacing, close buttons, docking markers, and the width limit scale for the current monitor's DPI.
 
 Selecting a tab restores the previous screen's toolbar items and removes its screen menu, then merges the selected screen's `ToolBar` and registered `MenuItems` into the main form. The same item instances and event handlers are retained. When detached, `WinFormsApplicationScreenForm` displays the registered `MenuItems` directly as top-level menus, including File when supplied, regardless of `ShowInApplicationMenuStrip`. It retains the original `ToolBar` control, layout, and handlers instead of copying its items into a replacement strip. The selected docked screen continues to supply the main window's menu and toolbar. Redocking selects the returned tab and merges its items back into the main form.
+
+Hosted horizontal toolbars reserve the preferred height of every current command, including temporarily hidden commands. Switching Live/paused actions or enabling a command therefore leaves the tabs and active content at the same vertical position. `ToolStripStableHeightBehavior` supplies this shared sizing for the main toolbar and a screen's assigned `ToolBar`, including when undocked. It uses native preferred or explicit item sizes, margins, padding, fonts and current DPI; tall hosted controls fit, and removing them releases their height. Explicit caller minimum sizes are retained. Ordinary standalone strips can opt in by owning the behavior, whose disposal restores their declared minimum and releases its subscriptions without disposing the borrowed strip.
 
 Detached windows use a compact caption with accessible **Re-dock**, **Minimize**, **Maximize/Restore**, and **Close** icon buttons. The title area supports native dragging and double-click maximize/restore, and the border remains resizable. Close and re-dock preserve the screen's cancellation checks. Only menus and toolbars supplied by the screen occupy space; a content-only screen starts immediately below the caption, without empty bars or a detached tab row.
 
