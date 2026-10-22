@@ -24,12 +24,27 @@ public class MouseMoveEvent : MouseEvent {
 		double deltaFromLastEvent,
 		double distanceSinceLastClick,
 		DateTime time
-	) : base(processName, x, y, time) {
+	)
+		: this(processName, moveType, x, y, distanceSinceMotionStart, deltaFromLastEvent, distanceSinceLastClick, time, null) {
+	}
+
+	public MouseMoveEvent(
+		string processName,
+		MouseMotionType moveType,
+		int x,
+		int y,
+		double distanceSinceMotionStart,
+		double deltaFromLastEvent,
+		double distanceSinceLastClick,
+		DateTime time,
+		long? monotonicTimestampMilliseconds
+	)
+		: base(processName, x, y, time) {
 		DistanceSinceLastClick = distanceSinceLastClick;
 		DeltaFromLastEvent = deltaFromLastEvent;
 		DistanceSinceMotionStart = distanceSinceMotionStart;
 		MoveType = moveType;
-
+		MonotonicTimestampMilliseconds = monotonicTimestampMilliseconds;
 	}
 
 	public MouseMotionType MoveType { get; private set; }
@@ -39,6 +54,9 @@ public class MouseMoveEvent : MouseEvent {
 	public double DistanceSinceLastClick { get; private set; }
 
 	public double DeltaFromLastEvent { get; private set; }
+
+	/// <summary>Monotonic uptime captured when the input arrives, before asynchronous processing; absent for legacy or synthetic events.</summary>
+	public long? MonotonicTimestampMilliseconds { get; private set; }
 
 
 }
