@@ -49,6 +49,10 @@ Console.WriteLine($"Is member of Administrators: {isMember}");
 
 ## Windows resource abstractions
 
+Read-only [power plan, setting and sleep inventories](System/Power/README.md)
+expose native GUIDs, AC/DC values, policy provenance and paged snapshot sources.
+They are independent of the explicit power-transition commands.
+
 ### Pageable native inventories
 
 Concrete `IDataSource<T>` backends are provided by `WindowsProcessDataSource`
@@ -116,7 +120,7 @@ the application, which composes these APIs.
 | Network | [Tools.Windows.Network / WindowsNetworkUtil](Networking/WindowsNetworkUtil.cs) reads IPv4/IPv6 TCP/UDP owner tables, interface information and native counters. Plain types retain native identities, unsigned totals, speeds and flags. |
 | Storage | [Tools.Windows.Drives / WindowsDriveUtil](Storage/WindowsDriveUtil.cs) reads logical drives/physical disks/partitions and changes labels. [WindowsVolume](Files/WindowsVolume.cs) exposes native volume queries. [VolumeCheckSentry](Storage/VolumeCheckSentry.cs) wraps read-only chkdsk.exe for a selected local root with owned cancellation and structured arguments. Callers select probing, provider deadlines, confirmation and reporting; per-row errors remain alongside successful fields. |
 | Startup/events | [Tools.Windows.Startup / WindowsStartupUtil](Startup/WindowsStartupUtil.cs) reads Run locations, raw approval bytes and startup files. [Tools.Windows.EventLogs / WindowsEventLogUtil](EventLogs/WindowsEventLogUtil.cs) owns readers/records and returns detached event data with caller-supplied bounds. Interpretation/display policy stays in the app. |
-| Windows/messages | [WindowsWindow](Windowing/WindowsWindow.cs) reads HWND/title/class/thread/process/visibility/minimized data. Optional process-detail omission lets callers join their existing process inventory. GetBounds verifies the captured process creation time and checks the window thread/class before and after reading [GetWindowRect](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowrect) screen coordinates; those coordinates follow the caller's DPI context and may include invisible resize borders. GetPhysicalBounds uses a synchronous ThreadDpiAwarenessScope to return the same verified outer rectangle in physical desktop pixels, independent of the caller context; it preserves the process DPI policy. [WindowMessageSender](Windowing/WindowMessageSender.cs) posts or sends with timeout, retaining process identity through main-window dispatch. The caller supplies editor/highlight policy and confirmation. |
+| Windows/messages | [WindowsWindow](Windowing/WindowsWindow.cs) reads HWND/title/class/thread/process/visibility/minimized data. Optional process-detail omission lets callers join their existing process inventory. GetBounds verifies the captured process creation time and checks the window thread/class before and after reading [GetWindowRect](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowrect) screen coordinates; those coordinates follow the caller's DPI context and may include invisible resize borders. GetPhysicalBounds uses a synchronous ThreadDpiAwarenessScope to return the same verified outer rectangle in physical desktop pixels, independent of the caller context; it preserves the process DPI policy. GetVisiblePhysicalBounds applies the same identity checks and returns [DWM extended frame bounds](https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute), excluding invisible resize margins, with a physical outer-bounds fallback when DWM has no usable frame. [WindowMessageSender](Windowing/WindowMessageSender.cs) posts or sends with timeout, retaining process identity through main-window dispatch. The caller supplies editor/highlight policy and confirmation. |
 | Console/pipes | [ProcessSignalService](Processes/ProcessSignalService.cs) uses an owned console helper. [Tools.Windows.Pipes / NamedPipeUtil](Pipes/NamedPipeUtil.cs) lists local pipe names without opening endpoints; [NamedPipePeer](Pipes/NamedPipePeer.cs) queries connected peer identity. Client capture, elevated restart and Task Manager replacement remain application workflows. |
 | Trace sessions | [Tools.Windows.TraceSessions / EtwTraceUtil](Tracing/EtwTraceUtil.cs) queries accessible native ETW sessions, enables real-time delivery on an exactly identified existing session and consumes detached [EtwTraceEventRecord](Tracing/EtwTraceEventRecord.cs) records. The reader owns OpenTrace/ProcessTrace/CloseTrace and generic TDH field decoding; provider interpretation, packet attribution, bounded storage and capture/recovery policy stay in the app. |
 | Logged-on sessions | [Tools.Windows.Sessions / SessionUtil](Sessions/SessionUtil.cs) queries local or named-server WTS sessions through plain [WindowsSessionInfo](Sessions/WindowsSessionInfo.cs). Message, disconnect, logoff and remote-control operations revalidate session ID/server/user/logon time. Remote control requires an existing RDP caller session and uses Windows permissions/consent. Native memory/server handles are scope-owned; tool layout and confirmation stay in the app. |
@@ -844,3 +848,46 @@ only querying, identity/path/counters remain available while `HasExited` explici
 reports the missing synchronization permission. Identity capture and verified
 commands require a live handle; they never infer a successful check from access
 denial. Window and file-handle ownership checks reuse the same native liveness rule.
+
+### Active Monitor And Display Paths
+
+`Tools.Windows.Display.GetDisplaysAsync(token)` dispatches CCD, GDI, registry and
+optional WMI metadata reads to a worker and returns `WindowsDisplayInfo[]`. It is a
+read-only snapshot of active paths, with exact adapter LUID/target IDs and device
+paths, current/preferred timings, color state, driver metadata, source modes and
+validated cached EDID metadata. Older systems or unsupported driver queries leave
+optional fields null and preserve per-query availability details. HDR support,
+user enablement and active mode use the optional advanced-color v2 request; the
+older advanced-color flags are not reinterpreted as HDR state.
+
+`WindowsDisplayDataSource` implements `IDataSource<WindowsDisplayInfo>` through
+`ReloadableSnapshotDataSource<T>`. Its first query collects once; sorting,
+filtering and page reads reuse that inventory until `ReloadAsync(token)`. Sync
+native readers assert that they are not on the main thread. Query buffers retry
+boundedly when a hotplug races sizing, without publishing a failed query.
+
+`WindowsMonitorEdid.Parse` validates the EDID 1.x base header and checksum before
+decoding size/gamma. Missing extension blocks and per-block checksum failures are
+reported; raw bytes remain available. The native reader reads the registry cache
+and flags EDID overrides separately. It does not read DDC live, apply overrides,
+change display settings or write monitor registers.
+
+Native contracts: [QueryDisplayConfig](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-querydisplayconfig),
+[display target names](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-displayconfig_target_device_name),
+[video signals](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-displayconfig_video_signal_info),
+and [Windows EDID overrides](https://learn.microsoft.com/en-us/windows-hardware/drivers/display/overriding-monitor-edids).
+
+## Mouse Hook Compatibility
+
+`IMouseHook` exposes the `Scroll` event already implemented by `BaseMouseHook`.
+Consumers implementing `IMouseHook` directly must provide that event; subclasses
+of `BaseMouseHook` inherit its implementation.
+
+Asynchronous `WindowsMouseHook` observations preserve native arrival order and
+carry `MouseMoveEvent.MonotonicTimestampMilliseconds` captured before dispatch.
+The existing wall-clock `Time` remains the processing time. Stop, restart and
+uninstall discard queued observations from earlier activations; an already
+running callback can finish. Native critical callbacks retain synchronous
+dispatch so their subscribers can decide whether input is suppressed.
+`HooksTool.IsAnyMouseButtonDown()` reads physical button state independently of
+the caller's message queue, including the two extended mouse buttons.
