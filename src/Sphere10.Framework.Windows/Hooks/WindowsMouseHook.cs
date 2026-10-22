@@ -20,6 +20,8 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 	public static readonly TimeSpan DefaultMovingStoppedInterval;
 	private IntPtr _hMouseHook;
 	private WinAPI.USER32.HookProc _mouseHookProcedure;
+	private readonly SerialThreadPool _mouseActivityQueue = new(error => SystemLog.Exception(error));
+	private long _activityGeneration;
 
 	static WindowsMouseHook() {
 		DefaultMovingStoppedInterval = TimeSpan.FromMilliseconds(100);
@@ -68,6 +70,7 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 	}
 
 	public override void UninstallHook() {
+		Interlocked.Increment(ref _activityGeneration);
 		if (Status == DeviceHookStatus.Uninstalled && !Disposing) {
 			throw new SoftwareException("Mouse hook has not installed. Current Status is '{0}'", Status);
 		}
@@ -81,6 +84,16 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 		Status = DeviceHookStatus.Uninstalled;
 	}
 
+	public override void StartHook() {
+		Interlocked.Increment(ref _activityGeneration);
+		base.StartHook();
+	}
+
+	public override void StopHook() {
+		Interlocked.Increment(ref _activityGeneration);
+		base.StopHook();
+	}
+
 
 	public override void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY) {
 		HooksTool.SimulateMouseDeviceAction(button, buttonState, screenX, screenY);
@@ -89,6 +102,7 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 	private IntPtr MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam) {
 		var mouseMessages = (WinAPI.USER32.WM)wParam;
 		if (Status == DeviceHookStatus.Active) {
+			var arrivalTimestamp = Environment.TickCount64;
 			var oldPriority = Thread.CurrentThread.Priority;
 			try {
 				Thread.CurrentThread.Priority = ThreadPriority.Highest;
@@ -160,10 +174,16 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 
 					}
 
-					// Base method will process rest of logic
-					ContinueOutsideCriticalExecutionContext(
-						() => base.ProcessMouseActivity(mouseHookStruct.pt.x, mouseHookStruct.pt.y, buttonClicked, buttonState, clickType, wheelDelta)
-					);
+					// Independent workers can turn forward motion into an apparent reversal; preserve native arrival order.
+					var generation = Interlocked.Read(ref _activityGeneration);
+					void ProcessActivity() {
+						if (Status == DeviceHookStatus.Active && !Disposing && generation == Interlocked.Read(ref _activityGeneration))
+							base.ProcessMouseActivity(mouseHookStruct.pt.x, mouseHookStruct.pt.y, buttonClicked, buttonState, clickType, wheelDelta, arrivalTimestamp);
+					}
+					if (ProcessAsyncronously)
+						_mouseActivityQueue.QueueUserWorkItem(ProcessActivity);
+					else
+						ProcessActivity();
 				}
 			} finally {
 				Thread.CurrentThread.Priority = oldPriority;

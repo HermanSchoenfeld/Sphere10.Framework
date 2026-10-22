@@ -105,6 +105,10 @@ public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
 	}
 
 	protected virtual void ProcessMouseActivity(int currentX, int currentY, MouseButton buttonClicked, MouseButtonState buttonState, MouseClickType clickType, int wheelDelta) {
+		ProcessMouseActivity(currentX, currentY, buttonClicked, buttonState, clickType, wheelDelta, null);
+	}
+
+	protected virtual void ProcessMouseActivity(int currentX, int currentY, MouseButton buttonClicked, MouseButtonState buttonState, MouseClickType clickType, int wheelDelta, long? monotonicTimestampMilliseconds) {
 		lock (this) {
 			string activeProcessName = ActiveApplicationMonitor.GetActiveApplicationName();
 			DateTime now = DateTime.Now;
@@ -166,7 +170,8 @@ public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
 							_distanceMovedSinceStart,
 							distanceSinceLastEvent,
 							_distanceMovedSinceClick,
-							now
+							now,
+							monotonicTimestampMilliseconds
 						)
 					);
 				}
@@ -221,7 +226,8 @@ public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
 						_distanceMovedSinceStart,
 						distanceSinceLastEvent,
 						_distanceMovedSinceClick,
-						now
+						now,
+						monotonicTimestampMilliseconds
 					)
 				);
 
