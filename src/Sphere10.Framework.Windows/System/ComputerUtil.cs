@@ -77,6 +77,18 @@ public class ComputerUtil {
 
 	public virtual Task<WindowsPowerCapabilities> GetPowerCapabilitiesAsync(CancellationToken cancellationToken = default) => Task.Run(GetPowerCapabilities, cancellationToken);
 
+	public virtual WindowsPowerPlanInfo[] GetPowerPlans(CancellationToken cancellationToken = default) => WindowsPowerInventory.GetPlans(cancellationToken);
+
+	public virtual Task<WindowsPowerPlanInfo[]> GetPowerPlansAsync(CancellationToken cancellationToken = default) => Task.Run(() => GetPowerPlans(cancellationToken), cancellationToken);
+
+	public virtual WindowsPowerSettingInfo[] GetPowerSettings(Guid planId, CancellationToken cancellationToken = default) => WindowsPowerInventory.GetSettings(planId, cancellationToken);
+
+	public virtual Task<WindowsPowerSettingInfo[]> GetPowerSettingsAsync(Guid planId, CancellationToken cancellationToken = default) => Task.Run(() => GetPowerSettings(planId, cancellationToken), cancellationToken);
+
+	public virtual WindowsPowerDiagnosticInfo[] GetPowerDiagnostics(CancellationToken cancellationToken = default) => WindowsPowerInventory.GetDiagnostics(cancellationToken);
+
+	public virtual Task<WindowsPowerDiagnosticInfo[]> GetPowerDiagnosticsAsync(CancellationToken cancellationToken = default) => Task.Run(() => GetPowerDiagnostics(cancellationToken), cancellationToken);
+
 	/// <summary>Requests power-off. Acceptance does not guarantee completion; the interactive user or another application may veto shutdown.</summary>
 	public virtual void Shutdown(uint reason, bool forceIfHung = false) => RequestShutdown(8, reason, forceIfHung);
 
