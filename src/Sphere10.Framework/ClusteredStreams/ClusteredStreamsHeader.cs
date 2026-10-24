@@ -61,13 +61,13 @@ public class ClusteredStreamsHeader {
 		_lock = rootStream;
 		_reader = new EndianBinaryReader(EndianBitConverter.For(endianness), _headerStream);
 		_writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), _headerStream);
-		_versionProperty = new StreamMappedProperty<byte>(_headerStream, VersionOffset, VersionLength, PrimitiveSerializer<byte>.Instance, _reader, _writer, @lock: _lock);
-		_policyProperty = new StreamMappedProperty<ClusteredStreamsPolicy>(_headerStream, PolicyOffset, PolicyLength, EnumSerializer<ClusteredStreamsPolicy>.Instance, _reader, _writer, @lock: _lock);
-		_streamCountProperty = new StreamMappedProperty<long>(_headerStream, StreamCountOffset, StreamCountLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_streamDescriptorsClusterProperty = new StreamMappedProperty<long>(_headerStream, StreamDescriptorsEndClusterOffset, StreamDescriptorsEndClusterLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_reservedStreamsProperty = new StreamMappedProperty<long>(_headerStream, ReservedStreamsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_clusterSizeProperty = new StreamMappedProperty<int>(_headerStream, ClusterSizeOffset, ClusterSizeLength, PrimitiveSerializer<int>.Instance, _reader, _writer, @lock: _lock);
-		_totalClustersProperty = new StreamMappedProperty<long>(_headerStream, TotalClustersOffset, TotalClustersLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
+		_versionProperty = StreamMappedProperty.From(_headerStream, VersionOffset, VersionLength, PrimitiveSerializer<byte>.Instance, _reader, _writer, @lock: _lock, useCache: true);
+		_policyProperty = StreamMappedProperty.From(_headerStream, PolicyOffset, PolicyLength, EnumSerializer<ClusteredStreamsPolicy>.Instance, _reader, _writer, @lock: _lock, useCache: true);
+		_streamCountProperty = StreamMappedProperty.From(_headerStream, StreamCountOffset, StreamCountLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock, useCache: true);
+		_streamDescriptorsClusterProperty = StreamMappedProperty.From(_headerStream, StreamDescriptorsEndClusterOffset, StreamDescriptorsEndClusterLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock, useCache: true);
+		_reservedStreamsProperty = StreamMappedProperty.From(_headerStream, ReservedStreamsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock, useCache: true);
+		_clusterSizeProperty = StreamMappedProperty.From(_headerStream, ClusterSizeOffset, ClusterSizeLength, PrimitiveSerializer<int>.Instance, _reader, _writer, @lock: _lock, useCache: true);
+		_totalClustersProperty = StreamMappedProperty.From(_headerStream, TotalClustersOffset, TotalClustersLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock, useCache: true);
 		_extensionPropertiesStream = rootStream.AsBounded(ExtensionPropertiesOffset, ByteLength - VersionLength - PolicyLength - StreamCountLength - StreamDescriptorsEndClusterLength - ReservedStreamsLength - ClusterSizeLength - TotalClustersLength, allowInnerResize: false, useRelativeOffset: true);
 		_mappedExtensionPropertyFlushes = new List<Action>();
 	}
@@ -97,11 +97,14 @@ public class ClusteredStreamsHeader {
 
 	public long TotalClusters { get => _totalClustersProperty.Value; set => _totalClustersProperty.Value = value; }
 
-	public StreamMappedProperty<T> MapExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer) {
+	public StreamMappedProperty<T> MapExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer)
+		=> MapExtensionProperty(offset, length, serializer, false);
+
+	public StreamMappedProperty<T> MapExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer, bool useCache = false) {
 		Guard.ArgumentInRange(offset, 0, _extensionPropertiesStream.Length - 1, nameof(offset));
 		Guard.ArgumentInRange(length, 1, _extensionPropertiesStream.Length - offset, nameof(length));
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
-		var extProp = new StreamMappedProperty<T>(_extensionPropertiesStream, offset, length, serializer, _reader, _writer, @lock: _lock);
+		var extProp = StreamMappedProperty.From(_extensionPropertiesStream, offset, length, serializer, _reader, _writer, @lock: _lock, useCache: useCache);
 		_mappedExtensionPropertyFlushes.Add(extProp.FlushCache);
 		return extProp;
 	}

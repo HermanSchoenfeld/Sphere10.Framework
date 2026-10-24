@@ -25,9 +25,31 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 		IEqualityComparer<TKey> keyComparer,
 		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	)
+
+		: this(
+			objectStream,
+			indexName,
+			projection,
+			keySerializer,
+			keyComparer,
+			new BTreeSpec(BTreeType.BTree, bTreeOrder)
+		) {
+	}
+
+	public UniqueProjectionIndex(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TKey> projection,
+		IItemSerializer<TKey> keySerializer,
+		IEqualityComparer<TKey> keyComparer,
+		BTreeSpec bTreeSpec
+	)
 		: base(
 			objectStream, 
-			new UniqueKeyStorageAttachment<TKey>(objectStream.Streams, indexName, keySerializer, keyComparer, bTreeOrder),
+			new UniqueKeyStorageAttachment<TKey>(
+				objectStream.Streams, indexName, keySerializer, keyComparer,
+				bTreeSpec
+			),
 			IndexNullPolicy.ThrowOnNull
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));

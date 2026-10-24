@@ -35,9 +35,34 @@ internal sealed class ProjectionChecksumIndex<TItem, TProjection> : ProjectionIn
 		IEqualityComparer<TProjection> keyComparer,
 		IndexNullPolicy nullPolicy,
 		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	)
+		: this(
+			objectStream,
+			indexName,
+			projection,
+			projectionChecksummer,
+			projectionHydrator,
+			keyComparer,
+			nullPolicy,
+			new BTreeSpec(BTreeType.BTreePlus, bTreeOrder)
+		) {
+	}
+
+	public ProjectionChecksumIndex(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TProjection> projection,
+		IItemChecksummer<TProjection> projectionChecksummer,
+		Func<long, TProjection> projectionHydrator,
+		IEqualityComparer<TProjection> keyComparer,
+		IndexNullPolicy nullPolicy,
+		BTreeSpec bTreeSpec
 	) : base(
 			objectStream,
-			new IndexStorageAttachment<int>(objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default, bTreeOrder),
+			new IndexStorageAttachment<int>(
+				objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default,
+				bTreeSpec
+			),
 			nullPolicy
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));

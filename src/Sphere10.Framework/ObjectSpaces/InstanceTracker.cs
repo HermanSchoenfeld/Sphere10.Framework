@@ -107,10 +107,11 @@ internal class InstanceTracker {
 	/// <summary>
 	/// Returns the number of provisional (unpersisted) instances of the given type.
 	/// </summary>
-	public int GetProvisionalCount(Type itemType)
-		=> _objectsByType.TryGetValue(itemType, out var instances)
-			? instances.Values.Count(o => _provisionalObjects.Contains(o))
-			: 0;
+	public int GetProvisionalCount(Type itemType) {
+		if (!_objectsByType.TryGetValue(itemType, out var instances) || _provisionalObjects.Count == 0)
+			return 0;
+		return instances.Values.Count(o => _provisionalObjects.Contains(o));
+	}
 
 	/// <summary>
 	/// O(N) scan through provisional (unpersisted) instances of <typeparamref name="TItem"/> looking
@@ -118,11 +119,16 @@ internal class InstanceTracker {
 	/// Returns true and sets <paramref name="item"/> on the first match, false otherwise.
 	/// </summary>
 	public bool TryFindProvisional<TItem, TMember>(Expression<Func<TItem, TMember>> memberExpression, TMember memberValue, IEqualityComparer<TMember> comparer, out TItem item) {
-		var getter = memberExpression.Compile();
-		if (_objectsByType.TryGetValue(typeof(TItem), out var instances)) {
+		Func<TItem, TMember> getter = null;
+		// Direct members bound to this lambda are safe to compile only when needed. Other shapes
+		// retain eager compilation, including its validation before provisional/index lookup.
+		if (memberExpression?.Body is not MemberExpression member || !ReferenceEquals(member.Expression, memberExpression.Parameters[0]))
+			getter = memberExpression.Compile();
+		if (_provisionalObjects.Count != 0 && _objectsByType.TryGetValue(typeof(TItem), out var instances)) {
 			foreach (var obj in instances.Values) {
 				if (!_provisionalObjects.Contains(obj))
 					continue;
+				getter ??= memberExpression.Compile();
 				var typed = (TItem)obj;
 				if (comparer.Equals(getter(typed), memberValue)) {
 					item = typed;

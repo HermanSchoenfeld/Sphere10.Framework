@@ -13,29 +13,39 @@ using System.Linq;
 namespace Sphere10.Framework;
 
 /// <summary>
-/// An in-memory one-to-many lookup (multimap) backed by an <see cref="InMemoryBTreePlus{K,V}"/>
+/// An in-memory one-to-many lookup (multimap) backed by a configured B-tree
 /// with compound keys. Each logical entry <c>(key, value)</c> is stored as
-/// <c>CompoundKey(key, groupIndex) → value</c> in the B+ tree.
+/// <c>CompoundKey(key, groupIndex) → value</c> in the tree.
 /// </summary>
 /// <typeparam name="K">Lookup key type.</typeparam>
 /// <typeparam name="V">Lookup value type.</typeparam>
 public class InMemoryBTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
-	private readonly InMemoryBTreePlus<CompoundKey<K, int>, V> _btree;
+	private readonly IBTree<CompoundKey<K, int>, V> _btree;
 	private readonly BTreeLookup<K, V> _lookup;
 
 	public InMemoryBTreeLookup(IComparer<K> keyComparer)
 		: this(Sphere10FrameworkDefaults.BTreeLookupOrder, keyComparer) {
 	}
 
-	public InMemoryBTreeLookup(int order, IComparer<K> keyComparer) {
+	public InMemoryBTreeLookup(int order, IComparer<K> keyComparer)
+		: this(new BTreeSpec(BTreeType.BTreePlus, order), keyComparer) {
+	}
+
+	public InMemoryBTreeLookup(BTreeSpec bTreeSpec, IComparer<K> keyComparer) {
+		Guard.ArgumentNotNull(bTreeSpec, nameof(bTreeSpec));
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-		var CompoundComparer = new CompoundKeyComparer<K, int>(keyComparer, Comparer<int>.Default);
-		_btree = new InMemoryBTreePlus<CompoundKey<K, int>, V>(order, CompoundComparer);
+		Spec = bTreeSpec;
+		var compoundComparer = new CompoundKeyComparer<K, int>(keyComparer, Comparer<int>.Default);
+		_btree = Spec.Type == BTreeType.BTree
+			? new InMemoryBTree<CompoundKey<K, int>, V>(Spec.Order, compoundComparer)
+			: new InMemoryBTreePlus<CompoundKey<K, int>, V>(Spec.Order, compoundComparer);
 		_lookup = new BTreeLookup<K, V>(_btree, keyComparer);
 	}
 
-	/// <summary>The order of the underlying B+ tree.</summary>
+	/// <summary>The order of the underlying B-tree.</summary>
 	public int Order => _btree.Order;
+
+	public BTreeSpec Spec { get; }
 
 	/// <summary>
 	/// The total number of entries (including duplicate keys with different values).

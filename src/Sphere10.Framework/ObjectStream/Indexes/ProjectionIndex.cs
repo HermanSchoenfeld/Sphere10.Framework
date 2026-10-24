@@ -29,9 +29,31 @@ internal sealed class ProjectionIndex<TItem, TProjection> : ProjectionIndexBase<
 		IEqualityComparer<TProjection> projectionComparer,
 		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	)
+
+		: this(
+			objectStream,
+			indexName,
+			projection,
+			projectionSerializer,
+			projectionComparer,
+			new BTreeSpec(BTreeType.BTreePlus, bTreeOrder)
+		) {
+	}
+
+	public ProjectionIndex(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TProjection> projection,
+		IItemSerializer<TProjection> projectionSerializer,
+		IEqualityComparer<TProjection> projectionComparer,
+		BTreeSpec bTreeSpec
+	)
 		: base(
 			objectStream,
-			new IndexStorageAttachment<TProjection>(objectStream.Streams, indexName, projectionSerializer, projectionComparer, bTreeOrder),
+			new IndexStorageAttachment<TProjection>(
+				objectStream.Streams, indexName, projectionSerializer, projectionComparer,
+				bTreeSpec
+			),
 			IndexNullPolicy.ThrowOnNull
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));

@@ -27,7 +27,17 @@ public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAtta
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IComparer<TKey> keyComparer
-	) : base(streams, attachmentID, order, keySerializer, valueSerializer, keyComparer) {
+	) : this(streams, attachmentID, keySerializer, valueSerializer, keyComparer, new BTreeSpec(BTreeType.BTreePlus, order)) {
+	}
+
+	public BTreeLookupStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer,
+		BTreeSpec bTreeSpec
+	) : base(streams, attachmentID, keySerializer, valueSerializer, keyComparer, bTreeSpec) {
 	}
 
 	public new StreamMappedBTreeLookup<TKey, TValue> BTreeLookup => base.BTreeLookup;

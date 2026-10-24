@@ -111,7 +111,8 @@ internal class MerkleTreeStorageAttachment : ClusteredStreamsAttachmentBase, IDy
 			_merkleRootProperty = Streams.Header.MapExtensionProperty(
 				0, 
 				sizeof(bool) + hashSize,  // 1 byte for null flag + hash size
-				new ConstantSizeNullableByteArraySerializer(hashSize)
+				new ConstantSizeNullableByteArraySerializer(hashSize),
+				useCache: true
 			);
 
 			// When stream mapped root is changed, fire the root changed event (ensures not excessively triggered during dirty writes)
@@ -147,7 +148,10 @@ internal class MerkleTreeStorageAttachment : ClusteredStreamsAttachmentBase, IDy
 
 	private void EnsureTreeCalculated() {
 		Guard.Ensure(Streams.IsLocked, $"{nameof(MerkleTreeStorageAttachment)} must be locked before calling '{nameof(EnsureTreeCalculated)}' method");
-		_merkleRootProperty.Value = _flatTree.Root;
+		var root = _flatTree.Root;
+		// Root arrays are independently allocated; only a content change needs publishing.
+		if (!ByteArrayEqualityComparer.Instance.Equals(root, _merkleRootProperty.Value))
+			_merkleRootProperty.Value = root;
 	}
 
 }

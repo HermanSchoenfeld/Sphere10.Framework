@@ -39,16 +39,25 @@ public class IndexStorageAttachment<TData> : CompositeStorageAttachmentBase, ILo
 		IEqualityComparer<TData> datumComparer,
 		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	)
+		: this(streams, attachmentID, datumSerializer, datumComparer, new BTreeSpec(BTreeType.BTreePlus, bTreeOrder)) {
+	}
+
+	public IndexStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TData> datumSerializer,
+		IEqualityComparer<TData> datumComparer,
+		BTreeSpec bTreeSpec
+	)
 		: this(
 			streams,
 			attachmentID,
 			new PagedListStorageAttachment<TData>(streams, attachmentID + ".pagedList", datumSerializer),
-			new BTreeLookupStorageAttachment<TData, long>(streams, attachmentID + ".btreeLookup", bTreeOrder, datumSerializer, PrimitiveSerializer<long>.Instance, Comparer<TData>.Default)
+			new BTreeLookupStorageAttachment<TData, long>(streams, attachmentID + ".btreeLookup", datumSerializer, PrimitiveSerializer<long>.Instance, Comparer<TData>.Default, bTreeSpec)
 		) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Data serializer must be a constant-length serializer.");
 		Guard.ArgumentNotNull(datumComparer, nameof(datumComparer));
-		Guard.ArgumentGTE(bTreeOrder, 3, nameof(bTreeOrder));
 	}
 
 	private IndexStorageAttachment(
@@ -60,6 +69,8 @@ public class IndexStorageAttachment<TData> : CompositeStorageAttachmentBase, ILo
 		_pagedListStore = pagedListStore;
 		_btreeLookupStore = btreeLookupStore;
 	}
+
+	public BTreeSpec Spec => _btreeLookupStore.Spec;
 
 	public int Count => IsAttached ? _btreeLookupStore.BTreeLookup.DistinctKeyCount : 0;
 

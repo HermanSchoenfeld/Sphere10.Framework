@@ -15,12 +15,14 @@ namespace Sphere10.Framework;
 
 /// <summary>
 /// Abstract base for all B-tree family dictionaries (B-tree, B+ tree, etc.).
-/// Provides the common <see cref="IDictionary{K, V}"/> contract and abstract operations
+/// Provides the common <see cref="IBTree{K, V}"/> contract and abstract operations
 /// that subclasses implement for specific tree variants.
+/// <see cref="BTree{K, V, TNode}"/> and <see cref="BTreePlus{K, V, TNode}"/> supply distinct
+/// node algorithms; their storage subclasses supply the node representation.
 /// </summary>
 /// <typeparam name="K">Key type.</typeparam>
 /// <typeparam name="V">Value type.</typeparam>
-public abstract class BTreeBase<K, V> : IDictionary<K, V> {
+public abstract class BTreeBase<K, V> : IBTree<K, V> {
 	private readonly int _order;
 	private readonly IComparer<K> _comparer;
 
@@ -40,26 +42,26 @@ public abstract class BTreeBase<K, V> : IDictionary<K, V> {
 
 	public ICollection<K> Keys {
 		get {
-			var List = new List<K>(Count);
-			foreach (var Kv in this)
-				List.Add(Kv.Key);
-			return List;
+			var list = new List<K>(Count);
+			foreach (var entry in this)
+				list.Add(entry.Key);
+			return list;
 		}
 	}
 
 	public ICollection<V> Values {
 		get {
-			var List = new List<V>(Count);
-			foreach (var Kv in this)
-				List.Add(Kv.Value);
-			return List;
+			var list = new List<V>(Count);
+			foreach (var entry in this)
+				list.Add(entry.Value);
+			return list;
 		}
 	}
 
 	public V this[K key] {
 		get {
-			if (TryGetValue(key, out var Value))
-				return Value;
+			if (TryGetValue(key, out var value))
+				return value;
 			throw new KeyNotFoundException();
 		}
 		set => Set(key, value, overwriteIfExists: true);
@@ -78,9 +80,9 @@ public abstract class BTreeBase<K, V> : IDictionary<K, V> {
 	public abstract bool Remove(K key);
 
 	public bool Remove(KeyValuePair<K, V> item) {
-		if (!TryGetValue(item.Key, out var Current))
+		if (!TryGetValue(item.Key, out var current))
 			return false;
-		if (!EqualityComparer<V>.Default.Equals(Current, item.Value))
+		if (!EqualityComparer<V>.Default.Equals(current, item.Value))
 			return false;
 		return Remove(item.Key);
 	}
@@ -92,7 +94,7 @@ public abstract class BTreeBase<K, V> : IDictionary<K, V> {
 	public abstract bool TryGetValue(K key, out V value);
 
 	public bool Contains(KeyValuePair<K, V> item)
-		=> TryGetValue(item.Key, out var Current) && EqualityComparer<V>.Default.Equals(Current, item.Value);
+		=> TryGetValue(item.Key, out var current) && EqualityComparer<V>.Default.Equals(current, item.Value);
 
 	public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) {
 		if (array == null)
@@ -102,13 +104,15 @@ public abstract class BTreeBase<K, V> : IDictionary<K, V> {
 		if (array.Length - arrayIndex < Count)
 			throw new ArgumentException("Destination array is too small.", nameof(array));
 
-		foreach (var Kv in this)
-			array[arrayIndex++] = Kv;
+		foreach (var entry in this)
+			array[arrayIndex++] = entry;
 	}
 
 	public abstract IEnumerator<KeyValuePair<K, V>> GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+	public abstract IEnumerable<KeyValuePair<K, V>> FindRange(K lowerInclusive, K upperInclusive);
 
 	public abstract bool Validate(out string error);
 
@@ -116,7 +120,7 @@ public abstract class BTreeBase<K, V> : IDictionary<K, V> {
 
 	[Conditional("DIAGNOSTIC")]
 	protected void DebugValidate() {
-		if (!Validate(out var Error))
-			throw new InvalidOperationException("B-tree invariant violation: " + Error);
+		if (!Validate(out var error))
+			throw new InvalidOperationException("B-tree invariant violation: " + error);
 	}
 }

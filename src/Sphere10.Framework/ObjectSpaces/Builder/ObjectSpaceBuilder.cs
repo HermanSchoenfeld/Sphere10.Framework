@@ -29,8 +29,10 @@ public class ObjectSpaceBuilder {
 	private long _maxMemory;
 	private long _pageSize;
 	private int _clusterSize;
+	private BTreeSpec _indexBTreeSpec;
 	private int _indexBTreeOrder;
 	private bool _indexBTreeOrderSpecified;
+	private bool _indexBTreeTypeSpecified;
 	private bool _clusterSizeSpecified;
 	private bool _clusteredStreamsPolicySpecified;
 	private ObjectSpaceType? _boundType;
@@ -145,11 +147,33 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
+	/// <summary>Sets the B-tree type and order for all member indexes. Preserve this specification when reopening storage.</summary>
+	public ObjectSpaceBuilder WithIndexBTreeSpec(BTreeSpec spec) {
+		Guard.ArgumentNotNull(spec, nameof(spec));
+		_indexBTreeSpec = spec;
+		_indexBTreeOrderSpecified = true;
+		_indexBTreeTypeSpecified = true;
+		return this;
+	}
+
 	/// <summary>Sets the B-tree order for all member indexes. Existing storage must be reopened with the same order.</summary>
 	public ObjectSpaceBuilder WithIndexBTreeOrder(int order) {
-		Guard.ArgumentGTE(order, 3, nameof(order));
-		_indexBTreeOrder = order;
+		if (order < 3)
+			throw new ArgumentOutOfRangeException(nameof(order), order, "B-tree order must be at least 3.");
+		if (_indexBTreeSpec is null)
+			_indexBTreeOrder = order;
+		else
+			_indexBTreeSpec = new BTreeSpec(_indexBTreeSpec.Type, order);
 		_indexBTreeOrderSpecified = true;
+		return this;
+	}
+
+	/// <summary>Selects the type for all member indexes. Null retains the historical mixed layout. Preserve the selection on reopen.</summary>
+	public ObjectSpaceBuilder WithIndexBTreeType(BTreeType? type) {
+		var order = _indexBTreeSpec?.Order ?? _indexBTreeOrder;
+		_indexBTreeSpec = type.HasValue ? new BTreeSpec(type.Value, order) : null;
+		_indexBTreeOrder = order;
+		_indexBTreeTypeSpecified = true;
 		return this;
 	}
 
@@ -309,11 +333,20 @@ public class ObjectSpaceBuilder {
 			HashFunction = _hashFunction,
 			Dimensions = _dimensions.Select(x => x.BuildDefinition()).ToArray()
 		};
-		if (_indexBTreeOrderSpecified)
-			definition.IndexBTreeOrder = _indexBTreeOrder;
-		else if (MatchesBoundStorage())
-			definition.IndexBTreeOrder = _boundDefinition.IndexBTreeOrder;
-		if (MatchesBoundStorage()) {
+		var retained = MatchesBoundStorage();
+		var configuredOrder = _indexBTreeSpec?.Order ?? _indexBTreeOrder;
+		var inheritedOrder = retained ? _boundDefinition.IndexBTreeOrder : configuredOrder;
+		var order = _indexBTreeOrderSpecified ? configuredOrder : inheritedOrder;
+		var configuredType = _indexBTreeSpec?.Type;
+		var inheritedType = retained ? _boundDefinition.IndexBTreeType : configuredType;
+		var type = _indexBTreeTypeSpecified ? configuredType : inheritedType;
+		var spec = type.HasValue ? new BTreeSpec(type.Value, order) : null;
+		Guard.Ensure(!retained || (spec == _boundDefinition.IndexBTreeSpec && order == _boundDefinition.IndexBTreeOrder),
+			"An ObjectSpace builder cannot change the index B-tree specification of its bound storage.");
+		if (_indexBTreeOrderSpecified || retained)
+			definition.IndexBTreeOrder = order;
+		definition.IndexBTreeType = type;
+		if (retained) {
 			foreach (var dimension in definition.Dimensions)
 				if (!dimension.AverageObjectSizeBytes.HasValue && _boundDimensionClusterSizes.TryGetValue(dimension.ObjectType, out var boundSize))
 					dimension.AverageObjectSizeBytes = boundSize;
@@ -368,7 +401,7 @@ public class ObjectSpaceBuilder {
 	}
 
 	private bool MatchesBoundStorage() {
-		if (_boundType != _type || _boundDefinition is not { HasBoundIndexBTreeOrder: true })
+		if (_boundType != _type || _boundDefinition is not { HasBoundIndexBTreeSpec: true })
 			return false;
 		if (_type == ObjectSpaceType.MemoryMapped)
 			return _memoryStream != null && ReferenceEquals(_memoryStream, _boundMemoryStream);
@@ -390,7 +423,7 @@ public class ObjectSpaceBuilder {
 	}
 
 	private void CaptureBoundConfiguration(ObjectSpace space, ObjectSpaceType selectedType) {
-		if (space.RequiresLoad || !space.Definition.HasBoundIndexBTreeOrder)
+		if (space.RequiresLoad || !space.Definition.HasBoundIndexBTreeSpec)
 			return;
 		if (selectedType == ObjectSpaceType.MemoryMapped && _memoryStream == null)
 			return;

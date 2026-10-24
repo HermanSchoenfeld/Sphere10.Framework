@@ -37,7 +37,17 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 		IEqualityComparer<TKey> keyComparer,
 		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	)
-		: this(streams, attachmentID, keySerializer, Comparer<TKey>.Default, bTreeOrder) {
+		: this(streams, attachmentID, keySerializer, keyComparer, new BTreeSpec(BTreeType.BTree, bTreeOrder)) {
+	}
+
+	public UniqueKeyStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IEqualityComparer<TKey> keyComparer,
+		BTreeSpec bTreeSpec
+	)
+		: this(streams, attachmentID, keySerializer, Comparer<TKey>.Default, bTreeSpec) {
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
 	}
 
@@ -52,15 +62,24 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 		IComparer<TKey> keyComparer,
 		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
 	)
+		: this(streams, attachmentID, keySerializer, keyComparer, new BTreeSpec(BTreeType.BTree, bTreeOrder)) {
+	}
+
+	public UniqueKeyStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IComparer<TKey> keyComparer,
+		BTreeSpec bTreeSpec
+	)
 		: this(
 			streams,
 			attachmentID,
 			new PagedListStorageAttachment<TKey>(streams, attachmentID + ".pagedList", keySerializer),
-			new BTreeStorageAttachment<TKey, long>(streams, attachmentID + ".btree", bTreeOrder, keySerializer, PrimitiveSerializer<long>.Instance, keyComparer ?? Comparer<TKey>.Default)
+			new BTreeStorageAttachment<TKey, long>(streams, attachmentID + ".btree", keySerializer, PrimitiveSerializer<long>.Instance, keyComparer ?? Comparer<TKey>.Default, bTreeSpec)
 		) {
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.Argument(keySerializer.IsConstantSize, nameof(keySerializer), "Key serializer must be a constant-length serializer.");
-		Guard.ArgumentGTE(bTreeOrder, 3, nameof(bTreeOrder));
 	}
 
 	private UniqueKeyStorageAttachment(
@@ -73,7 +92,9 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 		_btreeStore = btreeStore;
 	}
 
-	public int Count => IsAttached ? _btreeStore.BTree.Count : 0;
+	public BTreeSpec Spec => _btreeStore.Spec;
+
+	public int Count => IsAttached ? _btreeStore.Tree.Count : 0;
 
 	public IEnumerable<TKey> Keys {
 		get {
@@ -116,7 +137,7 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
 			Guard.Argument(index == _pagedListStore.Count, nameof(index), "Index mismatches with expected index in store");
-			_btreeStore.BTree.Add(key, index);
+			_btreeStore.Tree.Add(key, index);
 			_pagedListStore.Add(key);
 		}
 	}
@@ -125,8 +146,8 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
 			var OldKey = _pagedListStore.Read(index);
-			_btreeStore.BTree.Remove(OldKey);
-			_btreeStore.BTree.Add(key, index);
+			_btreeStore.Tree.Remove(OldKey);
+			_btreeStore.Tree.Add(key, index);
 			_pagedListStore.Update(index, key);
 		}
 	}
@@ -134,7 +155,7 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 	public void Insert(long index, TKey key) {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			Guard.Ensure(!_btreeStore.BTree.ContainsKey(key));
+			Guard.Ensure(!_btreeStore.Tree.ContainsKey(key));
 			_pagedListStore.Insert(index, key);
 			RebuildBTree();
 		}
@@ -152,14 +173,14 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
 			var OldKey = _pagedListStore.Read(index);
-			_btreeStore.BTree.Remove(OldKey);
+			_btreeStore.Tree.Remove(OldKey);
 		}
 	}
 
 	public void Clear() {
 		CheckAttached();
 		using (Streams.EnterAccessScope()) {
-			_btreeStore.BTree.Clear();
+			_btreeStore.Tree.Clear();
 			_pagedListStore.Clear();
 		}
 	}
@@ -167,7 +188,7 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 	public IEnumerator<KeyValuePair<TKey, long>> GetEnumerator() {
 		CheckAttached();
 		using (Streams.EnterAccessScope())
-			return _btreeStore.BTree.ToList().GetEnumerator();
+			return _btreeStore.Tree.ToList().GetEnumerator();
 	}
 
 	IEnumerator IEnumerable.GetEnumerator() {
@@ -178,27 +199,27 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 		get {
 			CheckAttached();
 			using (Streams.EnterAccessScope())
-				return _btreeStore.BTree[key];
+				return _btreeStore.Tree[key];
 		}
 	}
 
 	public override void Attach() {
 		base.Attach();
 		using (Streams.EnterAccessScope()) {
-			if (_btreeStore.BTree.Count == 0 && _pagedListStore.Count > 0)
+			if (_btreeStore.Tree.Count == 0 && _pagedListStore.Count > 0)
 				RebuildBTree();
 		}
 	}
 
 	private void RebuildBTree() {
 		using var _ = Streams.EnterAccessScope();
-		_btreeStore.BTree.Clear();
+		_btreeStore.Tree.Clear();
 		var Reserved = Streams.Header.ReservedStreams;
 		for (var I = 0L; I < _pagedListStore.Count; I++) {
 			if (Streams.FastReadStreamDescriptorTraits(I + Reserved).HasFlag(ClusteredStreamTraits.Reaped))
 				continue;
 			var Key = _pagedListStore.Read(I);
-			_btreeStore.BTree.Add(Key, I);
+			_btreeStore.Tree.Add(Key, I);
 		}
 	}
 }

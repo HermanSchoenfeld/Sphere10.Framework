@@ -32,8 +32,15 @@ public class ConfigurationTests {
 		Assert.That(() => builder.WithIndexBTreeOrder(order), Throws.InstanceOf<ArgumentException>());
 		Assert.That(builder.BuildDefinition().IndexBTreeOrder, Is.EqualTo(8));
 		var definition = builder.BuildDefinition();
-		definition.IndexBTreeOrder = order;
-		Assert.That(definition.Validate().IsFailure, Is.True);
+		Assert.That(() => definition.IndexBTreeOrder = order, Throws.TypeOf<ArgumentOutOfRangeException>());
+		Assert.That(definition.IndexBTreeOrder, Is.EqualTo(8));
+		Assert.That(definition.IndexBTreeSpec, Is.Null);
+
+		var spec = new BTreeSpec(BTreeType.BTreePlus, 8);
+		definition.IndexBTreeSpec = spec;
+		Assert.That(() => definition.IndexBTreeOrder = order, Throws.TypeOf<ArgumentOutOfRangeException>());
+		Assert.That(definition.IndexBTreeOrder, Is.EqualTo(8));
+		Assert.That(definition.IndexBTreeSpec, Is.SameAs(spec));
 	}
 
 	[TestCase(3, false)]
