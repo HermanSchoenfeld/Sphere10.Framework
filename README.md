@@ -230,6 +230,7 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 ### :open_book: Getting Started
 
 - [**Documentation Home**](docs/README.md) — Complete documentation index
+- [**Framework To-do**](src/TODO.md) — Running engineering backlog across all Framework subsystems
 - [**Getting Started Guide**](docs/start-here.md) — Quick orientation for new developers
 - [**Tools Reference**](docs/tools-reference.md) — Complete Tools.* namespace catalog
 - [**Real-World Examples**](docs/real-world-usage-examples.md) — Practical patterns from test suite

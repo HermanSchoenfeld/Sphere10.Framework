@@ -295,8 +295,9 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 			RunId = _settings.RunId,
 			Profile.Storage,
 			Profile.Family,
+			Profile.Spec,
+			Profile.EffectiveType,
 			Profile.KeyShape,
-			Profile.Order,
 			MaximumLeafEntries = Profile.Order - 1,
 			Profile.KeyBytes,
 			Profile.StoredKeyBytes,
@@ -321,7 +322,7 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 		using var reader = new EndianBinaryReader(EndianBitConverter.For(Profile.Endianness), new NonClosingStream(_stream));
 		_stream.Position = 0;
 		var root = reader.ReadInt64();
-		var plus = Profile.Family != BTreeFamily.BTree;
+		var plus = Profile.EffectiveType == BTreeType.BTreePlus;
 		var empty = plus ? 0L : -1L;
 		var queue = new Queue<(long Handle, int Depth)>();
 		if (root != empty)

@@ -3,6 +3,45 @@
 NUnit coverage for the general profiler command, ObjectSpace, B-tree and cache workloads,
 parameter-study contracts and retained measurement evidence.
 
+`StreamMappedDictionaries/StreamMappedDictionaryWorkloadTests` registers the six
+`IntegrationTests_Heavy` cases: KVP and constant-length-key dictionaries on
+`MemoryStream`, 32-byte clusters, 250 maximum items, 250 iterations, and the
+Debug/Default/Performance policies. It reuses the canonical NUnit dictionary
+integration helper and links the core fixture's payload/serializer/comparer
+sources. The ordinary smoke cases use eight maximum items and three iterations.
+The full cases are explicit and run serially; they include the original
+correctness assertions and setup/cleanup rather than a BenchmarkDotNet kernel.
+The helper seeds operation/input generation with 31337, but its existing removal
+shuffles use the thread-local RNG without a public seed scope. Preserve that
+behavior and record this limitation when comparing runs.
+
+Run the matching full workload or its short verification from the Framework root:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Debug -p:BuildRevision=0 --settings tests/Sphere10.Framework.Utils.Profiler.Tests/StreamMappedDictionaries/serial.runsettings --filter 'FullyQualifiedName~StreamMappedDictionaryWorkloadTests.IntegrationTests_Heavy' --logger 'trx;LogFileName=heavy-six.trx'
+
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Debug -p:BuildRevision=0 --filter 'FullyQualifiedName~StreamMappedDictionaryWorkloadTests.IntegrationTests_Smoke|FullyQualifiedName~HeavyRegistryContainsBothImplementationsAndAllThreePolicies|FullyQualifiedName~RecordedStreamMappedDictionaryResults'
+```
+
+`StreamMappedDictionaries/RecordedStreamMappedDictionaryResults` reads local
+`Results/StreamMappedDictionaries/<campaign>/campaign.json` captures. It checks
+the workload/runtime controls, declared Core binary SHA256, hashed raw TRX files,
+and all six passed results by their actual test names and classes. Its output
+compares elapsed times without a performance threshold. A campaign records
+relative capture filenames, source provenance, and stages containing six case
+mappings (`Implementation`, `Policy`, `Trx`, `TestClass`, `TestName`,
+`SourceProvenance`). Each stage declares `Name`, `Configuration`, `CoreSha256`,
+`SourceProvenance`, and an optional `ComparisonBase`; later optimization passes
+can retain additional stages without replacing earlier captures. The manifest's
+`CaptureHashes` map identifies every raw TRX by SHA256. Original superseded runs
+remain retained, with any accepted clean reruns mapped explicitly per case.
+Missing local campaigns skip the evidence fixture; malformed or incomplete
+present campaigns fail. Raw campaign folders stay ignored local output.
+`RecordedStreamMappedDictionaryResultsTests` uses synthetic TRX records to check
+both exact capture shapes (original Core fixtures and the profiler fixture),
+including result/definition identity matching and rejection of changed workloads,
+duplicate results, failures and skipped cases. It does not run a workload.
+
 `ProfilerCommandTests` verifies help/explicit domain selection, unknown-domain
 rejection, configuration inspection and the requirement for a benchmark filter
 before output artifacts are created.
@@ -149,3 +188,67 @@ dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -p:BuildRevision=0 --f
 ```
 
 The [core ObjectSpace fixtures](../Sphere10.Framework.Tests/ObjectSpaces) cover core index/runtime changes. [Profiler execution checks](../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) use BenchmarkDotNet; they are not a replacement test harness.
+
+`ObjectSpaceHotPathTests` exercises warm identity lookups, clean Merkle flushes,
+reindexing and mixed autosave work in memory and file stores, with plain lookup
+controls. Thirty-two ordinary cases check persisted data, indexes and Merkle
+roots, including a non-256-bit digest and both explicit `BTreeType`
+choices. Ten explicit `TraceHotPath` and twenty
+`TraceSelectedImplementationHotPath` cases reuse the same fixture with
+`HotPathRepeats` and `HotPathArtifactRoot` runsettings parameters.
+Profile stacks beneath `RunMeasuredBatch`; preparation, integrity verification
+and reopening are outside that marker. These cases provide trace workloads;
+BenchmarkDotNet supplies the statistical timing and allocation measurements.
+
+```powershell
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~ObjectSpaces.ObjectSpaceHotPathTests&Name!~TraceHotPath'
+```
+
+`ObjectSpaceMerkleBenchmarks.CleanFlush` measures repeated clean flushes against
+an already settled Merkle store. Setup and final integrity/reopen checks remain
+outside the benchmark. Select a Merkle-enabled profile when running it.
+
+`RecordedObjectSpaceHotPathTests` checks the fifteen paired cases retained in
+`Results/20261022-objectspace-hotpaths`: the small workload matrix plus larger
+mutation batches and a separate file-reindex confirmation. It checks the original settings, successful worker logs and
+all twenty actual samples per case, and prints the before/after measurements.
+It validates retained evidence without requiring the current machine to meet
+a timing threshold. See the [ObjectSpace performance report](../../docs/performance/object-space-hotpaths.md)
+for configuration, profiling findings and limitations.
+
+The same fixture adds seven page-only before/after pairs and four explicit-tree
+cases from `Results/20261022-objectspace-page-btree`. Two further paired cases
+in `Results/20261022-span-dispatch` compare the subsequent inheritance cleanup,
+for twenty-eight recorded cases across the three campaigns. Both dispatch
+captures already contain page pooling, so their comparison does not isolate that
+change. The page campaign retains all repeated mutation
+captures, including the worse adjacent reindex result and the reverse-order
+confirmation. Explicit implementation measurements cover both Memory and File
+stores. These descriptive comparisons do not select a universal winning tree.
+See the [page reuse and tree selection report](../../docs/performance/object-space-page-btree.md).
+The [inheritance review](../../docs/performance/span-inheritance-review.md)
+records the retained/reverted optimizations and subclass extension points.
+
+`FilePageMemoryTests.FilePageStartupAndFlushFootprint` is a separate explicit
+fresh-process diagnostic. Run it once per test process, passing
+`FilePageArtifactRoot` for its JSON output; repeat with separate invocations
+to compare startup, post-workload and post-disposal process memory. Only its final
+labeled checkpoint forces collection. This diagnostic is separate from the
+BenchmarkDotNet timing/allocation jobs.
+
+```powershell
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed'
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~FilePageMemoryTests.FilePageStartupAndFlushFootprint' -- 'TestRunParameters.Parameter(name="FilePageArtifactRoot",value="E:/PageMemoryRun")'
+```
+
+`BTreeNodeIoPerformanceTests.StreamedNodeMutationSamples` is an explicit serial
+allocation diagnostic for both streamed tree types, both byte orders, and orders
+4, 64 and 256. It measures insert, update, deletion and node recycling, then
+checks the independent contents, reopening and complete stored-byte hashes.
+Pass `BTreeNodeIoArtifactRoot` through runsettings for its JSON output.
+`StreamTemporaryBufferPerformanceTests` measures temporary stream and serializer
+buffers separately; its output parameter is `StreamTemporaryBufferArtifactRoot`.
+Both diagnostics retain one warmup and five samples, with preparation and
+verification outside measurement. Compare the same fixture and inputs against
+the saved before/after Framework binaries; these diagnostics establish allocation
+changes, not a statistical latency result.

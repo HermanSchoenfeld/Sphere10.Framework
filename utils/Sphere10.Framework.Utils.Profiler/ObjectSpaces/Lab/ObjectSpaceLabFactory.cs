@@ -16,7 +16,7 @@ using Sphere10.Framework.ObjectSpaces;
 namespace Sphere10.Framework.Utils.Profiler.ObjectSpaces.Lab;
 
 public static class ObjectSpaceLabFactory {
-	private const int SchemaVersion = 2;
+	private const int SchemaVersion = 4;
 	private static readonly JsonSerializerOptions JsonOptions = new() {
 		WriteIndented = true,
 		Converters = { new JsonStringEnumConverter() }
@@ -27,13 +27,16 @@ public static class ObjectSpaceLabFactory {
 		configuration = configuration.Clone();
 		configuration.Validate().ThrowOnFailure();
 		var builder = new ObjectSpaceBuilder()
-			.WithIndexBTreeOrder(configuration.IndexBTreeOrder)
 			.UsingHashFunction(configuration.HashFunction)
 			.WithClusterSize(configuration.ClusterSize)
 			.WithPageSize(configuration.PageSize)
 			.WithMaxMemory(configuration.MaxMemory)
 			.WithClusteredStreamsPolicy(configuration.Policy)
 			.WithEndianness(configuration.Endianness);
+		if (configuration.IndexBTreeSpec == null)
+			builder.WithIndexBTreeOrder(configuration.IndexBTreeOrder);
+		else
+			builder.WithIndexBTreeSpec(configuration.IndexBTreeSpec);
 		if (configuration.AutoSave)
 			builder.AutoSave();
 		var dimension = builder.AddDimension<ObjectSpaceLabRecord>(ignoreAnnotations: true)
@@ -113,12 +116,42 @@ public static class ObjectSpaceLabFactory {
 			"The ObjectSpace lab manifest requires a complete Configuration object.");
 		var schemaVersion = 0;
 		Guard.Ensure(document.RootElement.TryGetProperty(nameof(LabManifest.SchemaVersion), out var version) && version.TryGetInt32(out schemaVersion)
-			&& schemaVersion is 1 or SchemaVersion, "Unsupported ObjectSpace lab manifest schema.");
+			&& schemaVersion is 1 or 2 or 3 or SchemaVersion, "Unsupported ObjectSpace lab manifest schema.");
+		configuration.TryGetProperty(nameof(ObjectSpaceLabConfiguration.IndexBTreeSpec), out var specification);
+		var hasSpecification = specification.ValueKind == JsonValueKind.Object;
 		foreach (var property in typeof(ObjectSpaceLabConfiguration).GetProperties().Where(property => property.CanWrite
-			&& (schemaVersion != 1 || property.Name != nameof(ObjectSpaceLabConfiguration.SchemaProfile))))
+			&& (schemaVersion != 1 || property.Name != nameof(ObjectSpaceLabConfiguration.SchemaProfile))
+			&& property.Name != nameof(ObjectSpaceLabConfiguration.IndexBTreeSpec)
+			&& (!hasSpecification || property.Name != nameof(ObjectSpaceLabConfiguration.IndexBTreeOrder))))
 			Guard.Ensure(configuration.TryGetProperty(property.Name, out _), $"The ObjectSpace lab manifest is missing configuration field '{property.Name}'.");
+		BTreeSpec legacySpec = null;
+		if (schemaVersion < 4) {
+			var legacyOrder = 0;
+			Guard.Ensure(configuration.TryGetProperty("IndexBTreeOrder", out var order) && order.TryGetInt32(out legacyOrder),
+				"The ObjectSpace lab manifest is missing configuration field 'IndexBTreeOrder'.");
+			var hasType = configuration.TryGetProperty("IndexBTreeImplementation", out var implementation);
+			Guard.Ensure(schemaVersion < 3 || hasType, "The ObjectSpace lab manifest is missing configuration field 'IndexBTreeImplementation'.");
+			var legacyType = hasType ? implementation.Deserialize<BTreeType?>(JsonOptions) : null;
+			Guard.Ensure(schemaVersion >= 3 || !legacyType.HasValue,
+				"Version 1 and 2 manifests only support the historical mixed B-tree implementations.");
+			Guard.Ensure(!configuration.TryGetProperty(nameof(ObjectSpaceLabConfiguration.IndexBTreeSpec), out _),
+				"Version 1, 2 and 3 manifests require the legacy B-tree configuration fields.");
+			if (legacyType.HasValue)
+				legacySpec = new BTreeSpec(legacyType.Value, legacyOrder);
+		} else {
+			Guard.Ensure(!hasSpecification || specification.TryGetProperty(nameof(BTreeSpec.Type), out _)
+				&& specification.TryGetProperty(nameof(BTreeSpec.Order), out _), "The ObjectSpace lab manifest requires a complete IndexBTreeSpec object.");
+			Guard.Ensure(specification.ValueKind is JsonValueKind.Object or JsonValueKind.Null or JsonValueKind.Undefined,
+				"The ObjectSpace lab manifest requires a complete IndexBTreeSpec object.");
+			Guard.Ensure(!configuration.TryGetProperty("IndexBTreeImplementation", out _)
+				&& (!hasSpecification || !configuration.TryGetProperty(nameof(ObjectSpaceLabConfiguration.IndexBTreeOrder), out var order)
+					|| order.GetInt32() == specification.GetProperty(nameof(BTreeSpec.Order)).GetInt32()),
+				"The index B-tree specification conflicts with legacy configuration fields.");
+		}
 		var manifest = document.RootElement.Deserialize<LabManifest>(JsonOptions);
 		Guard.Ensure(manifest?.Configuration != null, "Incomplete ObjectSpace lab manifest.");
+		if (legacySpec != null)
+			manifest.Configuration.IndexBTreeSpec = legacySpec;
 		if (schemaVersion == 1) {
 			Guard.Ensure(!configuration.TryGetProperty(nameof(ObjectSpaceLabConfiguration.SchemaProfile), out var profile)
 				|| profile.GetString() == nameof(ObjectSpaceLabSchemaProfile.PayloadOnly), "Version 1 only supports the original payload dimension.");

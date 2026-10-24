@@ -1,0 +1,56 @@
+[
+  {
+    "Name": "plain",
+    "Configuration": {
+      "Storage": "Memory",
+      "SchemaProfile": "PayloadOnly",
+      "IndexProfile": "Full",
+      "ClusterSize": 4096,
+      "AverageRecordSizeBytes": 256,
+      "PageSize": 262144,
+      "MaxMemory": 16777216,
+      "Policy": "Default",
+      "Endianness": "LittleEndian",
+      "AutoSave": false,
+      "Merkleized": false,
+      "HashFunction": "SHA2_256",
+      "IndexBTreeOrder": 64
+    }
+  },
+  {
+    "Name": "merkle",
+    "Configuration": {
+      "Storage": "Memory",
+      "SchemaProfile": "PayloadOnly",
+      "IndexProfile": "Full",
+      "ClusterSize": 4096,
+      "AverageRecordSizeBytes": 256,
+      "PageSize": 262144,
+      "MaxMemory": 16777216,
+      "Policy": "Default",
+      "Endianness": "LittleEndian",
+      "AutoSave": false,
+      "Merkleized": true,
+      "HashFunction": "SHA2_256",
+      "IndexBTreeOrder": 64
+    }
+  },
+  {
+    "Name": "merkle-auto",
+    "Configuration": {
+      "Storage": "Memory",
+      "SchemaProfile": "PayloadOnly",
+      "IndexProfile": "Full",
+      "ClusterSize": 4096,
+      "AverageRecordSizeBytes": 256,
+      "PageSize": 262144,
+      "MaxMemory": 16777216,
+      "Policy": "Default",
+      "Endianness": "LittleEndian",
+      "AutoSave": true,
+      "Merkleized": true,
+      "HashFunction": "SHA2_256",
+      "IndexBTreeOrder": 64
+    }
+  }
+]

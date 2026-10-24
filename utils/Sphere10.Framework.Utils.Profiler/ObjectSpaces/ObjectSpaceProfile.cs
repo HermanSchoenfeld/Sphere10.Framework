@@ -29,7 +29,7 @@ public sealed class ObjectSpaceProfile {
 	}
 
 	public static ObjectSpaceProfile[] CreateSuite(string suite, ObjectSpaceLabStorage storage) {
-		Guard.Argument(suite is "baseline" or "framework-defaults" or "btree" or "btree-refinement" or "clusters" or "pages" or "cache" or "policies" or "features" or "hashes" or "indexes" or "endianness", nameof(suite), $"Unknown suite '{suite}'.");
+		Guard.Argument(suite is "baseline" or "framework-defaults" or "btree" or "btree-refinement" or "clusters" or "pages" or "cache" or "policies" or "features" or "hashes" or "indexes" or "endianness" or "type" or "implementation", nameof(suite), $"Unknown suite '{suite}'.");
 		// Sweep one factor at a time before investigating interactions with custom profiles.
 		var profiles = new List<ObjectSpaceProfile>();
 		void Add(string name, Action<ObjectSpaceLabConfiguration> configure = null) {
@@ -67,6 +67,11 @@ public sealed class ObjectSpaceProfile {
 					configuration.AutoSave = false;
 					configuration.Merkleized = false;
 				});
+				break;
+			case "type":
+			case "implementation":
+				foreach (var implementation in Enum.GetValues<BTreeType>())
+					Add(implementation.ToString().ToLowerInvariant(), configuration => configuration.IndexBTreeSpec = new BTreeSpec(implementation, configuration.IndexBTreeOrder));
 				break;
 			case "btree":
 				foreach (var order in new[] { 8, 16, 32, 64, 128, 256, 512 })

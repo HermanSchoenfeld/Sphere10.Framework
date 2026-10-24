@@ -35,6 +35,7 @@ public sealed class ObjectSpaceBenchmarkFixture : IDisposable {
 	private ObjectSpaceLabRecord[] _mutationRecords;
 	private ObjectSpaceLabRecord[] _replacementRecords;
 	private byte[][] _resizedPayloads;
+	private byte[] _cleanMerkleRoot;
 	private bool _disposed;
 
 	public ObjectSpaceBenchmarkFixture(string profileName)
@@ -104,6 +105,47 @@ public sealed class ObjectSpaceBenchmarkFixture : IDisposable {
 		OpenBaseline();
 		if (warm)
 			Store.GetAll<ObjectSpaceLabRecord>().ToArray();
+	}
+
+	public void PrepareCleanMerkle() {
+		Guard.Ensure(Configuration.Merkleized, "Clean Merkle flush requires a Merkleized profile.");
+		PrepareRead(true);
+		Store.Flush();
+		VerifyMerkleIntegrity();
+		_cleanMerkleRoot = ReadSpatialMerkleRoot();
+	}
+
+	/// <summary>Flushes an already settled store repeatedly; preparation and integrity verification belong outside measurement.</summary>
+	public int CleanFlush() {
+		for (var index = 0; index < _settings.OperationCount; index++)
+			Store.Flush();
+		return _settings.OperationCount;
+	}
+
+	public void VerifyCleanMerkleResult(int flushes) {
+		Guard.Ensure(flushes == _settings.OperationCount, "Unexpected clean flush count.");
+		VerifyMerkleIntegrity();
+		Guard.Ensure(ByteArrayEqualityComparer.Instance.Equals(ReadSpatialMerkleRoot(), _cleanMerkleRoot), "A clean flush changed the settled spatial Merkle root.");
+		ObjectSpaceLabFactory.Complete(Store);
+		ReopenCurrent();
+		VerifyMerkleIntegrity();
+		Guard.Ensure(ByteArrayEqualityComparer.Instance.Equals(ReadSpatialMerkleRoot(), _cleanMerkleRoot), "A settled spatial Merkle root changed across reopen.");
+		VerifyCardinality(_settings.RecordCount);
+		VerifyRecord(Store.Get(IdentityMember, 1), CreateRecord(1));
+		VerifyRecord(Store.Get(IdentityMember, (long)_settings.RecordCount), CreateRecord(_settings.RecordCount));
+	}
+
+	/// <summary>Verifies dimension and spatial roots on the owning thread, outside benchmark timing.</summary>
+	public void VerifyMerkleIntegrity() {
+		if (!Configuration.Merkleized)
+			return;
+		using var access = Store.EnterAccessScope();
+		for (var index = 0; index < Store.Dimensions.Count; index++) {
+			var streams = Store.Dimensions[index].Container.ObjectStream.Streams;
+			using var dimensionAccess = streams.EnterAccessScope();
+			streams.Attachments[Sphere10FrameworkDefaults.DefaultMerkleTreeIndexName].VerifyIntegrity();
+		}
+		Store.Streams.Attachments[Sphere10FrameworkDefaults.DefaultSpatialMerkleTreeIndexName].VerifyIntegrity();
 	}
 
 	public void PrepareEmpty() {
@@ -389,6 +431,13 @@ public sealed class ObjectSpaceBenchmarkFixture : IDisposable {
 		Store = OpenWorking();
 	}
 
+	private byte[] ReadSpatialMerkleRoot() {
+		using var access = Store.EnterAccessScope();
+		var digestSize = Hashers.GetDigestSizeBytes(Configuration.HashFunction);
+		return Store.Streams.Header.MapExtensionProperty(0, sizeof(bool) + digestSize,
+			new ConstantSizeNullableByteArraySerializer(digestSize)).Value;
+	}
+
 	private ObjectSpace OpenWorking() {
 		if (Configuration.Storage == ObjectSpaceLabStorage.Memory)
 			_memoryStream ??= new MemoryStream();
@@ -484,7 +533,7 @@ public sealed class ObjectSpaceBenchmarkFixture : IDisposable {
 			_settings.WorkloadMix,
 			_profile.ComparisonGroup,
 			BaselineStorageBytes,
-			LongIdentifierNodeBytes = 24L * Configuration.IndexBTreeOrder + 17,
+			LongIdentifierNodeBytes = 24L * Configuration.IndexBTreeOrder + (Configuration.IndexBTreeSpec?.Type == BTreeType.BTreePlus ? 25 : 17),
 			Note = "Storage bytes exclude configuration manifests and transient transaction pages; page cache budget excludes tracked object instances."
 		};
 		File.WriteAllText(Path.Combine(directory, $"{Guid.NewGuid():N}.json"), JsonSerializer.Serialize(manifest, ProfilerSettings.JsonOptions));

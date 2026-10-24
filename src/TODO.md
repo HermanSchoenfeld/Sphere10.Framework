@@ -1,6 +1,33 @@
-# TODO — Agent Work Instructions
+# Framework to-do
+
+This is the Framework-wide running engineering backlog. Keep follow-ups across subsystems here, with their current evidence and completion criteria.
+
+## Current follow-ups
+
+- [ ] **Existing buffer search and alias semantics.** `MemoryBuffer.IndexOfRange` scans backing capacity and returns matching positions rather than one result per input; scalar adapters can consequently fail on duplicate or absent matches. Its existing span insertion can also observe shifted source bytes when the source aliases unchanged backing storage. Review these contracts separately with capacity, duplicate, missing-item and alias cases; the performance changes preserve them. See the [behavior review](../docs/performance/comment-and-behavior-review.md).
+- [ ] **Existing dynamic-page and empty-snapshot validation.** Dynamic raw snapshot/write methods index page-local tables with the supplied global index, so later pages can fail. Existing paged snapshots reject a zero-page empty range. Define compatibility and address these separately from the new destination-read APIs, with event, failure and page-boundary tests.
+
+- [ ] **Cluster-seeker missing END trait — existing defect.** The final `ClusterPointer.CheckTraits` guard checks START when the last logical cluster lacks END. A one-cluster START-only pointer is therefore accepted. Keep its existing behavior during allocation optimization; review the corruption contract and diagnostic compatibility separately before correcting that predicate. See [seeker checks](Sphere10.Framework/ClusteredStreams/ClusterSeeker.cs).
+
+- [ ] **Explicit auto-built serializer type-code start.** `RegisterAutoBuild<T>(typeCode)` forwards the requested start, but `SerializerBuilder.FactoryAssemble` applies it only when creating a copied factory. The retained-factory path can assign a different code. Define and test the requested-code contract separately before changing serialized type-code allocation.
+- [x] **Collection API expansion (23 October 2026).** Added three/four-component compound keys and `CompoundKey.From`, cycle-safe `BuildGraph`/`GraphNode.Visit`, shared `IBTree` composition, and default-off stream-mapped property caching with construction helpers and explicit owned-header caching. See [collection APIs](../docs/usage/keys-graphs-and-stream-properties.md) and their focused tests.
+- [ ] **Legacy container policy — existing header limitation.** Version 1 headers store zero while runtime `ClusteredStreams.Policy` can enable caches/allocation policies. Clarify supplied-policy requirements for legacy `FromStream` without rewriting existing files.
+
+- [ ] **Container-header extension ownership and overlap protection.** Define how attachments reserve extension-property offsets, including the Merkle null flag and variable-size digest region. `ClusteredStreamsHeader.MapExtensionProperty` currently checks bounds but does not detect overlapping mappings. Verify independent properties can coexist and conflicting reservations are rejected. See [header mappings](Sphere10.Framework/ClusteredStreams/ClusteredStreamsHeader.cs) and [Merkle attachment mappings](Sphere10.Framework/ClusteredStreams/Attachments/MerkleTreeStorageAttachment.cs).
+- [ ] **B-tree order and layout configuration.** Evaluate how callers manage and retain the complete index layout across reopen: `BTreeSpec` (type and order), serializers and endianness. Keep the current decision that the specification is passed through builders and index constructors without persistence in tree storage. Clarify application-owned configuration and the limits of structural layout checks. See [ObjectSpace configuration](Sphere10.Framework/ObjectSpaces/README.md#configuration-and-performance).
+- [ ] **Recycled B-tree nodes across reopen — existing defect.** Both streamed tree constructors start with an empty runtime `_freeList` and reload entry/node counts without restoring recycled-node state. Reopening and disposing without tree mutations can therefore change the persisted `FreeListCount` at header offset 16 from 1 to 0. Fix or reconstruct persisted recycled-node state for both [BTree](Sphere10.Framework/Collections/StreamMapped/StreamMappedBTree.cs) and [BTreePlus](Sphere10.Framework/Collections/StreamMapped/StreamMappedBTreePlus.cs). Verify free-count preservation, recycled-node reuse and storage growth across repeated reopen/mutation cycles for both implementations. This defect is outside the storage-marker removal change.
+- [ ] **Durable cross-dimension references and garbage collection.** Persist and rehydrate reference metadata, then verify reopened shared references and cycles, collection across recycled physical slots and rollback/reopen behavior before advertising durable graph GC. See [current ObjectSpace boundaries](Sphere10.Framework/ObjectSpaces/README.md#current-boundaries).
+- [ ] **Custom comparer and equality coverage.** Verify custom ordering and equality remain consistent for identity, unique, grouped and checksum indexes, including duplicate detection, lookup and reopening with both B-tree implementations. Address the documented comparer-registry limitations. See [comparers and equality](../docs/guidelines/patterns/collections-and-storage.md#comparers--equality).
+- [ ] **Destination-based fixed-size serialization.** The streamed-tree node helpers now use spans, but generic key/value serialization still creates owned arrays through `SerializeToBytes`/`DeserializeBytes`. Design a destination-based serializer contract with matching decorator/context behavior before removing those boundary allocations. Cover custom serializers, size mismatches, endianness, failures and reentrancy, then measure real index mutations. See [serializer contracts](Sphere10.Framework/Serialization/IItemSerializer.cs).
+- [ ] **Constant-size nullable reader alignment — existing defect.** `NullableSerializer<T>.Deserialize` skips `ValueSerializer.ConstantSize` bytes after reading either a null or a present value, although `Serialize` writes padding only for null values. A present value can therefore consume bytes from the following record. The temporary-buffer optimization preserves this behavior and tests it explicitly. Decide compatibility and fix stream alignment separately, with concatenated null/present records and truncated-input tests. See [nullable serializer](Sphere10.Framework/Serialization/Nullable/NullableSerializer.cs) and [preserved behavior tests](../tests/Sphere10.Framework.Tests/Serialization/PaddingDiscardSpanTests.cs).
+
+## Legacy items awaiting triage
+
+The following seven entries preserve earlier proposals and details. Their completion status and descriptions have not been verified against the current source; APIs, target-framework statements and proposed fixes may be stale. Confirm the remaining work before implementation.
 
 ## Task 1: Migrate All `ClassicAssert` Usages to Constraint-Model Assertions
+
+**Status:** Untriaged; current scope and completion status unverified.
 
 **Scope:** All `*.cs` files under `tests/` and `src/` directories.
 
@@ -20,6 +47,8 @@
 ---
 
 ## Task 2: ObjectSpace Integration Tests — Freshly-Hydrated Round-Trip Verification
+
+**Status:** Untriaged; current scope and completion status unverified.
 
 **File:** `tests/Sphere10.Framework.Tests/ObjectSpaces/ObjectSpaceIntegrationTests.cs`
 
@@ -43,6 +72,8 @@ Apply this pattern to every test region: Identity CRUD, Account CRUD, Block/Tran
 ---
 
 ## Task 3: Schnorr Implementation Review & Refactor
+
+**Status:** Untriaged; current scope and completion status unverified.
 
 **Files:**
 - `src/Sphere10.Framework.CryptoEx/EC/Schnorr/Schnorr.cs` (main implementation)
@@ -89,6 +120,8 @@ The inner `Key` base class wraps `AsInteger` in `Tools.Values.Future.LazyLoad(..
 
 ## Task 4: Optimize with `stackalloc` / `Span<byte>` to Minimize Allocations
 
+**Status:** Untriaged; current scope and completion status unverified.
+
 **Scope:** Framework-wide, focusing on hot paths in:
 1. **Schnorr** (`Schnorr.cs`) — `TaggedHash`, `ComputeSha256Hash`, `SignDigestWithAuxRandomData`, `VerifyDigest`, `BytesOfBigInt`, `BytesOfXCoord`.
 2. **Cryptography** (`src/Sphere10.Framework.CryptoEx/`) — any hashing, key derivation, or signing code that allocates `new byte[N]` for small fixed-size buffers.
@@ -106,6 +139,8 @@ The inner `Key` base class wraps `AsInteger` in `Tools.Values.Future.LazyLoad(..
 ---
 
 ## Task 5: Deterministic Key Derivation Across All Signature Schemes
+
+**Status:** Untriaged; current scope and completion status unverified.
 
 **Requirement:** `GeneratePrivateKey(ReadOnlySpan<byte> seed)` must be fully deterministic — same seed always produces the same private key, across instances, runs, and machines.
 
@@ -127,6 +162,8 @@ The inner `Key` base class wraps `AsInteger` in `Tools.Values.Future.LazyLoad(..
 ---
 
 ## Task 6: Schnorr Security Tests — Exhaustive Bit-Flip Coverage
+
+**Status:** Untriaged; current scope and completion status unverified.
 
 **File:** `tests/Sphere10.Framework.CryptoEx.Tests/SchnorrSecurityTests.cs`
 
@@ -168,6 +205,8 @@ public void VerifyDigest_FlipEveryBit_AllFail() {
 ---
 
 ## Task 7: InstanceTracker — Lookup by `ObjectSpaceObjectReference` Before Loading
+
+**Status:** Untriaged; current scope and completion status unverified.
 
 **Files:**
 - `src/Sphere10.Framework/ObjectSpaces/InstanceTracker.cs`

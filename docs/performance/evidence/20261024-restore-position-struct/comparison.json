@@ -1,0 +1,52 @@
+{
+  "Date": "2026-10-24",
+  "Target": ".NET 10, Release, x64 VSTest",
+  "Workload": "1000 static StreamPagedList<long>.WriteItemBytes span overwrites",
+  "Conditions": "Same profiler test assembly in separate hosts. Prepared stream capacity, inputs and 32 warm-up writes are outside owner-thread GC.GetAllocatedBytesForCurrentThread measurement. Exact bytes, adjacent item, restored position and retained stream ownership are checked before the allocation assertion. No latency or retained-memory claim.",
+  "BeforeCoreSha256": "593F0365C2A38DB14E285CA479253D6CC5989ECC28400F63282E282D0D30F1BF",
+  "AfterCoreSha256": "4F5E2C4BCB5840CEDC58C09CE8F175802696E187BEB30004C6291BCE56F2AB33",
+  "ProfilerAssemblySha256": "94459046324F3CE887FCF1A1436AFCB195D5E4ADAB5B38F07DC61F95E8BE134D",
+  "BaselineFailure": "Both baseline cases intentionally fail only the new zero-allocation assertion, reporting 40000 bytes; semantic checks complete first.",
+  "Samples": [
+    {
+      "Phase": "before",
+      "Test": "StaticPageSpanWritesDoNotAllocatePositionScopes(BigEndian)",
+      "Outcome": "Failed",
+      "AllocatedBytes": 40000,
+      "ContentAndOwnershipChecksPassed": true
+    },
+    {
+      "Phase": "before",
+      "Test": "StaticPageSpanWritesDoNotAllocatePositionScopes(LittleEndian)",
+      "Outcome": "Failed",
+      "AllocatedBytes": 40000,
+      "ContentAndOwnershipChecksPassed": true
+    },
+    {
+      "Phase": "after",
+      "Test": "StaticPageSpanWritesDoNotAllocatePositionScopes(LittleEndian)",
+      "Outcome": "Passed",
+      "AllocatedBytes": 0,
+      "ContentAndOwnershipChecksPassed": true
+    },
+    {
+      "Phase": "after",
+      "Test": "StaticPageSpanWritesDoNotAllocatePositionScopes(BigEndian)",
+      "Outcome": "Passed",
+      "AllocatedBytes": 0,
+      "ContentAndOwnershipChecksPassed": true
+    }
+  ],
+  "Validation": {
+    "FocusedReleasePassed": 651,
+    "FocusedDebugPassed": 651,
+    "ProfilerReleasePassed": 2,
+    "DirectScopeAllocatedBytesPer1000": 0,
+    "DirectScopeExtensionsCovered": [
+      "EnterRestorePositionScope",
+      "EnterRestorePositionSeek"
+    ],
+    "CrossPlatformBuildErrors": 0,
+    "CrossPlatformExistingNugetWarnings": 20
+  }
+}

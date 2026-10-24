@@ -66,7 +66,7 @@ public class RecordedDefaultSelectionTests {
 			var resultPath = Path.Combine(directory, "results.json");
 			TestContext.AddTestAttachment(planPath, "Exact measured study plan");
 			TestContext.AddTestAttachment(resultPath, "Raw candidate samples");
-			var plan = JsonSerializer.Deserialize<StudyPlan>(File.ReadAllText(planPath), ProfilerSettings.JsonOptions);
+			var plan = StudyEvidence.ReadPlan(planPath);
 			var result = StudyEvidence.Read(resultPath).Single(item => item.Case.Id == source.GetProperty("CaseId").GetString());
 			Assert.That(result.IsEligible(plan.SampleCount), Is.True, "Failed or incomplete evidence cannot nominate a new default.");
 			Assert.That(result.Case.Workload, Is.EqualTo("Mixed"));

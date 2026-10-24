@@ -105,6 +105,8 @@ public sealed class ProfilerSettings {
 		var settings = new ProfilerSettings();
 		var suite = "baseline";
 		var storage = ObjectSpaceLabStorage.Memory;
+		BTreeType? implementation = null;
+		int? order = null;
 		var profileFile = (string)null;
 		var profileNames = (string)null;
 		var forwarded = new List<string>();
@@ -119,6 +121,9 @@ public sealed class ProfilerSettings {
 			switch (argument) {
 				case "--suite": suite = Value().ToLowerInvariant(); break;
 				case "--storage": storage = Tools.Enums.ParseEnum<ObjectSpaceLabStorage>(Value(), true); break;
+				case "--type":
+				case "--implementation": implementation = Tools.Enums.ParseEnum<BTreeType>(Value(), true); break;
+				case "--order": order = int.Parse(Value(), CultureInfo.InvariantCulture); break;
 				case "--records": settings.RecordCount = int.Parse(Value(), CultureInfo.InvariantCulture); break;
 				case "--payload": settings.PayloadBytes = int.Parse(Value(), CultureInfo.InvariantCulture); break;
 				case "--operations": settings.OperationCount = int.Parse(Value(), CultureInfo.InvariantCulture); operationsSpecified = true; break;
@@ -144,13 +149,20 @@ public sealed class ProfilerSettings {
 			}
 		}
 		settings.Profiles = profileFile == null ? ObjectSpaceProfile.CreateSuite(suite, storage)
-			: JsonSerializer.Deserialize<ObjectSpaceProfile[]>(File.ReadAllText(profileFile), JsonOptions);
+			: ReadProfiles(profileFile);
 		Guard.ArgumentNotNullOrEmpty(settings.Profiles, nameof(args), "At least one configuration profile is required.");
 		Guard.Argument(settings.Profiles.All(profile => profile != null), nameof(args), "Profiles must not contain null entries.");
 		if (profileNames != null) {
 			var selectedNames = profileNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 			Guard.Argument(selectedNames.All(name => settings.Profiles.Any(profile => profile.Name == name)), nameof(args), "A selected profile does not exist in the suite or configuration file.");
 			settings.Profiles = settings.Profiles.Where(profile => selectedNames.Contains(profile.Name, StringComparer.Ordinal)).ToArray();
+		}
+		foreach (var profile in settings.Profiles) {
+			Guard.ArgumentNotNull(profile.Configuration, nameof(profile.Configuration));
+			if (implementation.HasValue)
+				profile.Configuration.IndexBTreeSpec = new BTreeSpec(implementation.Value, order ?? profile.Configuration.IndexBTreeOrder);
+			else if (order.HasValue)
+				profile.Configuration.IndexBTreeOrder = order.Value;
 		}
 		if (!operationsSpecified)
 			settings.OperationCount = Math.Min(settings.RecordCount, settings.OperationCount);
@@ -159,6 +171,42 @@ public sealed class ProfilerSettings {
 		settings.Validate();
 		benchmarkArgs = forwarded.ToArray();
 		return settings;
+	}
+
+	private static ObjectSpaceProfile[] ReadProfiles(string path) {
+		using var document = JsonDocument.Parse(File.ReadAllText(path));
+		return document.RootElement.EnumerateArray().Select(ReadProfile).ToArray();
+	}
+
+	internal static ObjectSpaceProfile ReadProfile(JsonElement element) {
+		var profile = element.Deserialize<ObjectSpaceProfile>(JsonOptions);
+		if (profile?.Configuration == null)
+			return profile;
+		TryGetProfileProperty(element, nameof(ObjectSpaceProfile.Configuration), out var configuration);
+		var hasOrder = TryGetProfileProperty(configuration, "IndexBTreeOrder", out var order);
+		var hasType = TryGetProfileProperty(configuration, "IndexBTreeImplementation", out var type);
+		if (profile.Configuration.IndexBTreeSpec != null) {
+			TryGetProfileProperty(configuration, nameof(ObjectSpaceLabConfiguration.IndexBTreeSpec), out var specification);
+			TryGetProfileProperty(specification, nameof(BTreeSpec.Order), out var specificationOrder);
+			Guard.Argument(!hasType && (!hasOrder || order.GetInt32() == specificationOrder.GetInt32()), nameof(element),
+				"The index B-tree specification conflicts with legacy configuration fields.");
+		} else if (hasType) {
+			var implementation = type.Deserialize<BTreeType?>(JsonOptions);
+			if (implementation.HasValue)
+				profile.Configuration.IndexBTreeSpec = new BTreeSpec(implementation.Value, profile.Configuration.IndexBTreeOrder);
+		}
+		return profile;
+	}
+
+	private static bool TryGetProfileProperty(JsonElement element, string name, out JsonElement value) {
+		foreach (var property in element.EnumerateObject()) {
+			if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)) {
+				value = property.Value;
+				return true;
+			}
+		}
+		value = default;
+		return false;
 	}
 
 	private static ProfilerSettings ReadCurrent() {

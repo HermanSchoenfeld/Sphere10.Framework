@@ -97,7 +97,7 @@ public static class ProfilerResults {
 		var directory = Path.Combine(settings.OutputDirectory, "storage", settings.RunId);
 		if (!Directory.Exists(directory))
 			return null;
-		foreach (var path in Directory.EnumerateFiles(directory, profile + "-*.json")) {
+		foreach (var path in Directory.EnumerateFiles(directory, "*.json")) {
 			using var document = JsonDocument.Parse(File.ReadAllText(path));
 			if (document.RootElement.GetProperty("Profile").GetString() == profile)
 				return document.RootElement.GetProperty("BaselineStorageBytes").GetInt64();

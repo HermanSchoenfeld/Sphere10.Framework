@@ -154,6 +154,7 @@ normal adaptive invocation counts.
 | `WarmCodeLookup` | `operations` unique string checksum-index queries; Full profiles only. |
 | `WarmCategoryLookup` | `operations` nonunique queries, hydrating their matching rows; Full profiles only. Throughput counts queries, not returned rows. |
 | `WarmScan` | Materialize and sum all saved live records using the warmed identity tracker. |
+| `CleanFlush` | `operations` calls to `Flush` on an already settled Merkle store. Only Merkle profiles participate; setup and final root/integrity/reopen checks are excluded. The batch is idempotent and supports adaptive invocation counts. |
 | `FirstTouchIdentityLookup` | Existing ID queries immediately after reopening a fresh ObjectSpace. |
 | `FirstTouchScan` | Materialize and sum all saved live records immediately after reopening. |
 | `InsertAndPersist` | Accept and save `records` prebuilt detached records into an empty store, then Complete. |
@@ -181,6 +182,18 @@ mutation checks reopen storage to verify updated keys, missing deleted keys,
 replacement rows and payload round trips. Rollback checks reacquire records from
 the restored view. A failed check fails that benchmark instead of producing a
 usable timing rank.
+
+The focused [ObjectSpace hot-path tests](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/ObjectSpaces/ObjectSpaceHotPathTests.cs)
+reuse this fixture for ordinary correctness checks and explicit repeated trace
+workloads. Filter trace stacks beneath `RunMeasuredBatch` to exclude preparation
+and verification. Their runsettings expose `HotPathRepeats` and
+`HotPathArtifactRoot`; they do not replace BenchmarkDotNet measurements. The
+[performance report](../../../docs/performance/object-space-hotpaths.md) records
+the paired lookup, clean-flush and mutation campaign.
+Its exact historical profiles are available as
+`profiles.hotpaths-memory.json` and `profiles.hotpaths-file.json`: `plain` and
+`merkle` use explicit saves; `merkle-auto` exercises dirty-flag autosave. These
+pin the measured configuration and do not select new Framework defaults.
 
 The fixture is deliberately synchronous: ObjectSpace dimension streams retain
 a monitor scope for their entire loaded lifetime. Creation, use and disposal
@@ -253,3 +266,13 @@ order-32/order-64 results and their limits. Its overlapping confidence intervals
 establish no preferred order.
 The [EventPipe diagnostic smoke](results/eventpipe-smoke.md) records successful
 trace collection and source-backed areas for follow-up profiling.
+
+The `type` suite compares `BTree` and `BTreePlus` across all member indexes. `--type BTree` or `--type BTreePlus` applies that selection to the selected built-in or JSON profiles. `--order` changes the order while preserving the selected type. An optional immutable `Configuration.IndexBTreeSpec` carries both concrete values, for example `"IndexBTreeSpec": { "Type": "BTreePlus", "Order": 64 }`. When no type is selected, `IndexBTreeOrder` alone preserves the historical mixed layout. For example:
+
+```powershell
+dotnet run -c Release --project utils/Sphere10.Framework.Utils.Profiler -- object-spaces --suite type --storage Memory --filter '*ReindexAndPersist*' --job Short
+```
+
+Use fresh workspaces when switching tree types. File lab sidecars version 4 record a complete `IndexBTreeSpec` when a type is selected, or a bare `IndexBTreeOrder` for historical mixed indexes. Version 3 maps a concrete recorded implementation into a specification; versions 1 and 2 retain the original bare order and mixed layout. Reading a legacy sidecar does not rewrite it. These are application configuration sidecars; tree type and order are not persisted in Framework tree headers.
+
+For existing profiler inputs, the JSON reader maps a concrete legacy `IndexBTreeImplementation` into a complete specification and retains a bare `IndexBTreeOrder` when no type was recorded. Repeated order fields must agree; conflicting selections are rejected. `--implementation` and suite `implementation` remain accepted aliases for retained commands. Frozen result files retain their original field names and source identities.

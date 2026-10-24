@@ -112,6 +112,7 @@ public sealed class StudyCase {
 	public string ComparisonGroup => (Domain == "object-spaces"
 		? $"object-spaces/{ObjectSpaces.Profiles.Single().ComparisonGroup}/{Workload}/{Mix}/records-{ObjectSpaces.RecordCount}/ops-{ObjectSpaces.OperationCount}/payload-{ObjectSpaces.PayloadBytes}-{ObjectSpaces.PayloadPattern}/categories-{ObjectSpaces.CategoryCount}-{ObjectSpaces.HotCategoryPercent}/lookup-{ObjectSpaces.LookupPattern}-{ObjectSpaces.HotSetPercent}/shuffled-{ObjectSpaces.ShuffledInsertion}"
 		: $"btrees/{BTrees.Profiles.Single().Storage}/{BTrees.Profiles.Single().Family}/{BTrees.Profiles.Single().KeyShape}/{Workload}/{Mix}/records-{BTrees.RecordCount}/ops-{BTrees.OperationCount}/group-{BTrees.GroupSize}/shuffled-{BTrees.ShuffledInsertion}")
+		+ (Domain == "btrees" && BTrees.Profiles.Single().Spec != null ? $"/tree-{BTrees.Profiles.Single().Spec.Type}" : "")
 		+ (Factor == null ? "" : $"/factor-{Factor}");
 }
 
@@ -203,7 +204,26 @@ public static class StudyEvidence {
 					.Select(result => result.Case.Id).ToArray() };
 		}).ToArray();
 
-	public static StudyResult[] Read(string path) => JsonSerializer.Deserialize<StudyResult[]>(File.ReadAllText(path), ProfilerSettings.JsonOptions);
+	public static StudyPlan ReadPlan(string path) {
+		using var document = JsonDocument.Parse(File.ReadAllText(path));
+		var plan = document.RootElement.Deserialize<StudyPlan>(ProfilerSettings.JsonOptions);
+		if (plan != null) {
+			var cases = GetProperty(document.RootElement, nameof(StudyPlan.Cases));
+			if (cases.ValueKind == JsonValueKind.Array)
+				plan.Cases = cases.EnumerateArray().Select(ReadCase).ToArray();
+		}
+		return plan;
+	}
+
+	public static StudyResult[] Read(string path) {
+		using var document = JsonDocument.Parse(File.ReadAllText(path));
+		return document.RootElement.EnumerateArray().Select(element => {
+			var result = element.Deserialize<StudyResult>(ProfilerSettings.JsonOptions);
+			if (result?.Case != null)
+				result.Case = ReadCase(GetProperty(element, nameof(StudyResult.Case)));
+			return result;
+		}).ToArray();
+	}
 
 	public static string Format(StudyResult[] results, int expectedSamples) {
 		var text = new StringBuilder("# Parameter study: measured screening candidates\n\n");
@@ -241,4 +261,24 @@ public static class StudyEvidence {
 					sample.AllocatedBytes.ToString(CultureInfo.InvariantCulture), sample.Checksum }.Select(value => "\"" + value.Replace("\"", "\"\"") + "\"")));
 		File.WriteAllText(Path.Combine(directory, "samples.csv"), csv.ToString());
 	}
+
+	private static StudyCase ReadCase(JsonElement element) {
+		var item = element.Deserialize<StudyCase>(ProfilerSettings.JsonOptions);
+		if (item?.ObjectSpaces != null) {
+			var settings = GetProperty(element, nameof(StudyCase.ObjectSpaces));
+			var profiles = GetProperty(settings, nameof(ProfilerSettings.Profiles));
+			if (profiles.ValueKind == JsonValueKind.Array)
+				item.ObjectSpaces.Profiles = profiles.EnumerateArray().Select(ProfilerSettings.ReadProfile).ToArray();
+		}
+		if (item?.BTrees != null) {
+			var settings = GetProperty(element, nameof(StudyCase.BTrees));
+			var profiles = GetProperty(settings, nameof(BTreeProfilerSettings.Profiles));
+			if (profiles.ValueKind == JsonValueKind.Array)
+				item.BTrees.Profiles = profiles.EnumerateArray().Select(BTreeProfilerSettings.ReadProfile).ToArray();
+		}
+		return item;
+	}
+
+	private static JsonElement GetProperty(JsonElement element, string name)
+		=> element.EnumerateObject().LastOrDefault(property => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)).Value;
 }
