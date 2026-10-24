@@ -37,7 +37,11 @@ public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 	}
 
 	public override IEnumerable<byte> ReadRange(long index, long count)
-		=> ReadSpan(index, count).ToArray();
+		=> PagedBufferImplementationHelper.ReadRange(_friend, index, count);
+
+	/// <summary>Copies bytes into caller-owned storage. Override this method to customize destination reads.</summary>
+	public virtual void ReadRange(long index, Span<byte> destination)
+		=> PagedBufferImplementationHelper.ReadRange(_friend, index, destination);
 
 	public ReadOnlySpan<byte> ReadSpan(long index, long count)
 		=> PagedBufferImplementationHelper.ReadRange(_friend, index, count);
@@ -101,8 +105,7 @@ public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 			// Use byte streaming for perf
 			var memBuff = (MemoryBuffer)memoryPage;
 			memBuff.ExpandTo((int)stream.Length); // note: underlying allocation is still done in chunks of page-size
-			var bytesRead = stream.Read(memBuff.AsSpan());
-			Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
+			stream.ReadExactly(memBuff.AsSpan());
 		}
 	}
 }

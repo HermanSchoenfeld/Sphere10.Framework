@@ -49,14 +49,19 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 		=> throw new NotSupportedException();
 
 	public override IEnumerable<byte> ReadRange(long index, long count)
-		=> ReadArray(index, count).ToArray();
+		=> ReadArray(index, count);
+
+	/// <summary>Fills caller-owned storage, or throws at end of stream. Override this method to customize destination reads.</summary>
+	public virtual void ReadRange(long index, Span<byte> destination) {
+		SeekToRead(index, destination.Length);
+		_stream.ReadExactly(destination);
+	}
 
 	public ReadOnlySpan<byte> ReadSpan(long index, long count)
 		=> ReadArray(index, count);
 
 	public byte[] ReadArray(long index, long count) {
-		CheckRange(index, count);
-		_stream.Seek(index, SeekOrigin.Begin);
+		SeekToRead(index, count);
 		return _stream.ReadBytes(count);
 	}
 
@@ -98,6 +103,10 @@ public class StreamMappedBuffer : RangedListBase<byte>, IBuffer {
 
 	public void ExpandBy(long newBytes) => ExpandTo(Count + newBytes);
 
+	private void SeekToRead(long index, long count) {
+		CheckRange(index, count);
+		_stream.Seek(index, SeekOrigin.Begin);
+	}
 
 }
 

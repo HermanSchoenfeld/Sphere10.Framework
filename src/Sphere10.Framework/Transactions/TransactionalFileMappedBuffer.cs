@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,6 +38,8 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 	public override TransactionalFileMappedBuffer AsBuffer => this;
 
 	public ReadOnlySpan<byte> ReadSpan(long index, long count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
+
+	public void ReadRange(long index, Span<byte> destination) => PagedBufferImplementationHelper.ReadRange(_friend, index, destination);
 
 	public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(_friend, span);
 
@@ -117,14 +120,25 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 	}
 
 
-	private class PageImpl : TransactionalFilePageBase<byte>, IBufferPage {
+	private class PageImpl : TransactionalFilePageBase<byte>, IBufferPage, IBufferPageReader {
 
 		public PageImpl(FileStream stream, string uncommittedPageFileName, long pageNumber, long pageSize)
-			: base(stream, new ConstantLengthItemSizer<byte>(sizeof(byte), false), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
+			: base(stream, new ConstantLengthItemSizer<byte>(sizeof(byte), false), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(pageSize, ArrayPool<byte>.Shared)) {
+		}
+
+		public override void Dispose() {
+			MemoryStore.Clear();
+			base.Dispose();
 		}
 
 		public ReadOnlySpan<byte> ReadSpan(long index, long count)
 			=> PagedBufferImplementationHelper.ReadPageSpan(this, (MemoryBuffer)MemoryStore, index, count);
+
+		void IBufferPageReader.ReadRange(long index, Span<byte> destination) {
+			CheckPageState(PageState.Loaded);
+			CheckRange(index, destination.Length);
+			((MemoryBuffer)MemoryStore).ReadRange(index - StartIndex, destination);
+		}
 
 		public bool AppendSpan(ReadOnlySpan<byte> items, out ReadOnlySpan<byte> overflow)
 			=> PagedBufferImplementationHelper.AppendPageSpan(this, MemoryStore as MemoryBuffer, items, out overflow);
@@ -136,17 +150,33 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 			var memBuff = (MemoryBuffer)memoryPage;
 			if (stream.Length != memBuff.Count)
 				stream.SetLength(memBuff.Count); // eliminate unused space in fiel
-			using (var writer = new BinaryWriter(stream)) {
-				writer.Write(memBuff.AsSpan());
-			}
+			stream.Write(memBuff.BorrowPageSpan());
 		}
 
 		protected override void LoadInternal(Stream stream, IExtendedList<byte> memoryPage) {
 			// Use byte streaming for perf
 			var memBuff = (MemoryBuffer)memoryPage;
-			memBuff.ExpandTo((int)stream.Length);
-			var bytesRead = stream.Read(memBuff.AsSpan());
-			Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
+			try {
+				memBuff.ExpandTo((int)stream.Length);
+				stream.ReadExactly(memBuff.BorrowPageSpan());
+			} catch {
+				ResetFailedLoad();
+				throw;
+			}
+		}
+
+		protected override Stream OpenReadStream() {
+			try {
+				return base.OpenReadStream();
+			} catch {
+				ResetFailedLoad();
+				throw;
+			}
+		}
+
+		private void ResetFailedLoad() {
+			MemoryStore.Clear();
+			State = PageState.Unloaded;
 		}
 
 	}

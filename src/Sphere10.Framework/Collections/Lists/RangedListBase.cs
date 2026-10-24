@@ -33,19 +33,19 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<T> items) => IndexOfRange(items).Select(ix => ix >= 0);
 
-	public sealed override T Read(long index) {
+	public override T Read(long index) {
 		return ReadRange(index, 1).Single();
 	}
 
-	public sealed override void Add(T item) {
+	public override void Add(T item) {
 		AddRange(new[] { item });
 	}
 
-	public sealed override void Update(long index, T item) {
+	public override void Update(long index, T item) {
 		UpdateRange(index, new[] { item });
 	}
 
-	public sealed override void Insert(long index, T item) {
+	public override void Insert(long index, T item) {
 		InsertRange(index, new[] { item });
 	}
 

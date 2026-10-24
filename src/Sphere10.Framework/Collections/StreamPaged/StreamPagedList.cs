@@ -57,6 +57,8 @@ namespace Sphere10.Framework;
 ///  - indexing
 /// </remarks>
 public class StreamPagedList<TItem> : PagedListBase<TItem> {
+	private static readonly IDisposable _staticPageScope = new StaticPageScope();
+
 	public const uint MagicID = 31337;
 	public const byte FormatVersion = 1;
 	public const int ListHeaderSize = 256;
@@ -114,20 +116,14 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 				return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
 			}
 			case StreamPagedListType.Static:
-				return Tools.Scope.ExecuteOnDispose(() => { }); //no-op
+				return _staticPageScope;
 			default:
 				throw new ArgumentOutOfRangeException();
 		}
 	}
 
 	public int ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
-		CheckLoaded();
-		NotifyAccessing();
-		CheckRange(itemIndex, 1);
-
-		var pageSegment = GetPageSegments(itemIndex, 1).Single();
-		var page = (StreamPageBase<TItem>)pageSegment.Item1;
-		NotifyPageAccessing(page);
+		var page = BeginItemRead(itemIndex);
 		using (EnterOpenPageScope(page)) {
 			NotifyPageReading(page);
 			page.ReadItemBytes(itemIndex, byteOffset, byteLength, out result);
@@ -135,8 +131,21 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		}
 		NotifyPageAccessed(page);
 		NotifyAccessed();
-
 		return result.Length;
+	}
+
+	/// <summary>Reads item bytes into caller-owned storage, returning the bytes available before the end of the backing stream.</summary>
+	public int ReadItemBytes(long itemIndex, long byteOffset, Span<byte> destination) {
+		var page = BeginItemRead(itemIndex);
+		int bytesRead;
+		using (EnterOpenPageScope(page)) {
+			NotifyPageReading(page);
+			bytesRead = page.ReadItemBytes(itemIndex, byteOffset, destination);
+			NotifyPageRead(page);
+		}
+		NotifyPageAccessed(page);
+		NotifyAccessed();
+		return bytesRead;
 	}
 
 	public void WriteItemBytes(long index, long byteOffset, ReadOnlySpan<byte> bytes) {
@@ -148,17 +157,14 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 
 		if (newItemsCount == 0) return;
 		//var endIndex = index + newItemsCount - 1;
-		var pageSegment = GetPageSegments(index, 1).Single();
-
-		var page = (StreamPageBase<TItem>)pageSegment.Item1;
-		var pageStartIX = pageSegment.Item2;
+		var page = (StreamPageBase<TItem>)InternalPages[FindPageContainingIndex(index)];
 		//var pageCount = pageSegment.Item3;
 		//var pageItems = newItems.Slice(pageStartIX - index, pageCount);
 		using (EnterOpenPageScope(page)) {
 			NotifyPageAccessing(page);
 			NotifyPageWriting(page);
 			UpdateVersion();
-			page.WriteItemBytes(pageStartIX, byteOffset, bytes);
+			page.WriteItemBytes(index, byteOffset, bytes);
 			NotifyPageWrite(page);
 		}
 		NotifyPageAccessed(page);
@@ -239,6 +245,15 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 			_ => throw new ArgumentOutOfRangeException()
 		};
 
+	private StreamPageBase<TItem> BeginItemRead(long itemIndex) {
+		CheckLoaded();
+		NotifyAccessing();
+		CheckRange(itemIndex, 1);
+		var page = (StreamPageBase<TItem>)InternalPages[FindPageContainingIndex(itemIndex)];
+		NotifyPageAccessing(page);
+		return page;
+	}
+
 	private void CreateListHeader() {
 		Stream.Seek(0, SeekOrigin.Begin);
 		Writer.Write((uint)MagicID);
@@ -246,6 +261,12 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Writer.Write((uint)0U); // traits (used in v2)
 		Writer.Write(Tools.Array.Gen(ListHeaderSize - (int)Stream.Position, (byte)0)); // padding
 		Guard.Ensure(Stream.Position == ListHeaderSize, "Head size inconsistency");
+	}
+
+	private sealed class StaticPageScope : IDisposable {
+		public void Dispose() {
+			// Static pages have no per-access resources to release.
+		}
 	}
 }
 

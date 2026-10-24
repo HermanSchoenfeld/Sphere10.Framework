@@ -271,7 +271,7 @@ public abstract class ClusterMap {
 		}
 
 		UpdateCluster(to, tipCluster);
-		pendingEvent.ModifiedClusters.Add(to);
+		pendingEvent.AddModifiedCluster(to);
 		pendingEvent.InformMovedCluster(tipClusterIndex, to);
 		pendingEvent.RemovedClusters.Add(tipClusterIndex);
 	}
@@ -323,7 +323,7 @@ public abstract class ClusterMap {
 
 	internal void WriteClusterTraits(long cluster, ClusterTraits traits, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterTraitsInternal(cluster, traits);
-		pendingEvent.ModifiedClusters.Add(cluster);
+		pendingEvent.AddModifiedCluster(cluster);
 	}
 
 	internal abstract void WriteClusterTraitsInternal(long cluster, ClusterTraits traits);
@@ -340,7 +340,7 @@ public abstract class ClusterMap {
 
 	internal void MaskClusterTraits(long cluster, ClusterTraits traits, bool on, ClusterMapChangedEventArgs pendingEvent) {
 		MaskClusterTraitsInternal(cluster, traits, on);
-		pendingEvent.ModifiedClusters.Add(cluster);
+		pendingEvent.AddModifiedCluster(cluster);
 	}
 
 	internal abstract void MaskClusterTraitsInternal(long cluster, ClusterTraits traits, bool on);
@@ -364,7 +364,7 @@ public abstract class ClusterMap {
 	internal void WriteClusterPrev(long cluster, long prev, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterPrevInternal(cluster, prev);
 		pendingEvent.ClusterLinksChanged = true;
-		pendingEvent.ModifiedClusters.Add(cluster);
+		pendingEvent.AddModifiedCluster(cluster);
 	}
 
 	internal abstract void WriteClusterPrevInternal(long cluster, long prev);
@@ -388,7 +388,7 @@ public abstract class ClusterMap {
 	internal void WriteClusterNext(long cluster, long next, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterNextInternal(cluster, next);
 		pendingEvent.ClusterLinksChanged = true;
-		pendingEvent.ModifiedClusters.Add(cluster);
+		pendingEvent.AddModifiedCluster(cluster);
 	}
 
 	internal abstract void WriteClusterNextInternal(long cluster, long next);
@@ -398,6 +398,9 @@ public abstract class ClusterMap {
 	#region ReadClusterData
 
 	internal abstract byte[] ReadClusterData(long cluster, long offset, long size);
+
+	internal virtual void ReadClusterData(long cluster, long offset, Span<byte> destination)
+		=> ReadClusterData(cluster, offset, destination.Length).AsSpan(0, destination.Length).CopyTo(destination);
 
 	#endregion
 
@@ -411,7 +414,7 @@ public abstract class ClusterMap {
 
 	internal void WriteClusterData(long cluster, long offset, ReadOnlySpan<byte> data, ClusterMapChangedEventArgs pendingEvent) {
 		WriteClusterDataInternal(cluster, offset, data);
-		pendingEvent.ModifiedClusters.Add(cluster);
+		pendingEvent.AddModifiedCluster(cluster);
 	}
 
 	internal abstract void WriteClusterDataInternal(long cluster, long offset, ReadOnlySpan<byte> data);

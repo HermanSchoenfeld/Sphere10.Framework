@@ -32,6 +32,17 @@ public interface IStreamFragmentProvider {
 	/// <remarks></remarks>
 	ReadOnlySpan<byte> GetFragment(long fragmentID);
 
+	/// <summary>Returns a fragment's length without requiring its content to be materialized.</summary>
+	int GetFragmentLength(long fragmentID) => GetFragment(fragmentID).Length;
+
+	/// <summary>Copies available fragment bytes into caller-owned storage and returns the number copied.</summary>
+	int ReadFragment(long fragmentID, long fragmentPosition, Span<byte> destination) {
+		var fragment = GetFragment(fragmentID).Slice(Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition));
+		var count = Math.Min(fragment.Length, destination.Length);
+		fragment[..count].CopyTo(destination);
+		return count;
+	}
+
 	/// <summary>
 	/// Update an existing fragment with the span bytes from the specified position.
 	/// </summary>

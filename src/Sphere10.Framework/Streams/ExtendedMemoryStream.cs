@@ -22,6 +22,7 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <remarks><see cref="ExtendedMemoryStream"/>'s are used extensively throughout the Sphere10.Framework Framework in particular as an internal mechanism to facilitate
 /// memory paged, clustered, stream mapped and merkleized collections.
+/// Array and single-byte operations delegate to the corresponding virtual span overload.
 /// </remarks>
 public class ExtendedMemoryStream : Stream, ILoadable {
 	public event EventHandlerEx<object> Loading;
@@ -86,19 +87,23 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 		Guard.ArgumentInRange(offset, 0, buffer.Length - 1, nameof(offset));
 		Guard.ArgumentInRange(count, 0, int.MaxValue, nameof(count));
 
+		var remainingBufferBytes = buffer.Length - offset;
+		return Read(buffer.AsSpan(offset, Math.Min(count, remainingBufferBytes)));
+	}
+
+	public override int Read(Span<byte> buffer) {
 		if (Length == 0)
 			return 0;
-
-		var remainingSourceBytes = _source.Count - Position;
-		var remainingBufferBytes = buffer.Length - offset;
-		var bytesRead = Math.Max(0, Math.Min(count, Math.Min(remainingBufferBytes, remainingSourceBytes)));
-
-		var bytes = _source.ReadSpan((int)Position, (int)bytesRead);
-		bytes.CopyTo(buffer.AsSpan(offset, (int)bytesRead));
-
+		var bytesRead = (int)Math.Max(0, Math.Min(buffer.Length, Length - Position));
+		_source.ReadRange((int)Position, buffer[..bytesRead]);
 		Position += bytesRead;
 		Debug.Assert(0 <= Position && Position <= Length);
-		return (int)bytesRead;
+		return bytesRead;
+	}
+
+	public override int ReadByte() {
+		Span<byte> buffer = stackalloc byte[1];
+		return Read(buffer) == 0 ? -1 : buffer[0];
 	}
 
 	/// <summary>
@@ -143,24 +148,26 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 		Guard.ArgumentNotNull(buffer, nameof(buffer));
 		Guard.ArgumentInRange(offset, 0, buffer.Length - 1, nameof(offset));
 		Guard.ArgumentInRange(count, 0, buffer.Length - offset, nameof(count));
+		Write(buffer.AsSpan(offset, count));
+	}
 
-		var updateAmount = (int)Math.Min(Length - Position, count);
-		var addingAmount = (int)Math.Max(0, count - updateAmount);
-		Debug.Assert(updateAmount + addingAmount == count);
-
+	public override void Write(ReadOnlySpan<byte> buffer) {
+		var updateAmount = (int)Math.Min(Length - Position, buffer.Length);
+		var addingAmount = buffer.Length - updateAmount;
 		if (updateAmount > 0) // Optimize bellow allocation (10mb clusters will allocate 10mb array)
-			_source.UpdateRange((int)Position, buffer.AsSpan(offset, updateAmount));
-
+			_source.UpdateRange((int)Position, buffer[..updateAmount]);
 		if (addingAmount > 0)
-			_source.AddRange(buffer.AsSpan(offset + updateAmount, addingAmount));
-
+			_source.AddRange(buffer[updateAmount..]);
 		Position += updateAmount + addingAmount;
 		Debug.Assert(Position <= Length);
 	}
 
-	public virtual byte[] ToArray() {
-		return _source.ToArray();
+	public override void WriteByte(byte value) {
+		ReadOnlySpan<byte> buffer = stackalloc byte[] { value };
+		Write(buffer);
 	}
+
+	public virtual byte[] ToArray() => _source.ToArray();
 
 	protected override void Dispose(bool disposing) {
 		base.Dispose(disposing);

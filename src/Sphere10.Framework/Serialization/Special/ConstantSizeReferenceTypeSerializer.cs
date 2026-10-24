@@ -27,7 +27,7 @@ public sealed class ConstantSizeReferenceTypeSerializer<TItem> : ItemSerializerD
 	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var item = base.Deserialize(reader, context);
 		if (item is null)
-			reader.ReadBytes(_internalConstantSize);
+			reader.DiscardBytes(_internalConstantSize);
 		return item;
 	}
 

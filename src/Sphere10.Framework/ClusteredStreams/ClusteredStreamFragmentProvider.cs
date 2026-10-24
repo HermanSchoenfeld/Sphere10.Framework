@@ -49,6 +49,19 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		return _parent.ReadClusterData(index, 0, _parent.ClusterSize);
 	}
 
+	public int GetFragmentLength(long index) {
+		Guard.ArgumentInRange(index, 0, _parent.Clusters.Count - 1, nameof(index));
+		return _parent.ClusterSize;
+	}
+
+	public int ReadFragment(long index, long fragmentPosition, Span<byte> destination) {
+		Guard.ArgumentInRange(index, 0, _parent.Clusters.Count - 1, nameof(index));
+		Guard.ArgumentInRange(fragmentPosition, 0, _parent.ClusterSize, nameof(fragmentPosition));
+		var count = (int)Math.Min(destination.Length, _parent.ClusterSize - fragmentPosition);
+		_parent.ReadClusterData(index, fragmentPosition, destination[..count]);
+		return count;
+	}
+
 	public void MapStreamPosition(long position, out long fragmentID, out long fragmentPosition) {
 		CheckNotEmpty();
 		var logicalClusterIndex = position / _parent.ClusterSize;

@@ -40,6 +40,8 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 
 	public ReadOnlySpan<byte> ReadSpan(long index, long count) => PagedBufferImplementationHelper.ReadRange(_friend, index, count);
 
+	public void ReadRange(long index, Span<byte> destination) => PagedBufferImplementationHelper.ReadRange(_friend, index, destination);
+
 	public void AddRange(ReadOnlySpan<byte> span) => PagedBufferImplementationHelper.AddRange(_friend, span);
 
 	public void UpdateRange(long index, ReadOnlySpan<byte> items) => PagedBufferImplementationHelper.UpdateRange(_friend, index, items);
@@ -132,17 +134,14 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 		protected override void SaveInternal(IExtendedList<byte> memoryPage, Stream stream) {
 			// Use byte streaming for perf
 			var memBuff = (MemoryBuffer)memoryPage;
-			using (var writer = new BinaryWriter(stream)) {
-				writer.Write(memBuff.AsSpan());
-			}
+			stream.Write(memBuff.AsSpan());
 		}
 
 		protected override void LoadInternal(Stream stream, IExtendedList<byte> memoryPage) {
 			// Use byte streaming for perf
 			var memBuff = (MemoryBuffer)memoryPage;
 			memBuff.ExpandTo((int)stream.Length);
-			var bytesRead = stream.Read(memBuff.AsSpan());
-			Guard.Ensure(bytesRead == stream.Length, "Read less bytes than expected");
+			stream.ReadExactly(memBuff.AsSpan());
 		}
 
 		public ReadOnlySpan<byte> ReadSpan(long index, long count)

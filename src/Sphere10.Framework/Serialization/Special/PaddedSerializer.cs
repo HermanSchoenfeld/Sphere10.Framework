@@ -19,7 +19,7 @@ internal class PaddedSerializer<TItem> : ConstantSizeItemSerializerBase<TItem> {
 	}
 
 	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
-		const int StackAllocPaddingThreshold = 2048;
+		const int paddingBufferLength = 2048;
 
 		// Check
 		var expectedSize = _dynamicSerializer.CalculateSize(context, item);
@@ -32,8 +32,14 @@ internal class PaddedSerializer<TItem> : ConstantSizeItemSerializerBase<TItem> {
 		// Write padding
 		var paddingLength = ConstantSize - itemBytes;
 		if (paddingLength > 0) {
-			Span<byte> padding = paddingLength <= StackAllocPaddingThreshold ? stackalloc byte[unchecked((int)paddingLength)] : new byte[paddingLength];
-			writer.Write(padding);
+			var remaining = checked((int)paddingLength);
+			Span<byte> padding = stackalloc byte[Math.Min(remaining, paddingBufferLength)];
+			padding.Clear();
+			while (remaining > 0) {
+				var count = Math.Min(remaining, padding.Length);
+				writer.Write(padding[..count]);
+				remaining -= count;
+			}
 		}
 	}
 
@@ -49,9 +55,8 @@ internal class PaddedSerializer<TItem> : ConstantSizeItemSerializerBase<TItem> {
 
 		// read padding
 		var padding = ConstantSize - bytesRead;
-		if (padding > 0) {
-			var _ = reader.ReadBytes(padding);
-		}
+		if (padding > 0)
+			reader.DiscardBytes(padding);
 		return item;
 	}
 }

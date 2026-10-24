@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -258,9 +259,6 @@ public static class Guard {
 			throw new ArgumentException(message, paramName);
 	}
 
-#if OMIT_GUARD
-		[Conditional("DEBUG")]
-#endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static TType ArgumentCast<TType>(object @object, string paramName) {
 		ArgumentCast<TType>(@object, out var result, paramName);
@@ -304,6 +302,16 @@ public static class Guard {
 	public static void Against(bool condition, string message = null)
 		=> Ensure(!condition, message);
 
+	/// <summary>Formats an interpolated diagnostic only when the guard fails; diagnostic expressions are intentionally evaluated lazily.</summary>
+#if OMIT_GUARD
+		[Conditional("DEBUG")]
+#endif
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static void Against(bool condition, [InterpolatedStringHandlerArgument(nameof(condition))] ref AgainstGuardMessageHandler message) {
+		if (condition)
+			throw new InvalidOperationException(message.GetFormattedText());
+	}
+
 
 	/// <summary>
 	/// Throws an InvalidOperationException if the specified condition is not met.
@@ -319,10 +327,17 @@ public static class Guard {
 			throw new InvalidOperationException(message ?? "Internal error");
 	}
 
-
+	/// <summary>Formats an interpolated diagnostic only when the guard fails; diagnostic expressions are intentionally evaluated lazily.</summary>
 #if OMIT_GUARD
 		[Conditional("DEBUG")]
 #endif
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static void Ensure(bool condition, [InterpolatedStringHandlerArgument(nameof(condition))] ref EnsureGuardMessageHandler message) {
+		if (!condition)
+			throw new InvalidOperationException(message.GetFormattedText());
+	}
+
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static TType EnsureCast<TType>(object @object, string message) {
 		EnsureCast<TType>(@object, out var result, message);
@@ -344,4 +359,3 @@ public static class Guard {
 		}
 	}
 }
-

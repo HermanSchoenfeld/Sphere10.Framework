@@ -24,6 +24,8 @@ public abstract class BufferDecorator<TBuffer> : ExtendedListDecorator<byte, TBu
 
 	public virtual ReadOnlySpan<byte> ReadSpan(long index, long count) => InternalCollection.ReadSpan(index, count);
 
+	public virtual void ReadRange(long index, Span<byte> destination) => ReadSpan(index, destination.Length).CopyTo(destination);
+
 	public virtual void UpdateRange(long index, ReadOnlySpan<byte> items) => InternalCollection.UpdateRange(index, items);
 
 	public virtual void ExpandTo(long totalBytes) => InternalCollection.ExpandTo(totalBytes);

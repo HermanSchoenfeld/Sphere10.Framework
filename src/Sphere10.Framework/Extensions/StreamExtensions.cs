@@ -23,13 +23,13 @@ public static class StreamExtensions {
 		return nextByte;
 	}
 
-	public static IDisposable EnterRestorePositionScope(this Stream stream) => EnterRestorePositionSeek(stream, stream.Position, SeekOrigin.Begin);
+	public static RestorePositionScope EnterRestorePositionScope(this Stream stream) => EnterRestorePositionSeek(stream, stream.Position, SeekOrigin.Begin);
 
-	public static IDisposable EnterRestorePositionSeek(this Stream stream, long offset, SeekOrigin origin) {
+	public static RestorePositionScope EnterRestorePositionSeek(this Stream stream, long offset, SeekOrigin origin) {
 		Guard.Argument(stream.CanSeek, nameof(stream), "Stream must be seekable");
 		var position = stream.Position;
 		stream.Seek(offset, origin);
-		return new ActionDisposable(() => stream.Position = position);
+		return new RestorePositionScope(stream, position);
 	}
 
 	public static byte[] ToArray(this Stream stream) {

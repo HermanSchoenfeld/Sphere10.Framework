@@ -20,6 +20,12 @@ internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
 
 	public abstract long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] bytes);
 
+	public virtual int ReadItemBytes(long itemIndex, long byteOffset, Span<byte> destination) {
+		ReadItemBytes(itemIndex, byteOffset, destination.Length, out var bytes);
+		bytes.AsSpan().CopyTo(destination);
+		return bytes.Length;
+	}
+
 	public abstract void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes);
 
 	protected StreamPagedList<TItem> Parent { get; }
@@ -33,5 +39,8 @@ internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
 	protected IItemSerializer<TItem> Serializer => Parent.Serializer;
 
 	protected EndianBinaryWriter Writer => Parent.Writer;
+
+	protected int ReadBytes(Span<byte> destination)
+		=> destination.IsEmpty ? 0 : Reader.ReadBytes(destination);
 }
 

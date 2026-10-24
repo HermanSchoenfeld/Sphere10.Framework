@@ -14,6 +14,9 @@ public interface IBuffer : IExtendedList<byte> {
 
 	ReadOnlySpan<byte> ReadSpan(long index, long count);
 
+	/// <summary>Copies a range into caller-owned storage without requiring a materialized range.</summary>
+	void ReadRange(long index, Span<byte> destination) => ReadSpan(index, destination.Length).CopyTo(destination);
+
 	void AddRange(ReadOnlySpan<byte> span);
 
 	void UpdateRange(long index, ReadOnlySpan<byte> items);

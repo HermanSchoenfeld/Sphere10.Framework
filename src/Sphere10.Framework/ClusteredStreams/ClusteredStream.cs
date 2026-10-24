@@ -114,7 +114,7 @@
  	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
  		
  		// Track any changes to the descriptor's start/end cluster arising from migrating tips
- 		if (changedEvent.MovedTerminals.TryGetValue(StreamIndex, out var newTerminal)) {
+		if (changedEvent.TryGetMovedTerminal(StreamIndex, out var newTerminal)) {
  			if (newTerminal.NewStart.HasValue)
  				_descriptor.StartCluster = newTerminal.NewStart.Value;
  			

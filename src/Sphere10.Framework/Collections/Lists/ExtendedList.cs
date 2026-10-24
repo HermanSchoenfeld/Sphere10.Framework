@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework;
 
@@ -152,25 +153,36 @@ public class ExtendedList<T> : RangedListBase<T> {
 	}
 
 	/// <summary>
+	/// Copies a range directly into caller-owned storage without allocating a range snapshot.
+	/// </summary>
+	public void ReadRange(long index, Span<T> destination) {
+		CheckRange(index, destination.Length);
+		_internalArray.AsSpan(checked((int)index), destination.Length).CopyTo(destination);
+	}
+
+	/// <summary>
 	/// Appends a sequence of items to the list.
 	/// </summary>
 	/// <param name="items">The items to add.</param>
 	public override void AddRange(IEnumerable<T> items) {
 		// TODO: needs updating to support multiple _internalArray's and 2^64-1 addressable items
 		Guard.ArgumentNotNull(items, nameof(items));
-		var itemsArr = items as T[] ?? items.ToArray();
+		AddRange(GetContiguousItems(items));
+	}
 
-		if (itemsArr.LongLength == 0)
+	// Keep array calls on the virtual enumerable contract for existing subclasses.
+	public void AddRange(T[] items) => AddRange((IEnumerable<T>)items);
+
+	/// <summary>
+	/// Appends caller-owned contiguous items without materializing an enumerable.
+	/// </summary>
+	public void AddRange(ReadOnlySpan<T> items) {
+		if (items.IsEmpty)
 			return;
-
-		GrowSpaceIfRequired(itemsArr.LongLength);
+		GrowSpaceIfRequired(items.Length);
 		UpdateVersion();
-		if (itemsArr.LongLength == 1)
-			// single access optimization
-			_internalArray[_length] = itemsArr[0];
-		else
-			Array.Copy(itemsArr, 0, _internalArray, _length, itemsArr.LongLength);
-		_length += itemsArr.LongLength;
+		items.CopyTo(_internalArray.AsSpan(checked((int)_length), items.Length));
+		_length += items.Length;
 	}
 
 	/// <summary>
@@ -180,14 +192,20 @@ public class ExtendedList<T> : RangedListBase<T> {
 	/// <param name="items">The items to write.</param>
 	public override void UpdateRange(long index, IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		var itemsArr = items as T[] ?? items.ToArray();
-		CheckRange(index, itemsArr.LongLength);
+		UpdateRange(index, GetContiguousItems(items));
+	}
 
-		if (itemsArr.LongLength == 0)
+	public void UpdateRange(long index, T[] items) => UpdateRange(index, (IEnumerable<T>)items);
+
+	/// <summary>
+	/// Replaces a range directly from caller-owned contiguous storage.
+	/// </summary>
+	public void UpdateRange(long index, ReadOnlySpan<T> items) {
+		CheckRange(index, items.Length);
+		if (items.IsEmpty)
 			return;
-
 		UpdateVersion();
-		Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.LongLength);
+		items.CopyTo(_internalArray.AsSpan(checked((int)index), items.Length));
 	}
 
 	/// <summary>
@@ -198,19 +216,25 @@ public class ExtendedList<T> : RangedListBase<T> {
 	public override void InsertRange(long index, IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		Guard.ArgumentInRange(index, 0, Math.Max(0, _length), nameof(index));
+		InsertRange(index, GetContiguousItems(items));
+	}
 
-		var itemsArr = items as T[] ?? items.ToArray();
-		GrowSpaceIfRequired(itemsArr.LongLength);
+	public void InsertRange(long index, T[] items) => InsertRange(index, (IEnumerable<T>)items);
+
+	/// <summary>
+	/// Inserts caller-owned contiguous items, preserving overlapping source contents.
+	/// </summary>
+	public void InsertRange(long index, ReadOnlySpan<T> items) {
+		Guard.ArgumentInRange(index, 0, Math.Max(0, _length), nameof(index));
+		GrowSpaceIfRequired(items.Length);
+		if (items.Overlaps(_internalArray.AsSpan()))
+			items = items.ToArray();
 		UpdateVersion();
 
-		var capacity = _internalArray.LongLength - _length;
-		if (itemsArr.LongLength > capacity)
-			throw new ArgumentException("Insufficient capacity", nameof(items));
-
 		// Use Array.Copy to move original items, since handles overlap scenarios
-		Array.Copy(_internalArray, index, _internalArray, index + itemsArr.LongLength, _length - index);
-		Array.Copy(itemsArr, 0, _internalArray, index, itemsArr.LongLength);
-		_length += itemsArr.LongLength;
+		Array.Copy(_internalArray, index, _internalArray, index + items.Length, _length - index);
+		items.CopyTo(_internalArray.AsSpan(checked((int)index), items.Length));
+		_length += items.Length;
 	}
 
 	/// <summary>
@@ -230,6 +254,15 @@ public class ExtendedList<T> : RangedListBase<T> {
 		if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
 			Array.Clear(_internalArray, checked((int)_length), checked((int)count));
 		UpdateVersion();
+	}
+
+	private static ReadOnlySpan<T> GetContiguousItems(IEnumerable<T> items) {
+		// Borrow known contiguous sources only for the duration of this synchronous operation.
+		if (items is T[] array)
+			return array;
+		if (items is List<T> list)
+			return CollectionsMarshal.AsSpan(list);
+		return items.ToArray();
 	}
 
 	private void GrowSpaceIfRequired(long newItems) {

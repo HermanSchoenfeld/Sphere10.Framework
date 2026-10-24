@@ -16,6 +16,7 @@ namespace Sphere10.Framework;
 /// <summary>
 /// A stream implementation that connects multiple disparate byte fragments into one logical stream. The fragments are managed through a <see cref="IStreamFragmentProvider"/>.
 /// </summary>
+/// <remarks>Array and single-byte operations delegate to the corresponding virtual span overload.</remarks>
 public class FragmentedStream : Stream {
 
 	private long _position;
@@ -83,9 +84,8 @@ public class FragmentedStream : Stream {
 	}
 
 	public override int ReadByte() {
-		if (Position >= Length)
-			return -1;
-		return base.ReadByte();
+		Span<byte> value = stackalloc byte[1];
+		return Read(value) == 0 ? -1 : value[0];
 	}
 
 	public override int Read(byte[] buffer, int offset, int count) {
@@ -96,24 +96,23 @@ public class FragmentedStream : Stream {
 		if (Length == 0)
 			return 0;
 
-		var remainingStreamBytes = Length - Position;
 		var remainingBufferBytes = buffer.Length - offset;
-		var bytesToRead = Math.Max(0, Math.Min(count, Math.Min(remainingBufferBytes, remainingStreamBytes)));
+		return Read(buffer.AsSpan(offset, Math.Min(count, remainingBufferBytes)));
+	}
 
-		var bufferSpan = buffer.AsSpan();
-		var bufferOffset = offset;
+	public override int Read(Span<byte> buffer) {
+		var bytesToRead = Math.Max(0, Math.Min(buffer.Length, Length - Position));
+		var bufferOffset = 0;
 		var totalRead = (int)bytesToRead;
 
 		while (bytesToRead > 0) {
 			FragmentProvider.MapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition);
 			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
-			var fragment = FragmentProvider.GetFragment(fragmentIndex);
-
-			var bytesToReadFromFragment = (int)Math.Min(fragment.Length - fragmentPositionI, bytesToRead);
-			var fragmentSlice = fragment.Slice(fragmentPositionI, bytesToReadFromFragment);
-			var bufferSlice = bufferSpan.Slice(bufferOffset, bytesToReadFromFragment);
-			fragmentSlice.CopyTo(bufferSlice);
+			var bufferSlice = buffer.Slice(bufferOffset, (int)bytesToRead);
+			var bytesToReadFromFragment = FragmentProvider.ReadFragment(fragmentIndex, fragmentPositionI, bufferSlice);
+			if (bytesToReadFromFragment <= 0 || bytesToReadFromFragment > bytesToRead)
+				throw new EndOfStreamException("Fragment provider returned an invalid read count before the logical end of the stream.");
 
 			bufferOffset += bytesToReadFromFragment;
 			Position += bytesToReadFromFragment;
@@ -129,67 +128,66 @@ public class FragmentedStream : Stream {
 			return;
 		Guard.ArgumentInRange(offset, 0, buffer.Length - 1, nameof(offset));
 		Guard.ArgumentInRange(count, 0, buffer.Length - offset, nameof(count));
+		Write(buffer.AsSpan(offset, count));
+	}
 
-		var remainingBufferBytes = buffer.Length - offset;
+	public override void Write(ReadOnlySpan<byte> buffer) {
 		var remainingStreamBytes = Length - Position;
-		var bytesToWrite = (int)Math.Min(remainingBufferBytes, count);
+		var bytesToWrite = buffer.Length;
 
 		// Grow stream if required
 		if (bytesToWrite > remainingStreamBytes) {
 			var newStreamLength = Length + (bytesToWrite - remainingStreamBytes);
 			var prePos = Position;
 			FragmentProvider.SetTotalBytes(newStreamLength);
-			
+
 			StreamLength = newStreamLength;
 			var postPos = Position;
 			Guard.Ensure(postPos == prePos, "Stream pointer has moved during resize");
 		}
 
-		var bufferSpan = buffer.AsSpan();
-		var bufferOffset = offset;
-		var totalWrites = 0;
+		var bufferOffset = 0;
 		while (bytesToWrite > 0) {
 			FragmentProvider.MapStreamPosition(Position, out var fragmentIndex, out var fragmentPosition);
 			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
-			var fragment = FragmentProvider.GetFragment(fragmentIndex).ToArray();
-			var bytesToWriteToFragment = Math.Min(fragment.Length - fragmentPosition, bytesToWrite);
+			// The provider owns the destination; pass only the caller's changed bytes.
+			var fragmentLength = FragmentProvider.GetFragmentLength(fragmentIndex);
+			var bytesToWriteToFragment = Math.Min(fragmentLength - fragmentPositionI, bytesToWrite);
+			FragmentProvider.UpdateFragment(fragmentIndex, fragmentPosition, buffer.Slice(bufferOffset, bytesToWriteToFragment));
 
-			var bytesToWriteFramentI = Tools.Collection.CheckNotImplemented64bitAddressingLength(bytesToWriteToFragment);
-			var fragmentSlice = fragment.AsSpan(fragmentPositionI, bytesToWriteFramentI);
-			var bufferSlice = bufferSpan.Slice(bufferOffset, bytesToWriteFramentI);
-			bufferSlice.CopyTo(fragmentSlice);
-			FragmentProvider.UpdateFragment(fragmentIndex, fragmentPosition, fragmentSlice);
-
-			bufferOffset += bytesToWriteFramentI;
+			bufferOffset += bytesToWriteToFragment;
 			Position += bytesToWriteToFragment;
-			totalWrites += bytesToWriteFramentI;
-			bytesToWrite -= bytesToWriteFramentI;
+			bytesToWrite -= bytesToWriteToFragment;
 		}
 		Debug.Assert(bytesToWrite == 0);
+	}
+
+	public override void WriteByte(byte value) {
+		ReadOnlySpan<byte> bytes = stackalloc byte[] { value };
+		Write(bytes);
 	}
 
 	public override void Flush() {
 	}
 
 	public virtual byte[] ToArray() {
-		var builder = new ByteArrayBuilder();
+		var result = new byte[Tools.Collection.CheckNotImplemented64bitAddressingLength(Length)];
 		var position = 0L;
 		var bytesToRead = Length;
 		while (bytesToRead > 0) {
 			FragmentProvider.MapStreamPosition(position, out var fragmentIndex, out var fragmentPosition);
 			var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
 
-			var fragment = FragmentProvider.GetFragment(fragmentIndex);
-			var bytesToReadFromFragment = (int)Math.Min(fragment.Length - fragmentPosition, bytesToRead);
-			var fragmentBytes = fragment.Slice(fragmentPositionI, bytesToReadFromFragment);
-			builder.Append(fragmentBytes);
+			var bytesToReadFromFragment = FragmentProvider.ReadFragment(fragmentIndex, fragmentPositionI, result.AsSpan((int)position, (int)bytesToRead));
+			if (bytesToReadFromFragment <= 0 || bytesToReadFromFragment > bytesToRead)
+				throw new EndOfStreamException("Fragment provider returned an invalid read count before the logical end of the stream.");
 
 			position += bytesToReadFromFragment;
 			bytesToRead -= bytesToReadFromFragment;
 		}
 		Debug.Assert(bytesToRead == 0);
-		return builder.ToArray();
+		return result;
 	}
 
 	protected override void Dispose(bool disposing) {
@@ -211,5 +209,6 @@ public class FragmentedStream : Stream {
 				break;
 		}
 	}
+
 }
 

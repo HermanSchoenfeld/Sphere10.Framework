@@ -167,10 +167,9 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 	}
 
 	public override long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
-		byteLength = byteLength ?? _itemSizes[itemIndex]; 
+		byteLength ??= _itemSizes[itemIndex];
 		Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
 		result = Reader.ReadBytes(byteLength.Value);
-
 		return result.Length;
 	}
 
@@ -178,6 +177,12 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
 		Writer.Write(bytes);
 		// TODO: check doesn't overwrite other item
+	}
+
+	public override int ReadItemBytes(long itemIndex, long byteOffset, Span<byte> destination) {
+		itemIndex -= StartIndex;
+		Stream.Seek(_offsets[itemIndex] + byteOffset, SeekOrigin.Begin);
+		return ReadBytes(destination);
 	}
 
 	protected override IEnumerable<TItem> ReadInternal(long index, long count) {
