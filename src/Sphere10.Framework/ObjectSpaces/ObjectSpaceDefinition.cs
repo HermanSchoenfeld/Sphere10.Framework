@@ -17,9 +17,9 @@ namespace Sphere10.Framework.ObjectSpaces;
 /// Defines the structure and policies for an <see cref="ObjectSpace"/>, including dimensions, indexes, and optional merkle/autosave traits.
 /// </summary>
 public class ObjectSpaceDefinition {
+	private BTreeSpec _indexBTreeSpec;
 	private int _indexBTreeOrder = Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder;
 	private bool _hasExplicitIndexBTreeOrder;
-	private int _boundIndexBTreeOrder;
 
 
 	public ObjectSpaceDefinition() : this(false, false) {
@@ -41,22 +41,54 @@ public class ObjectSpaceDefinition {
 	public CHF HashFunction { get; set; } = Sphere10FrameworkDefaults.HashFunction;
 
 	/// <summary>
+	/// Optional complete specification for the dimension's member indexes. Otherwise their constructors receive <see cref="IndexBTreeOrder"/>.
+	/// Preserve the same configuration when reopening storage.
+	/// </summary>
+	public BTreeSpec IndexBTreeSpec {
+		get => _indexBTreeSpec;
+		set {
+			Guard.ArgumentNotNull(value, nameof(value));
+			SetIndexBTreeSpec(value);
+			_hasExplicitIndexBTreeOrder = true;
+		}
+	}
+
+	/// <summary>
 	/// B-tree order used by the dimension's member indexes. Must be at least 3 and must remain unchanged when reopening existing storage.
 	/// </summary>
 	public int IndexBTreeOrder {
-		get => _indexBTreeOrder;
+		get => _indexBTreeSpec?.Order ?? _indexBTreeOrder;
 		set {
-			Guard.Ensure(!HasBoundIndexBTreeOrder || value == _boundIndexBTreeOrder, "An ObjectSpace definition cannot change its index order after loading storage.");
-			_indexBTreeOrder = value;
+			if (value < 3)
+				throw new ArgumentOutOfRangeException(nameof(value), value, "B-tree order must be at least 3.");
+			Guard.Ensure(!HasBoundIndexBTreeSpec || value == IndexBTreeOrder,
+				"An ObjectSpace definition cannot change its index B-tree order after loading storage.");
+			if (_indexBTreeSpec is null)
+				_indexBTreeOrder = value;
+			else
+				SetIndexBTreeSpec(new BTreeSpec(_indexBTreeSpec.Type, value));
 			_hasExplicitIndexBTreeOrder = true;
+		}
+	}
+
+	/// <summary>
+	/// Selects the type for all member indexes. Null leaves the choice to each index's order-only constructor.
+	/// An explicit selection must remain unchanged when reopening storage.
+	/// </summary>
+	public BTreeType? IndexBTreeType {
+		get => _indexBTreeSpec?.Type;
+		set {
+			var order = IndexBTreeOrder;
+			SetIndexBTreeSpec(value.HasValue ? new BTreeSpec(value.Value, order) : null);
+			_indexBTreeOrder = order;
 		}
 	}
 
 	/// <summary>Whether the index order was assigned explicitly rather than inherited from the framework default.</summary>
 	internal bool HasExplicitIndexBTreeOrder => _hasExplicitIndexBTreeOrder;
 
-	/// <summary>Whether this definition has retained its index order from a successful load.</summary>
-	internal bool HasBoundIndexBTreeOrder { get; private set; }
+	/// <summary>Whether this definition's index specification became immutable after a successful load.</summary>
+	internal bool HasBoundIndexBTreeSpec { get; private set; }
 
 
 	/// <summary>
@@ -66,8 +98,6 @@ public class ObjectSpaceDefinition {
 
 	public Result Validate() {
 		var result = Result.Success;
-		if (IndexBTreeOrder < 3)
-			result.AddError("Index B-tree order must be at least 3.");
 
 		// Pre-condition checks
 		if (Dimensions == null)
@@ -166,15 +196,16 @@ public class ObjectSpaceDefinition {
 
 	internal void AssertOpeningIndexOrder(bool hasPersistedState) {
 		Validate().ThrowOnFailure();
-		Guard.Ensure(!hasPersistedState || HasExplicitIndexBTreeOrder || HasBoundIndexBTreeOrder,
-			"Existing ObjectSpace storage requires its original index order. Declare WithIndexBTreeOrder(originalOrder), using 64 for the historical default.");
+		Guard.Ensure(!hasPersistedState || HasExplicitIndexBTreeOrder || HasBoundIndexBTreeSpec,
+			"Existing ObjectSpace storage requires its original index order. Declare WithIndexBTreeSpec(originalSpec) or WithIndexBTreeOrder(originalOrder), using 64 for the historical default.");
 	}
 
-	internal void BindIndexBTreeOrder() {
-		if (HasBoundIndexBTreeOrder)
-			return;
-		_boundIndexBTreeOrder = IndexBTreeOrder;
-		HasBoundIndexBTreeOrder = true;
+	internal void BindIndexBTreeSpec() => HasBoundIndexBTreeSpec = true;
+
+	private void SetIndexBTreeSpec(BTreeSpec spec) {
+		Guard.Ensure(!HasBoundIndexBTreeSpec || spec == _indexBTreeSpec,
+			"An ObjectSpace definition cannot change its index B-tree specification after loading storage.");
+		_indexBTreeSpec = spec;
 	}
 
 	public class DimensionDefinition {

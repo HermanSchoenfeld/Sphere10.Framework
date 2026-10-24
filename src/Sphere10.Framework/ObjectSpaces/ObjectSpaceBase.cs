@@ -347,7 +347,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			_persistedOutRefs = new Dictionary<ObjectSpaceObjectReference, HashSet<ObjectSpaceObjectReference>>();
 			_persistedInRefs = new Dictionary<ObjectSpaceObjectReference, HashSet<ObjectSpaceObjectReference>>();
 		}
-		Definition.BindIndexBTreeOrder();
+		Definition.BindIndexBTreeSpec();
 	}
 	
 	protected void SaveModifiedObjects() {
@@ -572,6 +572,11 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		// NOTE: same as BuildUniqueKey, but may have differentiating functionality in future
 		var keyComparer = Comparers.GetEqualityComparer(indexDefinition.Member.PropertyType);
 		var keySerializer = Serializers.GetSerializer(indexDefinition.Member.PropertyType);
+		var bTreeSpec = Definition.IndexBTreeSpec;
+		if (bTreeSpec is not null)
+			return keySerializer.IsConstantSize ?
+				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer, bTreeSpec) :
+				IndexFactory.CreateUniqueMemberChecksumIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, null, null, keyComparer, indexDefinition.NullPolicy, bTreeSpec);
 		return
 			keySerializer.IsConstantSize ?
 				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer, Definition.IndexBTreeOrder) :
@@ -581,6 +586,11 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
 		var keyComparer = Comparers.GetEqualityComparer(indexDefinition.Member.PropertyType);
 		var keySerializer = Serializers.GetSerializer(indexDefinition.Member.PropertyType);
+		var bTreeSpec = Definition.IndexBTreeSpec;
+		if (bTreeSpec is not null)
+			return keySerializer.IsConstantSize ?
+				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer, bTreeSpec) :
+				IndexFactory.CreateUniqueMemberChecksumIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, null, null, keyComparer, indexDefinition.NullPolicy, bTreeSpec);
 		return
 			keySerializer.IsConstantSize ?
 				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer, Definition.IndexBTreeOrder) :
@@ -590,6 +600,11 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
 		var keyComparer = Comparers.GetEqualityComparer(indexDefinition.Member.PropertyType);
 		var keySerializer = Serializers.GetSerializer(indexDefinition.Member.PropertyType);
+		var bTreeSpec = Definition.IndexBTreeSpec;
+		if (bTreeSpec is not null)
+			return keySerializer.IsConstantSize ?
+				IndexFactory.CreateMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer, bTreeSpec) :
+				IndexFactory.CreateMemberChecksumIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, null, null, keyComparer, indexDefinition.NullPolicy, bTreeSpec);
 		return
 			keySerializer.IsConstantSize ?
 				IndexFactory.CreateMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer, Definition.IndexBTreeOrder) :

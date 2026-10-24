@@ -21,10 +21,23 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IComparer<TKey> keyComparer
-	) : base(streams, attachmentID, order, keySerializer, valueSerializer, keyComparer) {
+	) : this(streams, attachmentID, keySerializer, valueSerializer, keyComparer, new BTreeSpec(BTreeType.BTree, order)) {
+	}
+
+	public BTreeStorageAttachment(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer,
+		BTreeSpec bTreeSpec
+	) : base(streams, attachmentID, keySerializer, valueSerializer, keyComparer, bTreeSpec) {
 	}
 
 	public new StreamMappedBTree<TKey, TValue> BTree => base.BTree;
+
+	/// <summary>The selected ordered dictionary, independent of its node layout.</summary>
+	public new BTreeBase<TKey, TValue> Tree => base.Tree;
 
 	#region IsReadOnly
 
@@ -32,7 +45,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 		get {
 			CheckAttached();
 			using var _ = Streams.EnterAccessScope();
-			return BTree.IsReadOnly;
+			return Tree.IsReadOnly;
 		}
 	}
 
@@ -44,7 +57,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 		get {
 			CheckAttached();
 			using var _ = Streams.EnterAccessScope();
-			return BTree.Count;
+			return Tree.Count;
 		}
 	}
 
@@ -56,7 +69,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 		get {
 			CheckAttached();
 			using var _ = Streams.EnterAccessScope();
-			return BTree.Keys;
+			return Tree.Keys;
 		}
 	}
 
@@ -64,7 +77,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 		get {
 			CheckAttached();
 			using var _ = Streams.EnterAccessScope();
-			return BTree.Values;
+			return Tree.Values;
 		}
 	}
 
@@ -76,12 +89,12 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 		get {
 			CheckAttached();
 			using var _ = Streams.EnterAccessScope();
-			return BTree[key];
+			return Tree[key];
 		}
 		set {
 			CheckAttached();
 			using var _ = Streams.EnterAccessScope();
-			BTree[key] = value;
+			Tree[key] = value;
 		}
 	}
 
@@ -92,13 +105,13 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 	public void Add(TKey key, TValue value) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		BTree.Add(key, value);
+		Tree.Add(key, value);
 	}
 
 	public void Add(KeyValuePair<TKey, TValue> item) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		BTree.Add(item);
+		Tree.Add(item);
 	}
 
 	#endregion
@@ -108,13 +121,13 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 	public bool ContainsKey(TKey key) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		return BTree.ContainsKey(key);
+		return Tree.ContainsKey(key);
 	}
 
 	public bool Contains(KeyValuePair<TKey, TValue> item) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		return BTree.Contains(item);
+		return Tree.Contains(item);
 	}
 
 	#endregion
@@ -124,7 +137,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 	public bool TryGetValue(TKey key, out TValue value) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		return BTree.TryGetValue(key, out value);
+		return Tree.TryGetValue(key, out value);
 	}
 
 	#endregion
@@ -134,13 +147,13 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 	public bool Remove(TKey key) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		return BTree.Remove(key);
+		return Tree.Remove(key);
 	}
 
 	public bool Remove(KeyValuePair<TKey, TValue> item) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		return BTree.Remove(item);
+		return Tree.Remove(item);
 	}
 
 	#endregion
@@ -150,7 +163,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 	public void Clear() {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		BTree.Clear();
+		Tree.Clear();
 	}
 
 	#endregion
@@ -160,7 +173,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 	public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
 		CheckAttached();
 		using var _ = Streams.EnterAccessScope();
-		BTree.CopyTo(array, arrayIndex);
+		Tree.CopyTo(array, arrayIndex);
 	}
 
 	#endregion
@@ -172,7 +185,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 		var scope = Streams.EnterAccessScope();
 		try {
 			return
-				BTree
+				Tree
 					.GetEnumerator()
 					.OnDispose(scope.Dispose);
 		} catch {

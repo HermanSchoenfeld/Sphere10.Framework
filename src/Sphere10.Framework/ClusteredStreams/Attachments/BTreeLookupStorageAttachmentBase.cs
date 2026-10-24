@@ -15,7 +15,6 @@ namespace Sphere10.Framework;
 /// on its reserved stream. This is the ILookup analog of <see cref="BTreeStorageAttachmentBase{TKey,TValue}"/>.
 /// </summary>
 public abstract class BTreeLookupStorageAttachmentBase<TKey, TValue> : ClusteredStreamsAttachmentBase {
-	private readonly int _order;
 	private readonly IItemSerializer<TKey> _keySerializer;
 	private readonly IItemSerializer<TValue> _valueSerializer;
 	private readonly IComparer<TKey> _keyComparer;
@@ -28,15 +27,28 @@ public abstract class BTreeLookupStorageAttachmentBase<TKey, TValue> : Clustered
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IComparer<TKey> keyComparer
+	) : this(streams, attachmentID, keySerializer, valueSerializer, keyComparer, new BTreeSpec(BTreeType.BTreePlus, order)) {
+	}
+
+	public BTreeLookupStorageAttachmentBase(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer,
+		BTreeSpec bTreeSpec
 	) : base(streams, attachmentID) {
+		Guard.ArgumentNotNull(bTreeSpec, nameof(bTreeSpec));
+		Spec = bTreeSpec;
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-		_order = order;
 		_keySerializer = keySerializer;
 		_valueSerializer = valueSerializer;
 		_keyComparer = keyComparer;
 	}
+
+	public BTreeSpec Spec { get; }
 
 	protected StreamMappedBTreeLookup<TKey, TValue> BTreeLookup {
 		get {
@@ -47,11 +59,12 @@ public abstract class BTreeLookupStorageAttachmentBase<TKey, TValue> : Clustered
 
 	protected override void AttachInternal() {
 		_lookup = new StreamMappedBTreeLookup<TKey, TValue>(
-			_order,
+			Spec,
 			AttachmentStream,
 			_keySerializer,
 			_valueSerializer,
-			_keyComparer
+			_keyComparer,
+			Sphere10FrameworkDefaults.Endianness
 		);
 	}
 

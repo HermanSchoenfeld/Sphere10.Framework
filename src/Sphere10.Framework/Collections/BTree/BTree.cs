@@ -14,6 +14,8 @@ namespace Sphere10.Framework;
 
 /// <summary>
 /// Abstract base for B-tree dictionaries with configurable order and pluggable node storage.
+/// Implements the ordinary B-tree node algorithm over <see cref="BTreeBase{K, V}"/>'s shared dictionary contract.
+/// Entries may reside in both internal and leaf nodes; subclasses provide node storage.
 ///
 /// Semantics of order:
 /// - Max children per node = order
@@ -75,6 +77,9 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 	#region Abstract — Key Operations
 
 	protected abstract KeyValuePair<K, V> GetKey(TNode node, int index);
+
+	/// <summary>Reads the comparison key. Storage implementations can avoid reading the value; override this hook when projecting comparison keys.</summary>
+	protected virtual K GetKeyValue(TNode node, int index) => GetKey(node, index).Key;
 
 	protected abstract void SetKey(TNode node, int index, KeyValuePair<K, V> entry);
 
@@ -244,7 +249,7 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 	/// Returns all key-value pairs whose keys fall within [<paramref name="lowerInclusive"/>, <paramref name="upperInclusive"/>].
 	/// Entries are yielded in sorted (in-order) sequence. Performance is O(log n + k) where k is the result count.
 	/// </summary>
-	public IEnumerable<KeyValuePair<K, V>> FindRange(K lowerInclusive, K upperInclusive) {
+	public override IEnumerable<KeyValuePair<K, V>> FindRange(K lowerInclusive, K upperInclusive) {
 		if (!HasRoot)
 			yield break;
 		foreach (var Item in FindRangeRecursive(Root, lowerInclusive, upperInclusive))
@@ -281,22 +286,22 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 	}
 
 	protected virtual int FindKeyIndex(TNode node, K key, out bool found) {
-		var Lo = 0;
-		var Hi = GetKeyCount(node) - 1;
-		while (Lo <= Hi) {
-			var Mid = Lo + ((Hi - Lo) >> 1);
-			var Cmp = Compare(key, GetKey(node, Mid).Key);
-			if (Cmp == 0) {
+		var low = 0;
+		var high = GetKeyCount(node) - 1;
+		while (low <= high) {
+			var middle = low + ((high - low) >> 1);
+			var comparison = Compare(key, GetKeyValue(node, middle));
+			if (comparison == 0) {
 				found = true;
-				return Mid;
+				return middle;
 			}
-			if (Cmp < 0)
-				Hi = Mid - 1;
+			if (comparison < 0)
+				high = middle - 1;
 			else
-				Lo = Mid + 1;
+				low = middle + 1;
 		}
 		found = false;
-		return Lo;
+		return low;
 	}
 
 	protected virtual SplitResult SplitNode(TNode node) {

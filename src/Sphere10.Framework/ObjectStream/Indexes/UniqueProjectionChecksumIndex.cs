@@ -34,9 +34,34 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 		IEqualityComparer<TKey> keyComparer,
 		IndexNullPolicy indexNullPolicy,
 		int bTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder
+	)
+		: this(
+			objectStream,
+			indexName,
+			projection,
+			keyChecksummer,
+			keyHydrator,
+			keyComparer,
+			indexNullPolicy,
+			new BTreeSpec(BTreeType.BTreePlus, bTreeOrder)
+		) {
+	}
+
+	public UniqueProjectionChecksumIndex(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TKey> projection,
+		IItemChecksummer<TKey> keyChecksummer,
+		Func<long, TKey> keyHydrator,
+		IEqualityComparer<TKey> keyComparer,
+		IndexNullPolicy indexNullPolicy,
+		BTreeSpec bTreeSpec
 	) : base(
 			objectStream,
-			new IndexStorageAttachment<int>(objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default, bTreeOrder),
+			new IndexStorageAttachment<int>(
+				objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default,
+				bTreeSpec
+			),
 			indexNullPolicy
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));

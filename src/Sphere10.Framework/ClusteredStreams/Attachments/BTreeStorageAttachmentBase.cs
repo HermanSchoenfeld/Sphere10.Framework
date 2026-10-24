@@ -12,15 +12,14 @@ using System.Collections.Generic;
 namespace Sphere10.Framework;
 
 /// <summary>
-/// A single-stream <see cref="ClusteredStreamsAttachmentBase"/> that hosts a <see cref="StreamMappedBTree{TKey,TValue}"/>
+/// A single-stream <see cref="ClusteredStreamsAttachmentBase"/> that hosts a configured stream-mapped B-tree
 /// on its reserved stream.
 /// </summary>
 public abstract class BTreeStorageAttachmentBase<TKey, TValue> : ClusteredStreamsAttachmentBase {
-	private readonly int _order;
 	private readonly IItemSerializer<TKey> _keySerializer;
 	private readonly IItemSerializer<TValue> _valueSerializer;
 	private readonly IComparer<TKey> _keyComparer;
-	private StreamMappedBTree<TKey, TValue> _btree;
+	private BTreeBase<TKey, TValue> _btree;
 
 	public BTreeStorageAttachmentBase(
 		ClusteredStreams streams,
@@ -29,17 +28,33 @@ public abstract class BTreeStorageAttachmentBase<TKey, TValue> : ClusteredStream
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IComparer<TKey> keyComparer
+	) : this(streams, attachmentID, keySerializer, valueSerializer, keyComparer, new BTreeSpec(BTreeType.BTree, order)) {
+	}
+
+	public BTreeStorageAttachmentBase(
+		ClusteredStreams streams,
+		string attachmentID,
+		IItemSerializer<TKey> keySerializer,
+		IItemSerializer<TValue> valueSerializer,
+		IComparer<TKey> keyComparer,
+		BTreeSpec bTreeSpec
 	) : base(streams, attachmentID) {
+		Guard.ArgumentNotNull(bTreeSpec, nameof(bTreeSpec));
+		Spec = bTreeSpec;
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
-		_order = order;
 		_keySerializer = keySerializer;
 		_valueSerializer = valueSerializer;
 		_keyComparer = keyComparer;
 	}
 
-	protected StreamMappedBTree<TKey, TValue> BTree {
+	public BTreeSpec Spec { get; }
+
+	protected StreamMappedBTree<TKey, TValue> BTree => Tree as StreamMappedBTree<TKey, TValue>
+		?? throw new InvalidOperationException("This attachment uses BTreePlus. Use its Tree property for implementation-independent access.");
+
+	protected BTreeBase<TKey, TValue> Tree {
 		get {
 			CheckAttached();
 			return _btree;
@@ -47,20 +62,17 @@ public abstract class BTreeStorageAttachmentBase<TKey, TValue> : ClusteredStream
 	}
 
 	protected override void AttachInternal() {
-		_btree = new StreamMappedBTree<TKey, TValue>(
-			_order,
-			AttachmentStream,
-			_keySerializer,
-			_valueSerializer,
-			_keyComparer
-		);
+		var stream = AttachmentStream;
+		_btree = Spec.Type == BTreeType.BTreePlus
+			? new StreamMappedBTreePlus<TKey, TValue>(Spec.Order, stream, _keySerializer, _valueSerializer, _keyComparer)
+			: new StreamMappedBTree<TKey, TValue>(Spec.Order, stream, _keySerializer, _valueSerializer, _keyComparer);
 	}
 
 	public override void VerifyIntegrity() {
 	}
 
 	protected override void DetachInternal() {
-		_btree?.Dispose();
+		(_btree as IDisposable)?.Dispose();
 		_btree = null;
 	}
 }

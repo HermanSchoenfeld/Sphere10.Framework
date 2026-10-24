@@ -75,6 +75,7 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	private const int ChildCountOffset = 5;
 	private const int NextLeafOffset = 9;
 	private const int EntriesOffset = 17;
+	private const int StackBufferSize = 1024;
 
 	// Header field offsets and lengths
 	private const int RootIndexOffset = 0;
@@ -161,9 +162,9 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		ValidateExistingStorage();
 
 		// Header properties — cached, write-through stream-mapped values
-		_rootIndexProperty = new StreamMappedProperty<long>(_stream, RootIndexOffset, RootIndexLength, PrimitiveSerializer<long>.Instance, _reader, _writer);
-		_countProperty = new StreamMappedProperty<long>(_stream, CountOffset, CountLength, PrimitiveSerializer<long>.Instance, _reader, _writer);
-		_freeListCountProperty = new StreamMappedProperty<int>(_stream, FreeListCountOffset, FreeListCountLength, PrimitiveSerializer<int>.Instance, _reader, _writer);
+		_rootIndexProperty = StreamMappedProperty.From(_stream, RootIndexOffset, RootIndexLength, PrimitiveSerializer<long>.Instance, _reader, _writer, useCache: true);
+		_countProperty = StreamMappedProperty.From(_stream, CountOffset, CountLength, PrimitiveSerializer<long>.Instance, _reader, _writer, useCache: true);
+		_freeListCountProperty = StreamMappedProperty.From(_stream, FreeListCountOffset, FreeListCountLength, PrimitiveSerializer<int>.Instance, _reader, _writer, useCache: true);
 
 		if (stream.Length == 0) {
 			// Initialize a new tree
@@ -207,36 +208,40 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	#region Node Lifecycle
 
 	protected override long CreateLeafNode() {
-		var Record = ArrayPool<byte>.Shared.Rent(_nodeSize);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
 		try {
-			Array.Clear(Record, 0, _nodeSize);
-			Record[IsLeafOffset] = 1;
+			record.Clear();
+			record[IsLeafOffset] = 1;
 			// KeyCount = 0, ChildCount = 0 are already zero after clear
 			// NextLeaf = NoNode
-			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
+			_bitConverter.WriteTo(NoNode, record, NextLeafOffset);
 			// Initialize all children slots to NoNode (unused for leaves, but keeps the record clean)
-			for (var I = 0; I < Order + 1; I++)
-				Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
-			return AllocateNode(Record);
+			for (var index = 0; index < Order + 1; index++)
+				_bitConverter.WriteTo(NoNode, record, _childrenOffset + (index * sizeof(long)));
+			return AllocateNode(record);
 		} finally {
-			ArrayPool<byte>.Shared.Return(Record);
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
 	}
 
 	protected override long CreateInternalNode() {
-		var Record = ArrayPool<byte>.Shared.Rent(_nodeSize);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
 		try {
-			Array.Clear(Record, 0, _nodeSize);
-			Record[IsLeafOffset] = 0;
+			record.Clear();
+			record[IsLeafOffset] = 0;
 			// KeyCount = 0, ChildCount = 0 are already zero after clear
 			// NextLeaf = NoNode (not used for internal nodes)
-			Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, NextLeafOffset, sizeof(long));
+			_bitConverter.WriteTo(NoNode, record, NextLeafOffset);
 			// Initialize all children slots to NoNode
-			for (var I = 0; I < Order + 1; I++)
-				Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + (I * sizeof(long)), sizeof(long));
-			return AllocateNode(Record);
+			for (var index = 0; index < Order + 1; index++)
+				_bitConverter.WriteTo(NoNode, record, _childrenOffset + (index * sizeof(long)));
+			return AllocateNode(record);
 		} finally {
-			ArrayPool<byte>.Shared.Return(Record);
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
 	}
 
@@ -285,20 +290,24 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void InsertLeafEntry(long node, int index, KeyValuePair<K, V> entry) {
-		var Record = ReadNode(node);
-		var KeyCount = _bitConverter.ToInt32(Record, KeyCountOffset);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
+		try {
+			ReadNode(node, record);
+			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-		// Shift entries right to make room
-		if (index < KeyCount) {
-			Buffer.BlockCopy(
-				Record, EntriesOffset + (index * _entrySize),
-				Record, EntriesOffset + ((index + 1) * _entrySize),
-				(KeyCount - index) * _entrySize);
+			// Shift entries right to make room
+			if (index < keyCount)
+				record.Slice(EntriesOffset + (index * _entrySize), (keyCount - index) * _entrySize)
+					.CopyTo(record.Slice(EntriesOffset + ((index + 1) * _entrySize)));
+
+			SerializeEntry(record, index, entry);
+			_bitConverter.WriteTo(keyCount + 1, record, KeyCountOffset);
+			WriteNode(node, record);
+		} finally {
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
-
-		SerializeEntry(Record, index, entry);
-		Buffer.BlockCopy(_bitConverter.GetBytes(KeyCount + 1), 0, Record, KeyCountOffset, 4);
-		WriteNode(node, Record);
 	}
 
 	protected override void AddLeafEntry(long node, KeyValuePair<K, V> entry) {
@@ -314,21 +323,25 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void RemoveLeafEntryAt(long node, int index) {
-		var Record = ReadNode(node);
-		var KeyCount = _bitConverter.ToInt32(Record, KeyCountOffset);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
+		try {
+			ReadNode(node, record);
+			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-		// Shift entries left
-		if (index < KeyCount - 1) {
-			Buffer.BlockCopy(
-				Record, EntriesOffset + ((index + 1) * _entrySize),
-				Record, EntriesOffset + (index * _entrySize),
-				(KeyCount - index - 1) * _entrySize);
+			// Shift entries left
+			if (index < keyCount - 1)
+				record.Slice(EntriesOffset + ((index + 1) * _entrySize), (keyCount - index - 1) * _entrySize)
+					.CopyTo(record.Slice(EntriesOffset + (index * _entrySize)));
+
+			// Zero the vacated slot
+			record.Slice(EntriesOffset + ((keyCount - 1) * _entrySize), _entrySize).Clear();
+			_bitConverter.WriteTo(keyCount - 1, record, KeyCountOffset);
+			WriteNode(node, record);
+		} finally {
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
-
-		// Zero the vacated slot
-		Array.Clear(Record, EntriesOffset + ((KeyCount - 1) * _entrySize), _entrySize);
-		Buffer.BlockCopy(_bitConverter.GetBytes(KeyCount - 1), 0, Record, KeyCountOffset, 4);
-		WriteNode(node, Record);
 	}
 
 	#endregion
@@ -348,20 +361,24 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void InsertInternalKey(long node, int index, K key) {
-		var Record = ReadNode(node);
-		var KeyCount = _bitConverter.ToInt32(Record, KeyCountOffset);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
+		try {
+			ReadNode(node, record);
+			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-		// Shift entry slots right (full entrySize slots to preserve fixed layout)
-		if (index < KeyCount) {
-			Buffer.BlockCopy(
-				Record, EntriesOffset + (index * _entrySize),
-				Record, EntriesOffset + ((index + 1) * _entrySize),
-				(KeyCount - index) * _entrySize);
+			// Shift entry slots right (full entrySize slots to preserve fixed layout)
+			if (index < keyCount)
+				record.Slice(EntriesOffset + (index * _entrySize), (keyCount - index) * _entrySize)
+					.CopyTo(record.Slice(EntriesOffset + ((index + 1) * _entrySize)));
+
+			SerializeKey(record, index, key);
+			_bitConverter.WriteTo(keyCount + 1, record, KeyCountOffset);
+			WriteNode(node, record);
+		} finally {
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
-
-		SerializeKey(Record, index, key);
-		Buffer.BlockCopy(_bitConverter.GetBytes(KeyCount + 1), 0, Record, KeyCountOffset, 4);
-		WriteNode(node, Record);
 	}
 
 	protected override void AddInternalKey(long node, K key) {
@@ -375,21 +392,25 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void RemoveInternalKeyAt(long node, int index) {
-		var Record = ReadNode(node);
-		var KeyCount = _bitConverter.ToInt32(Record, KeyCountOffset);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
+		try {
+			ReadNode(node, record);
+			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-		// Shift entry slots left (full entrySize slots)
-		if (index < KeyCount - 1) {
-			Buffer.BlockCopy(
-				Record, EntriesOffset + ((index + 1) * _entrySize),
-				Record, EntriesOffset + (index * _entrySize),
-				(KeyCount - index - 1) * _entrySize);
+			// Shift entry slots left (full entrySize slots)
+			if (index < keyCount - 1)
+				record.Slice(EntriesOffset + ((index + 1) * _entrySize), (keyCount - index - 1) * _entrySize)
+					.CopyTo(record.Slice(EntriesOffset + (index * _entrySize)));
+
+			// Zero the vacated slot
+			record.Slice(EntriesOffset + ((keyCount - 1) * _entrySize), _entrySize).Clear();
+			_bitConverter.WriteTo(keyCount - 1, record, KeyCountOffset);
+			WriteNode(node, record);
+		} finally {
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
-
-		// Zero the vacated slot
-		Array.Clear(Record, EntriesOffset + ((KeyCount - 1) * _entrySize), _entrySize);
-		Buffer.BlockCopy(_bitConverter.GetBytes(KeyCount - 1), 0, Record, KeyCountOffset, 4);
-		WriteNode(node, Record);
 	}
 
 	#endregion
@@ -407,20 +428,24 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void InsertChild(long node, int index, long child) {
-		var Record = ReadNode(node);
-		var ChildCount = _bitConverter.ToInt32(Record, ChildCountOffset);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
+		try {
+			ReadNode(node, record);
+			var childCount = _bitConverter.ToInt32(record, ChildCountOffset);
 
-		// Shift children right
-		if (index < ChildCount) {
-			Buffer.BlockCopy(
-				Record, _childrenOffset + (index * sizeof(long)),
-				Record, _childrenOffset + ((index + 1) * sizeof(long)),
-				(ChildCount - index) * sizeof(long));
+			// Shift children right
+			if (index < childCount)
+				record.Slice(_childrenOffset + (index * sizeof(long)), (childCount - index) * sizeof(long))
+					.CopyTo(record.Slice(_childrenOffset + ((index + 1) * sizeof(long))));
+
+			_bitConverter.WriteTo(child, record, _childrenOffset + (index * sizeof(long)));
+			_bitConverter.WriteTo(childCount + 1, record, ChildCountOffset);
+			WriteNode(node, record);
+		} finally {
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
-
-		Buffer.BlockCopy(_bitConverter.GetBytes(child), 0, Record, _childrenOffset + (index * sizeof(long)), sizeof(long));
-		Buffer.BlockCopy(_bitConverter.GetBytes(ChildCount + 1), 0, Record, ChildCountOffset, 4);
-		WriteNode(node, Record);
 	}
 
 	protected override void AddChild(long node, long child) {
@@ -433,21 +458,25 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void RemoveChildAt(long node, int index) {
-		var Record = ReadNode(node);
-		var ChildCount = _bitConverter.ToInt32(Record, ChildCountOffset);
+		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
+		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
+		try {
+			ReadNode(node, record);
+			var childCount = _bitConverter.ToInt32(record, ChildCountOffset);
 
-		// Shift children left
-		if (index < ChildCount - 1) {
-			Buffer.BlockCopy(
-				Record, _childrenOffset + ((index + 1) * sizeof(long)),
-				Record, _childrenOffset + (index * sizeof(long)),
-				(ChildCount - index - 1) * sizeof(long));
+			// Shift children left
+			if (index < childCount - 1)
+				record.Slice(_childrenOffset + ((index + 1) * sizeof(long)), (childCount - index - 1) * sizeof(long))
+					.CopyTo(record.Slice(_childrenOffset + (index * sizeof(long))));
+
+			// Write NoNode into the vacated slot
+			_bitConverter.WriteTo(NoNode, record, _childrenOffset + ((childCount - 1) * sizeof(long)));
+			_bitConverter.WriteTo(childCount - 1, record, ChildCountOffset);
+			WriteNode(node, record);
+		} finally {
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
 		}
-
-		// Write NoNode into the vacated slot
-		Buffer.BlockCopy(_bitConverter.GetBytes(NoNode), 0, Record, _childrenOffset + ((ChildCount - 1) * sizeof(long)), sizeof(long));
-		Buffer.BlockCopy(_bitConverter.GetBytes(ChildCount - 1), 0, Record, ChildCountOffset, 4);
-		WriteNode(node, Record);
 	}
 
 	#endregion
@@ -576,26 +605,26 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 
 	private long GetNodeOffset(long handle) => HeaderSize + (HandleToIndex(handle) * _nodeSize);
 
-	private byte[] ReadNode(long handle) {
+	private void ReadNode(long handle, Span<byte> record) {
 		_stream.Seek(GetNodeOffset(handle), SeekOrigin.Begin);
-		return _reader.ReadBytes(_nodeSize);
+		_stream.ReadExactly(record[.._nodeSize]);
 	}
 
-	private void WriteNode(long handle, byte[] record) {
+	private void WriteNode(long handle, ReadOnlySpan<byte> record) {
 		_stream.Seek(GetNodeOffset(handle), SeekOrigin.Begin);
-		_writer.Write(record, 0, _nodeSize);
+		_stream.Write(record[.._nodeSize]);
 	}
 
-	private long AllocateNode(byte[] record) {
+	private long AllocateNode(ReadOnlySpan<byte> record) {
 		if (_freeList.Count > 0) {
-			var Recycled = _freeList.Pop();
-			WriteNode(Recycled, record);
-			return Recycled;
+			var recycled = _freeList.Pop();
+			WriteNode(recycled, record);
+			return recycled;
 		}
-		var NewHandle = IndexToHandle(_nodeCount);
+		var newHandle = IndexToHandle(_nodeCount);
 		_nodeCount++;
-		WriteNode(NewHandle, record);
-		return NewHandle;
+		WriteNode(newHandle, record);
+		return newHandle;
 	}
 
 	#endregion
@@ -605,22 +634,22 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	/// <summary>
 	/// Serializes a full K+V entry into an entry slot in the record. Used for leaf nodes.
 	/// </summary>
-	private void SerializeEntry(byte[] record, int entryIndex, KeyValuePair<K, V> entry) {
-		var Offset = EntriesOffset + (entryIndex * _entrySize);
-		var KeyBytes = _keySerializer.SerializeToBytes(entry.Key, _endianness);
-		Buffer.BlockCopy(KeyBytes, 0, record, Offset, _keySize);
-		var ValueBytes = _valueSerializer.SerializeToBytes(entry.Value, _endianness);
-		Buffer.BlockCopy(ValueBytes, 0, record, Offset + _keySize, _valueSize);
+	private void SerializeEntry(Span<byte> record, int entryIndex, KeyValuePair<K, V> entry) {
+		var offset = EntriesOffset + (entryIndex * _entrySize);
+		var keyBytes = _keySerializer.SerializeToBytes(entry.Key, _endianness);
+		keyBytes.AsSpan(0, _keySize).CopyTo(record.Slice(offset, _keySize));
+		var valueBytes = _valueSerializer.SerializeToBytes(entry.Value, _endianness);
+		valueBytes.AsSpan(0, _valueSize).CopyTo(record.Slice(offset + _keySize, _valueSize));
 	}
 
 	/// <summary>
 	/// Serializes only the key (K) into an entry slot in the record. Used for internal node separator keys.
 	/// The value portion of the slot is left untouched (padding).
 	/// </summary>
-	private void SerializeKey(byte[] record, int entryIndex, K key) {
-		var Offset = EntriesOffset + (entryIndex * _entrySize);
-		var KeyBytes = _keySerializer.SerializeToBytes(key, _endianness);
-		Buffer.BlockCopy(KeyBytes, 0, record, Offset, _keySize);
+	private void SerializeKey(Span<byte> record, int entryIndex, K key) {
+		var offset = EntriesOffset + (entryIndex * _entrySize);
+		var keyBytes = _keySerializer.SerializeToBytes(key, _endianness);
+		keyBytes.AsSpan(0, _keySize).CopyTo(record.Slice(offset, _keySize));
 	}
 
 	#endregion

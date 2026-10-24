@@ -105,7 +105,7 @@ public class DefaultsCompatibilityTests {
 			serializers = space.Serializers;
 			comparers = space.Comparers;
 			Assert.That(definition.HasExplicitIndexBTreeOrder, Is.False);
-			Assert.That(definition.HasBoundIndexBTreeOrder, Is.True);
+			Assert.That(definition.HasBoundIndexBTreeSpec, Is.True);
 			Assert.That(definition.IndexBTreeOrder, Is.EqualTo(Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder));
 			Assert.That(space.Streams.Header.ClusterSize, Is.EqualTo(fileBacked ? Sphere10FrameworkDefaults.FileObjectSpaceClusterSize : Sphere10FrameworkDefaults.MemoryObjectSpaceClusterSize));
 			Assert.That(space.Dimensions.Single().Container.ObjectStream.Streams.Header.ClusterSize,
@@ -138,10 +138,10 @@ public class DefaultsCompatibilityTests {
 		var builder = CreateBuilder(false).UseFile(Path.Combine(folder, "deferred.dat"));
 		using (var space = builder.Build()) {
 			Assert.That(space.RequiresLoad, Is.True);
-			Assert.That(space.Definition.HasBoundIndexBTreeOrder, Is.False);
+			Assert.That(space.Definition.HasBoundIndexBTreeSpec, Is.False);
 			Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.False);
 			space.Load();
-			Assert.That(space.Definition.HasBoundIndexBTreeOrder, Is.True);
+			Assert.That(space.Definition.HasBoundIndexBTreeSpec, Is.True);
 			Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.True);
 			SaveRecords(space);
 			CompleteWrites(space);
@@ -159,7 +159,7 @@ public class DefaultsCompatibilityTests {
 		using var space = builder.Build();
 		space.Definition.Dimensions = Array.Empty<ObjectSpaceDefinition.DimensionDefinition>();
 		Assert.That(() => space.Load(), Throws.Exception);
-		Assert.That(space.Definition.HasBoundIndexBTreeOrder, Is.False);
+		Assert.That(space.Definition.HasBoundIndexBTreeSpec, Is.False);
 		Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.False);
 		Assert.That(new FileInfo(Path.Combine(folder, "invalid.dat")).Length, Is.Zero);
 	}

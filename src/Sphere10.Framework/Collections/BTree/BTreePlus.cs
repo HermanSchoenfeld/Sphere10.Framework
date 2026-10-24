@@ -14,6 +14,7 @@ namespace Sphere10.Framework;
 
 /// <summary>
 /// Abstract base for B+ tree dictionaries with configurable order and pluggable node storage.
+/// Implements the B+ tree node algorithm over <see cref="BTreeBase{K, V}"/>'s shared dictionary contract.
 /// Data entries are stored only in leaf nodes, which are linked for efficient sequential access.
 /// Internal nodes hold separator keys that guide searches.
 /// </summary>
@@ -159,9 +160,6 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 
 		Count--;
 
-		if (HasRoot && !IsLeaf(Root))
-			RebuildInternalSeparators(Root);
-
 		if (HasRoot && GetKeyCount(Root) == 0) {
 			if (IsLeaf(Root)) {
 				var OldRoot = Root;
@@ -207,7 +205,7 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 	/// Returns all key-value pairs whose keys fall within [<paramref name="lowerInclusive"/>, <paramref name="upperInclusive"/>].
 	/// Entries are yielded in sorted (in-order) sequence using the linked leaf chain for O(log n + k) performance.
 	/// </summary>
-	public IEnumerable<KeyValuePair<K, V>> FindRange(K lowerInclusive, K upperInclusive) {
+	public override IEnumerable<KeyValuePair<K, V>> FindRange(K lowerInclusive, K upperInclusive) {
 		if (!HasRoot)
 			yield break;
 
@@ -506,6 +504,9 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 			var Left = GetChild(parent, childIndex - 1);
 			if (GetKeyCount(Left) > MinKeys) {
 				BorrowFromLeft(parent, childIndex);
+				// An internal rotation can copy a parent separator whose child minimum
+				// changed during deletion. Repair that node before returning upward.
+				RefreshAllSeparators(GetChild(parent, childIndex));
 				return;
 			}
 		}
@@ -514,23 +515,18 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 			var Right = GetChild(parent, childIndex + 1);
 			if (GetKeyCount(Right) > MinKeys) {
 				BorrowFromRight(parent, childIndex);
+				RefreshAllSeparators(GetChild(parent, childIndex));
 				return;
 			}
 		}
 
-		if (childIndex > 0)
+		if (childIndex > 0) {
 			MergeChildren(parent, childIndex - 1);
-		else if (childIndex < GetChildCount(parent) - 1)
+			RefreshAllSeparators(GetChild(parent, childIndex - 1));
+		} else if (childIndex < GetChildCount(parent) - 1) {
 			MergeChildren(parent, childIndex);
-	}
-
-	private void RebuildInternalSeparators(TNode node) {
-		if (IsLeaf(node))
-			return;
-		var ChildCount = GetChildCount(node);
-		for (var i = 0; i < ChildCount; i++)
-			RebuildInternalSeparators(GetChild(node, i));
-		RefreshAllSeparators(node);
+			RefreshAllSeparators(GetChild(parent, childIndex));
+		}
 	}
 
 	private void RefreshAllSeparators(TNode parent) {
