@@ -8,65 +8,63 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework;
 
-public interface IGraphEdge<TNode, TEdge, TWeight>
-	where TNode : IGraph<TNode, TEdge, TWeight>
-	where TEdge : IGraphEdge<TNode, TEdge, TWeight>, new() {
-	TWeight Weight { get; set; }
-	TNode Source { get; set; }
-	TNode Destination { get; set; }
-}
-
-
-public interface IGraphEdge<TNode> : IGraphEdge<TNode, GraphEdge<TNode>, int>
-	where TNode : IGraph<TNode> {
-}
-
-
-public interface IGraphEdge : IGraphEdge<Graph> {
-}
-
-
-public class Graph<TNode, TEdge, TWeight> : IGraph<TNode, TEdge, TWeight>
-	where TNode : IGraph<TNode, TEdge, TWeight>
-	where TEdge : IGraphEdge<TNode, TEdge, TWeight>, new() {
-
-
-	public virtual IEnumerable<TEdge> Edges { get; set; }
-
-	public ISimpleGraph ToSimpleGraph(Func<ISimpleGraph, TEdge> edgeCreator = null) {
-		return new SimpleGraphAdapter<TNode, TEdge, TWeight>((TNode)(object)this, edgeCreator);
+/// <summary>
+/// A directed graph node containing an entity and ordered outgoing connections.
+/// Connections may contain shared nodes, repeated edges and cycles.
+/// </summary>
+public class GraphNode<TEntity> : ISimpleGraph<TEntity, GraphNode<TEntity>> {
+	public GraphNode(TEntity entity) {
+		Entity = entity;
 	}
 
-}
+	public TEntity Entity { get; set; }
 
+	public IEnumerable<GraphNode<TEntity>> Connections { get; set; } = Enumerable.Empty<GraphNode<TEntity>>();
 
-public class Graph<TNode> : Graph<TNode, GraphEdge<TNode>, int>, IGraph<TNode>
-	where TNode : IGraph<TNode> {
-}
+	/// <summary>
+	/// Visits this node and its connections in depth-first preorder, once per node identity.
+	/// A rejected node prunes its outgoing connections. Null connections are skipped.
+	/// Each enumeration has independent traversal state; the default comparer uses reference identity.
+	/// Connections are evaluated lazily, and their enumerators are disposed on completion, early exit or failure.
+	/// </summary>
+	public IEnumerable<GraphNode<TEntity>> Visit(Func<GraphNode<TEntity>, bool> discriminator = null, IEqualityComparer<GraphNode<TEntity>> comparer = null) {
+		var visited = new HashSet<GraphNode<TEntity>>(comparer ?? ReferenceEqualityComparer.Instance);
+		var pending = new Stack<IEnumerator<GraphNode<TEntity>>>();
+		IEnumerable<GraphNode<TEntity>> roots = new[] { this };
+		try {
+			pending.Push(roots.GetEnumerator());
+			while (pending.Count > 0) {
+				var current = pending.Peek();
+				if (!current.MoveNext()) {
+					pending.Pop().Dispose();
+					continue;
+				}
+				var node = current.Current;
+				if (node is null || visited.Contains(node) || discriminator is not null && !discriminator(node))
+					continue;
+				visited.Add(node);
+				yield return node;
+				var connections = node.Connections;
+				if (connections is not null)
+					pending.Push(connections.GetEnumerator());
+			}
+		} finally {
+			while (pending.Count > 0)
+				pending.Pop().Dispose();
+		}
+	}
 
+	#region Base Interface Bridges
 
-public class Graph : Graph<Graph>, IGraph {
-}
+	IEnumerable<GraphNode<TEntity>> ISimpleGraph<GraphNode<TEntity>>.Connections {
+		get => Connections;
+		set => Connections = value is null ? Enumerable.Empty<GraphNode<TEntity>>() : value.ToArray();
+	}
 
-
-public class GraphEdge<TNode, TEdge, TWeight> : IGraphEdge<TNode, TEdge, TWeight>
-	where TNode : IGraph<TNode, TEdge, TWeight>
-	where TEdge : IGraphEdge<TNode, TEdge, TWeight>, new() {
-
-	public virtual TWeight Weight { get; set; }
-	public virtual TNode Source { get; set; }
-	public virtual TNode Destination { get; set; }
-}
-
-
-public class GraphEdge<TNode> : GraphEdge<TNode, GraphEdge<TNode>, int>, IGraphEdge<TNode>
-	where TNode : IGraph<TNode> {
-}
-
-
-public class GraphEdge : GraphEdge<Graph>, IGraphEdge {
+	#endregion
 }
 
