@@ -50,6 +50,13 @@ public static class IEnumerableExtensions {
 		}
 	}
 
+	/// <summary>
+	/// Visits roots and outgoing connections recursively in depth-first preorder, using
+	/// <paramref name="comparer"/> or default equality. A rejected item prunes its connections.
+	/// A null item ends its current sibling sequence; a null connection sequence ends its branch.
+	/// The returned enumerable shares visited state across enumerations. Edge iterators are evaluated lazily,
+	/// and their enumerators are disposed on completion, early exit or failure.
+	/// </summary>
 	public static IEnumerable<TItem> Visit<TItem>(this IEnumerable<TItem> nodes, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null) {
 		discriminator ??= _ => true;
 		var visited = new HashSet<TItem>(comparer ?? EqualityComparer<TItem>.Default);
@@ -74,6 +81,76 @@ public static class IEnumerableExtensions {
 				foreach (var connectedNode in VisitInternal(edgeIterator(node)))
 					 yield return connectedNode;
 			}
+		}
+	}
+
+	/// <summary>
+	/// Builds a directed graph snapshot from the supplied roots in depth-first order.
+	/// Items equal under <paramref name="comparer"/> (default equality when omitted) share one node,
+	/// preserving cycles, shared references, outgoing edge order and repeated edges.
+	/// The first encountered representative supplies the entity and outgoing connections.
+	/// The discriminator is evaluated once per distinct item; rejection prunes its connections.
+	/// Null roots, items and connection sequences are skipped. Returned roots are distinct in input order,
+	/// including roots reachable from another root. Each included item's connections are enumerated once.
+	/// </summary>
+	public static GraphNode<TItem>[] BuildGraph<TItem>(this IEnumerable<TItem> nodes, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null) {
+		Guard.ArgumentNotNull(edgeIterator, nameof(edgeIterator));
+		if (nodes is null)
+			return Array.Empty<GraphNode<TItem>>();
+		var knownNodes = new Dictionary<TItem, GraphNode<TItem>>(comparer ?? EqualityComparer<TItem>.Default);
+		var roots = new List<GraphNode<TItem>>();
+		var rootSet = new HashSet<GraphNode<TItem>>(ReferenceEqualityComparer.Instance);
+		var pending = new Stack<(GraphNode<TItem> node, IEnumerator<TItem> edges, List<GraphNode<TItem>> connections)>();
+		foreach (var item in nodes) {
+			var root = ResolveNode(item, out var created);
+			if (root is null)
+				continue;
+			if (rootSet.Add(root))
+				roots.Add(root);
+			if (created)
+				BuildConnections(root);
+		}
+		return roots.ToArray();
+
+		void BuildConnections(GraphNode<TItem> root) {
+			try {
+				PushConnections(root);
+				while (pending.Count > 0) {
+					var current = pending.Peek();
+					if (!current.edges.MoveNext()) {
+						pending.Pop().edges.Dispose();
+						current.node.Connections = current.connections.ToArray();
+						continue;
+					}
+					var connection = ResolveNode(current.edges.Current, out var created);
+					if (connection is null)
+						continue;
+					current.connections.Add(connection);
+					if (created)
+						PushConnections(connection);
+				}
+			} finally {
+				while (pending.Count > 0)
+					pending.Pop().edges.Dispose();
+			}
+		}
+
+		GraphNode<TItem> ResolveNode(TItem item, out bool created) {
+			created = false;
+			if (item is null)
+				return null;
+			if (knownNodes.TryGetValue(item, out var existing))
+				return existing;
+			var node = discriminator is null || discriminator(item) ? new GraphNode<TItem>(item) : null;
+			knownNodes.Add(item, node);
+			created = node is not null;
+			return node;
+		}
+
+		void PushConnections(GraphNode<TItem> node) {
+			var connections = edgeIterator(node.Entity);
+			if (connections is not null)
+				pending.Push((node, connections.GetEnumerator(), new List<GraphNode<TItem>>()));
 		}
 	}
 

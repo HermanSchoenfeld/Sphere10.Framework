@@ -35,11 +35,38 @@ public static class UniversalExtensions {
 			Signature = signer.Sign(item, privateKey, signerNonce)
 		};
 
+	/// <summary>
+	/// Visits this item followed by successive ancestors, once per comparer identity.
+	/// Null items terminate the chain; a rejected item prunes its ancestors.
+	/// The returned enumerable shares visited state across enumerations. Ancestors are evaluated lazily.
+	/// </summary>
 	public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, TItem> ancestorIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null)
 		=> Visit(node, x => x != null ? [ancestorIterator(x)] : Array.Empty<TItem>(), discriminator, comparer);
 
+	/// <summary>
+	/// Visits this item and its outgoing connections in depth-first preorder, using default equality unless a comparer is supplied.
+	/// Rejected items prune their connections; a null item ends its current sibling sequence.
+	/// The returned enumerable shares visited state across enumerations. Connections are evaluated lazily.
+	/// </summary>
 	public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null)
 		=> new[] { node }.Visit(edgeIterator, discriminator, comparer);
+
+	/// <summary>
+	/// Builds a graph containing this item and successive ancestors, preserving cycles and comparer identity.
+	/// Null or rejected roots return null; rejection prunes the remaining chain. Connections are materialized.
+	/// </summary>
+	public static GraphNode<TItem> BuildGraph<TItem>(this TItem node, Func<TItem, TItem> ancestorIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null) {
+		Guard.ArgumentNotNull(ancestorIterator, nameof(ancestorIterator));
+		return BuildGraph(node, item => new[] { ancestorIterator(item) }, discriminator, comparer);
+	}
+
+	/// <summary>
+	/// Builds a directed graph snapshot rooted at this item, expanding connections in depth-first order.
+	/// Default equality or the supplied comparer merges equivalent items into one node, preserving cycles and shared references.
+	/// Rejection prunes connections; null items and connection sequences are skipped. A null or rejected root returns null.
+	/// </summary>
+	public static GraphNode<TItem> BuildGraph<TItem>(this TItem node, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null)
+		=> new[] { node }.BuildGraph(edgeIterator, discriminator, comparer).FirstOrDefault();
 
 	public static void Swap<T>(ref T fromX, ref T fromY) {
 		T temp = default(T);

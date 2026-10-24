@@ -26,9 +26,67 @@ public class CompoundKeyComparer<TKey1, TKey2> : IComparer<CompoundKey<TKey1, TK
 	}
 
 	public int Compare(CompoundKey<TKey1, TKey2> x, CompoundKey<TKey1, TKey2> y) {
-		var Cmp = _key1Comparer.Compare(x.Key1, y.Key1);
-		if (Cmp != 0)
-			return Cmp;
+		var comparison = _key1Comparer.Compare(x.Key1, y.Key1);
+		if (comparison != 0)
+			return comparison;
 		return _key2Comparer.Compare(x.Key2, y.Key2);
+	}
+}
+
+/// <summary>Compares three-component compound keys lexicographically using the supplied component comparers.</summary>
+public class CompoundKeyComparer<TKey1, TKey2, TKey3> : IComparer<CompoundKey<TKey1, TKey2, TKey3>> {
+	private readonly IComparer<TKey1> _key1Comparer;
+	private readonly IComparer<TKey2> _key2Comparer;
+	private readonly IComparer<TKey3> _key3Comparer;
+
+	public CompoundKeyComparer(IComparer<TKey1> key1Comparer, IComparer<TKey2> key2Comparer, IComparer<TKey3> key3Comparer) {
+		Guard.ArgumentNotNull(key1Comparer, nameof(key1Comparer));
+		Guard.ArgumentNotNull(key2Comparer, nameof(key2Comparer));
+		Guard.ArgumentNotNull(key3Comparer, nameof(key3Comparer));
+		_key1Comparer = key1Comparer;
+		_key2Comparer = key2Comparer;
+		_key3Comparer = key3Comparer;
+	}
+
+	public int Compare(CompoundKey<TKey1, TKey2, TKey3> x, CompoundKey<TKey1, TKey2, TKey3> y) {
+		var comparison = _key1Comparer.Compare(x.Key1, y.Key1);
+		if (comparison != 0)
+			return comparison;
+		comparison = _key2Comparer.Compare(x.Key2, y.Key2);
+		if (comparison != 0)
+			return comparison;
+		return _key3Comparer.Compare(x.Key3, y.Key3);
+	}
+}
+
+/// <summary>Compares four-component compound keys lexicographically using the supplied component comparers.</summary>
+public class CompoundKeyComparer<TKey1, TKey2, TKey3, TKey4> : IComparer<CompoundKey<TKey1, TKey2, TKey3, TKey4>> {
+	private readonly IComparer<TKey1> _key1Comparer;
+	private readonly IComparer<TKey2> _key2Comparer;
+	private readonly IComparer<TKey3> _key3Comparer;
+	private readonly IComparer<TKey4> _key4Comparer;
+
+	public CompoundKeyComparer(IComparer<TKey1> key1Comparer, IComparer<TKey2> key2Comparer, IComparer<TKey3> key3Comparer, IComparer<TKey4> key4Comparer) {
+		Guard.ArgumentNotNull(key1Comparer, nameof(key1Comparer));
+		Guard.ArgumentNotNull(key2Comparer, nameof(key2Comparer));
+		Guard.ArgumentNotNull(key3Comparer, nameof(key3Comparer));
+		Guard.ArgumentNotNull(key4Comparer, nameof(key4Comparer));
+		_key1Comparer = key1Comparer;
+		_key2Comparer = key2Comparer;
+		_key3Comparer = key3Comparer;
+		_key4Comparer = key4Comparer;
+	}
+
+	public int Compare(CompoundKey<TKey1, TKey2, TKey3, TKey4> x, CompoundKey<TKey1, TKey2, TKey3, TKey4> y) {
+		var comparison = _key1Comparer.Compare(x.Key1, y.Key1);
+		if (comparison != 0)
+			return comparison;
+		comparison = _key2Comparer.Compare(x.Key2, y.Key2);
+		if (comparison != 0)
+			return comparison;
+		comparison = _key3Comparer.Compare(x.Key3, y.Key3);
+		if (comparison != 0)
+			return comparison;
+		return _key4Comparer.Compare(x.Key4, y.Key4);
 	}
 }
