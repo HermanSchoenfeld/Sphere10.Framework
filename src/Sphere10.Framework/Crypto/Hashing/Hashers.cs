@@ -162,12 +162,14 @@ public static class Hashers {
 			hasher = Constructors[(int)algorithm].Invoke();
 		} else hasher.Reset();
 
-		var tempArr = new byte[expectedSize];
+		// Keep small chain digests on the stack, with a bounded fallback for registered algorithms.
+		Span<byte> previousDigest = expectedSize <= 256 ? stackalloc byte[expectedSize] : new byte[expectedSize];
+		scoped ReadOnlySpan<byte> input = bytes;
 		try {
 			while (n-- > 0) {
-				hasher.Compute(bytes, result);
-				result.CopyTo(tempArr);
-				bytes = tempArr;
+				hasher.Compute(input, result);
+				result.CopyTo(previousDigest);
+				input = previousDigest;
 			}
 		} finally {
 			hashers.Push(hasher);

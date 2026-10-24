@@ -13,11 +13,13 @@ namespace Sphere10.Framework;
 public abstract class HashFunctionBase : IHashFunction {
 	protected bool _inTransform;
 	private byte[] _computedDigest;
+	private bool _hasComputedDigest;
 
 	public abstract int DigestSize { get; }
 
 	public virtual void Initialize() {
-		_computedDigest = null; // Important not set this value since Transform needs to know when "empty pre-image" usecase
+		// GetResult must distinguish a reset from a previously computed "empty pre-image" digest.
+		_hasComputedDigest = false;
 	}
 
 	public virtual void Compute(ReadOnlySpan<byte> input, Span<byte> output) {
@@ -38,12 +40,19 @@ public abstract class HashFunctionBase : IHashFunction {
 	protected abstract void Finalize(Span<byte> digest);
 
 	public void GetResult(Span<byte> result) {
-		if (_inTransform || _computedDigest is null) {
-			if (_computedDigest == null) //  _computedDigest == null is the case when no Transform has been applied, and thus is the "empty pre-image" use-case
+		if (_inTransform || !_hasComputedDigest) {
+			// Keep storage across preimages; validity is tracked separately for the empty-preimage case.
+			if (_computedDigest == null)
 				_computedDigest = new byte[DigestSize];
-			else if (_computedDigest.Length != DigestSize) // _computedDigest was from previous pre-image, resize it
-				Array.Resize(ref _computedDigest, DigestSize);
+			else {
+				if (_computedDigest.Length != DigestSize) // _computedDigest was from previous pre-image, resize it
+					Array.Resize(ref _computedDigest, DigestSize);
+				if (!_hasComputedDigest)
+					_computedDigest.AsSpan().Clear();
+			}
 			_inTransform = false;
+			// As with the original allocated buffer, retain the partial digest if finalization throws.
+			_hasComputedDigest = true;
 			Finalize(_computedDigest);
 		}
 		_computedDigest.CopyTo(result);
@@ -51,7 +60,7 @@ public abstract class HashFunctionBase : IHashFunction {
 
 	public void Reset() {
 		Initialize();
-		_computedDigest = null;
+		_hasComputedDigest = false;
 	}
 
 	public abstract object Clone();
