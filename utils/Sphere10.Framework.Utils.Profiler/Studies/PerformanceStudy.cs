@@ -65,7 +65,7 @@ public static class PerformanceStudy {
 			}
 		}
 		var plan = planPath == null ? CreatePlan(domain, suite, records, operations, payload, workloads)
-			: JsonSerializer.Deserialize<StudyPlan>(File.ReadAllText(planPath), ProfilerSettings.JsonOptions);
+			: StudyEvidence.ReadPlan(planPath);
 		plan.OutputDirectory = destination ?? Path.GetFullPath(Path.Combine("BenchmarkDotNet.Artifacts", $"study-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}"));
 		plan.DataDirectory = dataRoot ?? plan.DataDirectory ?? Path.Combine(Path.GetTempPath(), "Sphere10-PerformanceStudies");
 		if (planPath == null) {
@@ -236,7 +236,7 @@ public static class PerformanceStudy {
 		var factors = new List<(string Factor, BTreeProfile[] Profiles)>();
 		void Add(string factor, string suite) {
 			var profiles = BTreeProfile.CreateSuite("baseline", storage, family, keys).Concat(BTreeProfile.CreateSuite(suite, storage, family, keys))
-				.GroupBy(profile => JsonSerializer.Serialize(new { profile.Storage, profile.Family, profile.KeyShape, profile.Order,
+				.GroupBy(profile => JsonSerializer.Serialize(new { profile.Storage, profile.Family, profile.Spec, profile.KeyShape,
 					profile.PageSize, profile.CacheBytes, profile.FileBufferBytes, profile.Endianness }, ProfilerSettings.JsonOptions)).Select(group => group.First()).ToArray();
 			factors.Add((factor, profiles));
 		}

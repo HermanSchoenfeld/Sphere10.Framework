@@ -215,6 +215,8 @@ public class ObjectSpaceLabTests {
 		var manifest = JsonNode.Parse(File.ReadAllText(manifestPath));
 		manifest["SchemaVersion"] = 1;
 		manifest["Configuration"].AsObject().Remove(nameof(ObjectSpaceLabConfiguration.SchemaProfile));
+		manifest["Configuration"]["IndexBTreeOrder"] = configuration.IndexBTreeOrder;
+		manifest["Configuration"].AsObject().Remove(nameof(ObjectSpaceLabConfiguration.IndexBTreeSpec));
 		File.WriteAllText(manifestPath, manifest.ToJsonString());
 		Assert.That(ObjectSpaceLabFactory.ReadConfiguration(path).SchemaProfile, Is.EqualTo(ObjectSpaceLabSchemaProfile.PayloadOnly));
 		using (var space = ObjectSpaceLabFactory.Open(ObjectSpaceLabFactory.ReadConfiguration(path), path))

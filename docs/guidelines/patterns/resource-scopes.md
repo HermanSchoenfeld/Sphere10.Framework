@@ -23,6 +23,44 @@ using (collection.EnterWriteScope()) {
 
 If an operation acquires a resource, enters a state, or needs guaranteed cleanup, wrap it in the existing scope that expresses that acquire/release contract. Do not reproduce its machinery with a bare `try/finally`. Exception handling and multi-step lifecycle coordination can still require `try`/`catch`/`finally`; preserve their ownership and failure behavior and match the underlying scope contract.
 
+## Choosing a disposal implementation
+
+Use the existing [Disposable](../../../src/Sphere10.Framework/Disposables/Disposable.cs)
+lineage for general disposable objects that need its resource hooks and lifecycle.
+For reusable scopes that need `IScope`, end notifications or extension hooks, use
+[ScopeBase](../../../src/Sphere10.Framework/Scopes/ScopeBase.cs) and its appropriate
+directional descendants, such as `SyncScope` or `SyncOnlyScope`. Implement their
+end hooks rather than replacing the inherited disposal protocol. `SyncDisposable`
+is not the default base for a new scope; it supplies a general disposable adapter,
+not the scope contract.
+
+A simple leaf scope on a performance-sensitive path should implement `IDisposable`
+directly when synchronous cleanup is its whole contract. Store the resource and
+exit state directly, and implement `Dispose()` without a captured delegate,
+asynchronous adapter or finalizer machinery. For a small value scope, return its
+concrete struct type so ordinary `using` callers avoid both object allocation
+and interface boxing. [RestorePositionScope](../../../src/Sphere10.Framework/Streams/RestorePositionScope.cs)
+is returned directly by the stream restore-position extensions; it restores a
+borrowed stream's position and does not close that stream.
+
+```csharp
+using var restore = stream.EnterRestorePositionSeek(offset, SeekOrigin.Begin);
+// Use the stream at the selected position; disposal restores its original position.
+```
+
+Keep the concrete type when passing or storing a value scope. Assigning it to
+`IDisposable` boxes it, and a struct instance method converted to a delegate
+captures a copy. Mutable scope copies have independent disposal state: keep one
+local instance and avoid passing it by value or through readonly storage when
+its disposal state must be shared. Measure the actual calling path, including
+the return type and consumers, rather than assuming a struct is allocation-free.
+
+Keep ownership and cleanup semantics explicit whichever implementation is used.
+Review repeated disposal, failures and retries, nested lifetimes and reentrant
+callbacks. A failed cleanup must not be silently marked successful when the
+operation promises a retry. A simple scope does not acquire thread safety or
+asynchronous support merely by exposing a disposal interface.
+
 ## Cleanup review and domain scopes
 
 Treat cleanup-only `try/finally` in newly written or changed code as a review
@@ -36,8 +74,10 @@ to shorten a method.
 
 Use `Tools.Scope.ExecuteOnDispose` for a one-off exit action. When the same
 resource protocol is repeated, define a named scope in the resource's owning
-domain, extend the established directional scope base and implement its end
-hook. Keep application state/workflow scopes in the application; reusable
+domain and choose its disposal implementation as described above. Use the
+established directional base and end hook when the scope contract is needed;
+use direct `IDisposable` for a simple performance-sensitive leaf scope. Keep
+application state/workflow scopes in the application; reusable
 native-resource scopes belong in the Windows library. Prefer existing safe
 handles when the native API already has an appropriate handle type.
 
@@ -58,8 +98,8 @@ allocation is freed; native callbacks must remain rooted until the consumer
 task has drained. Resource transfer needs an explicit retained/committed flag
 so rollback disposes only resources still owned by the acquiring operation.
 Thread-affine cleanup must run on its acquiring thread; use the synchronous-only
-scope base for those protocols rather than inheriting an asynchronous adapter
-that can dispatch release to another worker.
+scope base or a direct `IDisposable` leaf scope for those protocols rather than
+inheriting an asynchronous adapter that can dispatch release to another worker.
 
 The example assumes an existing synchronized collection with the default recursion policy. The outer write scope keeps the membership check and addition atomic even when each member self-locks. [IScope](../../../src/Sphere10.Framework/Scopes/IScope.cs) exposes both disposal forms and `ScopeEnd`; [ScopeBase](../../../src/Sphere10.Framework/Scopes/ScopeBase.cs) runs its end hook before the notification. Its async notification uses `Task.Run`, so the generic scope contract does not promise the acquiring thread.
 

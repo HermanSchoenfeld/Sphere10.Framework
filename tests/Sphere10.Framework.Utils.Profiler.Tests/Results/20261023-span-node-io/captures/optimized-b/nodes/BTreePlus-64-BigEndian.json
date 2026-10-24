@@ -1,0 +1,131 @@
+{
+  "Type": "BTreePlus",
+  "Order": 64,
+  "Endianness": "BigEndian",
+  "RecordCount": 512,
+  "StopwatchFrequency": 10000000,
+  "Runtime": "10.0.13",
+  "Measurements": [
+    {
+      "Sample": 0,
+      "Workload": "Insert",
+      "AllocatedBytes": 4584152,
+      "ElapsedTicks": 45569,
+      "StreamBytes": 19607,
+      "StorageSha256": "7DCCDB1D6E327A5FC4FE28ECC5EF4BB5C7506BF58D70C686674DC5B253088FB2"
+    },
+    {
+      "Sample": 0,
+      "Workload": "Update",
+      "AllocatedBytes": 3562912,
+      "ElapsedTicks": 13870,
+      "StreamBytes": 19607,
+      "StorageSha256": "25BEB28A84EF420F23FC36BD3C35657AF815C83BBBCBA9E63F280E543CE53864"
+    },
+    {
+      "Sample": 0,
+      "Workload": "DeleteAndRecycle",
+      "AllocatedBytes": 12596216,
+      "ElapsedTicks": 64036,
+      "StreamBytes": 19607,
+      "StorageSha256": "68D7CFCEF4560E1800838A93395C86E24302E2BA4FA15668065683962DDFD49A"
+    },
+    {
+      "Sample": 1,
+      "Workload": "Insert",
+      "AllocatedBytes": 4584152,
+      "ElapsedTicks": 28403,
+      "StreamBytes": 19607,
+      "StorageSha256": "7DCCDB1D6E327A5FC4FE28ECC5EF4BB5C7506BF58D70C686674DC5B253088FB2"
+    },
+    {
+      "Sample": 1,
+      "Workload": "Update",
+      "AllocatedBytes": 3562912,
+      "ElapsedTicks": 13369,
+      "StreamBytes": 19607,
+      "StorageSha256": "25BEB28A84EF420F23FC36BD3C35657AF815C83BBBCBA9E63F280E543CE53864"
+    },
+    {
+      "Sample": 1,
+      "Workload": "DeleteAndRecycle",
+      "AllocatedBytes": 12596216,
+      "ElapsedTicks": 64817,
+      "StreamBytes": 19607,
+      "StorageSha256": "68D7CFCEF4560E1800838A93395C86E24302E2BA4FA15668065683962DDFD49A"
+    },
+    {
+      "Sample": 2,
+      "Workload": "Insert",
+      "AllocatedBytes": 4584152,
+      "ElapsedTicks": 21753,
+      "StreamBytes": 19607,
+      "StorageSha256": "7DCCDB1D6E327A5FC4FE28ECC5EF4BB5C7506BF58D70C686674DC5B253088FB2"
+    },
+    {
+      "Sample": 2,
+      "Workload": "Update",
+      "AllocatedBytes": 3562912,
+      "ElapsedTicks": 13277,
+      "StreamBytes": 19607,
+      "StorageSha256": "25BEB28A84EF420F23FC36BD3C35657AF815C83BBBCBA9E63F280E543CE53864"
+    },
+    {
+      "Sample": 2,
+      "Workload": "DeleteAndRecycle",
+      "AllocatedBytes": 12596216,
+      "ElapsedTicks": 60107,
+      "StreamBytes": 19607,
+      "StorageSha256": "68D7CFCEF4560E1800838A93395C86E24302E2BA4FA15668065683962DDFD49A"
+    },
+    {
+      "Sample": 3,
+      "Workload": "Insert",
+      "AllocatedBytes": 4584152,
+      "ElapsedTicks": 21890,
+      "StreamBytes": 19607,
+      "StorageSha256": "7DCCDB1D6E327A5FC4FE28ECC5EF4BB5C7506BF58D70C686674DC5B253088FB2"
+    },
+    {
+      "Sample": 3,
+      "Workload": "Update",
+      "AllocatedBytes": 3562912,
+      "ElapsedTicks": 19405,
+      "StreamBytes": 19607,
+      "StorageSha256": "25BEB28A84EF420F23FC36BD3C35657AF815C83BBBCBA9E63F280E543CE53864"
+    },
+    {
+      "Sample": 3,
+      "Workload": "DeleteAndRecycle",
+      "AllocatedBytes": 12596216,
+      "ElapsedTicks": 59912,
+      "StreamBytes": 19607,
+      "StorageSha256": "68D7CFCEF4560E1800838A93395C86E24302E2BA4FA15668065683962DDFD49A"
+    },
+    {
+      "Sample": 4,
+      "Workload": "Insert",
+      "AllocatedBytes": 4584152,
+      "ElapsedTicks": 22347,
+      "StreamBytes": 19607,
+      "StorageSha256": "7DCCDB1D6E327A5FC4FE28ECC5EF4BB5C7506BF58D70C686674DC5B253088FB2"
+    },
+    {
+      "Sample": 4,
+      "Workload": "Update",
+      "AllocatedBytes": 3562912,
+      "ElapsedTicks": 18249,
+      "StreamBytes": 19607,
+      "StorageSha256": "25BEB28A84EF420F23FC36BD3C35657AF815C83BBBCBA9E63F280E543CE53864"
+    },
+    {
+      "Sample": 4,
+      "Workload": "DeleteAndRecycle",
+      "AllocatedBytes": 12596216,
+      "ElapsedTicks": 59275,
+      "StreamBytes": 19607,
+      "StorageSha256": "68D7CFCEF4560E1800838A93395C86E24302E2BA4FA15668065683962DDFD49A"
+    }
+  ],
+  "Conditions": "One unrecorded warmup and five recorded samples; preallocated MemoryStream, construction, verification, reopen and hashing outside measurement. Thread allocations and screening timings, not BenchmarkDotNet confirmation."
+}

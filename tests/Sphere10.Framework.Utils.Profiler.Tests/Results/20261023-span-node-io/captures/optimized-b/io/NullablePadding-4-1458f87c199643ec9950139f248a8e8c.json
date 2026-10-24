@@ -1,0 +1,35 @@
+{
+  "Workload": "NullablePadding",
+  "ByteSize": 4,
+  "Iterations": 4096,
+  "FrameworkAssembly": "E:\\Sphere10-BTree-Spec-20261023\\optimized-run\\Sphere10.Framework.dll",
+  "FrameworkMvid": "f1b7b0f2-b792-4b4a-b9e2-e14f06109b38",
+  "Conditions": "Owner-thread allocations; serializer/context/input/output capacity and warm-up prepared outside measurement. Returned strings and reference tracking remain included. Verification is outside measurement; these samples establish no timing threshold.",
+  "Samples": [
+    {
+      "Sample": 0,
+      "AllocatedBytes": 0,
+      "ElapsedMilliseconds": 0.3159
+    },
+    {
+      "Sample": 1,
+      "AllocatedBytes": 0,
+      "ElapsedMilliseconds": 0.3026
+    },
+    {
+      "Sample": 2,
+      "AllocatedBytes": 0,
+      "ElapsedMilliseconds": 0.3033
+    },
+    {
+      "Sample": 3,
+      "AllocatedBytes": 0,
+      "ElapsedMilliseconds": 0.3076
+    },
+    {
+      "Sample": 4,
+      "AllocatedBytes": 0,
+      "ElapsedMilliseconds": 0.3114
+    }
+  ]
+}

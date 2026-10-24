@@ -453,6 +453,8 @@ capture/ignore/report-only `try/catch`.
 
 ### Code Comments & Vertical Spaces
 
+Preserve existing code comments when changing an implementation. Remove a comment only when it is no longer relevant to the replacement; update referenced names or details when needed while retaining its explanation. Optimization, shortening code or changing formatting does not justify removing relevant comments. Review removed comment lines as part of every code change.
+
 Developers should add code-comments inside their code so as to assist auditors on what the purpose of the code is. XMLDOC code comments need not be done during development but can be retrofitted later using tooling. Spaces between lines of code should **only** be used to group the "logical segments" of the code block. All code within a "logical segment" should have no spaces. Each logical segment should have a comment. A fluent builder invocation and its nested child builders form one continuous logical segment, with no blank separator lines.
 
 **Example:**

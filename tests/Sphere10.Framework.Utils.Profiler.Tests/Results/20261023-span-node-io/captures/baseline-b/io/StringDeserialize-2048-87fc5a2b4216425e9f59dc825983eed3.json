@@ -1,0 +1,35 @@
+{
+  "Workload": "StringDeserialize",
+  "ByteSize": 2048,
+  "Iterations": 4096,
+  "FrameworkAssembly": "E:\\Sphere10-BTree-Spec-20261023\\baseline-run\\Sphere10.Framework.dll",
+  "FrameworkMvid": "10faa35c-14da-4946-87aa-93a353eafb8e",
+  "Conditions": "Owner-thread allocations; serializer/context/input/output capacity and warm-up prepared outside measurement. Returned strings and reference tracking remain included. Verification is outside measurement; these samples establish no timing threshold.",
+  "Samples": [
+    {
+      "Sample": 0,
+      "AllocatedBytes": 25362432,
+      "ElapsedMilliseconds": 5.2472
+    },
+    {
+      "Sample": 1,
+      "AllocatedBytes": 25362432,
+      "ElapsedMilliseconds": 4.4641
+    },
+    {
+      "Sample": 2,
+      "AllocatedBytes": 25362432,
+      "ElapsedMilliseconds": 4.4673
+    },
+    {
+      "Sample": 3,
+      "AllocatedBytes": 25362432,
+      "ElapsedMilliseconds": 3.9889
+    },
+    {
+      "Sample": 4,
+      "AllocatedBytes": 25362432,
+      "ElapsedMilliseconds": 6.8713
+    }
+  ]
+}

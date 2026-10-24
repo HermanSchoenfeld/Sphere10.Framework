@@ -4,7 +4,6 @@
     "Configuration": {
       "Storage": "File",
       "IndexProfile": "Full",
-      "IndexBTreeOrder": 32,
       "ClusterSize": 4096,
       "AverageRecordSizeBytes": 1024,
       "PageSize": 65536,
@@ -13,7 +12,8 @@
       "Endianness": "LittleEndian",
       "Merkleized": false,
       "HashFunction": "SHA2_256",
-      "AutoSave": false
+      "AutoSave": false,
+      "IndexBTreeOrder": 32
     }
   },
   {
@@ -21,7 +21,6 @@
     "Configuration": {
       "Storage": "File",
       "IndexProfile": "Full",
-      "IndexBTreeOrder": 64,
       "ClusterSize": 4096,
       "AverageRecordSizeBytes": 1024,
       "PageSize": 65536,
@@ -30,7 +29,8 @@
       "Endianness": "LittleEndian",
       "Merkleized": false,
       "HashFunction": "SHA2_256",
-      "AutoSave": false
+      "AutoSave": false,
+      "IndexBTreeOrder": 64
     }
   }
 ]

@@ -1,0 +1,12 @@
+Workload,ByteSize,BeforeBytes,AfterBytes,AllocationReductionPercent
+EndianCharWrite,,131072.0,0.0,100.0
+NullReferencePadding,8192,35230144.0,1577408.0,95.52256158816722
+NullablePadding,4,131072.0,0.0,100.0
+PaddedDeserialize,8192,33652736.0,0.0,100.0
+PaddedSerialize,8192,34111488.0,458752.0,98.65513928914505
+ProfilerCaptureRead,,884984.0,524536.0,40.72932391998047
+ProfilerRead,,360448.0,0.0,100.0
+StringDeserialize,128,1769472.0,1146880.0,35.18518518518518
+StringDeserialize,2048,25362432.0,16875520.0,33.4625322997416
+StringSerialize,128,622592.0,0.0,100.0
+StringSerialize,2048,8486912.0,0.0,100.0

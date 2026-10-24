@@ -35,8 +35,12 @@ internal sealed class BTreeIndex<TKey> : IBTreeBenchmarkIndex {
 	public BTreeIndex(BTreeProfile profile, TKey[] keys, IItemSerializer<TKey> serializer, IComparer<TKey> comparer, Stream stream) {
 		_keys = keys;
 		if (profile.Family == BTreeFamily.Lookup) {
-			_lookup = profile.Storage == BTreeStorage.ManagedNodes ? new InMemoryBTreeLookup<TKey, long>(profile.Order, comparer)
-				: new StreamMappedBTreeLookup<TKey, long>(profile.Order, stream, serializer, PrimitiveSerializer<long>.Instance, comparer, profile.Endianness);
+			if (profile.Spec == null)
+				_lookup = profile.Storage == BTreeStorage.ManagedNodes ? new InMemoryBTreeLookup<TKey, long>(profile.Order, comparer)
+					: new StreamMappedBTreeLookup<TKey, long>(profile.Order, stream, serializer, PrimitiveSerializer<long>.Instance, comparer, profile.Endianness);
+			else
+				_lookup = profile.Storage == BTreeStorage.ManagedNodes ? new InMemoryBTreeLookup<TKey, long>(profile.Spec, comparer)
+					: new StreamMappedBTreeLookup<TKey, long>(profile.Spec, stream, serializer, PrimitiveSerializer<long>.Instance, comparer, profile.Endianness);
 			return;
 		}
 		if (profile.Family == BTreeFamily.BTree) {

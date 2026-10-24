@@ -9,6 +9,12 @@
 		<PackageReference Include="NUnit" />
 		<PackageReference Include="NUnit3TestAdapter" />
 		<ProjectReference Include="../../utils/Sphere10.Framework.Utils.Profiler/Sphere10.Framework.Utils.Profiler.csproj" />
+		<ProjectReference Include="../../src/Sphere10.Framework.NUnit/Sphere10.Framework.NUnit.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="../Sphere10.Framework.Tests/TestObjects/TestObject.cs" Link="StreamMappedDictionaries/TestObjects/TestObject.cs" />
+		<Compile Include="../Sphere10.Framework.Tests/TestObjects/TestObjectSerializer.cs" Link="StreamMappedDictionaries/TestObjects/TestObjectSerializer.cs" />
+		<Compile Include="../Sphere10.Framework.Tests/TestObjects/TestObjectEqualityComparer.cs" Link="StreamMappedDictionaries/TestObjects/TestObjectEqualityComparer.cs" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="Results/**/*" CopyToOutputDirectory="PreserveNewest" />

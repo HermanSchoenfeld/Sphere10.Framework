@@ -13,6 +13,7 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | [**Getting Started**](start-here.md) | Quick orientation for new developers |
 | [**Tools Reference**](tools-reference.md) | Complete catalog of `Tools.*` namespace utilities |
 | [**Real-World Examples**](real-world-usage-examples.md) | Practical patterns from the test suite |
+| [**Keys, graphs and mapped properties**](usage/keys-graphs-and-stream-properties.md) | Compound keys, graph construction/traversal, IBTree and optional property caching |
 
 ---
 
@@ -25,6 +26,7 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | [**3-Tier Architecture**](guidelines/3-tier-architecture.md) | Architectural patterns and principles |
 | [**Code Styling**](guidelines/code-styling.md) | Coding standards and conventions |
 | [**Patterns and Practices**](guidelines/patterns-and-practices.md) | Task index for the focused pattern guides below |
+| [**Performance change review**](performance/comment-and-behavior-review.md) | Retained profiling evidence, restored comments and reverted behavior changes |
 
 ### Pattern Topics
 

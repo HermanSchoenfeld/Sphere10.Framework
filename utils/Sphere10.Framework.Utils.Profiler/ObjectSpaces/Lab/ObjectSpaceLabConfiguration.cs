@@ -13,6 +13,8 @@ using System.Text.Json.Serialization;
 namespace Sphere10.Framework.Utils.Profiler.ObjectSpaces.Lab;
 
 public class ObjectSpaceLabConfiguration {
+	private BTreeSpec _indexBTreeSpec;
+	private int _indexBTreeOrder = Sphere10FrameworkDefaults.IndexBTreeOrder;
 
 	[Category("Schema"), DisplayName("Dimensions"), Description("PayloadOnly preserves the profiler baseline. DeveloperLab adds Groups and Events with scalar relationships and their own indexes.")]
 	public ObjectSpaceLabSchemaProfile SchemaProfile { get; set; } = ObjectSpaceLabSchemaProfile.PayloadOnly;
@@ -23,8 +25,25 @@ public class ObjectSpaceLabConfiguration {
 	[Category("Indexes"), DisplayName("Index profile"), Description("IdentifierOnly indexes Id. Full also indexes unique Code and nonunique Category; compare their lookup and write costs.")]
 	public ObjectSpaceLabIndexProfile IndexProfile { get; set; } = ObjectSpaceLabIndexProfile.Full;
 
-	[Category("Indexes"), DisplayName("B-tree order"), Description("Maximum node child count, minimum 3, default 64. Larger order trades tree depth against node search, serialization and space. Preserve it on reopen.")]
-	public int IndexBTreeOrder { get; set; } = Sphere10FrameworkDefaults.IndexBTreeOrder;
+	[Category("Indexes"), DisplayName("B-tree specification"), Description("Optional complete tree type and order. Omit it to retain historical mixed indexes at the configured order.")]
+	public BTreeSpec IndexBTreeSpec {
+		get => _indexBTreeSpec;
+		set {
+			_indexBTreeSpec = value;
+			if (value != null)
+				_indexBTreeOrder = value.Order;
+		}
+	}
+
+	[Category("Indexes"), DisplayName("B-tree order"), Description("Maximum node child count, at least three. Preserve the order on reopen.")]
+	public int IndexBTreeOrder {
+		get => _indexBTreeSpec?.Order ?? _indexBTreeOrder;
+		set {
+			if (_indexBTreeSpec != null)
+				_indexBTreeSpec = new BTreeSpec(_indexBTreeSpec.Type, value);
+			_indexBTreeOrder = value;
+		}
+	}
 
 	[Category("Storage"), DisplayName("Outer cluster (bytes)"), Description("Allocation unit in the outer clustered stream. Compare with payload size and fragmentation; preserve layout on reopen.")]
 	public int ClusterSize { get; set; } = 4096;

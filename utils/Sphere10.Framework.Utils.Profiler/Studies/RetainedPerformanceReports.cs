@@ -27,7 +27,7 @@ public static class RetainedPerformanceReports {
 		if (File.Exists(selectionPath))
 			WriteDefaultSelection(selectionPath, output);
 		foreach (var path in studies) {
-			var plan = JsonSerializer.Deserialize<StudyPlan>(File.ReadAllText(path), ProfilerSettings.JsonOptions);
+			var plan = StudyEvidence.ReadPlan(path);
 			output.WriteLine($"Direct screening evidence: {Path.GetDirectoryName(path)}");
 			output.WriteLine(StudyEvidence.Format(StudyEvidence.Read(Path.Combine(Path.GetDirectoryName(path), "results.json")), plan.SampleCount));
 		}

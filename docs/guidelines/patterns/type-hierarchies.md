@@ -51,3 +51,46 @@ Before renaming a hierarchy, inspect direct construction, dependency-injection
 registrations, inheritance, decorators, builders, examples and tests. Update
 all affected consumers together. Avoid keeping a superseded implementation
 active beside an unused replacement.
+
+## Event notifications and template hooks
+
+An inheritable event-owning class exposes each notification through three matching
+members: a public event, a protected nonvirtual `Notify*` method, and a protected
+virtual `On*` template method. Operations call `Notify*`; that method calls the
+template hook and then invokes the event exactly once with the same arguments.
+The hook defaults to an empty implementation when there is no required behavior.
+Subclasses override `On*` instead of raising the event or replacing its dispatch.
+
+**When this pattern is applied to one event, apply it to every event in the
+class or event family.** Do not leave another event without its hook, invoke a
+hook directly from an operation, or raise an event separately from its notifier.
+Declare contract events on the corresponding interface and preserve them through
+decorators and projections. Existing generic hooks whose signatures already fit
+a specialization can be inherited; avoid redundant forwarding overrides.
+
+For example, these members belong inside an event-owning base class:
+
+```csharp
+public event EventHandlerEx<long> ItemRemoving;
+
+protected virtual void OnItemRemoving(long key) {
+}
+
+protected void NotifyItemRemoving(long key) {
+	OnItemRemoving(key);
+	ItemRemoving?.Invoke(key);
+}
+```
+
+Preserve the notification's lifecycle boundary, argument identity, exception
+propagation and synchronization. A pre-removal notification runs while the entry
+is still present and accounted for; commit follows successful completion of both
+the hook and event. Reentrancy protection must cover the entire notifier, including
+event subscribers. A post-removal notification observes committed removal.
+Changing event ordering or moving a precondition after a callback requires its
+own behavioral justification and tests.
+
+[CacheBase<TKey, TValue>](../../../src/Sphere10.Framework/Cache/CacheBaseT.cs)
+uses the pattern for `ItemFetching`, `ItemFetched`, `ItemRemoving` and `ItemRemoved`.
+Verify each family member, hook/event ordering, failure and retry behavior, and
+forwarding through its public contract rather than testing only the newly added event.

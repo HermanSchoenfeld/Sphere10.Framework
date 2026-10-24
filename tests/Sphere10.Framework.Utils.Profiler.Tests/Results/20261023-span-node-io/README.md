@@ -1,0 +1,9 @@
+# Streamed-node and serializer allocation captures
+
+Four fresh serial hosts executed the same profiling assembly against the saved original and optimized Framework DLLs, in baseline/optimized/optimized/baseline order. Each host passed all 23 explicit diagnostic cases.
+
+Each case has one unrecorded warmup and five retained samples. `comparison.json` and the two CSV files contain allocation medians over ten samples per variant/configuration. The 36 streamed-node comparisons also preserve identical complete stored-byte hashes and lengths. The compact published evidence contains 97 JSON files, the two CSV summaries and this README: `comparison.json`, four capture manifests, 48 raw node reports and 44 raw I/O reports. `captures/` contains these manifests and raw JSON reports. Runsettings, logs, TRX results and duplicate NUnit attachment trees remain in the full local archive. The checkout keeps the shorter original JSON paths to avoid Windows build-copy path limits.
+
+See the [report](../../../../docs/performance/btree-span-node-io.md) for implementation boundaries, results and compatibility notes. The two fixture sources are [node mutations](../../BTrees/BTreeNodeIoPerformanceTests.cs) and [temporary I/O buffers](../../IO/StreamTemporaryBufferPerformanceTests.cs). Ordinary [recorded-evidence tests](../../BTrees/RecordedBTreeNodeIoTests.cs) validate these captures without asserting universal speed thresholds.
+
+The capture/analysis scripts in the full local archive retain their actual local campaign paths. Saved DLLs, PDBs and validation logs also remain at `E:\Sphere10-BTree-Spec-20261023`; binary and harness hashes are recorded in each published manifest. The recorded-evidence tests need only the published JSON files. These captures were taken from an uncommitted working checkout and do not identify two published releases. Diagnostic timings establish no statistical latency or process-memory result.

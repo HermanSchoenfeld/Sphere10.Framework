@@ -34,15 +34,37 @@ public enum BTreeKeyShape {
 }
 
 public sealed class BTreeProfile {
+	private BTreeSpec _spec;
+	private int _order = 64;
+
 	public string Name { get; set; }
 
 	public BTreeStorage Storage { get; set; } = BTreeStorage.FileStream;
 
 	public BTreeFamily Family { get; set; } = BTreeFamily.BTreePlus;
 
-	public BTreeKeyShape KeyShape { get; set; }
+	/// <summary>Optional complete type and order override. When omitted, the named family selects its existing implementation.</summary>
+	public BTreeSpec Spec {
+		get => _spec;
+		set {
+			_spec = value;
+			if (value != null)
+				_order = value.Order;
+		}
+	}
 
-	public int Order { get; set; } = 64;
+	public int Order {
+		get => _spec?.Order ?? _order;
+		set {
+			if (_spec != null)
+				_spec = new BTreeSpec(_spec.Type, value);
+			_order = value;
+		}
+	}
+
+	public BTreeType EffectiveType => Spec?.Type ?? (Family == BTreeFamily.BTree ? BTreeType.BTree : BTreeType.BTreePlus);
+
+	public BTreeKeyShape KeyShape { get; set; }
 
 	public long PageSize { get; set; } = 65536;
 
@@ -56,12 +78,14 @@ public sealed class BTreeProfile {
 
 	public int StoredKeyBytes => KeyBytes + (Family == BTreeFamily.Lookup ? sizeof(int) : 0);
 
-	public int NodeRecordBytes => (Family == BTreeFamily.BTree ? 9 : 17) + Order * (StoredKeyBytes + sizeof(long)) + (Order + 1) * sizeof(long);
+	public int NodeRecordBytes => (EffectiveType == BTreeType.BTree ? 9 : 17) + Order * (StoredKeyBytes + sizeof(long)) + (Order + 1) * sizeof(long);
 
 	public void Validate() {
 		Guard.ArgumentNotNullOrWhitespace(Name, nameof(Name));
 		Guard.Argument(Name.All(character => char.IsAsciiLetterOrDigit(character) || character == '-'), nameof(Name), "Use letters, digits and hyphens in profile names.");
 		Guard.Argument(Enum.IsDefined(Storage) && Enum.IsDefined(Family) && Enum.IsDefined(KeyShape) && Enum.IsDefined(Endianness), nameof(Storage), "Unknown tree, storage or key layout.");
+		Guard.Argument(Family == BTreeFamily.Lookup || Spec == null || Spec.Type == (Family == BTreeFamily.BTree ? BTreeType.BTree : BTreeType.BTreePlus),
+			nameof(Spec), "Dictionary profiles must use their named family. The type override selects the backing tree for Lookup profiles.");
 		Guard.ArgumentInRange(Order, 3, 16384, nameof(Order));
 		Guard.ArgumentInRange(PageSize, 4096L, 16777216L, nameof(PageSize));
 		Guard.ArgumentGTE(CacheBytes, PageSize, nameof(CacheBytes));
@@ -102,6 +126,14 @@ public sealed class BTreeProfile {
 			case "storage":
 				foreach (var backend in Enum.GetValues<BTreeStorage>())
 					Add(backend.ToString().ToLowerInvariant(), backend: backend);
+				break;
+			case "type":
+			case "implementation":
+				foreach (var implementation in Enum.GetValues<BTreeType>()) {
+					Add(implementation.ToString().ToLowerInvariant(), tree: family == BTreeFamily.Lookup ? BTreeFamily.Lookup
+						: implementation == BTreeType.BTree ? BTreeFamily.BTree : BTreeFamily.BTreePlus);
+					profiles[^1].Spec = new BTreeSpec(implementation, profiles[^1].Order);
+				}
 				break;
 			case "family":
 				foreach (var tree in Enum.GetValues<BTreeFamily>())

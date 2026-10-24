@@ -1,0 +1,10 @@
+{
+  "Capture": "optimized-a",
+  "Binary": "optimized",
+  "Started": "2026-10-23T16:28:16.1103072+10:00",
+  "FrameworkSha256": "21A30012BC17B23105167B244228AA5B231724FAA067459D8362F87C6840F7B4",
+  "TestAssemblySha256": "3EF22A8386BEA2E342DC84ED41027F397C5603C1C4CFA88553EE2AFE16E04FC3",
+  "Filter": "FullyQualifiedName~BTreeNodeIoPerformanceTests|FullyQualifiedName~StreamTemporaryBufferPerformanceTests",
+  "ExitCode": 0,
+  "Completed": "2026-10-23T16:28:20.7408738+10:00"
+}

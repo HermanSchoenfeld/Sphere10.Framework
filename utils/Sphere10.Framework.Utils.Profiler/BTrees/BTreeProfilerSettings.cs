@@ -79,6 +79,8 @@ public sealed class BTreeProfilerSettings {
 		var storage = BTreeStorage.FileStream;
 		var family = BTreeFamily.BTreePlus;
 		var keyShape = BTreeKeyShape.Int64;
+		BTreeType? implementation = null;
+		int? order = null;
 		var profileFile = (string)null;
 		var profileNames = (string)null;
 		var forwarded = new List<string>();
@@ -94,6 +96,9 @@ public sealed class BTreeProfilerSettings {
 				case "--suite": suite = Value().ToLowerInvariant(); break;
 				case "--storage": storage = Tools.Enums.ParseEnum<BTreeStorage>(Value(), true); break;
 				case "--family": family = Tools.Enums.ParseEnum<BTreeFamily>(Value(), true); break;
+				case "--type":
+				case "--implementation": implementation = Tools.Enums.ParseEnum<BTreeType>(Value(), true); break;
+				case "--order": order = int.Parse(Value(), CultureInfo.InvariantCulture); break;
 				case "--keys": keyShape = Tools.Enums.ParseEnum<BTreeKeyShape>(Value(), true); break;
 				case "--records": settings.RecordCount = int.Parse(Value(), CultureInfo.InvariantCulture); break;
 				case "--operations": settings.OperationCount = int.Parse(Value(), CultureInfo.InvariantCulture); operationsSpecified = true; break;
@@ -114,13 +119,19 @@ public sealed class BTreeProfilerSettings {
 			}
 		}
 		settings.Profiles = profileFile == null ? BTreeProfile.CreateSuite(suite, storage, family, keyShape)
-			: JsonSerializer.Deserialize<BTreeProfile[]>(File.ReadAllText(profileFile), JsonOptions);
+			: ReadProfiles(profileFile);
 		Guard.ArgumentNotNullOrEmpty(settings.Profiles, nameof(args));
 		Guard.Argument(settings.Profiles.All(profile => profile != null), nameof(args), "Null profiles are not supported.");
 		if (profileNames != null) {
 			var names = profileNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 			Guard.Argument(names.All(name => settings.Profiles.Any(profile => profile.Name == name)), nameof(args), "A selected profile does not exist.");
 			settings.Profiles = settings.Profiles.Where(profile => names.Contains(profile.Name, StringComparer.Ordinal)).ToArray();
+		}
+		foreach (var profile in settings.Profiles) {
+			if (implementation.HasValue)
+				profile.Spec = new BTreeSpec(implementation.Value, order ?? profile.Order);
+			else if (order.HasValue)
+				profile.Order = order.Value;
 		}
 		if (!operationsSpecified)
 			settings.OperationCount = Math.Min(settings.RecordCount, settings.OperationCount);
@@ -130,6 +141,40 @@ public sealed class BTreeProfilerSettings {
 		settings.Validate();
 		benchmarkArgs = forwarded.ToArray();
 		return settings;
+	}
+
+	private static BTreeProfile[] ReadProfiles(string path) {
+		using var document = JsonDocument.Parse(File.ReadAllText(path));
+		return document.RootElement.EnumerateArray().Select(ReadProfile).ToArray();
+	}
+
+	internal static BTreeProfile ReadProfile(JsonElement element) {
+		var profile = element.Deserialize<BTreeProfile>(JsonOptions);
+		if (profile == null)
+			return null;
+		var hasOrder = TryGetProfileProperty(element, "Order", out var order);
+		var hasType = TryGetProfileProperty(element, "Implementation", out var type);
+		if (profile.Spec != null) {
+			TryGetProfileProperty(element, nameof(BTreeProfile.Spec), out var specification);
+			TryGetProfileProperty(specification, nameof(BTreeSpec.Order), out var specificationOrder);
+			Guard.Argument(!hasType && (!hasOrder || order.GetInt32() == specificationOrder.GetInt32()), nameof(element), "The B-tree specification conflicts with legacy configuration fields.");
+		} else if (hasType) {
+			var implementation = type.Deserialize<BTreeType?>(JsonOptions);
+			if (implementation.HasValue)
+				profile.Spec = new BTreeSpec(implementation.Value, profile.Order);
+		}
+		return profile;
+	}
+
+	private static bool TryGetProfileProperty(JsonElement element, string name, out JsonElement value) {
+		foreach (var property in element.EnumerateObject()) {
+			if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)) {
+				value = property.Value;
+				return true;
+			}
+		}
+		value = default;
+		return false;
 	}
 
 	private static BTreeProfilerSettings ReadCurrent() {

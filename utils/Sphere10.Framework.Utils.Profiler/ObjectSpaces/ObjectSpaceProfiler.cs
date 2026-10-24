@@ -52,6 +52,8 @@ public static class ObjectSpaceProfiler {
 		};
 		if (settings.Profiles.Any(profile => profile.Configuration.IndexProfile == ObjectSpaceLabIndexProfile.Full))
 			benchmarks.Add(typeof(ObjectSpaceSecondaryIndexBenchmarks));
+		if (settings.Profiles.Any(profile => profile.Configuration.Merkleized))
+			benchmarks.Add(typeof(ObjectSpaceMerkleBenchmarks));
 		if (settings.Profiles.Any(profile => profile.Configuration.Storage == ObjectSpaceLabStorage.File))
 			benchmarks.Add(typeof(ObjectSpaceTransactionBenchmarks));
 		var summaries = BenchmarkSwitcher.FromTypes(benchmarks.ToArray()).Run(benchmarkArgs, configuration).ToArray();
@@ -66,8 +68,10 @@ public static class ObjectSpaceProfiler {
 
 		dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- object-spaces [options] --filter '*WarmIdentityLookup*' --job Short
 
-		--suite       baseline (default), framework-defaults, btree, btree-refinement, clusters, pages, cache, policies, features, hashes, indexes, endianness
+		--suite       baseline (default), framework-defaults, btree, btree-refinement, type, clusters, pages, cache, policies, features, hashes, indexes, endianness
 		--storage     Memory (default) or File; pages/cache require File
+		--type        BTree or BTreePlus for every member index; omitted preserves historical mixed layouts
+		--order       Override the selected profiles' node order, preserving their tree type
 		--records     Total baseline records (default 1000)
 		--payload     Byte-array payload length per record (default 128)
 		--operations  Distinct lookup/mutation records per invocation (default min(records,256))
@@ -84,6 +88,7 @@ public static class ObjectSpaceProfiler {
 		--data-root   Parent directory for temporary benchmark workspaces; choose the disk under test
 		--trace       Capture a separate EventPipe CPU-sampling profile using the existing BDN package
 		--show-config Print exact configuration without running benchmarks
+		Legacy --implementation and suite implementation remain accepted aliases.
 
 		Other options are passed to BenchmarkDotNet, e.g. --list flat, --filter '*', --job Dry/Short/Medium.
 		No arguments prints this help. Execution requires an explicit --filter; a Dry job verifies execution only.

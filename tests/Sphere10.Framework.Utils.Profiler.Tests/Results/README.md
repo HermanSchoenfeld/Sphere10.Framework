@@ -6,6 +6,7 @@ The profiler retains measured configurations, original samples, host/storage con
 |---|---|---|
 | ObjectSpace Memory and File | [Recommendations and limits](ObjectSpace-recommendations.md), [machine-readable values](ObjectSpace-recommendations.json), [final constant decisions and exact sources](final-default-selection.json) | [Original independent three-mix confirmations](20261013-objectspaces-bdn-confirmations), [distribution sensitivity](20261013-objectspaces-dataset-transfer-256), [larger stores](20261013-objectspaces-order-size-4096), [File cache pressure](20261013-objectspaces-file-cache-pressure-4096), [integrated order169 comparison](20261013-objectspaces-post-default-bdn-balanced), [power-of-two order128/256 comparison](20261013-objectspaces-power2-order-bdn-balanced) |
 | B-tree implementations | [Recommendations and limits](20261013-btree-recommendations/BTree-recommendations.md), [machine-readable values](20261013-btree-recommendations/BTree-recommendations.json) | [Three-mix numeric confirmations](20261013-btree-bdn-confirmations), [longer-warmup managed comparison](20261013-btree-bdn-managed-warm30), [32-byte-key confirmation](20261013-btree-bdn-wide-confirmations), [numeric lookup confirmation](20261013-btree-bdn-numeric-lookup-confirmations), [pure workloads](20261013-btree-pure-diagnostics-3000), [key-width sensitivity](20261013-btree-key-width-sensitivity-3000) |
+| Streamed-node and serializer spans | [Allocation report and compatibility boundaries](../../../docs/performance/btree-span-node-io.md); this comparison changes no default configuration | [Four serial hosts, original/optimized byte identities and raw allocation samples](20261023-span-node-io) |
 
 ObjectSpace now uses shared order 256 after the user requested power-of-two constants. The matched Memory comparison favors 256 over 128 with disjoint intervals; File 128 has a lower point mean but overlaps 256, which allocates slightly less. Its selected Memory cluster/policy configuration prioritizes Balanced throughput/allocation despite its roughly 2.8× larger encoding in the larger test. File's 256-KiB page/16-MiB cache is a stable measured budget in the fast interval, not a uniquely resolved optimum. The recommendations retain Balanced/ReadHeavy/WriteHeavy, distribution/size sensitivity and the File budget tradeoffs. Read the [ObjectSpace opening/default contract](../../../src/Sphere10.Framework/ObjectSpaces/README.md#new-store-defaults-and-existing-storage) for exact constant owners and compatible existing-store opening.
 
@@ -35,4 +36,38 @@ Retain original failed cases with their attributed errors and exclude them from 
 
 New campaign subdirectories are ignored local output, including raw reports, console logs, per-iteration metrics and generated worker files. Existing checked-in evidence and top-level reports/manifests remain versioned; `.gitignore` does not untrack historical evidence. A future evidence publication must be deliberate rather than staging a complete local run accidentally. Cache evidence fixtures skip when no local captures exist; ordinary workload correctness tests still run.
 
+Stream-mapped dictionary campaigns use local `StreamMappedDictionaries/<campaign>/campaign.json`
+manifests and unchanged raw TRX captures. `RecordedStreamMappedDictionaryResults`
+checks both dictionary implementations and all three policies for every declared
+stage, including per-case clean rerun mappings, actual passed test identities and
+capture hashes. It prints before/after elapsed evidence without asserting timing
+thresholds. The [profiler test guide](../README.md) documents the matching explicit
+full workloads, ordinary smoke cases, serial settings and removal-shuffle caveat.
+
 The repository's `.gitattributes` preserves deliberately versioned evidence bytes and exporter whitespace across Windows and Linux checkouts. Local worker DLLs remain ignored. Do not normalize raw reports or rewrite captures to make formatting checks pass.
+
+`20261022-objectspace-hotpaths` contains the local ObjectSpace before/after
+campaign: fourteen matrix pairs covering memory/file lookups, clean Merkle
+flushes and two mutation batch sizes, plus a separate file-reindex confirmation
+pair. `RecordedObjectSpaceHotPathTests` checks
+the original full BenchmarkDotNet JSON, run settings, CSV rows and worker logs.
+It skips when the whole local campaign is absent and rejects incomplete local
+captures. The [performance report](../../../docs/performance/object-space-hotpaths.md)
+documents the source/worker provenance and the limits of the measurements.
+
+`20261022-objectspace-page-btree` adds seven page-only before/after pairs (280
+actual samples), four explicit BTree/BTreePlus Memory/File cases (80 samples),
+six fresh-process footprint captures and counts-only page activity diagnostics.
+The recorded fixture validates all repeated captures, including the worse
+adjacent reindex confirmation and the reverse-order capture. Original console,
+CSV and full JSON bytes are retained under schema-isolated names documented in
+`capture-name-mapping.json`. The portable extraction scripts read these local
+files without needing the original worker binaries. The [follow-up report](../../../docs/performance/object-space-page-btree.md)
+describes allocation gains, unstable mutation timings and retained-memory costs.
+
+`20261022-span-dispatch` retains the separate subclass-dispatch cleanup comparison:
+File/Merkle warm lookup and clean flush before and after removing runtime-type
+gates and reverting marginal shortcuts. Both source revisions include pooled
+transactional pages. Its two recorded cases reconcile all 80 actual samples
+without a timing threshold. The [inheritance review](../../../docs/performance/span-inheritance-review.md)
+explains the source boundaries and explicit virtual extension points.

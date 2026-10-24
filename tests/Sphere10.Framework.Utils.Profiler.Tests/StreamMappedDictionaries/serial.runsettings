@@ -1,0 +1,4 @@
+<RunSettings>
+  <RunConfiguration><MaxCpuCount>1</MaxCpuCount></RunConfiguration>
+  <NUnit><NumberOfTestWorkers>0</NumberOfTestWorkers></NUnit>
+</RunSettings>

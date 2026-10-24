@@ -79,9 +79,11 @@ public static class BTreeProfiler {
 
 		dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- btrees --suite order --filter '*Mixed*' --job Short
 
-		--suite       baseline, framework-defaults, wide-keys, order (8..512), storage (all 6 backends), family, pages, cache, buffers
+		--suite       baseline, framework-defaults, wide-keys, order (8..512), storage (all 6 backends), family, type, pages, cache, buffers
 		--storage     ManagedNodes, StreamMemory, FileStream (default), FilePaged, OSMemoryMapped, TransactionalFile
 		--family      BTree, BTreePlus (default), Lookup
+		--type        BTree or BTreePlus backing for Lookup; dictionary families retain their named type
+		--order       Override the selected profiles' node order, preserving their tree type
 		--keys        Int64 (default), Int32 or Digest32; values are Int64, lookup ordinals are Int32
 		--records     Baseline entries (default 10000)
 		--operations  Distinct target entries per batch (default min(records,256))
@@ -93,6 +95,7 @@ public static class BTreeProfiler {
 		--output      Exact run config, Full JSON, CSV, geometry and BDN reports directory
 		--data-root   Temporary workspace parent; choose the disk under test
 		--show-config Print exact profiles without executing benchmarks
+		Legacy --implementation and suite implementation remain accepted aliases.
 
 		Explicit --filter or --list flat is required. Dry verifies execution; it does not identify an optimum.
 		See BTrees/README.md for batch reset, completion, memory-mapping and leaf geometry boundaries.

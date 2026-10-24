@@ -12,6 +12,7 @@ and source headers. These topic files describe the implementation practices.
 |---|---|
 | Any framework implementation or change to its consumers | [Framework reuse and adoption](patterns/framework-reuse.md) |
 | Choosing interfaces, abstract bases, concrete products or decorators | [Type hierarchies](patterns/type-hierarchies.md) |
+| Adding or changing events, notification methods or template hooks | [Event notifications and template hooks](patterns/type-hierarchies.md#event-notifications-and-template-hooks) |
 | Adapting typed serializers, collections, data sources, caches or comparers to another representation | [Projection adapters](patterns/projections.md) |
 | Paired synchronous/asynchronous APIs, adapters or disposal | [Sync/async implementation hierarchies](patterns/sync-async.md) |
 | External command-line tool wrappers, ProcessSentry or Sentry versus native utility ownership | [Process Sentries](patterns/process-sentries.md) |

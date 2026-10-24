@@ -1,0 +1,10 @@
+{
+  "Capture": "baseline-b",
+  "Binary": "baseline",
+  "Started": "2026-10-23T16:28:31.7069725+10:00",
+  "FrameworkSha256": "3995A08D58D006606ABF064F821DFE73C52A9DF436CA706E4280DFD8DA315DEF",
+  "TestAssemblySha256": "3EF22A8386BEA2E342DC84ED41027F397C5603C1C4CFA88553EE2AFE16E04FC3",
+  "Filter": "FullyQualifiedName~BTreeNodeIoPerformanceTests|FullyQualifiedName~StreamTemporaryBufferPerformanceTests",
+  "ExitCode": 0,
+  "Completed": "2026-10-23T16:28:35.6461827+10:00"
+}

@@ -1,0 +1,35 @@
+{
+  "Workload": "ProfilerCaptureRead",
+  "Iterations": 4096,
+  "ReadSize": 64,
+  "FrameworkAssembly": "E:\\Sphere10-BTree-Spec-20261023\\baseline-run\\Sphere10.Framework.dll",
+  "FrameworkMvid": "10faa35c-14da-4946-87aa-93a353eafb8e",
+  "Conditions": "Owner-thread allocations; input, destination, output capacity and warm-up are outside measurement. Capture-list growth remains included; owned snapshot materialization and validation are outside. Samples are diagnostic and establish no timing threshold.",
+  "Samples": [
+    {
+      "Sample": 0,
+      "AllocatedBytes": 884984,
+      "ElapsedMilliseconds": 0.3825
+    },
+    {
+      "Sample": 1,
+      "AllocatedBytes": 884984,
+      "ElapsedMilliseconds": 0.4565
+    },
+    {
+      "Sample": 2,
+      "AllocatedBytes": 884984,
+      "ElapsedMilliseconds": 3.4257
+    },
+    {
+      "Sample": 3,
+      "AllocatedBytes": 884984,
+      "ElapsedMilliseconds": 0.5199
+    },
+    {
+      "Sample": 4,
+      "AllocatedBytes": 884984,
+      "ElapsedMilliseconds": 0.5096
+    }
+  ]
+}

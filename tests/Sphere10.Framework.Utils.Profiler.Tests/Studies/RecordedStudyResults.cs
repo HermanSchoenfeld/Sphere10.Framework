@@ -53,7 +53,7 @@ public class RecordedStudyResults {
 			if (File.Exists(path))
 				TestContext.AddTestAttachment(path, name);
 		}
-		var plan = JsonSerializer.Deserialize<StudyPlan>(File.ReadAllText(Path.Combine(directory, "run-plan.json")), ProfilerSettings.JsonOptions);
+		var plan = StudyEvidence.ReadPlan(Path.Combine(directory, "run-plan.json"));
 		var results = StudyEvidence.Read(Path.Combine(directory, "results.json"));
 		using var host = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "host.json")));
 		var frequency = host.RootElement.GetProperty("Frequency").GetInt64();
@@ -603,7 +603,7 @@ public class RecordedRecommendations {
 			var resultPath = Path.Combine(directory, "results.json");
 			if (!File.Exists(resultPath))
 				continue;
-			var plan = JsonSerializer.Deserialize<StudyPlan>(File.ReadAllText(path), ProfilerSettings.JsonOptions);
+			var plan = StudyEvidence.ReadPlan(path);
 			var results = StudyEvidence.Read(resultPath);
 			if (results.Length != plan.Cases.Length || !results.All(result => result.IsEligible(plan.SampleCount) || !string.IsNullOrWhiteSpace(result.Error) && !result.Verified)
 				|| !results.Select(result => result.Case.Id).OrderBy(id => id, StringComparer.Ordinal)
