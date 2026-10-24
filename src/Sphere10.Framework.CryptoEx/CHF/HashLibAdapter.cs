@@ -29,8 +29,7 @@ public class HashLibAdapter : IHashFunction {
 	public void Compute(ReadOnlySpan<byte> input, Span<byte> output) {
 		if (_needsFinalBlock)
 			throw new InvalidOperationException("Complete prior transformations before starting a new one");
-		// _hashResult.ComputeBytes(input.ToArray()).CopyTo(result);  // Add when Ugo adds
-		_hashAlgorithm.ComputeBytes(input.ToArray()).GetBytes().CopyTo(output);
+		_hashAlgorithm.ComputeByteSpan(input).GetBytes().CopyTo(output);
 	}
 
 	public void Transform(ReadOnlySpan<byte> part) {

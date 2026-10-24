@@ -23,7 +23,7 @@ public class Crypto {
 	/// </summary>
 	/// <param name="bytes">The sensitive byte array to overwrite</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void SecureErase(byte[] bytes) => GenerateCryptographicallyRandomBytes(bytes.Length).CopyTo(bytes.AsSpan());
+	public static void SecureErase(byte[] bytes) => RandomNumberGenerator.Fill(bytes.AsSpan(0, bytes.Length));
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
