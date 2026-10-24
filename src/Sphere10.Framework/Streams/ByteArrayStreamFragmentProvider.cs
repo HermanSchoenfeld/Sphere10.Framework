@@ -44,6 +44,17 @@ public class ByteArrayStreamFragmentProvider : IStreamFragmentProvider {
 		return _fragments[fragmentIndexI];
 	}
 
+	public int GetFragmentLength(long fragmentID)
+		=> ((IStreamFragmentProvider)this).GetFragment(fragmentID).Length;
+
+	public int ReadFragment(long fragmentID, long fragmentPosition, Span<byte> destination) {
+		var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);
+		var fragment = ((IStreamFragmentProvider)this).GetFragment(fragmentID).Slice(fragmentPositionI);
+		var count = Math.Min(fragment.Length, destination.Length);
+		fragment[..count].CopyTo(destination);
+		return count;
+	}
+
 	public void UpdateFragment(long fragmentID, long fragmentPosition, ReadOnlySpan<byte> updateSpan) {
 		var fragmentIndexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(fragmentID);
 		var fragmentPositionI = Tools.Collection.CheckNotImplemented64bitAddressingLength(fragmentPosition);

@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Text;
 using NUnit.Framework;
 using MarkerRepository = Sphere10.Framework.TransactionalFileMappedBuffer.MarkerRepository;
 using PageMarkerType = Sphere10.Framework.TransactionalFileMappedBuffer.PageMarkerType;
@@ -16,6 +17,16 @@ namespace Sphere10.Framework.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class TransactionalMarkerMemoryTests {
+
+	[TestCase("")]
+	[TestCase("folder/example.dat")]
+	[TestCase("Folder/\u5DE5\u4F5C/\uD83D\uDE00.dat")]
+	[TestCase("long", 1000)]
+	public void FileIdentifierPreservesUtf8DigestAndGuidByteOrder(string path, int repetitions = 1) {
+		path = string.Concat(System.Linq.Enumerable.Repeat(path, repetitions));
+		var expected = new Guid(Hashers.Hash(CHF.Blake2b_128, Encoding.UTF8.GetBytes(path)));
+		Assert.That(TransactionalFileMappedBuffer.ComputeFileID(path), Is.EqualTo(expected));
+	}
 
 	[Test]
 	public void SparsePageMarkersAllocateSpaceForTheirActualValues() {

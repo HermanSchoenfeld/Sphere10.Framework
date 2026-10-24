@@ -52,6 +52,74 @@ public class ClusterMapTests {
 	}
 
 	[Test]
+	public void ClusterDataReadsFillCallerStorageWithoutPayloadAllocations([Values] ClusterMapImplementationType implementationType) {
+		const int clusterSize = 4096;
+		const int readOffset = 7;
+		const int payloadLength = clusterSize - readOffset;
+		const int iterations = 1000;
+		using var cleanup = Create(implementationType, clusterSize, out var clusterMap);
+		clusterMap.NewClusterChain(2, 99);
+		var source = new byte[clusterSize];
+		for (var index = 0; index < source.Length; index++)
+			source[index] = (byte)index;
+		clusterMap.WriteClusterData(1, 0, source);
+		Span<byte> destination = stackalloc byte[24];
+		destination.Fill(255);
+		clusterMap.ReadClusterData(1, readOffset, destination.Slice(3, 18));
+		Assert.That(destination.Slice(3, 18).ToArray(), Is.EqualTo(source[7..25]));
+		Assert.That(destination[..3].ToArray(), Is.All.EqualTo(255));
+		Assert.That(destination[21..].ToArray(), Is.All.EqualTo(255));
+
+		var payload = new byte[payloadLength];
+		clusterMap.ReadClusterData(1, readOffset, payload.AsSpan());
+		Assert.That(clusterMap.ReadClusterData(1, readOffset, payloadLength), Is.EqualTo(source[readOffset..]));
+		var destinationChecksum = 0L;
+		var before = GC.GetAllocatedBytesForCurrentThread();
+		for (var iteration = 0; iteration < iterations; iteration++) {
+			clusterMap.ReadClusterData(1, readOffset, payload.AsSpan());
+			destinationChecksum += payload[0] + payload[^1];
+		}
+		var destinationAllocated = GC.GetAllocatedBytesForCurrentThread() - before;
+		var snapshotChecksum = 0L;
+		before = GC.GetAllocatedBytesForCurrentThread();
+		for (var iteration = 0; iteration < iterations; iteration++) {
+			var snapshot = clusterMap.ReadClusterData(1, readOffset, payloadLength);
+			snapshotChecksum += snapshot[0] + snapshot[^1];
+		}
+		var snapshotAllocated = GC.GetAllocatedBytesForCurrentThread() - before;
+		Assert.That(destinationAllocated, Is.LessThan(iterations * (long)payloadLength / 2), "Destination reads may allocate backend metadata, but must not allocate a payload snapshot per read, including in a shared helper.");
+		TestContext.WriteLine($"{iterations} cluster data reads ({implementationType}, {payloadLength} payload bytes/read): caller storage {destinationAllocated:N0} B, snapshots {snapshotAllocated:N0} B, saved {snapshotAllocated - destinationAllocated:N0} B.");
+		Assert.That(payload, Is.EqualTo(source[readOffset..]));
+		Assert.That(destinationChecksum, Is.EqualTo(iterations * (long)(source[readOffset] + source[^1])));
+		Assert.That(snapshotChecksum, Is.EqualTo(destinationChecksum));
+		Assert.That(snapshotAllocated - destinationAllocated, Is.GreaterThanOrEqualTo(iterations * (long)payloadLength),
+			"Caller-owned reads must save a payload allocation per read; the same backend's metadata allocations remain visible in both measurements.");
+	}
+
+	[Test]
+	public void StreamMappedDataSnapshotsRetainShortResultsWhileDestinationReadsRejectTruncation([Values] bool enableCache) {
+		using var stream = new TruncatedReadStream();
+		var map = new StreamMappedClusterMap(stream, 0, new ClusterSerializer(32), enableCache, autoLoad: true);
+		map.NewClusterChain(1, 99);
+		map.WriteClusterData(0, 0, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 });
+		stream.ReadLimit = ClusterSerializer.DataOffset + 5;
+		Assert.That(map.ReadClusterData(0, 0, 8), Is.EqualTo(new byte[] { 1, 2, 3, 4, 5 }));
+		var destination = new byte[] { 255, 255, 255, 255, 255, 255, 255, 255 };
+		Assert.That(() => map.ReadClusterData(0, 0, destination.AsSpan()), Throws.TypeOf<EndOfStreamException>());
+		Assert.That(destination, Is.EqualTo(new byte[] { 1, 2, 3, 4, 5, 255, 255, 255 }));
+	}
+
+	[Test]
+	public void TruncatedPrimitiveMetadataReadFailsBeforeUsingIncompleteStackBytes([Values] bool enableCache) {
+		using var stream = new TruncatedReadStream();
+		var map = new StreamMappedClusterMap(stream, 0, new ClusterSerializer(32), enableCache, autoLoad: true);
+		map.NewClusterChain(1, 99);
+		var reopened = new StreamMappedClusterMap(stream, 0, new ClusterSerializer(32), enableCache, autoLoad: true);
+		stream.ReadLimit = 11;
+		Assert.That(() => reopened.ReadClusterNext(0), Throws.TypeOf<EndOfStreamException>());
+	}
+
+	[Test]
 	public void StreamMappedNextLinksAndTerminalsRetainTheirFullWidth(
 		[Values] Endianness endianness,
 		[Values] bool enableCache,
@@ -382,8 +450,14 @@ public class ClusterMapTests {
 
 	}
 
+	private sealed class TruncatedReadStream : MemoryStream {
+		public long ReadLimit { get; set; } = long.MaxValue;
 
+		public override int Read(byte[] buffer, int offset, int count)
+			=> base.Read(buffer, offset, (int)Math.Max(0, Math.Min(count, ReadLimit - Position)));
 
-
+		public override int Read(Span<byte> buffer)
+			=> base.Read(buffer[..(int)Math.Max(0, Math.Min(buffer.Length, ReadLimit - Position))]);
+	}
 }
 

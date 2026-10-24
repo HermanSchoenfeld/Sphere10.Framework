@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -30,6 +31,9 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	private readonly long _initialCapacity;
 	private readonly long _blockGrowthSize;
 	private readonly long _maxCapacity;
+	private readonly ArrayPool<byte> _arrayPool;
+	private bool _ownsRentedArray;
+	private bool _arrayExposed;
 
 	public MemoryBuffer() : this(0, DefaultBlockGrowth) {
 	}
@@ -46,6 +50,12 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		: this(fixedArray, fixedArray.Length, 0, fixedArray.Length) {
 	}
 
+	internal MemoryBuffer(long pageCapacity, ArrayPool<byte> arrayPool)
+		: this(Array.Empty<byte>(), 0, pageCapacity, pageCapacity) {
+		Guard.ArgumentNotNull(arrayPool, nameof(arrayPool));
+		_arrayPool = arrayPool;
+	}
+
 	private MemoryBuffer(byte[] internalArray, long currentSize, long capacityGrowthSize, long maxCapacity) {
 		_internalArray = internalArray;
 		_initialCapacity = internalArray.Length;
@@ -59,6 +69,40 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	public long MaxCapacity => _maxCapacity;
 
 	public override long Count => _length;
+
+	public override byte Read(long index) {
+		CheckRange(index, 1);
+		return _internalArray[index];
+	}
+
+	public override void Add(byte item) {
+		GrowSpaceIfRequired(1);
+		UpdateVersion();
+		_internalArray[_length++] = item;
+	}
+
+	public override void Update(long index, byte item) {
+		CheckRange(index, 1);
+		UpdateVersion();
+		_internalArray[index] = item;
+	}
+
+	public override void Insert(long index, byte item) {
+		CheckIndex(index, allowAtEnd: true);
+		GrowSpaceIfRequired(1);
+		UpdateVersion();
+		Array.Copy(_internalArray, index, _internalArray, index + 1, _length - index);
+		_internalArray[index] = item;
+		_length++;
+	}
+
+	public override IEnumerator<byte> GetEnumerator() {
+		var version = Version;
+		for (var index = 0L; index < _length; index++) {
+			CheckVersion(version);
+			yield return _internalArray[index];
+		}
+	}
 
 	public override long[] IndexOfRange(IEnumerable<byte> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
@@ -79,23 +123,25 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	public override IEnumerable<byte> ReadRange(long index, long count) {
 		CheckRange(index, count);
 		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
-		// optimize for single read
-		if (count == 1)
-			return new[] { _internalArray[index] };
-
 		var endIndex = Math.Min(index + count - 1, _length - 1);
 		var readCount = endIndex - index + 1;
 		if (readCount <= 0)
 			return Array.Empty<byte>();
 		var readCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(readCount);
-		var readResult = new byte[readCount];
-		Buffer.BlockCopy(_internalArray, indexI, readResult, 0, readCountI);
+		var readResult = new byte[readCountI];
+		CopyRange(indexI, readResult);
 		return readResult;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public ReadOnlySpan<byte> ReadSpan(long index, long count) {
 		return AsSpan(index, count);
+	}
+
+	public void ReadRange(long index, Span<byte> destination) {
+		CheckRange(index, destination.Length);
+		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
+		CopyRange(indexI, destination);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -113,6 +159,8 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		var newBytesCount = Math.Max(index + items.Length, _length) - _length;
 
 		GrowSpaceIfRequired(newBytesCount);
+		if (_arrayPool is not null && index > _length)
+			_internalArray.AsSpan(checked((int)_length), checked((int)(index - _length))).Clear();
 		UpdateVersion();
 
 		if (items.Length == 1)
@@ -135,6 +183,8 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	public void ExpandBy(long newBytes) {
 		Guard.ArgumentInRange(newBytes, 0, long.MaxValue, nameof(newBytes));
 		GrowSpaceIfRequired(newBytes);
+		if (_arrayPool is not null)
+			_internalArray.AsSpan(checked((int)_length), checked((int)newBytes)).Clear();
 		_length += newBytes;
 	}
 
@@ -197,10 +247,31 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 
 		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
 		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
-		return _internalArray.AsSpan(indexI, countI);
+		var result = _internalArray.AsSpan(indexI, countI);
+		if (_arrayPool is not null && !result.IsEmpty)
+			_arrayExposed = true;
+		return result;
 	}
 
+	// Only page-owned synchronous I/O may borrow this span without retiring the array from reuse.
+	internal Span<byte> BorrowPageSpan() => _internalArray.AsSpan(0, checked((int)_length));
+
+	private void CopyRange(int index, Span<byte> destination) => _internalArray.AsSpan(index, destination.Length).CopyTo(destination);
+
 	public override void Clear() {
+		if (_arrayPool is not null) {
+			var array = _internalArray;
+			var returnArray = _ownsRentedArray && !_arrayExposed;
+			_internalArray = Array.Empty<byte>();
+			_length = 0;
+			_ownsRentedArray = false;
+			_arrayExposed = false;
+			if (returnArray) {
+				array.AsSpan().Clear();
+				_arrayPool.Return(array);
+			}
+			return;
+		}
 		var initialCapacityI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_initialCapacity);
 		Array.Resize(ref _internalArray, initialCapacityI);
 		_length = 0;
@@ -226,8 +297,26 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		var growAmount = (int)Math.Min(Math.Ceiling(actualNewBytes / (double)_blockGrowthSize) * _blockGrowthSize, remainingGrowthCapacity);
 		Debug.Assert(_internalArray.Length + growAmount <= _maxCapacity);
 
-		// Re-allocate internal array
-		Array.Resize(ref _internalArray, _internalArray.Length + growAmount);
+		if (_arrayPool is not null) {
+			// Page storage grows once to its fixed capacity and is detached completely on unload.
+			Debug.Assert(_internalArray.Length == 0);
+			var capacity = checked((int)(_internalArray.Length + growAmount));
+			var array = _arrayPool.Rent(capacity);
+			if (array.Length == capacity) {
+				_ownsRentedArray = true;
+			} else {
+				// Cache accounting is in page-size units: an overlarge pool bucket must not be retained.
+				array.AsSpan().Clear();
+				_arrayPool.Return(array);
+				array = new byte[capacity];
+				_ownsRentedArray = false;
+			}
+			_internalArray = array;
+			_arrayExposed = false;
+		} else {
+			// Re-allocate internal array
+			Array.Resize(ref _internalArray, _internalArray.Length + growAmount);
+		}
 	}
 
 }

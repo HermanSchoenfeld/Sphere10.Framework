@@ -43,22 +43,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 		FlushOnDispose = false;
 		Disposing = false;
 		Pages = InternalPages.AsReadOnly().WithProjection(p => (IMemoryPage<TItem>)p);
-		_loadedPages = new ActionCache<long, IMemoryPage<TItem>>(
-			(page) => {
-				Guard.ArgumentInRange(page, 0, InternalPages.Count - 1, nameof(page), "Page not contained in list");
-				var memPage = (IMemoryPage<TItem>)InternalPages[page];
-				NotifyPageAccessing(memPage);
-				NotifyPageLoading(memPage);
-				memPage.Load();
-				NotifyPageLoaded(memPage);
-				NotifyPageAccessed(memPage);
-				return memPage;
-			},
-			sizeEstimator: p => pageSize,
-			reapStrategy: CacheReapPolicy.LeastUsed,
-			expirationStrategy: ExpirationPolicy.SinceLastAccessedTime,
-			maxCapacity: maxMemory
-		);
+		_loadedPages = new PageCache(this, maxMemory);
 
 		_loadedPages.ItemRemoved += (page, key) => {
 			var memPage = (IMemoryPage<TItem>)InternalPages[page];
@@ -67,12 +52,6 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 			if (memPage.State == PageState.Deleted)
 				return;
 
-			// Uncaching a dirty page, ensure saved
-			if (memPage.Dirty && memPage.State != PageState.Deleting) {
-				NotifyPageSaving(memPage);
-				memPage.Save();
-				NotifyPageSaved(memPage);
-			}
 			NotifyPageAccessing(memPage);
 			NotifyPageUnloading(memPage);
 			memPage.Unload();
@@ -131,8 +110,9 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 		// dont need to do much since cache manages life-cycle of page
 		CheckNotDisposed();
 		var cachedItem = _loadedPages.Get(page.Number); // ensures page is fetched from streams if not cached
+		var canPurge = cachedItem.CanPurge;
 		cachedItem.CanPurge = false;
-		return new ActionScope(() => cachedItem.CanPurge = true);
+		return new ActionScope(() => cachedItem.CanPurge = canPurge);
 	}
 
 	/// <summary>
@@ -227,6 +207,64 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	}
 
 	#endregion
+
+	private sealed class PageCache : CacheBase<long, IMemoryPage<TItem>> {
+		private readonly MemoryPagedListBase<TItem> _owner;
+
+		public PageCache(MemoryPagedListBase<TItem> owner, long maxMemory)
+			: base(reapStrategy: CacheReapPolicy.LeastUsed, expirationStrategy: ExpirationPolicy.SinceLastAccessedTime, maxCapacity: maxMemory) {
+			_owner = owner;
+		}
+
+		protected override IMemoryPage<TItem> Fetch(long key) {
+			Guard.ArgumentInRange(key, 0, _owner.InternalPages.Count - 1, nameof(key), "Page not contained in list");
+			var page = (IMemoryPage<TItem>)_owner.InternalPages[key];
+			EnsureCapacity(_owner.PageSize);
+			if (_owner.PageSize > Reaper.AvailableSpace(this))
+				throw new InvalidOperationException("Cache capacity insufficient to open the requested page.");
+
+			// Reserve before loading: callbacks may open other pages, but cannot spend this page's capacity.
+			CurrentSize += _owner.PageSize;
+			try {
+				_owner.NotifyPageAccessing(page);
+				_owner.NotifyPageLoading(page);
+				page.Load();
+				return page;
+			} finally {
+				CurrentSize -= _owner.PageSize;
+			}
+		}
+
+		protected override long EstimateSize(IMemoryPage<TItem> value) => _owner.PageSize;
+
+		protected override bool CheckStaleness(long key, CachedItem<IMemoryPage<TItem>> item) => false;
+
+		protected override void OnItemFetched(long key, IMemoryPage<TItem> value) {
+			var item = InternalStorage[key];
+			var canPurge = item.CanPurge;
+			item.CanPurge = false;
+			try {
+				_owner.NotifyPageLoaded(value);
+				_owner.NotifyPageAccessed(value);
+			} finally {
+				item.CanPurge = canPurge;
+			}
+			if (value.State != PageState.Loaded || !InternalStorage.TryGetValue(key, out var current) || !ReferenceEquals(current, item))
+				throw new InvalidOperationException("The page was unloaded or reopened by a load notification. Retry the operation to reopen it.");
+		}
+
+		protected override void OnItemRemoving(long key, CachedItem<IMemoryPage<TItem>> item) {
+			// Uncaching a dirty page, ensure saved
+			var page = item.Value;
+			if (!page.Dirty || page.State is PageState.Deleting or PageState.Deleted)
+				return;
+			_owner.NotifyPageSaving(page);
+			page.Save();
+			_owner.NotifyPageSaved(page);
+			if (page.Dirty)
+				throw new InvalidOperationException("The page was modified by a save notification. Retry the operation to save those changes.");
+		}
+	}
 
 }
 

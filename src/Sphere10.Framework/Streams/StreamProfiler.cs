@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework;
 
@@ -24,16 +25,23 @@ public class StreamProfiler : StreamDecorator {
 	}
 
 	public override int Read(byte[] buffer, int offset, int count) {
-		var capture = new byte[count];
-		var actualRead = InnerStream.Read(capture, 0, count);
+		ValidateBufferArguments(buffer, offset, count);
+		return Read(buffer.AsSpan(offset, count));
+	}
 
-		if (!_peeking) {
-			if (_captureScopes.Count > 0) {
-				var topMostScope = _captureScopes.Peek();
-				topMostScope.AddRange(capture);
-			}
+	public override int Read(Span<byte> buffer) {
+		var actualRead = InnerStream.Read(buffer);
+		if (!_peeking && _captureScopes.Count > 0) {
+			var capture = _captureScopes.Peek();
+			var start = capture.Count;
+			var count = checked(start + buffer.Length);
+			capture.EnsureCapacity(count);
+			CollectionsMarshal.SetCount(capture, count);
+			var destination = CollectionsMarshal.AsSpan(capture)[start..];
+			buffer[..actualRead].CopyTo(destination);
+			// Array reads historically captured the full request, padding short reads with zeroes.
+			destination[actualRead..].Clear();
 		}
-		Array.Copy(capture, 0, buffer, offset, actualRead);
 		return actualRead;
 	}
 

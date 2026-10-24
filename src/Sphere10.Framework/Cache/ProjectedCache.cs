@@ -27,6 +27,11 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 		remove => RemoveHandler(1, value);
 	}
 
+	public event EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> ItemRemoving {
+		add => AddHandler(3, value);
+		remove => RemoveHandler(3, value);
+	}
+
 	public event EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> ItemRemoved {
 		add => AddHandler(2, value);
 		remove => RemoveHandler(2, value);
@@ -40,9 +45,10 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 	private readonly ConditionalWeakTable<CachedItem<TValue>, ProjectedCachedItem<TValue, TProjectedValue>> _entryViews;
 	private readonly ConditionalWeakTable<CachedItem<TValue>, ProjectedCachedItem<TValue, TProjectedValue>>.CreateValueCallback _entryViewFactory;
 	private readonly Dictionary<(int Event, Delegate Handler), (Delegate Normalized, int Count)> _handlerProjections;
-	private readonly bool[] _forwardersAttached = new bool[3];
+	private readonly bool[] _forwardersAttached = new bool[4];
 	private volatile EventHandlerEx<TProjectedKey> _itemFetching;
 	private volatile EventHandlerEx<TProjectedKey, TProjectedValue> _itemFetched;
+	private volatile EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> _itemRemoving;
 	private volatile EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> _itemRemoved;
 	private volatile bool _disposed;
 
@@ -171,6 +177,7 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 			} finally {
 				_itemFetching = null;
 				_itemFetched = null;
+				_itemRemoving = null;
 				_itemRemoved = null;
 				_handlerProjections.Clear();
 				_entryViews.Clear();
@@ -248,13 +255,14 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 		};
 	}
 
-	private Delegate GetEvent(int eventIndex) => eventIndex switch { 0 => _itemFetching, 1 => _itemFetched, _ => _itemRemoved };
+	private Delegate GetEvent(int eventIndex) => eventIndex switch { 0 => _itemFetching, 1 => _itemFetched, 2 => _itemRemoved, _ => _itemRemoving };
 
 	private void SetEvent(int eventIndex, Delegate value) {
 		switch (eventIndex) {
 			case 0: _itemFetching = (EventHandlerEx<TProjectedKey>)value; break;
 			case 1: _itemFetched = (EventHandlerEx<TProjectedKey, TProjectedValue>)value; break;
-			default: _itemRemoved = (EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>>)value; break;
+			case 2: _itemRemoved = (EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>>)value; break;
+			default: _itemRemoving = (EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>>)value; break;
 		}
 	}
 
@@ -264,7 +272,8 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 		switch (eventIndex) {
 			case 0: _source.ItemFetching += OnItemFetching; break;
 			case 1: _source.ItemFetched += OnItemFetched; break;
-			default: _source.ItemRemoved += OnItemRemoved; break;
+			case 2: _source.ItemRemoved += OnItemRemoved; break;
+			default: _source.ItemRemoving += OnItemRemoving; break;
 		}
 		_forwardersAttached[eventIndex] = true;
 	}
@@ -275,7 +284,8 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 		switch (eventIndex) {
 			case 0: _source.ItemFetching -= OnItemFetching; break;
 			case 1: _source.ItemFetched -= OnItemFetched; break;
-			default: _source.ItemRemoved -= OnItemRemoved; break;
+			case 2: _source.ItemRemoved -= OnItemRemoved; break;
+			default: _source.ItemRemoving -= OnItemRemoving; break;
 		}
 		_forwardersAttached[eventIndex] = false;
 	}
@@ -288,6 +298,11 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 	private void OnItemFetched(TKey key, TValue value) {
 		if (!_disposed)
 			_itemFetched?.Invoke(_keyProjection(key), _valueProjection(value));
+	}
+
+	private void OnItemRemoving(TKey key, CachedItem<TValue> item) {
+		if (!_disposed)
+			_itemRemoving?.Invoke(_keyProjection(key), ProjectEntry(item));
 	}
 
 	private void OnItemRemoved(TKey key, CachedItem<TValue> item) {

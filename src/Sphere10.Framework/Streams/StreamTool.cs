@@ -27,51 +27,29 @@ public static class Streams {
 		if (count == 0)
 			return;
 
-		// SeekTo to the initial read position
-		stream.Seek(fromIndex, SeekOrigin.Begin);
+		Guard.ArgumentNotNegative(count, nameof(count));
 
-		// In cases where the copy/paste overlaps, isolate the overlapping region
-		// TODO: this can result in memory bloat if overlap region is large (i.e. insert 1 byte at beginning of stream will result in overlap block the size of of entire stream)
-		// The solution to this is complex but possible using the two-variable-XOR swap trick such that:
-		// - when writing to overlap region, write the XOR'd value as follows (NEW VALUE XOR OLD VALUE)
-		// - when reading an overlap region byte, the original value ios recovered by (NEW VALUE) XOR (NEW VALUE XOR OLD VALUE)
-		// - the memory bloat complexity is traded-off with computational and seek complexity
-		// - wrapping the above in a block-based approach would be ideal
-
-		var rightOverlapSection = System.Array.Empty<byte>();
-		if (toIndex >= fromIndex) {
-			var fromEndIndex = fromIndex + count - 1;
-			if (toIndex <= fromEndIndex) {
-				var rightOverlapSectionLength = fromEndIndex - toIndex + 1;
-				var rightOverLapSectionLengthI = Tools.Collection.CheckNotImplemented64bitAddressingLength(rightOverlapSectionLength);
-				rightOverlapSection = stream.ReadBytes(rightOverLapSectionLengthI);
-				if (rightOverlapSection.Length != rightOverlapSectionLength)
-					throw new InternalErrorException("Unable to read overlapping section");
-			}
-		}
-
-		// Shift the bytes in blocks read from left-to-right
-		var readPosition = stream.Position;
-		var writePosition = (long)toIndex + rightOverlapSection.Length;
-		var block = new byte[blockSize];
-
-		foreach (var nextBlockSize in Tools.Collection.Partition(count - rightOverlapSection.LongLength, blockSize)) {
-			Debug.Assert(nextBlockSize <= blockSize);
-			stream.Seek(readPosition, SeekOrigin.Begin);
-			if (stream.Read(block, 0, unchecked((int)nextBlockSize)) != nextBlockSize)
+		// Copy backwards for a right overlap, so scratch space stays bounded by blockSize.
+		var backwards = toIndex >= fromIndex && toIndex - fromIndex < count;
+		var bufferLength = (int)Math.Min(count, blockSize);
+		var rented = bufferLength <= 1024 ? null : ArrayPool<byte>.Shared.Rent(bufferLength);
+		using var release = rented == null ? null : Scope.ExecuteOnDispose(buffer => ArrayPool<byte>.Shared.Return(buffer), rented);
+		Span<byte> block = rented == null ? stackalloc byte[bufferLength] : rented.AsSpan(0, bufferLength);
+		var remaining = count;
+		// Shift the bytes in blocks read from left-to-right, except when a right overlap requires reading backwards.
+		while (remaining > 0) {
+			var nextBlockSize = (int)Math.Min(remaining, bufferLength);
+			var offset = backwards ? remaining - nextBlockSize : count - remaining;
+			stream.Seek(fromIndex + offset, SeekOrigin.Begin);
+			if (stream.Read(block[..nextBlockSize]) != nextBlockSize)
 				throw new InternalErrorException("Failed to read bytes from stream");
-			readPosition = stream.Position;
-			stream.Seek(writePosition, SeekOrigin.Begin);
-			stream.Write(block, 0, unchecked((int)nextBlockSize));
-			writePosition = stream.Position;
+			stream.Seek(toIndex + offset, SeekOrigin.Begin);
+			stream.Write(block[..nextBlockSize]);
+			remaining -= nextBlockSize;
 		}
 
-		// Copy the isolated overlap block if required
-		if (rightOverlapSection.Length > 0) {
-			stream.Seek(toIndex, SeekOrigin.Begin);
-			stream.WriteBytes(rightOverlapSection);
-		}
-
+		// Preserve the established final position after restoring a right-overlap segment.
+		stream.Position = backwards ? fromIndex + count : toIndex + count;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

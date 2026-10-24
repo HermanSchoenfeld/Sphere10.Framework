@@ -23,6 +23,9 @@ public interface ICache<TKey, TValue> : ICacheBase {
 	/// <summary>Raised after a fetched value has been stored.</summary>
 	event EventHandlerEx<TKey, TValue> ItemFetched;
 
+	/// <summary>Raised before committing an entry's removal; ordinary removal remains retryable if a callback fails.</summary>
+	event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoving;
+
 	/// <summary>Raised when an entry is removed explicitly or through reaping.</summary>
 	event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved;
 

@@ -122,12 +122,8 @@ internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 	/// <param name="result"></param>
 	/// <returns>Number of bytes actually read</returns>
 	public override long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
-		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
-		byteLength ??= ItemSize;
-		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
-
-		Stream.Seek(offset, SeekOrigin.Begin);
-		result = Reader.ReadBytes(byteLength.Value);
+		SeekToItem(itemIndex, byteOffset);
+		result = Reader.ReadBytes(byteLength ?? ItemSize);
 		return result.Length;
 	}
 
@@ -138,6 +134,17 @@ internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 		//Stream.Seek(offset, SeekOrigin.Begin);
 		using var _ = Stream.EnterRestorePositionSeek(offset, SeekOrigin.Begin);
 		Writer.Write(bytes);
+	}
+
+	public override int ReadItemBytes(long itemIndex, long byteOffset, Span<byte> destination) {
+		SeekToItem(itemIndex, byteOffset);
+		return ReadBytes(destination);
+	}
+
+	private void SeekToItem(long itemIndex, long byteOffset) {
+		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
+		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
+		Stream.Seek(offset, SeekOrigin.Begin);
 	}
 
 }

@@ -8,8 +8,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace Sphere10.Framework;
 
@@ -18,27 +16,23 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <remarks>PagedBuffer span operations implemented in a not-so-great way. Relying on page operations to do the bulk insertions</remarks>
 internal static class PagedBufferImplementationHelper {
-	public static ReadOnlySpan<byte> ReadRange(IPagedListDelegate<byte> source, long index, long count) {
-		var builder = new ByteArrayBuilder();
+	public static byte[] ReadRange(IPagedListDelegate<byte> source, long index, long count) {
 		source.CheckRequiresLoad();
 		source.NotifyAccessing();
 		source.CheckRange(index, count, false);
-
-		foreach (var pageSegment in source.GetPageSegments(index, count)) {
-			var page = (IBufferPage)pageSegment.Item1;
-			var pageStartIndex = pageSegment.Item2;
-			var pageItemCount = pageSegment.Item3;
-			source.NotifyPageAccessing(page);
-			using (source.EnterOpenPageScope(page)) {
-				source.NotifyPageReading(page);
-				builder.Append(page.ReadSpan(pageStartIndex, pageItemCount));
-				source.NotifyPageRead(page);
-			}
-			source.NotifyPageAccessed(page);
-		}
+		var length = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
+		var result = length == 0 ? Array.Empty<byte>() : new byte[length];
+		ReadRangeInternal(source, index, result);
 		source.NotifyAccessed();
+		return result;
+	}
 
-		return builder.ToArray();
+	public static void ReadRange(IPagedListDelegate<byte> source, long index, Span<byte> destination) {
+		source.CheckRequiresLoad();
+		source.NotifyAccessing();
+		CheckReadRange(source, index, destination.Length);
+		ReadRangeInternal(source, index, destination);
+		source.NotifyAccessed();
 	}
 
 	public static void AddRange(IPagedListDelegate<byte> source, ReadOnlySpan<byte> span) {
@@ -46,7 +40,8 @@ internal static class PagedBufferImplementationHelper {
 			return;
 		source.CheckRequiresLoad();
 		source.NotifyAccessing();
-		var page = source.InternalPages().Any() ? source.InternalPages().Last() : source.CreateNextPage();
+		var pages = source.InternalPages();
+		var page = pages.Count > 0 ? pages[pages.Count - 1] : source.CreateNextPage();
 		var bufferPage = (IBufferPage)page;
 		source.NotifyPageAccessing(page);
 		var fittedCompletely = false;
@@ -108,10 +103,7 @@ internal static class PagedBufferImplementationHelper {
 	public static Span<byte> AsSpan(IPagedListDelegate<byte> source, long index, long count) {
 		// TODO: this needs to check if the span range covers a contiguous region of a page, and if not throw
 		// returns span for the page (needs to provide a locking scope to ensure the page isn't swapped)
-		var readOnlySpan = ReadRange(source, index, count);
-
-		// https://github.com/dotnet/runtime/issues/23494#issuecomment-648290373
-		return MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(readOnlySpan), readOnlySpan.Length);
+		return ReadRange(source, index, count).AsSpan();
 	}
 
 	public static void ExpandTo(IPagedListDelegate<byte> source, long totalBytes) {
@@ -179,6 +171,37 @@ internal static class PagedBufferImplementationHelper {
 		page.Dirty = true;
 
 		//source.SetCount(source.GetCount() + newBytesCount);  // When updating a page, the owner objectStream should be aware of acquiring the count
+	}
+
+	private static void CheckReadRange(IPagedListDelegate<byte> source, long index, long count) {
+		if (count == 0 && source.InternalPages().Count == 0)
+			Guard.ArgumentEquals(index, 0L, nameof(index));
+		else
+			source.CheckRange(index, count, false);
+	}
+
+	private static void ReadRangeInternal(IPagedListDelegate<byte> source, long index, Span<byte> destination) {
+		var destinationOffset = 0;
+		foreach (var pageSegment in source.GetPageSegments(index, destination.Length)) {
+			var page = (IBufferPage)pageSegment.Item1;
+			var pageStartIndex = pageSegment.Item2;
+			var pageItemCount = pageSegment.Item3;
+			source.NotifyPageAccessing(page);
+			using (source.EnterOpenPageScope(page)) {
+				source.NotifyPageReading(page);
+				if (page is IBufferPageReader reader) {
+					var count = Tools.Collection.CheckNotImplemented64bitAddressingLength(pageItemCount);
+					reader.ReadRange(pageStartIndex, destination.Slice(destinationOffset, count));
+					destinationOffset += count;
+				} else {
+					var pageSpan = page.ReadSpan(pageStartIndex, pageItemCount);
+					pageSpan.CopyTo(destination.Slice(destinationOffset, pageSpan.Length));
+					destinationOffset += pageSpan.Length;
+				}
+				source.NotifyPageRead(page);
+			}
+			source.NotifyPageAccessed(page);
+		}
 	}
 
 }

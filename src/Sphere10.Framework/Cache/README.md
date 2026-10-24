@@ -33,6 +33,25 @@ Replacing a value recomputes its size and reserves any additional capacity befor
 
 `Purge()` removes the entries present at the start of the operation; entries added by removal callbacks remain stored and accounted for. Disposal prevents new admissions, attempts every original removal callback, clears membership and reports callback failures together. Callbacks that dispose a cache cannot cause the outer fetch or replacement to repopulate it.
 
+Derived caches can override `OnItemRemoving` to prepare an entry before removal is committed. The entry remains cached, unpurged and counted against capacity until the hook returns successfully. A failure during ordinary removal, purge or reaping leaves that entry available for retry; earlier successful removals and independent callback changes remain effective. Nested removal and reaping skip the entry being prepared. Reentrant reads use that entry without refreshing it, including when it was invalidated. Replacing the same entry or starting cache disposal from the preparation hook throws `InvalidOperationException`. `ItemRemoved` retains its post-removal timing and observes the released capacity and purged entry. Disposal still attempts all original entries, clears membership and reports failures together.
+
+Memory-paged lists save dirty pages in this preparation hook and unload them after removal. Save failures therefore retain the original loaded page and cache accounting without reinsertion. `PageSaving` and `PageSaved` run while the page remains cached; reentrant reads and changes made before the save use that resident page. If a `PageSaved` handler dirties it again, eviction throws and retains those changes for the next attempt. A nested flush can process other pages but skips an in-progress save. Transactional flush continues to stage pages; commit and rollback keep their existing publication and discard boundaries.
+
+The page cache reserves capacity before loading a page, including during loading callbacks. `PageLoaded` and the corresponding access notification run after cache admission with the page pinned against capacity reaping. A notification failure leaves the admitted page accounted for and retryable. Explicit callback `Flush()` retains its ability to unload cached pages; if it unloads the page being opened, that open throws rather than returning an unloaded page, and can be retried after the callback completes. Nested open scopes restore the previous pin state.
+
+## Notifications
+
+Every cache notification follows the [event/template-hook pattern](../../../docs/guidelines/patterns/type-hierarchies.md#event-notifications-and-template-hooks): the operation calls a protected nonvirtual `Notify*` method, which calls the corresponding protected virtual `On*` hook and then the public event. The pattern applies to all four notifications, including the new pre-removal event; adding it for one requires completing the whole event family.
+
+| Event | Lifecycle boundary |
+|---|---|
+| `ItemFetching` | Immediately before a miss fetches a value. |
+| `ItemFetched` | After fetch completion and the applicable cache-admission policy. |
+| `ItemRemoving` | Before removal commits, while membership and capacity accounting remain intact. |
+| `ItemRemoved` | After membership removal, capacity release and marking the entry purged. |
+
+An exception from either the removing hook or its event prevents ordinary eviction and allows retry. The same reentrancy guards cover both callbacks. Disposal retains its best-effort cleanup and aggregated-error behavior. Typed and object cache projections forward each notification with the corresponding live entry view; they do not take ownership of the cache or its payloads.
+
 ## Shared capacity
 
 Use `PooledCacheReaper` when differently typed caches need one combined budget. The existing `ICacheReaper` hierarchy operates on `ICacheBase`, which exposes synchronization, diagnostics and capacity operations without keys, values or entries. Each cache uses `IsolatedCacheReaper` by default. A custom reaper can coordinate typed implementations through this shared contract without object projection.

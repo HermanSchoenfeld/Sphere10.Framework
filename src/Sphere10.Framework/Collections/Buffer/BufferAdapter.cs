@@ -26,9 +26,11 @@ public class BufferAdapter : ExtendedListAdapter<byte>, IBuffer {
 		return base.ReadRange(index, count).ToArray();
 	}
 
-	public void AddRange(ReadOnlySpan<byte> span) {
-		base.AddRange((IEnumerable<byte>)span.ToArray());
-	}
+	public void ReadRange(long index, Span<byte> destination)
+		=> ((IBuffer)this).ReadSpan(index, destination.Length).CopyTo(destination);
+
+	public void AddRange(ReadOnlySpan<byte> span)
+		=> base.AddRange((IEnumerable<byte>)span.ToArray());
 
 	public void UpdateRange(long index, ReadOnlySpan<byte> items) {
 		base.UpdateRange(index, (IEnumerable<byte>)items.ToArray());

@@ -40,7 +40,7 @@ internal class ClusterSeeker {
 				CurrentCluster = startCluster,
 				CurrentIndex = startCluster != Cluster.Null ? 0 : Cluster.Null,
 		};
-		Pointer.CurrentTraits = CalculateCurrentTraits(); // method uses Pointer state, don't call within object initializer 
+		Pointer.CurrentTraits = CalculateCurrentTraits(); // method uses Pointer state, don't call within object initializer
 	}
 
 	public ClusterPointer Pointer { get; }
@@ -64,7 +64,7 @@ internal class ClusterSeeker {
 		Pointer.CurrentTraits = CalculateCurrentTraits();
 		if (_integrityChecks) {
 			Pointer.CheckTraits();
-			Guard.Ensure(Pointer.CurrentTraits.HasFlag(ClusterTraits.Start), $"Start cluster {Pointer.Chain.StartCluster} is not a start cluster");
+			Guard.Ensure((Pointer.CurrentTraits & ClusterTraits.Start) != 0, $"Start cluster {Pointer.Chain.StartCluster} is not a start cluster");
 		}
 	}
 
@@ -77,7 +77,7 @@ internal class ClusterSeeker {
 		Pointer.CurrentTraits = CalculateCurrentTraits();
 		if (_integrityChecks) {
 			Pointer.CheckTraits();
-			Guard.Ensure(Pointer.CurrentTraits.HasFlag(ClusterTraits.End), $"End cluster {Pointer.CurrentCluster} was not marked end");
+			Guard.Ensure((Pointer.CurrentTraits & ClusterTraits.End) != 0, $"End cluster {Pointer.CurrentCluster} was not marked end");
 		}
 	}
 
@@ -88,6 +88,13 @@ internal class ClusterSeeker {
 #if LogicalClusterMemoizationOptimization
 		CheckNotEmpty();
 		Guard.ArgumentInRange(logicalCluster, 0, Pointer.Chain.TotalClusters - 1, nameof(logicalCluster));
+		// Primitive reads commonly remain in the current physical cluster.
+		if (logicalCluster == Pointer.CurrentIndex) {
+			Pointer.CurrentTraits = CalculateCurrentTraits();
+			if (_integrityChecks)
+				Pointer.CheckTraits();
+			return;
+		}
 		UseClosestCheckpoint(logicalCluster);
 #endif
 		FindShortestPathToLogicalCluster(logicalCluster, out var startCluster, out var steps, out var direction);
@@ -117,20 +124,27 @@ internal class ClusterSeeker {
 		if (_integrityChecks) {
 			Guard.Ensure(Pointer.Chain.StartCluster >= 0, "Cannot seek as there are no clusters to seek");
 		}
-		var walkedClusters = new HashSet<long> {
-			Pointer.CurrentCluster
-		};
-		for (var i = 0; i < steps; i++) {
-			Guard.Against(Pointer.CurrentTraits.HasFlag(ClusterTraits.End), $"Cannot walk past the last cluster on cluster chain ({steps - i} steps to go)");
+		if (steps <= 0)
+			return;
+		Span<long> walkedClusterBuffer = steps <= 32 ? stackalloc long[(int)steps + 1] : Span<long>.Empty;
+		var walkedClusters = walkedClusterBuffer.IsEmpty ? new HashSet<long> { Pointer.CurrentCluster } : null;
+		if (!walkedClusterBuffer.IsEmpty)
+			walkedClusterBuffer[0] = Pointer.CurrentCluster;
+		for (var i = 0L; i < steps; i++) {
+			Guard.Against((Pointer.CurrentTraits & ClusterTraits.End) != 0, $"Cannot walk past the last cluster on cluster chain ({steps - i} steps to go)");
 			var nextCluster = _clusters.ReadClusterNext(Pointer.CurrentCluster);
-			Guard.Ensure(!walkedClusters.Contains(nextCluster), $"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic next {nextCluster})");
+			Guard.Ensure(walkedClusters == null ? !walkedClusterBuffer[..((int)i + 1)].Contains(nextCluster) : !walkedClusters.Contains(nextCluster),
+				$"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic next {nextCluster})");
 			Pointer.CurrentCluster = nextCluster;
 			Pointer.CurrentIndex++;
 			Pointer.CurrentTraits = CalculateCurrentTraits();
 			if (_integrityChecks) {
 				Pointer.CheckTraits();
 			}
-			walkedClusters.Add(Pointer.CurrentCluster);
+			if (walkedClusters == null)
+				walkedClusterBuffer[(int)i + 1] = Pointer.CurrentCluster;
+			else
+				walkedClusters.Add(Pointer.CurrentCluster);
 #if LogicalClusterMemoizationOptimization
 			RememberCheckpoint();
 #endif
@@ -139,20 +153,27 @@ internal class ClusterSeeker {
 
 	public void SeekBackwards(long steps) {
 		Guard.Ensure(Pointer.Chain.StartCluster >= 0, "Cannot seek as there are no clusters to seek");
-		var walkedClusters = new HashSet<long> {
-			Pointer.CurrentCluster
-		};
-		for (var i = 0; i < steps; i++) {
-			Guard.Against(Pointer.CurrentTraits.HasFlag(ClusterTraits.Start), "Cannot walk before the first cluster on cluster chain");
+		if (steps <= 0)
+			return;
+		Span<long> walkedClusterBuffer = steps <= 32 ? stackalloc long[(int)steps + 1] : Span<long>.Empty;
+		var walkedClusters = walkedClusterBuffer.IsEmpty ? new HashSet<long> { Pointer.CurrentCluster } : null;
+		if (!walkedClusterBuffer.IsEmpty)
+			walkedClusterBuffer[0] = Pointer.CurrentCluster;
+		for (var i = 0L; i < steps; i++) {
+			Guard.Against((Pointer.CurrentTraits & ClusterTraits.Start) != 0, "Cannot walk before the first cluster on cluster chain");
 			var prevCluster = _clusters.ReadClusterPrev(Pointer.CurrentCluster);
-			Guard.Ensure(!walkedClusters.Contains(prevCluster), $"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic prev {prevCluster})");
+			Guard.Ensure(walkedClusters == null ? !walkedClusterBuffer[..((int)i + 1)].Contains(prevCluster) : !walkedClusters.Contains(prevCluster),
+				$"Cyclic dependency detected (cluster {Pointer.CurrentCluster} has cyclic prev {prevCluster})");
 			Pointer.CurrentCluster = prevCluster;
 			Pointer.CurrentIndex--;
 			Pointer.CurrentTraits = CalculateCurrentTraits();
 			if (_integrityChecks) {
 				Pointer.CheckTraits();
 			}
-			walkedClusters.Add(Pointer.CurrentCluster);
+			if (walkedClusters == null)
+				walkedClusterBuffer[(int)i + 1] = Pointer.CurrentCluster;
+			else
+				walkedClusters.Add(Pointer.CurrentCluster);
 #if LogicalClusterMemoizationOptimization
 			RememberCheckpoint();
 #endif
@@ -185,24 +206,24 @@ internal class ClusterSeeker {
 		    ((changedEvent.ClusterLinksChanged || changedEvent.ClusterCountDelta != 0) && !changedEvent.ChainTerminal.HasValue) ||
 		    (changedEvent.ChainOriginalStartCluster.HasValue && changedEvent.ChainNewStartCluster.HasValue)) {
 			_checkpoints.Clear();
-		} else if (changedEvent.MovedClusters.Count != 0) {
+		} else if (changedEvent.HasMovedClusters) {
 			foreach (var checkpoint in _checkpoints.ToArray()) {
-				if (changedEvent.MovedClusters.TryGetValue(checkpoint.Value, out var movedCluster))
+				if (changedEvent.TryGetMovedCluster(checkpoint.Value, out var movedCluster))
 					_checkpoints[checkpoint.Key] = movedCluster;
 			}
 		}
 #endif
 
 		// Process changes arising from tip migrations (no size changed here)
-		if (changedEvent.MovedClusters.TryGetValue(Pointer.Chain.StartCluster, out var newStart)) 
+		if (changedEvent.TryGetMovedCluster(Pointer.Chain.StartCluster, out var newStart))
 			Pointer.Chain.StartCluster = newStart;
 
-		if (changedEvent.MovedClusters.TryGetValue(Pointer.Chain.EndCluster, out var newEnd)) 
+		if (changedEvent.TryGetMovedCluster(Pointer.Chain.EndCluster, out var newEnd))
 			Pointer.Chain.EndCluster = newEnd;
-		
-		if (changedEvent.MovedClusters.TryGetValue(Pointer.CurrentCluster, out var newCurrent)) 
+
+		if (changedEvent.TryGetMovedCluster(Pointer.CurrentCluster, out var newCurrent))
 			Pointer.CurrentCluster = newCurrent;
-		
+
 		// Process changes arising from this chain's resizing
 		if (changedEvent.ChainTerminal == TerminalValue) {
 			if (changedEvent.AddedChain) {
@@ -253,24 +274,26 @@ internal class ClusterSeeker {
 
 	protected void FindShortestPathToLogicalCluster(long logicalCluster, out long closestKnownCluster, out long steps, out IterateDirection seekDirection) {
 		CheckNotEmpty();
-		var paths = new List<(long FromKnownCluster, long Steps, IterateDirection Dir)>();
-
+		// Preserve the stable start/end/current tie order without sorting temporary candidates.
 		// Consider path from start
-		CalculatePathToLogicalCluster(0, logicalCluster, Pointer.Chain.TotalClusters, out var steps_, out var dir);
-		paths.Add((Pointer.Chain.StartCluster, steps_, dir));
+		CalculatePathToLogicalCluster(0, logicalCluster, Pointer.Chain.TotalClusters, out steps, out seekDirection);
+		closestKnownCluster = Pointer.Chain.StartCluster;
 
 		// Consider path from end
-		CalculatePathToLogicalCluster(Pointer.Chain.TotalClusters - 1, logicalCluster, Pointer.Chain.TotalClusters, out steps_, out dir);
-		paths.Add((Pointer.Chain.EndCluster, steps_, dir));
+		CalculatePathToLogicalCluster(Pointer.Chain.TotalClusters - 1, logicalCluster, Pointer.Chain.TotalClusters, out var candidateSteps, out var candidateDirection);
+		if (candidateSteps < steps) {
+			closestKnownCluster = Pointer.Chain.EndCluster;
+			steps = candidateSteps;
+			seekDirection = candidateDirection;
+		}
 
 		// Consider path from current position
-		CalculatePathToLogicalCluster(Pointer.CurrentIndex, logicalCluster, Pointer.Chain.TotalClusters, out steps_, out dir);
-		paths.Add((Pointer.CurrentCluster, steps_, dir));
-
-		var result = paths.OrderBy(x => x.Steps).First();
-		closestKnownCluster = result.FromKnownCluster;
-		steps = result.Steps;
-		seekDirection = result.Dir;
+		CalculatePathToLogicalCluster(Pointer.CurrentIndex, logicalCluster, Pointer.Chain.TotalClusters, out candidateSteps, out candidateDirection);
+		if (candidateSteps < steps) {
+			closestKnownCluster = Pointer.CurrentCluster;
+			steps = candidateSteps;
+			seekDirection = candidateDirection;
+		}
 	}
 
 #if LogicalClusterMemoizationOptimization
@@ -327,14 +350,15 @@ internal class ClusterSeeker {
 		public ClusterTraits CurrentTraits;
 
 		public void CheckTraits() {
-			if (CurrentTraits.HasFlag(ClusterTraits.Start))
+			// Single-bit trait checks avoid Enum.HasFlag boxing in unoptimized builds.
+			if ((CurrentTraits & ClusterTraits.Start) != 0)
 				Guard.Ensure(CurrentIndex == 0, $"Start cluster is START but has index {CurrentIndex}");
-			if (CurrentTraits.HasFlag(ClusterTraits.End))
+			if ((CurrentTraits & ClusterTraits.End) != 0)
 				Guard.Ensure(CurrentIndex == Chain.TotalClusters - 1, $"End cluster {CurrentCluster} is END but index {CurrentIndex} does not match chain total clusters {Chain.TotalClusters}");
-			if (CurrentIndex == 0 && !CurrentTraits.HasFlag(ClusterTraits.Start))
-				Guard.Ensure(CurrentTraits.HasFlag(ClusterTraits.Start), $"Cluster {CurrentCluster} index is 0 but traits {CurrentTraits} do not marked START");
-			if (CurrentIndex == Chain.TotalClusters - 1 && !CurrentTraits.HasFlag(ClusterTraits.End))
-				Guard.Ensure(CurrentTraits.HasFlag(ClusterTraits.Start), $"Cluster index {CurrentTraits} is end of chain but not marked END");
+			if (CurrentIndex == 0 && (CurrentTraits & ClusterTraits.Start) == 0)
+				Guard.Ensure((CurrentTraits & ClusterTraits.Start) != 0, $"Cluster {CurrentCluster} index is 0 but traits {CurrentTraits} do not marked START");
+			if (CurrentIndex == Chain.TotalClusters - 1 && (CurrentTraits & ClusterTraits.End) == 0)
+				Guard.Ensure((CurrentTraits & ClusterTraits.Start) != 0, $"Cluster index {CurrentTraits} is end of chain but not marked END");
 		}
 	}
 }

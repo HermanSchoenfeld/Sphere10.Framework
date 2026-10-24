@@ -24,6 +24,11 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		remove => RemoveTypedHandler(1, value);
 	}
 
+	public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoving {
+		add => AddTypedHandler(3, value);
+		remove => RemoveTypedHandler(3, value);
+	}
+
 	public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved {
 		add => AddTypedHandler(2, value);
 		remove => RemoveTypedHandler(2, value);
@@ -31,10 +36,12 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 
 	private EventHandlerEx<TKey> _itemFetching;
 	private EventHandlerEx<TKey, TValue> _itemFetched;
+	private EventHandlerEx<TKey, CachedItem<TValue>> _itemRemoving;
 	private EventHandlerEx<TKey, CachedItem<TValue>> _itemRemoved;
 	private readonly Dictionary<(int Event, Delegate Handler), (Delegate Projection, int Count)> _variantHandlers = new();
 	private readonly Dictionary<CachedItem<TValue>, int> _protectedItems = new(ReferenceEqualityComparer.Instance);
 	private long _order;
+	private int _removalDepth;
 	private bool _disposed;
 
 	internal readonly IDictionary<TKey, CachedItem<TValue>> InternalStorage;
@@ -118,7 +125,7 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		using (EnterWriteScope()) {
 			CheckNotDisposed();
 			var now = DateTime.Now;
-			var requiresFetch = !InternalStorage.TryGetValue(key, out var item) || IsExpired(item, now) || IsStale(key, item);
+			var requiresFetch = !InternalStorage.TryGetValue(key, out var item) || !item.IsRemoving && (IsExpired(item, now) || IsStale(key, item));
 			CheckNotDisposed();
 			if (requiresFetch) {
 				if (item != null)
@@ -245,6 +252,8 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		using (EnterWriteScope()) {
 			if (_disposed)
 				return;
+			if (_removalDepth > 0)
+				throw new InvalidOperationException("Cannot dispose the cache while preparing an entry for removal.");
 			_disposed = true;
 			var errors = new List<Exception>();
 			try {
@@ -262,6 +271,7 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 				_variantHandlers.Clear();
 				_itemFetching = null;
 				_itemFetched = null;
+				_itemRemoving = null;
 				_itemRemoved = null;
 				try {
 					Reaper.Deregister(this);
@@ -288,6 +298,14 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 	protected virtual void OnItemFetched(TKey key, TValue value) {
 	}
 
+	/// <summary>
+	/// Prepares an entry for removal while it remains stored and counted against capacity.
+	/// An exception prevents this removal. Recursive removal skips this entry; replacing it or starting disposal is rejected.
+	/// Disposal retains its best-effort cleanup contract and clears membership even when preparation fails.
+	/// </summary>
+	protected virtual void OnItemRemoving(TKey key, CachedItem<TValue> item) {
+	}
+
 	protected virtual void OnItemRemoved(TKey key, CachedItem<TValue> item) {
 	}
 
@@ -301,14 +319,27 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		_itemFetched?.Invoke(key, value);
 	}
 
+	protected void NotifyItemRemoving(TKey key, CachedItem<TValue> item) {
+		OnItemRemoving(key, item);
+		_itemRemoving?.Invoke(key, item);
+	}
+
 	protected void NotifyItemRemoved(TKey key, CachedItem<TValue> item) {
 		OnItemRemoved(key, item);
 		_itemRemoved?.Invoke(key, item);
 	}
 
 	internal void RemoveItemInternal(TKey key) {
-		if (!InternalStorage.TryGetValue(key, out var item))
+		if (!InternalStorage.TryGetValue(key, out var item) || item.IsRemoving)
 			return;
+		item.IsRemoving = true;
+		_removalDepth++;
+		try {
+			NotifyItemRemoving(key, item);
+		} finally {
+			_removalDepth--;
+			item.IsRemoving = false;
+		}
 		InternalStorage.Remove(key);
 		CurrentSize -= item.Size;
 		item.Traits = (item.Traits | CachedItemTraits.Purged) & ~CachedItemTraits.CanPurge;
@@ -321,6 +352,8 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		Guard.Ensure(size >= 0, "A cache size estimator returned a negative size.");
 		Guard.Ensure(size <= MaxCapacity, $"Cache capacity insufficient for requested space {size}");
 		InternalStorage.TryGetValue(key, out var original);
+		if (original?.IsRemoving == true)
+			throw new InvalidOperationException("Cannot replace an entry while preparing it for removal.");
 		Protect(original);
 		try {
 			EnsureCapacity(size - (original?.Size ?? 0));
@@ -357,7 +390,8 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		}
 	}
 
-	private void EnsureCapacity(long delta) {
+	/// <summary>Attempts to release capacity before a derived cache allocates a value of a known size.</summary>
+	protected void EnsureCapacity(long delta) {
 		var available = Reaper.AvailableSpace(this);
 		if (delta <= available)
 			return;
@@ -380,7 +414,7 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		return ExpirationPolicy != ExpirationPolicy.None && now - from > ExpirationDuration;
 	}
 
-	private bool IsReapable(CachedItem<TValue> item) => item.CanPurge && !_protectedItems.ContainsKey(item);
+	private bool IsReapable(CachedItem<TValue> item) => item.CanPurge && !item.IsRemoving && !_protectedItems.ContainsKey(item);
 
 	private int CompareVictims(CachedItem<TValue> left, CachedItem<TValue> right, DateTime now) {
 		var expired = IsExpired(right, now).CompareTo(IsExpired(left, now));
@@ -498,13 +532,14 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 			_ => new EventHandlerEx<TKey, CachedItem<TValue>>((key, item) => ((EventHandlerEx<TKey, CachedItem<TValue>>)handler)(key, item))
 		};
 
-	private Delegate GetEvent(int eventIndex) => eventIndex switch { 0 => _itemFetching, 1 => _itemFetched, _ => _itemRemoved };
+	private Delegate GetEvent(int eventIndex) => eventIndex switch { 0 => _itemFetching, 1 => _itemFetched, 2 => _itemRemoved, _ => _itemRemoving };
 
 	private void SetEvent(int eventIndex, Delegate value) {
 		switch (eventIndex) {
 			case 0: _itemFetching = (EventHandlerEx<TKey>)value; break;
 			case 1: _itemFetched = (EventHandlerEx<TKey, TValue>)value; break;
-			default: _itemRemoved = (EventHandlerEx<TKey, CachedItem<TValue>>)value; break;
+			case 2: _itemRemoved = (EventHandlerEx<TKey, CachedItem<TValue>>)value; break;
+			default: _itemRemoving = (EventHandlerEx<TKey, CachedItem<TValue>>)value; break;
 		}
 	}
 }

@@ -100,7 +100,8 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 		if (_enableCache) 
 			return GetCachedClusterHeader(cluster).Traits;
 
-		_clusters.InternalCollection.ReadItemBytes(cluster, ClusterSerializer.TraitsOffset, ClusterSerializer.TraitsLength, out var bytes);
+		Span<byte> bytes = stackalloc byte[ClusterSerializer.TraitsLength];
+		ReadItemBytes(cluster, ClusterSerializer.TraitsOffset, bytes);
 		var traits = (ClusterTraits)bytes[0];
 		return traits;
 	}
@@ -109,16 +110,19 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 		if (_enableCache)
 			_clusterCache.Remove(clusterIndex);
 
-		_clusters.InternalCollection.WriteItemBytes(clusterIndex, ClusterSerializer.TraitsOffset, new[] { (byte)traits });
+		ReadOnlySpan<byte> bytes = stackalloc byte[] { (byte)traits };
+		_clusters.InternalCollection.WriteItemBytes(clusterIndex, ClusterSerializer.TraitsOffset, bytes);
 	}
 
 	internal override void MaskClusterTraitsInternal(long clusterIndex, ClusterTraits traits, bool on) {
 		if (_enableCache)
 			_clusterCache.Remove(clusterIndex);
 
-		_clusters.InternalCollection.ReadItemBytes(clusterIndex, ClusterSerializer.TraitsOffset, ClusterSerializer.TraitsLength, out var traitBytes);
+		Span<byte> traitBytes = stackalloc byte[ClusterSerializer.TraitsLength];
+		ReadItemBytes(clusterIndex, ClusterSerializer.TraitsOffset, traitBytes);
 		var newTraits = ((ClusterTraits)traitBytes[0]).CopyAndSetFlags(traits, on);
-		_clusters.InternalCollection.WriteItemBytes(clusterIndex, ClusterSerializer.TraitsOffset, new[] { (byte)newTraits });
+		traitBytes[0] = (byte)newTraits;
+		_clusters.InternalCollection.WriteItemBytes(clusterIndex, ClusterSerializer.TraitsOffset, traitBytes);
 		if (_enableCache)
 			_clusterCache.Remove(clusterIndex);
 	}
@@ -127,7 +131,8 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 		if (_enableCache) 
 			return GetCachedClusterHeader(cluster).Prev;
 
-		_clusters.InternalCollection.ReadItemBytes(cluster, ClusterSerializer.PrevOffset, ClusterSerializer.PrevLength, out var bytes);
+		Span<byte> bytes = stackalloc byte[ClusterSerializer.PrevLength];
+		ReadItemBytes(cluster, ClusterSerializer.PrevOffset, bytes);
 		var prevCluster = _clusters.InternalCollection.Reader.BitConverter.ToInt64(bytes);
 		return prevCluster;
 	}
@@ -136,7 +141,8 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 		if (_enableCache)
 			_clusterCache.Remove(clusterIndex);
 
-		var bytes = _clusters.InternalCollection.Writer.BitConverter.GetBytes(prev);
+		Span<byte> bytes = stackalloc byte[sizeof(long)];
+		_clusters.InternalCollection.Writer.BitConverter.WriteTo(prev, bytes);
 		_clusters.InternalCollection.WriteItemBytes(clusterIndex, ClusterSerializer.PrevOffset, bytes);
 	}
 
@@ -144,7 +150,8 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 		if (_enableCache) 
 			return GetCachedClusterHeader(cluster).Next;
 
-		_clusters.InternalCollection.ReadItemBytes(cluster, ClusterSerializer.NextOffset, ClusterSerializer.NextLength, out var bytes);
+		Span<byte> bytes = stackalloc byte[ClusterSerializer.NextLength];
+		ReadItemBytes(cluster, ClusterSerializer.NextOffset, bytes);
 		var nextValue = _clusters.InternalCollection.Reader.BitConverter.ToInt64(bytes);
 		return nextValue;
 	}
@@ -153,7 +160,8 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 		if (_enableCache)
 			_clusterCache.Remove(clusterIndex);
 
-		var bytes = _clusters.InternalCollection.Writer.BitConverter.GetBytes(next);
+		Span<byte> bytes = stackalloc byte[sizeof(long)];
+		_clusters.InternalCollection.Writer.BitConverter.WriteTo(next, bytes);
 		_clusters.InternalCollection.WriteItemBytes(clusterIndex, ClusterSerializer.NextOffset, bytes);
 	}
 
@@ -162,6 +170,9 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 		_clusters.InternalCollection.ReadItemBytes(clusterIndex, ClusterSerializer.DataOffset + offset, size, out var bytes);
 		return bytes;
 	}
+
+	internal override void ReadClusterData(long clusterIndex, long offset, Span<byte> destination)
+		=> ReadItemBytes(clusterIndex, ClusterSerializer.DataOffset + offset, destination);
 
 	internal override void WriteClusterDataInternal(long clusterIndex, long offset, ReadOnlySpan<byte> data) {
 		// cluster data is not cached
@@ -173,7 +184,8 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private ClusterHeader GetCachedClusterHeader(long index) {
 		if (!_clusterCache.TryGetValue(index, out var header)) {
-			_clusters.InternalCollection.ReadItemBytes(index, 0, ClusterSerializer.TraitsLength + ClusterSerializer.PrevLength + ClusterSerializer.NextLength, out var bytes);
+			Span<byte> bytes = stackalloc byte[ClusterSerializer.TraitsLength + ClusterSerializer.PrevLength + ClusterSerializer.NextLength];
+			ReadItemBytes(index, 0, bytes);
 			header = new ClusterHeader(
 				(ClusterTraits)bytes[0],
 				_clusters.InternalCollection.Reader.BitConverter.ToInt64(bytes, (int)ClusterSerializer.PrevOffset),
@@ -182,6 +194,12 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 			_clusterCache[index] = header;
 		}
 		return header;
+	}
+
+	private void ReadItemBytes(long index, long byteOffset, Span<byte> destination) {
+		var bytesRead = _clusters.InternalCollection.ReadItemBytes(index, byteOffset, destination);
+		if (bytesRead != destination.Length)
+			throw new EndOfStreamException("Cluster storage ended before the requested bytes were read.");
 	}
 
 	

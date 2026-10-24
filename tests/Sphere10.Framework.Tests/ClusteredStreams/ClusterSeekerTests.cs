@@ -15,6 +15,132 @@ namespace Sphere10.Framework.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ClusterSeekerTests {
+	[TestCase(0, 3, ClusterTraits.None)]
+	[TestCase(1, 3, ClusterTraits.Start)]
+	[TestCase(1, 3, ClusterTraits.End)]
+	[TestCase(2, 3, ClusterTraits.None)]
+	[TestCase(0, 1, ClusterTraits.End)]
+	public void PointerRejectsMissingOrMisplacedTerminalTraits(long index, long count, ClusterTraits traits) {
+		var pointer = new ClusterSeeker.ClusterPointer {
+			Chain = new ClusterSeeker.ClusterChain { TotalClusters = count },
+			CurrentCluster = 42,
+			CurrentIndex = index,
+			CurrentTraits = traits
+		};
+		Assert.That(pointer.CheckTraits, Throws.InvalidOperationException);
+	}
+
+	[TestCase(0, 3, ClusterTraits.Start)]
+	[TestCase(1, 3, ClusterTraits.None)]
+	[TestCase(2, 3, ClusterTraits.End)]
+	[TestCase(0, 1, ClusterTraits.Start | ClusterTraits.End)]
+	public void PointerAcceptsConsistentTerminalTraits(long index, long count, ClusterTraits traits) {
+		var pointer = new ClusterSeeker.ClusterPointer {
+			Chain = new ClusterSeeker.ClusterChain { TotalClusters = count },
+			CurrentCluster = 42,
+			CurrentIndex = index,
+			CurrentTraits = traits
+		};
+		Assert.That(pointer.CheckTraits, Throws.Nothing);
+	}
+
+	[Test]
+	public void PointerPreservesExistingAcceptanceOfSingleStartOnlyCluster() {
+		// The existing END check accepts START here; integrity behavior is unchanged by the seek optimizations.
+		var pointer = new ClusterSeeker.ClusterPointer {
+			Chain = new ClusterSeeker.ClusterChain { TotalClusters = 1 },
+			CurrentCluster = 42,
+			CurrentIndex = 0,
+			CurrentTraits = ClusterTraits.Start
+		};
+		Assert.That(pointer.CheckTraits, Throws.Nothing);
+	}
+
+	[TestCase(9, 8, 4, 0, 4, IterateDirection.LeftToRight)]
+	[TestCase(11, 4, 2, 0, 2, IterateDirection.LeftToRight)]
+	[TestCase(11, 4, 7, 10, 3, IterateDirection.RightToLeft)]
+	[TestCase(11, 5, 6, 5, 1, IterateDirection.LeftToRight)]
+	public void ShortestPathPreservesStartThenEndThenCurrentTieOrder(int count, int currentIndex, int targetIndex, long expectedCluster, long expectedSteps, IterateDirection expectedDirection) {
+		var map = new InMemoryClusterMap(new ExtendedList<Cluster>(), 1);
+		var (start, end) = map.NewClusterChain(count, 99);
+		var seeker = new PathInspectingClusterSeeker(map, 99, start, end, count);
+		seeker.SeekForward(currentIndex);
+		var (cluster, steps, direction) = seeker.FindPath(targetIndex);
+		Assert.That(cluster, Is.EqualTo(expectedCluster));
+		Assert.That(steps, Is.EqualTo(expectedSteps));
+		Assert.That(direction, Is.EqualTo(expectedDirection));
+	}
+
+	[Test]
+	public void TraversalReachesBothBoundariesAcrossScratchThreshold([Values(1, 32, 33, 80)] int steps, [Values] bool integrityChecks) {
+		var map = new InMemoryClusterMap(new ExtendedList<Cluster>(), 1);
+		var seeker = CreateSeeker(map, steps + 1, 99, integrityChecks);
+		seeker.SeekForward(steps);
+		Assert.That(seeker.Pointer.CurrentIndex, Is.EqualTo(steps));
+		Assert.That(seeker.Pointer.CurrentCluster, Is.EqualTo(seeker.Pointer.Chain.EndCluster));
+		Assert.That(seeker.Pointer.CurrentTraits, Is.EqualTo(ClusterTraits.End));
+		Assert.That(() => seeker.SeekForward(1), Throws.InvalidOperationException);
+		seeker.SeekBackwards(steps);
+		Assert.That(seeker.Pointer.CurrentIndex, Is.Zero);
+		Assert.That(seeker.Pointer.CurrentCluster, Is.EqualTo(seeker.Pointer.Chain.StartCluster));
+		Assert.That(seeker.Pointer.CurrentTraits, Is.EqualTo(ClusterTraits.Start));
+		Assert.That(() => seeker.SeekBackwards(1), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void LongStepCountReachesBoundaryWithoutNarrowing([Values] bool backwards, [Values] bool integrityChecks) {
+		var map = new InMemoryClusterMap(new ExtendedList<Cluster>(), 1);
+		var seeker = CreateSeeker(map, 3, 99, integrityChecks);
+		if (backwards) {
+			seeker.SeekEnd();
+			Assert.That(() => seeker.SeekBackwards(long.MaxValue), Throws.InvalidOperationException.With.Message.Contains("before the first cluster"));
+			Assert.That(seeker.Pointer.CurrentIndex, Is.Zero);
+		} else {
+			Assert.That(() => seeker.SeekForward(long.MaxValue), Throws.InvalidOperationException.With.Message.Contains("past the last cluster"));
+			Assert.That(seeker.Pointer.CurrentIndex, Is.EqualTo(2));
+		}
+	}
+
+	[Test]
+	public void RepeatedStationaryAndCheckpointSeeksDoNotAllocate([Values] bool integrityChecks) {
+		var map = new InMemoryClusterMap(new ExtendedList<Cluster>(), 1);
+		var seeker = CreateSeeker(map, 100, 99, integrityChecks);
+		seeker.SeekForward(99);
+		seeker.SeekTo(50);
+		seeker.SeekTo(51);
+		var before = GC.GetAllocatedBytesForCurrentThread();
+		for (var i = 0; i < 1000; i++) {
+			seeker.SeekTo(50);
+			seeker.SeekTo(50);
+			seeker.SeekTo(51);
+		}
+		var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+		TestContext.Out.WriteLine($"3,000 current/nearby cluster seeks (integrity={integrityChecks}): {allocated:N0} allocated bytes.");
+		Assert.That(allocated, Is.LessThan(1024));
+		Assert.That(seeker.Pointer.CurrentCluster, Is.EqualTo(51));
+	}
+
+	[TestCase(4, false)]
+	[TestCase(32, false)]
+	[TestCase(33, false)]
+	[TestCase(80, false)]
+	[TestCase(4, true)]
+	[TestCase(32, true)]
+	[TestCase(33, true)]
+	[TestCase(80, true)]
+	public void CyclesAreRejectedWithStackAndHeapTraversalScratch(int steps, bool backwards) {
+		var map = new InMemoryClusterMap(new ExtendedList<Cluster>(), 1);
+		var seeker = CreateSeeker(map, 100, 99, false);
+		if (backwards) {
+			seeker.SeekEnd();
+			map.WriteClusterPrev(98, 99);
+			Assert.That(() => seeker.SeekBackwards(steps), Throws.InvalidOperationException.With.Message.Contains("Cyclic dependency"));
+		} else {
+			map.WriteClusterNext(1, 0);
+			Assert.That(() => seeker.SeekForward(steps), Throws.InvalidOperationException.With.Message.Contains("Cyclic dependency"));
+		}
+	}
+
 	[TestCase(100)]
 	[TestCase(ClusterSeeker.MaxCheckpoints)]
 	[TestCase(8193)]
@@ -158,6 +284,17 @@ public class ClusterSeekerTests {
 			seeker.SeekTo(index);
 			Assert.That(seeker.Pointer.CurrentIndex, Is.EqualTo(index));
 			Assert.That(seeker.Pointer.CurrentCluster, Is.EqualTo(expected[index]));
+		}
+	}
+
+	private sealed class PathInspectingClusterSeeker : ClusterSeeker {
+		public PathInspectingClusterSeeker(ClusterMap map, long terminal, long start, long end, long count)
+			: base(map, terminal, start, end, count, true) {
+		}
+
+		public (long Cluster, long Steps, IterateDirection Direction) FindPath(long index) {
+			FindShortestPathToLogicalCluster(index, out var cluster, out var steps, out var direction);
+			return (cluster, steps, direction);
 		}
 	}
 

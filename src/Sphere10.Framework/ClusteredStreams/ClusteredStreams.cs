@@ -623,12 +623,12 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		void ClusterMapChangedHandler(object source, ClusterMapChangedEventArgs changedEvent) {
 			CheckLocked();
 			// Data-only writes do not change stream descriptors, cluster counts or seek positions.
-			if (!changedEvent.ClusterLinksChanged && changedEvent.ClusterCountDelta == 0 && changedEvent.MovedClusters.Count == 0 &&
-			    changedEvent.MovedTerminals.Count == 0 && !changedEvent.ChainTerminal.HasValue)
+			if (!changedEvent.ClusterLinksChanged && changedEvent.ClusterCountDelta == 0 && !changedEvent.HasMovedClusters &&
+			    !changedEvent.HasMovedTerminals && !changedEvent.ChainTerminal.HasValue)
 				return;
 			SuppressEvents = true;
 			try {
-				var movedChainTerminals = changedEvent.MovedTerminals.OrderBy(x => x.Key).ToArray();
+				var movedChainTerminals = changedEvent.GetMovedTerminals().OrderBy(x => x.Key).ToArray();
 
 				// 1. Update header (no clusters affected)
 				if (changedEvent.ClusterCountDelta != 0)

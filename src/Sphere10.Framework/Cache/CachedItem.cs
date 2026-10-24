@@ -32,10 +32,12 @@ public class CachedItem<T> : IDisposable {
 
 	internal virtual long AccessOrder { get; set; }
 
+	internal bool IsRemoving { get; set; }
+
 	/// <summary>Whether the cache may evict this entry under capacity pressure.</summary>
 	public bool CanPurge {
-		get => Traits.HasFlag(CachedItemTraits.CanPurge);
-		set => Traits = Traits.CopyAndSetFlags(CachedItemTraits.CanPurge, value);
+		get => (Traits & CachedItemTraits.CanPurge) != 0;
+		set => Traits = value ? Traits | CachedItemTraits.CanPurge : Traits & ~CachedItemTraits.CanPurge;
 	}
 
 	/// <summary>Explicitly disposes the value. Cache eviction itself does not own or dispose cached payloads.</summary>

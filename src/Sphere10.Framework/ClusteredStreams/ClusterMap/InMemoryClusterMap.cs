@@ -67,10 +67,16 @@ public sealed class InMemoryClusterMap : ClusterMap {
 	internal override void WriteClusterNextInternal(long clusterIndex, long next) => GetCluster(clusterIndex).Next = next;
 	
 	internal override byte[] ReadClusterData(long clusterIndex, long offset, long size) 
-		=> GetCluster(clusterIndex).Data.AsSpan().Slice((int)offset, (int)size).ToArray();
+		=> ReadClusterDataSpan(clusterIndex, offset, size).ToArray();
+
+	internal override void ReadClusterData(long clusterIndex, long offset, Span<byte> destination)
+		=> ReadClusterDataSpan(clusterIndex, offset, destination.Length).CopyTo(destination);
 
 	internal override void WriteClusterDataInternal(long clusterIndex, long offset, ReadOnlySpan<byte> data)
 		=> data.CopyTo(GetCluster(clusterIndex).Data.AsSpan().Slice((int)offset));
+
+	private ReadOnlySpan<byte> ReadClusterDataSpan(long clusterIndex, long offset, long size)
+		=> GetCluster(clusterIndex).Data.AsSpan().Slice((int)offset, (int)size);
 	
 	
 }

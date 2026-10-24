@@ -311,6 +311,7 @@ public class CacheProjectionTests {
 		var calls = 0;
 		projection.ItemFetching += _ => calls++;
 		projection.ItemFetched += (_, _) => calls++;
+		projection.ItemRemoving += (_, _) => calls++;
 		projection.ItemRemoved += (_, _) => calls++;
 		AggregateException failure = null;
 		try {
@@ -319,28 +320,30 @@ public class CacheProjectionTests {
 			failure = error;
 		}
 		Assert.That(failure, Is.Not.Null);
-		Assert.That(failure.InnerExceptions.Select(error => error.Message), Is.EquivalentTo(new[] { "Removal 0", "Removal 1", "Removal 2" }));
-		Assert.That(source.EventRemovalAttempts, Is.EqualTo(new[] { 1, 1, 1 }));
+		Assert.That(failure.InnerExceptions.Select(error => error.Message), Is.EquivalentTo(new[] { "Removal 0", "Removal 1", "Removal 2", "Removal 3" }));
+		Assert.That(source.EventRemovalAttempts, Is.EqualTo(new[] { 1, 1, 1, 1 }));
 		Assert.That(source.Get("after").Value, Is.EqualTo(5));
 		source.Remove("after");
 		Assert.That(calls, Is.Zero);
 		Assert.That(projection.Dispose, Throws.Nothing);
-		Assert.That(source.EventRemovalAttempts, Is.EqualTo(new[] { 1, 1, 1 }));
+		Assert.That(source.EventRemovalAttempts, Is.EqualTo(new[] { 1, 1, 1, 1 }));
 	}
 
 	[TestCase(0)]
 	[TestCase(1)]
 	[TestCase(2)]
+	[TestCase(3)]
 	public void DisposingProjectionDoesNotRemoveForwardersThatWereNeverSubscribed(int eventIndex) {
 		using var source = new DirectCache<string, int>(key => key.Length, throwAfterEventRemoval: true);
 		using var projection = source.AsObjectCache();
 		switch (eventIndex) {
 			case 0: projection.ItemFetching += _ => { }; break;
 			case 1: projection.ItemFetched += (_, _) => { }; break;
-			default: projection.ItemRemoved += (_, _) => { }; break;
+			case 2: projection.ItemRemoved += (_, _) => { }; break;
+			default: projection.ItemRemoving += (_, _) => { }; break;
 		}
 		Assert.That(projection.Dispose, Throws.TypeOf<AggregateException>());
-		var attempts = new int[3];
+		var attempts = new int[4];
 		attempts[eventIndex] = 1;
 		Assert.That(source.EventRemovalAttempts, Is.EqualTo(attempts));
 		Assert.That(source.Get("alive").Value, Is.EqualTo(5));
@@ -475,6 +478,14 @@ public class CacheProjectionTests {
 			}
 		}
 
+		public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoving {
+			add => Internal.ItemRemoving += value;
+			remove {
+				Internal.ItemRemoving -= value;
+				RecordEventRemoval(3);
+			}
+		}
+
 		public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved {
 			add => Internal.ItemRemoved += value;
 			remove {
@@ -485,7 +496,7 @@ public class CacheProjectionTests {
 
 		private readonly ActionCache<TKey, TValue> _internal;
 		private readonly bool _throwAfterEventRemoval;
-		private readonly int[] _eventRemovalAttempts = new int[3];
+		private readonly int[] _eventRemovalAttempts = new int[4];
 
 		public DirectCache(Func<TKey, TValue> fetch, bool throwAfterEventRemoval = false) {
 			_internal = new ActionCache<TKey, TValue>(fetch);

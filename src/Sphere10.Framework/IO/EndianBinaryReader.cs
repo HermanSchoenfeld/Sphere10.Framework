@@ -432,25 +432,15 @@ public class EndianBinaryReader : IDisposable {
 		if (count < 0) {
 			throw new ArgumentOutOfRangeException(nameof(index));
 		}
-		if (count + index > buffer.Length) {
+		if (index > buffer.Length || count > buffer.Length - index) {
 			throw new ArgumentException("Not enough space in buffer for specified number of bytes starting at specified index");
 		}
-		int read = 0;
-		while (count > 0) {
-			int block = _stream.Read(buffer, index, count);
-			if (block == 0) {
-				return read;
-			}
-			index += block;
-			read += block;
-			count -= block;
-		}
-		return read;
+		return ReadBytes(buffer.AsSpan(index, count));
 	}
 
 
 	/// <summary>
-	/// Fills the span with bytes
+	/// Reads bytes into the span with one underlying stream read, which may return fewer bytes than requested.
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public int Read(Span<byte> buffer) {
@@ -467,24 +457,38 @@ public class EndianBinaryReader : IDisposable {
 	/// <param name="count">The number of bytes to read</param>
 	/// <returns>The bytes read</returns>
 	public byte[] ReadBytes(long count) {
-		CheckDisposed();
-		if (count < 0) {
-			throw new ArgumentOutOfRangeException(nameof(count));
-		}
-		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
-		byte[] ret = new byte[count];
-		var index = 0;
-		while (index < count) {
-			int read = _stream.Read(ret, index, countI - index);
-			// Stream has finished half way through. That's fine, return what we've got.
-			if (read == 0) {
-				byte[] copy = new byte[index];
-				System.Buffer.BlockCopy(ret, 0, copy, 0, index);
-				return copy;
-			}
-			index += read;
+		var countI = ValidateReadBytesLength(count);
+		byte[] ret = new byte[countI];
+		var bytesRead = ReadBytes(ret.AsSpan());
+		// Stream has finished half way through. That's fine, return what we've got.
+		if (bytesRead != ret.Length) {
+			var copy = new byte[bytesRead];
+			ret.AsSpan(0, bytesRead).CopyTo(copy);
+			return copy;
 		}
 		return ret;
+	}
+
+	internal int ReadBytes(Span<byte> destination)
+		=> TryReadInternal(destination, destination.Length);
+
+	internal int ValidateReadBytesLength(long count) {
+		CheckDisposed();
+		if (count < 0)
+			throw new ArgumentOutOfRangeException(nameof(count));
+		return Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
+	}
+
+	internal void DiscardBytes(long count) {
+		var remaining = ValidateReadBytesLength(count);
+		Span<byte> scratch = stackalloc byte[Math.Min(remaining, 512)];
+		while (remaining > 0) {
+			var requested = Math.Min(scratch.Length, remaining);
+			var read = ReadBytes(scratch[..requested]);
+			remaining -= read;
+			if (read < requested)
+				break;
+		}
 	}
 
 	/// <summary>
@@ -600,16 +604,9 @@ public class EndianBinaryReader : IDisposable {
 	/// <param name="data">Buffer to read into</param>
 	/// <param name="size">Number of bytes to read</param>
 	private void ReadInternal(Span<byte> data, int size) {
-		CheckDisposed();
-		int index = 0;
-		while (index < size) {
-			// int read = stream.Read(data, index, size - index);
-			int read = _stream.Read(data.Slice(index, size - index));
-			if (read == 0) {
-				throw new EndOfStreamException($"End of stream reached with {size - index} byte{(size - index == 1 ? "s" : "")} left to read.");
-			}
-			index += read;
-		}
+		var bytesRead = TryReadInternal(data, size);
+		if (bytesRead != size)
+			throw new EndOfStreamException($"End of stream reached with {size - bytesRead} byte{(size - bytesRead == 1 ? "s" : "")} left to read.");
 	}
 
 	/// <summary>
@@ -620,11 +617,11 @@ public class EndianBinaryReader : IDisposable {
 	/// <param name="data">Buffer to read into</param>
 	/// <param name="size">Number of bytes to read</param>
 	/// <returns>Number of bytes actually read</returns>
-	private int TryReadInternal(byte[] data, int size) {
+	private int TryReadInternal(Span<byte> data, int size) {
 		CheckDisposed();
 		int index = 0;
 		while (index < size) {
-			int read = _stream.Read(data, index, size - index);
+			int read = _stream.Read(data.Slice(index, size - index));
 			if (read == 0) {
 				return index;
 			}

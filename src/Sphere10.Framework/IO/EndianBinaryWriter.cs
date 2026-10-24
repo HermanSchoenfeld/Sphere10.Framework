@@ -8,6 +8,7 @@
 // Based from original: http://jonskeet.uk/csharp/miscutil/
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 
@@ -271,7 +272,8 @@ public class EndianBinaryWriter : IDisposable {
 	/// <param name="count">The number of bytes to write</param>
 	public void Write(byte[] value, int offset, int count) {
 		CheckDisposed();
-		stream.Write(value, offset, count);
+		ArgumentNullException.ThrowIfNull(value);
+		Write(value.AsSpan(offset, count));
 	}
 
 	/// <summary>
@@ -289,9 +291,20 @@ public class EndianBinaryWriter : IDisposable {
 	/// <param name="value">An array containing the characters to write</param>
 	public void Write(ReadOnlySpan<char> value) {
 		CheckDisposed();
-		byte[] data = new byte[sizeof(char) * value.Length];
-		Encoding.GetBytes(value, data);
-		WriteInternal(data, data.Length);
+		var byteLength = checked(sizeof(char) * value.Length);
+		byte[] rented = null;
+		Span<byte> data = byteLength <= 512
+			? stackalloc byte[byteLength]
+			: (rented = ArrayPool<byte>.Shared.Rent(byteLength)).AsSpan(0, byteLength);
+		try {
+			// Preserve the existing fixed-size output, including unused zero-padded bytes.
+			data.Clear();
+			Encoding.GetBytes(value, data);
+			WriteInternal(data, data.Length);
+		} finally {
+			if (rented != null)
+				ArrayPool<byte>.Shared.Return(rented);
+		}
 	}
 
 	/// <summary>

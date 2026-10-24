@@ -34,6 +34,11 @@ public abstract class CacheBase : CacheBase<object, object>, ICache {
 
 	protected abstract bool CheckStaleness(object key, CachedItem item);
 
+	protected sealed override void OnItemRemoving(object key, CachedItem<object> item) => OnItemRemoving(key, (CachedItem)item);
+
+	protected virtual void OnItemRemoving(object key, CachedItem item) {
+	}
+
 	protected override void OnItemRemoved(object key, CachedItem<object> item) => OnItemRemoved(key, (CachedItem)item);
 
 	protected virtual void OnItemRemoved(object key, CachedItem item) {

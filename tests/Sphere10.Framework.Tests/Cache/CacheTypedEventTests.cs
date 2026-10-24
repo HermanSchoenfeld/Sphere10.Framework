@@ -19,6 +19,7 @@ public class CacheTypedEventTests {
 	[TestCase(0)]
 	[TestCase(1)]
 	[TestCase(2)]
+	[TestCase(3)]
 	public void ObjectEventsPreserveDuplicateMulticastAndComponentRemoval(int eventIndex) {
 		using var cache = new ActionCache<int, int>(key => key);
 		using var projection = cache.AsObjectCache();
@@ -239,16 +240,20 @@ public class CacheTypedEventTests {
 				if (add) cache.ItemFetched += (EventHandlerEx<object, object>)handler;
 				else cache.ItemFetched -= (EventHandlerEx<object, object>)handler;
 				break;
-			default:
+			case 2:
 				if (add) cache.ItemRemoved += (EventHandlerEx<object, CachedItem<object>>)handler;
 				else cache.ItemRemoved -= (EventHandlerEx<object, CachedItem<object>>)handler;
+				break;
+			default:
+				if (add) cache.ItemRemoving += (EventHandlerEx<object, CachedItem<object>>)handler;
+				else cache.ItemRemoving -= (EventHandlerEx<object, CachedItem<object>>)handler;
 				break;
 		}
 	}
 
 	private static void Trigger(ActionCache<int, int> cache, int eventIndex, int key) {
 		cache.Get(key);
-		if (eventIndex == 2)
+		if (eventIndex is 2 or 3)
 			cache.Remove(key);
 	}
 

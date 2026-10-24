@@ -71,7 +71,7 @@ public class NullableSerializer<T> : ItemSerializerBase<T?> where T : struct  {
 		var hasValue = reader.ReadBoolean();
 		var result = hasValue ? new T?(ValueSerializer.Deserialize(reader, context)) : null;
 		if (IsConstantSize)
-			reader.ReadBytes(ValueSerializer.ConstantSize);
+			reader.DiscardBytes(ValueSerializer.ConstantSize);
 		return result;
 	}
 }
