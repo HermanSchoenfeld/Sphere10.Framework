@@ -9,6 +9,7 @@
  using System;
  using System.Diagnostics;
  using System.IO;
+ using System.Runtime.ExceptionServices;
  
  namespace Sphere10.Framework;
  
@@ -30,8 +31,9 @@
  	private readonly ClusteredStreams _streams;
  	private readonly ClusteredStreamFragmentProvider _fragmentProvider;
  	private ClusteredStreamDescriptor _descriptor;
- 	private readonly Action _finalizeAction;
+	private Action _finalizeAction;
  	private readonly Disposables  _disposables;
+	private bool _closed;
  
 	/// <summary>
 	/// Creates a clustered stream wrapper for the specified terminal stream index.
@@ -45,7 +47,7 @@
  	internal ClusteredStream(ClusteredStreams streams, long streamIndex, bool readOnly, Action finalizeAction = null)
  		: base(CreateInternalStream(streams, streamIndex, readOnly, out var streamDescriptor, out var fragmentProvider)) {
  		_streams = streams;
- 		_finalizeAction = finalizeAction;
+		_finalizeAction = finalizeAction ?? (static () => { });
  		StreamIndex = streamIndex;
  		_descriptor = streamDescriptor;
  		ReadOnly = readOnly;
@@ -171,14 +173,29 @@
 	/// </remarks>
  	public override void Close() {
  		// Close() is called by Dispose
- 		if (!ReadOnly)
- 			_streams.UpdateStreamDescriptor(StreamIndex, _descriptor);
- 		
-        _finalizeAction?.Invoke();
-        _disposables.ForEach(d => d.Dispose());
-        DiagnosticVerifyClusters();
-        base.Close();
+		if (_closed)
+			return;
+		_closed = true;
+		Tools.Exceptions.Execute(this, static stream => stream.CloseInternal(), static (stream, error) => {
+			// Registered finalizers retain their own successful-disposal guards, so a retry resumes failed and pending cleanup.
+			stream._closed = false;
+			ExceptionDispatchInfo.Capture(error).Throw();
+		});
     }
+
+	private void CloseInternal() {
+		if (_finalizeAction is not null) {
+			if (!ReadOnly)
+				_streams.UpdateStreamDescriptor(StreamIndex, _descriptor);
+			// A failed descriptor save keeps ownership open for retry. Once released, this stream must not overwrite a replacement's descriptor.
+			var finalizeAction = _finalizeAction;
+			_finalizeAction = null;
+			finalizeAction();
+		}
+		_disposables.ForEach(d => d.Dispose());
+		DiagnosticVerifyClusters();
+		base.Close();
+	}
  
 	private void NotifyStreamLengthChanged(long newSize) {
 		StreamLengthChanged?.Invoke(newSize);

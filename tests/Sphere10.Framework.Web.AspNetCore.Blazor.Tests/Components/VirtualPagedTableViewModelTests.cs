@@ -37,6 +37,13 @@ public class VirtualPagedTableViewModelTests {
 
 
 	[Test]
+	public async Task DisposedTableRejectsRefreshBeforeAccessingItsProvider() {
+		var model = new VirtualPagedTableViewModel<int>();
+		model.Dispose();
+		await Assert.ThatAsync(async () => await model.RefreshAsync(), Throws.TypeOf<ObjectDisposedException>());
+	}
+
+	[Test]
 	public async Task ProviderAndReturnedArraysDoNotChangeTheLoadedPage() {
 		var items = new[] { 1, 2 };
 		using var model = new VirtualPagedTableViewModel<int> {

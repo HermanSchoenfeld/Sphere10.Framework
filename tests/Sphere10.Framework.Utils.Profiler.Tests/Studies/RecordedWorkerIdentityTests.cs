@@ -26,7 +26,11 @@ public class RecordedWorkerIdentityTests {
 	private static readonly Regex WorkerCommand = new(@"^// Execute: dotnet (?<application>\S+\.dll) .*?--benchmarkName (?<name>""(?:\\.|[^""])*"").*?--benchmarkId (?<id>\d+) in (?<directory>.+)$", RegexOptions.CultureInvariant);
 
 	public static IEnumerable<TestCaseData> RetainedWorkerAudits() {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		if (!ProfilerEvidence.IsConfigured) {
+			yield return new TestCaseData("not-configured").Ignore(ProfilerEvidence.MissingInputMessage);
+			yield break;
+		}
+		var root = ProfilerEvidence.GetRoot();
 		var paths = Directory.Exists(root) ? Directory.GetFiles(root, "*.json", SearchOption.AllDirectories)
 			.Where(path => Path.GetFileName(path) is "worker-fingerprints.json" or "worker-binary-fingerprints.json").ToArray() : Array.Empty<string>();
 		if (paths.Length == 0) {
@@ -40,8 +44,10 @@ public class RecordedWorkerIdentityTests {
 	}
 
 	[TestCaseSource(nameof(RetainedWorkerAudits))]
+	[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+	[Category("RecordedPerformance")]
 	public void RecordedWorkerIdentityMatchesItsExecutedConfigurationOrDeclaresHistoricalUnavailability(string relativePath) {
-		var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", relativePath);
+		var path = Path.Combine(ProfilerEvidence.GetRoot(), relativePath);
 		Assert.That(File.Exists(path), Is.True);
 		var directory = Path.GetDirectoryName(path);
 		TestContext.AddTestAttachment(path, "Worker identity capture or historical unavailability audit");
@@ -64,8 +70,10 @@ public class RecordedWorkerIdentityTests {
 	}
 
 	[Test]
+	[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+	[Category("RecordedPerformance")]
 	public void EveryCompletedControlledKeepFilesRunHasAnActualWorkerCapture() {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		var root = ProfilerEvidence.GetRoot();
 		Assert.That(Directory.Exists(root), Is.True);
 		var count = 0;
 		foreach (var path in Directory.GetFiles(root, "run.json", SearchOption.AllDirectories)) {

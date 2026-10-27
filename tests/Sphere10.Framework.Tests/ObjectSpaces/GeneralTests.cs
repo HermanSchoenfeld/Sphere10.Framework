@@ -40,6 +40,37 @@ public class GeneralTests {
 		Assert.That(() => { using var _ = TestsHelper.CreateObjectSpace(testTraits); }, Throws.Nothing);
 	}
 
+	[Test]
+	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
+	public void DisposalReleasesOnlyItsOwnCleanupAndTemporaryDirectory(TestTraits testTraits) {
+		var firstCleanups = 0;
+		var secondCleanups = 0;
+		string firstDirectory = null;
+		string secondDirectory = null;
+		using (var second = TestsHelper.CreateObjectSpace(testTraits)) {
+			second.Disposables.Add(() => secondCleanups++);
+			if (second is FileObjectSpace secondFile)
+				secondDirectory = Path.GetDirectoryName(secondFile.File.Path);
+			using (var first = TestsHelper.CreateObjectSpace(testTraits)) {
+				first.Disposables.Add(() => firstCleanups++);
+				Assert.That(first.Disposables, Is.Not.SameAs(second.Disposables));
+				if (first is FileObjectSpace firstFile)
+					firstDirectory = Path.GetDirectoryName(firstFile.File.Path);
+			}
+			Assert.That(firstCleanups, Is.EqualTo(1));
+			Assert.That(secondCleanups, Is.Zero);
+			Assert.That(second.Count<Account>(), Is.Zero);
+			if (firstDirectory is not null) {
+				Assert.That(Directory.Exists(firstDirectory), Is.False);
+				Assert.That(Directory.Exists(secondDirectory), Is.True);
+			}
+		}
+		Assert.That(firstCleanups, Is.EqualTo(1));
+		Assert.That(secondCleanups, Is.EqualTo(1));
+		if (secondDirectory is not null)
+			Assert.That(Directory.Exists(secondDirectory), Is.False);
+	}
+
 	#endregion
 
 	#region Save

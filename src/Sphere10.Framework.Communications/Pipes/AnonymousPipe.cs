@@ -61,26 +61,20 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 	}
 	public override async ValueTask DisposeAsync() {
 		await base.DisposeAsync();
-		_writeStream?.Dispose();
-		_readStream?.Dispose();
+		await DisposePipeResourcesAsync();
 	}
 
 	protected override async Task OpenInternal() {
 		(Endpoint, _readStream, _writeStream) = await OpenPipeInternal();
-		_writer = new StreamWriter(_writeStream) { AutoFlush = true };
-		_reader = new StreamReader(_readStream);
+		_writer = new StreamWriter(_writeStream, leaveOpen: true) { AutoFlush = true };
+		_reader = new StreamReader(_readStream, leaveOpen: true);
 	}
 
 	protected abstract Task<(AnonymousPipeEndpoint endpoint, PipeStream readStream, PipeStream writeStream)> OpenPipeInternal();
 
-	protected override async Task CloseInternal() {
-		await _writer.DisposeAsync();
-		_reader.Dispose();
-		await _readStream.DisposeAsync();
-		await _writeStream.DisposeAsync();
-	}
+	protected override Task CloseInternal() => DisposePipeResourcesAsync();
 
-	public override bool IsConnectionAlive() => _readStream.IsConnected && _writeStream.IsConnected;
+	public override bool IsConnectionAlive() => _readStream is { IsConnected: true } && _writeStream is { IsConnected: true };
 
 	protected override Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
 		=> TrySendString(Convert.ToBase64String(bytes.Span), cancellationToken);
@@ -118,6 +112,26 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 		if (!string.IsNullOrEmpty(@string))
 			NotifyReceivedString(@string);
 		return @string;
+	}
+
+	private async Task DisposePipeResourcesAsync() {
+		// The wrappers leave both pipes open; this owner awaits each pipe's asynchronous disposal once.
+		if (_writer is not null) {
+			await _writer.DisposeAsync();
+			_writer = null;
+		}
+		if (_reader is not null) {
+			await Task.Run(_reader.Dispose);
+			_reader = null;
+		}
+		if (_readStream is not null) {
+			await _readStream.DisposeAsync();
+			_readStream = null;
+		}
+		if (_writeStream is not null) {
+			await _writeStream.DisposeAsync();
+			_writeStream = null;
+		}
 	}
 
 	private void NotifyReceivedString(string str) {

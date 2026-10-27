@@ -24,8 +24,10 @@ namespace Sphere10.Framework.Utils.Profiler.Tests;
 public class RetainedPerformanceReportTests {
 	[TestCase(null)]
 	[TestCase("20261013-objectspaces-bdn-confirmations")]
+	[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+	[Category("RecordedPerformance")]
 	public void ActualCombinedAndBenchmarkOnlyDirectoriesExposeTheirExactProfilesWithoutWriting(string relativeDirectory) {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		var root = ProfilerEvidence.GetRoot();
 		var directory = relativeDirectory == null ? root : Path.Combine(root, relativeDirectory);
 		Assert.That(Directory.Exists(directory), Is.True);
 		var before = Snapshot(directory);
@@ -160,7 +162,7 @@ public class RetainedPerformanceReportTests {
 	// Test arrangement and cleanup use a GUID-owned temporary directory. Only the report operation is asserted to be read-only.
 	private sealed class SyntheticReport : IDisposable {
 		public const string ProfileName = "file-combined-candidate-with-an-unabridged-name-169";
-		private readonly IDisposable _cleanup;
+		private ActionScope<string> _cleanup;
 
 		public SyntheticReport() {
 			Directory = Path.Combine(Path.GetTempPath(), "Sphere10RetainedReportTests", Guid.NewGuid().ToString("N"));

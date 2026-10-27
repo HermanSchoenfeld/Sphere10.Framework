@@ -26,13 +26,13 @@ var connectionString = Environment.GetEnvironmentVariable("POSTGRESQL_CONNECTION
 Guard.ArgumentNotNullOrEmpty(connectionString, nameof(connectionString));
 var dac = new PostgreSQLDAC(connectionString);
 
-using (dac.BeginScope()) {
+using (dac.EnterScope()) {
 	var serverVersion = dac.ExecuteScalar<string>("SELECT version()");
 	Console.WriteLine(serverVersion);
 }
 ```
 
-Constructing a DAC, including through `Tools.PostgreSQL.Open(...)`, only prepares its configuration. `BeginScope()` opens the connection by default. The scope owns the connection; the DAC itself is not disposable.
+Constructing a DAC, including through `Tools.PostgreSQL.Open(...)`, only prepares its configuration. `EnterScope()` opens the connection by default. The scope owns the connection; the DAC itself is not disposable.
 
 ## 🧩 Public API
 
@@ -44,7 +44,7 @@ Types are in `Sphere10.Framework.Data`; the static facade is in the global `Tool
 | `Tools.PostgreSQL.Open(...)` | Builds a connection string and returns a configured DAC. |
 | `Tools.PostgreSQL.CreateConnectionString(...)` | Returns a provider connection string without opening a connection. |
 | `CreateConnection()` / `CreateOpenConnection()` | Creates a caller-owned `NpgsqlConnection`, closed or opened respectively. |
-| `BeginScope()` | Opens a managed connection scope, optionally with a transaction. |
+| `EnterScope()` | Opens a managed connection scope, optionally with a transaction. |
 | `ExecuteScalar<T>(sql)` / `ExecuteQuery(sql)` | Returns a converted scalar or a materialized `DataTable`. |
 | `ExecuteNonQuery(sql)` / `ExecuteReader(sql)` | Executes a statement or returns a disposable reader. |
 | `Insert`, `Update`, `Delete` | Shared SQL-builder helpers; return affected-row counts. |
@@ -85,7 +85,7 @@ The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery`, `ExecuteReader` 
 The DAC's string-based execution methods execute SQL text. `ExecuteQuery(sql, params object[] args)` formats SQL through the builder; it does not bind ADO.NET parameters. Create a command for bound values:
 
 ```csharp
-using (var scope = dac.BeginScope()) {
+using (var scope = dac.EnterScope()) {
 	using var command = scope.Connection.CreateCommand();
 	command.CommandText = "SELECT @value";
 	command.CommandTimeout = 30;
@@ -110,7 +110,7 @@ The transaction assignment connects a manually created command to any local tran
 The following example assumes an existing `app_counters` table with numeric `id` and `counter_value` columns and rows `1` and `2`:
 
 ```csharp
-using (var scope = dac.BeginScope()) {
+using (var scope = dac.EnterScope()) {
 	scope.BeginTransaction(IsolationLevel.ReadCommitted);
 	dac.ExecuteNonQuery("UPDATE app_counters SET counter_value = counter_value + 1 WHERE id = 1");
 	dac.ExecuteNonQuery("UPDATE app_counters SET counter_value = counter_value + 1 WHERE id = 2");

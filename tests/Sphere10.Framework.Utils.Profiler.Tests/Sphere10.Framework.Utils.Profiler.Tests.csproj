@@ -3,6 +3,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<IsTestProject>true</IsTestProject>
 		<IsPackable>false</IsPackable>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Results/**</DefaultItemExcludes>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -15,8 +16,5 @@
 		<Compile Include="../Sphere10.Framework.Tests/TestObjects/TestObject.cs" Link="StreamMappedDictionaries/TestObjects/TestObject.cs" />
 		<Compile Include="../Sphere10.Framework.Tests/TestObjects/TestObjectSerializer.cs" Link="StreamMappedDictionaries/TestObjects/TestObjectSerializer.cs" />
 		<Compile Include="../Sphere10.Framework.Tests/TestObjects/TestObjectEqualityComparer.cs" Link="StreamMappedDictionaries/TestObjects/TestObjectEqualityComparer.cs" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Update="Results/**/*" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 </Project>

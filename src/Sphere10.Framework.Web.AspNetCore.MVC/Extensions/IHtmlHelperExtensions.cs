@@ -28,7 +28,7 @@ public static class HtmlHelperExtensions {
 		return new BootstrapFormScope<TModel>(htmlHelper, url, formModel, attributes, options);
 	}
 
-	public static IDisposable BeginBootstrapForm<TModel>(this IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default)
+	public static BootstrapFormScope<TModel> BeginBootstrapForm<TModel>(this IHtmlHelper<TModel> htmlHelper, string action, string controller, TModel formModel, AttributeDictionary attributes = null, FormScopeOptions options = FormScopeOptions.Default)
 		where TModel : FormModelBase {
 		return new BootstrapFormScope<TModel>(htmlHelper, action, controller, formModel, attributes, options);
 	}

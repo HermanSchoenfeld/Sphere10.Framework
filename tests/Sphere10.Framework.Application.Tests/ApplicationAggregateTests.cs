@@ -74,7 +74,7 @@ public class ApplicationAggregateTests {
 		else
 			decorator.Dispose();
 		Assert.That(application.WasDisposed, Is.True);
-		Assert.That(() => application.SetMenus(new[] { menu }), Throws.InvalidOperationException);
+		Assert.That(() => application.SetMenus(new[] { menu }), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	private sealed class ProbeApplication : SyncApplicationBase {

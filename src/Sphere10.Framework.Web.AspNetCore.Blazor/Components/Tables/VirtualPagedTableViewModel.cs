@@ -64,7 +64,7 @@ public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedC
 	}
 
 	public async Task RefreshAsync() {
-		Guard.Ensure(!_disposed, "The table has been disposed.");
+		ObjectDisposedException.ThrowIf(_disposed, this);
 		Guard.ArgumentNotNull(ItemsProvider, nameof(ItemsProvider));
 		Guard.ArgumentGT(PageSize, 0, nameof(PageSize));
 		var version = ++_requestVersion;

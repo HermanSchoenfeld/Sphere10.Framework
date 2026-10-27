@@ -27,7 +27,7 @@ public static class Oracle {
 	public static bool TestConnectionString(string connectionString) {
 		var dac = new OracleDAC(connectionString);
 		try {
-			using (dac.BeginScope()) {
+			using (dac.EnterScope()) {
 				return true;
 			}
 		} catch {

@@ -26,7 +26,11 @@ namespace Sphere10.Framework.Utils.Profiler.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class RecordedStudyResults {
 	public static IEnumerable<TestCaseData> RetainedStudies() {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		if (!ProfilerEvidence.IsConfigured) {
+			yield return new TestCaseData("not-configured").Ignore(ProfilerEvidence.MissingInputMessage);
+			yield break;
+		}
+		var root = ProfilerEvidence.GetRoot();
 		var plans = Directory.Exists(root) ? Directory.GetFiles(root, "run-plan.json", SearchOption.AllDirectories) : Array.Empty<string>();
 		if (plans.Length == 0) {
 			yield return new TestCaseData("missing-evidence").SetName("RecordedStudyResults.RetainedEvidenceIsRequired");
@@ -39,10 +43,12 @@ public class RecordedStudyResults {
 	}
 
 	[TestCaseSource(nameof(RetainedStudies))]
+	[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+	[Category("RecordedPerformance")]
 	public void MeasurementsReproduceTheDisplayedCandidates(string relativeDirectory) {
 		// These are retained measurements, not benchmark execution during a unit-test run.
-		var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", relativeDirectory);
-		Assert.That(Directory.Exists(directory), Is.True, "Retain measured study evidence under the profiler test project's Results folder and rebuild the tests.");
+		var directory = Path.Combine(ProfilerEvidence.GetRoot(), relativeDirectory);
+		Assert.That(Directory.Exists(directory), Is.True, "Supply measured study evidence through ProfilerResultsRoot.");
 		foreach (var name in new[] { "run-plan.json", "host.json", "samples.jsonl", "samples.csv", "results.json", "recommendations.json", "report.md" }) {
 			var path = Path.Combine(directory, name);
 			Assert.That(File.Exists(path), Is.True, $"Missing retained evidence: {path}");
@@ -243,7 +249,11 @@ public class RecordedStudyResults {
 [Parallelizable(ParallelScope.Children)]
 public class RecordedBenchmarkDotNetConfirmations {
 	public static IEnumerable<TestCaseData> RetainedConfirmations() {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		if (!ProfilerEvidence.IsConfigured) {
+			yield return new TestCaseData("not-configured").Ignore(ProfilerEvidence.MissingInputMessage);
+			yield break;
+		}
+		var root = ProfilerEvidence.GetRoot();
 		var reports = Directory.Exists(root) ? Directory.GetFiles(root, "*-report-full.json", SearchOption.AllDirectories) : Array.Empty<string>();
 		if (reports.Length == 0) {
 			yield return new TestCaseData("missing-confirmations").SetName("RecordedBenchmarkDotNetConfirmations.RetainedConfirmationIsRequired");
@@ -256,9 +266,11 @@ public class RecordedBenchmarkDotNetConfirmations {
 	}
 
 	[TestCaseSource(nameof(RetainedConfirmations))]
+	[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+	[Category("RecordedPerformance")]
 	public void IndependentProcessMeasurementsExposeTheirSamplesAndUncertainty(string relativePath) {
-		var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", relativePath);
-		Assert.That(File.Exists(path), Is.True, "Retain the finalist BenchmarkDotNet full JSON reports under Results and rebuild the tests.");
+		var path = Path.Combine(ProfilerEvidence.GetRoot(), relativePath);
+		Assert.That(File.Exists(path), Is.True, "Supply the finalist BenchmarkDotNet full JSON reports through ProfilerResultsRoot.");
 		TestContext.AddTestAttachment(path, "BenchmarkDotNet finalist confirmation");
 		var directory = Path.GetDirectoryName(Path.GetDirectoryName(path));
 		var arguments = ReadRunArguments(directory);
@@ -296,8 +308,10 @@ public class RecordedBenchmarkDotNetConfirmations {
 	}
 
 	[Test]
+	[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+	[Category("RecordedPerformance")]
 	public void ControlledMeasuredFinalistsCoverBothObjectSpaceBackendsAndEveryBTreePlusBackendAcrossThreeMixes() {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		var root = ProfilerEvidence.GetRoot();
 		Assert.That(Directory.Exists(root), Is.True, "Retained independent-process measurements are required.");
 		var objectSpaces = new HashSet<(ObjectSpaceLabStorage Storage, ObjectSpaceWorkloadMix Mix)>();
 		var btrees = new HashSet<(BTreeStorage Storage, string Mix)>();
@@ -512,8 +526,14 @@ public class RecordedBenchmarkDotNetConfirmations {
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+[Category("RecordedPerformance")]
 public class RecordedRecommendations {
 	public static IEnumerable<TestCaseData> RetainedGroups() {
+		if (!ProfilerEvidence.IsConfigured) {
+			yield return new TestCaseData("not-configured", "not-configured").Ignore(ProfilerEvidence.MissingInputMessage);
+			yield break;
+		}
 		var studies = ReadCompletedStudies().ToArray();
 		if (studies.Length == 0) {
 			yield return new TestCaseData("missing-evidence", "missing-group").SetName("RecordedRecommendations.CompletedEvidenceIsRequired");
@@ -548,7 +568,7 @@ public class RecordedRecommendations {
 		Assert.That(recommendation.IndistinguishableIds, Is.EquivalentTo(overlapping));
 
 		// The selected test result is a self-contained view of one backend/family/workload/factor comparison.
-		var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", relativeDirectory);
+		var directory = Path.Combine(ProfilerEvidence.GetRoot(), relativeDirectory);
 		foreach (var name in new[] { "run-plan.json", "host.json", "results.json", "report.md", "samples.csv" })
 			TestContext.AddTestAttachment(Path.Combine(directory, name), name);
 		TestContext.Out.WriteLine($"Comparison: {comparisonGroup}");
@@ -595,7 +615,7 @@ public class RecordedRecommendations {
 	}
 
 	private static IEnumerable<(string RelativeDirectory, StudyPlan Plan, StudyResult[] Results)> ReadCompletedStudies() {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		var root = ProfilerEvidence.GetRoot();
 		if (!Directory.Exists(root))
 			yield break;
 		foreach (var path in Directory.GetFiles(root, "run-plan.json", SearchOption.AllDirectories).OrderBy(path => path, StringComparer.Ordinal)) {

@@ -15,5 +15,5 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 /// <summary>Renderer-specific interaction services over the portable UI coordinator.</summary>
 public interface IBlazorUserInterfaceServices : IUserInterfaceServices {
 	/// <summary>Binds the shell controller and renderer dispatcher for this circuit. Disposing the scope removes that binding.</summary>
-	IDisposable AttachController(object controller, Func<Func<Task>, Task> dispatcher);
+	ActionScope AttachController(object controller, Func<Func<Task>, Task> dispatcher);
 }

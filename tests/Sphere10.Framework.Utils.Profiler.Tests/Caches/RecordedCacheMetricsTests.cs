@@ -20,9 +20,15 @@ namespace Sphere10.Framework.Utils.Profiler.Tests.Caches;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+[Category("RecordedPerformance")]
 public class RecordedCacheMetricsTests {
 	public static IEnumerable<TestCaseData> RetainedCachePhases() {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		if (!ProfilerEvidence.IsConfigured) {
+			yield return new TestCaseData("not-configured").Ignore(ProfilerEvidence.MissingInputMessage);
+			yield break;
+		}
+		var root = ProfilerEvidence.GetRoot();
 		var found = false;
 		var paths = Directory.Exists(root) ? Directory.GetFiles(root, "run.json", SearchOption.AllDirectories) : Array.Empty<string>();
 		foreach (var path in paths.OrderBy(path => path, StringComparer.Ordinal)) {
@@ -41,8 +47,8 @@ public class RecordedCacheMetricsTests {
 
 	[TestCaseSource(nameof(RetainedCachePhases))]
 	public void RetainedBatchesReconcileConfigurationAccountingAndDeterministicCounters(string relativeDirectory) {
-		var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", relativeDirectory);
-		Assert.That(Directory.Exists(directory), Is.True, "Retain the completed cache measurement phase under Results and rebuild the tests.");
+		var directory = Path.Combine(ProfilerEvidence.GetRoot(), relativeDirectory);
+		Assert.That(Directory.Exists(directory), Is.True, "Supply the completed cache measurement phase through ProfilerResultsRoot.");
 		using var run = ReadAttachment(Path.Combine(directory, "run.json"));
 		var settings = JsonSerializer.Deserialize<CacheProfilerSettings>(run.RootElement.GetProperty("Settings"), CacheProfilerSettings.JsonOptions);
 		settings.Validate();

@@ -20,12 +20,18 @@ namespace Sphere10.Framework.Utils.Profiler.Tests.StreamMappedDictionaries;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+[Category("RecordedPerformance")]
 public class RecordedStreamMappedDictionaryResults {
 	private static readonly XNamespace TrxNamespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
 	private static readonly string[] RequiredCases = { "Kvp/Debug", "Kvp/Default", "Kvp/Performance", "Clk/Debug", "Clk/Default", "Clk/Performance" };
 	private static readonly Regex HashPattern = new("^[0-9A-Fa-f]{64}$", RegexOptions.CultureInvariant);
 
 	public static IEnumerable<TestCaseData> RetainedCampaigns() {
+		if (!ProfilerEvidence.IsConfigured) {
+			yield return new TestCaseData((string)null).Ignore(ProfilerEvidence.MissingInputMessage);
+			yield break;
+		}
 		var root = EvidenceRoot;
 		if (!Directory.Exists(root) || !Directory.EnumerateFileSystemEntries(root).Any()) {
 			yield return new TestCaseData((string)null).SetName("RecordedStreamMappedDictionaryResults.NoLocalCampaign");
@@ -114,7 +120,7 @@ public class RecordedStreamMappedDictionaryResults {
 		return seconds;
 	}
 
-	private static string EvidenceRoot => Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", "StreamMappedDictionaries");
+	private static string EvidenceRoot => Path.Combine(ProfilerEvidence.GetRoot(), "StreamMappedDictionaries");
 
 	private static Dictionary<string, XDocument> ReadCaptures(string directory, Dictionary<string, string> hashes) {
 		Assert.That(hashes, Is.Not.Null.And.Not.Empty);

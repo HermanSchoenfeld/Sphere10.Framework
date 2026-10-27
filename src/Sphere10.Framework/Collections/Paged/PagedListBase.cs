@@ -264,22 +264,18 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public override IEnumerator<TItem> GetEnumerator() {
 		var currentVersion = Version;
-		IDisposable lastScope = default;
 		return
-			_pages
-				.SelectMany(p => {
-					lastScope?.Dispose();
-					lastScope = EnterOpenPageScope(p);
-					return p;
-				})
+			EnumeratePages()
 				.GetEnumerator()
-				.OnMoveNext(
-					preMoveNextAction: () => CheckVersion(currentVersion),
-					postMoveNextAction: (result) => {
-						if (!result)
-							lastScope?.Dispose(); // last scope
-					}
-				);
+				.OnMoveNext(() => CheckVersion(currentVersion));
+
+		IEnumerable<TItem> EnumeratePages() {
+			foreach (var page in _pages) {
+				using var scope = EnterOpenPageScope(page);
+				foreach (var item in page)
+					yield return item;
+			}
+		}
 	}
 
 	protected abstract IPage<TItem> NewPageInstance(long pageNumber);
@@ -407,7 +403,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		return _lastFoundPage;
 	}
 
-	public abstract IDisposable EnterOpenPageScope(IPage<TItem> page);
+	public abstract PageScope<TItem> EnterOpenPageScope(IPage<TItem> page);
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

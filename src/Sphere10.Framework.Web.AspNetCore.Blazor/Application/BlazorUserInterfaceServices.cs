@@ -41,7 +41,7 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 	/// <summary>Legacy exit commands are observed asynchronously; callers requiring the result await IApplication.ExitAsync.</summary>
 	public override void Exit(bool force = false) => ObserveInteraction(Services.GetRequiredService<IApplication>().ExitAsync(force));
 
-	public IDisposable AttachController(object controller, Func<Func<Task>, Task> dispatcher) {
+	public ActionScope AttachController(object controller, Func<Func<Task>, Task> dispatcher) {
 		Guard.ArgumentNotNull(controller, nameof(controller));
 		Guard.ArgumentNotNull(dispatcher, nameof(dispatcher));
 		_controller = controller;

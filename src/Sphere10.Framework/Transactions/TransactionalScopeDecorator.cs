@@ -6,34 +6,49 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
-public class TransactionalScopeDecorator<TTransactionalScope> : ContextScopeDecorator<TTransactionalScope>, ITransactionalScope where TTransactionalScope : ITransactionalScope {
-	public event EventHandlerEx Committing { add => Internal.Committing += value; remove => Internal.Committing -= value; }
-	public event EventHandlerEx Committed { add => Internal.Committed += value; remove => Internal.Committed -= value; }
-	public event EventHandlerEx RollingBack { add => Internal.RollingBack += value; remove => Internal.RollingBack -= value; }
-	public event EventHandlerEx RolledBack { add => Internal.RolledBack += value; remove => Internal.RolledBack -= value; }
+public struct TransactionalScopeDecorator<TTransactionalScope> : ITransactionalScope
+	where TTransactionalScope : ITransactionalScope {
+	private TTransactionalScope _internal;
 
-	public TransactionalScopeDecorator(TTransactionalScope internalScope) : base(internalScope) {
+	public event EventHandlerEx Committing { add => _internal.Committing += value; remove => _internal.Committing -= value; }
+	public event EventHandlerEx Committed { add => _internal.Committed += value; remove => _internal.Committed -= value; }
+	public event EventHandlerEx RollingBack { add => _internal.RollingBack += value; remove => _internal.RollingBack -= value; }
+	public event EventHandlerEx RolledBack { add => _internal.RolledBack += value; remove => _internal.RolledBack -= value; }
+
+	public TransactionalScopeDecorator(TTransactionalScope internalScope) {
+		if (internalScope is null)
+			throw new ArgumentNullException(nameof(internalScope));
+		_internal = internalScope;
 	}
 
-	public override IContextScope RootScope => Internal.RootScope;
+	public string ContextID => _internal.ContextID;
+
+	public ContextScopePolicy Policy => _internal.Policy;
+
+	public IContextScope RootScope => _internal.RootScope;
 
 	ITransactionalScope ITransactionalScope.RootScope => RootScope as ITransactionalScope;
 
-	public virtual void BeginTransaction() => Internal.BeginTransaction();
+	public void BeginTransaction() => _internal.BeginTransaction();
 
-	public virtual Task BeginTransactionAsync() => Internal.BeginTransactionAsync();
+	public Task BeginTransactionAsync() => _internal.BeginTransactionAsync();
 
-	public virtual void Commit() => Internal.Commit();
+	public void Commit() => _internal.Commit();
 
-	public virtual Task CommitAsync() => Internal.CommitAsync();
+	public Task CommitAsync() => _internal.CommitAsync();
 
-	public virtual void Rollback() => Internal.Rollback();
+	public void Rollback() => _internal.Rollback();
 
-	public virtual Task RollbackAsync() => Internal.RollbackAsync();
+	public Task RollbackAsync() => _internal.RollbackAsync();
+
+	public void Dispose() => _internal.Dispose();
+
+	public ValueTask DisposeAsync() => _internal.DisposeAsync();
 
 }
 

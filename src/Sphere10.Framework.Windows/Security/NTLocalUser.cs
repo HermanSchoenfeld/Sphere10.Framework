@@ -271,8 +271,8 @@ public class NTLocalUser : NTLocalObject {
 		var userInfo = new WinAPI.NETAPI32.USER_INFO_2();
 		var logonHoursLength = LogonHours?.Length ?? 0;
 		Guard.Ensure(logonHoursLength == 0 || (ulong)logonHoursLength == ((ulong)UnitsPerWeek + 7) / 8, "Logon hours must match the configured units per week.");
-		using var logonHours = logonHoursLength == 0 ? null : new UnmanagedMemoryScope(logonHoursLength);
-		var logonHoursUnmanaged = logonHours?.Item ?? IntPtr.Zero;
+		using var logonHours = logonHoursLength == 0 ? default : new UnmanagedMemoryScope(logonHoursLength);
+		var logonHoursUnmanaged = logonHours.Item;
 		if (logonHoursLength > 0)
 			Marshal.Copy(LogonHours, 0, logonHoursUnmanaged, logonHoursLength);
 

@@ -11,5 +11,5 @@ using System;
 namespace Sphere10.Framework.Consensus;
 
 public interface IBlockchainState {
-	IDisposable EnterUpdateScope();
+	ActionScope EnterUpdateScope();
 }

@@ -133,12 +133,12 @@ public class ChartExampleCompilationTests {
 		start.Environment["TMP"] = directory;
 		using var process = new Process { StartInfo = start };
 		Assert.That(process.Start(), Is.True, "The Installed .NET SDK Must Start");
-		await using var stop = Tools.Scope.ExecuteOnDisposeAsync(async () => {
+		await using var stop = Tools.Scope.ExecuteOnDisposeAsync<Process>(static async process => {
 			if (!process.HasExited) {
 				process.Kill(true);
 				await process.WaitForExitAsync();
 			}
-		});
+		}, process);
 		var standardOutput = process.StandardOutput.ReadToEndAsync();
 		var standardError = process.StandardError.ReadToEndAsync();
 		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));

@@ -89,7 +89,7 @@ public class SqliteDAC : DACBase {
 		result.Columns.Add("ReferenceColumnName", typeof(string));
 		result.Columns.Add("CascadeUpdate", typeof(bool));
 		result.Columns.Add("CascadeDelete", typeof(bool));
-		using (var scope = this.BeginScope()) {
+		using (var scope = this.EnterScope()) {
 			var sqliteMasterTables = SelectSqliteMaster().Where(x => x.type == "table").ToArray();
 			var tables = sqliteMasterTables.Where(x => x.name != "sqlite_sequence").ToArray();
 			var tableColumns = tables.ToDictionary(t => t.name, t => PragmaTableInfo(t.name).OrderBy(ti => ti.cid).ToArray());

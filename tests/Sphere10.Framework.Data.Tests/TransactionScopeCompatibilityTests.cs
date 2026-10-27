@@ -19,7 +19,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void Commit_AutoEnlist(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			using (var txn = new TransactionScope(TransactionScopeOption.Required)) {
-				using (dac.BeginScope(true)) {
+				using (dac.EnterScope(true)) {
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 					txn.Complete();
 				}
@@ -34,7 +34,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void Commit_ManualEnlist(DBMSType dbmsType) {
 
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				using (var txn = new TransactionScope(TransactionScopeOption.Required)) {
 					scope.EnlistInSystemTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
@@ -50,7 +50,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void Rollback_AutoEnlist(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			using (new TransactionScope(TransactionScopeOption.Required)) {
-				using (dac.BeginScope(true)) {
+				using (dac.EnterScope(true)) {
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				}
 			}
@@ -64,7 +64,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void Rollback_ManualEnlist_1(DBMSType dbmsType) {
 
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				using (new TransactionScope(TransactionScopeOption.Required)) {
 					scope.EnlistInSystemTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
@@ -78,7 +78,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void Rollback_ManualEnlist_2(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				using (new TransactionScope(TransactionScopeOption.Required)) {
 					scope.EnlistInSystemTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
@@ -95,7 +95,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void MixedScope_SystemThenDAC_1(DBMSType dbmsType) {
 
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				using (var tx = new TransactionScope(TransactionScopeOption.Required)) {
 					scope.EnlistInSystemTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
@@ -114,7 +114,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void MixedScope_SystemThenDAC_2(DBMSType dbmsType) {
 
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				using (new TransactionScope(TransactionScopeOption.Required)) {
 					scope.EnlistInSystemTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
@@ -132,7 +132,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void MixedScope_DACThenSystem_1(DBMSType dbmsType) {
 
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				scope.BeginTransaction();
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
 				scope.Commit();
@@ -152,7 +152,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void MixedScope_DACThenSystem_2(DBMSType dbmsType) {
 
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				scope.BeginTransaction();
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
 				scope.Commit();
@@ -172,7 +172,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	public void Error_BeginTransactionAfterAutoEnlisted(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			using (new TransactionScope(TransactionScopeOption.Required)) {
-				using (var scope = dac.BeginScope(true)) {
+				using (var scope = dac.EnterScope(true)) {
 					Assert.Catch(() => scope.BeginTransaction());
 				}
 			}
@@ -183,7 +183,7 @@ public class TransactionScopeCompatibilityTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void Error_ManualEnlistAfterBeginTransaction(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				scope.BeginTransaction();
 				using (new TransactionScope(TransactionScopeOption.Required)) {
 					Assert.Catch(() => scope.EnlistInSystemTransaction());

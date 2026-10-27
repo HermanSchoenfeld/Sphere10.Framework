@@ -177,8 +177,10 @@ public class WinFormsApplicationLifecycleTests {
 		Assert.That(finalizations, Is.Zero);
 		Assert.That(providerDisposals, Is.EqualTo(1));
 		Assert.That(ownedDisposals, Is.EqualTo(failConstruction ? 0 : 1));
-		if (application != null)
-			Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.InstanceOf<InvalidOperationException>());
+		if (application != null) {
+			Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
+			Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
+		}
 	});
 
 	[TestCase(false)]

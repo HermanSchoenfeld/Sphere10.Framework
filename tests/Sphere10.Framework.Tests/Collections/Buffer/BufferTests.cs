@@ -193,13 +193,13 @@ public class BufferTests {
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
 				buffer = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, maxMemory));
 				disposables.Add(buffer);
-				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.TransactionalBinaryFile:
 				var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				var fileName = Path.Combine(baseDir, "File.dat");
 				buffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, pageSize, maxMemory));
-				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(storageType), storageType, null);

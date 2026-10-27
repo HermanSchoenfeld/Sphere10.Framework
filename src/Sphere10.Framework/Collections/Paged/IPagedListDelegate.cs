@@ -25,7 +25,7 @@ internal interface IPagedListDelegate<TItem> {
 
 	Func<IReadOnlyList<IPage<TItem>>> InternalPages { get; }
 
-	Func<IPage<TItem>, IDisposable> EnterOpenPageScope { get; }
+	Func<IPage<TItem>, PageScope<TItem>> EnterOpenPageScope { get; }
 
 	Func<long, long, List<Tuple<IPage<TItem>, long, long>>> GetPageSegments { get; }
 

@@ -56,6 +56,43 @@ public class ApplicationLifecycleDirectionTests {
 	}
 
 	[Test]
+	public async Task SyncApplicationAsyncDisposalReturnsBeforeBlockedCleanupCompletes() {
+		using var entered = new ManualResetEventSlim();
+		using var release = new ManualResetEventSlim();
+		using var returned = new ManualResetEventSlim();
+		var application = new SyncApplication();
+		application.Disposables.Add(() => {
+			entered.Set();
+			if (!release.Wait(TimeSpan.FromSeconds(10)))
+				throw new TimeoutException("Cleanup was not released.");
+		});
+		application.Initialize();
+		var operation = ValueTask.CompletedTask;
+		Exception callFailure = null;
+		var caller = new Thread(() => {
+			try {
+				operation = application.DisposeAsync();
+			} catch (Exception error) {
+				callFailure = error;
+			} finally {
+				returned.Set();
+			}
+		});
+		caller.Start();
+		try {
+			Assert.That(entered.Wait(TimeSpan.FromSeconds(5)), Is.True);
+			Assert.That(returned.Wait(TimeSpan.FromSeconds(5)), Is.True, "DisposeAsync must return while cleanup remains blocked.");
+			Assert.That(callFailure, Is.Null);
+			Assert.That(operation.IsCompleted, Is.False);
+		} finally {
+			release.Set();
+			Assert.That(caller.Join(TimeSpan.FromSeconds(5)), Is.True);
+			await operation;
+		}
+		Assert.That(application.Finalizations, Is.EqualTo(1));
+	}
+
+	[Test]
 	public async Task AsyncApplicationSyncAdaptersDispatchAsyncPrimitivesAndAwaitResourcesOutsideTheCallingContext() {
 		await using var application = new AsyncApplication();
 		var resource = new Resource();

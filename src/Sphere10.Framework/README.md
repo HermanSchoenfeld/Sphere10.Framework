@@ -42,7 +42,7 @@ dotnet add package Sphere10.Framework
 
 Generic contracts supply default implementations for their inherited non-generic
 members. Implement the typed operations when creating an
-`IStreamMappedCollection<T>`, `ISynchronizedObject<TReadScope, TWriteScope>`,
+`IStreamMappedCollection<T>`,
 typed protocol handler, `IDigitalSignatureScheme<TPrivateKey, TPublicKey>`,
 `IOTSAlgorithm<TConfig>` or `ICloneable<T>`; the interface supplies the conversion
 to the base contract. Protocol implementations continue to provide their own
@@ -70,6 +70,16 @@ implemented directly in their `Base Interface Bridges` regions, preserving check
 collection counts and indexes. Class implementations take
 precedence over interface defaults, and defaults are called through interface
 references.
+
+## Scope ownership and composition
+
+Small cleanup scopes implement `IScope` as structs and finalize directly. Use `Tools.Scope.ExecuteOnDispose` for an `Action` finalizer or `Tools.Scope.ExecuteOnDisposeAsync` for a `Func<ValueTask>` finalizer. Generic factories take the callback first and the item second, returning concrete `ActionScope` / `ActionScope<T>` or `TaskScope` / `TaskScope<T>` structs directly. Both support both disposal directions and retain a typed callback without runtime delegate-type selection. Generic constructors take the item first and a static callback second to avoid capturing that item. `SyncScope` / `SyncScope<T>` permit synchronous disposal only; `AsyncScope` / `AsyncScope<T>` permit asynchronous disposal only. Constructors guard required callbacks and resources; default required-resource scopes are invalid. `NoOpScope` and `NoOpScope<T>` explicitly perform no cleanup, and the generic form borrows its `Item`. `Tools.Scope` retains domain scope factories. Adapt existing tasks with `new ValueTask(task)` in an `ExecuteOnDisposeAsync` callback to preserve asynchronous completion.
+
+Keep one owner and one normal disposal per acquisition. There are no lifecycle flags, reentry suppression, automatic retry or pending-operation caches; repeated explicit disposal invokes the finalizer again. Interface conversions and struct method groups can box or copy the same resource ownership. Context, transaction and serialization scopes retain their actual class identity and domain logic, without artificial struct facades or generic disposal-state classes.
+
+`ActionScope.Dispose()` invokes its callback directly, while `DisposeAsync()` offloads through `Task.Run`. `TaskScope.DisposeAsync()` awaits its callback; synchronous disposal starts that callback on a worker outside the caller's synchronization context and waits for actual completion. Both preserve callback faults. Native monitor/read/write scopes require synchronous `using` and reject async disposal, as do synchronous-only DPI/token scopes. Control-backed UI cleanup queues to its owning dispatcher. Async cleanup must return before blocked work completes and represent the resource's actual completion.
+
+`ISynchronizedObject` and `ISynchronizedObject<TReadScope, TWriteScope>` share only `IReaderWriterLock.ThreadLock`; they retain separate concrete scope return contracts. See [resource scopes](../../docs/guidelines/patterns/resource-scopes.md), [synchronization](../../docs/guidelines/patterns/synchronization.md) and [transaction ownership](../../docs/guidelines/patterns/persistence-and-transactions.md) for ownership and execution boundaries.
 
 ## 🛠️ Tools.* Namespace — Global Tooling Framework
 
@@ -806,7 +816,7 @@ Stream-mapped collections persist their data to streams using serializers and cl
 
 The corresponding asynchronous methods are `BeginTransactionAsync()`, `CommitAsync()` and `RollbackAsync()`. `BeginTransaction()` returns `void`; the scope itself is consumed with `using` or `await using`.
 
-`TransactionalScopeBase<TTransaction>` extends `ContextScope` and coordinates transaction ownership and nesting within a logical call context. Isolation and which operations participate are determined by the concrete backend; sharing a context does not automatically enlist every `ITransactionalObject`. Disposal closes an owned transaction, but the common base does not automatically call `Rollback()`. See [resource scopes](../../docs/guidelines/patterns/resource-scopes.md) for ownership and cleanup rules.
+Concrete transaction scopes are classes deriving from `TransactionalScopeBase<TTransaction>`, which extends `ContextScope` and coordinates transaction ownership and nesting within a logical call context. Isolation and which operations participate are determined by the concrete backend; sharing a context does not automatically enlist every `ITransactionalObject`. Disposal closes an owned transaction, but the common policy does not automatically call `Rollback()`. See [resource scopes](../../docs/guidelines/patterns/resource-scopes.md) for ownership and cleanup rules.
 
 ### Merkle Coordinates and Proofs
 
@@ -1258,7 +1268,7 @@ The StreamMappedList shown above demonstrates the core disk-backed storage patte
 
 **Transactional Scopes:**
 
-`TransactionalDictionary<TKey, TValue>` wraps stream-mapped storage and an `ITransactionalObject`. Construct its file backend with a `Sphere10FrameworkFileDescriptor`, load it, and explicitly call `Commit()` or `Rollback()`. It has no parameterless constructor or `BeginScope()` method:
+`TransactionalDictionary<TKey, TValue>` wraps stream-mapped storage and an `ITransactionalObject`. Construct its file backend with a `Sphere10FrameworkFileDescriptor`, load it, and explicitly call `Commit()` or `Rollback()`. It has no parameterless constructor or `EnterScope()` method:
 
 ```csharp
 using System;
@@ -1731,37 +1741,31 @@ var person = objectStream[personIndex.Value];
 
 ### Custom Transactional Scopes
 
-`TransactionalScopeBase<TTransaction>` coordinates ownership and lifecycle. For a synchronous backend, derive from `SyncTransactionalScope<TTransaction>` and implement its four synchronous transaction hooks. An asynchronous backend uses `AsyncTransactionalScope<TTransaction>` and the corresponding async hooks; concrete types do not implement one public direction by calling the other.
+`TransactionalScopeBase<TTransaction>` coordinates transaction ownership and nesting over `ContextScope`. Reuse the existing `ActionTransactionalScope<TTransaction>` class for synchronous backend delegates or `TaskTransactionalScope<TTransaction>` for asynchronous delegates. These are the actual domain owners, with direct finalization and no generic lifecycle-state layer or struct facade.
 
-This complete example wraps a provider's `DbTransaction`. The caller supplies an already-open `DbConnection` and a context name; this scope requires that it be the root for that name:
+This complete example uses `ActionTransactionalScope<DbTransaction>` to wrap a provider's transaction. The caller supplies an already-open `DbConnection` and a context name; this scope requires that it be the root for that name:
 
 ```csharp
 using System;
 using System.Data.Common;
 using Sphere10.Framework;
 
-public sealed class DatabaseTransactionScope : SyncTransactionalScope<DbTransaction> {
-	private readonly DbConnection _connection;
-
-	public DatabaseTransactionScope(DbConnection connection, string contextID)
-		: base(ContextScopePolicy.MustBeRoot, contextID) {
+public static class DatabaseTransactionExample {
+	public static ActionTransactionalScope<DbTransaction> CreateScope(DbConnection connection, string contextID) {
 		Guard.ArgumentNotNull(connection, nameof(connection));
-		_connection = connection;
+		return new ActionTransactionalScope<DbTransaction>(
+			ContextScopePolicy.MustBeRoot,
+			contextID,
+			connection.BeginTransaction,
+			static transaction => transaction.Commit(),
+			static transaction => transaction.Rollback(),
+			static transaction => transaction.Dispose()
+		);
 	}
 
-	protected override DbTransaction BeginTransactionInternal() => _connection.BeginTransaction();
-
-	protected override void CloseTransactionInternal(DbTransaction transaction) => transaction.Dispose();
-
-	protected override void CommitInternal(DbTransaction transaction) => transaction.Commit();
-
-	protected override void RollbackInternal(DbTransaction transaction) => transaction.Rollback();
-}
-
-public static class DatabaseTransactionExample {
 	public static void Execute(DbConnection connection, string contextID, Action<DbTransaction> operation) {
 		Guard.ArgumentNotNull(operation, nameof(operation));
-		using var scope = new DatabaseTransactionScope(connection, contextID);
+		using var scope = CreateScope(connection, contextID);
 		scope.BeginTransaction();
 		try {
 			operation(scope.Transaction);
@@ -1915,7 +1919,7 @@ The SMTP sync and async helpers were exercised against a local SMTP server, incl
 `UrlShortner.Google` and `GoogleAsync` target an API that [Google discontinued on March 30, 2019](https://developers.googleblog.com/transitioning-google-url-shortener-to-firebase-dynamic-links/). Updating the HTTP client cannot restore that service. `TinyUrl` and `TinyUrlAsync` target the third-party `tiny-url.info` service, not `tinyurl.com`; live shortening remains unverified without a supported service and credentials.
 ## Length-preserving encrypted streams
 
-`EncryptedStream` (and `EncryptedStream<TStream>`) uses AES-CTR. It takes the backing stream, key, initial counter and optional `leaveOpen` flag. Writes encrypt immediately and reads decrypt; 10 plaintext bytes produce exactly 10 ciphertext bytes. The mode is fixed to preserve arbitrary byte lengths and independent random access, including overwrites that touch only the requested bytes. There is no separate cipher interface, factory or inheritance hierarchy.
+`EncryptedStream` (and `EncryptedStream<TStream>`) uses AES-CTR. It takes the backing stream, key, initial counter and optional `leaveOpen` flag (default `false`). Writes encrypt immediately and reads decrypt; 10 plaintext bytes produce exactly 10 ciphertext bytes. The mode is fixed to preserve arbitrary byte lengths and independent random access, including overwrites that touch only the requested bytes. There is no separate cipher interface, factory or inheritance hierarchy.
 
 ```csharp
 var key = Tools.Crypto.GenerateCryptographicallyRandomBytes(32);
@@ -1929,7 +1933,7 @@ var plaintext = new byte[7];
 encryptedStream.ReadExactly(plaintext);
 ```
 
-Use a 32-byte key for AES-256; AES-128 and AES-192 keys (16 and 24 bytes) are also accepted. The initial counter is always 16 bytes. Both arrays are copied. The stream owns its internal AES instance; `leaveOpen` controls only the backing stream. Counter blocks increment as big-endian integers, following NIST SP 800-38A section 6.5; AES vectors from appendix F.5 are covered by the tests.
+Use a 32-byte key for AES-256; AES-128 and AES-192 keys (16 and 24 bytes) are also accepted. The initial counter is always 16 bytes. Both arrays are copied. The stream owns its internal AES instance; `leaveOpen: true` keeps the backing stream open after disposal; the default closes it. Counter blocks increment as big-endian integers, following NIST SP 800-38A section 6.5; AES vectors from appendix F.5 are covered by the tests.
 
 [.NET's `CipherMode` enum](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.ciphermode) has no CTR member. The small counter-mode loop therefore lives directly inside `EncryptedStream` and uses .NET AES to encrypt counter blocks without padding. It does not expose ECB as though it were the stream mode.
 

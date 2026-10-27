@@ -17,6 +17,6 @@ namespace Sphere10.Framework.Consensus;
 /// </summary>
 public abstract class BlockchainStateBase : IBlockchainState {
 
-	public virtual IDisposable EnterUpdateScope()
-		=> new ActionScope(() => { });
+	public virtual ActionScope EnterUpdateScope()
+		=> Tools.Scope.ExecuteOnDispose(() => { });
 }

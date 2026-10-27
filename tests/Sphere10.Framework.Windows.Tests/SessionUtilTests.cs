@@ -103,6 +103,29 @@ public class SessionUtilTests {
 		Assert.That(() => server.Handle, Throws.InstanceOf<ObjectDisposedException>());
 	}
 
+	[Test]
+	public async Task DefaultNativeResourceScopesAreInactiveThroughBothDisposalPaths() {
+		AlwaysOnScope execution = default;
+		AttachToCommandPromptScope console = default;
+		Assert.That(() => {
+			execution.Dispose();
+			console.Dispose();
+		}, Throws.Nothing);
+		await execution.DisposeAsync();
+		await console.DisposeAsync();
+		Assert.That(console.IsAttached, Is.False);
+	}
+
+	[Test]
+	public async Task AsynchronousSessionCleanupReleasesOwnershipBeforeCompleting() {
+		var memory = new WtsMemoryScope(IntPtr.Zero);
+		var server = new WtsServerScope();
+		await memory.DisposeAsync();
+		await server.DisposeAsync();
+		Assert.That(() => memory.Pointer, Throws.InstanceOf<ObjectDisposedException>());
+		Assert.That(() => server.Handle, Throws.InstanceOf<ObjectDisposedException>());
+	}
+
 	private sealed class RecordingCurrentSession : SessionUtil {
 		public int ReadThreadId { get; private set; }
 		public override uint CurrentSessionId { get { ReadThreadId = Environment.CurrentManagedThreadId; return 42; } }

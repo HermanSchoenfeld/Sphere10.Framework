@@ -87,7 +87,7 @@ public partial class SqliteConnectionPanel : ConnectionPanelBase, IDatabaseConne
 		var dac = GetDAC();
 		try {
 			await Task.Run(() => {
-				using (var scope = dac.BeginScope(openConnection: true)) {
+				using (var scope = dac.EnterScope(openConnection: true)) {
 				}
 			});
 		} catch (Exception error) {

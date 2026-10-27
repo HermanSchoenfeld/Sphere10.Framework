@@ -15,17 +15,18 @@ namespace Sphere10.Framework;
 
 public sealed class HashingStream : WriteOnlyStream {
 	private readonly IHashFunction _hashFunction;
-	private readonly Disposables _disposables;
+	private readonly Hashers.HasherScope _hasherScope;
 	private bool _canWrite;
+	private bool _disposed;
 
 	public HashingStream(CHF hashFunction)
 		: base(new MemoryStream()) {
-		_disposables = new Disposables();
-		_disposables.Add(Hashers.BorrowHasher(hashFunction, out _hashFunction));
+		_hasherScope = Hashers.EnterBorrowHasherScope(hashFunction, out _hashFunction);
 		_canWrite = true;
 	}
 
 	public byte[] GetDigest() {
+		ObjectDisposedException.ThrowIf(_disposed, this);
 		_canWrite = false;
 		return _hashFunction.GetResult();
 	}
@@ -52,17 +53,27 @@ public sealed class HashingStream : WriteOnlyStream {
 
 	public override void WriteByte(byte value) {
 		CheckCanWrite();
-		Span<byte> SingleByte = stackalloc byte[1];
-		SingleByte[0] = value;
-		_hashFunction.Transform(SingleByte);
+		Span<byte> singleByte = stackalloc byte[1];
+		singleByte[0] = value;
+		_hashFunction.Transform(singleByte);
+	}
+
+	public override void Close() {
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 
 	protected override void Dispose(bool disposing) {
+		if (_disposed)
+			return;
 		base.Dispose(disposing);
-		_disposables.Dispose();
+		_hasherScope.Dispose();
+		_canWrite = false;
+		_disposed = true;
 	}
 
 	private void CheckCanWrite() {
+		ObjectDisposedException.ThrowIf(_disposed, this);
 		if (!_canWrite)
 			throw new InvalidOperationException("Hashing stream cannot get written to after digest has been computed");
 	}

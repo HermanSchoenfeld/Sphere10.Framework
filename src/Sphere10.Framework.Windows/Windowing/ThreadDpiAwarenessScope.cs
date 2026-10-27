@@ -9,15 +9,15 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
 /// <summary>Temporarily changes the current native thread's DPI awareness and restores its exact previous context.</summary>
 /// <remarks>Use synchronously on the creating thread, nested in reverse disposal order. Never hold this scope across an await.</remarks>
-public sealed class ThreadDpiAwarenessScope : SyncOnlyScope {
+public readonly struct ThreadDpiAwarenessScope : IScope {
 	private readonly IntPtr _previousContext;
 	private readonly int _threadId;
-	private bool _restored;
 
 	public ThreadDpiAwarenessScope(DpiAwarenessContext context) {
 		Guard.Argument(Enum.IsDefined(context), nameof(context), "Select a supported Windows DPI awareness context.");
@@ -27,12 +27,13 @@ public sealed class ThreadDpiAwarenessScope : SyncOnlyScope {
 			throw new Win32Exception(Marshal.GetLastPInvokeError(), "Windows could not set the thread DPI awareness context.");
 	}
 
-	protected override void OnScopeEnd() {
-		if (_restored)
+	public void Dispose() {
+		if (_previousContext == IntPtr.Zero)
 			return;
 		Guard.Ensure(Environment.CurrentManagedThreadId == _threadId, "DPI awareness must be restored on the thread that entered its scope.");
 		if (WinAPI.USER32.SetThreadDpiAwarenessContext(_previousContext) == IntPtr.Zero)
 			throw new Win32Exception(Marshal.GetLastPInvokeError(), "Windows could not restore the thread DPI awareness context.");
-		_restored = true;
 	}
+
+	public ValueTask DisposeAsync() => ValueTask.FromException(new NotSupportedException("This scope does not support async"));
 }

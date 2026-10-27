@@ -35,7 +35,7 @@ public static class PostgreSQL {
 
 		var connString = CreateConnectionString(host, "postgres", username, password, port);
 		var dac = new PostgreSQLDAC(connString);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			return dac.ExecuteScalar<bool>(
 				CheckDatabaseExistsQuery.FormatWith(databaseName)
 			);
@@ -45,7 +45,7 @@ public static class PostgreSQL {
 	public static bool TestConnectionString(string connectionString) {
 		var dac = new PostgreSQLDAC(connectionString);
 		try {
-			using (dac.BeginScope()) {
+			using (dac.EnterScope()) {
 				return true;
 			}
 		} catch {
@@ -62,7 +62,7 @@ public static class PostgreSQL {
 
 		var connString = CreateConnectionString(host, "postgres", username, password, port);
 		var dac = new PostgreSQLDAC(connString);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var alreadyExists = dac.ExecuteScalar<bool>(CheckDatabaseExistsQuery.FormatWith(databaseName));
 
 			var shouldDrop = false;
@@ -100,7 +100,7 @@ public static class PostgreSQL {
 
 		var connString = CreateConnectionString(host, "postgres", username, password, port);
 		var dac = new PostgreSQLDAC(connString);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var exists = dac.ExecuteScalar<bool>(CheckDatabaseExistsQuery.FormatWith(databaseName));
 
 			if (exists) {

@@ -18,6 +18,15 @@ namespace Sphere10.Framework.Tests;
 public class MemoryPagedListCacheTests {
 
 	[Test]
+	public void DisposedListRejectsFurtherAccess() {
+		var list = new MemoryPagedList<int>(16, 16, sizeof(int));
+		using (list)
+			list.Add(1);
+		Assert.That(list.Disposed, Is.True);
+		Assert.That(() => list.Add(2), Throws.TypeOf<ObjectDisposedException>());
+	}
+
+	[Test]
 	public void CacheBudgetAboveFourGiBRemainsLongWithoutAllocatingTheWholeBudget() {
 		const long budget = 1L << 32;
 		using var list = new MemoryPagedList<int>(64, budget, sizeof(int));

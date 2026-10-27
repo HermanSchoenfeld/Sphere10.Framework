@@ -90,12 +90,12 @@ public class SqliteToolTest {
 		try {
 			var dac1 = Tools.Sqlite.Create(path, "password");
 			Assert.Catch<Exception>(() => {
-				using (var x = Tools.Sqlite.Open(path, "wrong password").BeginScope(true)) {
+				using (var x = Tools.Sqlite.Open(path, "wrong password").EnterScope(true)) {
 					var y = ((SqliteDAC)x.DAC).SelectSqliteMaster();
 				}
 			});
 			Assert.DoesNotThrow(() => {
-				using (var x = Tools.Sqlite.Open(path, "password").BeginScope(true)) {
+				using (var x = Tools.Sqlite.Open(path, "password").EnterScope(true)) {
 					var y = ((SqliteDAC)x.DAC).SelectSqliteMaster();
 				}
 			});

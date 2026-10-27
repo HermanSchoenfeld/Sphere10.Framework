@@ -25,6 +25,14 @@ public static class IEnumeratorExtensions {
 	public static IEnumerator<T> OnDispose<T>(this IEnumerator<T> enumerator, Action action)
 		=> new OnDisposeEnumerator<T>(enumerator, action);
 
+	/// <summary>Transfers one concrete scope to the enumerator and releases it before disposing the inner enumerator.</summary>
+	/// <remarks>The scope is released once after successful disposal. The caller must not dispose its original scope copy after transfer.</remarks>
+	public static IEnumerator<T> DisposeWith<T, TScope>(this IEnumerator<T> enumerator, TScope scope)
+		where TScope : struct, IDisposable {
+		Guard.ArgumentNotNull(enumerator, nameof(enumerator));
+		return new ScopeEnumerator<T, TScope>(enumerator, scope);
+	}
+
 	public static IEnumerator<T> WithMemory<T>(this IEnumerator<T> enumerator)
 		=> new MemorizingEnumerator<T>(enumerator);
 

@@ -582,7 +582,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 	}
 
 	/// <summary>Groups synchronous platform changes into one notification after membership and selection have committed.</summary>
-	protected IDisposable DeferNotifications() {
+	protected ActionScope DeferNotifications() {
 		EnsureUsable();
 		_transitionDepth++;
 		return Tools.Scope.ExecuteOnDispose(() => {
@@ -602,7 +602,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		});
 	}
 
-	protected void EnsureUsable() => Guard.Ensure(!_disposed, "The screen host has been disposed.");
+	protected void EnsureUsable() => ObjectDisposedException.ThrowIf(_disposed, this);
 
 	protected override void OnScreenSelected(IApplicationScreen screen) {
 		if (_disposed)

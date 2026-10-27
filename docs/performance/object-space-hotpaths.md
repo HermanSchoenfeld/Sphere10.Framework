@@ -1,5 +1,12 @@
 # ObjectSpace hot-path performance, 22 October 2026
 
+Historical evidence availability: profiler capture files are no longer shipped
+with the repository. Measurements below describe the original campaign, not a
+new verification. Inspecting its raw data or archive-side analysis scripts
+requires an external copy. Example paths use `E:/ProfilerEvidence`; substitute
+your own archive root and pass it as the `ProfilerResultsRoot` NUnit parameter
+when explicitly selecting recorded-capture checks.
+
 Source revision note, 23 October 2026: the current source removes the `FlatMerkleTree` parent-scratch optimization described below and restores the original parent-hash calculation. Its measured allocation reduction did not justify the added scratch/pool machinery for a path representing 0.71% of the first reindexing profile's measured samples. The earlier scratch changes to `MerkleMath.VerifyProof` were also reverted, restoring its original verification logic; no direct evidence had established proof verification as a profiled bottleneck. See the [span report's revision note](span-optimizations.md). The frozen captures, allocation numbers and combined timing results remain historical evidence for their original source revision; they do not describe the current source after these removals. Other crypto/span changes and the Merkle-root publication change remain in place.
 
 This campaign profiles and optimizes ObjectSpaces, including Merkleized memory and file stores. Its baseline already contains the preceding stream, buffer, collection, cryptography and stream-mapped-dictionary improvements in the working tree. The numbers below are incremental to that baseline.
@@ -96,7 +103,7 @@ The profiler's storage-size reporting also now reads its GUID-named metadata fil
 
 Final validation passed: complete Release Core **12,949 passed**, 102 skipped; complete Release profiler **1,099 passed**, 16 explicit cases not selected; focused Debug **749 passed**. The six retained diagnostic trace runs each completed their repeated workload and oracle checks successfully. No tests failed in these final runs. Raw TRX/logs, source verification and the separate expected-original-budget failures are retained under the local campaign's `validation` directory and `final-validation.json`.
 
-The local raw campaign is `tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-objectspace-hotpaths`. Large traces, frozen source snapshots, generated workers and full logs are preserved at `E:\Sphere10-ObjectSpace-Performance-20261022`. The local campaign includes original full JSON/CSV/console logs, commands, allocation probes, stack reports and `binary-and-source-provenance.json`. Local copies use `workload-run.json`, `*-report-full.bdn.json` and `retained-worker-fingerprints.json` to distinguish their schemas from older audit campaigns. `capture-name-mapping.json` records their original filenames and unchanged SHA256 values. The campaign remains ignored output, rather than an accidental publication of generated files.
+The original local campaign was `E:/ProfilerEvidence/20261022-objectspace-hotpaths`. Large traces, frozen source snapshots, generated workers and full logs are preserved at `E:\Sphere10-ObjectSpace-Performance-20261022`. The original local campaign included full JSON/CSV/console logs, commands, allocation probes, stack reports and `binary-and-source-provenance.json`. Local copies use `workload-run.json`, `*-report-full.bdn.json` and `retained-worker-fingerprints.json` to distinguish their schemas from older audit campaigns. `capture-name-mapping.json` records their original filenames and unchanged SHA256 values. The capture files are now external inputs rather than published project items.
 
 Source snapshots differ in exactly four Core implementation files; at completion of that campaign, the compiled Core/profiler source matched the final snapshot. BuildRevision was fixed to zero. Trace hosts and actual retained workers have SHA256, versions and MVIDs recorded separately. All ten final matrix worker groups, both confirmation groups, all four original large groups and the final original small group are retained. **The first five original small generated projects reused their directory before capture; their individual original generated binaries were not retained.** Frozen sources, raw build/worker commands and measurements are preserved, but later worker/launcher hashes do not reconstruct those missing original binary identities.
 
@@ -122,7 +129,7 @@ Ordinary workload checks and retained evidence:
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~ObjectSpaces.ObjectSpaceHotPathTests&Name!~TraceHotPath'
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed'
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
 ```
 
 Explicit tracing selects an individual `ObjectSpaceHotPathTests.TraceHotPath` case, with `HotPathRepeats` and `HotPathArtifactRoot` in a runsettings file, `MaxCpuCount=1` and NUnit `NumberOfTestWorkers=0`. Keep creation/use/disposal on the same synchronous owner thread. Filter stacks beneath `RunMeasuredBatch`; preparation, verification and reopening are outside that marker. The traces use managed sampled thread time with GC allocation ticks, not kernel CPU time or an exact allocation census. Whole-process sampled byte totals include setup and verification and are not before/after allocation percentages; use BenchmarkDotNet and the dedicated allocation probes for those claims.

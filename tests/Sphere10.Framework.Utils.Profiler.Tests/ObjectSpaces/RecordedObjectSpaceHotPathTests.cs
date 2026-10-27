@@ -20,6 +20,8 @@ namespace Sphere10.Framework.Utils.Profiler.Tests.ObjectSpaces;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+[Category("RecordedPerformance")]
 public class RecordedObjectSpaceHotPathTests {
 	private const string Campaign = "20261022-objectspace-hotpaths";
 	private const string PageCampaign = "20261022-objectspace-page-btree";
@@ -66,7 +68,7 @@ public class RecordedObjectSpaceHotPathTests {
 	[TestCase("File", BTreeType.BTree)]
 	[TestCase("File", BTreeType.BTreePlus)]
 	public void SelectedImplementationsRetainAllWorkerSamples(string storage, BTreeType implementation) {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", PageCampaign);
+		var root = Path.Combine(ProfilerEvidence.GetRoot(), PageCampaign);
 		if (!Directory.Exists(root))
 			Assert.Ignore("Local implementation captures are unavailable; this fixture never launches benchmarks.");
 		var profile = implementation.ToString().ToLowerInvariant();
@@ -75,9 +77,9 @@ public class RecordedObjectSpaceHotPathTests {
 	}
 
 	private static void VerifyPair(string campaign, string folder, string method, string profile, string storage, bool merkleOnly) {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", campaign);
+		var root = Path.Combine(ProfilerEvidence.GetRoot(), campaign);
 		if (!Directory.Exists(root))
-			Assert.Ignore("Local captures are unavailable. Retain completed paired BenchmarkDotNet captures under Results/" + campaign + " as described in Results/README.md; this fixture never launches benchmarks.");
+			Assert.Ignore("External captures are unavailable. Supply " + campaign + " within ProfilerResultsRoot as described in the profiler test README; this fixture never launches benchmarks.");
 
 		var before = ReadCapture(Path.Combine(root, "before-" + folder), folder, method, profile, storage, merkleOnly);
 		var after = ReadCapture(Path.Combine(root, "after-" + folder), folder, method, profile, storage, merkleOnly);

@@ -106,6 +106,7 @@ public class ApplicationUserInterfaceServicesTests {
 		Assert.That(host.ActiveScreen, Is.SameAs(screen));
 		Assert.That(screen.Disposals, Is.Zero);
 		Assert.That(await host.CloseScreenAsync(screen), Is.True);
+		await Assert.ThatAsync(async () => await userInterface.ExecuteMenuItemAsync(new ActionItem()), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]
@@ -159,7 +160,7 @@ public class ApplicationUserInterfaceServicesTests {
 			await host.DisposeAsync();
 		else
 			host.Dispose();
-		Assert.That(async () => await userInterface.ExecuteMenuItemAsync(action), Throws.InvalidOperationException);
+		await Assert.ThatAsync(async () => await userInterface.ExecuteMenuItemAsync(action), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]

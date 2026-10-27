@@ -8,17 +8,18 @@ tables in Visual Studio Test Explorer; unit tests never silently run benchmarks.
 
 ## View results in Visual Studio
 
-Build `Sphere10.Framework.Utils.Profiler.Tests`, open **Test Explorer**, and run
-`RecordedStudyResults` and `RecordedBenchmarkDotNetConfirmations`. Select a test
+Build `Sphere10.Framework.Utils.Profiler.Tests`, supply an external capture root
+with the `ProfilerResultsRoot` NUnit parameter, then explicitly run
+`RecordedStudyResults` and `RecordedBenchmarkDotNetConfirmations` in **Test Explorer**. Select a test
 and inspect its output and attachments. Screening output shows each parameter's
 mean, approximate 95% interval, allocations and candidates whose intervals
 overlap. Confirmation output includes BenchmarkDotNet's original measured values.
 No assertion requires your machine to reproduce another machine's timing.
 
-The checked-in [test results](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results)
-contain `run-plan.json`, `host.json`, `samples.jsonl`, `samples.csv`,
+Historical captures are no longer shipped in the source repository. A supplied
+external study directory contains `run-plan.json`, `host.json`, `samples.jsonl`, `samples.csv`,
 `results.json`, `recommendations.json`, `report.md` and storage metadata.
-Independent BenchmarkDotNet reports are retained alongside those studies.
+Keep independent BenchmarkDotNet reports alongside those external studies.
 `RecordedStudyResults` recomputes each decision from the sample durations and
 reconciles the durations with the retained clock ticks and append-only journal.
 
@@ -27,8 +28,8 @@ Display the recomputed tables without running another measurement:
 `study --report` reads both direct screening plans and independent BenchmarkDotNet Full JSON, including a directory containing only BDN reports. When `final-default-selection.json` exists at the supplied root, it prints the recorded objective, each constant's value, exact source and rationale first. The following tables retain raw samples, exact profile settings and reported confidence levels. Reporting writes no files and starts no measurements.
 
 ```powershell
-dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- study --report tests/Sphere10.Framework.Utils.Profiler.Tests/Results
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~Recorded' --logger 'console;verbosity=detailed'
+dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- study --report E:/ProfilerEvidence
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~Recorded' --logger 'console;verbosity=detailed' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
 ```
 
 ## Measure and replay

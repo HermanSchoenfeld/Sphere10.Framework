@@ -436,7 +436,7 @@ public class SharedScreenHostIntegrationTests {
 		Assert.That(native.IsDisposed, Is.True);
 		Assert.That(control.IsDisposed, Is.True);
 		Assert.That(host.Screens, Is.Empty);
-		Assert.That(() => host.ShowScreenAsync(control), Throws.InvalidOperationException);
+		Assert.That(() => host.ShowScreenAsync(control), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]

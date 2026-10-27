@@ -63,7 +63,7 @@ public class UserControlEx : UserControl, IUpdatable {
 	public virtual void SetLocalizedText(CultureInfo culture = null) {
 	}
 
-	public IDisposable EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) {
+	public UpdateScope EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) {
 		return new UpdateScope(this, behaviour);
 	}
 

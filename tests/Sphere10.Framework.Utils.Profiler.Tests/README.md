@@ -1,7 +1,31 @@
 # Profiler tests
 
 NUnit coverage for the general profiler command, ObjectSpace, B-tree and cache workloads,
-parameter-study contracts and retained measurement evidence.
+parameter-study contracts and optional external measurement evidence.
+
+## External historical captures
+
+Historical captures are not included in the repository, indexed as project items,
+or copied into test output. Recorded-capture checks are explicit tests in the
+`RecordedPerformance` category. Supply the external capture root through the
+`ProfilerResultsRoot` NUnit parameter and select the required fixture. Without
+that parameter, capture discovery is skipped; supplied malformed or incomplete
+evidence still fails its existing checks. Benchmark implementations and synthetic
+correctness/parser tests remain ordinary source files.
+
+```powershell
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~Recorded' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
+```
+
+Paths described below are relative to that external root. Keep new captures
+outside the checkout; explicit diagnostics also accept their existing output-root
+parameters. A source checkout does not supply historical performance evidence.
+
+## Local scope diagnostics
+
+The scope benchmark fixtures, captured campaign files and reproduction notes are retained locally and excluded from version control. Behavioral scope regression tests remain in the ordinary test projects. Historical workload definitions, measured results and their comparison limits are summarized in the [value-scope](../../docs/performance/value-scopes.md), [scope-abstraction](../../docs/performance/scope-abstraction.md) and [scope-composition](../../docs/performance/scope-composition.md) reports.
+
+## Stream-mapped dictionary workload measurements
 
 `StreamMappedDictionaries/StreamMappedDictionaryWorkloadTests` registers the six
 `IntegrationTests_Heavy` cases: KVP and constant-length-key dictionaries on
@@ -23,8 +47,8 @@ dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Debug -p:BuildRevis
 dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Debug -p:BuildRevision=0 --filter 'FullyQualifiedName~StreamMappedDictionaryWorkloadTests.IntegrationTests_Smoke|FullyQualifiedName~HeavyRegistryContainsBothImplementationsAndAllThreePolicies|FullyQualifiedName~RecordedStreamMappedDictionaryResults'
 ```
 
-`StreamMappedDictionaries/RecordedStreamMappedDictionaryResults` reads local
-`Results/StreamMappedDictionaries/<campaign>/campaign.json` captures. It checks
+`StreamMappedDictionaries/RecordedStreamMappedDictionaryResults` reads
+`StreamMappedDictionaries/<campaign>/campaign.json` under the configured external root. It checks
 the workload/runtime controls, declared Core binary SHA256, hashed raw TRX files,
 and all six passed results by their actual test names and classes. Its output
 compares elapsed times without a performance threshold. A campaign records
@@ -35,8 +59,8 @@ mappings (`Implementation`, `Policy`, `Trx`, `TestClass`, `TestName`,
 can retain additional stages without replacing earlier captures. The manifest's
 `CaptureHashes` map identifies every raw TRX by SHA256. Original superseded runs
 remain retained, with any accepted clean reruns mapped explicitly per case.
-Missing local campaigns skip the evidence fixture; malformed or incomplete
-present campaigns fail. Raw campaign folders stay ignored local output.
+Missing campaigns skip this optional evidence fixture; malformed or incomplete
+present campaigns fail. Capture files remain external inputs.
 `RecordedStreamMappedDictionaryResultsTests` uses synthetic TRX records to check
 both exact capture shapes (original Core fixtures and the profiler fixture),
 including result/definition identity matching and rejection of changed workloads,
@@ -61,17 +85,12 @@ It checks the exact profile, estimator-size accounting and deterministic
 checksums across independent workers. Read its output alongside
 `RecordedBenchmarkDotNetConfirmations` for timings and allocation measurements;
 cache-metrics files do not assign batches to BenchmarkDotNet sample stages.
-The [current cache results](Results/cache-projection-performance-summary.md)
-summarize 19 measured cases from the canonical typed core and explicit object
-projection. Their three `projection-bdn` phases contain 38 successful workers
-and 380 actual timing samples. The [earlier implicit-object results](Results/cache-performance-summary.md)
-and their original worker evidence remain separately retained.
-
-New benchmark campaign folders under `Results/` are ignored local output.
-Existing checked-in evidence and top-level reports remain versioned. The cache
-evidence fixture skips when no local cache captures are available; the workload
-correctness tests run normally. Keep original reports and worker identities
-together locally when inspecting a capture.
+The historical cache comparisons covered the canonical typed core, explicit
+object projection and the earlier implicit-object implementation. Their reports
+and worker evidence are no longer shipped with the source. The cache evidence
+fixture skips when no external cache captures are available; workload correctness
+tests run normally. Keep original reports and worker identities together when
+inspecting an external capture.
 
 `BTrees/BTreeProfilerTests` verifies B-tree, B+ tree and multimap lookup behavior
 across managed nodes, MemoryStream, FileStream, framework paged files, true OS
@@ -105,7 +124,7 @@ fixtures under `Sphere10.Framework.Utils.Profiler.Tests`:
    samples; capability/dataset separation; uncertainty ties; sample statistics;
    temporal drift diagnostics; and supported-workload preflight. These are ordinary tests of the study runner
    and analyzer, using synthetic data rather than timing assertions.
-2. **RecordedStudyResults** reads the retained studies under [Results](Results).
+2. **RecordedStudyResults** reads studies from `ProfilerResultsRoot`.
    Select an individual result after running it and open its **Output** to see
    each measured candidate, sample count, interval and exact comparison group.
    The attached JSON, journal, CSV and Markdown files contain configurations,
@@ -153,15 +172,16 @@ Controlled confirmation checks also reconcile the exact declared warmup count wi
 Running these fixtures reads existing evidence; it does not start a new
 performance campaign or require this machine's timing to match recorded timing.
 There are no hard-coded fastest orders or performance pass/fail thresholds.
-Missing or unexplained incomplete evidence fails its fixture instead of silently
+When external inputs are supplied, missing or unexplained incomplete evidence
+fails its fixture instead of silently
 showing a recommendation. A measured case that failed setup or verification must
 retain its error and unverified status. The fixture displays that failure and
 checks its captured samples; it excludes the case from recommendations and
 successful coverage. A passing evidence check validates the failure record and
 does not claim that the failed configuration works. After a fix, retain its new
 run separately and preserve the original raw failure evidence.
-Results are copied into the test output during build,
-so rebuild after replacing a retained report.
+Reports are read directly from the external root; builds do not copy them into
+the test output.
 
 Direct study timings are screening evidence from one process with reset batches
 and shuffled profile order. A lowest mean is a measured candidate for that exact
@@ -208,8 +228,8 @@ dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRev
 an already settled Merkle store. Setup and final integrity/reopen checks remain
 outside the benchmark. Select a Merkle-enabled profile when running it.
 
-`RecordedObjectSpaceHotPathTests` checks the fifteen paired cases retained in
-`Results/20261022-objectspace-hotpaths`: the small workload matrix plus larger
+`RecordedObjectSpaceHotPathTests` can inspect the fifteen historical paired cases in
+`20261022-objectspace-hotpaths`: the small workload matrix plus larger
 mutation batches and a separate file-reindex confirmation. It checks the original settings, successful worker logs and
 all twenty actual samples per case, and prints the before/after measurements.
 It validates retained evidence without requiring the current machine to meet
@@ -217,8 +237,8 @@ a timing threshold. See the [ObjectSpace performance report](../../docs/performa
 for configuration, profiling findings and limitations.
 
 The same fixture adds seven page-only before/after pairs and four explicit-tree
-cases from `Results/20261022-objectspace-page-btree`. Two further paired cases
-in `Results/20261022-span-dispatch` compare the subsequent inheritance cleanup,
+cases from `20261022-objectspace-page-btree`. Two further paired cases
+in `20261022-span-dispatch` compare the subsequent inheritance cleanup,
 for twenty-eight recorded cases across the three campaigns. Both dispatch
 captures already contain page pooling, so their comparison does not isolate that
 change. The page campaign retains all repeated mutation

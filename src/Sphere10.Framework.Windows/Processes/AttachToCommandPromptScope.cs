@@ -8,10 +8,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
-public class AttachToCommandPromptScope : IDisposable {
+public readonly struct AttachToCommandPromptScope : IScope {
 
 	public AttachToCommandPromptScope() {
 		var foregroundWindowHWND = WinAPI.USER32.GetForegroundWindow();
@@ -45,5 +46,7 @@ public class AttachToCommandPromptScope : IDisposable {
 			WinAPI.USER32.PostMessage(Shell.MainWindowHandle, (int)WinAPI.USER32.WM.KEYDOWN, (int)VirtualKey.Return, 0);
 		}
 	}
+
+	public ValueTask DisposeAsync() => new(Task.Run(Dispose));
 }
 

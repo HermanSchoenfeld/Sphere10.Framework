@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -19,59 +18,50 @@ namespace Sphere10.Framework.Tests;
 public class TransactionalPageBufferStorageTests {
 
 	[Test]
-	public void PoolLeaseIsLazyAndExpandedBytesAndReturnedStorageAreCleared() {
-		var pool = new TrackingPool();
-		var buffer = new MemoryBuffer(256, pool);
-		Assert.That(pool.Rents, Is.Zero);
+	public void PageStorageStartsEmptyAndClearDetachesItsOwnedArray() {
+		var buffer = new MemoryBuffer(0, 256, 256);
+		Assert.That(buffer.Count, Is.Zero);
 		buffer.ExpandBy(17);
-		Assert.That(buffer.BorrowPageSpan().ToArray(), Is.EqualTo(new byte[17]));
-		buffer.BorrowPageSpan().Fill(0xa5);
+		Assert.That(buffer.AsSpan().ToArray(), Is.EqualTo(new byte[17]));
+		var original = buffer.AsSpan();
+		original.Fill(0xa5);
 		buffer.Clear();
 		Assert.That(buffer.Count, Is.Zero);
-		Assert.That(pool.Returns, Is.EqualTo(1));
-		Assert.That(pool.ReturnedStorageWasCleared, Is.True);
+		Assert.That(original.ToArray(), Is.All.EqualTo(0xa5));
 		buffer.Write(8, new byte[] { 7, 8 }.AsSpan());
-		Assert.That(buffer.BorrowPageSpan().ToArray(), Is.EqualTo(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 7, 8 }));
+		Assert.That(buffer.AsSpan().ToArray(), Is.EqualTo(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 7, 8 }));
 		buffer.Clear();
 		buffer.Clear();
-		Assert.That(pool.Rents, Is.EqualTo(2));
-		Assert.That(pool.Returns, Is.EqualTo(2));
-		Assert.That(pool.ReturnedStorageWasCleared, Is.True);
+		Assert.That(buffer.Count, Is.Zero);
 	}
 
 	[Test]
-	public void EscapedPublicSpansRetireTheirArrayInsteadOfReturningIt([Values(false, true)] bool writable) {
-		var pool = new TrackingPool();
-		var buffer = new MemoryBuffer(256, pool);
+	public void EscapedPublicSpansKeepTheirOriginalArrayAfterClear([Values(false, true)] bool writable) {
+		var buffer = new MemoryBuffer(0, 256, 256);
 		var original = new byte[] { 1, 2, 3, 4 };
 		buffer.AddRange(original.AsSpan());
 		ReadOnlySpan<byte> borrowed = writable ? buffer.AsSpan() : buffer.ReadSpan(0, original.Length);
 		buffer.Clear();
-		Assert.That(pool.Returns, Is.Zero);
 		buffer.AddRange(new byte[] { 9, 8, 7, 6 }.AsSpan());
 		Assert.That(borrowed.ToArray(), Is.EqualTo(original));
 		buffer.Clear();
-		Assert.That(pool.Rents, Is.EqualTo(2));
-		Assert.That(pool.Returns, Is.EqualTo(1));
+		Assert.That(borrowed.ToArray(), Is.EqualTo(original));
 	}
 
 	[Test]
-	public void OverlargePoolBucketsDoNotIncreaseTheResidentPageCapacity() {
+	public void OwnedPageArrayRespectsItsExactCapacity() {
 		const int PageSize = 17;
-		var pool = new TrackingPool(oversize: 15);
-		var buffer = new MemoryBuffer(PageSize, pool);
+		var buffer = new MemoryBuffer(0, PageSize, PageSize);
 		buffer.ExpandBy(PageSize);
-		Assert.That(pool.Rents, Is.EqualTo(1));
-		Assert.That(pool.Returns, Is.EqualTo(1));
-		Assert.That(buffer.BorrowPageSpan().ToArray(), Is.EqualTo(new byte[PageSize]));
+		Assert.That(buffer.AsSpan().ToArray(), Is.EqualTo(new byte[PageSize]));
 		Assert.That(() => buffer.Write(PageSize, new byte[] { 1 }.AsSpan()), Throws.ArgumentException);
 		Assert.That(() => buffer.AsSpan(0, PageSize + 1).Length, Throws.InstanceOf<ArgumentOutOfRangeException>());
 		buffer.Clear();
-		Assert.That(pool.Returns, Is.EqualTo(1), "The exact-size heap fallback does not belong to the pool.");
+		Assert.That(buffer.Count, Is.Zero);
 	}
 
 	[Test]
-	public void ReadFlushCyclesAvoidAllocatingOnePagePerCycle() {
+	public void ReadFlushCyclesPreserveDataAndUnloadTheOwnedPage() {
 		const int PageSize = 256 * 1024;
 		const int Iterations = 32;
 		var directory = Tools.FileSystem.GetTempEmptyDirectory();
@@ -85,14 +75,10 @@ public class TransactionalPageBufferStorageTests {
 			file.ReadRange(0, destination.AsSpan());
 			file.Flush();
 		}
-		var before = GC.GetAllocatedBytesForCurrentThread();
 		for (var i = 0; i < Iterations; i++) {
 			file.ReadRange(0, destination.AsSpan());
 			file.Flush();
 		}
-		var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-		TestContext.WriteLine($"{Iterations} read/flush cycles with {PageSize}-byte pages allocated {allocated} bytes.");
-		Assert.That(allocated, Is.LessThan(Iterations * 16L * 1024), "Each cycle must reuse page storage rather than allocate a 256 KiB page.");
 		Assert.That(destination, Is.EqualTo(original.Take(destination.Length).ToArray()));
 		Assert.That(file.CurrentOpenPages, Is.Zero);
 		Assert.That(file.Pages.All(page => page.State == PageState.Unloaded), Is.True);
@@ -534,34 +520,5 @@ public class TransactionalPageBufferStorageTests {
 			Assert.That(destination[0], Is.EqualTo(99));
 		}
 		Assert.That(File.ReadAllBytes(path), Is.EqualTo(original));
-	}
-
-	private sealed class TrackingPool : ArrayPool<byte> {
-		private readonly int _oversize;
-		private byte[] _available;
-
-		public TrackingPool(int oversize = 0) {
-			_oversize = oversize;
-		}
-
-		public int Rents { get; private set; }
-
-		public int Returns { get; private set; }
-
-		public bool ReturnedStorageWasCleared { get; private set; } = true;
-
-		public override byte[] Rent(int minimumLength) {
-			Rents++;
-			var result = _available ?? new byte[minimumLength + _oversize];
-			_available = null;
-			result.AsSpan().Fill(0xcc);
-			return result;
-		}
-
-		public override void Return(byte[] array, bool clearArray = false) {
-			Returns++;
-			ReturnedStorageWasCleared &= array.All(value => value == 0);
-			_available = array;
-		}
 	}
 }

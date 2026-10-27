@@ -113,8 +113,10 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	protected override async Task OnTransactionalScopeEndAsync(List<Exception> errors) {
 		if (ScopeOwnsSession) {
 			await Session.FlushAsync().IgnoringExceptions(errors);
-			Tools.Exceptions.ExecuteCapturingException(() => Session.Close(), errors);
-			Tools.Exceptions.ExecuteCapturingException(Session.Dispose, errors);
+			await Task.Run(() => {
+				Tools.Exceptions.ExecuteCapturingException(() => Session.Close(), errors);
+				Tools.Exceptions.ExecuteCapturingException(Session.Dispose, errors);
+			});
 		}
 	}
 

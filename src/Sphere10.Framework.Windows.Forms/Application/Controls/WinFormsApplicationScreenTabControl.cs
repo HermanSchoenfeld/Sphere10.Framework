@@ -575,7 +575,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 		Tools.Windows.Win32.SetTabCaption(Handle, index, caption.Replace("&", "&&", StringComparison.Ordinal));
 	}
 
-	private IDisposable EnterReorderScope() {
+	private ActionScope EnterReorderScope() {
 		var WasReordering = Reordering;
 		Reordering = true;
 		return Tools.Scope.ExecuteOnDispose(() => Reordering = WasReordering);

@@ -29,6 +29,6 @@ public abstract class SyncRepositoryBase<TEntity, TIdentity> : RepositoryBase<TE
 	public override Task ClearAsync()
 		=> Task.Run(Clear);
 
-	protected sealed override async ValueTask FreeManagedResourcesAsync() => FreeManagedResources();
+	protected sealed override ValueTask FreeManagedResourcesAsync() => new(Task.Run(FreeManagedResources));
 }
 

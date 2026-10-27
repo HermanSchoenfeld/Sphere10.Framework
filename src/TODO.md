@@ -4,6 +4,10 @@ This is the Framework-wide running engineering backlog. Keep follow-ups across s
 
 ## Current follow-ups
 
+- [ ] **Reusable Windows device I/O and processor-group affinity.** Add Framework.Windows abstractions for device handles/control requests and processor-group affinity so SystemExpert's hardware collectors can consume them while retaining the PawnIO protocol and Intel decoding in the application. Preserve resource ownership and verify source/package consumers before migrating the nine existing native-call boundary violations. See the [disposal review and validation findings](../docs/performance/disposable-template-review.md).
+
+- [ ] **Scope consumer throughput confirmation.** Independently confirm dictionary, enumeration and storage timing after the direct-finalization refactor with longer BenchmarkDotNet runs. The paired short-batch captures preserve allocation reductions but show substantial host variation and mixed timing, so their pooled percentages are not an overall throughput claim. See [scope measurements](../docs/performance/scope-composition.md).
+
 - [ ] **Existing buffer search and alias semantics.** `MemoryBuffer.IndexOfRange` scans backing capacity and returns matching positions rather than one result per input; scalar adapters can consequently fail on duplicate or absent matches. Its existing span insertion can also observe shifted source bytes when the source aliases unchanged backing storage. Review these contracts separately with capacity, duplicate, missing-item and alias cases; the performance changes preserve them. See the [behavior review](../docs/performance/comment-and-behavior-review.md).
 - [ ] **Existing dynamic-page and empty-snapshot validation.** Dynamic raw snapshot/write methods index page-local tables with the supplied global index, so later pages can fail. Existing paged snapshots reject a zero-page empty range. Define compatibility and address these separately from the new destination-read APIs, with event, failure and page-boundary tests.
 

@@ -64,7 +64,7 @@ public class FileTransactionScope : SyncTransactionalScope<FileTransaction> {
 
 	public static FileTransactionScope GetCurrent() {
 		//return ContextScope<FileTransactionScope>.GetCurrent(ToContextName(transactionFile));
-		return FileTransactionScope.GetCurrent(ContextIDPrefix);
+		return GetCurrent(ContextIDPrefix);
 	}
 
 	public static void ProcessDanglingTransactions(string baseDir) {
@@ -74,7 +74,7 @@ public class FileTransactionScope : SyncTransactionalScope<FileTransaction> {
 	}
 
 	protected new static FileTransactionScope GetCurrent(string contextID)
-		=> ActionTransactionalScope<FileTransaction>.GetCurrent(contextID) as FileTransactionScope;
+		=> ContextScope.GetCurrent(contextID) as FileTransactionScope;
 
 	private static string GenTransactionFileName() => $"FTXN_{Guid.NewGuid().ToStrictAlphaString()}.txn";
 }

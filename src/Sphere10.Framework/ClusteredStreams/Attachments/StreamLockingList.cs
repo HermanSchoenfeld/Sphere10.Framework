@@ -151,7 +151,7 @@ internal class StreamLockingList<TData> : ExtendedListDecorator<TData> {
 			return
 				base
 					.GetEnumerator()
-					.OnDispose(scope.Dispose);
+					.DisposeWith(scope);
 		} catch {
 			scope.Dispose();
 			throw;

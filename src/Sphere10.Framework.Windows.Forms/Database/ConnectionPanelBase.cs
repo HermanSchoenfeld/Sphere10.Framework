@@ -46,7 +46,7 @@ public partial class ConnectionPanelBase : UserControlEx, IDatabaseConnectionPro
 		var dac = GetDAC();
 		try {
 			await Task.Run(() => {
-				using (var scope = dac.BeginScope(openConnection: true)) {
+				using (var scope = dac.EnterScope(openConnection: true)) {
 
 				}
 			});

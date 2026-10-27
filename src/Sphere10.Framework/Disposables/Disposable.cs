@@ -25,12 +25,15 @@ namespace Sphere10.Framework;
 public abstract class Disposable : IAsyncDisposable, IDisposable {
 	private bool _disposed;
 
-	public void Dispose() {
+	public virtual void Dispose() {
 		Dispose(true);
 		GC.SuppressFinalize(this); // Use SupressFinalize in case a subclass of this type implements a finalizer.
 	}
 
-	public async ValueTask DisposeAsync() {
+	public virtual async ValueTask DisposeAsync() {
+		if (_disposed)
+			return;
+
 		await FreeManagedResourcesAsync().ConfigureAwait(false);
 
 		Dispose(disposing: false);

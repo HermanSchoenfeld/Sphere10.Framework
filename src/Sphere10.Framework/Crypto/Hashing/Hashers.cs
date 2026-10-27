@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Security.Cryptography;
 
 
@@ -219,15 +220,14 @@ public static class Hashers {
 		return result;
 	}
 
-	public static IDisposable BorrowHasher(CHF algorithm, out IHashFunction hasher) {
+	public static HasherScope EnterBorrowHasherScope(CHF algorithm, out IHashFunction hasher) {
 		var hashers = HasherStack[(int)algorithm];
 		Guard.Ensure(hashers is not null, $"No implementation for {algorithm} found");
 		if (!hashers.TryPop(out hasher)) {
 			hasher = Constructors[(int)algorithm].Invoke();
 		}
 		hasher.Reset();
-		var hasherObj = hasher;
-		return new ActionScope(() => hashers.Push(hasherObj));
+		return new HasherScope(hashers, hasher);
 	}
 
 	public static void RegisterDefaultAlgorithms() {
@@ -245,6 +245,24 @@ public static class Hashers {
 		Register(CHF.Blake2b_160, () => new Blake2b(Blake2b._160Config));
 		Register(CHF.Blake2b_128, () => new Blake2b(Blake2b._128Config));
 
+	}
+
+	/// <summary>Returns a borrowed hasher to its pool when disposed.</summary>
+	/// <remarks>Keep one concrete using local. Copies must not independently return the same hasher.</remarks>
+	public readonly struct HasherScope : IScope {
+		private readonly ConcurrentStack<IHashFunction> _pool;
+		private readonly IHashFunction _hasher;
+
+		internal HasherScope(ConcurrentStack<IHashFunction> pool, IHashFunction hasher) {
+			Guard.ArgumentNotNull(pool, nameof(pool));
+			Guard.ArgumentNotNull(hasher, nameof(hasher));
+			_pool = pool;
+			_hasher = hasher;
+		}
+
+		public void Dispose() => _pool.Push(_hasher);
+
+		public ValueTask DisposeAsync() => new(Task.Run(Dispose));
 	}
 }
 

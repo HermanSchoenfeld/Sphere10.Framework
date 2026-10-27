@@ -101,7 +101,7 @@ public partial class FormEx : Form, IUpdatable {
 		Visible = false;
 	}
 
-	public IDisposable EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) {
+	public UpdateScope EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) {
 		return new UpdateScope(this, behaviour);
 	}
 

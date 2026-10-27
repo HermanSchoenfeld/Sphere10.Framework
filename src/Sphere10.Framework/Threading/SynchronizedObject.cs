@@ -6,148 +6,63 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Threading;
 
 namespace Sphere10.Framework;
 
-public class SynchronizedObject : ISynchronizedObject {
-	internal readonly ReaderWriterLockSlim _threadLock;
-
+public class SynchronizedObject : SynchronizedObjectBase, ISynchronizedObject {
 	public SynchronizedObject()
 		: this(LockRecursionPolicy.SupportsRecursion) {
 	}
 
-	public SynchronizedObject(LockRecursionPolicy policy) {
-		_threadLock = new ReaderWriterLockSlim(policy);
+	public SynchronizedObject(LockRecursionPolicy policy)
+		: base(policy) {
 	}
 
-	public ISynchronizedObject ParentSyncObject { get; set; }
-
-	public ReaderWriterLockSlim ThreadLock => ParentSyncObject?.ThreadLock ?? _threadLock;
-
-	public IDisposable EnterReadScope() {
-		ThreadLock.EnterReadLock();
-		OnReadScopeOpen();
-		var scope = new ActionDisposable(
-			() => {
-				ThreadLock.ExitReadLock();
-				OnReadScopeClosed();
-			}
-		);
-		return scope;
+	public ISynchronizedObject ParentSyncObject {
+		get => (ISynchronizedObject)ParentSyncObjectCore;
+		set => ParentSyncObjectCore = value;
 	}
 
-	public IDisposable EnterWriteScope() {
-		ThreadLock.EnterWriteLock();
-		OnWriteScopeOpen();
-		var scope = new ActionDisposable(
-			() => {
-				ThreadLock.ExitWriteLock();
-				OnWriteScopeClosed();
-			}
-		);
-		return scope;
-	}
+	public ReadScope EnterReadScope() => new(this);
 
-	protected virtual void OnReadScopeOpen() {
-	}
-
-	protected virtual void OnReadScopeClosed() {
-	}
-
-	protected virtual void OnWriteScopeOpen() {
-	}
-
-	protected virtual void OnWriteScopeClosed() {
-	}
-
-	protected virtual void EnsureReadable() {
-		if (!(ThreadLock.IsReadLockHeld || ThreadLock.IsUpgradeableReadLockHeld))
-			throw new SoftwareException("Resource has not entered a read scope");
-	}
-
-	protected virtual void EnsureWritable() {
-		if (!ThreadLock.IsWriteLockHeld)
-			throw new SoftwareException("Resource has not entered a write scope");
-	}
-
+	public WriteScope EnterWriteScope() => new(this);
 }
 
-
-public class SynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
-	where TReadScope : IScope, new()
-	where TWriteScope : IScope, new() {
-	internal readonly ReaderWriterLockSlim _threadLock;
-
+public class SynchronizedObject<TReadScope, TWriteScope> : SynchronizedObjectBase, ISynchronizedObject<TReadScope, TWriteScope>
+	where TReadScope : struct, IScope
+	where TWriteScope : struct, IScope {
 	public SynchronizedObject()
 		: this(LockRecursionPolicy.SupportsRecursion) {
 	}
 
-	public SynchronizedObject(LockRecursionPolicy policy) {
-		_threadLock = new ReaderWriterLockSlim(policy);
+	public SynchronizedObject(LockRecursionPolicy policy)
+		: base(policy) {
 	}
 
-	public ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
-
-	ISynchronizedObject ISynchronizedObject.ParentSyncObject {
-		get => ParentSyncObject;
-		set => ParentSyncObject = (ISynchronizedObject<TReadScope, TWriteScope>)value;
+	public ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject {
+		get => (ISynchronizedObject<TReadScope, TWriteScope>)ParentSyncObjectCore;
+		set => ParentSyncObjectCore = value;
 	}
 
-	public ReaderWriterLockSlim ThreadLock => ParentSyncObject?.ThreadLock ?? _threadLock;
-
-	public TReadScope EnterReadScope() {
-		ThreadLock.EnterReadLock();
-		OnReadScopeOpen();
-		var scope = new TReadScope();
-		scope.ScopeEnd += () => {
-			ThreadLock.ExitReadLock();
-			OnReadScopeClosed();
-		};
-		return scope;
+	public ReadScope<TReadScope> EnterReadScope() {
+		var lockScope = new ReadScope(this);
+		try {
+			return new ReadScope<TReadScope>(new TReadScope(), lockScope);
+		} catch {
+			lockScope.Dispose();
+			throw;
+		}
 	}
 
-	IDisposable ISynchronizedObject.EnterReadScope() {
-		return EnterReadScope();
+	public WriteScope<TWriteScope> EnterWriteScope() {
+		var lockScope = new WriteScope(this);
+		try {
+			return new WriteScope<TWriteScope>(new TWriteScope(), lockScope);
+		} catch {
+			lockScope.Dispose();
+			throw;
+		}
 	}
-
-	public TWriteScope EnterWriteScope() {
-		ThreadLock.EnterWriteLock();
-		OnWriteScopeOpen();
-		var scope = new TWriteScope();
-		scope.ScopeEnd += () => {
-			ThreadLock.ExitWriteLock();
-			OnWriteScopeClosed();
-		};
-		return scope;
-	}
-
-	IDisposable ISynchronizedObject.EnterWriteScope() {
-		return EnterWriteScope();
-	}
-
-	protected virtual void OnReadScopeOpen() {
-	}
-
-	protected virtual void OnReadScopeClosed() {
-	}
-
-	protected virtual void OnWriteScopeOpen() {
-	}
-
-	protected virtual void OnWriteScopeClosed() {
-	}
-
-	protected virtual void EnsureReadable() {
-		if (!(ThreadLock.IsReadLockHeld || ThreadLock.IsUpgradeableReadLockHeld))
-			throw new SoftwareException("Resource has not entered a read scope");
-	}
-
-	protected virtual void EnsureWritable() {
-		if (!ThreadLock.IsWriteLockHeld)
-			throw new SoftwareException("Resource has not entered a write scope");
-	}
-
 }
 

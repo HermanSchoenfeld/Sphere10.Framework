@@ -75,6 +75,17 @@ public static class Exceptions {
 		}
 	}
 
+	/// <summary>Executes an action with its prefetched argument without requiring a capturing delegate.</summary>
+	public static bool Execute<T>(T argument, Action<T> action, Action<T, Exception> handler = null) {
+		try {
+			action(argument);
+			return true;
+		} catch (Exception error) {
+			handler?.Invoke(argument, error);
+			return false;
+		}
+	}
+
 
 	public static T TryOrDefault<T>(Func<T> func, T @default) {
 		try {

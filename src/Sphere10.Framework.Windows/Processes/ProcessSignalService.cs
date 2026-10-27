@@ -28,12 +28,12 @@ public static class ProcessSignalService {
 			identity.StartTimeUtc.Value.Ticks.ToString(CultureInfo.InvariantCulture), signal.ToString(CultureInfo.InvariantCulture));
 		using var worker = await Task.Run(() => Process.Start(request), cancellationToken);
 		Guard.Ensure(worker != null, "Could not start the isolated console signal sender.");
-		await using var termination = Tools.Scope.ExecuteOnDisposeAsync(async () => {
+		await using var termination = Tools.Scope.ExecuteOnDisposeAsync<Process>(static async worker => {
 			if (!worker.HasExited) {
 				worker.Kill();
 				await worker.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(3));
 			}
-		});
+		}, worker);
 		await worker.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
 		Guard.Ensure(worker.ExitCode == 0, $"Console signal failed (code {worker.ExitCode}); the process may have no accessible console.");
 	}
@@ -46,6 +46,7 @@ public static class ProcessSignalService {
 			Guard.Argument(args.Length == 4, nameof(args), "Invalid signal sender arguments.");
 			var identity = new ProcessIdentity(int.Parse(args[1], CultureInfo.InvariantCulture), new DateTime(long.Parse(args[2], CultureInfo.InvariantCulture), DateTimeKind.Utc));
 			var signal = uint.Parse(args[3], CultureInfo.InvariantCulture);
+			// Sync-over-async pattern
 			ProcessCommandService.ExecuteAsync(identity, process => Tools.Windows.Processes.SendConsoleSignal(process.Id, signal)).GetAwaiter().GetResult();
 		}, out var error);
 		if (error != null)

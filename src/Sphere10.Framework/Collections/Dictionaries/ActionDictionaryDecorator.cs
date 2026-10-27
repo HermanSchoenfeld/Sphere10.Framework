@@ -19,7 +19,8 @@ public class ActionDictionaryDecorator<TKey, TValue, TConcrete> : DictionaryDeco
 	public ActionDictionaryDecorator(TConcrete internalDictionary, Action enterAction, Action exitAction)
 		: base(internalDictionary) {
 		_enterAction = enterAction;
-		_exitAction = exitAction;
+		// A missing optional exit callback still produces a valid cleanup scope.
+		_exitAction = exitAction ?? (static () => { });
 	}
 
 	public override ICollection<TKey> Keys {
@@ -109,12 +110,17 @@ public class ActionDictionaryDecorator<TKey, TValue, TConcrete> : DictionaryDeco
 
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		var scope = EnterScope();
-		return base.GetEnumerator().OnDispose(scope.Dispose);
+		try {
+			return base.GetEnumerator().DisposeWith(scope);
+		} catch {
+			scope.Dispose();
+			throw;
+		}
 	}
 
-	private IDisposable EnterScope() {
+	private ActionScope EnterScope() {
 		_enterAction?.Invoke();
-		return new ActionScope(_exitAction);
+		return Tools.Scope.ExecuteOnDispose(_exitAction);
 	}
 
 }

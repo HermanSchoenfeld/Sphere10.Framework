@@ -30,10 +30,10 @@ public class NonReentrantLock {
 	public bool IsLocked => _owningThreadId.HasValue;
 
 	/// <summary>
-	/// Acquires the lock and returns an IDisposable that releases the lock when disposed.
-	/// This method is intended to be used in a using statement.
+	/// Acquires the lock and returns a scope that releases it through synchronous disposal on the acquiring thread.
+	/// This method is intended to be used in a using statement; asynchronous disposal is unsupported.
 	/// </summary>
-	/// <returns>An IDisposable that releases the lock when disposed.</returns>
+	/// <returns>A scope that releases the lock when disposed on the acquiring thread.</returns>
 	/// <example>
 	/// <code>
 	/// using (var scope = myNonReentrantLock.EnterLockScope()) {
@@ -43,9 +43,9 @@ public class NonReentrantLock {
 	/// </code>
 	/// </example>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public IDisposable EnterLockScope() {
+	public SyncScope<NonReentrantLock> EnterLockScope() {
 		Acquire();
-		return new ActionScope(Release);
+		return new SyncScope<NonReentrantLock>(this, static threadLock => threadLock.Release());
 	}
 
 	/// <summary>

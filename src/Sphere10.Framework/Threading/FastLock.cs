@@ -6,7 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Threading;
 
 namespace Sphere10.Framework;
@@ -18,9 +17,10 @@ public sealed class FastLock {
 		_lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 	}
 
-	public IDisposable EnterLockScope() {
+	/// <summary>Acquires a recursive lock whose scope must be disposed synchronously on this thread.</summary>
+	public SyncScope<ReaderWriterLockSlim> EnterLockScope() {
 		_lock.EnterWriteLock();
-		return new ActionScope(() => _lock.ExitWriteLock());
+		return new SyncScope<ReaderWriterLockSlim>(_lock, static threadLock => threadLock.ExitWriteLock());
 	}
 
 }

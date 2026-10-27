@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming;
 
 /// <summary>Observes the scoped theme and releases the subscription when the renderer disposes the component.</summary>
 public abstract class ThemedComponentBase : ComponentBase, IDisposable {
-	private IDisposable _subscription;
+	private ActionScope? _subscription;
 	private bool _disposed;
 
 	[Inject]

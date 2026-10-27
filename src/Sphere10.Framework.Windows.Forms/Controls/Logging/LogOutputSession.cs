@@ -131,6 +131,7 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 		var completion = DisposeAsync();
 		// Borrowed output may already have dispatched to the UI. Its owner controls that callback;
 		// synchronous Stop must never join it from the same dispatcher.
+		// Sync-over-async pattern
 		if (_ownsSink)
 			completion.GetAwaiter().GetResult();
 	}

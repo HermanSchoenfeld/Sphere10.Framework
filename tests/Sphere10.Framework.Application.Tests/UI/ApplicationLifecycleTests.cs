@@ -187,7 +187,11 @@ public class ApplicationLifecycleTests {
 
 		Assert.That(finalizations, Is.Zero);
 		Assert.That(disposals, Is.EqualTo(1));
-		Assert.That(() => application.Initialize(), Throws.Exception);
+		Assert.That(() => application.Initialize(), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.ConfigureInitializers(Array.Empty<IApplicationInitializer>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.ConfigureFinalizers(Array.Empty<IApplicationFinalizer>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]

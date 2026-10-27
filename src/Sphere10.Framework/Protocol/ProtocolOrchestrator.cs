@@ -174,6 +174,7 @@ public class ProtocolOrchestrator {
 			return false;
 		}
 
+		// Sync-over-async pattern
 		if (!Channel.TrySendBytes(data, Channel.DefaultTimeout).Result) {
 			Logger.Error("Failed to transmit message envelope");
 			return false;

@@ -53,10 +53,7 @@ public class ApplicationScreenPoliciesBrowserTests {
 	[TearDown]
 	public async Task TearDown() {
 		using var runtime = Tools.Scope.ExecuteOnDispose(() => _playwright?.Dispose());
-		await using var browser = new TaskScope(async () => {
-			if (_browser != null)
-				await _browser.DisposeAsync();
-		});
+		await using var browser = Tools.Scope.ExecuteOnDisposeAsync<IBrowser>(static browser => browser?.DisposeAsync() ?? ValueTask.CompletedTask, _browser);
 		if (_page != null && TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed) {
 			var path = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"screen-policy-{TestContext.CurrentContext.Test.ID}.png");
 			await _page.ScreenshotAsync(new() { Path = path, FullPage = true });

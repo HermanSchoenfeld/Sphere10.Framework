@@ -19,14 +19,14 @@ public class Blake2bSlowConsistency {
 	[Test]
 	public void Empty() {
 		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
-		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
+		using var _ = Hashers.EnterBorrowHasherScope(CHF.Blake2b_512_Fast, out var fastHasher);
 		Assert.That(slowHasher.GetResult(), Is.EqualTo(fastHasher.GetResult()));
 	}
 
 	[Test]
 	public void Empty_2() {
 		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
-		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
+		using var _ = Hashers.EnterBorrowHasherScope(CHF.Blake2b_512_Fast, out var fastHasher);
 		slowHasher.Transform(Array.Empty<byte>());
 		fastHasher.Transform(Array.Empty<byte>());
 		Assert.That(slowHasher.GetResult(), Is.EqualTo(fastHasher.GetResult()));
@@ -36,7 +36,7 @@ public class Blake2bSlowConsistency {
 	[Test]
 	public void Random() {
 		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
-		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
+		using var _ = Hashers.EnterBorrowHasherScope(CHF.Blake2b_512_Fast, out var fastHasher);
 		var bytes = new Random(31337).NextBytes(100);
 		slowHasher.Transform(bytes);
 		fastHasher.Transform(bytes);
@@ -48,7 +48,7 @@ public class Blake2bSlowConsistency {
 	public void Complex() {
 		var rng = new Random(31337);
 		var slowHasher = new Sphere10.Framework.Blake2b(Sphere10.Framework.Blake2b._512Config);
-		using var _ = Hashers.BorrowHasher(CHF.Blake2b_512_Fast, out var fastHasher);
+		using var _ = Hashers.EnterBorrowHasherScope(CHF.Blake2b_512_Fast, out var fastHasher);
 
 		for (var i = 0; i < rng.Next(0, 100); i++) {
 			var block = rng.NextBytes(rng.Next(0, 100));

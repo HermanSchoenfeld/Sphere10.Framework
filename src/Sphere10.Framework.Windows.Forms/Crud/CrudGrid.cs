@@ -841,7 +841,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			var suppressLoading = SuppressLoadingIndicator || initialBinding;
 			if (!suppressLoading && !await _refreshThrottle.IsCallerFirstInStampede() || IsDisposed)
 				return;
-			using var animation = suppressLoading ? null : EnterLoadingIndicator();
+			using ActionScope? animation = suppressLoading ? null : EnterLoadingIndicator();
 			var previousEnabled = _grid.Enabled;
 			using var restoreEnabled = Tools.Scope.ExecuteOnDispose(() => {
 				if (!suppressLoading && !IsDisposed)
@@ -877,7 +877,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		}
 	}
 
-	private IDisposable EnterLoadingIndicator() {
+	private ActionScope EnterLoadingIndicator() {
 		// An inner operation cannot hide the indicator still owned by its enclosing operation.
 		_loadingIndicatorScopes++;
 		UpdateLoadingIndicator();

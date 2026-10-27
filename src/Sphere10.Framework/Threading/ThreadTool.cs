@@ -23,16 +23,7 @@ public static class Threads {
 		return new Task(() => invokeAsyncMethod().WaitSafe());
 	}
 
-	public static IDisposable EnterLockScope(object lockObject) {
-		var lockTaken = false;
-		Monitor.Enter(lockObject, ref lockTaken);
-		return new ActionScope(
-			() => {
-				if (lockTaken)
-					System.Threading.Monitor.Exit(lockObject);
-			}
-		);
-	}
+	public static MonitorScope EnterLockScope(object lockObject) => new(lockObject);
 
 	public static void RaiseAsync(EventHandlerEx handler) => Task.Factory.StartNew(() => handler?.Invoke());
 

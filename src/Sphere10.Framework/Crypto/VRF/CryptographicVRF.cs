@@ -19,7 +19,7 @@ public class CryptographicVRF : VRFAlgorithmBase {
 	protected override void RunInternal(ReadOnlySpan<byte> seed, IPrivateKey privateKey, ulong nonce, out byte[] proof) {
 		// Step 1: Hash the seed to create a digest
 		Span<byte> seedDigest = stackalloc byte[Hashers.GetDigestSizeBytes(CHF)];
-		using (Hashers.BorrowHasher(CHF, out var hasher)) {
+		using (Hashers.EnterBorrowHasherScope(CHF, out var hasher)) {
 			hasher.Transform(seed);
 			hasher.GetResult(seedDigest);
 		}
@@ -31,7 +31,7 @@ public class CryptographicVRF : VRFAlgorithmBase {
 	protected override bool TryVerifyInternal(ReadOnlySpan<byte> seed, ReadOnlySpan<byte> proof, IPublicKey publicKey) {
 		// Step 1: Recompute the message digest from the seed
 		Span<byte> seedDigest = stackalloc byte[Hashers.GetDigestSizeBytes(CHF)];
-		using (Hashers.BorrowHasher(CHF, out var hasher)) {
+		using (Hashers.EnterBorrowHasherScope(CHF, out var hasher)) {
 			hasher.Transform(seed);
 			hasher.GetResult(seedDigest);
 		}

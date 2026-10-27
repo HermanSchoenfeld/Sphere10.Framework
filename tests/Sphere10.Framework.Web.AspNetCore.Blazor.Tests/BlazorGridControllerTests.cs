@@ -120,6 +120,7 @@ public class BlazorGridControllerTests {
 		Assert.That(controller.Items, Is.Empty);
 		Assert.That(changes, Is.EqualTo(changesAtDisposal));
 		Assert.That(source.Disposed, Is.False);
+		await Assert.ThatAsync(async () => await controller.RefreshAsync(), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]

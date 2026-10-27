@@ -33,7 +33,7 @@ public class RapidTableViewModel<TItem> : ComponentViewModelBase, IDisposable, I
 	public int ItemLimit { get; set; } = 25;
 
 	public async Task SetSourceAsync(IAsyncEnumerable<TItem> source, CancellationToken cancellationToken = default) {
-		Guard.Ensure(!_disposed, "The table has been disposed.");
+		ObjectDisposedException.ThrowIf(_disposed, this);
 		Guard.ArgumentNotNull(source, nameof(source));
 		Guard.ArgumentGT(ItemLimit, 0, nameof(ItemLimit));
 		while (_items.Count > ItemLimit)

@@ -106,6 +106,7 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 		EnsureExitIsNotReentrant();
 		var exit = ExitAsync(force, cancellationToken);
 		WaitOnUIThread(exit);
+		// Sync-over-async pattern
 		return exit.GetAwaiter().GetResult();
 	}
 
@@ -117,7 +118,7 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	public override void SetMenus(IEnumerable<IApplicationMenu> menus) {
-		Guard.Ensure(!IsDisposed, "The application has been disposed.");
+		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(menus, nameof(menus));
 		var definitions = menus.ToArray();
 		Guard.Argument(definitions.All(menu => menu is IWinFormsApplicationMenu), nameof(menus), "WinForms menu definitions are required.");
@@ -126,7 +127,7 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	public override void SetToolBarItems(IEnumerable<IApplicationMenuItem> items) {
-		Guard.Ensure(!IsDisposed, "The application has been disposed.");
+		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(items, nameof(items));
 		var definitions = items.ToArray();
 		Guard.Argument(definitions.All(item => item is IWinFormsApplicationMenuItem), nameof(items), "WinForms menu item definitions are required.");
@@ -223,6 +224,7 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 				if (!operation.IsCompleted)
 					Thread.Sleep(1);
 			}
+		// Sync-over-async pattern
 		operation.GetAwaiter().GetResult();
 	}
 

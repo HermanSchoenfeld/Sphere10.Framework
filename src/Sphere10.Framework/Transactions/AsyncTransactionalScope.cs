@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
@@ -16,25 +17,36 @@ public abstract class AsyncTransactionalScope<TTransaction> : TransactionalScope
 	protected AsyncTransactionalScope(ContextScopePolicy policy, string contextID) : base(policy, contextID) {
 	}
 
-	protected sealed override TTransaction BeginTransactionInternal() => BeginTransactionInternalAsync().ResultSafe();
+	// Sync-over-async pattern
+	protected sealed override TTransaction BeginTransactionInternal() => Task.Run(BeginTransactionInternalAsync).GetAwaiter().GetResult();
 
-	protected sealed override void CloseTransactionInternal(TTransaction transaction) => CloseTransactionInternalAsync(transaction).WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void CloseTransactionInternal(TTransaction transaction) => Task.Run(() => CloseTransactionInternalAsync(transaction)).GetAwaiter().GetResult();
 
-	protected sealed override void CommitInternal(TTransaction transaction) => CommitInternalAsync(transaction).WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void CommitInternal(TTransaction transaction) => Task.Run(() => CommitInternalAsync(transaction)).GetAwaiter().GetResult();
 
-	protected sealed override void RollbackInternal(TTransaction transaction) => RollbackInternalAsync(transaction).WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void RollbackInternal(TTransaction transaction) => Task.Run(() => RollbackInternalAsync(transaction)).GetAwaiter().GetResult();
 
-	protected sealed override void OnContextEnd() => OnContextEndAsync().AsTask().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnContextEnd()
+		=> Task.Run(() => OnContextEndAsync().AsTask()).GetAwaiter().GetResult();
 
-	protected sealed override void OnTransactionalScopeEnd(List<Exception> errors) => OnTransactionalScopeEndAsync(errors).WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnTransactionalScopeEnd(List<Exception> errors) => Task.Run(() => OnTransactionalScopeEndAsync(errors)).GetAwaiter().GetResult();
 
-	protected sealed override void OnCommitting() => OnCommittingAsync().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnCommitting() => Task.Run(OnCommittingAsync).GetAwaiter().GetResult();
 
-	protected sealed override void OnCommitted() => OnCommittedAsync().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnCommitted() => Task.Run(OnCommittedAsync).GetAwaiter().GetResult();
 
-	protected sealed override void OnRollingBack() => OnRollingBackAsync().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnRollingBack() => Task.Run(OnRollingBackAsync).GetAwaiter().GetResult();
 
-	protected sealed override void OnRolledBack() => OnRolledBackAsync().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnRolledBack() => Task.Run(OnRolledBackAsync).GetAwaiter().GetResult();
 
 }
 

@@ -1,5 +1,12 @@
 # Streamed B-tree and serializer buffer allocations, 23 October 2026
 
+Historical evidence availability: profiler capture files are no longer shipped
+with the repository. Measurements below describe the original campaign, not a
+new verification. Inspecting its raw data or archive-side analysis scripts
+requires an external copy. Example paths use `E:/ProfilerEvidence`; substitute
+your own archive root and pass it as the `ProfilerResultsRoot` NUnit parameter
+when explicitly selecting recorded-capture checks.
+
 Current-source note: the [24 October behavior review](comment-and-behavior-review.md) restores unsupported optimizations and unrelated behavior changes. The matched node and serializer-buffer measurements below remain evidence for the retained paths; their captured binary identities are historical.
 
 Both streamed trees now use `Span<byte>` for destination node reads and mutation buffers, and `ReadOnlySpan<byte>` for node writes and allocation. Node counts and child pointers are written directly into those spans. Temporary character, string and padding buffers were also removed from synchronous I/O paths.
@@ -8,7 +15,7 @@ The retained comparison measures owner-thread managed allocation. It establishes
 
 ## Matched captures
 
-The [raw captures and comparison](../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261023-span-node-io) retain four fresh, serial hosts in original/optimized/optimized/original order. Every host executes the same test assembly, with one unrecorded warmup and five recorded samples per case. Each configuration therefore has ten samples per binary. The comparison uses allocation medians; preparation, verification and output snapshots are outside measurement.
+The raw captures and comparison (external capture `20261023-span-node-io`) retain four fresh, serial hosts in original/optimized/optimized/original order. Every host executes the same test assembly, with one unrecorded warmup and five recorded samples per case. Each configuration therefore has ten samples per binary. The comparison uses allocation medians; preparation, verification and output snapshots are outside measurement.
 
 | Binary | SHA-256 |
 |---|---|
@@ -33,7 +40,7 @@ The saved original DLL and PDB, original node sources, isolated test hosts and v
 
 The two byte orders have the same allocation medians in these captures. Update allocations are unchanged for every configuration. Generic key/value serializer allocations remain in those operations.
 
-All **36 type/order/endianness/workload comparisons** have identical complete stored-byte hashes and lengths across both binaries and all samples. Each sample also checks contents against an independent oracle and reopens a snapshot. The [full node comparison](../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261023-span-node-io/node-comparison.csv) retains allocation counts, hashes and diagnostic timings.
+All **36 type/order/endianness/workload comparisons** have identical complete stored-byte hashes and lengths across both binaries and all samples. Each sample also checks contents against an independent oracle and reopens a snapshot. The full node comparison (external capture `20261023-span-node-io/node-comparison.csv`) retains allocation counts, hashes and diagnostic timings.
 
 Whole-node scratch uses at most 1,024 stack bytes; larger nodes use an exactly sliced pool rental returned in `finally`. Copies handle overlapping entry/child shifts, and vacated slots retain their original clearing and sentinel rules. The private helpers need no byte-array overloads. The virtual tree hooks remain intact. Short node reads now throw before partially initialized scratch can be used or written back.
 
@@ -57,7 +64,7 @@ One redundant search optimization was removed: `GetKeyValue` previously read int
 | Null reference padding read | 8,192 bytes | 35,230,144 | 1,577,408 | 95.52% |
 | Nullable padding read | 4 bytes | 131,072 | 0 | 100% |
 
-The [I/O comparison](../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261023-span-node-io/io-comparison.csv) and [allocation audit](stream-buffer-allocation-audit.md) describe exact boundaries and retained ownership. These zero-allocation loops reuse existing readers, writers, streams and contexts; allocating those objects or returning a serialized byte array remains separate work.
+The I/O comparison (external capture `20261023-span-node-io/io-comparison.csv`) and [allocation audit](stream-buffer-allocation-audit.md) describe exact boundaries and retained ownership. These zero-allocation loops reuse existing readers, writers, streams and contexts; allocating those objects or returning a serialized byte array remains separate work.
 
 String serialization retains its size descriptors and partial-EOF decoding behavior. Encoding conversion now uses span APIs, so custom encodings that intercept only older string/array overloads need to implement the corresponding conversion hooks. No production custom encoding subclasses were found in this checkout. Character writing retains its legacy fixed-size zero padding. Profiler captures retain their own storage, nested scopes and short-read padding. Direct destination reads can expose bytes written by an underlying stream before it throws; incomplete reads do not append capture data.
 
@@ -71,7 +78,7 @@ builder.WithIndexBTreeSpec(new BTreeSpec(BTreeType.BTreePlus, 256));
 
 A specification always contains a validated concrete type and order, exposed through get-only properties. When no type is selected, constructors receive the bare order and retain their historical context-specific defaults. Definitions hold an optional complete specification, the bare order and a bound flag, without duplicated bound specifications. Tree type and order are supplied again when reopening and are not persisted in tree headers. Profiler-owned schema-4 sidecars retain complete specifications or bare orders and explicitly read legacy sidecars and replay plans without rewriting them.
 
-Focused regressions cover scratch boundaries, three-byte reads, both byte orders, mutation/recycling/reopen, serializer failures and retries, truncated nodes, encoding failures, padding and caller ownership. `RecordedBTreeNodeIoTests` independently checks raw capture identities, sample counts, medians and stored-byte equality during ordinary profiler test runs. Raw timings are retained for inspection without a speed threshold.
+Focused regressions cover scratch boundaries, three-byte reads, both byte orders, mutation/recycling/reopen, serializer failures and retries, truncated nodes, encoding failures, padding and caller ownership. `RecordedBTreeNodeIoTests` independently checks raw capture identities, sample counts, medians and stored-byte equality when explicitly supplied with external profiler captures. Raw timings are retained for inspection without a speed threshold.
 
 The 23 October span checkpoint passed 13,276 core Release tests (102 skipped), 303 focused Debug tests, and 1,213 ordinary profiler Release tests; the profiler's 60 explicit diagnostics are excluded from the ordinary run. All 23 allocation diagnostics passed in each of the four matched capture hosts. The cross-platform Release solution built with zero errors and 20 existing NuGet advisory warnings. Logs and TRX files are retained in `E:\Sphere10-BTree-Spec-20261023\validation`. A broader Debug run was stopped after 3,500 passing cases and replaced by the completed focused run; it is not counted as a successful full Debug run. Subsequent feature work is separate from the binary identities captured above.
 

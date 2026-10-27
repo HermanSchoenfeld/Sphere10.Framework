@@ -3,9 +3,28 @@
 
 # Build results
 BenchmarkDotNet.Artifacts/
+.bdn/
 
-# Profiler runs are local output; test source and top-level reports remain visible.
-/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/*/
+# Local scope benchmark campaigns, harnesses and source snapshots.
+/docs/performance/evidence/20261024-value-scopes/
+/docs/performance/evidence/20261024-scope-abstraction/
+/docs/performance/evidence/20261024-scope-composition/
+/docs/performance/evidence/20261025-callback-scope-consolidation/
+/docs/performance/evidence/20261025-async-disposal/
+/docs/performance/evidence/20261025-borrow-array-scopes/
+/docs/performance/evidence/20261025-disposable-template-review/
+
+# Scope performance diagnostics are local; behavioral regression tests remain visible.
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Scopes/
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Studies/RecordedScopeAbstractionResultsTests.cs
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Studies/RecordedScopeCompositionResultsTests.cs
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Studies/RecordedValueScopeResultsTests.cs
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Studies/ScopeCompositionLayoutTests.cs
+/tests/Sphere10.Framework.Tests/Scopes/ScopeToolAllocationTests.cs
+/tests/Sphere10.Framework.Tests/Threading/ScopeAllocationDiagnostics.cs
+
+# Profiler results are local output and do not belong in source control.
+/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -101,9 +120,6 @@ dlldata.c
 *.tlh
 *.tmp_proj
 *.log
-/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.dll
-/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.exe
-/tests/Sphere10.Framework.Utils.Profiler.Tests/Results/**/*.pdb
 *.vspscc
 *.vssscc
 .builds

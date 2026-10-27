@@ -10,10 +10,10 @@ BenchmarkDotNet package and references Core directly, with no UI dependency.
 Set `Sphere10.Framework.Utils.Profiler` as the startup project and use its default
 launch profile, also named `Sphere10.Framework.Utils.Profiler`. Press **Ctrl+F5**
 to run it. The checked-in [launch settings](Properties/launchSettings.json) start
-`dotnet run --configuration Release` and display rankings recomputed from the
-retained profiler-test results. It shows the measured configurations immediately.
-The report begins with the selected framework constants and their exact evidence references, then includes both screening and independent-process measurements. The profile builds and runs Release even when the solution toolbar selects Debug;
-it does not require you to enter arguments in project properties.
+`dotnet run --configuration Release` with `--help`. The default launch displays
+the available commands without requiring historical capture files. The profile
+builds and runs Release even when the solution toolbar selects Debug. Use
+`study --report <external-capture-root>` to inspect captures you supply.
 
 **F5** and the green Start button use the same profile. Their debugger attaches
 to the `dotnet` launcher; the Release profiler and BenchmarkDotNet workers run as
@@ -36,7 +36,7 @@ dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Uti
 
 CLI commands use `--no-launch-profile` to select their own arguments and skip the
 Visual Studio launcher. Running the profiler executable without arguments still
-prints domain help; the launch profile supplies its benchmark selection explicitly.
+prints domain help; the launch profile supplies its command explicitly.
 
 | Domain | Workloads and support |
 | --- | --- |
@@ -45,8 +45,8 @@ prints domain help; the launch profile supplies its benchmark selection explicit
 | `caches` | [Typed/object key access and admission pressure](Caches/README.md), LRU/FIFO policies, minimal/quarter/half eviction batches and verified fetch/victim accounting. |
 | `study` | [Retained parameter studies](Studies/README.md), all three real workload mixes, exact replay plans, verified sample journals and evidence displayed by NUnit tests. |
 
-Each domain owns its benchmark classes, configuration, sample models and retained
-results in its subfolder. Add future framework domains alongside `ObjectSpaces/`
+Each domain owns its benchmark classes, configuration and sample models.
+Measurement output belongs outside the source checkout. Add future framework domains alongside `ObjectSpaces/`
 and register their explicit command in [Program.cs](Program.cs). Domain runners
 must require a workload filter or an inspection command before execution, preserve
 correctness checks outside measured regions, and document their measurement
@@ -56,13 +56,13 @@ The existing ObjectSpace workloads, configuration sweeps and [measured pilot
 evidence](ObjectSpaces/results/pilot-btree-file.md) are retained. Dry checks prove
 execution; they do not select a preferred configuration. [Profiler tests](../../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md)
 cover the dispatcher, ObjectSpace, B-tree and cache correctness, evidence eligibility,
-and the recorded decisions. Run the `RecordedStudyResults` and
-`RecordedBenchmarkDotNetConfirmations` fixtures in Visual Studio Test Explorer
+and the recorded decisions. Supply external captures and explicitly run `RecordedStudyResults` and
+`RecordedBenchmarkDotNetConfirmations` in Visual Studio Test Explorer
 to see the tables, samples, exact configurations and attached reports. The tests
 recompute decisions from retained measurements rather than executing benchmarks
 or asserting that another machine has the same speed.
 
-`RecordedDefaultSelectionTests` checks the compiled constants against the exact measured profile/case and explains each tradeoff in its Output. `RecordedWorkerIdentityTests` reconciles worker execution paths and captured binary metadata; ignored local DLL archives are optional on a fresh clone. The [results index](../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results/README.md) links the recommendations, final manifest and raw evidence.
+`RecordedDefaultSelectionTests` checks the compiled constants against supplied measured profiles; `RecordedWorkerIdentityTests` reconciles supplied worker execution paths and binary metadata. These capture checks are explicit and use the `ProfilerResultsRoot` NUnit parameter. Historical result files are not shipped with the repository or copied during builds; see the [external-capture test instructions](../../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md#external-historical-captures).
 
 Use the `study` domain for all three mixes: balanced (50/50 reads/writes),
 read-heavy (90/10) and write-heavy (10/90). Start with order and one-factor

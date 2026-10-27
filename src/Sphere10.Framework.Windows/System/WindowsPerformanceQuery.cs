@@ -77,10 +77,10 @@ public class WindowsPerformanceQuery : SynchronizedObject, IDisposable {
 		if (previous != null)
 			Check(previous.IsValid ? 0 : previous.Status);
 		var raw = ToRaw(current);
-		using var older = previous == null ? null : new UnmanagedMemoryScope(Marshal.SizeOf<WinAPI.PDH.RAW_COUNTER>());
-		if (older != null)
+		using var older = previous == null ? default : new UnmanagedMemoryScope(Marshal.SizeOf<WinAPI.PDH.RAW_COUNTER>());
+		if (previous != null)
 			Marshal.StructureToPtr(ToRaw(previous), older.Item, false);
-		Check(WinAPI.PDH.PdhCalculateCounterFromRawValue(current.Counter, WinAPI.PDH.FormatDouble | WinAPI.PDH.FormatNoCap100, ref raw, older?.Item ?? IntPtr.Zero, out var formatted));
+		Check(WinAPI.PDH.PdhCalculateCounterFromRawValue(current.Counter, WinAPI.PDH.FormatDouble | WinAPI.PDH.FormatNoCap100, ref raw, older.Item, out var formatted));
 		Check(formatted.Status is 0 or 1 ? 0 : formatted.Status);
 		return formatted.Value;
 	}

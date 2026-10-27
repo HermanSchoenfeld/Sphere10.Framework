@@ -52,6 +52,8 @@ public class DemoLogOutputLifetimeTests {
 			.ConfigureServices(services => {
 				services.AddSingleton(new Local<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(directory, "User")))));
 				services.AddSingleton(new Global<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(directory, "Global")))));
+				services.AddSingleton<ISettingsServices, StandardSettingsServices>();
+				services.AddSingleton<IProductUsageServices, ProductUsageServices>();
 				services.AddMainForm<BlockMainForm>(form => form.ScreenMode = ScreenMode.MultiView);
 				services.AddWinFormsApplicationPlugin(WinFormsComponentDemoPlugin.Configure);
 			})

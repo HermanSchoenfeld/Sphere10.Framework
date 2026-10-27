@@ -19,7 +19,7 @@ public sealed class AsyncSynchronizedGate : SynchronizedObject {
 	private readonly Queue<Waiter> _waiters = new();
 	private bool _occupied;
 
-	public async Task<IDisposable> EnterScopeAsync(CancellationToken cancellationToken = default) {
+	public async Task<ActionScope<AsyncSynchronizedGate>> EnterScopeAsync(CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		var waiter = new Waiter(cancellationToken);
 		using var registration = cancellationToken.Register(() => Cancel(waiter));
@@ -46,7 +46,7 @@ public sealed class AsyncSynchronizedGate : SynchronizedObject {
 
 	private void Grant(Waiter waiter) {
 		waiter.Granted = true;
-		waiter.Completion.SetResult(new ActionScope(Release));
+		waiter.Completion.SetResult(Tools.Scope.ExecuteOnDispose<AsyncSynchronizedGate>(static gate => gate.Release(), this));
 	}
 
 	private void Release() {
@@ -67,7 +67,7 @@ public sealed class AsyncSynchronizedGate : SynchronizedObject {
 		}
 
 		public CancellationToken CancellationToken { get; }
-		public TaskCompletionSource<IDisposable> Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		public TaskCompletionSource<ActionScope<AsyncSynchronizedGate>> Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 		public bool Cancelled { get; set; }
 		public bool Granted { get; set; }
 	}

@@ -1,5 +1,12 @@
 # Span inheritance review, 23 October 2026
 
+Historical evidence availability: profiler capture files are no longer shipped
+with the repository. Measurements below describe the original campaign, not a
+new verification. Inspecting its raw data or archive-side analysis scripts
+requires an external copy. Example paths use `E:/ProfilerEvidence`; substitute
+your own archive root and pass it as the `ProfilerResultsRoot` NUnit parameter
+when explicitly selecting recorded-capture checks.
+
 Current-source note: the [24 October behavior review](comment-and-behavior-review.md) restores the original three wrapper implementations and unrelated search/paging behavior. The captured measurements below describe this earlier revision.
 
 Source revision note: this report describes the retained inheritance-cleanup revision and its measurements. The later [complexity review](optimization-complexity-review.md) removes transport-mode helpers and makes stream array operations delegate to virtual span overloads. The independent array/span/byte extension points described below belong to this earlier revision.
@@ -55,13 +62,13 @@ The focused behavior run passes **351 tests**; these and the allocation-focused 
 
 The [preceding page reuse report](object-space-page-btree.md) describes its frozen source revision. Its timing and source-identity claims must not be silently attributed to this cleanup. The new dispatch comparison uses that frozen combined implementation as the before build and the cleaned implementation as the after build. Both already contain page pooling; this comparison does not isolate or remeasure pooling itself.
 
-Original execution logs, TRX files, source manifests and generated benchmark workers are retained in `E:\Sphere10-Span-Dispatch-Cleanup-20261022`. The optional local recorded-capture directory is `tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-span-dispatch`. The ordinary recorded fixture skips an absent campaign and rejects partial captures; it never launches measurements or asserts a machine-speed threshold.
+Original execution logs, TRX files, source manifests and generated benchmark workers are retained in `E:\Sphere10-Span-Dispatch-Cleanup-20261022`. The optional external recorded-capture directory is `E:/ProfilerEvidence/20261022-span-dispatch`. The explicit recorded fixture skips an absent campaign and rejects partial captures; it never launches measurements or asserts a machine-speed threshold.
 
 To run the affected behavior and allocation checks from the Framework root:
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~ExtendedListSpanTests|FullyQualifiedName~BufferSpanTests|FullyQualifiedName~StreamSpanTests|FullyQualifiedName~StreamWrapperSpanTests|FullyQualifiedName~ExtendedMemoryStreamTests|FullyQualifiedName~ByteArraySpanConsolidationTests|FullyQualifiedName~FragmentReadSpanTests|FullyQualifiedName~BTreeTypeTests|FullyQualifiedName~GuardInterpolationTests|FullyQualifiedName~ClusterMapTests.ClusterDataReadsFillCallerStorageWithoutPayloadAllocations'
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed'
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
 ```
 
 ## Before/after ObjectSpace check
@@ -81,8 +88,8 @@ Both reported timing intervals overlap. These captures establish neither a timin
 
 The source inventory compares 1,073 Core, 52 CryptoEx and 35 profiler source/project files: **1,160 per revision**, with **14 changed Core files** and no CryptoEx/profiler changes. The three root build/package inputs are byte-identical. This inventory excludes generated outputs, tests and documentation; it does not substitute for compiled-worker identities. All six actual retained Core/Profiler/generated-worker DLLs have separate SHA256, versions and MVID records, with assembly/file versions 3.1.3.0.
 
-All **43 retained mapped payloads** pass byte-count/SHA256 verification. The portable analyzer replays both pairs and all 80 samples from the local copies, reconciling run settings, commands, worker exits, CSV/full-report statistics and normalized per-operation measurements. The mapped copies preserve original bytes; `.cs.txt` source suffixes keep evidence outside the C# compile glob. Launcher identities are not substituted for measured worker identities.
+All **43 retained mapped payloads** pass byte-count/SHA256 verification. The portable analyzer replays both pairs and all 80 samples from the original retained copies, reconciling run settings, commands, worker exits, CSV/full-report statistics and normalized per-operation measurements. The mapped copies preserve original bytes; `.cs.txt` source suffixes keep evidence outside the C# compile glob. Launcher identities are not substituted for measured worker identities.
 
 ```powershell
-python tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-span-dispatch/analysis/analyze_dispatch_cleanup.py --campaign tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-span-dispatch --output E:/RecomputedDispatchEvidence
+python E:/ProfilerEvidence/20261022-span-dispatch/analysis/analyze_dispatch_cleanup.py --campaign E:/ProfilerEvidence/20261022-span-dispatch --output E:/RecomputedDispatchEvidence
 ```

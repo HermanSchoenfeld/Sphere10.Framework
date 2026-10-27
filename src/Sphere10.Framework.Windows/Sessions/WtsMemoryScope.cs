@@ -8,11 +8,12 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
 /// <summary>Owns memory returned by WTS APIs; this allocation must be freed by WTSFreeMemory.</summary>
-public sealed class WtsMemoryScope : IDisposable {
+public sealed class WtsMemoryScope : IScope {
 	private IntPtr _memory;
 	private int _disposed;
 
@@ -29,4 +30,6 @@ public sealed class WtsMemoryScope : IDisposable {
 		if (memory != IntPtr.Zero)
 			WinAPI.WTSAPI32.WTSFreeMemory(memory);
 	}
+
+	public ValueTask DisposeAsync() => new(Task.Run(Dispose));
 }

@@ -64,7 +64,7 @@ public static class IDACAsyncExtensions {
 
 	public static async Task BulkInsertAsync(this IDAC dac, DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout, CancellationToken cancellationToken) {
 		// Begin a scope to make sure it's disposed if cancellationToken is turned on
-		using (var scope = dac.BeginScope()) {
+		using (var scope = dac.EnterScope()) {
 			await Task.Run(() => dac.BulkInsert(table, bulkInsertOptions, timeout), cancellationToken);
 		}
 	}

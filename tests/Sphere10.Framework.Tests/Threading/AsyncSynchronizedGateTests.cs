@@ -24,7 +24,7 @@ public class AsyncSynchronizedGateTests {
 		var third = gate.EnterScopeAsync();
 		Assert.That(second.IsCompleted, Is.False);
 		Assert.That(third.IsCompleted, Is.False);
-		await Task.Run(first.Dispose);
+		await Task.Run(() => first.Dispose());
 		var next = await second.WaitAsync(TimeSpan.FromSeconds(3));
 		Assert.That(third.IsCompleted, Is.False);
 		next.Dispose();
@@ -40,7 +40,6 @@ public class AsyncSynchronizedGateTests {
 		var following = gate.EnterScopeAsync();
 		cancellation.Cancel();
 		await Assert.ThatAsync(async () => await cancelled, Throws.InstanceOf<OperationCanceledException>());
-		held.Dispose();
 		held.Dispose();
 		using var admitted = await following.WaitAsync(TimeSpan.FromSeconds(3));
 	}

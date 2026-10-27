@@ -8,6 +8,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Sphere10.Framework.UnitTests;
@@ -16,144 +17,116 @@ namespace Sphere10.Framework.UnitTests;
 [Parallelizable(ParallelScope.Children)]
 public class TypedSynchronizedObjectAdapterTests {
 	[Test]
-	public void DirectImplementerUsesTypedScopeDefaults() {
+	public void DirectImplementerDisposesItsInnerScopeBeforeReleasingTheLock() {
 		var synchronized = new DirectSynchronizedObject();
 		using var threadLock = synchronized.ThreadLock;
-		var untyped = (ISynchronizedObject)synchronized;
-
-		using (var readScope = untyped.EnterReadScope())
-			Assert.That(readScope, Is.SameAs(synchronized.ReadScope));
-		using (var writeScope = untyped.EnterWriteScope())
-			Assert.That(writeScope, Is.SameAs(synchronized.WriteScope));
-
-		Assert.That(synchronized.ReadScope.IsDisposed, Is.True);
-		Assert.That(synchronized.WriteScope.IsDisposed, Is.True);
+		ISynchronizedObject<ActionScope, ActionScope> contract = synchronized;
+		var read = contract.EnterReadScope();
+		Assert.That(threadLock.IsReadLockHeld, Is.True);
+		read.Dispose();
+		Assert.That(synchronized.ReadClosed, Is.EqualTo(1));
+		Assert.That(threadLock.IsReadLockHeld, Is.False);
+		var write = contract.EnterWriteScope();
+		Assert.That(threadLock.IsWriteLockHeld, Is.True);
+		write.Dispose();
+		Assert.That(synchronized.WriteClosed, Is.EqualTo(1));
+		Assert.That(threadLock.IsWriteLockHeld, Is.False);
 	}
 
 	[Test]
-	public void ParentDefaultPreservesAssignmentAndNull([Values(false, true)] bool useBaseClass) {
-		var synchronized = CreateSynchronizedObject(useBaseClass);
-		var parent = CreateSynchronizedObject(useBaseClass);
+	public void TypedParentPreservesAssignmentAndCapturedLockIdentity() {
+		var synchronized = new SynchronizedObject<NoOpScope, NoOpScope>();
+		var parent = new SynchronizedObject<NoOpScope, NoOpScope>();
 		using var childLock = synchronized.ThreadLock;
 		using var parentLock = parent.ThreadLock;
-		var untyped = (ISynchronizedObject)synchronized;
-
-		untyped.ParentSyncObject = parent;
-
-		Assert.That(synchronized.ParentSyncObject, Is.SameAs(parent));
-		Assert.That(untyped.ParentSyncObject, Is.SameAs(parent));
-		Assert.That(untyped.ThreadLock, Is.SameAs(parentLock));
-		untyped.ParentSyncObject = null;
-		Assert.That(synchronized.ParentSyncObject, Is.Null);
-		Assert.That(untyped.ThreadLock, Is.SameAs(childLock));
+		synchronized.ParentSyncObject = parent;
+		Assert.That(synchronized.ThreadLock, Is.SameAs(parentLock));
+		var scope = synchronized.EnterReadScope();
+		synchronized.ParentSyncObject = null;
+		scope.Dispose();
+		Assert.That(parentLock.IsReadLockHeld, Is.False);
+		Assert.That(synchronized.ThreadLock, Is.SameAs(childLock));
 	}
 
 	[Test]
-	public void ParentDefaultRejectsIncompatibleScopeTypes([Values(false, true)] bool useBaseClass) {
-		var synchronized = CreateSynchronizedObject(useBaseClass);
-		using var threadLock = synchronized.ThreadLock;
-		var incompatible = new SynchronizedObject();
-		using var incompatibleLock = incompatible.ThreadLock;
-		var untyped = (ISynchronizedObject)synchronized;
-
-		Assert.That(() => untyped.ParentSyncObject = incompatible, Throws.TypeOf<InvalidCastException>());
-		Assert.That(synchronized.ParentSyncObject, Is.Null);
+	public void TypedAndOrdinaryContractsRemainDistinct() {
+		Assert.That(typeof(ISynchronizedObject).IsAssignableFrom(typeof(ISynchronizedObject<NoOpScope, NoOpScope>)), Is.False);
+		Assert.That(typeof(ISynchronizedObject).IsAssignableFrom(typeof(SynchronizedObject<NoOpScope, NoOpScope>)), Is.False);
 	}
 
 	[Test]
 	public void ConcreteSynchronizedObjectRetainsReadAndWriteLockLifetime() {
-		var synchronized = new SynchronizedObject<Scope, Scope>();
+		var synchronized = new SynchronizedObject<NoOpScope, NoOpScope>();
 		using var threadLock = synchronized.ThreadLock;
-		var untyped = (ISynchronizedObject)synchronized;
-
-		using (var readScope = untyped.EnterReadScope()) {
-			Assert.That(readScope, Is.TypeOf<Scope>());
+		ISynchronizedObject<NoOpScope, NoOpScope> contract = synchronized;
+		using (var readScope = contract.EnterReadScope()) {
+			Assert.That(readScope, Is.TypeOf<ReadScope<NoOpScope>>());
 			Assert.That(threadLock.IsReadLockHeld, Is.True);
 		}
 		Assert.That(threadLock.IsReadLockHeld, Is.False);
-		using (var writeScope = untyped.EnterWriteScope()) {
-			Assert.That(writeScope, Is.TypeOf<Scope>());
+		using (var writeScope = contract.EnterWriteScope()) {
+			Assert.That(writeScope, Is.TypeOf<WriteScope<NoOpScope>>());
 			Assert.That(threadLock.IsWriteLockHeld, Is.True);
 		}
 		Assert.That(threadLock.IsWriteLockHeld, Is.False);
 	}
 
 	[Test]
-	public void ClassAdaptersRetainLockAndParentDispatchWhenTypedInterfaceIsReimplemented() {
-		var synchronized = new RemappedSynchronizedObject();
-		var parent = new SynchronizedObject<Scope, Scope>();
+	public void FailedInnerConstructionReleasesTheAcquiredLock() {
+		var synchronized = new SynchronizedObject<ThrowingScope, ThrowingScope>();
 		using var threadLock = synchronized.ThreadLock;
-		using var parentLock = parent.ThreadLock;
-		var typed = (ISynchronizedObject<Scope, Scope>)synchronized;
-		var untyped = (ISynchronizedObject)synchronized;
-
-		typed.ParentSyncObject = parent;
-		Assert.That(synchronized.ParentSyncObject, Is.Null);
-		Assert.That(untyped.ParentSyncObject, Is.Null);
-		untyped.ParentSyncObject = parent;
-		Assert.That(synchronized.ParentSyncObject, Is.SameAs(parent));
-		untyped.ParentSyncObject = null;
-		Assert.That(synchronized.ParentSyncObject, Is.Null);
-		Assert.That(typed.ParentSyncObject, Is.SameAs(parent));
-
-		using (typed.EnterReadScope())
-			Assert.That(threadLock.IsReadLockHeld, Is.False);
-		using (untyped.EnterReadScope())
-			Assert.That(threadLock.IsReadLockHeld, Is.True);
+		Assert.That(() => synchronized.EnterReadScope(), Throws.Exception);
 		Assert.That(threadLock.IsReadLockHeld, Is.False);
-		using (typed.EnterWriteScope())
-			Assert.That(threadLock.IsWriteLockHeld, Is.False);
-		using (untyped.EnterWriteScope())
-			Assert.That(threadLock.IsWriteLockHeld, Is.True);
+		Assert.That(() => synchronized.EnterWriteScope(), Throws.Exception);
 		Assert.That(threadLock.IsWriteLockHeld, Is.False);
 	}
 
-	private static ISynchronizedObject<Scope, Scope> CreateSynchronizedObject(bool useBaseClass)
-		=> useBaseClass ? new SynchronizedObject<Scope, Scope>() : new DirectScopeSynchronizedObject();
-
-	private sealed class RemappedSynchronizedObject : SynchronizedObject<Scope, Scope>, ISynchronizedObject<Scope, Scope> {
-		ISynchronizedObject<Scope, Scope> ISynchronizedObject<Scope, Scope>.ParentSyncObject { get; set; }
-
-		Scope ISynchronizedObject<Scope, Scope>.EnterReadScope() => new();
-
-		Scope ISynchronizedObject<Scope, Scope>.EnterWriteScope() => new();
+	[Test]
+	public void FailedInnerCleanupRetainsLockForRetry() {
+		var synchronized = new SynchronizedObject();
+		using var threadLock = synchronized.ThreadLock;
+		var calls = 0;
+		var scope = new ReadScope<ActionScope>(Tools.Scope.ExecuteOnDispose(() => {
+			if (++calls == 1)
+				throw new InvalidOperationException();
+		}), synchronized.EnterReadScope());
+		Assert.That(() => scope.Dispose(), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(threadLock.IsReadLockHeld, Is.True);
+		scope.Dispose();
+		Assert.That(calls, Is.EqualTo(2));
+		Assert.That(threadLock.IsReadLockHeld, Is.False);
 	}
 
-	private sealed class DirectScopeSynchronizedObject : ISynchronizedObject<Scope, Scope> {
+	private sealed class DirectSynchronizedObject : ISynchronizedObject<ActionScope, ActionScope> {
 		private readonly ReaderWriterLockSlim _threadLock = new();
 
-		public ISynchronizedObject<Scope, Scope> ParentSyncObject { get; set; }
-
+		public ISynchronizedObject<ActionScope, ActionScope> ParentSyncObject { get; set; }
 		public ReaderWriterLockSlim ThreadLock => ParentSyncObject?.ThreadLock ?? _threadLock;
+		public int ReadClosed { get; private set; }
+		public int WriteClosed { get; private set; }
 
-		public Scope EnterReadScope() => new();
+		public ReadScope<ActionScope> EnterReadScope() {
+			var threadLock = ThreadLock;
+			threadLock.EnterReadLock();
+			return new ReadScope<ActionScope>(Tools.Scope.ExecuteOnDispose(() => {
+				Assert.That(threadLock.IsReadLockHeld, Is.True);
+				ReadClosed++;
+			}), new ReadScope(threadLock.ExitReadLock));
+		}
 
-		public Scope EnterWriteScope() => new();
+		public WriteScope<ActionScope> EnterWriteScope() {
+			var threadLock = ThreadLock;
+			threadLock.EnterWriteLock();
+			return new WriteScope<ActionScope>(Tools.Scope.ExecuteOnDispose(() => {
+				Assert.That(threadLock.IsWriteLockHeld, Is.True);
+				WriteClosed++;
+			}), new WriteScope(threadLock.ExitWriteLock));
+		}
 	}
 
-	private sealed class DirectSynchronizedObject : ISynchronizedObject<TestReadScope, TestWriteScope> {
-		public ISynchronizedObject<TestReadScope, TestWriteScope> ParentSyncObject { get; set; }
-
-		public ReaderWriterLockSlim ThreadLock { get; } = new();
-
-		public TestReadScope ReadScope { get; } = new();
-
-		public TestWriteScope WriteScope { get; } = new();
-
-		public TestReadScope EnterReadScope() => ReadScope;
-
-		public TestWriteScope EnterWriteScope() => WriteScope;
-	}
-
-	private sealed class TestReadScope : IDisposable {
-		public bool IsDisposed { get; private set; }
-
-		public void Dispose() => IsDisposed = true;
-	}
-
-	private sealed class TestWriteScope : IDisposable {
-		public bool IsDisposed { get; private set; }
-
-		public void Dispose() => IsDisposed = true;
+	private struct ThrowingScope : IScope {
+		public ThrowingScope() => throw new InvalidOperationException("ActionScope construction failed.");
+		public void Dispose() { }
+		public ValueTask DisposeAsync() => default;
 	}
 }

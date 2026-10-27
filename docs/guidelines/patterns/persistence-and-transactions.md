@@ -161,7 +161,6 @@ Follow the established directional hierarchy when implementing these APIs:
 | Load | `LoadableBase` | `SyncLoadableBase` | `AsyncLoadableBase` |
 | Save | `SaveableBase` | `SyncSaveableBase` | `AsyncSaveableBase` |
 | Load and save | `PersistableBase` | `SyncPersistableBase` | `AsyncPeristableBase` (current public spelling) |
-| Transaction scope | `TransactionalScopeBase<TTransaction>` | `SyncTransactionalScope<TTransaction>` | `AsyncTransactionalScope<TTransaction>` |
 
 The common layer owns shared sequencing/state/hooks; the directional layer
 adapts the opposite API; concrete implementations supply their chosen primitive.
@@ -173,6 +172,17 @@ completion and context requirements. Several older async-first bases above use
 synchronous void operations and synchronous cleanup are not evidence that the
 asynchronous work has finished; prefer their awaited APIs and do not copy the
 legacy bridge into new implementations.
+
+Context and transaction scopes keep their actual class identity and domain
+inheritance. [ContextScope](../../../src/Sphere10.Framework/Scopes/ContextScope/ContextScope.cs)
+implements ambient-root rules;
+[TransactionalScopeBase<TTransaction>](../../../src/Sphere10.Framework/Transactions/TransactionalScopeBase.cs)
+adds transaction participation, ownership and rollback voting. Their finalization
+calls the real domain hooks directly, without generic lifecycle flags, pending
+operation caches or struct facades. Preserve each concrete owner's original
+execution direction and await its actual cleanup operation; repeated disposal
+does not promise completion joining or automatic retry. See
+[resource scopes](resource-scopes.md).
 
 [LoadableDecorator](../../../src/Sphere10.Framework/Loadable/LoadableDecorator.cs)
 and [SaveableDecorator](../../../src/Sphere10.Framework/Saveable/SaveableDecorator.cs)
@@ -217,6 +227,9 @@ for autosave, original layout configuration and owner-thread lifetime.
 uses a `ContextID` and [CallContext's AsyncLocal storage](../../../src/Sphere10.Framework/Scopes/ContextScope/CallContext.cs)
 to identify a root within the logical call context. `MustBeRoot` rejects an
 existing matching root, `MustBeNested` requires one, and `None` permits either.
+Disposal restores the caller's previous ambient value before cleanup begins.
+Restoration checks the active root's identity so an older scope cannot overwrite
+a newer root. Scope finalization has no shared pending-disposal cache.
 This is context participation, not locking or an independent transaction per
 scope. Child tasks can inherit the same root reference; do not use that to run
 concurrent operations on a shared transaction/session.
@@ -257,7 +270,7 @@ commit. Reuse concrete recovery mechanisms and preserve the original failure.
 
 | Backend | Existing implementation and important ownership |
 |---|---|
-| ADO.NET database work | [IDAC.BeginScope()](../../../src/Sphere10.Framework.Data/DAC/IDACExtensions.cs) returns [DACScope](../../../src/Sphere10.Framework.Data/Scopes/DACScope.cs). The root owns a connection, and the creating scope owns a local `IDbTransaction`. |
+| ADO.NET database work | [IDAC.EnterScope()](../../../src/Sphere10.Framework.Data/DAC/IDACExtensions.cs) returns [DACScope](../../../src/Sphere10.Framework.Data/Scopes/DACScope.cs). The root owns a connection, and the creating scope owns a local `IDbTransaction`. |
 | NHibernate work | [DataAccessScope](../../../src/Sphere10.Framework.Data.NHibernate/Scopes/DataAccessScope.cs) shares the root session and transaction for its database/context key. The session owner closes/disposes it; ambient `System.Transactions` is rejected. |
 | Several transactional files | [FileTransactionScope](../../../src/Sphere10.Framework/IO/FileTransactionScope.cs) coordinates [FileTransaction](../../../src/Sphere10.Framework/IO/FileTransaction.cs) and enlisted page-backed files. |
 | A single serialized list/dictionary/set | [TransactionalList](../../../src/Sphere10.Framework/Transactions/TransactionalList.cs), [TransactionalDictionary](../../../src/Sphere10.Framework/Transactions/TransactionalDictionary.cs), [TransactionalHashSet](../../../src/Sphere10.Framework/Transactions/TransactionalHashSet.cs) compose collection storage with a transactional stream. |

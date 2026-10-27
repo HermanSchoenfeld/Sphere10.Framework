@@ -18,6 +18,18 @@ namespace Sphere10.Framework.Tests;
 public class StreamRestorePositionScopeTests {
 
 	[Test]
+	public void LegacySeekPositionScopeRetainsItsZeroPositionExit() {
+		using var stream = new MemoryStream(new byte[16]);
+		stream.Position = 5;
+		using (var scope = stream.EnterRestoreSeekPositionScope()) {
+			Assert.That(stream.Position, Is.EqualTo(5));
+			stream.Position = 9;
+		}
+		Assert.That(stream.Position, Is.Zero);
+		Assert.That(stream.CanRead, Is.True);
+	}
+
+	[Test]
 	public void NestedScopesRestoreTheirOwnPositionsWithoutClosingTheStream() {
 		using var stream = new MemoryStream(new byte[16]);
 		stream.Position = 3;
@@ -89,7 +101,7 @@ public class StreamRestorePositionScopeTests {
 	}
 
 	[Test]
-	public void RepeatedSynchronousDisposalDoesNotRestoreAgain() {
+	public void ExplicitDisposalCallsTheFinalizerEachTime() {
 		using var stream = new TrackingStream();
 		stream.Position = 4;
 		var restore = stream.EnterRestorePositionSeek(1, SeekOrigin.Begin);
@@ -97,16 +109,17 @@ public class StreamRestorePositionScopeTests {
 		stream.Position = 9;
 		stream.ClearOperations();
 		restore.Dispose();
-		Assert.That(stream.Operations, Is.Empty);
-		Assert.That(stream.Position, Is.EqualTo(9));
+		Assert.That(stream.Operations, Is.EqualTo(new[] { "set position 4" }));
+		Assert.That(stream.Position, Is.EqualTo(4));
 	}
 
 	[Test]
-	public void ReentrantDisposalDoesNotRestoreAgain() {
+	public void RestorationRunsInlineOnTheCallingThread() {
 		using var stream = new TrackingStream();
 		stream.Position = 4;
 		var restore = stream.EnterRestorePositionSeek(1, SeekOrigin.Begin);
-		stream.PositionChanging = () => restore.Dispose();
+		var callingThread = Environment.CurrentManagedThreadId;
+		stream.PositionChanging = () => Assert.That(Environment.CurrentManagedThreadId, Is.EqualTo(callingThread));
 		stream.ClearOperations();
 		restore.Dispose();
 		Assert.That(stream.Operations, Is.EqualTo(new[] { "set position 4" }));
@@ -126,16 +139,26 @@ public class StreamRestorePositionScopeTests {
 	}
 
 	[Test]
-	public void DefaultScopeCanBeDisposedRepeatedly() {
-		var restore = default(RestorePositionScope);
-		Assert.That(() => {
-			restore.Dispose();
-			restore.Dispose();
-		}, Throws.Nothing);
+	public void ConstructionRequiresAStream() {
+		Assert.That(() => new RestorePositionScope(null, 0), Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("stream"));
 	}
 
 	[Test]
-	public void InterfaceConsumersRetainRestorationAndRepeatedDisposal() {
+	public void EntryPointsRequireAStream([Values] bool seek) {
+		Stream stream = null;
+		Assert.That(() => {
+			using var scope = seek ? stream.EnterRestorePositionSeek(0, SeekOrigin.Begin) : stream.EnterRestorePositionScope();
+		}, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("stream"));
+	}
+
+	[Test]
+	public void LegacySeekPositionScopeRequiresAStream() {
+		Stream stream = null;
+		Assert.That(() => stream.EnterRestoreSeekPositionScope(), Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("stream"));
+	}
+
+	[Test]
+	public void InterfaceConsumersRetainDirectRestoration() {
 		using var stream = new MemoryStream(new byte[16]);
 		stream.Position = 4;
 		IDisposable restore = stream.EnterRestorePositionSeek(1, SeekOrigin.Begin);
@@ -143,7 +166,7 @@ public class StreamRestorePositionScopeTests {
 		Assert.That(stream.Position, Is.EqualTo(4));
 		stream.Position = 9;
 		restore.Dispose();
-		Assert.That(stream.Position, Is.EqualTo(9));
+		Assert.That(stream.Position, Is.EqualTo(4));
 		Assert.That(stream.CanRead, Is.True);
 	}
 

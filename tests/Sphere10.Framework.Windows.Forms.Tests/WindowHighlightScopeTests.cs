@@ -15,18 +15,53 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
+using Tools;
 using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
 [TestFixture, NonParallelizable, Apartment(ApartmentState.STA)]
 public class WindowHighlightScopeTests {
+	[Test]
+	public void AsynchronousDisposalQueuesAndAwaitsTheFramesOwnerThread() => RunWithMessageLoop(async _ => {
+		var ownerThreadId = Environment.CurrentManagedThreadId;
+		var highlight = Tools.Scope.EnterHighlightScope(new Rectangle(-19000, -19000, 360, 220), Color.Red);
+		using var cleanup = Tools.Scope.ExecuteOnDispose(highlight.Dispose);
+		var frame = FormsApplication.OpenForms.Cast<Form>().Single(form => form.Name == "WindowHighlightForm");
+		var disposalThreadId = 0;
+		frame.Disposed += (_, _) => disposalThreadId = Environment.CurrentManagedThreadId;
+		var disposal = highlight.DisposeAsync();
+		Assert.That(disposal.IsCompleted, Is.False);
+		Assert.That(frame.IsDisposed, Is.False, "Cleanup must be queued instead of blocking the initiating call.");
+		await disposal;
+		Assert.That(frame.IsDisposed, Is.True);
+		Assert.That(disposalThreadId, Is.EqualTo(ownerThreadId));
+	});
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void RepeatedCleanupRetainsOneNativeFrameOwner(bool asynchronous) => RunWithMessageLoop(async owner => {
+		using var highlight = new WindowHighlightScope(new Rectangle(-19000, -19000, 360, 220), Color.Red);
+		var frame = FormsApplication.OpenForms.Cast<Form>().Single(form => form.Name == "WindowHighlightForm");
+		var disposals = 0;
+		frame.Disposed += (_, _) => disposals++;
+		if (asynchronous)
+			await highlight.DisposeAsync();
+		else
+			highlight.Dispose();
+		await highlight.DisposeAsync();
+		highlight.Dispose();
+		Assert.That(frame.IsDisposed, Is.True);
+		Assert.That(disposals, Is.EqualTo(1));
+	});
+
 	[TestCase(false)]
 	[TestCase(true)]
 	public void FrameIsHollowClickThroughAndDoesNotActivateAnotherWindowThenDisposesOnItsOwnerThread(bool asynchronous) => RunWithMessageLoop(async owner => {
 		var foreground = WinAPI.USER32.GetForegroundWindow();
 		var bounds = new Rectangle(-19000, -19000, 360, 220);
-		using var highlight = new WindowHighlightScope(bounds, Color.Red, 4);
+		var highlight = new WindowHighlightScope(bounds, Color.Red, 4);
+		using var releaseHighlight = Tools.Scope.ExecuteOnDispose(() => highlight.Dispose());
 		var frame = FormsApplication.OpenForms.Cast<Form>().Single(form => form.Name == "WindowHighlightForm");
 		var handle = frame.Handle;
 		Assert.That(ReadNativePhysicalBounds(handle), Is.EqualTo(bounds));
@@ -79,7 +114,8 @@ public class WindowHighlightScopeTests {
 			Assert.That(WindowsWindow.GetPhysicalBounds(snapshot), Is.EqualTo(targetBounds));
 			Assert.That(WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetThreadDpiAwarenessContext(), caller), Is.True,
 				"Reading physical geometry must restore the caller's exact DPI context.");
-			using var highlight = new WindowHighlightScope(targetBounds, Color.Red, 4);
+			var highlight = new WindowHighlightScope(targetBounds, Color.Red, 4);
+			using var releaseHighlight = Tools.Scope.ExecuteOnDispose(() => highlight.Dispose());
 			var frame = FormsApplication.OpenForms.Cast<Form>().Single(form => form.Name == "WindowHighlightForm");
 			var handle = frame.Handle;
 			Assert.That(WinAPI.USER32.AreDpiAwarenessContextsEqual(WinAPI.USER32.GetWindowDpiAwarenessContext(handle),
@@ -167,7 +203,7 @@ public class WindowHighlightScopeTests {
 	[Test]
 	public void ActualFrameReceivesNoActivationOrFocusOnFirstShowResizeAndReshow() => RunWithMessageLoop(async owner => {
 		var type = typeof(WindowHighlightScope).Assembly.GetType("Sphere10.Framework.Windows.Forms.WindowHighlightForm", throwOnError: true);
-		using var frame = (Form)Sphere10.Framework.TypeActivator.ActivateWithCompatibleArgs(type, Array.Empty<object>());
+		using var frame = (Form)Sphere10.Framework.TypeActivator.ActivateWithCompatibleArgs(type, System.Array.Empty<object>());
 		var activated = 0;
 		var focused = 0;
 		frame.Activated += (_, _) => activated++;

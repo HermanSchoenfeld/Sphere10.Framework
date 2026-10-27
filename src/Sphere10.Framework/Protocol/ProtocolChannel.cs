@@ -112,7 +112,8 @@ public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
 	}
 
 	public void Dispose() {
-		DisposeAsync().AsTask().WaitSafe();
+		// Sync-over-async pattern
+		Task.Run(() => DisposeAsync().AsTask()).GetAwaiter().GetResult();
 	}
 
 	public virtual async ValueTask DisposeAsync() {

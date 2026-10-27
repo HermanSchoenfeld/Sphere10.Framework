@@ -126,7 +126,7 @@ public class PropertyGridExTests {
 		var initialWidth = LabelWidth(native);
 		// Resolve the real lazily-created native editor, including its existing forwarding handler.
 		var child = (Control)native.GetType().GetProperty(editorProperty, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(native);
-		using var releaseDetachedList = editorProperty == "DropDownListBox" ? Tools.Scope.ExecuteOnDispose(child.Dispose) : null;
+		using ActionScope? releaseDetachedList = editorProperty == "DropDownListBox" ? Tools.Scope.ExecuteOnDispose(child.Dispose) : null;
 		if (editorProperty == "DropDownListBox") {
 			// The native popup reparents the list outside the view. Losing editor focus is its discovery boundary.
 			typeof(Control).GetMethod("OnLostFocus", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(native, new object[] { EventArgs.Empty });

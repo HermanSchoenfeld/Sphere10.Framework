@@ -6,15 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework;
 
 public abstract class AsyncContextScope : ContextScope {
 	protected AsyncContextScope(ContextScopePolicy policy, string contextID) : base(policy, contextID) {
 	}
 
-	protected sealed override void OnScopeEndInternal() => OnScopeEndAsync().AsTask().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnScopeEndInternal()
+		=> Task.Run(() => OnScopeEndInternalAsync().AsTask()).GetAwaiter().GetResult();
 
-	protected sealed override void OnContextEnd() => OnContextEndAsync().AsTask().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void OnContextEnd()
+		=> Task.Run(() => OnContextEndAsync().AsTask()).GetAwaiter().GetResult();
 
 }
 

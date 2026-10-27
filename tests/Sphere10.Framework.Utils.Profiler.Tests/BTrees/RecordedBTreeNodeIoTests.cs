@@ -17,11 +17,13 @@ namespace Sphere10.Framework.Utils.Profiler.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+[Category("RecordedPerformance")]
 public class RecordedBTreeNodeIoTests {
 	private static readonly string[] _captureNames = { "baseline-a", "optimized-a", "optimized-b", "baseline-b" };
 	private static readonly string[] _workloads = { "Insert", "Update", "DeleteAndRecycle" };
 
-	private static string EvidenceDirectory => Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", "20261023-span-node-io");
+	private static string EvidenceDirectory => Path.Combine(ProfilerEvidence.GetRoot(), "20261023-span-node-io");
 
 	[Test]
 	public void CapturesUseOneHarnessAndTwoConsistentFrameworkBinaries() {

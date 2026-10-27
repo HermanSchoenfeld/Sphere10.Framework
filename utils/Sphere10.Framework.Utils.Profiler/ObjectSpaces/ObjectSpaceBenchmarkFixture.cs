@@ -27,7 +27,7 @@ public sealed class ObjectSpaceBenchmarkFixture : IDisposable {
 	private readonly string _baselinePath;
 	private readonly string _workingPath;
 	private readonly string _workingPages;
-	private readonly IDisposable _directoryLifetime;
+	private ActionScope<string> _directoryLifetime;
 	private readonly Dictionary<long, long> _storageSlots = new();
 	private byte[] _baselineBytes;
 	private MemoryStream _memoryStream;
@@ -401,8 +401,11 @@ public sealed class ObjectSpaceBenchmarkFixture : IDisposable {
 		if (_disposed)
 			return;
 		_disposed = true;
-		using (_directoryLifetime)
+		try {
 			CloseStore();
+		} finally {
+			_directoryLifetime.Dispose();
+		}
 	}
 
 	private void OpenBaseline() {

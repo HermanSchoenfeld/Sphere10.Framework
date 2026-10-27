@@ -55,7 +55,7 @@ public class WOTSSharp : WOTS {
 		=> HMAC(ComputeMessageDigest(message), seed);
 
 	private byte[] HMAC(ReadOnlySpan<byte> digest, ReadOnlySpan<byte> seed) {
-		using (Hashers.BorrowHasher(Config.HashFunction, out var hasher)) {
+		using (Hashers.EnterBorrowHasherScope(Config.HashFunction, out var hasher)) {
 			hasher.Transform(seed);
 			hasher.Transform(digest);
 			var innerHash = hasher.GetResult();

@@ -15,7 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>Reserves a startup plugin's name and removes its new lifecycle registrations if startup registration fails.</summary>
-internal sealed class ApplicationPluginRegistrationScope : SyncScope {
+internal sealed class ApplicationPluginRegistrationScope : SyncDisposable, IScope {
+	// Commit and rollback refer to the same reserved plugin registration.
 	private static readonly ConditionalWeakTable<IServiceCollection, HashSet<string>> _loadingNames = new();
 	private static readonly CriticalObject _reservation = new();
 	private readonly IServiceCollection _services;
@@ -37,7 +38,7 @@ internal sealed class ApplicationPluginRegistrationScope : SyncScope {
 
 	public void Commit() => _committed = true;
 
-	protected override void OnScopeEnd() {
+	protected override void FreeManagedResources() {
 		using var reservation = Tools.Scope.ExecuteOnDispose(() => {
 			using var access = _reservation.EnterAccessScope();
 			if (_loadingNames.TryGetValue(_services, out var names)) {

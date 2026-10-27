@@ -21,7 +21,7 @@ namespace Sphere10.Framework.Utils.Profiler.Tests.ObjectSpaces.Lab;
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class ObjectSpaceLabTests {
 	private string _directory;
-	private IDisposable _directoryCleanup;
+	private ActionScope<string> _directoryCleanup;
 
 	[SetUp]
 	public void SetUp() {

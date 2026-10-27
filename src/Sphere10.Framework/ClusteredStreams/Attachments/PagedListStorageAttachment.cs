@@ -245,7 +245,7 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 			return 
 				PagedList
 					.GetEnumerator()
-					.OnDispose(scope.Dispose);
+					.DisposeWith(scope);
 		} catch {
 			scope.Dispose();
 			throw;

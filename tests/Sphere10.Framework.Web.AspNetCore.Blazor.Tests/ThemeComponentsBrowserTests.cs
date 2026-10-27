@@ -55,10 +55,7 @@ public class ThemeComponentsBrowserTests {
 	[TearDown]
 	public async Task TearDown() {
 		using var runtimeCleanup = Tools.Scope.ExecuteOnDispose(() => _playwright?.Dispose());
-		await using var browserCleanup = new TaskScope(async () => {
-			if (_browser != null)
-				await _browser.DisposeAsync();
-		});
+		await using var browserCleanup = Tools.Scope.ExecuteOnDisposeAsync<IBrowser>(static browser => browser?.DisposeAsync() ?? ValueTask.CompletedTask, _browser);
 		if (_page != null && !_page.IsClosed && TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
 			await AttachScreenshotAsync("failure");
 		Assert.That(_errors, Is.Empty, "The theme gallery must not produce browser or script errors.");

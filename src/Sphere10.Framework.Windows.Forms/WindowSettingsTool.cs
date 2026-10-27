@@ -19,13 +19,13 @@ namespace Tools;
 
 public static partial class WinForms {
 	/// <summary>Restores on load and saves only when the window actually closes. Dispose the scope to detach the handlers.</summary>
-	public static IDisposable AutoPersistWindowSettings(Form Window, string SettingsID = "MainForm")
+	public static Sphere10.Framework.ActionScope AutoPersistWindowSettings(Form Window, string SettingsID = "MainForm")
 		=> TrackWindowSettings(Window, SettingsID, Settings => Settings.Save());
 
-	internal static IDisposable TrackWindowSettings(Form Window, string SettingsID, Action<FormWindowSettings> OnAcceptedClose)
+	internal static Sphere10.Framework.ActionScope TrackWindowSettings(Form Window, string SettingsID, Action<FormWindowSettings> OnAcceptedClose)
 		=> TrackWindowSettings(Window, SettingsID, OnAcceptedClose, out _);
 
-	internal static IDisposable TrackWindowSettings(Form Window, string SettingsID, Action<FormWindowSettings> OnAcceptedClose, out Action captureAcceptedClose) {
+	internal static Sphere10.Framework.ActionScope TrackWindowSettings(Form Window, string SettingsID, Action<FormWindowSettings> OnAcceptedClose, out Action captureAcceptedClose) {
 		Guard.ArgumentNotNull(Window, nameof(Window));
 		Guard.ArgumentNotNullOrEmpty(SettingsID, nameof(SettingsID));
 		Guard.ArgumentNotNull(OnAcceptedClose, nameof(OnAcceptedClose));

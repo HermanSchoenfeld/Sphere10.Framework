@@ -57,8 +57,6 @@ namespace Sphere10.Framework;
 ///  - indexing
 /// </remarks>
 public class StreamPagedList<TItem> : PagedListBase<TItem> {
-	private static readonly IDisposable _staticPageScope = new StaticPageScope();
-
 	public const uint MagicID = 31337;
 	public const byte FormatVersion = 1;
 	public const int ListHeaderSize = 256;
@@ -107,16 +105,17 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 
 	internal IItemSerializer<TItem> Serializer { get; }
 
-	public override IDisposable EnterOpenPageScope(IPage<TItem> page) {
+	public override PageScope<TItem> EnterOpenPageScope(IPage<TItem> page) {
 		switch (Type) {
 			case StreamPagedListType.Dynamic: {
 				var streamedPage = (DynamicStreamPage<TItem>)page;
 				streamedPage.Open();
 
-				return Tools.Scope.ExecuteOnDispose(streamedPage.Close);
+				return new PageScope<TItem>(streamedPage);
 			}
 			case StreamPagedListType.Static:
-				return _staticPageScope;
+				// Static pages have no per-access resources to release.
+				return new PageScope<TItem>(static () => { });
 			default:
 				throw new ArgumentOutOfRangeException();
 		}
@@ -261,12 +260,6 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Writer.Write((uint)0U); // traits (used in v2)
 		Writer.Write(Tools.Array.Gen(ListHeaderSize - (int)Stream.Position, (byte)0)); // padding
 		Guard.Ensure(Stream.Position == ListHeaderSize, "Head size inconsistency");
-	}
-
-	private sealed class StaticPageScope : IDisposable {
-		public void Dispose() {
-			// Static pages have no per-access resources to release.
-		}
 	}
 }
 

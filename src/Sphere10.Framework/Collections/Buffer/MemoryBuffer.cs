@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -31,9 +30,6 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	private readonly long _initialCapacity;
 	private readonly long _blockGrowthSize;
 	private readonly long _maxCapacity;
-	private readonly ArrayPool<byte> _arrayPool;
-	private bool _ownsRentedArray;
-	private bool _arrayExposed;
 
 	public MemoryBuffer() : this(0, DefaultBlockGrowth) {
 	}
@@ -48,12 +44,6 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 
 	public MemoryBuffer(byte[] fixedArray)
 		: this(fixedArray, fixedArray.Length, 0, fixedArray.Length) {
-	}
-
-	internal MemoryBuffer(long pageCapacity, ArrayPool<byte> arrayPool)
-		: this(Array.Empty<byte>(), 0, pageCapacity, pageCapacity) {
-		Guard.ArgumentNotNull(arrayPool, nameof(arrayPool));
-		_arrayPool = arrayPool;
 	}
 
 	private MemoryBuffer(byte[] internalArray, long currentSize, long capacityGrowthSize, long maxCapacity) {
@@ -159,8 +149,6 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		var newBytesCount = Math.Max(index + items.Length, _length) - _length;
 
 		GrowSpaceIfRequired(newBytesCount);
-		if (_arrayPool is not null && index > _length)
-			_internalArray.AsSpan(checked((int)_length), checked((int)(index - _length))).Clear();
 		UpdateVersion();
 
 		if (items.Length == 1)
@@ -183,8 +171,6 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	public void ExpandBy(long newBytes) {
 		Guard.ArgumentInRange(newBytes, 0, long.MaxValue, nameof(newBytes));
 		GrowSpaceIfRequired(newBytes);
-		if (_arrayPool is not null)
-			_internalArray.AsSpan(checked((int)_length), checked((int)newBytes)).Clear();
 		_length += newBytes;
 	}
 
@@ -247,31 +233,12 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 
 		var indexI = Tools.Collection.CheckNotImplemented64bitAddressingIndex(index);
 		var countI = Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
-		var result = _internalArray.AsSpan(indexI, countI);
-		if (_arrayPool is not null && !result.IsEmpty)
-			_arrayExposed = true;
-		return result;
+		return _internalArray.AsSpan(indexI, countI);
 	}
-
-	// Only page-owned synchronous I/O may borrow this span without retiring the array from reuse.
-	internal Span<byte> BorrowPageSpan() => _internalArray.AsSpan(0, checked((int)_length));
 
 	private void CopyRange(int index, Span<byte> destination) => _internalArray.AsSpan(index, destination.Length).CopyTo(destination);
 
 	public override void Clear() {
-		if (_arrayPool is not null) {
-			var array = _internalArray;
-			var returnArray = _ownsRentedArray && !_arrayExposed;
-			_internalArray = Array.Empty<byte>();
-			_length = 0;
-			_ownsRentedArray = false;
-			_arrayExposed = false;
-			if (returnArray) {
-				array.AsSpan().Clear();
-				_arrayPool.Return(array);
-			}
-			return;
-		}
 		var initialCapacityI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_initialCapacity);
 		Array.Resize(ref _internalArray, initialCapacityI);
 		_length = 0;
@@ -297,26 +264,8 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		var growAmount = (int)Math.Min(Math.Ceiling(actualNewBytes / (double)_blockGrowthSize) * _blockGrowthSize, remainingGrowthCapacity);
 		Debug.Assert(_internalArray.Length + growAmount <= _maxCapacity);
 
-		if (_arrayPool is not null) {
-			// Page storage grows once to its fixed capacity and is detached completely on unload.
-			Debug.Assert(_internalArray.Length == 0);
-			var capacity = checked((int)(_internalArray.Length + growAmount));
-			var array = _arrayPool.Rent(capacity);
-			if (array.Length == capacity) {
-				_ownsRentedArray = true;
-			} else {
-				// Cache accounting is in page-size units: an overlarge pool bucket must not be retained.
-				array.AsSpan().Clear();
-				_arrayPool.Return(array);
-				array = new byte[capacity];
-				_ownsRentedArray = false;
-			}
-			_internalArray = array;
-			_arrayExposed = false;
-		} else {
-			// Re-allocate internal array
-			Array.Resize(ref _internalArray, _internalArray.Length + growAmount);
-		}
+		// Re-allocate internal array
+		Array.Resize(ref _internalArray, _internalArray.Length + growAmount);
 	}
 
 }

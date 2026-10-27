@@ -43,8 +43,8 @@ public class Blake2bFastConsistency {
 		CHF fast) {
 		var rng = new Random(31337);
 
-		using (Hashers.BorrowHasher(normal, out var normalHasher))
-		using (Hashers.BorrowHasher(fast, out var fasterHasher)) {
+		using (Hashers.EnterBorrowHasherScope(normal, out var normalHasher))
+		using (Hashers.EnterBorrowHasherScope(fast, out var fasterHasher)) {
 			for (var i = 0; i < rng.Next(0, 100); i++) {
 				var block = rng.NextBytes(rng.Next(0, 100));
 				normalHasher.Transform(block);

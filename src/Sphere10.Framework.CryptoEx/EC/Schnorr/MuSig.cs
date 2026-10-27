@@ -112,7 +112,7 @@ public class MuSig {
 	}
 
 	private static MuSigPrivateNonce GeneratePrivateNonce(byte[] sessionId, byte[] messageDigest, byte[] privateKey, byte[] aggregatedPublicKey, byte[] extraInput) {
-		using (Hashers.BorrowHasher(CHF.SHA2_256, out var hasher)) {
+		using (Hashers.EnterBorrowHasherScope(CHF.SHA2_256, out var hasher)) {
 			hasher.Transform(MuSigNonceTag);
 			hasher.Transform(MuSigNonceTag);
 			hasher.Transform(sessionId);

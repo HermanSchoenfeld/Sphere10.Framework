@@ -294,9 +294,11 @@ public static class TaskExtensions {
 	}
 
 	public static T ResultSafe<T>(this Task<T> task) {
+		// Sync-over-async pattern
 		return Task.Run(() => task.Result).Result;
 	}
 	public static T ResultSafe<T>(this Task<T> task, CancellationToken cancellationToken) {
+		// Sync-over-async pattern
 		return Task.Run(() => task.Result, cancellationToken).Result;
 	}
 

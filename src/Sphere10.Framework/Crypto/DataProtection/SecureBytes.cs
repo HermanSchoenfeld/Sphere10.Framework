@@ -45,11 +45,11 @@ public sealed class SecureBytes : ISecureItem<byte[]> {
 		}
 	}
 
-	public IScope EnterUnprotectedScope() {
+	public ActionScope EnterUnprotectedScope() {
 		using (_scopes.EnterWriteScope()) {
 			if (_scopes.Value++ == 0)
 				Decrypt();
-			return new ActionScope(() => {
+			return Tools.Scope.ExecuteOnDispose(() => {
 				using (_scopes.EnterWriteScope()) {
 					if (_scopes.Value-- == 0)
 						Encrypt();

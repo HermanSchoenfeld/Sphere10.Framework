@@ -86,10 +86,10 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	internal IWinFormsApplicationBlock[] StartupBlocks => _engine.RegistrationBlocks;
 
-	internal IDisposable EnterPresentationScope() => EnterUpdateScope();
+	internal IScope EnterPresentationScope() => EnterUpdateScope();
 
 	public override void SelectBlock(IWinFormsApplicationBlock block) {
-		Guard.Ensure(!_disposing, "The screen host is disposing.");
+		ObjectDisposedException.ThrowIf(_disposing, this);
 		Guard.Argument(block == null || _engine.RegistrationBlocks.Contains(block, ReferenceEqualityComparer.Instance), nameof(block), "Block is not registered.");
 		_engine.SelectBlock(block);
 	}
@@ -172,7 +172,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	public override void RegisterScreenTypes(IWinFormsApplicationBlock Block) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
-		Guard.Ensure(!_disposing, "The screen host is disposing");
+		ObjectDisposedException.ThrowIf(_disposing, this);
 		using var update = EnterUpdateScope();
 		var blocks = _engine.RegistrationBlocks.Contains(Block, ReferenceEqualityComparer.Instance) ? _engine.RegistrationBlocks : _engine.RegistrationBlocks.Append(Block).ToArray();
 		var definitions = Tools.UI.GetScreenDefinitions(blocks);
@@ -313,7 +313,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		Guard.ArgumentNotNull(Screen, nameof(Screen));
 		Guard.Argument(!Screen.IsDisposed, nameof(Screen), "Cannot show a disposed screen");
 		Guard.Argument(Screen.Host == null || ReferenceEquals(Screen.Host, this), nameof(Screen), "Screen already belongs to another host");
-		Guard.Ensure(!_disposing, "The screen host is disposing");
+		ObjectDisposedException.ThrowIf(_disposing, this);
 		using var update = EnterUpdateScope(repaintImmediately: selectTab);
 		if (registerBlock && Screen.Host == null && Screen.Block != null)
 			RegisterScreenTypes(Screen.Block);
@@ -560,11 +560,10 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		var errors = new List<Exception>();
 		_disposing = true;
 		Tools.Exceptions.ExecuteCapturingException(ClearDockPreview, errors);
-		IDisposable update = null;
+		ScreenTransitionScope update = default;
 		Tools.Exceptions.ExecuteCapturingException(() => update = EnterUpdateScope(), errors);
 		using (Tools.Scope.ExecuteOnDispose(() => {
-			if (update != null)
-				Tools.Exceptions.ExecuteCapturingException(update.Dispose, errors);
+			Tools.Exceptions.ExecuteCapturingException(() => update?.Dispose(), errors);
 		})) {
 			Tools.Exceptions.ExecuteCapturingException(() => ChangeActiveScreen(null), errors);
 			foreach (var screen in Screens)
@@ -639,7 +638,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		}
 	}
 
-	private IDisposable EnterUpdateScope(bool repaintImmediately = true) => new ScreenTransitionScope(this, repaintImmediately);
+	private ScreenTransitionScope EnterUpdateScope(bool repaintImmediately = true) => new(this, repaintImmediately);
 
 	private static bool CanHide(WinFormsApplicationScreen? Screen) {
 		var Cancel = false;
@@ -833,10 +832,10 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		public WinFormsApplicationScreenForm? Window { get; set; }
 	}
 
-	private sealed class ScreenTransitionScope : ScopeBase {
+	private sealed class ScreenTransitionScope : WinFormsSyncDisposableBase, IScope {
 		private readonly WinFormsApplicationScreenHost _owner;
-		private readonly IDisposable _rendering;
-		private readonly IDisposable _notifications;
+		private ControlRenderingScope _rendering;
+		private ActionScope? _notifications;
 
 		public ScreenTransitionScope(WinFormsApplicationScreenHost owner, bool repaintImmediately) {
 			_owner = owner;
@@ -860,26 +859,26 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			entered = true;
 		}
 
-		protected override void OnScopeEnd() {
+		protected override void FreeManagedResources() {
 			if (--_owner._updateDepth > 0)
 				return;
 			using var rendering = _rendering;
-			using var notifications = _notifications;
-			using var state = Tools.Scope.ExecuteOnDispose(() => {
+			try {
+				using var state = Tools.Scope.ExecuteOnDispose(() => {
+					_owner._updating = false;
+					_owner._activeSelectionChanged = false;
+				});
+				if (!_owner._disposing)
+					_owner.UpdatePresentationVisibility();
 				_owner._updating = false;
-				_owner._activeSelectionChanged = false;
-			});
-			if (!_owner._disposing)
-				_owner.UpdatePresentationVisibility();
-			_owner._updating = false;
-			if (_owner._activeSelectionChanged && !_owner._disposing)
-				_owner.OnActiveScreenChanged(_owner.ActiveScreen);
+				if (_owner._activeSelectionChanged && !_owner._disposing)
+					_owner.OnActiveScreenChanged(_owner.ActiveScreen);
+			} finally {
+				_notifications?.Dispose();
+			}
 		}
 
-		protected override ValueTask OnScopeEndAsync() {
-			OnScopeEnd();
-			return ValueTask.CompletedTask;
-		}
+
 	}
 
 	/// <summary>Tracks actual native controls in the common host while synchronous presentation remains on the UI thread.</summary>
@@ -908,7 +907,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 		public void InitializeState() => MarkInitialized();
 
-		public IDisposable DeferChanges() => DeferNotifications();
+		public ActionScope DeferChanges() => DeferNotifications();
 
 		public void RegisterDefinitions(ApplicationScreenDefinition[] definitions) => RegisterTrackedDefinitions(definitions);
 

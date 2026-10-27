@@ -88,7 +88,7 @@ dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Uti
 dotnet run -c Release --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- btrees --suite wide-keys --keys Digest32 --storage TransactionalFile --family Lookup --show-config
 ```
 
-See the [retained recommendations](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261013-btree-recommendations/BTree-recommendations.md) and [constant decisions](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results/final-default-selection.json) for exact source cases, raw batches, reported intervals and backend-specific overrides. Some primary comparisons remain overlapping plateaus. Large node orders can increase allocations/GC and cause repeated merge/split work around particular dataset boundaries; total leaf count and occupancy remain diagnostic outputs.
+Historical recommendations and constant-decision captures are no longer shipped with the repository. Supply external evidence to the [recorded-capture checks](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md#external-historical-captures), or run a new study for exact source cases, raw batches, reported intervals and backend-specific overrides. Some primary comparisons remain overlapping plateaus. Large node orders can increase allocations/GC and cause repeated merge/split work around particular dataset boundaries; total leaf count and occupancy remain diagnostic outputs.
 
 ## Workloads and correctness boundaries
 

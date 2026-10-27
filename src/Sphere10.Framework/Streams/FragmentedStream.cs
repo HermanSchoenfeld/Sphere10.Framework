@@ -199,15 +199,11 @@ public class FragmentedStream : Stream {
 	}
 
 	public override async ValueTask DisposeAsync() {
-		await base.DisposeAsync();
-		switch (FragmentProvider) {
-			case IAsyncDisposable asyncDisposable:
-				await asyncDisposable.DisposeAsync();
-				break;
-			case IDisposable disposable:
-				disposable.Dispose();
-				break;
-		}
+		// Preserve virtual Close/Dispose(true) cleanup for this synchronous-first stream and its subclasses.
+		await Task.Run(Dispose).ConfigureAwait(false);
+		// The synchronous path already releases IDisposable providers; only async-only providers remain.
+		if (FragmentProvider is IAsyncDisposable asyncDisposable && FragmentProvider is not IDisposable)
+			await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 	}
 
 }

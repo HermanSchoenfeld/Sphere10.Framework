@@ -237,33 +237,33 @@ public class StreamPagedListTests {
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
 				stream = new ExtendedMemoryStream(new FileMappedBuffer(PagedFileDescriptor.From( tmpFile, Math.Max(1, estimatedMaxByteSize), 1 * Math.Max(1, estimatedMaxByteSize))), true);
 				disposables.Add(stream);
-				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.BinaryFile_2Page_1InMem:
 				tmpFile = Tools.FileSystem.GetTempFileName(false);
 				stream = new ExtendedMemoryStream(new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, Math.Max(1, estimatedMaxByteSize / 2), 2 * Math.Max(1, estimatedMaxByteSize / 2))), true);
 				disposables.Add(stream);
-				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.BinaryFile_10Page_5InMem:
 				tmpFile = Tools.FileSystem.GetTempFileName(false);
 				stream = new ExtendedMemoryStream(new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, Math.Max(1, estimatedMaxByteSize / 10), 5 * Math.Max(1, estimatedMaxByteSize / 10))), true);
 				disposables.Add(stream);
-				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.TransactionalBinaryFile_1Page_1InMem:
 				var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				var fileName = Path.Combine(baseDir, "File.dat");
 				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, Math.Max(1, estimatedMaxByteSize), 1 * Math.Max(1, estimatedMaxByteSize))), true);
 				disposables.Add(stream);
-				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			case StorageType.TransactionalBinaryFile_2Page_1InMem:
 				baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				fileName = Path.Combine(baseDir, "File.dat");
 				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, Math.Max(1, estimatedMaxByteSize / 2), 2 * Math.Max(1, estimatedMaxByteSize / 2))), true);
 				disposables.Add(stream);
-				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 
 			case StorageType.TransactionalBinaryFile_10Page_5InMem:
@@ -271,7 +271,7 @@ public class StreamPagedListTests {
 				fileName = Path.Combine(baseDir, "File.dat");
 				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, Math.Max(1, estimatedMaxByteSize / 10), 5 * Math.Max(1, estimatedMaxByteSize / 10))), true);
 				disposables.Add(stream);
-				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+				disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(storageType), storageType, null);

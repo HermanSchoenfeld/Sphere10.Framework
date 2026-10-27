@@ -134,11 +134,12 @@ public static class ILoggerExtensions {
 	/// Measures and logs the duration of a scoped operation using <see cref="ILogger.Debug(string)"/>.
 	/// </summary>
 	/// <param name="messagePrefix">Text prefixed before the elapsed milliseconds.</param>
-	/// <returns>An <see cref="IDisposable"/> that logs the elapsed time when disposed.</returns>
-	public static IDisposable LogDuration(this ILogger logger, string messagePrefix) {
+	/// <returns>A concrete scope that logs the elapsed time when disposed.</returns>
+	public static ActionScope<(ILogger Logger, string MessagePrefix, DateTime Start)> EnterLogDurationScope(this ILogger logger, string messagePrefix) {
 		var start = DateTime.Now;
-		return new ActionScope(
-			() => logger.Debug($"{messagePrefix ?? string.Empty} ({(long)DateTime.Now.Subtract(start).TotalMilliseconds} ms)")
+		return Tools.Scope.ExecuteOnDispose<(ILogger Logger, string MessagePrefix, DateTime Start)>(
+			static state => state.Logger.Debug($"{state.MessagePrefix ?? string.Empty} ({(long)DateTime.Now.Subtract(state.Start).TotalMilliseconds} ms)"),
+			(Logger: logger, MessagePrefix: messagePrefix, Start: start)
 		);
 	}
 

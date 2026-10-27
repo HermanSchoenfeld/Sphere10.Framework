@@ -79,6 +79,7 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 
 	public override DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		Debug.AssertNotMainThread();
+		// Sync-over-async pattern
 		return ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection).ResultSafe();
 	}
 
@@ -99,6 +100,7 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 
 	public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions) {
 		Debug.AssertNotMainThread();
+		// Sync-over-async pattern
 		return ValidateRangeAsync(actions).ResultSafe();
 	}
 
@@ -109,6 +111,7 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 				return result.Result;
 			if (!result.IsCompleted)
 				Debug.AssertNotMainThread();
+			// Sync-over-async pattern
 			return result.ResultSafe();
 		}
 	}
@@ -120,6 +123,7 @@ public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
 				return result.Result;
 			if (!result.IsCompleted)
 				Debug.AssertNotMainThread();
+			// Sync-over-async pattern
 			return result.ResultSafe();
 		}
 	}

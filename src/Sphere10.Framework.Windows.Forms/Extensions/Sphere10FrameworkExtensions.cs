@@ -87,7 +87,7 @@ public static class Sphere10FrameworkExtensions {
 		WinFormsApplication nativeApplication = null;
 		MainFormSettingsFinalizer settingsFinalizer = null;
 		Form mainForm = null;
-		IDisposable windowSettings = null;
+		ActionScope? windowSettings = null;
 		Func<Task> previousShutdown = null;
 		Task shutdown = null;
 		var completing = false;
@@ -214,6 +214,7 @@ public static class Sphere10FrameworkExtensions {
 				if (!pendingShutdown.IsCompleted)
 					Thread.Sleep(1);
 			}
+			// Sync-over-async pattern
 			Tools.Exceptions.ExecuteCapturingException(() => pendingShutdown.GetAwaiter().GetResult(), errors);
 			if (mainForm != null) {
 				mainForm.FormClosed -= Complete;
@@ -221,8 +222,7 @@ public static class Sphere10FrameworkExtensions {
 				if (!mainForm.IsDisposed)
 					Tools.Exceptions.ExecuteCapturingException(mainForm.Dispose, errors);
 			}
-			if (windowSettings != null)
-				Tools.Exceptions.ExecuteCapturingException(windowSettings.Dispose, errors);
+			Tools.Exceptions.ExecuteCapturingException(() => windowSettings?.Dispose(), errors);
 			if (builder.Framework.IsStarted)
 				Tools.Exceptions.ExecuteCapturingException(builder.Framework.EndFramework, errors);
 			foreach (var ownedSplash in new[] { completedStartupSplash, splash }.Where(ownedSplash => ownedSplash != null).Distinct()) {

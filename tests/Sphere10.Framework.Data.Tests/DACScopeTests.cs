@@ -19,8 +19,8 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ReuseConnection_SameDAC_1(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(false)) {
-				using (var scope2 = dac.BeginScope(false)) {
+			using (var scope = dac.EnterScope(false)) {
+				using (var scope2 = dac.EnterScope(false)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -31,8 +31,8 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ReuseConnection_SameDAC_2(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(false)) {
-				using (var scope2 = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(false)) {
+				using (var scope2 = dac.EnterScope(true)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -43,8 +43,8 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ReuseConnection_SameDAC_3(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
-				using (var scope2 = dac.BeginScope(false)) {
+			using (var scope = dac.EnterScope(true)) {
+				using (var scope2 = dac.EnterScope(false)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -55,8 +55,8 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ReuseConnection_SameDAC_4(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
-				using (var scope2 = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
+				using (var scope2 = dac.EnterScope(true)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -69,8 +69,8 @@ public class DACScopeTests : DACTestFixture {
 	public void ReuseConnection_DifferentDAC_1(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			var dac2 = DuplicateDAC(dac);
-			using (var scope = dac.BeginScope(false)) {
-				using (var scope2 = dac2.BeginScope(false)) {
+			using (var scope = dac.EnterScope(false)) {
+				using (var scope2 = dac2.EnterScope(false)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -82,8 +82,8 @@ public class DACScopeTests : DACTestFixture {
 	public void ReuseConnection_DifferentDAC_2(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			var dac2 = DuplicateDAC(dac);
-			using (var scope = dac.BeginScope(false)) {
-				using (var scope2 = dac2.BeginScope(true)) {
+			using (var scope = dac.EnterScope(false)) {
+				using (var scope2 = dac2.EnterScope(true)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -95,8 +95,8 @@ public class DACScopeTests : DACTestFixture {
 	public void ReuseConnection_DifferentDAC_3(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			var dac2 = DuplicateDAC(dac);
-			using (var scope = dac.BeginScope(true)) {
-				using (var scope2 = dac2.BeginScope(false)) {
+			using (var scope = dac.EnterScope(true)) {
+				using (var scope2 = dac2.EnterScope(false)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -108,8 +108,8 @@ public class DACScopeTests : DACTestFixture {
 	public void ReuseConnection_DifferentDAC_4(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			var dac2 = DuplicateDAC(dac);
-			using (var scope = dac.BeginScope(true)) {
-				using (var scope2 = dac2.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
+				using (var scope2 = dac2.EnterScope(true)) {
 					Assert.That(scope2.Connection, Is.SameAs(scope.Connection));
 				}
 			}
@@ -122,7 +122,7 @@ public class DACScopeTests : DACTestFixture {
 	public async Task ReuseConnection_DifferentDAC_Async1(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			var dac2 = DuplicateDAC(dac);
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				await AssertConnectionPropagationAsync(scope.Connection, dac2);
 			}
 		}
@@ -133,14 +133,14 @@ public class DACScopeTests : DACTestFixture {
 	public async Task ReuseConnection_DifferentDAC_Async2(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			var dac2 = DuplicateDAC(dac);
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				await Task.Run(() => AssertConnectionPropagationAsync(scope.Connection, dac2));
 			}
 		}
 	}
 
 	private async Task AssertConnectionPropagationAsync(IDbConnection expectedConnectionObj, IDAC dac2) {
-		using (var scope2 = dac2.BeginScope(true)) {
+		using (var scope2 = dac2.EnterScope(true)) {
 			Assert.That(scope2.Connection, Is.SameAs(expectedConnectionObj));
 		}
 	}
@@ -149,7 +149,7 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void Error_TransactionNotClosedDoesNotThrow(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			var scope = dac.BeginScope(true);
+			var scope = dac.EnterScope(true);
 			scope.BeginTransaction();
 			dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 			Assert.DoesNotThrow(scope.Dispose);
@@ -161,7 +161,7 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void CommitTransaction_1(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				scope.BeginTransaction();
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				scope.Commit();
@@ -173,7 +173,7 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void RollbackTransaction(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				scope.BeginTransaction();
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				scope.Rollback();
@@ -187,11 +187,11 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void RollbackTransaction_NestedScope(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				scope.BeginTransaction();
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				var dac2 = DuplicateDAC(dac);
-				using (var scope2 = dac2.BeginScope()) {
+				using (var scope2 = dac2.EnterScope()) {
 					scope2.BeginTransaction();
 					dac2.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
 					scope2.Rollback();
@@ -207,7 +207,7 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ConsequtiveTransactions(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope = dac.BeginScope(true)) {
+			using (var scope = dac.EnterScope(true)) {
 				scope.BeginTransaction();
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				scope.Commit();
@@ -227,9 +227,9 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ConsequtiveTransactionsNested_1(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope1 = dac.BeginScope()) {
+			using (var scope1 = dac.EnterScope()) {
 				scope1.BeginTransaction();
-				using (var scope2 = dac.BeginScope(true)) {
+				using (var scope2 = dac.EnterScope(true)) {
 					scope2.BeginTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 					scope2.Commit();
@@ -250,9 +250,9 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ConsequtiveTransactionsNested_2(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope1 = dac.BeginScope()) {
+			using (var scope1 = dac.EnterScope()) {
 				scope1.BeginTransaction();
-				using (var scope2 = dac.BeginScope(true)) {
+				using (var scope2 = dac.EnterScope(true)) {
 					scope2.BeginTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 					scope2.Commit();
@@ -273,9 +273,9 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ConsequtiveTransactionsNested_3(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope1 = dac.BeginScope()) {
+			using (var scope1 = dac.EnterScope()) {
 				scope1.BeginTransaction();
-				using (var scope2 = dac.BeginScope(true)) {
+				using (var scope2 = dac.EnterScope(true)) {
 					scope2.BeginTransaction();
 					dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 					scope2.Commit();
@@ -296,10 +296,10 @@ public class DACScopeTests : DACTestFixture {
 	[TestCaseSource(nameof(DBMS))]
 	public void ConsequtiveTransactionsNested_4(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
-			using (var scope0 = dac.BeginScope()) {
-				using (var scope1 = dac.BeginScope()) {
+			using (var scope0 = dac.EnterScope()) {
+				using (var scope1 = dac.EnterScope()) {
 					scope1.BeginTransaction();
-					using (var scope2 = dac.BeginScope(true)) {
+					using (var scope2 = dac.EnterScope(true)) {
 						scope2.BeginTransaction();
 						dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 						scope2.Commit();
@@ -326,7 +326,7 @@ public class DACScopeTests : DACTestFixture {
 	public void RepeatTransactionNotThrow(DBMSType dbmsType) {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			Assert.Catch(() => {
-				using (var scope0 = dac.BeginScope()) {
+				using (var scope0 = dac.EnterScope()) {
 					scope0.BeginTransaction();
 					Assert.DoesNotThrow(() => scope0.BeginTransaction());
 				}

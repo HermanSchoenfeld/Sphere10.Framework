@@ -19,7 +19,7 @@ internal class PagedListDelegate<TItem> : IPagedListDelegate<TItem> {
 		Action updateVersion,
 		Action checkRequiresLoad,
 		Action<long, long, bool> checkRange,
-		Func<IPage<TItem>, IDisposable> enterOpenPageScope,
+		Func<IPage<TItem>, PageScope<TItem>> enterOpenPageScope,
 		Func<long, long, List<Tuple<IPage<TItem>, long, long>>> getPageSegments,
 		Func<IReadOnlyList<IPage<TItem>>> internalPages,
 		Func<IPage<TItem>> createNextPage,
@@ -62,7 +62,7 @@ internal class PagedListDelegate<TItem> : IPagedListDelegate<TItem> {
 
 	public Func<IReadOnlyList<IPage<TItem>>> InternalPages { get; }
 
-	public Func<IPage<TItem>, IDisposable> EnterOpenPageScope { get; }
+	public Func<IPage<TItem>, PageScope<TItem>> EnterOpenPageScope { get; }
 
 	public Func<long, long, List<Tuple<IPage<TItem>, long, long>>> GetPageSegments { get; }
 

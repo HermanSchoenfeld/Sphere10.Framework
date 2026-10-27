@@ -8,7 +8,6 @@
 // Based from original: http://jonskeet.uk/csharp/miscutil/
 
 using System;
-using System.Buffers;
 using System.IO;
 using System.Text;
 
@@ -27,6 +26,7 @@ public class EndianBinaryWriter : IDisposable {
 	/// Whether or not this writer has been disposed yet.
 	/// </summary>
 	private bool disposed = false;
+	private readonly bool _leaveOpen;
 
 	/// <summary>
 	/// Buffer used for temporary streams during conversion from primitives
@@ -49,7 +49,12 @@ public class EndianBinaryWriter : IDisposable {
 	/// <param name="bitConverter">Converter to use when writing data</param>
 	/// <param name="stream">Stream to write data to</param>
 	public EndianBinaryWriter(EndianBitConverter bitConverter,
-	                          Stream stream) : this(bitConverter, stream, Encoding.UTF8) {
+	                          Stream stream) : this(bitConverter, stream, Encoding.UTF8, leaveOpen: false) {
+	}
+
+	/// <summary>Constructs a UTF-8 writer with control over whether the underlying stream is left open.</summary>
+	public EndianBinaryWriter(EndianBitConverter bitConverter, Stream stream, bool leaveOpen)
+		: this(bitConverter, stream, Encoding.UTF8, leaveOpen) {
 	}
 
 	/// <summary>
@@ -59,7 +64,16 @@ public class EndianBinaryWriter : IDisposable {
 	/// <param name="bitConverter">Converter to use when writing data</param>
 	/// <param name="stream">Stream to write data to</param>
 	/// <param name="encoding">Encoding to use when writing character data</param>
-	public EndianBinaryWriter(EndianBitConverter bitConverter, Stream stream, Encoding encoding) {
+	public EndianBinaryWriter(EndianBitConverter bitConverter, Stream stream, Encoding encoding)
+		: this(bitConverter, stream, encoding, leaveOpen: false) {
+	}
+
+	/// <summary>Constructs a writer with the selected encoding and control over whether the underlying stream is left open.</summary>
+	/// <param name="bitConverter">Converter to use when writing data</param>
+	/// <param name="stream">Stream to write data to</param>
+	/// <param name="encoding">Encoding to use when writing character data</param>
+	/// <param name="leaveOpen">Whether the underlying stream remains open when this writer is disposed.</param>
+	public EndianBinaryWriter(EndianBitConverter bitConverter, Stream stream, Encoding encoding, bool leaveOpen) {
 		if (bitConverter == null) {
 			throw new ArgumentNullException("bitConverter");
 		}
@@ -75,6 +89,7 @@ public class EndianBinaryWriter : IDisposable {
 		this.stream = stream;
 		this.bitConverter = bitConverter;
 		this.encoding = encoding;
+		_leaveOpen = leaveOpen;
 	}
 
 	#endregion
@@ -113,7 +128,7 @@ public class EndianBinaryWriter : IDisposable {
 	#region Public methods
 
 	/// <summary>
-	/// Closes the writer, including the underlying stream.
+	/// Closes the writer and, unless <c>leaveOpen</c> is true, its underlying stream.
 	/// </summary>
 	public void Close() {
 		Dispose();
@@ -292,19 +307,12 @@ public class EndianBinaryWriter : IDisposable {
 	public void Write(ReadOnlySpan<char> value) {
 		CheckDisposed();
 		var byteLength = checked(sizeof(char) * value.Length);
-		byte[] rented = null;
-		Span<byte> data = byteLength <= 512
-			? stackalloc byte[byteLength]
-			: (rented = ArrayPool<byte>.Shared.Rent(byteLength)).AsSpan(0, byteLength);
-		try {
-			// Preserve the existing fixed-size output, including unused zero-padded bytes.
-			data.Clear();
-			Encoding.GetBytes(value, data);
-			WriteInternal(data, data.Length);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		using BorrowArrayScope<byte>? rented = byteLength <= 512 ? null : Tools.Scope.EnterBorrowArrayScope(byteLength);
+		Span<byte> data = rented.HasValue ? rented.Value.Span : stackalloc byte[byteLength];
+		// Preserve the existing fixed-size output, including unused zero-padded bytes.
+		data.Clear();
+		Encoding.GetBytes(value, data);
+		WriteInternal(data, data.Length);
 	}
 
 	/// <summary>
@@ -351,9 +359,7 @@ public class EndianBinaryWriter : IDisposable {
 	/// Checks whether or not the writer has been disposed, throwing an exception if so.
 	/// </summary>
 	private void CheckDisposed() {
-		if (disposed) {
-			throw new ObjectDisposedException("EndianBinaryWriter");
-		}
+		ObjectDisposedException.ThrowIf(disposed, nameof(EndianBinaryWriter));
 	}
 
 	/// <summary>
@@ -372,13 +378,14 @@ public class EndianBinaryWriter : IDisposable {
 	#region IDisposable Members
 
 	/// <summary>
-	/// Disposes of the underlying stream.
+	/// Flushes and disposes of the writer, leaving its underlying stream open only when <c>leaveOpen</c> is true.
 	/// </summary>
 	public void Dispose() {
 		if (!disposed) {
 			Flush();
 			disposed = true;
-			((IDisposable)stream).Dispose();
+			if (!_leaveOpen)
+				((IDisposable)stream).Dispose();
 		}
 	}
 

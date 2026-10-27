@@ -731,7 +731,7 @@ public class ApplicationScreenTabTests {
 			using var Transform = Surface.Transform;
 			RuntimeBufferOffsetX = Transform.OffsetX;
 			var DeviceContext = Surface.GetHdc();
-			using var ContextScope = Tools.Scope.ExecuteOnDispose(() => Surface.ReleaseHdc(DeviceContext));
+			using var restoreDeviceContext = Tools.Scope.ExecuteOnDispose(() => Surface.ReleaseHdc(DeviceContext));
 			RuntimeCaptionPixels = 0;
 			var CaptionColor = (uint)ColorTranslator.ToWin32(DockPreviewForeColor);
 			for (var Y = 0; Y < RuntimeCaptureSize.Height; Y++)

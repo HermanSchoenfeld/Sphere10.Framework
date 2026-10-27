@@ -14,13 +14,15 @@ namespace Sphere10.Framework;
 /// Base class to handle scopes which are aware of other scope instances activated within the call context. These can be
 /// used share state and behaviour within the disparate call contexts (e.g. to implement database style commit/abort transactional scopes).
 /// </summary>
-public abstract class ContextScope : ScopeBase, IContextScope {
+public abstract class ContextScope : Disposable, IContextScope {
+	private readonly object _previousContext;
 
 	protected ContextScope(ContextScopePolicy policy, string contextID) {
 		Guard.ArgumentNotNullOrWhitespace(contextID, nameof(contextID));
 		Policy = policy;
 		ContextID = contextID;
-		if (CallContext.LogicalGetData(ContextID) is IContextScope contextObject) {
+		_previousContext = CallContext.LogicalGetData(ContextID);
+		if (_previousContext is IContextScope contextObject) {
 			// Nested
 			if (Policy == ContextScopePolicy.MustBeRoot)
 				throw new SoftwareException($"A scope context '{contextID}' has already been declared within the calling context");
@@ -32,7 +34,12 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 				throw new SoftwareException($"No scope context '{contextID}' exists within the calling context");
 			RootScope = this;
 			CallContext.LogicalSetData(ContextID, this);
-			OnContextStart();
+			try {
+				OnContextStart();
+			} catch {
+				RestoreContext();
+				throw;
+			}
 		}
 	}
 
@@ -48,28 +55,33 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 
 	public bool IsRootScope => ReferenceEquals(this, RootScope);
 
-
-	protected sealed override void OnScopeEnd() {
-		OnScopeEndInternal();
-		if (IsRootScope) {
-			CallContext.LogicalSetData(ContextID, null);
-			OnContextEnd();
-		}
+	public override void Dispose() {
+		RestoreContext();
+		base.Dispose();
 	}
 
-	protected sealed override async ValueTask OnScopeEndAsync() {
+	public override ValueTask DisposeAsync() {
+		// AsyncLocal assignments must happen in the caller before asynchronous cleanup can suspend.
+		RestoreContext();
+		return base.DisposeAsync();
+	}
+
+	protected sealed override void FreeManagedResources() {
+		OnScopeEndInternal();
+		if (IsRootScope)
+			OnContextEnd();
+	}
+
+	protected sealed override async ValueTask FreeManagedResourcesAsync() {
 		await OnScopeEndInternalAsync();
-		if (IsRootScope) {
-			CallContext.LogicalSetData(ContextID, null);
+		if (IsRootScope)
 			await OnContextEndAsync();
-		}
 	}
 
 	protected virtual void OnScopeEndInternal() {
 	}
 
-	protected virtual async ValueTask OnScopeEndInternalAsync() {
-	}
+	protected virtual ValueTask OnScopeEndInternalAsync() => ValueTask.CompletedTask;
 
 	protected virtual void OnContextStart() {
 	}
@@ -83,6 +95,11 @@ public abstract class ContextScope : ScopeBase, IContextScope {
 
 	protected static IContextScope GetCurrent(string contextID) {
 		return CallContext.LogicalGetData(contextID) as IContextScope;
+	}
+
+	private void RestoreContext() {
+		if (IsRootScope && ReferenceEquals(CallContext.LogicalGetData(ContextID), this))
+			CallContext.LogicalSetData(ContextID, _previousContext);
 	}
 }
 

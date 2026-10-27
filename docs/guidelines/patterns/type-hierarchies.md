@@ -13,6 +13,8 @@ has an implementation: abstractness communicates that the class is a
 foundation rather than a usable product. Generic and nongeneric variants
 follow the same rule.
 
+The existing disposal template lineage retains the names `Disposable`, `SyncDisposable` and `AsyncDisposable`; the directional names identify which managed-cleanup primitive the subclass supplies. See [class owners](resource-scopes.md#class-owners).
+
 A concrete `Foo` provides usable behavior and has a genuine direct consumer.
 Keep existing concrete types when applications construct or resolve them for
 that behavior. When their subclassing role also needs a clear extension

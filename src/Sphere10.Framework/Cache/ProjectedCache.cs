@@ -155,9 +155,10 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 
 	public void Purge() => Source.Purge();
 
-	public IDisposable EnterReadScope() => Source.EnterReadScope();
+	public ReadScope EnterReadScope() => Source.EnterReadScope();
 
-	public IDisposable EnterWriteScope() => Source.EnterWriteScope();
+	public WriteScope EnterWriteScope() => Source.EnterWriteScope();
+
 
 	/// <summary>Detaches this adapter's subscriptions. Neither the source cache nor its cached values are disposed.</summary>
 	public void Dispose() {

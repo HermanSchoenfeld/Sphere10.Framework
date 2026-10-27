@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -24,6 +25,13 @@ public class RapidTableViewModelTests {
 		for (int i = 0; i < 10; i++) {
 			yield return true;
 		}
+	}
+
+	[Test]
+	public async Task DisposedTableRejectsANewSource() {
+		var model = new RapidTableViewModel<bool>();
+		model.Dispose();
+		await Assert.ThatAsync(async () => await model.SetSourceAsync(DataSource()), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]

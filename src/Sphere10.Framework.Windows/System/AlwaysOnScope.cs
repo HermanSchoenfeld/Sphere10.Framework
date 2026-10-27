@@ -7,10 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
-public class AlwaysOnScope : IDisposable {
+public readonly struct AlwaysOnScope : IScope {
 	private readonly uint _priorState;
 	public AlwaysOnScope(bool system, bool display) {
 		var mode = (uint)WinAPI.KERNEL32.ES_CONTINUOUS;
@@ -23,7 +24,12 @@ public class AlwaysOnScope : IDisposable {
 	}
 
 	public void Dispose() {
-		WinAPI.KERNEL32.SetThreadExecutionState(_priorState);
+		if (_priorState != 0)
+			WinAPI.KERNEL32.SetThreadExecutionState(_priorState);
 	}
+
+	public ValueTask DisposeAsync() => _priorState == 0
+		? ValueTask.CompletedTask
+		: ValueTask.FromException(new NotSupportedException("Execution-state restoration must run on the thread that entered the scope. Use Dispose instead."));
 }
 

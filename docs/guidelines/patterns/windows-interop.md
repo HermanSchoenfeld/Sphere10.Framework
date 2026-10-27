@@ -52,7 +52,7 @@ returns verified outer bounds in physical desktop pixels;
 `GetBounds` retains GetWindowRect's caller-virtualized coordinate contract.
 [ThreadDpiAwarenessScope](../../../src/Sphere10.Framework.Windows/Windowing/ThreadDpiAwarenessScope.cs)
 temporarily sets the native thread context and restores its exact previous value.
-It derives from `SyncOnlyScope`: use synchronous `using`, dispose on the creating
+It supports synchronous disposal only: use `using`, dispose on the creating
 thread in reverse nesting order, and never hold it across an `await`. Native
 window creation inherits that context. [WindowHighlightScope](../../../src/Sphere10.Framework.Windows.Forms/Common/WindowHighlightScope.cs)
 uses the same physical space for its per-monitor-aware HWND and cancels a second

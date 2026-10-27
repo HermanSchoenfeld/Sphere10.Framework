@@ -10,14 +10,24 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
-public sealed class NoOpScope : ScopeBase {
-
-	protected override void OnScopeEnd() {
-		// No operation		
+public readonly struct NoOpScope : IScope {
+	public void Dispose() {
 	}
 
-	protected override async ValueTask OnScopeEndAsync() {
-		// No operation
+	public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+}
+
+/// <summary>Retains a borrowed item without taking ownership of its finalization.</summary>
+public readonly struct NoOpScope<T> : IScope<T> {
+	public NoOpScope(T item) {
+		Item = item;
 	}
+
+	public T Item { get; }
+
+	public void Dispose() {
+	}
+
+	public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
 

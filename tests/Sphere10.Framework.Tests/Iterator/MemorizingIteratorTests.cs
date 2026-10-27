@@ -208,7 +208,7 @@ public class MemorizingIteratorTests {
 		var source = new ProbeEnumerable<int>(new[] { 1, 2 });
 		var iterator = new MemorizingIterator<int>(source);
 		var cursor = ((IEnumerable)iterator).GetEnumerator();
-		using var cleanup = new ActionScope(() => ((IDisposable)cursor).Dispose());
+		using var cleanup = Tools.Scope.ExecuteOnDispose(() => ((IDisposable)cursor).Dispose());
 		Assert.That(cursor.MoveNext(), Is.True);
 		Assert.That(cursor.Current, Is.EqualTo(1));
 		Assert.That(cursor.MoveNext(), Is.True);
@@ -353,7 +353,7 @@ public class MemorizingIteratorTests {
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		private IEnumerable<T> Enumerate() {
-			using var scope = new ActionScope(() => DisposeCount++);
+			using var scope = Tools.Scope.ExecuteOnDispose(() => DisposeCount++);
 			foreach (var item in _items) {
 				YieldCount++;
 				yield return item;

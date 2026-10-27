@@ -128,6 +128,7 @@ public class RestClient : IRestClient, IDisposable {
 	}
 
 	protected virtual Exception BuildException(HttpResponseMessage response) {
+		// Sync-over-async pattern
 		throw new InvalidOperationException($"Error: {response.StatusCode}{Environment.NewLine}{response.Content.ReadAsStringAsync().ResultSafe()}");
 	}
 

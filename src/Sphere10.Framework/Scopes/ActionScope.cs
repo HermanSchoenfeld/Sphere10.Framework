@@ -7,28 +7,42 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
-public class ActionScope : SyncScope {
-	private readonly Action _endAction;
+/// <summary>Runs a synchronous finalizer directly or schedules it for asynchronous disposal.</summary>
+public readonly struct ActionScope : IScope {
+	private readonly Action _finalizer;
 
-	public ActionScope(Action endAction) {
-		_endAction = endAction;
+	public ActionScope(Action finalizer) {
+		Guard.ArgumentNotNull(finalizer, nameof(finalizer));
+		_finalizer = finalizer;
 	}
 
-	protected override void OnScopeEnd() {
-		_endAction?.Invoke();
-	}
+	public void Dispose() => _finalizer();
+
+	public ValueTask DisposeAsync() => new(Task.Run(_finalizer));
 }
 
-public class ActionScope<T> : ActionScope, IScope<T> {
+/// <summary>Runs a synchronous finalizer with its original item.</summary>
+public readonly struct ActionScope<T> : IScope<T> {
+	private readonly Action<T> _finalizer;
 
-	public ActionScope(T item, Action<T> endAction)
-		: base(() => endAction(item)) {
+	public ActionScope(T item, Action<T> finalizer) {
+		Guard.ArgumentNotNull(finalizer, nameof(finalizer));
 		Item = item;
+		_finalizer = finalizer;
 	}
 
 	public T Item { get; }
+
+	public void Dispose() => _finalizer(Item);
+
+	public ValueTask DisposeAsync() {
+		var finalizer = _finalizer;
+		var item = Item;
+		return new ValueTask(Task.Run(() => finalizer(item)));
+	}
 }
 

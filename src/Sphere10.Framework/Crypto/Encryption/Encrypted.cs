@@ -62,9 +62,9 @@ public sealed class Encrypted<TObject> : Encrypted, IEncrypted<TObject> {
 		var salt = Tools.Crypto.GenerateCryptographicallyRandomBytes(16);
 		var initialCounter = Tools.Crypto.GenerateCryptographicallyRandomBytes(16);
 		var keys = PBKDF2.DeriveKey(password, salt, KeyDerivationIterations, 64, HashAlgorithmName.SHA256);
-		using var clearKeys = Tools.Scope.ExecuteOnDispose(() => CryptographicOperations.ZeroMemory(keys));
+		using var clearKeys = Tools.Scope.ExecuteOnDispose<byte[]>(static bytes => CryptographicOperations.ZeroMemory(bytes), keys);
 		var encryptionKey = keys.AsSpan(0, 32).ToArray();
-		using var clearEncryptionKey = Tools.Scope.ExecuteOnDispose(() => CryptographicOperations.ZeroMemory(encryptionKey));
+		using var clearEncryptionKey = Tools.Scope.ExecuteOnDispose<byte[]>(static bytes => CryptographicOperations.ZeroMemory(bytes), encryptionKey);
 		using var storage = new MemoryStream();
 		using (var stream = new EncryptedStream(storage, encryptionKey, initialCounter, leaveOpen: true))
 			_serializer.Serialize(stream, item);
@@ -81,7 +81,7 @@ public sealed class Encrypted<TObject> : Encrypted, IEncrypted<TObject> {
 	public bool TryDecrypt(string secret, out TObject decryptedObject) {
 		Guard.ArgumentNotNull(secret, nameof(secret));
 		var secretBytes = Encoding.UTF8.GetBytes(secret);
-		using var cleanup = Tools.Scope.ExecuteOnDispose(() => CryptographicOperations.ZeroMemory(secretBytes));
+		using var cleanup = Tools.Scope.ExecuteOnDispose<byte[]>(static bytes => CryptographicOperations.ZeroMemory(bytes), secretBytes);
 		return TryDecrypt(secretBytes, out decryptedObject);
 	}
 
@@ -93,12 +93,12 @@ public sealed class Encrypted<TObject> : Encrypted, IEncrypted<TObject> {
 		// Verify and decrypt the same snapshot even if a caller modifies the exposed byte array.
 		var ciphertext = (byte[])EncryptedBytes.Clone();
 		var keys = PBKDF2.DeriveKey(secret, _salt, KeyDerivationIterations, 64, HashAlgorithmName.SHA256);
-		using var clearKeys = Tools.Scope.ExecuteOnDispose(() => CryptographicOperations.ZeroMemory(keys));
+		using var clearKeys = Tools.Scope.ExecuteOnDispose<byte[]>(static bytes => CryptographicOperations.ZeroMemory(bytes), keys);
 		var authenticationTag = Authenticate(keys, _salt, _initialCounter, ciphertext);
 		if (!CryptographicOperations.FixedTimeEquals(authenticationTag, _authenticationTag))
 			return false;
 		var encryptionKey = keys.AsSpan(0, 32).ToArray();
-		using var clearEncryptionKey = Tools.Scope.ExecuteOnDispose(() => CryptographicOperations.ZeroMemory(encryptionKey));
+		using var clearEncryptionKey = Tools.Scope.ExecuteOnDispose<byte[]>(static bytes => CryptographicOperations.ZeroMemory(bytes), encryptionKey);
 		using var storage = new MemoryStream(ciphertext, writable: false);
 		using var stream = new EncryptedStream(storage, encryptionKey, _initialCounter);
 		decryptedObject = (TObject)_serializer.Deserialize(stream);

@@ -76,6 +76,7 @@ public abstract class SyncWorkBase : WorkBase {
 }
 
 public abstract class AsyncWorkBase : WorkBase {
+	// Sync-over-async pattern
 	public override void Execute()
 		=> Task.Run(() => ExecuteAsync()).GetAwaiter().GetResult();
 }
@@ -102,6 +103,8 @@ evaluated inside `Task.Run`, so it starts without capturing the caller's
 synchronization context. The same approach handles `Task<T>` results through
 `GetAwaiter().GetResult()`. Running a wait on a task already created on the
 caller does not undo that task's captured context.
+
+Mark each sync-over-async bridge with `// Sync-over-async pattern`.
 
 Use the current
 [`SyncApplicationInitializerBase`](../../../src/Sphere10.Framework.Application/Lifecycle/SyncApplicationInitializerBase.cs)
@@ -131,15 +134,53 @@ Keep these rules explicit:
 
 ## Disposal and platform integration
 
-Disposal follows the implementation's chosen direction. A sync-first base owns
-synchronous cleanup; its asynchronous cleanup adapter calls
-`FreeManagedResources()` inline and returns a completed `ValueTask`.
-`SyncApplicationBase` returns `ValueTask.CompletedTask` explicitly;
-`SyncRepositoryBase` currently uses an `async ValueTask` method with no await.
-This disposal adapter does not require worker scheduling.
-An async-first base owns awaited cleanup; its synchronous adapter waits for
-`FreeManagedResourcesAsync()` to finish. When converting a `ValueTask` to a task
-for that bridge, call `AsTask()` once inside the async factory.
+Disposal follows the implementation's chosen direction. The abstract
+[`Disposable`](../../../src/Sphere10.Framework/Disposables/Disposable.cs) root
+owns the shared class disposal template. Class owners inherit from the abstract
+[`SyncDisposable`](../../../src/Sphere10.Framework/Disposables/SyncDisposable.cs)
+or [`AsyncDisposable`](../../../src/Sphere10.Framework/Disposables/AsyncDisposable.cs)
+and override their chosen managed-cleanup primitive. Keep these adapters in the
+directional bases instead of repeating them in concrete owners or composing a
+base through a property. Small resource-cleanup structs continue to implement
+`IScope` directly; see [resource scopes](resource-scopes.md#class-owners).
+
+`SyncDisposable` leaves `FreeManagedResources()` abstract. Its default
+virtual async adapter schedules that work with `Task.Run` and returns its
+completion and failure. Platform bases can specialize the execution location
+while retaining the same cleanup primitive. `SyncRepositoryBase` and
+`SyncApplicationBase` use the same execution direction. Calling synchronous
+cleanup inline and returning a completed
+`ValueTask`, including an `async` method without an await, still blocks the
+caller and is not this adapter.
+
+`AsyncDisposable` leaves `FreeManagedResourcesAsync()` abstract. Its sealed
+synchronous adapter invokes that factory inside `Task.Run`, outside the
+caller's synchronization context, then joins the complete operation and
+propagates its failure. Convert the returned `ValueTask` with `AsTask()` once
+inside that worker factory. Moving only the wait to a worker does not repair
+an operation already started on the caller's context.
+
+[`ContextScope`](../../../src/Sphere10.Framework/Scopes/ContextScope/ContextScope.cs)
+inherits `Disposable` and retains its sequential successful-disposal guard.
+It overrides the public virtual entrypoints to restore caller-side ambient
+context before delegating to the base template. Its `DisposeAsync()` override
+is a non-async front end, preserving that restoration through class, base and
+interface references without adding disposal state.
+
+[`SynchronizedRepository`](../../../src/Sphere10.Framework/Repository/SynchronizedRepository.cs)
+is a sync-first owning wrapper. Its async disposal schedules the existing
+virtual `Dispose()` on a worker. Nested wrappers acquire and release their
+write scopes on that same worker under the configured recursion policy,
+retaining the lock until owned cleanup completes. An async-first inner
+repository's synchronous disposal bridge joins its full cleanup operation.
+The ownership primitive used by this wrapper is the child's `Dispose()`.
+
+[`FragmentedStream`](../../../src/Sphere10.Framework/Streams/FragmentedStream.cs)
+also schedules virtual `Dispose()` for async disposal, preserving subclass
+`Close()` and `Dispose(true)` cleanup. The synchronous primitive disposes an
+`IDisposable` provider once during that operation, including providers that
+also implement `IAsyncDisposable`. An async-only provider is awaited after
+the worker completes.
 
 [`SyncApplicationBase`](../../../src/Sphere10.Framework.Application/UI/SyncApplicationBase.cs)
 and [`AsyncApplicationBase`](../../../src/Sphere10.Framework.Application/UI/AsyncApplicationBase.cs)
@@ -178,6 +219,20 @@ adapter; platform cancellation support must be explicit.
 UI adapters must respect their dispatcher. A worker bridge does not make UI
 operations safe on a worker, and blocking a dispatcher needed by a pending task
 can deadlock. Prefer awaited calls on UI execution paths.
+Keep platform dispatch in the owning UI implementation; general disposable
+bases do not need creator-thread IDs or UI context machinery.
+The abstract
+[`WinFormsSyncDisposableBase`](../../../src/Sphere10.Framework.Windows.Forms/Disposables/WinFormsSyncDisposableBase.cs)
+specializes the sync-first async hook for rendering, highlight, screen-transition,
+hot-key and wizard owners. It captures their WinForms context in one place.
+Synchronous cleanup remains inline on the calling UI thread and leaves queued
+callbacks pending. Async cleanup posts the same primitive to that context and
+returns a completion source representing its success or failure. The shared
+base supplies this execution policy without per-owner `Send` wrappers, thread
+tracking or async completion boilerplate; it requires a live dispatcher.
+Native monitor/read/write acquisitions cannot move between threads. Their
+scopes require synchronous disposal and reject async disposal before cleanup;
+use a thread-neutral admission primitive for work that must span an await.
 [`WinFormsApplication`](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplication.cs)
 starts lifecycle work on its owning UI thread, dispatches worker requests there,
 and pumps UI messages at supported synchronous boundaries while waiting for the

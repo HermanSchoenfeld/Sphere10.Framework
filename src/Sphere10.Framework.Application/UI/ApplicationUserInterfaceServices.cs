@@ -82,7 +82,7 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 			Changed?.Invoke();
 	}
 
-	protected void EnsureUsable() => Guard.Ensure(!_disposed, "The UI services have been disposed.");
+	protected void EnsureUsable() => ObjectDisposedException.ThrowIf(_disposed, this);
 
 	protected override void FreeManagedResources() {
 		if (_disposed)

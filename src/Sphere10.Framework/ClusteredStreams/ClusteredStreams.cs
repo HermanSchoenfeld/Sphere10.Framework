@@ -227,7 +227,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	#region Streams
 
-	public IDisposable EnterAccessScope() {
+	public AccessScope EnterAccessScope() {
 		CheckInitialized();
 		return
 			_rootStream
@@ -359,7 +359,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	private ClusteredStream OpenStreamInternal(long streamIndex, bool readOnly, bool acquireThreadLock) {
 		Guard.Ensure(!_openStreams.ContainsKey(streamIndex), $"Stream {streamIndex} is already open");
 
-		var accessScope = acquireThreadLock ? EnterAccessScope() : new NoOpScope();
+		AccessScope? accessScope = acquireThreadLock ? EnterAccessScope() : null;
 		try {
 			var stream = new ClusteredStream(this, streamIndex, readOnly, EndScopeCleanup);
 			if (!readOnly) {
@@ -374,11 +374,11 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 			void EndScopeCleanup() {
 				_openStreams.Remove(streamIndex);
-				accessScope.Dispose();
+				accessScope?.Dispose();
 			}
 		} catch {
 			// this is needed in case exception occurs before return
-			accessScope.Dispose();
+			accessScope?.Dispose();
 			throw;
 		}
 	}

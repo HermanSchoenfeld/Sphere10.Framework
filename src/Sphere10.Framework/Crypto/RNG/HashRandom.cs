@@ -56,7 +56,7 @@ public sealed class HashRandom : IRandomNumberGenerator {
 			var resultIndex = 0;
 			Span<byte> counterBytes = stackalloc byte[sizeof(ulong)];
 			var bitConverter = EndianBitConverter.Little;
-			using (Hashers.BorrowHasher(_chf, out var hasher)) {
+			using (Hashers.EnterBorrowHasherScope(_chf, out var hasher)) {
 				while (count > 0) {
 					var remainingData = _data.Length - _index;
 					var amountToCopy = Math.Min(remainingData, count);

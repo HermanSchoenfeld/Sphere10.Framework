@@ -1670,15 +1670,14 @@ public partial class CsvReader
 	/// <exception cref="InvalidOperationException">
 	///	No current record.
 	/// </exception>
-	/// <exception cref="InvalidOperationException">
+	/// <exception cref="ObjectDisposedException">
 	///	This operation is invalid when the reader is closed.
 	/// </exception>
 	private void ValidateDataReader(DataReaderValidations validations) {
 		if ((validations & DataReaderValidations.IsInitialized) != 0 && !_initialized)
 			throw new InvalidOperationException(ExceptionMessage.NoCurrentRecord);
 
-		if ((validations & DataReaderValidations.IsNotClosed) != 0 && _isDisposed)
-			throw new InvalidOperationException(ExceptionMessage.ReaderClosed);
+		ObjectDisposedException.ThrowIf((validations & DataReaderValidations.IsNotClosed) != 0 && _isDisposed, this);
 	}
 
 	/// <summary>
@@ -2123,8 +2122,7 @@ public partial class CsvReader
 	/// 	Derived classes should call this method at the start of all methods and properties that should not be accessed after a call to <see cref="M:Dispose()"/>.
 	/// </remarks>
 	protected void CheckDisposed() {
-		if (_isDisposed)
-			throw new ObjectDisposedException(this.GetType().FullName);
+		ObjectDisposedException.ThrowIf(_isDisposed, this);
 	}
 
 	/// <summary>

@@ -187,7 +187,7 @@ public class BTreeStorageAttachment<TKey, TValue> : BTreeStorageAttachmentBase<T
 			return
 				Tree
 					.GetEnumerator()
-					.OnDispose(scope.Dispose);
+					.DisposeWith(scope);
 		} catch {
 			scope.Dispose();
 			throw;

@@ -6,10 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework;
 
+/// <summary>Adapts asynchronous managed cleanup to synchronous disposal outside the caller's synchronization context.</summary>
 public abstract class AsyncDisposable : Disposable {
 
-	protected sealed override void FreeManagedResources() => FreeManagedResourcesAsync().AsTask().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void FreeManagedResources() => Task.Run(() => FreeManagedResourcesAsync().AsTask()).GetAwaiter().GetResult();
 }
 

@@ -316,12 +316,12 @@ public class RegistryUtil {
 
 		public int MaximumDepth { get; }
 
-		public IDisposable EnterLoad() {
+		public ActionScope EnterLoad() {
 			var write = EnterWriteScope();
 			_loadStarted = Stopwatch.GetTimestamp();
 			try {
 				Check();
-				return new ActionScope(() => {
+				return Tools.Scope.ExecuteOnDispose(() => {
 					_elapsed += Stopwatch.GetElapsedTime(_loadStarted);
 					write.Dispose();
 				});

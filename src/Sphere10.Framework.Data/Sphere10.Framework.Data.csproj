@@ -23,6 +23,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Update="CSV\ExceptionMessage.resx" LogicalName="Sphere10.Framework.Data.Csv.Resources.ExceptionMessage.resources" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Sphere10.Framework\Sphere10.Framework.csproj" />
 	</ItemGroup>
 

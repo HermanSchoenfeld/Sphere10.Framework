@@ -17,7 +17,7 @@ Static utility/tool classes live in the **`Tools`** global namespace so consumer
 - **`Tools.Runtime`** — `IsDebugBuild`, executable paths, entry-assembly access and design-mode checks.
 - **`Tools.FileSystem`** — temp files, read/write, directory management.
 - **`Tools.Streams`** — routing, `ReadByteArray`, writing streams to files, compression and encryption.
-- **`Tools.Scope`** — cleanup delegates and file/directory lifetime scopes; use the concrete transaction scopes for backend transactions.
+- **`Tools.Scope`** — typed scope activation for synchronization, access, stream position, paging, hashers, callbacks and file/directory lifetimes; use the concrete transaction scopes for backend transactions. Platform assemblies add C# 14 static extension factories; see [scope factories](resource-scopes.md#toolsscope-factories).
 - **`Tools.Exceptions`** — execution with captured failures, selected exception handling and intentional best-effort operations.
 - **`Tools.Sqlite`** / **`Tools.MSSQL`** — provider-specific helpers; the Firebird project exposes `FirebirdDAC`, not a `Tools.Firebird` facade.
 - **`Tools.NUnit`** — test utilities (e.g., 2D array formatting).
@@ -61,6 +61,7 @@ Choose the helper for the actual failure contract:
   a handler failure propagates. `ExecuteWithExceptionHandler` deliberately
   suppresses handler failures, so use it only when that best-effort behavior is
   intended.
+- `Execute(argument, static value => ..., static (value, error) => ...)` applies the same policy to a prefetched argument. Use it on hot cleanup paths to keep the ordered body and error handler without creating capturing delegates per call.
 - `ExecuteIgnoringException(action)` is for an explicitly optional operation
   whose failure must not replace the primary result. `TryOrDefault` is available
   when deliberately discarding the error and returning a fallback value.
@@ -98,6 +99,8 @@ policy at its owning boundary. A ref-like input that cannot be captured by a
 delegate can also require a narrow local handler; do not copy it or alter its
 lifetime solely to fit a wrapper. Do not broaden a narrow catch or turn cancellation
 into a successful empty inventory merely to shorten the code.
+
+For cleanup owners, keep the normal logical sequence visible in one ordered body and use `Tools.Exceptions.Execute*` or `Tools.Lambda.Action*` for the matching error policy. For example, `ClusteredStream.Close` persists the descriptor, releases its owner, runs registered finalizers and closes the underlying stream in that order; its error handler restores retry admission and rethrows the original exception. Do not scatter defensive state transitions around each step or suppress cleanup failures to simplify the code. Apply this review consistently to every cleanup change in the family. Retain narrow acquisition-transfer and native/async `finally` handlers where they carry real ownership or where a delegate wrapper would add allocation to a hot path without clarifying the flow.
 
 ## Windows utility facade and source folders
 
@@ -170,11 +173,17 @@ currently compares `long` values, rather than providing generic equality.
 Guard checks preserve argument/invariant exception contracts; they do not
 replace domain exceptions, cancellation or cleanup error propagation.
 
+Use `ObjectDisposedException.ThrowIf(isDisposed, this)` for use-after-disposal
+checks instead of a manual throw or `Guard.Ensure`. Use the string overload when
+a deliberate fixed object name is required. Preserve argument-validation,
+cancellation and cleanup contracts; ordinary repeated-disposal returns remain
+returns.
+
 ```csharp
 // ✅ Correct
 Guard.ArgumentNotNull(buffer, nameof(buffer));
 Guard.Argument(buffer.Length >= MinSize, nameof(buffer), "Buffer too small");
-Guard.Ensure(!IsDisposed, "Object has been disposed");
+ObjectDisposedException.ThrowIf(IsDisposed, this);
 
 // ❌ Wrong — do not use inline throws
 if (buffer == null) throw new ArgumentNullException(nameof(buffer));

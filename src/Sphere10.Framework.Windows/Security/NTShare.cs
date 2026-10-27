@@ -46,8 +46,8 @@ public class NTShare : NTLocalObject {
 	public override void Update() {
 		Checkpoint();
 		var descriptor = SecurityDescriptor;
-		using var ownedDescriptor = descriptor == IntPtr.Zero && _securityDescriptorBytes?.Length > 0 ? new UnmanagedMemoryScope(_securityDescriptorBytes.Length) : null;
-		if (ownedDescriptor != null) {
+		using var ownedDescriptor = descriptor == IntPtr.Zero && _securityDescriptorBytes?.Length > 0 ? new UnmanagedMemoryScope(_securityDescriptorBytes.Length) : default;
+		if (ownedDescriptor.Item != IntPtr.Zero) {
 			Marshal.Copy(_securityDescriptorBytes, 0, ownedDescriptor.Item, _securityDescriptorBytes.Length);
 			descriptor = ownedDescriptor.Item;
 		}

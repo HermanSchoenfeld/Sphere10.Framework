@@ -69,12 +69,11 @@ settings, forwarded arguments and measurement caveats.
 
 ## Run and inspect
 
-The [current retained results](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/Results/cache-projection-performance-summary.md)
-include all 19 measured cases, reported intervals, allocated bytes and verified
-fetch/reap/victim counts. Their `projection-bdn` phases measure the canonical
-typed contract and explicit `ObjectCacheProjection`. The separately retained
-`final-bdn` phases measured the earlier implementation with an implicit object
-interface. Keep measurements from different source versions separate; each
+Historical `projection-bdn` captures measured the canonical typed contract and
+explicit `ObjectCacheProjection`; `final-bdn` captures measured the earlier
+implementation with an implicit object interface. Those capture files are no
+longer shipped with the repository. Run a new campaign or supply external files
+to the [recorded-capture checks](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md#external-historical-captures). Keep measurements from different source versions separate; each
 phase retains its own worker identity and exact settings.
 
 Run from the Framework root, in Release without a debugger:

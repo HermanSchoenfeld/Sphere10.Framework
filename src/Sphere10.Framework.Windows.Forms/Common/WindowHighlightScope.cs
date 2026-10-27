@@ -9,13 +9,13 @@
 using System;
 using System.Drawing;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Owns a hollow, click-through, nonactivating frame over caller-supplied physical desktop bounds. Create, update and dispose on its STA UI thread.</summary>
 /// <remarks>The caller owns target verification, color, thickness and lifetime. No drawing is performed in another window's device context.</remarks>
-public sealed class WindowHighlightScope : ScopeBase {
+public sealed class WindowHighlightScope : WinFormsSyncDisposableBase, IScope {
+	// The frame, its mutable bounds and UI-thread lifetime keep one shared owner.
 	private readonly WindowHighlightForm _frame;
 	private readonly int _threadId;
 
@@ -50,20 +50,10 @@ public sealed class WindowHighlightScope : ScopeBase {
 		}
 	}
 
-	protected override void OnScopeEnd() {
+	protected override void FreeManagedResources() {
 		VerifyThread();
 		using var dpi = new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2);
 		_frame.Dispose();
-	}
-
-	protected override ValueTask OnScopeEndAsync() {
-		OnScopeEnd();
-		return ValueTask.CompletedTask;
-	}
-
-	protected override ValueTask FreeManagedResourcesAsync() {
-		FreeManagedResources();
-		return ValueTask.CompletedTask;
 	}
 
 	private void VerifyThread() => Guard.Ensure(Environment.CurrentManagedThreadId == _threadId, "Highlight frames belong to their creating UI thread.");

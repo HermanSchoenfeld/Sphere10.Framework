@@ -298,7 +298,7 @@ public class ApplicationExitTests {
 		Assert.That(application.ExitCalls, Is.Zero);
 		Assert.That(disposals, Is.EqualTo(1));
 		Assert.That(application.HasExited, Is.False);
-		Assert.That(() => application.ExitAsync(force: true), Throws.InvalidOperationException);
+		await Assert.ThatAsync(async () => await application.ExitAsync(force: true), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[TestCase(false)]
@@ -515,7 +515,7 @@ public class ApplicationExitTests {
 		var beforeNotification = notifications;
 		application.NotifyChange();
 		Assert.That(notifications, Is.EqualTo(beforeNotification));
-		Assert.That(() => application.ExitAsync(force: true), Throws.InvalidOperationException);
+		await Assert.ThatAsync(async () => await application.ExitAsync(force: true), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]

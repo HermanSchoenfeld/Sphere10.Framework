@@ -64,10 +64,10 @@ public class ProcessSentryTests {
 		var first = sentry.RunCapturedAsync(Command("ping 127.0.0.1 -n 60 >nul", "sleep 60"), firstCancellation.Token);
 		var pid = await WaitForProcessAsync(sentry);
 		{
-			await using var drainCancelledProcess = Tools.Scope.ExecuteOnDisposeAsync(async () => {
-				firstCancellation.Cancel();
-				try { await first; } catch (OperationCanceledException) { }
-			});
+			await using var drainCancelledProcess = Tools.Scope.ExecuteOnDisposeAsync<(CancellationTokenSource Cancellation, Task<ProcessExecutionResult> Pending)>(static async state => {
+				state.Cancellation.Cancel();
+				try { await state.Pending; } catch (OperationCanceledException) { }
+			}, (firstCancellation, first));
 			using var queuedCancellation = new CancellationTokenSource();
 			var queued = sentry.RunCapturedAsync(Command("echo should-not-run", "printf should-not-run"), queuedCancellation.Token);
 			queuedCancellation.Cancel();

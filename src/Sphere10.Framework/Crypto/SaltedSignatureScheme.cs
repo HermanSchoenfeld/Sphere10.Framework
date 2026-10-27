@@ -80,7 +80,7 @@ public class SaltedSignatureScheme<TPrivateKey, TPublicKey, TScheme> : DigitalSi
 	/// <returns>H(seed || H(seed || digest))</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private byte[] HMAC(ReadOnlySpan<byte> digest, ReadOnlySpan<byte> seed) {
-		using (Hashers.BorrowHasher(SaltingCHF, out var hasher)) {
+		using (Hashers.EnterBorrowHasherScope(SaltingCHF, out var hasher)) {
 			hasher.Transform(seed);
 			hasher.Transform(digest);
 			var innerHash = hasher.GetResult();

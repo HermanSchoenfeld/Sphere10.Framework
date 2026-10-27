@@ -10,7 +10,6 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Sphere10.Framework.Tests;
@@ -55,21 +54,6 @@ public class WarningRegressionTests {
 		Assert.That(checksummer.SubstitutionChecksum, Is.EqualTo(substitution));
 		Assert.That(checksummer.CalculateChecksum(reserved), Is.EqualTo(substitution));
 		Assert.That(checksummer.CalculateChecksum(1234), Is.EqualTo(1234));
-	}
-
-	[Test]
-	public async Task ScopeDecoratorForwardsNotificationsAndUnsubscription() {
-		var notifications = 0;
-		var removedNotifications = 0;
-		EventHandlerEx removedHandler = () => removedNotifications++;
-		var inner = new ActionScope(() => { });
-		var decorator = new ScopeDecorator<IScope>(inner);
-		decorator.ScopeEnd += () => notifications++;
-		decorator.ScopeEnd += removedHandler;
-		decorator.ScopeEnd -= removedHandler;
-		await decorator.DisposeAsync();
-		Assert.That(notifications, Is.EqualTo(1));
-		Assert.That(removedNotifications, Is.Zero);
 	}
 
 	[TestCase("https://example.test/path", "https://example.test/path?reserved%26key=a%2Bb%26c%3Dd%23e%2Ff%3Fg%20%E4%B8%96%E7%95%8C")]

@@ -8,12 +8,13 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
 /// <summary>Owns an HGlobal allocation. Never use for memory returned by an API requiring LocalFree, NetApiBufferFree or another allocator.</summary>
-public sealed class UnmanagedMemoryScope : SyncScope, IScope<IntPtr> {
-	private IntPtr _pointer;
+public readonly struct UnmanagedMemoryScope : IScope<IntPtr> {
+	private readonly IntPtr _pointer;
 
 	public UnmanagedMemoryScope(int size) {
 		Guard.ArgumentGT(size, 0, nameof(size));
@@ -36,8 +37,10 @@ public sealed class UnmanagedMemoryScope : SyncScope, IScope<IntPtr> {
 		return new UnmanagedMemoryScope(Marshal.StringToHGlobalUni(value), size);
 	}
 
-	protected override void OnScopeEnd() {
-		Marshal.FreeHGlobal(_pointer);
-		_pointer = IntPtr.Zero;
+	public void Dispose() {
+		if (_pointer != IntPtr.Zero)
+			Marshal.FreeHGlobal(_pointer);
 	}
+
+	public ValueTask DisposeAsync() => new(Task.Run(Dispose));
 }

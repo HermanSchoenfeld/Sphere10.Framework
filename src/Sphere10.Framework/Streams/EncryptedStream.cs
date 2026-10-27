@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
@@ -23,7 +22,7 @@ namespace Sphere10.Framework;
 /// ciphertext separately before decrypting untrusted input. Instances are not thread-safe.
 /// Seekable streams use absolute positions from zero; non-seekable streams start at the current underlying position.
 /// Do not access the underlying stream concurrently or resume after an underlying I/O failure.
-/// The key and initial counter are copied. LeaveOpen applies only to the backing stream.
+/// The key and initial counter are copied. Ownership applies only to the backing stream.
 /// </remarks>
 public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream : Stream {
 	private const int BufferSize = 81920;
@@ -36,6 +35,11 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 	private long _position;
 	private bool _disposed;
 
+	/// <summary>Creates an AES-CTR stream over the supplied backing stream.</summary>
+	/// <param name="stream">The readable or writable backing stream.</param>
+	/// <param name="key">The 16-, 24- or 32-byte AES key, copied by the constructor.</param>
+	/// <param name="initialCounter">The 16-byte initial counter, copied by the constructor.</param>
+	/// <param name="leaveOpen">Whether disposal leaves the backing stream open. The default is <see langword="false"/>.</param>
 	public EncryptedStream(TStream stream, byte[] key, byte[] initialCounter, bool leaveOpen = false)
 		: base(stream) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
@@ -134,8 +138,8 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 		EnsureWritableRange(buffer.Length);
 		if (buffer.IsEmpty)
 			return;
-		var scratch = ArrayPool<byte>.Shared.Rent(Math.Min(BufferSize, buffer.Length));
-		using var cleanup = Tools.Scope.ExecuteOnDispose(() => ArrayPool<byte>.Shared.Return(scratch, clearArray: true));
+		using var scratchScope = Tools.Scope.EnterBorrowArrayScope(Math.Min(BufferSize, buffer.Length), clearArray: true);
+		var scratch = scratchScope.Item;
 		while (!buffer.IsEmpty) {
 			var count = Math.Min(scratch.Length, buffer.Length);
 			var position = CipherPosition;
@@ -163,8 +167,8 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 		EnsureWritableRange(buffer.Length);
 		if (buffer.IsEmpty)
 			return;
-		var scratch = ArrayPool<byte>.Shared.Rent(Math.Min(BufferSize, buffer.Length));
-		using var cleanup = Tools.Scope.ExecuteOnDispose(() => ArrayPool<byte>.Shared.Return(scratch, clearArray: true));
+		using var scratchScope = Tools.Scope.EnterBorrowArrayScope(Math.Min(BufferSize, buffer.Length), clearArray: true);
+		var scratch = scratchScope.Item;
 		while (!buffer.IsEmpty) {
 			var count = Math.Min(scratch.Length, buffer.Length);
 			var position = CipherPosition;
@@ -201,8 +205,8 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 		Guard.ArgumentNotNull(destination, nameof(destination));
 		Guard.ArgumentGT(bufferSize, 0, nameof(bufferSize));
 		EnsureOpen();
-		var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-		using var cleanup = Tools.Scope.ExecuteOnDispose(() => ArrayPool<byte>.Shared.Return(buffer, clearArray: true));
+		using var bufferScope = Tools.Scope.EnterBorrowArrayScope(bufferSize, clearArray: true);
+		var buffer = bufferScope.Item;
 		int count;
 		while ((count = await ReadAsync(buffer.AsMemory(0, bufferSize), cancellationToken).ConfigureAwait(false)) != 0)
 			await destination.WriteAsync(buffer.AsMemory(0, count), cancellationToken).ConfigureAwait(false);
@@ -220,6 +224,7 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 
 	public override int EndRead(IAsyncResult asyncResult) {
 		Guard.Argument(asyncResult is Task<int>, nameof(asyncResult), "Expected the result returned by BeginRead.");
+		// Sync-over-async pattern
 		return ((Task<int>)asyncResult).GetAwaiter().GetResult();
 	}
 
@@ -234,6 +239,7 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 
 	public override void EndWrite(IAsyncResult asyncResult) {
 		Guard.Argument(asyncResult is Task, nameof(asyncResult), "Expected the result returned by BeginWrite.");
+		// Sync-over-async pattern
 		((Task)asyncResult).GetAwaiter().GetResult();
 	}
 
@@ -316,6 +322,11 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 
 /// <summary>Stream-typed decorator for length-preserving AES-CTR encryption.</summary>
 public sealed class EncryptedStream : EncryptedStream<Stream> {
+	/// <summary>Creates an AES-CTR stream over the supplied backing stream.</summary>
+	/// <param name="stream">The readable or writable backing stream.</param>
+	/// <param name="key">The 16-, 24- or 32-byte AES key, copied by the constructor.</param>
+	/// <param name="initialCounter">The 16-byte initial counter, copied by the constructor.</param>
+	/// <param name="leaveOpen">Whether disposal leaves the backing stream open. The default is <see langword="false"/>.</param>
 	public EncryptedStream(Stream stream, byte[] key, byte[] initialCounter, bool leaveOpen = false)
 		: base(stream, key, initialCounter, leaveOpen) {
 	}

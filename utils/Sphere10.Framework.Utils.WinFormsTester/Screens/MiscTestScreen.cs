@@ -317,7 +317,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		var table = "CREATE TABLE IF NOT EXISTS TTC (id INTEGER PRIMARY KEY, Route_ID TEXT, Branch_Code TEXT, Version INTEGER, Stop INTEGER, Vehicle_Index INTEGER, Day Integer, Time TEXT)";
 		var tempFile = string.Format("{0}{1}{2}", Path.GetTempPath(), Path.DirectorySeparatorChar, Guid.NewGuid());
 		var dac = Tools.Sqlite.Create(tempFile);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			dac.ExecuteNonQuery(table);
 		}
 		return tempFile;
@@ -325,7 +325,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 
 	public void SqliteDACInsertTest(string path, int numInserts) {
 		var dac = Tools.Sqlite.Open(path);
-		using (dac.BeginScope(true)) {
+		using (dac.EnterScope(true)) {
 			for (var i = 0; i < numInserts; i++)
 				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 		}
@@ -333,7 +333,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 
 	public void SqliteDACExecuteBatch(string path, int numInserts) {
 		var dac = Tools.Sqlite.Open(path);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			for (var i = 0; i < numInserts; i++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
@@ -343,7 +343,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 
 	public void SqliteDACExecuteBatch2(string path, int numInserts) {
 		var dac = Tools.Sqlite.Open(path);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			for (int i = 0; i < numInserts; i++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
@@ -355,7 +355,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 
 	public void SqliteDACExecuteBatchManualTransaction(string path, int numInserts) {
 		var dac = Tools.Sqlite.Open(path);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			builder.BeginTransaction();
 			for (int i = 0; i < numInserts; i++)
@@ -375,7 +375,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		var dbName = Guid.NewGuid().ToStrictAlphaString();
 		Tools.MSSQL.CreateDatabase("localhost", dbName, "sa", null, false);
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			dac.ExecuteNonQuery(table);
 		}
 		return dbName;
@@ -384,7 +384,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 	public void SqlServerDACInsertTest(string dbName, int numInserts) {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
 		;
-		using (dac.BeginScope(true)) {
+		using (dac.EnterScope(true)) {
 			for (var i = 0; i < numInserts; i++)
 				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 		}
@@ -392,7 +392,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 
 	public void SqlServerDACExecuteBatch(string dbName, int numInserts) {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			for (var i = 0; i < numInserts; i++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
@@ -402,7 +402,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 
 	public void SqlServerDACExecuteBatch2(string dbName, int numInserts) {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			for (int i = 0; i < numInserts; i++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
@@ -414,7 +414,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 
 	public void SqlServerDACExecuteBatchManualTransaction(string dbName, int numInserts) {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			builder.BeginTransaction();
 			for (int i = 0; i < numInserts; i++)

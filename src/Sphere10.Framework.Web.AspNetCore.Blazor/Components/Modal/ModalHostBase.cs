@@ -59,7 +59,7 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 
 	protected async Task<TResult> ShowCoreAsync<T>(IDictionary<string, object> parameters, CancellationToken callerCancellationToken)
 		where T : TComponent {
-		Guard.Ensure(!_disposed, "The modal host has been disposed.");
+		ObjectDisposedException.ThrowIf(_disposed, this);
 		Guard.Ensure(!_showing, "The modal host is already showing a dialog.");
 		callerCancellationToken.ThrowIfCancellationRequested();
 		_showing = true;
@@ -67,12 +67,12 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 		using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellationToken, callerCancellationToken);
 		var cancellationToken = cancellation.Token;
 		IJSObjectReference module = null;
-		await using var contentCleanup = Tools.Scope.ExecuteOnDisposeAsync(async () => {
-			_activeContent = null;
-			_showing = false;
-			if (!_disposed)
-				await InvokeAsync(StateHasChanged);
-		});
+		await using var contentCleanup = Tools.Scope.ExecuteOnDisposeAsync<ModalHostBase<TComponent, TResult>>(static async owner => {
+			owner._activeContent = null;
+			owner._showing = false;
+			if (!owner._disposed)
+				await owner.InvokeAsync(owner.StateHasChanged);
+		}, this);
 		await using var visibilityCleanup = Tools.Scope.ExecuteOnDisposeAsync(async () => {
 			await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
 				if (module != null && !_disposed)

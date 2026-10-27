@@ -1,5 +1,12 @@
 # ObjectSpace page reuse, span consolidation and tree selection, 22 October 2026
 
+Historical evidence availability: profiler capture files are no longer shipped
+with the repository. Measurements below describe the original campaign, not a
+new verification. Inspecting its raw data or archive-side analysis scripts
+requires an external copy. Example paths use `E:/ProfilerEvidence`; substitute
+your own archive root and pass it as the `ProfilerResultsRoot` NUnit parameter
+when explicitly selecting recorded-capture checks.
+
 Current-source note: the [24 October behavior review](comment-and-behavior-review.md) retains measured page reuse and node I/O while restoring the original wrapper, Schnorr and transactional file-ID implementations and unrelated paging behavior. Frozen captures below remain unchanged.
 
 Source revision note: the measurements and identities below describe the retained frozen implementation. A subsequent [span inheritance review](span-inheritance-review.md) removes subclass type gates and reverts several marginal shortcuts. The later [complexity review](optimization-complexity-review.md) removes mode-based read helpers and replaces the array-transport policy described below with array-to-span delegation. Those revisions have separate validation; these earlier numbers are not claims about every later source revision.
@@ -152,14 +159,14 @@ The full Release profiler suite passes **1,148 tests**, including all **26 `Reco
 
 The cross-platform Release solution build succeeds with zero errors and 20 NuGet audit warnings in existing package dependencies. No package versions were changed. Final original TRX/logs and the additive `final-validation-summary.json` remain in the E campaign. The summary records per-result outcomes and original TRX hashes; it does not rewrite captures. `git diff --check` passes.
 
-Local evidence is under `tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-objectspace-page-btree`. Original raw captures, source snapshots, generated workers and full validation files remain under `E:\Sphere10-ObjectSpace-PageBTree-20261022`. The local campaign stays ignored output. Copies use `workload-run.json`, `*-report-full.bdn.json`, `retained-worker-assemblies.json` and `console.txt` to avoid schema discovery by older recorded-evidence fixtures. `capture-name-mapping.json` lists each original/retained name, byte count and unchanged SHA256.
+The removed local evidence copy was under `E:/ProfilerEvidence/20261022-objectspace-page-btree`. Original raw captures, source snapshots, generated workers and full validation files remain under `E:\Sphere10-ObjectSpace-PageBTree-20261022`. The campaign is no longer shipped in the repository. Copies use `workload-run.json`, `*-report-full.bdn.json`, `retained-worker-assemblies.json` and `console.txt` to avoid schema discovery by older recorded-evidence fixtures. `capture-name-mapping.json` lists each original/retained name, byte count and unchanged SHA256.
 
 `provenance/final-worker-provenance.json` inventories all **14 actual retained worker groups × three DLLs = 42 binaries**, with SHA256, assembly/file/product versions and module MVID. It reads PE metadata without executing the worker assemblies. The same inventory compares frozen combined source `E:\s10p26\a` with current D-source bytes: **1,073 Core + 52 CryptoEx + 35 profiler `.cs`/`.csproj` files = 1,160 exact matches, zero differences**. Its stated scope excludes generated bin/obj output and does not claim that tests, documentation or every repository file were compared. The local provenance copy is byte-identical to the original E file, SHA256 `5A9CFFC0248EAF04550D5936A7F93B56FB9CCDEB39892CE8352F8AEE584C83DE`, and is included in the capture-name mapping. All **121 retained mapped payloads** pass byte-count/SHA256 replay verification; original captures remain unchanged.
 
-The portable `analysis/analyze_page_campaign.py` accepts original or retained basenames and preserves the initial four-pair summary. The additive `analysis/analyze_extended_campaign.py` includes all seven pairs, validates capture order and reports diagnostic counts/equivalence. They recompute descriptive summaries without reading external binaries or absolute output paths from capture metadata. Both have been run successfully against the local retained campaign. Replay on a fresh machine requires new captures; an absent ignored campaign is not fabricated from the documentation.
+The portable `analysis/analyze_page_campaign.py` accepts original or retained basenames and preserves the initial four-pair summary. The additive `analysis/analyze_extended_campaign.py` includes all seven pairs, validates capture order and reports diagnostic counts/equivalence. They recompute descriptive summaries without reading external binaries or absolute output paths from capture metadata. Both have been run successfully against the original retained campaign. Replay on a fresh machine requires new captures; an absent ignored campaign is not fabricated from the documentation.
 
 ```powershell
-python tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-objectspace-page-btree/analysis/analyze_extended_campaign.py --campaign tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-objectspace-page-btree --output E:/RecomputedPageEvidence
+python E:/ProfilerEvidence/20261022-objectspace-page-btree/analysis/analyze_extended_campaign.py --campaign E:/ProfilerEvidence/20261022-objectspace-page-btree --output E:/RecomputedPageEvidence
 ```
 
 `RecordedObjectSpaceHotPathTests` exposes the seven new paired cases and four explicit-implementation cases alongside the preceding campaign. It validates retained evidence and prints descriptive results without a machine-speed assertion. The portable `analysis/analyze_tree_implementations.py` similarly validates all four layouts' 80 actual samples without reading external binaries.
@@ -170,14 +177,14 @@ Run the correctness and retained-evidence checks from the Framework root:
 dotnet test tests/Sphere10.Framework.Tests -c Release -p:BuildRevision=0
 dotnet test tests/Sphere10.Framework.CryptoEx.Tests -c Release -p:BuildRevision=0
 dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed'
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
 dotnet build 'src/Sphere10.Framework (CrossPlatform).sln' -c Release -p:BuildRevision=0
 ```
 
 The original exact launch arguments and frozen sources remain in the E campaign. To measure the final combined explicit-tree configuration again, export its retained profiles and use fresh output/data directories. Repeat with the Memory capture to compare that backend. This produces a new descriptive run; it cannot reconstruct the original page-only baseline from the current combined source.
 
 ```powershell
-$capture = Get-Content tests/Sphere10.Framework.Utils.Profiler.Tests/Results/20261022-objectspace-page-btree/implementation-file/workload-run.json -Raw | ConvertFrom-Json
+$capture = Get-Content E:/ProfilerEvidence/20261022-objectspace-page-btree/implementation-file/workload-run.json -Raw | ConvertFrom-Json
 $capture.Settings.Profiles | ConvertTo-Json -Depth 12 | Set-Content E:/replay-tree-profiles.json
 dotnet run -c Release -p:BuildRevision=0 --no-launch-profile --project utils/Sphere10.Framework.Utils.Profiler -- object-spaces --config E:/replay-tree-profiles.json --profiles btree,btreeplus --records 256 --operations 200 --payload 128 --categories 256 --insertion shuffled --lookup Shuffled --mix Balanced --warmupCount 5 --iterationCount 10 --launchCount 2 --outliers DontRemove --noForcedGCs --keepFiles --data-root E:/replay-tree-data --output E:/replay-tree-results --strategy Monitoring --invocationCount 1 --unrollFactor 1 --filter '*ReindexAndPersist*'
 ```

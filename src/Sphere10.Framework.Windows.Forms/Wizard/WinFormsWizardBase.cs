@@ -17,7 +17,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Owns native screen presentation while the shared wizard owns navigation and terminal state.</summary>
-public abstract class WinFormsWizardBase<T> : SyncDisposable, IWinFormsWizard<T> {
+public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFormsWizard<T> {
 	public event EventHandlerEx Finished;
 	public event EventHandlerEx Changed {
 		add => Workflow.Changed += value;
@@ -94,10 +94,7 @@ public abstract class WinFormsWizardBase<T> : SyncDisposable, IWinFormsWizard<T>
 		get {
 			if (_workflow != null)
 				return _workflow;
-			var screens = ConstructScreens().ToArray();
-			foreach (var screen in screens)
-				_ownedScreens.Add(screen);
-			_workflow = new Wizard<T, WinFormsWizardScreen<T>>(Title, Model, screens, FinishCoreAsync, CancelCoreAsync);
+			_workflow = CreateWorkflow(ConstructScreens().ToArray());
 			return _workflow;
 		}
 	}
@@ -265,18 +262,29 @@ public abstract class WinFormsWizardBase<T> : SyncDisposable, IWinFormsWizard<T>
 		}
 		WizardResult = WizardResult.Success;
 		Finished?.Invoke();
-		_dialog.CloseDialog();
-		await DisposeAsync();
+		var dialog = _dialog;
+		try {
+			await DisposeAsync();
+		} finally {
+			dialog.CloseDialog();
+		}
 		return result;
 	}
 
 	protected override void FreeManagedResources() {
 		// Screens removed by branching still belong to this native wizard.
-		_ = Workflow;
+		if (_workflow == null && _ownedScreens.Count == 0)
+			_ownedScreens.UnionWith(ConstructScreens());
 		foreach (var screen in _ownedScreens)
 			screen.Dispose();
 		_ownedScreens.Clear();
 		_initializedScreens.Clear();
+	}
+
+	private Wizard<T, WinFormsWizardScreen<T>> CreateWorkflow(WinFormsWizardScreen<T>[] screens) {
+		foreach (var screen in screens)
+			_ownedScreens.Add(screen);
+		return new Wizard<T, WinFormsWizardScreen<T>>(Title, Model, screens, FinishCoreAsync, CancelCoreAsync);
 	}
 
 	private async Task<Result<bool>> FinishCoreAsync(T model) {

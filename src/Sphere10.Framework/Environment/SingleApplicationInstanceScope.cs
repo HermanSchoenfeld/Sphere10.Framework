@@ -8,6 +8,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
@@ -33,8 +34,12 @@ namespace Sphere10.Framework;
 ///				}
 ///			}
 /// </example>
-public class SingleApplicationInstanceScope : SyncScope {
+public struct SingleApplicationInstanceScope : IScope {
 	public Mutex _mutex;
+
+	public SingleApplicationInstanceScope()
+		: this(false, -1) {
+	}
 
 	public SingleApplicationInstanceScope(bool throwInsteadOfQuit = false, int exitCode = -1) {
 		bool singleInstance;
@@ -47,9 +52,9 @@ public class SingleApplicationInstanceScope : SyncScope {
 		}
 	}
 
-	protected override void OnScopeEnd() {
-		((IDisposable)_mutex).Dispose();
-	}
+	public void Dispose() => _mutex?.Dispose();
+
+	public ValueTask DisposeAsync() => new(Task.Run(Dispose));
 
 }
 

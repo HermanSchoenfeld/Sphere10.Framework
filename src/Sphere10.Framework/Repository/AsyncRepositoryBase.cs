@@ -6,16 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework;
 
 public abstract class AsyncRepositoryBase<TEntity, TIdentity> : RepositoryBase<TEntity, TIdentity> {
 
-	protected sealed override void FreeManagedResources() => FreeManagedResourcesAsync().AsTask().WaitSafe();
+	// Sync-over-async pattern
+	protected sealed override void FreeManagedResources() => Task.Run(() => FreeManagedResourcesAsync().AsTask()).GetAwaiter().GetResult();
 
+	// Sync-over-async pattern
 	public override bool Contains(TIdentity identity)
 		=> ContainsAsync(identity).ResultSafe();
 
 	public override bool TryGet(TIdentity identity, out TEntity entity) {
+		// Sync-over-async pattern
 		var result = TryGetAsync(identity).ResultSafe();
 		entity = result.Item2;
 		return result.Item1;

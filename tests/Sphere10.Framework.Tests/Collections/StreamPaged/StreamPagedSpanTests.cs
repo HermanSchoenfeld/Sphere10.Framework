@@ -118,7 +118,6 @@ public class StreamPagedSpanTests {
 		var list = new StreamPagedList<long>(PrimitiveSerializer<long>.Instance, stream, includeListHeader: false);
 		list.AddRange(new[] { 7L, 8L });
 		var scope = list.EnterOpenPageScope(list.Pages[0]);
-		Assert.That(scope, Is.Not.SameAs(Disposables.None), "A no-op page scope must not dispose the global mutable resource bag.");
 		scope.Dispose();
 		scope.Dispose();
 		using (list.EnterOpenPageScope(list.Pages[0]))
@@ -134,7 +133,7 @@ public class StreamPagedSpanTests {
 
 		public int OpenScopes { get; private set; }
 
-		public override IDisposable EnterOpenPageScope(IPage<int> page) {
+		public override PageScope<int> EnterOpenPageScope(IPage<int> page) {
 			OpenScopes++;
 			return base.EnterOpenPageScope(page);
 		}

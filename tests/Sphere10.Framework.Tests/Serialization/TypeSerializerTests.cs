@@ -133,7 +133,7 @@ public class TypeSerializerTests {
 
 	[Test]
 	public void TypeCollectionSerializer_ManySingleAssembly() {
-		var types = new [] { typeof(Account), typeof(IBijectiveDictionary<,>), typeof(Identity), typeof(Scope), typeof(TypeSerializerTests) };
+		var types = new [] { typeof(Account), typeof(IBijectiveDictionary<,>), typeof(Identity), typeof(ActionScope), typeof(TypeSerializerTests) };
 		var serializer = new TypeCollectionSerializer();
 		var serialized = serializer.SerializeBytesLE(types);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
@@ -143,7 +143,7 @@ public class TypeSerializerTests {
 
 	[Test]
 	public void TypeCollectionSerializer_ManyCrossAssembly() {
-		var types = new [] { typeof(Account), typeof(IBijectiveDictionary<Account,int>), typeof(Identity), typeof(Scope), typeof(TypeSerializerTests), typeof(IExtendedList<KeyValuePair<Scope, Account>>) };
+		var types = new [] { typeof(Account), typeof(IBijectiveDictionary<Account,int>), typeof(Identity), typeof(ActionScope), typeof(TypeSerializerTests), typeof(IExtendedList<KeyValuePair<ActionScope, Account>>) };
 		var serializer = new TypeCollectionSerializer();
 		var serialized = serializer.SerializeBytesLE(types);
 		var deserialized = serializer.DeserializeBytesLE(serialized);

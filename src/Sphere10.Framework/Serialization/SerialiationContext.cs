@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework;
 
-public class SerializationContext : SyncScope {
+public class SerializationContext : SyncDisposable, IScope {
 
 	private enum SerializationStatus { Sizing, Sized, Serializing, Serialized, Deserializing, Deserialized }
 
@@ -273,7 +273,7 @@ public class SerializationContext : SyncScope {
 #if !DEBUG
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-	protected override void OnScopeEnd() {
+	protected virtual void OnScopeEnd() {
 		if (_onRootContextEndActions is not null)
 			foreach (var action in _onRootContextEndActions)
 				action();
@@ -282,6 +282,8 @@ public class SerializationContext : SyncScope {
 		_hasFirstProcessedObject = false;
 
 	}
+
+	protected override void FreeManagedResources() => OnScopeEnd();
 
 	// --- External reference support (virtual methods for subclass override) ---
 

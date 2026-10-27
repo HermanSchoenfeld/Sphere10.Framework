@@ -85,7 +85,7 @@ public class FirebirdDAC : DACBase {
 	protected DataTable[] ExecuteStatementBatch(IEnumerable<string> statements) {
 		try {
 			var results = new List<DataTable>();
-			using (var scope = this.BeginScope()) {
+			using (var scope = this.EnterScope()) {
 				scope.BeginTransaction(IsolationLevel.ReadCommitted);
 				using (var command = scope.Connection.CreateCommand()) {
 					command.CommandTimeout = 0;

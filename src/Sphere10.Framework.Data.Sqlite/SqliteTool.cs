@@ -51,7 +51,7 @@ public static class Sqlite {
 
 			// set password, page config since ado.net doesn't do it
 			var dac = new SqliteDAC(connString);
-			using (var scope = dac.BeginScope(false)) {
+			using (var scope = dac.EnterScope(false)) {
 
 				// Set password explicitly since ADO.NET doesnt 
 				var builder = dac.CreateSQLBuilder();

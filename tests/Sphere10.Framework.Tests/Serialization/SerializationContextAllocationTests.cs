@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -130,6 +132,69 @@ public class SerializationContextAllocationTests {
 		Assert.That(result.First, Is.Not.SameAs(result.Third));
 		Assert.That(result.Third, Is.EqualTo(shared));
 		TestContext.WriteLine($"Reference graph bytes (mixed context={mixedContext}): {Convert.ToHexString(bytes)}");
+	}
+
+	[Test]
+	public void ContextReferencesShareObjectTrackingAndFinalization() {
+		var context = new SerializationContext();
+		var reference = context;
+		var item = new object();
+		Assert.That(Register(reference, item, true), Is.Zero);
+		Assert.That(context.GetDeserializedObject(0), Is.SameAs(item));
+		var finalizations = 0;
+		reference.RegisterFinalizationAction(() => finalizations++);
+		context.Dispose();
+		Assert.That(finalizations, Is.EqualTo(1));
+		Assert.That(() => reference.GetDeserializedObject(0), Throws.TypeOf<KeyNotFoundException>());
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	[NonParallelizable]
+	public async Task AsyncFinalizationReturnsBeforeSynchronousCallbackCompletes(bool fail) {
+		using var release = new ManualResetEventSlim();
+		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var context = new SerializationContext();
+		var item = new object();
+		Register(context, item, false);
+		context.RegisterFinalizationAction(() => {
+			Assert.That(context.GetDeserializedObject(0), Is.SameAs(item));
+			entered.SetResult();
+			if (!release.Wait(TimeSpan.FromSeconds(10)))
+				throw new TimeoutException("The asynchronous callback was not released.");
+			if (fail)
+				throw new InvalidOperationException("serialization finalization failed");
+		});
+		var initiating = Task.Factory.StartNew(() => context.DisposeAsync().AsTask(), CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+		try {
+			await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+			var completion = await initiating.WaitAsync(TimeSpan.FromSeconds(10));
+			Assert.That(completion.IsCompleted, Is.False);
+			release.Set();
+			if (fail) {
+				await Assert.ThatAsync(async () => await completion, Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("serialization finalization failed"));
+				Assert.That(context.GetDeserializedObject(0), Is.SameAs(item));
+			} else {
+				await completion.WaitAsync(TimeSpan.FromSeconds(10));
+				Assert.That(() => context.GetDeserializedObject(0), Throws.TypeOf<KeyNotFoundException>());
+			}
+		} finally {
+			release.Set();
+			try {
+				await initiating.Unwrap().WaitAsync(TimeSpan.FromSeconds(10));
+			} catch (InvalidOperationException) when (fail) {
+			}
+		}
+	}
+
+	[Test]
+	public void FinalizationFailurePropagatesBeforeReleasingTrackedObjects() {
+		var context = new SerializationContext();
+		var item = new object();
+		Register(context, item, false);
+		context.RegisterFinalizationAction(() => throw new InvalidOperationException("Owned finalization failure."));
+		Assert.That(context.Dispose, Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("Owned finalization failure."));
+		Assert.That(context.GetDeserializedObject(0), Is.SameAs(item));
 	}
 
 	private static long Register(SerializationContext context, object item, bool activateEarly) {

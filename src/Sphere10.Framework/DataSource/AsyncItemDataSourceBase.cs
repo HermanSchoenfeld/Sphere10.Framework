@@ -60,6 +60,7 @@ public abstract class AsyncItemDataSourceBase<TItem> : DataSourceBase<TItem> {
 
 	public override TItem Refresh(TItem entity) {
 		Debug.AssertNotMainThread();
+		// Sync-over-async pattern
 		return RefreshAsync(entity).ResultSafe();
 	}
 
@@ -75,6 +76,7 @@ public abstract class AsyncItemDataSourceBase<TItem> : DataSourceBase<TItem> {
 
 	public override Result Validate(TItem entity, CrudAction action) {
 		Debug.AssertNotMainThread();
+		// Sync-over-async pattern
 		return ValidateAsync(entity, action).ResultSafe();
 	}
 
@@ -91,6 +93,7 @@ public abstract class AsyncItemDataSourceBase<TItem> : DataSourceBase<TItem> {
 
 	public override DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		Debug.AssertNotMainThread();
+		// Sync-over-async pattern
 		return ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection).ResultSafe();
 	}
 
@@ -111,6 +114,7 @@ public abstract class AsyncItemDataSourceBase<TItem> : DataSourceBase<TItem> {
 
 	public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions) {
 		Debug.AssertNotMainThread();
+		// Sync-over-async pattern
 		return ValidateRangeAsync(actions).ResultSafe();
 	}
 
@@ -121,6 +125,7 @@ public abstract class AsyncItemDataSourceBase<TItem> : DataSourceBase<TItem> {
 				return result.Result;
 			if (!result.IsCompleted)
 				Debug.AssertNotMainThread();
+			// Sync-over-async pattern
 			return result.ResultSafe();
 		}
 	}
@@ -132,6 +137,7 @@ public abstract class AsyncItemDataSourceBase<TItem> : DataSourceBase<TItem> {
 				return result.Result;
 			if (!result.IsCompleted)
 				Debug.AssertNotMainThread();
+			// Sync-over-async pattern
 			return result.ResultSafe();
 		}
 	}

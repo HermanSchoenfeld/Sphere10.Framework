@@ -30,7 +30,7 @@ public class WindowsFileInspectionService {
 		checkpoint?.Invoke();
 		path = Path.GetFullPath(path);
 		using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.SequentialScan);
-		using var hashing = Hashers.BorrowHasher(CHF.SHA2_256, out var hasher);
+		using var hashing = Hashers.EnterBorrowHasherScope(CHF.SHA2_256, out var hasher);
 		var buffer = new byte[65536];
 		int count;
 		while ((count = stream.Read(buffer)) > 0) {

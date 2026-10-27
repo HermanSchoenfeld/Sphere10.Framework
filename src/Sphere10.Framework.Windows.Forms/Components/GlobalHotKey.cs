@@ -15,7 +15,7 @@ using Sphere10.Framework.Windows;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Receives global shortcut messages on a private message-only window without installing a keyboard hook.</summary>
-public sealed class GlobalHotKey : SyncDisposable, IGlobalHotKey {
+public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 	public event EventHandler Pressed;
 
 	private readonly int _ownerThreadId;
@@ -96,7 +96,7 @@ public sealed class GlobalHotKey : SyncDisposable, IGlobalHotKey {
 	}
 
 	private void EnsureUsable() {
-		Guard.Ensure(!_disposed, "The global shortcut has been disposed.");
+		ObjectDisposedException.ThrowIf(_disposed, this);
 		Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThreadId, "Global shortcuts must be registered and disposed on their creating UI thread.");
 	}
 

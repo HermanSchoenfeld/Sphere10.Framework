@@ -19,7 +19,7 @@ public class TypeExtensionTests {
 
 	[Test]
 	public void IsCrossAssemblyType_False(
-		[Values(typeof(Type), typeof(AssemblySerializer), typeof(Account), typeof(IBijectiveDictionary<,>), typeof(IBijectiveDictionary<Scope,Scope>), typeof(IDictionary<int,string>))]
+		[Values(typeof(Type), typeof(AssemblySerializer), typeof(Account), typeof(IBijectiveDictionary<,>), typeof(IBijectiveDictionary<ActionScope,ActionScope>), typeof(IDictionary<int,string>))]
 		Type type
 	) => Assert.That(type.IsCrossAssemblyType(), Is.False);
 

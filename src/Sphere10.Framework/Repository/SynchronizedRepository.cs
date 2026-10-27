@@ -33,9 +33,9 @@ public class SynchronizedRepository<TEntity, TIdentity> : RepositoryDecorator<TE
 
 	public ReaderWriterLockSlim ThreadLock => _innerSyncObject.ThreadLock;
 
-	public IDisposable EnterReadScope() => _innerSyncObject.EnterReadScope();
+	public ReadScope EnterReadScope() => _innerSyncObject.EnterReadScope();
 
-	public IDisposable EnterWriteScope() => _innerSyncObject.EnterWriteScope();
+	public WriteScope EnterWriteScope() => _innerSyncObject.EnterWriteScope();
 
 	public override bool Contains(TIdentity identity) {
 		using (EnterReadScope())
@@ -105,10 +105,6 @@ public class SynchronizedRepository<TEntity, TIdentity> : RepositoryDecorator<TE
 			InternalCollection.Dispose();
 	}
 
-	public override async ValueTask DisposeAsync() {
-		using (EnterWriteScope())
-			await base.DisposeAsync().ContinueOnSameThread();
-		;
-	}
+	public override ValueTask DisposeAsync() => new(Task.Run(Dispose));
 }
 

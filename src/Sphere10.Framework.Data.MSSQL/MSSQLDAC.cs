@@ -71,7 +71,7 @@ public class MSSQLDAC : DACBase {
 	}
 
 	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
-		using (var scope = this.BeginScope()) {
+		using (var scope = this.EnterScope()) {
 			using (var copy = new SqlBulkCopy(
 				       (SqlConnection)((RestrictedConnection)scope.Connection).DangerousInternalConnection,
 				       ConvertOptions(bulkInsertOptions),

@@ -6,43 +6,26 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Threading;
-
 namespace Sphere10.Framework;
 
-public interface ISynchronizedObject {
+public interface ISynchronizedObject : IReaderWriterLock {
 	ISynchronizedObject ParentSyncObject { get; set; }
-	ReaderWriterLockSlim ThreadLock { get; }
 
-	IDisposable EnterReadScope();
+	ReadScope EnterReadScope();
 
-	IDisposable EnterWriteScope();
+	WriteScope EnterWriteScope();
 
 }
 
 
-public interface ISynchronizedObject<TReadScope, TWriteScope> : ISynchronizedObject
-	where TReadScope : IDisposable
-	where TWriteScope : IDisposable {
-	new ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
-	new ReaderWriterLockSlim ThreadLock { get; }
+/// <summary>Synchronization with caller-selected struct cleanup scopes.</summary>
+public interface ISynchronizedObject<TReadScope, TWriteScope> : IReaderWriterLock
+	where TReadScope : struct, IScope
+	where TWriteScope : struct, IScope {
+	ISynchronizedObject<TReadScope, TWriteScope> ParentSyncObject { get; set; }
 
-	new TReadScope EnterReadScope();
+	ReadScope<TReadScope> EnterReadScope();
 
-	new TWriteScope EnterWriteScope();
-
-	#region Base Interface Bridges
-
-	ISynchronizedObject ISynchronizedObject.ParentSyncObject {
-		get => ParentSyncObject;
-		set => ParentSyncObject = (ISynchronizedObject<TReadScope, TWriteScope>)value;
-	}
-
-	IDisposable ISynchronizedObject.EnterReadScope() => EnterReadScope();
-
-	IDisposable ISynchronizedObject.EnterWriteScope() => EnterWriteScope();
-
-	#endregion
+	WriteScope<TWriteScope> EnterWriteScope();
 }
 

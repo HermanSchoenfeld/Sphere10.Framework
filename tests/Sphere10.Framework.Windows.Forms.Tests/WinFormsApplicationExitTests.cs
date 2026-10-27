@@ -538,7 +538,7 @@ public class WinFormsApplicationExitTests {
 					dialog.Dispose();
 			});
 			try {
-				await using var disposeApplication = Tools.Scope.ExecuteOnDisposeAsync(() => application.DisposeAsync().AsTask());
+				await using var disposeApplication = Tools.Scope.ExecuteOnDisposeAsync<ExitProbeApplication>(static application => application.DisposeAsync(), application);
 				await application.InitializeAsync();
 				mainForm.Show(owner);
 				await test(application, mainForm);

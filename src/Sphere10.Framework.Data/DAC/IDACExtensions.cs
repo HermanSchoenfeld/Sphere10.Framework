@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Data;
 
 public static class IDACExtensions {
 
-	public static DACScope BeginScope(this IDAC dac, bool openConnection = true, ContextScopePolicy policy = ContextScopePolicy.None) {
+	public static DACScope EnterScope(this IDAC dac, bool openConnection = true, ContextScopePolicy policy = ContextScopePolicy.None) {
 		if (dac.UseScopeOsmosis)
 			return new DACScope(dac, policy, openConnection);
 
@@ -49,7 +49,7 @@ public static class IDACExtensions {
 	}
 
 	public static long Save(this IDAC dac, DataRow dataRow, bool ommitAutoIncrementPK = true) {
-		using (var scope = dac.BeginScope(openConnection: true)) {
+		using (var scope = dac.EnterScope(openConnection: true)) {
 			return dataRow.RowState == DataRowState.Added ? dac.Insert(dataRow, ommitAutoIncrementPK) : dac.Update(dataRow);
 		}
 	}
@@ -158,7 +158,7 @@ public static class IDACExtensions {
 	}
 
 	public static DataTable ExecuteQuery(this IDAC dac, string query) {
-		using (var scope = dac.BeginScope())
+		using (var scope = dac.EnterScope())
 		using (var reader = dac.ExecuteReader(query))
 			return reader.ToDataTable();
 

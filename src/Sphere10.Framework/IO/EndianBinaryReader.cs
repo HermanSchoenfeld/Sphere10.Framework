@@ -27,6 +27,7 @@ public class EndianBinaryReader : IDisposable {
 	/// Whether or not this reader has been disposed yet.
 	/// </summary>
 	private bool _disposed = false;
+	private readonly bool _leaveOpen;
 
 	/// <summary>
 	/// Decoder to use for string conversions.
@@ -59,7 +60,12 @@ public class EndianBinaryReader : IDisposable {
 	/// <param name="bitConverter">Converter to use when reading data</param>
 	/// <param name="stream">Stream to read data from</param>
 	public EndianBinaryReader(EndianBitConverter bitConverter,
-	                          Stream stream) : this(bitConverter, stream, Encoding.UTF8) {
+	                          Stream stream) : this(bitConverter, stream, Encoding.UTF8, leaveOpen: false) {
+	}
+
+	/// <summary>Constructs a UTF-8 reader with control over whether the underlying stream is left open.</summary>
+	public EndianBinaryReader(EndianBitConverter bitConverter, Stream stream, bool leaveOpen)
+		: this(bitConverter, stream, Encoding.UTF8, leaveOpen) {
 	}
 
 	/// <summary>
@@ -69,7 +75,16 @@ public class EndianBinaryReader : IDisposable {
 	/// <param name="bitConverter">Converter to use when reading data</param>
 	/// <param name="stream">Stream to read data from</param>
 	/// <param name="encoding">Encoding to use when reading character data</param>
-	public EndianBinaryReader(EndianBitConverter bitConverter, Stream stream, Encoding encoding) {
+	public EndianBinaryReader(EndianBitConverter bitConverter, Stream stream, Encoding encoding)
+		: this(bitConverter, stream, encoding, leaveOpen: false) {
+	}
+
+	/// <summary>Constructs a reader with the selected encoding and control over whether the underlying stream is left open.</summary>
+	/// <param name="bitConverter">Converter to use when reading data</param>
+	/// <param name="stream">Stream to read data from</param>
+	/// <param name="encoding">Encoding to use when reading character data</param>
+	/// <param name="leaveOpen">Whether the underlying stream remains open when this reader is disposed.</param>
+	public EndianBinaryReader(EndianBitConverter bitConverter, Stream stream, Encoding encoding, bool leaveOpen) {
 		if (bitConverter == null) {
 			throw new ArgumentNullException("bitConverter");
 		}
@@ -87,6 +102,7 @@ public class EndianBinaryReader : IDisposable {
 		this._encoding = encoding;
 		this._decoder = encoding.GetDecoder();
 		this._minBytesPerChar = 1;
+		_leaveOpen = leaveOpen;
 
 		if (encoding is UnicodeEncoding) {
 			_minBytesPerChar = 2;
@@ -129,7 +145,7 @@ public class EndianBinaryReader : IDisposable {
 	#region Public methods
 
 	/// <summary>
-	/// Closes the reader, including the underlying stream..
+	/// Closes the reader and, unless <c>leaveOpen</c> is true, its underlying stream.
 	/// </summary>
 	public void Close() {
 		Dispose();
@@ -592,9 +608,7 @@ public class EndianBinaryReader : IDisposable {
 	/// Checks whether or not the reader has been disposed, throwing an exception if so.
 	/// </summary>
 	private void CheckDisposed() {
-		if (_disposed) {
-			throw new ObjectDisposedException(nameof(EndianBinaryReader));
-		}
+		ObjectDisposedException.ThrowIf(_disposed, nameof(EndianBinaryReader));
 	}
 
 	/// <summary>
@@ -635,12 +649,13 @@ public class EndianBinaryReader : IDisposable {
 	#region IDisposable Members
 
 	/// <summary>
-	/// Disposes of the underlying stream.
+	/// Disposes of the reader and, unless <c>leaveOpen</c> is true, its underlying stream.
 	/// </summary>
 	public void Dispose() {
 		if (!_disposed) {
 			_disposed = true;
-			((IDisposable)_stream).Dispose();
+			if (!_leaveOpen)
+				((IDisposable)_stream).Dispose();
 		}
 	}
 

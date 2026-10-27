@@ -6,12 +6,42 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework;
 
-public abstract class AsyncScope : ScopeBase {
+/// <summary>Awaits its required finalizer; synchronous disposal is unsupported.</summary>
+public readonly struct AsyncScope : IScope {
+	private readonly Func<ValueTask> _finalizer;
 
-	protected sealed override void OnScopeEnd()
-		=> OnScopeEndAsync().AsTask().WaitSafe();
+	public AsyncScope(Func<ValueTask> finalizer) {
+		Guard.ArgumentNotNull(finalizer, nameof(finalizer));
+		_finalizer = finalizer;
+	}
 
+	public void Dispose() => throw new NotSupportedException("This scope requires asynchronous disposal.");
+
+	public async ValueTask DisposeAsync() {
+		await _finalizer();
+	}
 }
 
+/// <summary>Awaits its required finalizer with its item; synchronous disposal is unsupported.</summary>
+public readonly struct AsyncScope<T> : IScope<T> {
+	private readonly Func<T, ValueTask> _finalizer;
+
+	public AsyncScope(T item, Func<T, ValueTask> finalizer) {
+		Guard.ArgumentNotNull(finalizer, nameof(finalizer));
+		Item = item;
+		_finalizer = finalizer;
+	}
+
+	public T Item { get; }
+
+	public void Dispose() => throw new NotSupportedException("This scope requires asynchronous disposal.");
+
+	public async ValueTask DisposeAsync() {
+		await _finalizer(Item);
+	}
+}

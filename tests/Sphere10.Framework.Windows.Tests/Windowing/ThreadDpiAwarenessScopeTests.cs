@@ -8,7 +8,9 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Tests;
 
@@ -19,7 +21,7 @@ public class ThreadDpiAwarenessScopeTests {
 	[TestCase(DpiAwarenessContext.PerMonitorAwareV2)]
 	public void NestedScopesRestoreTheExactCallingContextAfterSuccessAndFailure(DpiAwarenessContext context) {
 		var original = WinAPI.USER32.GetThreadDpiAwarenessContext();
-		using (var outer = new ThreadDpiAwarenessScope(context)) {
+		using (var outer = Tools.Scope.EnterThreadDpiAwarenessScope(context)) {
 			AssertContext(new IntPtr((int)context));
 			var outerContext = WinAPI.USER32.GetThreadDpiAwarenessContext();
 			Assert.That(() => {
@@ -57,18 +59,11 @@ public class ThreadDpiAwarenessScopeTests {
 	}
 
 	[Test]
-	public void AsyncDisposalIsRejectedAndSynchronousRestorationCannotRunTwice() {
+	public async Task AsyncDisposalIsUnsupportedAndLeavesTheOwnersContextActive() {
 		var original = WinAPI.USER32.GetThreadDpiAwarenessContext();
-		using var scope = new ThreadDpiAwarenessScope(DpiAwarenessContext.Unaware);
-		// Inspect the completed rejection without suspending while a thread-affine scope is active.
-		var rejection = scope.DisposeAsync();
-		Assert.That(rejection.IsCompleted, Is.True);
-		Assert.That(() => rejection.GetAwaiter().GetResult(), Throws.TypeOf<NotSupportedException>());
-		scope.Dispose();
-		AssertContext(original);
-		using (var next = new ThreadDpiAwarenessScope(DpiAwarenessContext.SystemAware)) {
-			scope.Dispose();
-			AssertContext(new IntPtr((int)DpiAwarenessContext.SystemAware));
+		using (var scope = new ThreadDpiAwarenessScope(DpiAwarenessContext.Unaware)) {
+			await Assert.ThatAsync(async () => await scope.DisposeAsync(), Throws.TypeOf<NotSupportedException>().With.Message.EqualTo("This scope does not support async"));
+			AssertContext(new IntPtr((int)DpiAwarenessContext.Unaware));
 		}
 		AssertContext(original);
 	}

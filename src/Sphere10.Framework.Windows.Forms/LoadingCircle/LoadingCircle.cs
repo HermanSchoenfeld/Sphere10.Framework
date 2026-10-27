@@ -388,7 +388,7 @@ public partial class LoadingCircle : Control {
 		_exclusionControls = null;
 	}
 
-	public static IDisposable EnterAnimationScope(Control containerControl, float relativeSize = 0.5f, StylePresets style = StylePresets.MacOSX, bool disableControls = false, params Control[] exclusionControls) {
+	public static ActionScope EnterAnimationScope(Control containerControl, float relativeSize = 0.5f, StylePresets style = StylePresets.MacOSX, bool disableControls = false, params Control[] exclusionControls) {
 		if (containerControl == null)
 			throw new ArgumentNullException("containerControl");
 
@@ -410,17 +410,17 @@ public partial class LoadingCircle : Control {
 
 		startAction();
 		loadingCircle.StartAnimating(disableControls ? containerControl : null, exclusionControls);
-		return new ActionScope(() => {
+		return Tools.Scope.ExecuteOnDispose(() => {
 			loadingCircle.StopAnimating();
 			containerControl.Controls.Remove(loadingCircle);
 		});
 	}
 
-	public IDisposable BeginAnimationScope() => BeginAnimationScope(null);
+	public ActionScope<LoadingCircle> BeginAnimationScope() => BeginAnimationScope(null);
 
-	public IDisposable BeginAnimationScope(Control containerToDisable, params Control[] exclusionControls) {
+	public ActionScope<LoadingCircle> BeginAnimationScope(Control containerToDisable, params Control[] exclusionControls) {
 		StartAnimating(containerToDisable, exclusionControls);
-		return new ActionScope(StopAnimating);
+		return Tools.Scope.ExecuteOnDispose<LoadingCircle>(static circle => circle.StopAnimating(), this);
 	}
 
 	//[Obsolete("Use BeginAnimationScope")]

@@ -12,8 +12,10 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -281,15 +283,48 @@ public class ControlRenderingScopeTests {
 	}
 
 	[Test]
-	public void AsynchronousDisposalCompletesOnTheUiThread() {
+	public void AsynchronousDisposalCompletesOnTheUiThread() => RunWithMessageLoop(async owner => {
 		using var panel = new CountingPanel();
+		owner.Controls.Add(panel);
 		panel.CreateControl();
 		panel.ResetCounts();
-		var scope = panel.EnterRenderingScope();
+		var scope = Tools.Scope.EnterRenderingScope(panel);
 		var disposal = scope.DisposeAsync();
-		Assert.That(disposal.IsCompletedSuccessfully, Is.True);
+		Assert.That(disposal.IsCompleted, Is.False);
+		Assert.That(panel.EnableRedrawCount, Is.Zero);
+		await disposal;
 		Assert.That(panel.EnableRedrawCount, Is.EqualTo(1));
-	}
+	});
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void RepeatedCleanupDoesNotFinalizeAgainAfterTheControlIsDisposed(bool asynchronous) => RunWithMessageLoop(async owner => {
+		using var panel = new CountingPanel();
+		owner.Controls.Add(panel);
+		panel.CreateControl();
+		using var scope = new CountingRenderingScope(panel);
+		if (asynchronous)
+			await scope.DisposeAsync();
+		else
+			scope.Dispose();
+		panel.Dispose();
+		await scope.DisposeAsync();
+		scope.Dispose();
+		Assert.That(scope.Finalizations, Is.EqualTo(1), "The native registration and its protected cleanup hook belong to one class owner.");
+	});
+
+	[Test]
+	public void AsyncCleanupPreservesProtectedOverrideDispatchAndReturnsItsFailure() => RunWithMessageLoop(async owner => {
+		using var panel = new CountingPanel();
+		owner.Controls.Add(panel);
+		panel.CreateControl();
+		panel.ResetCounts();
+		var scope = new FailingRenderingScope(panel);
+		ValueTask disposal = default;
+		Assert.That(() => { disposal = scope.DisposeAsync(); }, Throws.Nothing);
+		await Assert.ThatAsync(async () => await disposal, Throws.TypeOf<InvalidOperationException>().With.Message.EqualTo("Owned rendering override failure."));
+		Assert.That(panel.EnableRedrawCount, Is.EqualTo(1), "The overridable native cleanup must finish on the UI thread before its returned operation reports failure.");
+	});
 
 	[TestCase(false, false)]
 	[TestCase(true, false)]
@@ -316,11 +351,50 @@ public class ControlRenderingScopeTests {
 		Assert.That(Sphere10.Framework.Windows.WinAPI.USER32.IsWindowVisible(child.Handle), Is.EqualTo(!hideChild), "Showing a retained parent must restore requested native visibility without resurrecting explicitly hidden children.");
 	}
 
+	private static void RunWithMessageLoop(Func<Form, Task> test) {
+		Exception failure = null;
+		var completed = false;
+		var previous = SynchronizationContext.Current;
+		using var context = new WindowsFormsSynchronizationContext();
+		using var restore = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(previous));
+		SynchronizationContext.SetSynchronizationContext(context);
+		using var owner = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000) };
+		using var watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
+		watchdog.Tick += (_, _) => { failure = new AssertionException("Owned rendering fixture timed out."); owner.Close(); };
+		owner.Shown += async (_, _) => {
+			using var close = Tools.Scope.ExecuteOnDispose(owner.Close);
+			try {
+				await test(owner);
+				completed = true;
+			} catch (Exception error) { failure = error; }
+		};
+		watchdog.Start();
+		System.Windows.Forms.Application.Run(owner);
+		Assert.That(failure, Is.Null, failure?.ToString());
+		Assert.That(completed, Is.True);
+	}
+
 	private sealed class DefaultHiddenComboBox : ComboBox {
 		[DefaultValue(false)]
 		public new bool Visible {
 			get => base.Visible;
 			set => base.Visible = value;
+		}
+	}
+
+	private sealed class FailingRenderingScope(Control control) : ControlRenderingScope(control) {
+		protected override void OnScopeEnd() {
+			base.OnScopeEnd();
+			throw new InvalidOperationException("Owned rendering override failure.");
+		}
+	}
+
+	private sealed class CountingRenderingScope(Control control) : ControlRenderingScope(control) {
+		public int Finalizations { get; private set; }
+
+		protected override void OnScopeEnd() {
+			Finalizations++;
+			base.OnScopeEnd();
 		}
 	}
 

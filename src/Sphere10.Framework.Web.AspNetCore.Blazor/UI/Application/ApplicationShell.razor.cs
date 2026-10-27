@@ -40,7 +40,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	private ElementReference _navigationToggle;
 	private bool _navigationOpen;
 	private bool _focusNavigationToggle;
-	private IDisposable _controllerScope;
+	private ActionScope? _controllerScope;
 	private IJSObjectReference _startupSettingsModule;
 	private string _startupSettingsKey;
 	private bool _startupSettingsLoaded;

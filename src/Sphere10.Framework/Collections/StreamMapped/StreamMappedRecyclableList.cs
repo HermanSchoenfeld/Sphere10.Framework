@@ -104,7 +104,12 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 
 	public override IEnumerator<TItem> GetEnumerator() {
 		var scope = ObjectStream.EnterAccessScope();
-		return base.GetEnumerator().OnDispose(scope.Dispose);
+		try {
+			return base.GetEnumerator().DisposeWith(scope);
+		} catch {
+			scope.Dispose();
+			throw;
+		}
 	}
 
 	public void Dispose() {

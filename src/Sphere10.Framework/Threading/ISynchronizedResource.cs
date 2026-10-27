@@ -8,13 +8,13 @@
 
 namespace Sphere10.Framework;
 
-public interface ISynchronizedResource : ISynchronizedResource<Scope, Scope> {
+public interface ISynchronizedResource : ISynchronizedResource<NoOpScope, NoOpScope> {
 }
 
 
 public interface ISynchronizedResource<TReadScope, TWriteScope> : ISynchronizedObject<TReadScope, TWriteScope>
-	where TReadScope : IScope
-	where TWriteScope : IScope {
+	where TReadScope : struct, IScope
+	where TWriteScope : struct, IScope {
 
 	event EventHandlerEx<object> InitializingRead;
 	event EventHandlerEx<object> InitializedRead;

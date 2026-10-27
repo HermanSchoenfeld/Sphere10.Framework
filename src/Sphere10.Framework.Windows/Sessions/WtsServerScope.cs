@@ -10,11 +10,12 @@ using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
 /// <summary>Owns a remote WTS server handle. The local-current-server pseudo handle is borrowed and never closed.</summary>
-public sealed class WtsServerScope : IDisposable {
+public sealed class WtsServerScope : IScope {
 	private IntPtr _handle;
 	private int _disposed;
 
@@ -38,4 +39,6 @@ public sealed class WtsServerScope : IDisposable {
 		if (handle != IntPtr.Zero)
 			WinAPI.WTSAPI32.WTSCloseServer(handle);
 	}
+
+	public ValueTask DisposeAsync() => new(Task.Run(Dispose));
 }

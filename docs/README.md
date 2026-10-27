@@ -27,6 +27,13 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | [**Code Styling**](guidelines/code-styling.md) | Coding standards and conventions |
 | [**Patterns and Practices**](guidelines/patterns-and-practices.md) | Task index for the focused pattern guides below |
 | [**Performance change review**](performance/comment-and-behavior-review.md) | Retained profiling evidence, restored comments and reverted behavior changes |
+| [**Value scope performance**](performance/value-scopes.md) | Complete before/after allocation, GC and consumer measurements, API ownership and compatibility limits |
+| [**Scope abstraction performance**](performance/scope-abstraction.md) | Full scope-family migration, context coverage and comparison against the first struct implementation |
+| [**Direct scope finalization**](performance/scope-composition.md) | Retained comparison after removing scope lifecycle machinery, with timing and allocation limits |
+| [**Async disposal corrections**](performance/async-disposal-corrections.md) | Awaited cleanup, thread affinity, typed factories and static platform extensions |
+| [**Callback scope consolidation**](performance/callback-scope-consolidation.md) | Direct callback scopes, factory allocation screening and consumer measurements |
+| [**Borrowed array scopes**](performance/borrow-array-scopes.md) | Pooled-buffer ownership, logical lengths and allocation evidence |
+| [**Disposable ownership review**](performance/disposable-template-review.md) | Class disposal templates, cleanup retries and final validation evidence |
 
 ### Pattern Topics
 

@@ -379,7 +379,7 @@ public class ApplicationScreenHostHarmonizationTests {
 		if (resolveBeforeDisposal)
 			Assert.That(host.UserInterfaceServices, Is.Not.Null);
 		host.Dispose();
-		Assert.That(() => host.UserInterfaceServices, Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => host.UserInterfaceServices, Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[Test]

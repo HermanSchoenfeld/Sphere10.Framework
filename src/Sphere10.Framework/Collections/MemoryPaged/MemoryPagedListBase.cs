@@ -106,13 +106,13 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	public long CalculateTotalSize() => InternalPages.Sum(p => p.Size);
 
 	/// <inheritdoc />
-	public sealed override IDisposable EnterOpenPageScope(IPage<TItem> page) {
+	public sealed override PageScope<TItem> EnterOpenPageScope(IPage<TItem> page) {
 		// dont need to do much since cache manages life-cycle of page
 		CheckNotDisposed();
 		var cachedItem = _loadedPages.Get(page.Number); // ensures page is fetched from streams if not cached
 		var canPurge = cachedItem.CanPurge;
 		cachedItem.CanPurge = false;
-		return new ActionScope(() => cachedItem.CanPurge = canPurge);
+		return new PageScope<TItem>(cachedItem, canPurge);
 	}
 
 	/// <summary>
@@ -202,8 +202,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	#region Private methods
 
 	private void CheckNotDisposed() {
-		if (Disposed)
-			throw new InvalidOperationException("Disposing or disposed");
+		ObjectDisposedException.ThrowIf(Disposed, this);
 	}
 
 	#endregion

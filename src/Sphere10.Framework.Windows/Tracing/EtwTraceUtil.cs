@@ -76,11 +76,11 @@ public class EtwTraceUtil {
 			var structureSize = Marshal.SizeOf<WinAPI.ADVAPI32.EVENT_TRACE_PROPERTIES>();
 			const int stringBytes = 2048;
 			var bufferSize = structureSize + 2 * stringBytes;
-			using (var allocations = new Disposables()) {
+			var allocations = new UnmanagedMemoryScope[capacity];
+			try {
 				for (var index = 0; index < pointers.Length; index++) {
-					var allocation = new UnmanagedMemoryScope(bufferSize);
-					allocations.Add(allocation);
-					pointers[index] = allocation.Item;
+					allocations[index] = new UnmanagedMemoryScope(bufferSize);
+					pointers[index] = allocations[index].Item;
 					Marshal.Copy(new byte[bufferSize], 0, pointers[index], bufferSize);
 					var properties = new WinAPI.ADVAPI32.EVENT_TRACE_PROPERTIES {
 						Wnode = new WinAPI.ADVAPI32.WNODE_HEADER { BufferSize = (uint)bufferSize },
@@ -103,6 +103,9 @@ public class EtwTraceUtil {
 						ReadString(pointers[index], properties.LogFileNameOffset, bufferSize), properties.LogFileMode, properties.EventsLost);
 				}
 				return result;
+			} finally {
+				for (var index = 0; index < allocations.Length; index++)
+					allocations[index].Dispose();
 			}
 		}
 		throw new InvalidOperationException("ETW session enumeration exceeded its safe capacity.");

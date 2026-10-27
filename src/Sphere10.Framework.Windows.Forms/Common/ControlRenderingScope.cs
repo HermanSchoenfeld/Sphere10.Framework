@@ -21,7 +21,8 @@ using static Sphere10.Framework.Windows.WinAPI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Defers layout and native drawing for a control tree until its outermost rendering scope ends.</summary>
-public class ControlRenderingScope : ScopeBase {
+public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
+	// Native callbacks share this registration identity while controls are added, moved or recreated.
 	private const int SetRedrawMessage = 0x000B;
 	private static readonly ConditionalWeakTable<Control, RenderingState> _states = new();
 	private static readonly PropertyDescriptor _visibleProperty = TypeDescriptor.GetProperties(typeof(Control))[nameof(Control.Visible)];
@@ -56,7 +57,7 @@ public class ControlRenderingScope : ScopeBase {
 		entered = true;
 	}
 
-	protected override void OnScopeEnd() {
+	protected virtual void OnScopeEnd() {
 		Guard.Ensure(Environment.CurrentManagedThreadId == _threadId, "Rendering scopes must be disposed on their creating UI thread.");
 		if (_ended)
 			return;
@@ -89,16 +90,11 @@ public class ControlRenderingScope : ScopeBase {
 		}
 	}
 
-	protected override ValueTask OnScopeEndAsync() {
-		// Native controls must remain on the caller's UI thread, including asynchronous disposal.
-		OnScopeEnd();
-		return ValueTask.CompletedTask;
-	}
+	protected virtual ValueTask OnScopeEndAsync() => base.FreeManagedResourcesAsync();
 
-	protected override ValueTask FreeManagedResourcesAsync() {
-		// ScopeBase's general async completion dispatches ScopeEnd on a worker; native rendering remains on the UI thread.
-		FreeManagedResources();
-		return ValueTask.CompletedTask;
+	protected override void FreeManagedResources() {
+		// Native controls must remain on their creating UI thread, including asynchronous disposal.
+		OnScopeEnd();
 	}
 
 	private void Include(Control control) {

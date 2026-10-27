@@ -33,7 +33,7 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 	public bool IsLocked => _lock.IsLocked;
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public IDisposable EnterAccessScope() => _lock.EnterAccessScope();
+	public AccessScope EnterAccessScope() => _lock.EnterAccessScope();
 
 	public override void Flush() {
 		CheckLocked();
@@ -123,7 +123,7 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 
 	public override void Close() {
 		//CheckLocked();
-		using var scope = IsLocked ? EnterAccessScope() : new NoOpScope();
+		using var scope = IsLocked ? EnterAccessScope() : (AccessScope?)null;
 		InnerStream.Close();
 	}
 

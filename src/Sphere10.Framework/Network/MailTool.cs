@@ -127,7 +127,7 @@ public static class Mail {
 
 		// Own the message, retaining caller ownership of supplied attachments and alternate views.
 		using var mailMessage = new MailMessage();
-		using var detachBorrowedContent = Scope.ExecuteOnDispose(() => {
+		using var detachBorrowedContent = Tools.Scope.ExecuteOnDispose(() => {
 			mailMessage.Attachments.Clear();
 			mailMessage.AlternateViews.Clear();
 		});
@@ -206,7 +206,7 @@ public static class Mail {
 
 		// Own the message, retaining caller ownership of supplied attachments and alternate views.
 		using var mailMessage = new MailMessage();
-		using var detachBorrowedContent = Scope.ExecuteOnDispose(() => {
+		using var detachBorrowedContent = Tools.Scope.ExecuteOnDispose(() => {
 			mailMessage.Attachments.Clear();
 			mailMessage.AlternateViews.Clear();
 		});

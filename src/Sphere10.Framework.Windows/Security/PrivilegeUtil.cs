@@ -18,14 +18,14 @@ namespace Sphere10.Framework.Windows;
 public class PrivilegeUtil {
 	/// <summary>Enables required privileges on an operation-local effective token and restores the previous identity on disposal.
 	/// Acquire and dispose synchronously on the same worker thread; do not hold across await.</summary>
-	public IDisposable EnterScope(params string[] privileges) {
+	public TokenPrivilegeScope EnterScope(params string[] privileges) {
 		Guard.ArgumentNotNull(privileges, nameof(privileges));
-		return privileges.Length == 0 ? Tools.Scope.ExecuteOnDispose(() => { }) : new TokenPrivilegeScope((string[])privileges.Clone());
+		return privileges.Length == 0 ? default : new TokenPrivilegeScope((string[])privileges.Clone());
 	}
 
 	/// <summary>Attempts operation-local privilege admission. Missing privileges return false; other native failures are reported.</summary>
-	public bool TryEnterScope(string[] privileges, out IDisposable scope) {
-		IDisposable acquired = null;
+	public bool TryEnterScope(string[] privileges, out TokenPrivilegeScope scope) {
+		TokenPrivilegeScope acquired = default;
 		Tools.Exceptions.ExecuteCapturingException<System.ComponentModel.Win32Exception>(() => acquired = EnterScope(privileges), out var error,
 			failure => failure.NativeErrorCode == WinAPI.ADVAPI32.ErrorNotAllAssigned);
 		scope = acquired;

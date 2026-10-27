@@ -119,6 +119,36 @@ public class EncryptedStreamTests {
 	}
 
 	[Test]
+	public async Task AsyncTransfersRetainTheirScratchUntilUnderlyingWriteCompletes([Values] bool copying, [Values] bool failWrite) {
+		using var storage = new MemoryStream(_ciphertext);
+		using var destination = new GatedWriteStream(failWrite);
+		using var stream = CreateStream(copying ? storage : destination, _key, _initialCounter, leaveOpen: true);
+		var operation = copying
+			? stream.CopyToAsync(destination, _plaintext.Length, CancellationToken.None)
+			: stream.WriteAsync(_plaintext.AsMemory()).AsTask();
+		Exception failure = null;
+		try {
+			await destination.Entered.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.That(operation.IsCompleted, Is.False);
+			Assert.That(destination.Length, Is.Zero);
+		} finally {
+			destination.Release();
+			try {
+				await operation.WaitAsync(TimeSpan.FromSeconds(5));
+			} catch (Exception error) {
+				failure = error;
+			}
+		}
+		if (failWrite) {
+			Assert.That(failure, Is.SameAs(destination.Error));
+			Assert.That(destination.Length, Is.Zero);
+		} else {
+			Assert.That(failure, Is.Null);
+			Assert.That(destination.ToArray(), Is.EqualTo(copying ? _plaintext : _ciphertext));
+		}
+	}
+
+	[Test]
 	public void ByteAndLegacyAsyncOperationsDoNotBypassEncryption() {
 		using var storage = new MemoryStream();
 		using var stream = CreateStream(storage, _key, _initialCounter);
@@ -137,18 +167,40 @@ public class EncryptedStreamTests {
 		Assert.That(result, Is.EqualTo(_plaintext));
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public async Task DisposalHonorsOwnership(bool leaveOpen) {
-		using var storage = new MemoryStream();
-		var stream = CreateStream(storage, _key, _initialCounter, leaveOpen);
+	[Test]
+	public async Task DisposalHonorsLeaveOpen([Values] bool leaveOpen, [Values] bool generic, [Values] bool useAsync) {
+		using var storage = new DisposalTrackingStream();
+		using Stream stream = generic
+			? new EncryptedStream<DisposalTrackingStream>(storage, _key, _initialCounter, leaveOpen)
+			: new EncryptedStream(storage, _key, _initialCounter, leaveOpen);
 		stream.Write(_plaintext.AsSpan(0, 10));
-		await stream.DisposeAsync();
+		if (useAsync)
+			await stream.DisposeAsync();
+		else
+			stream.Dispose();
 		stream.Close();
 		Assert.That(stream.CanRead || stream.CanWrite || stream.CanSeek, Is.False);
 		Assert.That(storage.CanWrite, Is.EqualTo(leaveOpen));
+		Assert.That(storage.Disposals, Is.EqualTo(leaveOpen ? 0 : 1));
 		Assert.That(() => stream.WriteByte(1), Throws.InstanceOf<ObjectDisposedException>());
 		Assert.That(() => stream.ReadByte(), Throws.InstanceOf<ObjectDisposedException>());
+		Assert.That(storage.ToArray().Length, Is.EqualTo(10), "Disposal must not append padding.");
+	}
+
+	[Test]
+	public async Task DefaultConstructorOwnsItsUnderlyingStream([Values] bool generic, [Values] bool useAsync) {
+		using var storage = new DisposalTrackingStream();
+		using Stream stream = generic
+			? new EncryptedStream<DisposalTrackingStream>(storage, _key, _initialCounter)
+			: new EncryptedStream(storage, _key, _initialCounter);
+		stream.Write(_plaintext.AsSpan(0, 10));
+		if (useAsync)
+			await stream.DisposeAsync();
+		else
+			stream.Dispose();
+		stream.Close();
+		Assert.That(storage.CanWrite, Is.False);
+		Assert.That(storage.Disposals, Is.EqualTo(1));
 		Assert.That(storage.ToArray().Length, Is.EqualTo(10), "Disposal must not append padding.");
 	}
 
@@ -308,6 +360,40 @@ public class EncryptedStreamTests {
 
 	private static EncryptedStream CreateStream(Stream stream, byte[] key, byte[] initialCounter, bool leaveOpen = false)
 		=> new(stream, key, initialCounter, leaveOpen);
+
+	private sealed class DisposalTrackingStream : MemoryStream {
+		public int Disposals { get; private set; }
+
+		protected override void Dispose(bool disposing) {
+			if (disposing)
+				Disposals++;
+			base.Dispose(disposing);
+		}
+	}
+
+	private sealed class GatedWriteStream : MemoryStream {
+		private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		private readonly bool _failWrite;
+
+		public GatedWriteStream(bool failWrite) {
+			_failWrite = failWrite;
+		}
+
+		public Task Entered => _entered.Task;
+
+		public IOException Error { get; } = new("Injected asynchronous write failure.");
+
+		public void Release() => _release.TrySetResult();
+
+		public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) {
+			_entered.TrySetResult();
+			await _release.Task.WaitAsync(cancellationToken);
+			if (_failWrite)
+				throw Error;
+			await base.WriteAsync(buffer, cancellationToken);
+		}
+	}
 
 	private sealed class WriteTrackingStream : MemoryStream {
 		public List<(long Position, int Count)> Writes { get; } = new();

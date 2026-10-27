@@ -18,7 +18,7 @@ public class MainFormSettingsFinalizer : SyncApplicationFinalizerBase {
 	private Action _captureAcceptedClose;
 
 	/// <summary>Restores on load and captures approved shutdown or completed closure without writing settings. Dispose the returned scope to detach.</summary>
-	public IDisposable Attach(Form Window, string SettingsID = "MainForm") {
+	public ActionScope Attach(Form Window, string SettingsID = "MainForm") {
 		var tracking = Tools.WinForms.TrackWindowSettings(Window, SettingsID, Settings => _pendingSettings = Settings, out var captureAcceptedClose);
 		_captureAcceptedClose = captureAcceptedClose;
 		return Tools.Scope.ExecuteOnDispose(() => {

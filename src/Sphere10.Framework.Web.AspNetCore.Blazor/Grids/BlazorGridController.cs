@@ -770,7 +770,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		Guard.Ensure(_edit == null && !_isSaving, "Finish or cancel the current edit before changing the grid.");
 	}
 
-	private void EnsureUsable() => Guard.Ensure(!_disposed, "The grid controller has been disposed.");
+	private void EnsureUsable() => ObjectDisposedException.ThrowIf(_disposed, this);
 
 	private static void ValidatePageMode(BlazorGridPageMode pageMode) => Guard.Argument(
 		pageMode is BlazorGridPageMode.Paged or BlazorGridPageMode.Auto or BlazorGridPageMode.Single, nameof(pageMode), "Unknown page mode."

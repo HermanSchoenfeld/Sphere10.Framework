@@ -7,14 +7,17 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Windows;
+using Tools;
 using FormsApplication = System.Windows.Forms.Application;
 
 using Sphere10.Framework.Application.UI;
@@ -25,6 +28,206 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class AsyncModalTests {
+	[Test]
+	public void SynchronousNativeCleanupDoesNotRunPreviouslyPostedUiCallbacks() => RunWithMessageLoop(async owner => {
+		var posted = false;
+		using var shortcut = new GlobalHotKey();
+		SynchronizationContext.Current.Post(_ => posted = true, null);
+		shortcut.Dispose();
+		Assert.That(posted, Is.False, "Synchronous cleanup must remain inline instead of draining unrelated dispatcher work.");
+		await Task.Yield();
+		Assert.That(posted, Is.True);
+	});
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void GlobalShortcutCleanupQueuesToItsCreatingDispatcher(bool useCurrentContext) => RunWithMessageLoop(async owner => {
+		var previousContext = SynchronizationContext.Current;
+		using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(previousContext));
+		if (!useCurrentContext)
+			SynchronizationContext.SetSynchronizationContext(null);
+		using var shortcut = new GlobalHotKey();
+		SynchronizationContext.SetSynchronizationContext(previousContext);
+		var disposal = shortcut.DisposeAsync();
+		Assert.That(disposal.IsCompleted, Is.False);
+		Assert.That(shortcut.TryRegister(Keys.None, out _), Is.True, "The queued cleanup has not run while the initiating UI callback still owns the thread.");
+		await disposal;
+		Assert.That(() => shortcut.TryRegister(Keys.None, out _), Throws.TypeOf<ObjectDisposedException>());
+		await shortcut.DisposeAsync();
+	});
+
+	[Test]
+	public void DisposedGlobalShortcutRejectsUseButAllowsRepeatedCleanup() => RunWithMessageLoop(async owner => {
+		using var shortcut = new GlobalHotKey();
+		shortcut.Dispose();
+		Assert.That(() => shortcut.TryRegister(Keys.None, out _), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(shortcut.Unregister, Throws.TypeOf<ObjectDisposedException>());
+		shortcut.Dispose();
+		await shortcut.DisposeAsync();
+	});
+
+	[Test]
+	public void UpdateCompletionIsQueuedAndAwaitedOnTheControlThread() => RunWithMessageLoop(async owner => {
+		using var control = new UserControlEx();
+		owner.Controls.Add(control);
+		control.CreateControl();
+		var scope = Tools.Scope.EnterUpdateScope(control);
+		var disposal = scope.DisposeAsync();
+		Assert.That(disposal.IsCompleted, Is.False);
+		Assert.That(control.Updating, Is.True);
+		await disposal;
+		Assert.That(control.Updating, Is.False);
+	});
+
+	[Test]
+	public void WizardAwaitsOwnerThreadCleanupBeforeClosingItsDispatcher() => RunWithMessageLoop(async owner => {
+		var ownerThreadId = Environment.CurrentManagedThreadId;
+		var screen = new WinFormsWizardScreen<object>();
+		using var wizard = new WinFormsWizardBuilder<object>().WithTitle("Queued wizard cleanup").WithModel(new object())
+			.AddScreen(screen).OnFinished(_ => Task.FromResult(Result.Default)).Build();
+		var pending = wizard.Start(owner);
+		using var dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
+		var disposalThreadId = 0;
+		var dialogWasLiveDuringCleanup = false;
+		screen.Disposed += (_, _) => {
+			disposalThreadId = Environment.CurrentManagedThreadId;
+			dialogWasLiveDuringCleanup = dialog.IsHandleCreated && !dialog.IsDisposed;
+		};
+		await wizard.Next();
+		Assert.That(await pending, Is.EqualTo(WizardResult.Success));
+		Assert.That(screen.IsDisposed, Is.True);
+		Assert.That(disposalThreadId, Is.EqualTo(ownerThreadId));
+		Assert.That(dialogWasLiveDuringCleanup, Is.True, "The dispatcher's native handle must outlive queued screen cleanup.");
+	});
+
+	[Test]
+	public void UnstartedWizardWithoutScreensDisposesOnItsUiDispatcher() => RunWithMessageLoop(async owner => {
+		var wizard = new WinFormsActionWizard<object>("Empty owner", new object(), System.Array.Empty<WinFormsWizardScreen<object>>(), _ => Task.FromResult(Result.Default));
+		await wizard.DisposeAsync();
+		await wizard.DisposeAsync();
+	});
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void UnstartedWizardConstructsAndDisposesScreensOnItsUiDispatcher(bool useCurrentContext) => RunWithMessageLoop(async owner => {
+		var uiThreadId = Environment.CurrentManagedThreadId;
+		var previousContext = SynchronizationContext.Current;
+		using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(previousContext));
+		if (!useCurrentContext)
+			SynchronizationContext.SetSynchronizationContext(null);
+		var constructions = 0;
+		var constructionThreadId = 0;
+		var disposalThreadId = 0;
+		WinFormsWizardScreen<object> screen = null;
+		using var wizard = new ConstructingWizard(() => {
+			constructions++;
+			constructionThreadId = Environment.CurrentManagedThreadId;
+			screen = new WinFormsWizardScreen<object>();
+			screen.Disposed += (_, _) => disposalThreadId = Environment.CurrentManagedThreadId;
+			return screen;
+		});
+		SynchronizationContext.SetSynchronizationContext(previousContext);
+		var disposal = wizard.DisposeAsync();
+		Assert.That(disposal.IsCompleted, Is.False);
+		Assert.That(constructions, Is.Zero, "Screen discovery must wait for its queued UI cleanup.");
+		await disposal;
+		Assert.That(constructions, Is.EqualTo(1));
+		Assert.That(constructionThreadId, Is.EqualTo(uiThreadId));
+		Assert.That(disposalThreadId, Is.EqualTo(uiThreadId));
+		Assert.That(screen.IsDisposed, Is.True);
+		await wizard.DisposeAsync();
+		wizard.Dispose();
+		Assert.That(constructions, Is.EqualTo(1), "Repeated cleanup must not construct another set of owned screens.");
+	});
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void WizardAsyncDisposalAfterUnparentedModalCompletionReleasesRemovedScreens(bool finish) => RunWithMessageLoop(async owner => {
+		var uiThreadId = Environment.CurrentManagedThreadId;
+		var current = new WinFormsWizardScreen<object>();
+		var removed = new WinFormsWizardScreen<object>();
+		var disposalThreadId = 0;
+		var disposals = 0;
+		removed.Disposed += (_, _) => {
+			disposalThreadId = Environment.CurrentManagedThreadId;
+			disposals++;
+		};
+		using var wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Unparented wizard cleanup")
+			.WithModel(new object())
+			.AddScreen(current)
+			.AddScreen(removed)
+			.OnFinished(_ => Task.FromResult(Result.Default))
+			.Build();
+		wizard.RemoveScreen(removed);
+		await using (wizard) {
+			var pending = wizard.Start(null);
+			using var dialog = await WaitForDialog<WinFormsWizardDialog<object>>();
+			if (finish)
+				await wizard.Next();
+			else
+				((Form)dialog).Close();
+			Assert.That(await pending, Is.EqualTo(finish ? WizardResult.Success : WizardResult.Cancelled));
+			Assert.That(dialog.IsDisposed, Is.True);
+		}
+		Assert.That(current.IsDisposed, Is.True);
+		Assert.That(removed.IsDisposed, Is.True, "Steps removed before presentation still belong to the wizard after its modal dialog closes.");
+		Assert.That(disposalThreadId, Is.EqualTo(uiThreadId));
+		await wizard.DisposeAsync();
+		wizard.Dispose();
+		Assert.That(disposals, Is.EqualTo(1));
+	});
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void RepeatedPresentationCleanupPreservesSubsequentNotificationDeferral(bool asynchronous) => RunWithMessageLoop(async owner => {
+		using var host = new WinFormsApplicationScreenHost();
+		owner.Controls.Add(host);
+		// Exercise the existing internal presentation owner without widening the native host's public API.
+		var enterPresentation = typeof(WinFormsApplicationScreenHost).GetMethod("EnterPresentationScope", BindingFlags.Instance | BindingFlags.NonPublic);
+		IScope EnterPresentation() => (IScope)enterPresentation.Invoke(host, null);
+		var notifications = 0;
+		host.Changed += () => notifications++;
+		var transition = EnterPresentation();
+		host.ScreenMode = ScreenMode.MultiView;
+		Assert.That(notifications, Is.Zero);
+		if (asynchronous)
+			await transition.DisposeAsync();
+		else
+			transition.Dispose();
+		Assert.That(notifications, Is.EqualTo(1));
+		await transition.DisposeAsync();
+		transition.Dispose();
+		using (EnterPresentation()) {
+			host.ScreenMode = ScreenMode.SingleView;
+			Assert.That(notifications, Is.EqualTo(1), "The next presentation change must remain deferred until its outer scope ends.");
+		}
+		Assert.That(notifications, Is.EqualTo(2));
+	});
+
+	[TestCase(false, false)]
+	[TestCase(true, false)]
+	[TestCase(false, true)]
+	[TestCase(true, true)]
+	public void InvokeAsyncExRejectsDisposedControlsUnlessAlreadyCancelled(bool generic, bool cancelled) {
+		using var control = new Control();
+		using var cancellation = new CancellationTokenSource();
+		control.Dispose();
+		if (cancelled)
+			cancellation.Cancel();
+		var invoked = false;
+		Task Invoke() {
+			if (generic)
+				return control.InvokeAsyncEx<int>(_ => { invoked = true; return Task.FromResult(42); }, cancellation.Token);
+			return control.InvokeAsyncEx(_ => { invoked = true; return Task.CompletedTask; }, cancellation.Token);
+		}
+		if (cancelled)
+			Assert.That(Invoke().IsCanceled, Is.True);
+		else
+			Assert.That(() => { _ = Invoke(); }, Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(invoked, Is.False);
+	}
+
 	[TestCase(false)]
 	[TestCase(true)]
 	public void InvokeAsyncExWaitsForCallback(bool Generic) => RunWithMessageLoop(async Owner => {
@@ -438,6 +641,11 @@ public class AsyncModalTests {
 		Watchdog.Start();
 		FormsApplication.Run(Owner);
 		Assert.That(Failure, Is.Null, Failure?.ToString());
+	}
+
+	private sealed class ConstructingWizard(Func<WinFormsWizardScreen<object>> constructScreen) : WinFormsWizardBase<object>("Unstarted owner", new object()) {
+		protected override IEnumerable<WinFormsWizardScreen<object>> ConstructScreens() => new[] { constructScreen() };
+		protected override Task<Result> Finish() => Task.FromResult(Result.Default);
 	}
 
 	private class WizardScreenProbe : WinFormsWizardScreen<object> {

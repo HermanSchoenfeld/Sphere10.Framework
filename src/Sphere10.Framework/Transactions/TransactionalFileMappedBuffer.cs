@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -123,7 +122,7 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 	private class PageImpl : TransactionalFilePageBase<byte>, IBufferPage, IBufferPageReader {
 
 		public PageImpl(FileStream stream, string uncommittedPageFileName, long pageNumber, long pageSize)
-			: base(stream, new ConstantLengthItemSizer<byte>(sizeof(byte), false), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(pageSize, ArrayPool<byte>.Shared)) {
+			: base(stream, new ConstantLengthItemSizer<byte>(sizeof(byte), false), uncommittedPageFileName, pageNumber, pageSize, new MemoryBuffer(0, pageSize, pageSize)) {
 		}
 
 		public override void Dispose() {
@@ -150,7 +149,7 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 			var memBuff = (MemoryBuffer)memoryPage;
 			if (stream.Length != memBuff.Count)
 				stream.SetLength(memBuff.Count); // eliminate unused space in fiel
-			stream.Write(memBuff.BorrowPageSpan());
+			stream.Write(memBuff.AsSpan());
 		}
 
 		protected override void LoadInternal(Stream stream, IExtendedList<byte> memoryPage) {
@@ -158,7 +157,7 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 			var memBuff = (MemoryBuffer)memoryPage;
 			try {
 				memBuff.ExpandTo((int)stream.Length);
-				stream.ReadExactly(memBuff.BorrowPageSpan());
+				stream.ReadExactly(memBuff.AsSpan());
 			} catch {
 				ResetFailedLoad();
 				throw;

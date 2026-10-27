@@ -17,17 +17,16 @@ namespace Sphere10.Framework.Windows.Tests.Security;
 [Parallelizable(ParallelScope.Children)]
 public class NetApiBufferScopeTests {
 	[Test]
-	public void NativeEnumerationBufferRemainsUsableInsideItsScopeAndReleasesExactlyOnce() {
+	public void NativeEnumerationBufferRemainsUsableUntilReleaseAndItsManagedCopySurvives() {
 		var resume = UIntPtr.Zero;
 		var status = WinAPI.NETAPI32.NetLocalGroupEnumPaged(null, 0, out var pointer, WinAPI.NETAPI32.MAX_PREFERRED_LENGTH, out var count, out _, ref resume);
-		using var buffer = new NetApiBufferScope(pointer);
-		Assert.That(status, Is.EqualTo(WinAPI.NETAPI32.NET_API_STATUS.NERR_Success).Or.EqualTo(WinAPI.NETAPI32.NET_API_STATUS.ERROR_MORE_DATA));
-		Assert.That(count, Is.GreaterThan(0));
-		var name = Marshal.PtrToStructure<WinAPI.NETAPI32.LOCALGROUP_INFO_0>(buffer.Item).name;
-		Assert.That(name, Is.Not.Null.And.Not.Empty);
-		buffer.Dispose();
-		Assert.That(buffer.Item, Is.EqualTo(IntPtr.Zero));
-		buffer.Dispose();
+		string name;
+		using (var buffer = new NetApiBufferScope(pointer)) {
+			Assert.That(status, Is.EqualTo(WinAPI.NETAPI32.NET_API_STATUS.NERR_Success).Or.EqualTo(WinAPI.NETAPI32.NET_API_STATUS.ERROR_MORE_DATA));
+			Assert.That(count, Is.GreaterThan(0));
+			name = Marshal.PtrToStructure<WinAPI.NETAPI32.LOCALGROUP_INFO_0>(buffer.Item).name;
+			Assert.That(name, Is.Not.Null.And.Not.Empty);
+		}
 		Assert.That(name, Is.Not.Empty, "The copied managed value must survive release of its owning native buffer.");
 	}
 

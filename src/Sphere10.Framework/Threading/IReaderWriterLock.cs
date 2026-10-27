@@ -6,22 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Sphere10.Framework;
 
-public class Scope : ScopeBase {
-
-	protected override void OnScopeEnd() {
-	}
-
-	protected override async ValueTask OnScopeEndAsync() {
-	}
-
+/// <summary>Exposes the shared reader/writer lock independently of the concrete scope contract.</summary>
+public interface IReaderWriterLock {
+	ReaderWriterLockSlim ThreadLock { get; }
 }
-
-
-public class Scope<T> : Scope, IScope<T> {
-	public T Item { get; set; }
-}
-

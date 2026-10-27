@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Sphere10.Framework.Data\Sphere10.Framework.Data.csproj" />
+		<ProjectReference Include="..\..\src\Sphere10.Framework.Data.NHibernate\Sphere10.Framework.Data.NHibernate.csproj" />
 		<ProjectReference Include="..\..\src\Sphere10.Framework.NUnit.DB\Sphere10.Framework.NUnit.DB.csproj" />
 		<ProjectReference Include="..\Sphere10.Framework.Tests\Sphere10.Framework.Tests.csproj" />
 	</ItemGroup>

@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers;
 using System.Text;
 
 namespace Sphere10.Framework;
@@ -52,34 +51,20 @@ public class StringSerializer : ItemSerializerBase<string> {
 	public override void Serialize(string item, EndianBinaryWriter writer, SerializationContext context) {
 		var byteCount = TextEncoding.GetByteCount(item);
 		_sizeSerializer.Serialize(byteCount, writer, context);
-		byte[] rented = null;
-		Span<byte> bytes = byteCount <= 512
-			? stackalloc byte[byteCount]
-			: (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
-		try {
-			bytes.Clear();
-			TextEncoding.GetBytes(item.AsSpan(), bytes);
-			writer.Write(bytes);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		using BorrowArrayScope<byte>? rented = byteCount <= 512 ? null : Tools.Scope.EnterBorrowArrayScope(byteCount);
+		Span<byte> bytes = rented.HasValue ? rented.Value.Span : stackalloc byte[byteCount];
+		bytes.Clear();
+		TextEncoding.GetBytes(item.AsSpan(), bytes);
+		writer.Write(bytes);
 	}
 
 	public override string Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var size = _sizeSerializer.Deserialize(reader, context);
 		var byteCount = reader.ValidateReadBytesLength(size);
-		byte[] rented = null;
-		Span<byte> bytes = byteCount <= 512
-			? stackalloc byte[byteCount]
-			: (rented = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount);
-		try {
-			var read = reader.ReadBytes(bytes);
-			return TextEncoding.GetString(bytes[..read]);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		using BorrowArrayScope<byte>? rented = byteCount <= 512 ? null : Tools.Scope.EnterBorrowArrayScope(byteCount);
+		Span<byte> bytes = rented.HasValue ? rented.Value.Span : stackalloc byte[byteCount];
+		var read = reader.ReadBytes(bytes);
+		return TextEncoding.GetString(bytes[..read]);
 	}
 }
 

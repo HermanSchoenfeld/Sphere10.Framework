@@ -98,7 +98,7 @@ public class StackStorageAttachment<TData> : PagedListStorageAttachmentBase<TDat
 			return 
 				_stackImpl
 				.GetEnumerator()
-				.OnDispose(scope.Dispose);
+				.DisposeWith(scope);
 		} catch {
 			scope.Dispose();
 			throw;

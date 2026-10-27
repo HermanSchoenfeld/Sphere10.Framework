@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -17,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace Sphere10.Framework.Web.AspNetCore.MVC;
 
-public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : FormModelBase {
+public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModelBase {
 	public const string DefaultFormClasses = "";
 
 	public const string ButtonHtmlSnippet =
@@ -44,6 +45,7 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 	public const string FormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 100%; height: 100%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
 	public const string SmallerFormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 90%; height: 90%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
 
+	// Marker emission and form completion belong to one shared rendering session.
 	private readonly string _formID;
 	private readonly IHtmlHelper _htmlHelper;
 	private readonly FormScopeOptions _options;
@@ -104,6 +106,27 @@ public sealed class BootstrapFormScope<TModel> : IDisposable where TModel : Form
 		Guard.Ensure(_messageMarkerWritten == false, "Message marker has already been written");
 		_messageMarkerWritten = true;
 		return new HtmlString(FormatText(FormMessageMarker));
+	}
+
+	public async ValueTask DisposeAsync() {
+		var writer = _htmlHelper.ViewContext.Writer;
+		if (!_messageMarkerWritten) {
+			using var marker = new System.IO.StringWriter();
+			MessageMarker().WriteTo(marker, HtmlEncoder.Default);
+			await writer.WriteAsync(marker.ToString()).ConfigureAwait(false);
+		}
+		await writer.WriteAsync(FormatText(FormEndHtmlSnippet)).ConfigureAwait(false);
+		if (!_options.HasFlag(FormScopeOptions.OmitFormTag)) {
+			// MVC exposes only a synchronous EndForm helper. Render it locally before asynchronously writing its output.
+			using var ending = new System.IO.StringWriter();
+			try {
+				_htmlHelper.ViewContext.Writer = ending;
+				_htmlHelper.EndForm();
+			} finally {
+				_htmlHelper.ViewContext.Writer = writer;
+			}
+			await writer.WriteAsync(ending.ToString()).ConfigureAwait(false);
+		}
 	}
 
 	public void Dispose() {

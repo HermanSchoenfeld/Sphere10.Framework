@@ -81,8 +81,8 @@ public interface IPagedList<TItem> : IExtendedList<TItem>, ILoadable {
 	/// Enters a scope in which the supplied page is considered open, preventing eviction while work is performed.
 	/// </summary>
 	/// <param name="page">The target page.</param>
-	/// <returns>An <see cref="IDisposable"/> that marks the end of the scope when disposed.</returns>
-	IDisposable EnterOpenPageScope(IPage<TItem> page);
+	/// <returns>A concrete scope that marks the end of the page lifetime when disposed.</returns>
+	PageScope<TItem> EnterOpenPageScope(IPage<TItem> page);
 
 	/// <summary>
 	/// Exposes the logical pages that compose the list.

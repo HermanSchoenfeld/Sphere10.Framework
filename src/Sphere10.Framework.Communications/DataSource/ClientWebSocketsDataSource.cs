@@ -145,6 +145,7 @@ public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem
 			var sendPacket = new WebSocketsPacket(id, $"read {searchTerm} {pageLength} {usePage} {sortProperty} {sortDirection}");
 			SendBytes(sendPacket.ToBytes());
 
+			// Sync-over-async pattern
 			tcs.Task.Wait();
 
 			//await tcs.Task;
@@ -153,6 +154,7 @@ public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem
 			//		return (IEnumerable<TItem>)returnData;
 		});
 
+		// Sync-over-async pattern
 		task.Wait();
 
 		//totalItems = returnData.Count;

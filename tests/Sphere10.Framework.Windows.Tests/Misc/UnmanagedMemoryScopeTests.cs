@@ -8,32 +8,50 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Tests;
 
 [TestFixture]
 public class UnmanagedMemoryScopeTests {
 	[Test]
-	public void DisposalInvalidatesOwnedPointerEvenWhenOperationThrows() {
-		var scope = new UnmanagedMemoryScope(16);
+	public void OwnedAllocationCanBeReleasedWhenTheOperationThrows() {
+		var scope = Tools.Scope.EnterUnmanagedMemoryScope(16);
 		Assert.That(scope.Item, Is.Not.EqualTo(IntPtr.Zero));
 		Assert.That(() => {
-			using (scope) {
+			try {
 				Marshal.WriteInt32(scope.Item, 42);
 				throw new InvalidOperationException("Fixture operation failed.");
+			} finally {
+				scope.Dispose();
 			}
 		}, Throws.InvalidOperationException);
-		Assert.That(scope.Item, Is.EqualTo(IntPtr.Zero));
-		scope.Dispose();
 	}
 
 	[Test]
 	public void UnicodeStringScopeIncludesTerminatorAndRetainsUtf16Data() {
 		const string text = "Native 🧪 value";
-		using var scope = UnmanagedMemoryScope.FromUnicodeString(text);
+		using var scope = Tools.Scope.EnterUnmanagedUnicodeStringScope(text);
 		Assert.That(scope.Size, Is.EqualTo((text.Length + 1) * sizeof(char)));
 		Assert.That(Marshal.PtrToStringUni(scope.Item), Is.EqualTo(text));
 		Assert.That(Marshal.ReadInt16(scope.Item, scope.Size - sizeof(char)), Is.Zero);
+	}
+
+	[Test]
+	public async Task AsynchronousDisposalCanBeAwaitedUntilTheAllocationIsReleased() {
+		var scope = new UnmanagedMemoryScope(16);
+		Marshal.WriteInt32(scope.Item, 42);
+		await scope.DisposeAsync();
+	}
+
+	[Test]
+	public async Task DefaultMemoryHandleOwnsNoNativeAllocation() {
+		var scope = default(UnmanagedMemoryScope);
+		Assert.That(scope.Item, Is.EqualTo(IntPtr.Zero));
+		Assert.That(scope.Size, Is.Zero);
+		Assert.That(() => scope.Dispose(), Throws.Nothing);
+		await scope.DisposeAsync();
 	}
 }

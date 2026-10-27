@@ -40,6 +40,37 @@ public class ApplicationScreenHostTests {
 			Sphere10Framework.Instance.EndFramework();
 	}
 
+	[Test]
+	public void DisposedHostRejectsBlockSelection() {
+		using var host = new WinFormsApplicationScreenHost();
+		using var block = new WinFormsApplicationBlock();
+		host.Dispose();
+		Assert.That(() => host.SelectBlock(block), Throws.TypeOf<ObjectDisposedException>());
+		host.Dispose();
+	}
+
+	[Test]
+	public void DisposedHostRejectsScreenTypeRegistrationAfterValidatingItsArgument() {
+		using var host = new WinFormsApplicationScreenHost();
+		using var block = new WinFormsApplicationBlock();
+		host.Dispose();
+		Assert.That(() => host.RegisterScreenTypes(null), Throws.TypeOf<ArgumentNullException>());
+		Assert.That(() => host.RegisterScreenTypes(block), Throws.TypeOf<ObjectDisposedException>());
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void DisposedHostRejectsShowingScreens(bool undocked) {
+		using var host = new WinFormsApplicationScreenHost();
+		using var screen = new MultiProbeScreen();
+		host.Dispose();
+		if (undocked)
+			Assert.That(() => host.ShowScreenUndocked(screen), Throws.TypeOf<ObjectDisposedException>());
+		else
+			Assert.That(() => host.ShowScreen(screen), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(screen.IsDisposed, Is.False, "A rejected screen remains owned by its caller.");
+	}
+
 	[TestCase(ScreenMode.SingleView)]
 	[TestCase(ScreenMode.MultiView)]
 	public void SingleInstanceIsReusedByTypeAcrossBlocks(ScreenMode Mode) {

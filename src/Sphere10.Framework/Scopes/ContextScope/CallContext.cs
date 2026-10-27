@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Sphere10.Framework;
@@ -16,7 +17,7 @@ namespace Sphere10.Framework;
 /// async context of a test or invocation.
 /// </summary>
 public static class CallContext {
-	private static readonly SynchronizedDictionary<string, AsyncLocal<object>> State = new();
+	private static readonly SynchronizedDictionary<string, AsyncLocal<object>> _state = new();
 
 	/// <summary>
 	/// Stores a given object and associates it with the specified name.
@@ -24,10 +25,10 @@ public static class CallContext {
 	/// <param name="name">The name with which to associate the new item in the call context.</param>
 	/// <param name="data">The object to store in the call context.</param>
 	public static void LogicalSetData(string name, object data) {
-		using (State.EnterWriteScope()) {
-			if (!State.TryGetValue(name, out var asyncLocal)) {
+		using (_state.EnterWriteScope()) {
+			if (!_state.TryGetValue(name, out var asyncLocal)) {
 				asyncLocal = new AsyncLocal<object>();
-				State.Add(name, asyncLocal);
+				_state.Add(name, asyncLocal);
 			}
 			asyncLocal.Value = data;
 		}
@@ -39,15 +40,17 @@ public static class CallContext {
 	/// <param name="name">The name of the item in the call context.</param>
 	/// <returns>The object in the call context associated with the specified name, or <see langword="null"/> if not found.</returns>
 	public static object LogicalGetData(string name) =>
-		State.TryGetValue(name, out var data) ? data.Value : null;
+		_state.TryGetValue(name, out var data) ? data.Value : null;
 
 
 	public static IEnumerable<object> LogicalSearchData(string prefix) {
-		using (State.EnterReadScope()) {
-			foreach (var (key, _) in State) {
-				if (key.StartsWith(prefix))
-					yield return key;
-			}
+		// Keys are snapshotted when enumeration starts; no thread-affine lock is retained across a yield.
+		string[] keys;
+		using (_state.EnterReadScope())
+			keys = _state.Keys.ToArray();
+		foreach (var key in keys) {
+			if (key.StartsWith(prefix))
+				yield return key;
 		}
 	}
 }

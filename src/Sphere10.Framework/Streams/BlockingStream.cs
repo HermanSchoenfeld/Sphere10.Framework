@@ -61,8 +61,7 @@ public class BlockingStream : Stream {
 			throw new ArgumentOutOfRangeException(nameof(offset));
 		if (count < 0 || offset + count > buffer.Length)
 			throw new ArgumentOutOfRangeException(nameof(count));
-		if (_dataAvailable == null)
-			throw new ObjectDisposedException(GetType().Name);
+		ObjectDisposedException.ThrowIf(_dataAvailable == null, this);
 
 		if (count == 0) return 0;
 
@@ -115,8 +114,7 @@ public class BlockingStream : Stream {
 			throw new ArgumentOutOfRangeException(nameof(offset));
 		if (count < 0 || offset + count > buffer.Length)
 			throw new ArgumentOutOfRangeException(nameof(count));
-		if (_dataAvailable == null)
-			throw new ObjectDisposedException(GetType().Name);
+		ObjectDisposedException.ThrowIf(_dataAvailable == null, this);
 
 		if (count == 0) return;
 
@@ -132,8 +130,7 @@ public class BlockingStream : Stream {
 	}
 
 	public void SetEndOfStream() {
-		if (_dataAvailable == null)
-			throw new ObjectDisposedException(GetType().Name);
+		ObjectDisposedException.ThrowIf(_dataAvailable == null, this);
 		lock (_lockForAll) {
 			_illegalToWrite = true;
 			_doneWriting.Set();

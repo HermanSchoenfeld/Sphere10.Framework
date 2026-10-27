@@ -186,7 +186,7 @@ public static class ControlExtensions {
 	}
 
 	private static Control GetAsyncInvoker(Control Control) {
-		Guard.Ensure(!Control.IsDisposed, "Cannot invoke on a disposed control.");
+		ObjectDisposedException.ThrowIf(Control.IsDisposed, Control);
 		if (Control.IsHandleCreated)
 			return Control;
 		var Invoker = System.Windows.Forms.Application.OpenForms.Cast<Form>().Reverse().FirstOrDefault(Form => Form.IsHandleCreated && !Form.IsDisposed);

@@ -113,7 +113,7 @@ public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecora
 
 	public Task LoadAsync() => Task.Run(Load);
 
-	public IDisposable EnterOpenPageScope(IPage<TItem> page) => InternalCollection.EnterOpenPageScope(page);
+	public PageScope<TItem> EnterOpenPageScope(IPage<TItem> page) => InternalCollection.EnterOpenPageScope(page);
 
 	protected virtual void OnAccessing() {
 	}

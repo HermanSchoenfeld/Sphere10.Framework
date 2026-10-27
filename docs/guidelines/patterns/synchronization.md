@@ -14,6 +14,16 @@ scope-based acquire/release. Prefer `SynchronizedObject` and its
 For synchronous provider collection, enter/release the write scope within the
 same worker delegate. A thread-affine scope must never span an `await`.
 
+`Synchronized*` collections are the designated shared-state pattern in Framework
+and its consumers. Use the appropriate collection and its scopes rather than
+substituting `ConcurrentDictionary`, another concurrent collection or a separate
+locking protocol for an existing synchronized owner. A concrete requirement can
+justify a different primitive; document that requirement and the relevant
+correctness or measured performance evidence. A screening result alone does not
+justify abandoning a pattern that can support the required behavior. Preserve
+atomic compound operations and copy borrowed data under a short scope before
+yielding, awaiting or processing it outside the lock.
+
 When exclusive asynchronous admission is actually needed, use the framework's
 [AsyncSynchronizedGate](../../../src/Sphere10.Framework/Threading/AsyncSynchronizedGate.cs):
 `using var admission = await gate.EnterScopeAsync(cancellationToken);` releases
@@ -26,10 +36,27 @@ Do not implement another semaphore/gate with manual releases in a consumer.
 [ISynchronizedObject](../../../src/Sphere10.Framework/Threading/ISynchronizedObject.cs)
 exposes `EnterReadScope()`, `EnterWriteScope()`, `ThreadLock` and
 `ParentSyncObject`. [SynchronizedObject](../../../src/Sphere10.Framework/Threading/SynchronizedObject.cs)
-implements the scopes with a `ReaderWriterLockSlim`: a read scope permits concurrent
-readers, while a write scope excludes other readers and writers. Acquire through
-the scope methods and release through `using`; do not duplicate their enter/exit
+implements the scopes with a `ReaderWriterLockSlim`, returning concrete
+`ReadScope` and `WriteScope` values: a read scope permits concurrent readers,
+while a write scope excludes other readers and writers. Acquire through the
+scope methods and release through `using`; do not duplicate their enter/exit
 machinery with raw lock calls.
+
+The interface exposes the same concrete `ReadScope` and `WriteScope` return
+types as the ordinary methods. Use the standard names through either reference:
+
+```csharp
+ISynchronizedObject owner = new SynchronizedObject();
+using var scope = owner.EnterWriteScope();
+```
+
+`IReaderWriterLock` exposes only the shared `ThreadLock`. Ordinary `ISynchronizedObject` and typed `ISynchronizedObject<TReadScope, TWriteScope>` inherit that lock contract while keeping their distinct scope return types. `SynchronizedObjectBase` resolves the parent lock once for acquisition; the returned scope retains that exact lock even if `ParentSyncObject` changes before disposal.
+
+Decorators forward those concrete results directly. Custom providers implement
+the same methods and can return a scope constructed with their cleanup action.
+Acquisition and cleanup remain the provider's responsibility; creating a
+capturing callback can still allocate. There is one entry point per scope,
+without a separate interface method returning `IDisposable`.
 
 ```csharp
 using Sphere10.Framework;
@@ -97,12 +124,26 @@ foreach (var key in keys) {
 }
 ```
 
+[CallContext](../../../src/Sphere10.Framework/Scopes/ContextScope/CallContext.cs)
+uses a write scope to publish one ambient slot per name and a short read scope
+to copy key names before yielding them. The
+[registry tests](../../../tests/Sphere10.Framework.Tests/Scopes/CallContextTests.cs)
+cover concurrent first publication, execution-flow isolation and writes between
+search yields.
+
 Dispose manual enumerators with `using`; `foreach` disposes them automatically.
 Abandoning an enumerator can leave its read lock held. Do not pass a locked
 enumerator to another thread or hold it across an `await`. For slow processing,
 copy the required membership under a read scope and process the copy after
 releasing the scope. A membership snapshot does not make mutable elements
 immutable or thread safe.
+
+An enumerator or returned stream that retains a concrete scope must own it in
+one field or closure until disposal. Transfer ownership only after successful
+construction, and release the local acquisition if construction fails. Do not
+dispose both the local and its retained copy, or bind a struct's `Dispose` method
+to a delegate that captures another copy. This ownership transfer does not
+relax thread affinity.
 
 ## Borrowed callbacks and UI dispatch
 
@@ -140,9 +181,12 @@ using (root.EnterWriteScope()) {
 
 Configure the parent before publishing or using the child. Keep the parent
 chain acyclic and its identity stable while scopes can be open or waiting.
-The current `SynchronizedObject` exit delegate resolves `ThreadLock` again;
-changing the parent can make it exit a different lock from the one entered.
-Taking a scope on the old lock is insufficient to safely reparent active users.
+The nongeneric `SynchronizedObject` captures the acquired lock in its concrete
+scope and releases that same lock. Changing a parent still splits mutual
+exclusion between existing and new users; taking a scope on the old lock is
+insufficient to safely reparent active users. The generic
+`SynchronizedObject<TReadScope, TWriteScope>` also captures the acquired lock
+and releases that same instance.
 
 [PooledCacheReaper](../../../src/Sphere10.Framework/Cache/PooledCacheReaper.cs)
 is a concrete consumer: it parents differently typed caches to itself before
@@ -166,9 +210,18 @@ has finished one operation.
 Derive from `SynchronizedObject` when synchronization is intrinsic to a type,
 or delegate to one when a decorator already has another base. Use
 `OnReadScopeOpen/Closed` and `OnWriteScopeOpen/Closed` only for the additional
-scope behavior the type needs. Keep open hooks and typed scope construction
-exception-safe: the current base acquires the lock before invoking them and
-does not unwind acquisition if they throw.
+scope behavior the type needs. The nongeneric base acquires the lock before
+calling its open hook and unwinds that acquisition if the hook throws. Its
+concrete scope releases the captured lock before calling the closed hook.
+Disposal directly performs that sequence; there is no scope phase tracking or
+reentry suppression. If a closed hook throws, the acquisition has already been
+released. Do not repeat disposal to handle that notification failure.
+
+Default `ReadScope` and `WriteScope` values own nothing. Keep one owner and one
+normal disposal per acquisition; copying a scope copies the same acquisition,
+and assigning it to `IDisposable` boxes a copy. Direct concrete `using` calls keep
+the value. See [resource scopes](resource-scopes.md#choosing-a-disposal-implementation)
+for ownership transfer, callback helpers and binary compatibility.
 
 `EnsureReadable()` and `EnsureWritable()` verify the current thread's held
 lock; they do not acquire one. In the current base, `EnsureReadable()` checks
@@ -182,21 +235,32 @@ adds resource initialization/finalization around tracked scopes. It is a
 separate abstract lifecycle foundation, not a prerequisite for a synchronized
 collection or a drop-in replacement for the simple lock owner.
 
-The generic `SynchronizedObject<TReadScope, TWriteScope>` creates typed `IScope`
-objects and releases the lock through `ScopeEnd`. Its typed parent must use
-compatible scope types; the inline base-interface bridge preserves that
-requirement. [TypedSynchronizedObjectAdapterTests](../../../tests/Sphere10.Framework.Tests/Threading/TypedSynchronizedObjectAdapterTests.cs)
-cover typed/base dispatch, parent compatibility, and synchronous scope lifetime.
+The generic `SynchronizedObject<TReadScope, TWriteScope>` requires struct `IScope`
+types and returns `ReadScope<TReadScope>` / `WriteScope<TWriteScope>`. The wrapper
+disposes its inner scope while holding the lock, then releases the acquisition.
+If inner cleanup throws, lock release has not run; recovery follows the inner
+resource's contract rather than an automatic retry protocol. A construction
+failure unwinds the acquired lock. Its
+`ISynchronizedObject<TReadScope, TWriteScope>` contract is separate from the
+nongeneric value-scope contract, and its typed parent must use compatible scope
+types. Both families use owner-based `ReadScope` / `WriteScope` construction.
+Each scope extracts and captures `owner.ThreadLock` before acquisition, then
+runs the owner's open hook. Failed hooks release that captured lock; changing
+the parent's lock during or after the hook cannot change which lock is released.
+Their shared `IReaderWriterLock` contract exposes only `ThreadLock`.
+The base stores one parent reference and keeps its lock lookup nonvirtual;
+sharing the lock contract does not introduce a nongeneric scope bypass.
+[TypedSynchronizedObjectAdapterTests](../../../tests/Sphere10.Framework.Tests/Threading/TypedSynchronizedObjectAdapterTests.cs)
+cover typed dispatch, parent compatibility, and synchronous scope lifetime.
 
 ## Thread affinity and asynchronous work
 
 Reader/writer and monitor acquisitions belong to the acquiring thread. Keep
 these scope blocks synchronous and dispose on that thread. The typed scope's
-`IAsyncDisposable` shape does not remove this requirement:
-[ScopeBase](../../../src/Sphere10.Framework/Scopes/ScopeBase.cs) raises async
-`ScopeEnd` via `Task.Run`, so `await using` on the typed synchronized scope can
-attempt lock release from a worker thread. Use synchronous `using` for these
-lock scopes.
+`IAsyncDisposable` shape does not remove this requirement. Its `DisposeAsync()`
+returns `NotSupportedException` without starting cleanup or releasing the lock.
+An earlier `await` can still move the caller to another thread. Use synchronous
+`using` for these lock scopes.
 
 For async work, take a short synchronous scope to capture or update state,
 release it before awaiting, then acquire a new scope and revalidate any state
@@ -205,31 +269,52 @@ workflow, use the scope-returning `AsyncSynchronizedGate` described above rather
 than wrapping it in a thread-affine read/write scope. The existing
 [ApplicationScreenHost](../../../src/Sphere10.Framework.Application/UI/ApplicationScreenHost.cs)
 coordinates transitions with `SemaphoreSlim.WaitAsync` and releases through
-`Tools.Scope.ExecuteOnDispose`; that is an existing implementation, not the
+`ActionScope`; that is an existing implementation, not the
 consumer pattern for new coordination code.
 
 [SynchronizedRepository](../../../src/Sphere10.Framework/Repository/SynchronizedRepository.cs)
-has existing async adapters that call `ContinueOnSameThread` inside these
+has existing CRUD async adapters that call `ContinueOnSameThread` inside these
 scopes. The [task extension](../../../src/Sphere10.Framework/Extensions/TaskExtensions.cs)
 uses [SameThreadSynchronizationContext](../../../src/Sphere10.Framework/Threading/SameThreadSynchronizationContext.cs)
 to block and pump the calling thread until the wrapped task completes. That
 context is installed without restoring the previous one. This is an existing
 compatibility path with blocking/context effects, not a general pattern for
 nonblocking async locking.
+Its disposal adapter instead schedules its existing synchronous `Dispose`
+primitive on a worker. Acquisition, nested synchronized wrappers and release
+remain on that worker; inner repositories use their synchronous disposal
+contract, including the complete sync-over-async bridge for async-first owners.
+The caller receives the worker's task.
 
 ## Choosing other existing scope primitives
 
 - [ICriticalObject](../../../src/Sphere10.Framework/Threading/ICriticalObject.cs)
   and [CriticalObject](../../../src/Sphere10.Framework/Threading/CriticalObject.cs)
-  supply monitor-backed exclusive `EnterAccessScope()` and shared
-  `ParentCriticalObject`. ObjectSpace and clustered streams use this access
-  contract rather than reader/writer scopes.
+  supply monitor-backed exclusive access and shared `ParentCriticalObject`.
+  `EnterAccessScope()` returns concrete `AccessScope` through both the class and
+  interface. Custom providers implement that same return contract. The built-in
+  scope captures the acquired monitor, unwinds a failed open hook, and calls the
+  closed hook only after release. ObjectSpace and clustered streams forward this
+  access contract rather than using reader/writer scopes.
 - [FastLock](../../../src/Sphere10.Framework/Threading/FastLock.cs) supplies a
-  recursive exclusive `EnterLockScope()` backed by a reader/writer write lock.
+  recursive exclusive `EnterLockScope()` backed by a reader/writer write lock,
+  returning a concrete `SyncScope<ReaderWriterLockSlim>`.
 - [NonReentrantLock](../../../src/Sphere10.Framework/Threading/NonReentrantLock.cs)
   supplies exclusive `EnterLockScope()` and rejects reentry by the owning
   thread. Although backed by `SemaphoreSlim`, its public acquire/release
-  contract is synchronous and thread-affine.
+  contract is synchronous and thread-affine. It returns a concrete
+  `SyncScope<NonReentrantLock>`.
+- `Tools.Threads.EnterLockScope()` returns a concrete `MonitorScope` for an ordinary monitor. `AccessScope` separately retains the required `CriticalObject` owner and its closed notification; it has no plain-lock or callback mode.
+  `SemaphoreSlim.EnterWaitScope()` returns a concrete
+  `ActionScope<SemaphoreSlim>` after synchronous acquisition. These helpers
+  do not introduce asynchronous lock scopes.
+
+- [ProducerConsumerLock](../../../src/Sphere10.Framework/Threading/ProducerConsumerLock.cs) returns `ProducerConsumerScope`, which directly owns its monitor, role semaphore and acquiring thread identifier. Encapsulate this acquisition in its named value type instead of repeating tuple payloads or callback casts throughout the API.
+
+Use synchronous `using` for `FastLock` and `NonReentrantLock`, whose release must
+stay on their acquiring thread. Their `SyncScope<T>` rejects async
+disposal before invoking its callback. The semaphore admission scope remains
+thread-neutral and can offload release through `ActionScope<T>`.
 
 Choose the contract used by the actual resource. A synchronization scope only
 coordinates access; it does not make a mutation transactional or durable. See

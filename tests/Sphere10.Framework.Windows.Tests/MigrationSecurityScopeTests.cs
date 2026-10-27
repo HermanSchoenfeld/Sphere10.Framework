@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework.Windows.Security;
 
@@ -18,6 +19,11 @@ namespace Sphere10.Framework.Windows.Tests;
 [TestFixture]
 [NonParallelizable]
 public class MigrationSecurityScopeTests {
+	[Test]
+	public void NullPrivilegesAreRejectedBeforeNativeAcquisition() {
+		Assert.That(() => new TokenPrivilegeScope(null), Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("privileges"));
+	}
+
 	[Test]
 	public void TokenPrivilegeLayoutMatchesSingleNativePrivilege() {
 		Assert.That(Marshal.SizeOf<WinAPI.ADVAPI32.TokenPrivilege>(), Is.EqualTo(16));
@@ -41,15 +47,32 @@ public class MigrationSecurityScopeTests {
 		WindowsIdentity.RunImpersonated(caller.AccessToken, () => {
 			using var before = WindowsIdentity.GetCurrent();
 			var admitted = Tools.Windows.Security.TryEnterScope(new[] { "SeRestorePrivilege" }, out var scope);
-			using (scope) {
+			try {
 				using var during = WindowsIdentity.GetCurrent();
 				Assert.That(during.User, Is.EqualTo(before.User));
-				Assert.That(scope != null, Is.EqualTo(admitted));
+				Assert.That(scope.Equals(default(TokenPrivilegeScope)), Is.EqualTo(!admitted));
+			} finally {
+				scope.Dispose();
 			}
 			using var after = WindowsIdentity.GetCurrent();
 			Assert.That(after.User, Is.EqualTo(before.User));
 			Assert.That(after.ImpersonationLevel, Is.EqualTo(before.ImpersonationLevel));
 		});
+	}
+
+	[Test]
+	public async Task PrivilegeScopesRejectAsyncDisposalAndKeepTheirNativeCleanupSynchronous() {
+		using var before = WindowsIdentity.GetCurrent();
+		Tools.Windows.Security.TryEnterScope(new[] { "SeRestorePrivilege" }, out var scope);
+		try {
+			await Assert.ThatAsync(async () => await scope.DisposeAsync(), Throws.TypeOf<NotSupportedException>().With.Message.EqualTo("This scope does not support async"));
+			using var current = WindowsIdentity.GetCurrent();
+			Assert.That(current.User, Is.EqualTo(before.User));
+		} finally {
+			scope.Dispose();
+		}
+		using var after = WindowsIdentity.GetCurrent();
+		Assert.That(after.User, Is.EqualTo(before.User));
 	}
 
 	[Test]

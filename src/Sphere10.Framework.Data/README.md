@@ -47,7 +47,7 @@ The **Data Access Context (DAC)** is the central abstraction for database operat
 
 ### DACScope - Connection and Transaction Management
 
-The DAC holds configuration and is not disposable. `DACScope` owns the connection and any local transaction it creates. `BeginScope()` opens the connection by default; constructing the DAC does not. Common imports for these examples are:
+The DAC holds configuration and is not disposable. `DACScope` owns the connection and any local transaction it creates. `EnterScope()` opens the connection by default; constructing the DAC does not. Common imports for these examples are:
 
 ```csharp
 using System;
@@ -59,7 +59,7 @@ using Sphere10.Framework;
 using Sphere10.Framework.Data;
 
 // Opens a connection scope (reuses connection if nested)
-using (var scope = dac.BeginScope(openConnection: true)) {
+using (var scope = dac.EnterScope(openConnection: true)) {
 	// All operations share this connection
 	dac.Insert("Users", new[] { new ColumnValue("ID", 1) });
 	dac.Insert("Users", new[] { new ColumnValue("ID", 2) });
@@ -70,7 +70,7 @@ using (var scope = dac.BeginScope(openConnection: true)) {
 **Transaction Support:**
 
 ```csharp
-using (var scope = dac.BeginScope()) {
+using (var scope = dac.EnterScope()) {
 	scope.BeginTransaction();
 
 	dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
@@ -86,10 +86,10 @@ using (var scope = dac.BeginScope()) {
 With `UseScopeOsmosis = true` (the default), nested scopes with the same connection string share their connection and transaction. Setting it to `false` separates different DAC instances; scopes on the same instance can still nest. These are shared transactions, not savepoints:
 
 ```csharp
-using (var outerScope = dac.BeginScope()) {
+using (var outerScope = dac.EnterScope()) {
 	outerScope.BeginTransaction();
 
-	using (var innerScope = dac.BeginScope()) {
+	using (var innerScope = dac.EnterScope()) {
 		// Same connection as outerScope
 		innerScope.BeginTransaction();  // Joins the existing transaction
 		dac.Insert("Table", new[] { new ColumnValue("ID", 1) });
@@ -108,7 +108,7 @@ When a DAC scope opens its own connection inside an ambient `System.Transactions
 
 ```csharp
 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required)) {
-	using (dac.BeginScope()) {
+	using (dac.EnterScope()) {
 		dac.Insert("Users", new[] { new ColumnValue("ID", 1) });
 	}
 	transactionScope.Complete();
@@ -142,7 +142,7 @@ dac.Delete("Users", new[] { new ColumnValue("ID", 1) });
 For bound values, create an ADO.NET command through the scope. This scalar example uses the `@value` placeholder supported by SQL Server, MySQL, PostgreSQL and SQLite. For Oracle, use `SELECT :value FROM DUAL` and the parameter name `value`.
 
 ```csharp
-using (var scope = dac.BeginScope()) {
+using (var scope = dac.EnterScope()) {
 	using var command = scope.Connection.CreateCommand();
 	command.CommandText = "SELECT @value";
 	command.CommandTimeout = 30;

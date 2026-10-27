@@ -72,7 +72,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		_instanceTracker = new InstanceTracker();
 		AutoSave = objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.AutoSave);
 		GarbageCollectEnabled = objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.GarbageCollect);
-		Disposables = Disposables.None;
+		Disposables = new Disposables();
 		FlushOnDispose = true;
 
 		// Build the set of dimension types for external reference classification
@@ -110,7 +110,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	protected bool FlushOnDispose { get; set; }
 
-	public IDisposable EnterAccessScope() => _streams.EnterAccessScope();
+	public AccessScope EnterAccessScope() => _streams.EnterAccessScope();
 
 	/// <summary>
 	/// Returns a materialized membership snapshot of saved, live objects in physical slot order, preserving tracked instance identity.

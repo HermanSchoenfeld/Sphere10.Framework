@@ -177,7 +177,7 @@ public abstract class ApplicationBase : Disposable, IApplication {
 		using (_lifecycle.EnterAccessScope()) {
 			if (_exitState == ExitState.Exited)
 				return Task.FromResult(true);
-			Guard.Ensure(!IsDisposed && !_disposing, "The application has been disposed.");
+			ObjectDisposedException.ThrowIf(IsDisposed || _disposing, this);
 			Guard.Ensure(!_initializing, "Application initialization is still running.");
 			if (_exitRequest == null) {
 				Guard.Ensure(_finalization == null || _finalization.Task.IsCompleted || !ReferenceEquals(_runningFinalization.Value, _finalization),
@@ -220,7 +220,8 @@ public abstract class ApplicationBase : Disposable, IApplication {
 		var tasks = initializers.ToArray();
 		Guard.Argument(tasks.All(task => task != null), nameof(initializers), "Initialization tasks cannot be null.");
 		using var access = _lifecycle.EnterAccessScope();
-		Guard.Ensure(!_initializationStarted && !_finalized && !IsDisposed && !_disposing, "Application lifecycle tasks cannot change after initialization or finalization.");
+		ObjectDisposedException.ThrowIf(IsDisposed || _disposing, this);
+		Guard.Ensure(!_initializationStarted && !_finalized, "Application lifecycle tasks cannot change after initialization or finalization.");
 		_initializers = Tools.Values.Future.Explicit(tasks);
 	}
 
@@ -230,13 +231,14 @@ public abstract class ApplicationBase : Disposable, IApplication {
 		var tasks = finalizers.ToArray();
 		Guard.Argument(tasks.All(task => task != null), nameof(finalizers), "Finalization tasks cannot be null.");
 		using var access = _lifecycle.EnterAccessScope();
-		Guard.Ensure(!_initializationStarted && !_finalized && !IsDisposed && !_disposing, "Application lifecycle tasks cannot change after initialization or finalization.");
+		ObjectDisposedException.ThrowIf(IsDisposed || _disposing, this);
+		Guard.Ensure(!_initializationStarted && !_finalized, "Application lifecycle tasks cannot change after initialization or finalization.");
 		_finalizers = Tools.Values.Future.Explicit(tasks);
 	}
 
 	/// <summary>Replaces application-level menu membership without taking ownership of the definitions.</summary>
 	public virtual void SetMenus(IEnumerable<IApplicationMenu> menus) {
-		Guard.Ensure(!IsDisposed, "The application has been disposed.");
+		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(menus, nameof(menus));
 		var definitions = menus.ToArray();
 		Guard.Argument(definitions.All(menu => menu != null), nameof(menus), "Menu definitions cannot be null.");
@@ -246,7 +248,7 @@ public abstract class ApplicationBase : Disposable, IApplication {
 
 	/// <summary>Replaces application-level toolbar membership without taking ownership of the definitions.</summary>
 	public virtual void SetToolBarItems(IEnumerable<IApplicationMenuItem> items) {
-		Guard.Ensure(!IsDisposed, "The application has been disposed.");
+		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(items, nameof(items));
 		var definitions = items.ToArray();
 		Guard.Argument(definitions.All(item => item != null), nameof(items), "Toolbar definitions cannot be null.");
@@ -300,7 +302,8 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	/// <summary>Checks lifecycle state before a platform performs its own initialization work.</summary>
 	protected void EnsureCanInitialize() {
 		using var access = _lifecycle.EnterAccessScope();
-		Guard.Ensure(!IsDisposed && !_disposing && !_finalized, "The application has been finalized or disposed.");
+		ObjectDisposedException.ThrowIf(IsDisposed || _disposing, this);
+		Guard.Ensure(!_finalized, "The application has been finalized or disposed.");
 		Guard.Ensure(_exitState == ExitState.Running, "The application is exiting or has exited.");
 		Guard.Ensure(!_initializationStarted || IsInitialized, "Application initialization has already been attempted.");
 	}

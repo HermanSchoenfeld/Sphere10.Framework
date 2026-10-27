@@ -28,20 +28,25 @@ public class SynchronizedSet<TItem, TSet> : SetDecorator<TItem, TSet>, ISynchron
 
 	public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
-	public IDisposable EnterReadScope() {
+	public ReadScope EnterReadScope() {
 		return _lock.EnterReadScope();
 	}
 
-	public IDisposable EnterWriteScope() {
+	public WriteScope EnterWriteScope() {
 		return _lock.EnterWriteScope();
 	}
 
 	public override IEnumerator<TItem> GetEnumerator() {
 		var readScope = EnterReadScope();
-		return
-			InternalSet
-				.GetEnumerator()
-				.OnDispose(readScope.Dispose);
+		try {
+			return
+				InternalSet
+					.GetEnumerator()
+					.DisposeWith(readScope);
+		} catch {
+			readScope.Dispose();
+			throw;
+		}
 	}
 
 	public override bool Add(TItem item) {

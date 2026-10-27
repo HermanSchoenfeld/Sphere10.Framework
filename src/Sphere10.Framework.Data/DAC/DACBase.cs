@@ -63,7 +63,7 @@ public abstract class DACBase : IDAC {
 	public virtual int ExecuteNonQuery(string query) {
 		Log.Debug(Environment.NewLine + query);
 		try {
-			using (var scope = this.BeginScope(true))
+			using (var scope = this.EnterScope(true))
 			using (var command = scope.Connection.CreateCommand()) {
 				command.CommandTimeout = 0;
 				command.CommandText = query;
@@ -82,7 +82,7 @@ public abstract class DACBase : IDAC {
 	public virtual object ExecuteScalar(string query) {
 		Log.Debug(Environment.NewLine + query);
 
-		using (var scope = this.BeginScope(true))
+		using (var scope = this.EnterScope(true))
 		using (var command = scope.Connection.CreateCommand()) {
 			command.CommandText = query;
 			command.CommandType = CommandType.Text;
@@ -96,7 +96,7 @@ public abstract class DACBase : IDAC {
 		try {
 			var results = new List<DataTable>();
 
-			using (var scope = this.BeginScope(true)) {
+			using (var scope = this.EnterScope(true)) {
 				using (var command = scope.Connection.CreateCommand()) {
 					command.CommandTimeout = 0;
 					command.CommandType = CommandType.Text;
@@ -127,7 +127,7 @@ public abstract class DACBase : IDAC {
 	public virtual IDataReader ExecuteReader(string query) {
 		Log.Debug(Environment.NewLine + query);
 
-		using (var scope = this.BeginScope(true)) {
+		using (var scope = this.EnterScope(true)) {
 			try {
 				var command = scope.Connection.CreateCommand();
 				if (scope.Transaction != null)
@@ -166,7 +166,7 @@ public abstract class DACBase : IDAC {
 	public abstract void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout);
 
 	public DBSchema GetSchema() {
-		using (var scope = this.BeginScope()) {
+		using (var scope = this.EnterScope()) {
 			var schema =
 				new DBSchema {
 					DatabaseID = this.ConnectionString,

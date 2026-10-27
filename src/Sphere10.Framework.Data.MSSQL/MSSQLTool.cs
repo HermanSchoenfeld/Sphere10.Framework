@@ -67,7 +67,7 @@ public static class MSSQL {
 
 		var connString = CreateConnectionString(server, "master", userID, password, integratedSecurity);
 		var dac = new MSSQLDAC(connString);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			return dac.ExecuteScalar<bool>(
 				CheckDatabaseExistsQuery.FormatWith(databaseName)
 			);
@@ -77,7 +77,7 @@ public static class MSSQL {
 	public static bool TestConnectionString(string connectionString) {
 		var dac = new MSSQLDAC(connectionString);
 		try {
-			using (dac.BeginScope()) {
+			using (dac.EnterScope()) {
 				return true;
 			}
 		} catch {
@@ -95,7 +95,7 @@ public static class MSSQL {
 
 		var connString = CreateConnectionString(server, "master", username, password, useIntegratedSecurity);
 		var dac = new MSSQLDAC(connString);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var isAzure = dac.IsAzure();
 
 			var alreadyExists = dac.ExecuteScalar<bool>(CheckDatabaseExistsQuery.FormatWith(databaseName));
@@ -149,7 +149,7 @@ public static class MSSQL {
 
 		var connString = CreateConnectionString(server, "master", username, password, useIntegratedSecurity);
 		var dac = new MSSQLDAC(connString);
-		using (dac.BeginScope()) {
+		using (dac.EnterScope()) {
 			var exists = dac.ExecuteScalar<bool>(
 				CheckDatabaseExistsQuery.FormatWith(databaseName)
 			);

@@ -368,12 +368,12 @@ using (var dac = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable
 ```csharp
 using (var dac = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable)) {
     // Create a scope that reuses connections within the same DAC
-    using (var scope = dac.BeginScope(false)) {
+    using (var scope = dac.EnterScope(false)) {
         // Do work with scope
         var connection1 = scope.Connection;
         
         // Nested scopes reuse the same connection
-        using (var scope2 = dac.BeginScope(false)) {
+        using (var scope2 = dac.EnterScope(false)) {
             var connection2 = scope2.Connection;
             Assert.That(connection1, Is.SameAs(connection2));
         }
@@ -384,8 +384,8 @@ using (var dac = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable
 using (var dac1 = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable)) {
     var dac2 = DuplicateDAC(dac1);
     
-    using (var scope1 = dac1.BeginScope(false)) {
-        using (var scope2 = dac2.BeginScope(false)) {
+    using (var scope1 = dac1.EnterScope(false)) {
+        using (var scope2 = dac2.EnterScope(false)) {
             // Both scopes use same underlying connection
             Assert.That(scope1.Connection, Is.SameAs(scope2.Connection));
         }
@@ -394,7 +394,7 @@ using (var dac1 = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTabl
 ```
 
 **Key Features:**
-- `BeginScope(createTransaction)` - Start a scope, optionally creating transaction
+- `EnterScope(openConnection: true)` - Open a connection scope; call `BeginTransaction()` explicitly to start a transaction
 - Connection reuse within and across DACs
 - Automatic connection pooling
 - Proper disposal and cleanup
@@ -410,7 +410,7 @@ using (var dac1 = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTabl
 ```csharp
 using (var dac = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable)) {
     // Commit transaction
-    using (var scope = dac.BeginScope(true)) {
+    using (var scope = dac.EnterScope(true)) {
         scope.BeginTransaction();
         dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
         scope.Commit();  // Persists changes
@@ -418,7 +418,7 @@ using (var dac = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable
     Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));
     
     // Rollback transaction
-    using (var scope = dac.BeginScope(true)) {
+    using (var scope = dac.EnterScope(true)) {
         scope.BeginTransaction();
         dac.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
         scope.Rollback();  // Discards changes
@@ -426,31 +426,31 @@ using (var dac = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable
     Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));  // Still 1, not 2
 }
 
-// Nested transactions with independent rollback
+// Nested scopes share a transaction; an inner rollback vetoes the owner's commit
 using (var dac = EnterCreateDatabaseScope(DBMSType.SQLite, TestTables.BasicTable)) {
-    using (var scope = dac.BeginScope(true)) {
+    using (var scope = dac.EnterScope(true)) {
         scope.BeginTransaction();
         dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
         
         var dac2 = DuplicateDAC(dac);
-        using (var scope2 = dac2.BeginScope()) {
+        using (var scope2 = dac2.EnterScope()) {
             scope2.BeginTransaction();
             dac2.Insert("BasicTable", new[] { new ColumnValue("ID", 2) });
-            scope2.Rollback();  // Inner transaction rolls back
+            scope2.Rollback();  // Votes to roll back the shared transaction
         }
         
-        scope.Commit();  // Outer transaction commits
+        scope.Commit();  // Honors the inner scope's rollback vote
     }
     
-    // Should have only ID=1, ID=2 was rolled back
-    Assert.That(dac.Count("BasicTable"), Is.EqualTo(1));
+    // The rollback vote discards both inserts
+    Assert.That(dac.Count("BasicTable"), Is.Zero);
 }
 ```
 
 **Scope Options:**
-- `BeginScope(false)` - Without transaction
-- `BeginScope(true)` - With transaction
-- Transactions auto-close on scope disposal (rollback if not committed)
+- `EnterScope(openConnection: false)` - Create/share the connection without opening it
+- `EnterScope(openConnection: true)` - Open the connection without automatically starting a transaction
+- Call `Commit()` or `Rollback()` explicitly; scope disposal closes its owned transaction and connection
 
 ---
 
@@ -466,10 +466,10 @@ public async Task AsyncDatabaseOperations(DBMSType dbmsType) {
     using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
         var dac2 = DuplicateDAC(dac);
         
-        using (var scope = dac.BeginScope(true)) {
+        using (var scope = dac.EnterScope(true)) {
             // Run async work that propagates connection context
             await Task.Run(() => {
-                using (var scope2 = dac2.BeginScope(true)) {
+                using (var scope2 = dac2.EnterScope(true)) {
                     // scope2 automatically uses the same connection from scope
                     Assert.That(scope.Connection, Is.SameAs(scope2.Connection));
                 }

@@ -113,14 +113,19 @@ public class SynchronizedDictionary<TKey, TValue, TInner> : DictionaryDecorator<
 	}
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		var readScope = EnterReadScope();
-		return base.GetEnumerator().OnDispose(readScope.Dispose);
+		try {
+			return base.GetEnumerator().DisposeWith(readScope);
+		} catch {
+			readScope.Dispose();
+			throw;
+		}
 	}
 
-	public IDisposable EnterReadScope() {
+	public ReadScope EnterReadScope() {
 		return _lock.EnterReadScope();
 	}
 
-	public IDisposable EnterWriteScope() {
+	public WriteScope EnterWriteScope() {
 		return _lock.EnterWriteScope();
 	}
 }

@@ -10,13 +10,13 @@ using System.Threading;
 
 namespace Sphere10.Framework;
 
-public abstract class SynchronizedResource : SynchronizedResource<Scope, Scope>, ISynchronizedResource {
+public abstract class SynchronizedResource : SynchronizedResource<NoOpScope, NoOpScope>, ISynchronizedResource {
 }
 
 
 public abstract class SynchronizedResource<TReadScope, TWriteScope> : SynchronizedObject<TReadScope, TWriteScope>, ISynchronizedResource<TReadScope, TWriteScope>
-	where TReadScope : IScope, new()
-	where TWriteScope : IScope, new() {
+	where TReadScope : struct, IScope
+	where TWriteScope : struct, IScope {
 	private readonly Synchronized<ScopeTracker> _scopeTracker;
 
 	public event EventHandlerEx<object> Initializing;

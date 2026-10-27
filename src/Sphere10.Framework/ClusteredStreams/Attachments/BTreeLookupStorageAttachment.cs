@@ -148,15 +148,15 @@ public class BTreeLookupStorageAttachment<TKey, TValue> : BTreeLookupStorageAtta
 
 	public IEnumerator<IGrouping<TKey, TValue>> GetEnumerator() {
 		CheckAttached();
-		var Scope = Streams.EnterAccessScope();
+		var scope = Streams.EnterAccessScope();
 		try {
 			return
 				BTreeLookup
 					.EnumerateGroupings()
 					.GetEnumerator()
-					.OnDispose(Scope.Dispose);
+					.DisposeWith(scope);
 		} catch {
-			Scope.Dispose();
+			scope.Dispose();
 			throw;
 		}
 	}

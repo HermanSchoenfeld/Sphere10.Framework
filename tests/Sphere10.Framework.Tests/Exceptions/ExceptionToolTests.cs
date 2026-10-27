@@ -191,6 +191,44 @@ public class ExceptionToolTests {
 	}
 
 	[Test]
+	public void PrefetchedExecuteRunsTheActionOnceAndSkipsTheHandlerOnSuccess() {
+		var calls = new List<string>();
+		var succeeded = Tools.Exceptions.Execute(calls, static items => items.Add("action"), static (_, _) => throw new InvalidOperationException("Unexpected handler invocation."));
+		Assert.That(succeeded, Is.True);
+		Assert.That(calls, Is.EqualTo(new[] { "action" }));
+	}
+
+	[Test]
+	public void PrefetchedExecutePassesTheOriginalArgumentAndExceptionToTheHandler() {
+		var expected = new IOException("Owned action failure");
+		Exception handledArgument = null;
+		Exception handledError = null;
+		var handlerCalls = 0;
+		var succeeded = Tools.Exceptions.Execute(expected, static error => throw error, (argument, error) => {
+			handledArgument = argument;
+			handledError = error;
+			handlerCalls++;
+		});
+		Assert.That(succeeded, Is.False);
+		Assert.That(handledArgument, Is.SameAs(expected));
+		Assert.That(handledError, Is.SameAs(expected));
+		Assert.That(handlerCalls, Is.EqualTo(1));
+	}
+
+	[Test]
+	public void PrefetchedExecuteReturnsFailureWhenNoHandlerWasSupplied() {
+		var expected = new IOException("Owned action failure");
+		Assert.That(Tools.Exceptions.Execute(expected, static error => throw error), Is.False);
+	}
+
+	[Test]
+	public void PrefetchedExecutePropagatesTheHandlersOriginalFailure() {
+		var expected = new InvalidOperationException("Owned handler failure");
+		Assert.That(() => Tools.Exceptions.Execute(expected, static _ => throw new IOException("Owned action failure"), static (argument, _) => throw argument),
+			Throws.Exception.SameAs(expected));
+	}
+
+	[Test]
 	public void ExistingCollectionCaptureAppendsOnlyAnActualFailure() {
 		var previous = new IOException("Previous failure");
 		var expected = new ArgumentException("Owned appended failure");

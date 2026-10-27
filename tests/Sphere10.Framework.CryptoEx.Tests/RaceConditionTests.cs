@@ -23,7 +23,7 @@ public class RaceConditionTests {
 
 		void RaceConditionScenario() {
 			var expected = Hashers.Hash(chf, Array.Empty<byte>());
-			using (Hashers.BorrowHasher(chf, out var hasher)) {
+			using (Hashers.EnterBorrowHasherScope(chf, out var hasher)) {
 				Assert.That(hasher.GetResult(), Is.EqualTo(expected));
 			}
 			;
@@ -36,7 +36,7 @@ public class RaceConditionTests {
 
 		void RaceConditionScenario() {
 			var expected = Hashers.Hash(chf, Array.Empty<byte>());
-			using (Hashers.BorrowHasher(chf, out var hasher)) {
+			using (Hashers.EnterBorrowHasherScope(chf, out var hasher)) {
 				Assert.That(hasher.GetResult(), Is.EqualTo(expected));
 				Assert.That(hasher.GetResult(), Is.EqualTo(expected));
 				Assert.That(hasher.GetResult(), Is.EqualTo(expected));
@@ -55,7 +55,7 @@ public class RaceConditionTests {
 		void RaceConditionScenario(int x) {
 			var rng = new Random(x * parallelRuns);
 			var bytes = new ByteArrayBuilder();
-			using (Hashers.BorrowHasher(chf, out var hasher)) {
+			using (Hashers.EnterBorrowHasherScope(chf, out var hasher)) {
 				for (var i = 0; i < rng.Next(0, 100); i++) {
 					var block = rng.NextBytes(rng.Next(0, 100));
 					bytes.Append(block);
@@ -75,7 +75,7 @@ public class RaceConditionTests {
 		void RaceConditionScenario(int x) {
 			var rng = new Random(x * parallelRuns);
 			var bytes = new ByteArrayBuilder();
-			using (Hashers.BorrowHasher(chf, out var hasher)) {
+			using (Hashers.EnterBorrowHasherScope(chf, out var hasher)) {
 				for (var i = 0; i < rng.Next(0, 100); i++) {
 					var block = rng.NextBytes(rng.Next(0, 100));
 					bytes.Append(block);

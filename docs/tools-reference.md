@@ -147,11 +147,14 @@ when the caller needs completion and failure propagation.
 | Facade | Existing entrypoints | Implementation |
 |---|---|---|
 | `Tools.Exceptions` | `ExecuteCapturingException` (typed/filter overloads), `ExecuteCapturingExceptionAsync`, `Execute`, `ExecuteIgnoringException`, `TryOrDefault`; see [execution/capture practice](guidelines/patterns/framework-utilities.md#exception-execution-and-capture) | [ExceptionTool.cs](../src/Sphere10.Framework/Exceptions/ExceptionTool.cs) |
-| `Tools.Scope` | `ExecuteOnDispose`, `ExecuteOnDisposeAsync`, file/directory cleanup scopes | [ScopeTool.cs](../src/Sphere10.Framework/Scopes/ScopeTool.cs) |
+| `Tools.Scope` | `ExecuteOnDispose[Async]` (plain/generic concrete returns), `EnterReadScope`, `EnterWriteScope`, `EnterAccessScope`, `EnterRestorePositionScope`, `EnterRestorePositionSeek`, `EnterBorrowHasherScope`, `EnterBorrowArrayScope` (byte/generic, shared/custom pool), `EnterOpenPageScope`, `EnterLockScope`, `EnterWaitScope`, directional scopes, `DeleteFileOnDispose[Async]` / `DeleteDirOnDispose[Async]`, single-instance and no-op values | [ScopeTool.cs](../src/Sphere10.Framework/Scopes/ScopeTool.cs) |
 
-`Tools.Scope` supplies cleanup factories. Transaction begin/commit/rollback
+`Tools.Scope.ExecuteOnDispose` and `ExecuteOnDisposeAsync` return concrete `ActionScope` / `ActionScope<T>` and `TaskScope` / `TaskScope<T>` values for ad-hoc callbacks. Generic overloads take the callback first and item second, preserving static callbacks without boxing or an additional closure; see the [scope implementation guide](guidelines/patterns/resource-scopes.md#choosing-a-disposal-implementation). Transaction begin/commit/rollback
 belongs to the relevant [transactional scope](guidelines/patterns/resource-scopes.md),
 not `Tools.Scope.CreateScope()`.
+Windows/WinForms contribute platform scope factories as C# 14 static extension
+members on this same facade. Import `using Tools;` in addition to referencing
+the platform assembly; see [scope factories](guidelines/patterns/resource-scopes.md#toolsscope-factories).
 
 ## Platform-Specific Tools
 

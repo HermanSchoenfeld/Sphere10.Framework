@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
@@ -32,9 +31,8 @@ public static class Streams {
 		// Copy backwards for a right overlap, so scratch space stays bounded by blockSize.
 		var backwards = toIndex >= fromIndex && toIndex - fromIndex < count;
 		var bufferLength = (int)Math.Min(count, blockSize);
-		var rented = bufferLength <= 1024 ? null : ArrayPool<byte>.Shared.Rent(bufferLength);
-		using var release = rented == null ? null : Scope.ExecuteOnDispose(buffer => ArrayPool<byte>.Shared.Return(buffer), rented);
-		Span<byte> block = rented == null ? stackalloc byte[bufferLength] : rented.AsSpan(0, bufferLength);
+		using BorrowArrayScope<byte>? rented = bufferLength <= 1024 ? null : Scope.EnterBorrowArrayScope(bufferLength);
+		Span<byte> block = rented.HasValue ? rented.Value.Span : stackalloc byte[bufferLength];
 		var remaining = count;
 		// Shift the bytes in blocks read from left-to-right, except when a right overlap requires reading backwards.
 		while (remaining > 0) {
@@ -56,14 +54,11 @@ public static class Streams {
 	public static void RouteStream(Stream readStream, Stream writeStream, int blockSizeInBytes = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
 		Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 		// Optimized for reading a stream of unknown length
-		var buffer = ArrayPool<byte>.Shared.Rent(blockSizeInBytes);
-		try {
+		using (var buffer = Scope.EnterBorrowArrayScope(blockSizeInBytes)) {
 			int bytesRead;
-			while ((bytesRead = readStream.Read(buffer, 0, blockSizeInBytes)) > 0) {
-				writeStream.Write(buffer, 0, bytesRead);
+			while ((bytesRead = readStream.Read(buffer.Item, 0, blockSizeInBytes)) > 0) {
+				writeStream.Write(buffer.Item, 0, bytesRead);
 			}
-		} finally {
-			ArrayPool<byte>.Shared.Return(buffer);
 		}
 		if (closeReadStream)
 			readStream.Close();
@@ -75,12 +70,11 @@ public static class Streams {
 	public static void RouteStream(Stream readStream, Stream writeStream, long length, int blockSizeInBytes = Sphere10FrameworkDefaults.DefaultBufferOperationBlockSize, bool closeReadStream = false, bool closeWriteStream = false) {
 		Guard.Argument(writeStream != readStream, nameof(writeStream), "Cannot route to same stream");
 		// Optimized for reading a known length of bytes
-		var buffer = ArrayPool<byte>.Shared.Rent(blockSizeInBytes);
-		try {
+		using (var buffer = Scope.EnterBorrowArrayScope(blockSizeInBytes)) {
 			var reads = length / blockSizeInBytes;
 			for (var i = 0; i < reads; i++) {
-				var bytesRead = readStream.Read(buffer, 0, blockSizeInBytes);
-				writeStream.Write(buffer, 0, bytesRead);
+				var bytesRead = readStream.Read(buffer.Item, 0, blockSizeInBytes);
+				writeStream.Write(buffer.Item, 0, bytesRead);
 				length -= bytesRead;
 				if (bytesRead < blockSizeInBytes || length == 0) {
 					// encountered last block early
@@ -91,11 +85,9 @@ public static class Streams {
 
 			// left-over 
 			if (length > 0) {
-				var bytesRead = readStream.Read(buffer, 0, (int)length);
-				writeStream.Write(buffer, 0, bytesRead);
+				var bytesRead = readStream.Read(buffer.Item, 0, (int)length);
+				writeStream.Write(buffer.Item, 0, bytesRead);
 			}
-		} finally {
-			ArrayPool<byte>.Shared.Return(buffer);
 		}
 
 		if (closeReadStream)
@@ -159,50 +151,45 @@ public static class Streams {
 		var BufferLength = 32768;
 
 		// A buffer for each stream
-		var buffer1 = ArrayPool<byte>.Shared.Rent(BufferLength);
-		var buffer2 = ArrayPool<byte>.Shared.Rent(BufferLength);
-		try {
-			// Number of bytes valid within each buffer
-			var buffer1Valid = 0;
-			var buffer2Valid = 0;
+		using var buffer1 = Scope.EnterBorrowArrayScope(BufferLength);
+		using var buffer2 = Scope.EnterBorrowArrayScope(BufferLength);
+		// Number of bytes valid within each buffer
+		var buffer1Valid = 0;
+		var buffer2Valid = 0;
 
-			// Index within the buffer for each stream
-			var buffer1Index = 0;
-			var buffer2Index = 0;
+		// Index within the buffer for each stream
+		var buffer1Index = 0;
+		var buffer2Index = 0;
 
-			while (true) {
-				// Read any more data if we need to
-				if (buffer1Index == buffer1Valid) {
-					buffer1Valid = s1.Read(buffer1, 0, BufferLength);
-					buffer1Index = 0;
-				}
-
-				if (buffer2Index == buffer2Valid) {
-					buffer2Valid = s2.Read(buffer2, 0, BufferLength);
-					buffer2Index = 0;
-				}
-
-				// We've read to the end of both streams simultaneously
-				if (buffer1Valid == 0 && buffer2Valid == 0) {
-					return true;
-				}
-
-				// We've read to the end of one stream but not the other
-				if (buffer1Valid == 0 || buffer2Valid == 0) {
-					return false;
-				}
-
-				// compare each byte in buffer
-				if (buffer1[buffer1Index] != buffer2[buffer2Index]) {
-					return false;
-				}
-
-				buffer1Index++;
-				buffer2Index++;
+		while (true) {
+			// Read any more data if we need to
+			if (buffer1Index == buffer1Valid) {
+				buffer1Valid = s1.Read(buffer1.Item, 0, BufferLength);
+				buffer1Index = 0;
 			}
-		} finally {
-			ArrayPool<byte>.Shared.Return(buffer1);
-			ArrayPool<byte>.Shared.Return(buffer2);
+
+			if (buffer2Index == buffer2Valid) {
+				buffer2Valid = s2.Read(buffer2.Item, 0, BufferLength);
+				buffer2Index = 0;
+			}
+
+			// We've read to the end of both streams simultaneously
+			if (buffer1Valid == 0 && buffer2Valid == 0) {
+				return true;
+			}
+
+			// We've read to the end of one stream but not the other
+			if (buffer1Valid == 0 || buffer2Valid == 0) {
+				return false;
+			}
+
+			// compare each byte in buffer
+			if (buffer1.Item[buffer1Index] != buffer2.Item[buffer2Index]) {
+				return false;
+			}
+
+			buffer1Index++;
+			buffer2Index++;
 		}
 	}
 

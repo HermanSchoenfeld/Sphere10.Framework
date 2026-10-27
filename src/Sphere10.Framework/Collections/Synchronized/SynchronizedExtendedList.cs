@@ -43,11 +43,11 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 		}
 	}
 
-	public IDisposable EnterReadScope() {
+	public ReadScope EnterReadScope() {
 		return _lock.EnterReadScope();
 	}
 
-	public IDisposable EnterWriteScope() {
+	public WriteScope EnterWriteScope() {
 		return _lock.EnterWriteScope();
 	}
 
@@ -144,7 +144,12 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 
 	public override IEnumerator<TItem> GetEnumerator() {
 		var readScope = EnterReadScope();
-		return base.GetEnumerator().OnDispose(readScope.Dispose);
+		try {
+			return base.GetEnumerator().DisposeWith(readScope);
+		} catch {
+			readScope.Dispose();
+			throw;
+		}
 	}
 }
 

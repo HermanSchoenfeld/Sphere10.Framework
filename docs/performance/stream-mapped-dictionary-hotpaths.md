@@ -1,5 +1,12 @@
 <!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
+Historical evidence availability: profiler capture files are no longer shipped
+with the repository. Measurements below describe the original campaign, not a
+new verification. Inspecting its raw data or archive-side analysis scripts
+requires an external copy. Example paths use `E:/ProfilerEvidence`; substitute
+your own archive root and pass it as the `ProfilerResultsRoot` NUnit parameter
+when explicitly selecting recorded-capture checks.
+
 # Stream-mapped dictionary hot-path profiling
 
 Current-source note: the [24 October behavior review](comment-and-behavior-review.md) keeps measured seek/event/context changes and restores the three wrapper implementations, legacy paging behavior and unsupported transformations. Timing figures below identify their frozen binaries and are not new measurements of the reduced source tree.
@@ -131,7 +138,7 @@ Pass the checked-in [serial.runsettings](../../tests/Sphere10.Framework.Utils.Pr
 
 The frozen final Debug host passed 36 non-heavy checks: six smoke cases, one six-case registry check, one retained-capture validation and 28 synthetic parser cases. The retained evidence reader validates manifest workload controls, binary identity, hashed TRX inputs and all six successful results using their actual class/name identities. The synthetic cases cover both original core and profiler capture shapes, including result-to-definition matching and rejection of changed workloads, duplicate/missing results, failures, skipped cases and invalid durations. The six explicit heavy cases are additional runs and are not included in the 36-check count.
 
-The ignored local campaign `tests/Sphere10.Framework.Utils.Profiler.Tests/Results/StreamMappedDictionaries/20261022-hotpaths/campaign.json` retains the original, first-pass, corrected second-pass baseline and final timing stages with relative raw TRX mappings and hashes. New stages are appended while the original raw captures and their hashes remain unchanged. This campaign's evidence validator requires Debug stages; that restriction does not make the profiler workload fixture Debug-only. Profile captures and parsed stack summaries are separate local artifacts with the filenames listed above; the binary/source provenance manifest is retained alongside the frozen final host.
+The original local campaign `E:/ProfilerEvidence/StreamMappedDictionaries/20261022-hotpaths/campaign.json` retains the original, first-pass, corrected second-pass baseline and final timing stages with relative raw TRX mappings and hashes. New stages are appended while the original raw captures and their hashes remain unchanged. This campaign's evidence validator requires Debug stages; that restriction does not make the profiler workload fixture Debug-only. Profile captures and parsed stack summaries are separate local artifacts with the filenames listed above; the binary/source provenance manifest is retained alongside the frozen final host.
 
 ## Changes
 

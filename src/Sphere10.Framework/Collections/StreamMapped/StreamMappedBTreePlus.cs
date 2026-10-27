@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 
@@ -75,7 +74,6 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	private const int ChildCountOffset = 5;
 	private const int NextLeafOffset = 9;
 	private const int EntriesOffset = 17;
-	private const int StackBufferSize = 1024;
 
 	// Header field offsets and lengths
 	private const int RootIndexOffset = 0;
@@ -208,41 +206,31 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	#region Node Lifecycle
 
 	protected override long CreateLeafNode() {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			record.Clear();
-			record[IsLeafOffset] = 1;
-			// KeyCount = 0, ChildCount = 0 are already zero after clear
-			// NextLeaf = NoNode
-			_bitConverter.WriteTo(NoNode, record, NextLeafOffset);
-			// Initialize all children slots to NoNode (unused for leaves, but keeps the record clean)
-			for (var index = 0; index < Order + 1; index++)
-				_bitConverter.WriteTo(NoNode, record, _childrenOffset + (index * sizeof(long)));
-			return AllocateNode(record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		record.Clear();
+		record[IsLeafOffset] = 1;
+		// KeyCount = 0, ChildCount = 0 are already zero after clear
+		// NextLeaf = NoNode
+		_bitConverter.WriteTo(NoNode, record, NextLeafOffset);
+		// Initialize all children slots to NoNode (unused for leaves, but keeps the record clean)
+		for (var index = 0; index < Order + 1; index++)
+			_bitConverter.WriteTo(NoNode, record, _childrenOffset + (index * sizeof(long)));
+		return AllocateNode(record);
 	}
 
 	protected override long CreateInternalNode() {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			record.Clear();
-			record[IsLeafOffset] = 0;
-			// KeyCount = 0, ChildCount = 0 are already zero after clear
-			// NextLeaf = NoNode (not used for internal nodes)
-			_bitConverter.WriteTo(NoNode, record, NextLeafOffset);
-			// Initialize all children slots to NoNode
-			for (var index = 0; index < Order + 1; index++)
-				_bitConverter.WriteTo(NoNode, record, _childrenOffset + (index * sizeof(long)));
-			return AllocateNode(record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		record.Clear();
+		record[IsLeafOffset] = 0;
+		// KeyCount = 0, ChildCount = 0 are already zero after clear
+		// NextLeaf = NoNode (not used for internal nodes)
+		_bitConverter.WriteTo(NoNode, record, NextLeafOffset);
+		// Initialize all children slots to NoNode
+		for (var index = 0; index < Order + 1; index++)
+			_bitConverter.WriteTo(NoNode, record, _childrenOffset + (index * sizeof(long)));
+		return AllocateNode(record);
 	}
 
 	protected override void DeleteNode(long node) {
@@ -290,24 +278,19 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void InsertLeafEntry(long node, int index, KeyValuePair<K, V> entry) {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			ReadNode(node, record);
-			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		ReadNode(node, record);
+		var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-			// Shift entries right to make room
-			if (index < keyCount)
-				record.Slice(EntriesOffset + (index * _entrySize), (keyCount - index) * _entrySize)
-					.CopyTo(record.Slice(EntriesOffset + ((index + 1) * _entrySize)));
+		// Shift entries right to make room
+		if (index < keyCount)
+			record.Slice(EntriesOffset + (index * _entrySize), (keyCount - index) * _entrySize)
+				.CopyTo(record.Slice(EntriesOffset + ((index + 1) * _entrySize)));
 
-			SerializeEntry(record, index, entry);
-			_bitConverter.WriteTo(keyCount + 1, record, KeyCountOffset);
-			WriteNode(node, record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		SerializeEntry(record, index, entry);
+		_bitConverter.WriteTo(keyCount + 1, record, KeyCountOffset);
+		WriteNode(node, record);
 	}
 
 	protected override void AddLeafEntry(long node, KeyValuePair<K, V> entry) {
@@ -323,25 +306,20 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void RemoveLeafEntryAt(long node, int index) {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			ReadNode(node, record);
-			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		ReadNode(node, record);
+		var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-			// Shift entries left
-			if (index < keyCount - 1)
-				record.Slice(EntriesOffset + ((index + 1) * _entrySize), (keyCount - index - 1) * _entrySize)
-					.CopyTo(record.Slice(EntriesOffset + (index * _entrySize)));
+		// Shift entries left
+		if (index < keyCount - 1)
+			record.Slice(EntriesOffset + ((index + 1) * _entrySize), (keyCount - index - 1) * _entrySize)
+				.CopyTo(record.Slice(EntriesOffset + (index * _entrySize)));
 
-			// Zero the vacated slot
-			record.Slice(EntriesOffset + ((keyCount - 1) * _entrySize), _entrySize).Clear();
-			_bitConverter.WriteTo(keyCount - 1, record, KeyCountOffset);
-			WriteNode(node, record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		// Zero the vacated slot
+		record.Slice(EntriesOffset + ((keyCount - 1) * _entrySize), _entrySize).Clear();
+		_bitConverter.WriteTo(keyCount - 1, record, KeyCountOffset);
+		WriteNode(node, record);
 	}
 
 	#endregion
@@ -361,24 +339,19 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void InsertInternalKey(long node, int index, K key) {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			ReadNode(node, record);
-			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		ReadNode(node, record);
+		var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-			// Shift entry slots right (full entrySize slots to preserve fixed layout)
-			if (index < keyCount)
-				record.Slice(EntriesOffset + (index * _entrySize), (keyCount - index) * _entrySize)
-					.CopyTo(record.Slice(EntriesOffset + ((index + 1) * _entrySize)));
+		// Shift entry slots right (full entrySize slots to preserve fixed layout)
+		if (index < keyCount)
+			record.Slice(EntriesOffset + (index * _entrySize), (keyCount - index) * _entrySize)
+				.CopyTo(record.Slice(EntriesOffset + ((index + 1) * _entrySize)));
 
-			SerializeKey(record, index, key);
-			_bitConverter.WriteTo(keyCount + 1, record, KeyCountOffset);
-			WriteNode(node, record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		SerializeKey(record, index, key);
+		_bitConverter.WriteTo(keyCount + 1, record, KeyCountOffset);
+		WriteNode(node, record);
 	}
 
 	protected override void AddInternalKey(long node, K key) {
@@ -392,25 +365,20 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void RemoveInternalKeyAt(long node, int index) {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			ReadNode(node, record);
-			var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		ReadNode(node, record);
+		var keyCount = _bitConverter.ToInt32(record, KeyCountOffset);
 
-			// Shift entry slots left (full entrySize slots)
-			if (index < keyCount - 1)
-				record.Slice(EntriesOffset + ((index + 1) * _entrySize), (keyCount - index - 1) * _entrySize)
-					.CopyTo(record.Slice(EntriesOffset + (index * _entrySize)));
+		// Shift entry slots left (full entrySize slots)
+		if (index < keyCount - 1)
+			record.Slice(EntriesOffset + ((index + 1) * _entrySize), (keyCount - index - 1) * _entrySize)
+				.CopyTo(record.Slice(EntriesOffset + (index * _entrySize)));
 
-			// Zero the vacated slot
-			record.Slice(EntriesOffset + ((keyCount - 1) * _entrySize), _entrySize).Clear();
-			_bitConverter.WriteTo(keyCount - 1, record, KeyCountOffset);
-			WriteNode(node, record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		// Zero the vacated slot
+		record.Slice(EntriesOffset + ((keyCount - 1) * _entrySize), _entrySize).Clear();
+		_bitConverter.WriteTo(keyCount - 1, record, KeyCountOffset);
+		WriteNode(node, record);
 	}
 
 	#endregion
@@ -428,24 +396,19 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void InsertChild(long node, int index, long child) {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			ReadNode(node, record);
-			var childCount = _bitConverter.ToInt32(record, ChildCountOffset);
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		ReadNode(node, record);
+		var childCount = _bitConverter.ToInt32(record, ChildCountOffset);
 
-			// Shift children right
-			if (index < childCount)
-				record.Slice(_childrenOffset + (index * sizeof(long)), (childCount - index) * sizeof(long))
-					.CopyTo(record.Slice(_childrenOffset + ((index + 1) * sizeof(long))));
+		// Shift children right
+		if (index < childCount)
+			record.Slice(_childrenOffset + (index * sizeof(long)), (childCount - index) * sizeof(long))
+				.CopyTo(record.Slice(_childrenOffset + ((index + 1) * sizeof(long))));
 
-			_bitConverter.WriteTo(child, record, _childrenOffset + (index * sizeof(long)));
-			_bitConverter.WriteTo(childCount + 1, record, ChildCountOffset);
-			WriteNode(node, record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		_bitConverter.WriteTo(child, record, _childrenOffset + (index * sizeof(long)));
+		_bitConverter.WriteTo(childCount + 1, record, ChildCountOffset);
+		WriteNode(node, record);
 	}
 
 	protected override void AddChild(long node, long child) {
@@ -458,25 +421,20 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 	}
 
 	protected override void RemoveChildAt(long node, int index) {
-		var rented = _nodeSize <= StackBufferSize ? null : ArrayPool<byte>.Shared.Rent(_nodeSize);
-		Span<byte> record = rented == null ? stackalloc byte[_nodeSize] : rented.AsSpan(0, _nodeSize);
-		try {
-			ReadNode(node, record);
-			var childCount = _bitConverter.ToInt32(record, ChildCountOffset);
+		using BorrowArrayScope<byte>? rental = _nodeSize <= Sphere10FrameworkDefaults.StackBufferSize ? null : new BorrowArrayScope<byte>(_nodeSize);
+		Span<byte> record = rental.HasValue ? rental.Value.Span : stackalloc byte[_nodeSize];
+		ReadNode(node, record);
+		var childCount = _bitConverter.ToInt32(record, ChildCountOffset);
 
-			// Shift children left
-			if (index < childCount - 1)
-				record.Slice(_childrenOffset + ((index + 1) * sizeof(long)), (childCount - index - 1) * sizeof(long))
-					.CopyTo(record.Slice(_childrenOffset + (index * sizeof(long))));
+		// Shift children left
+		if (index < childCount - 1)
+			record.Slice(_childrenOffset + ((index + 1) * sizeof(long)), (childCount - index - 1) * sizeof(long))
+				.CopyTo(record.Slice(_childrenOffset + (index * sizeof(long))));
 
-			// Write NoNode into the vacated slot
-			_bitConverter.WriteTo(NoNode, record, _childrenOffset + ((childCount - 1) * sizeof(long)));
-			_bitConverter.WriteTo(childCount - 1, record, ChildCountOffset);
-			WriteNode(node, record);
-		} finally {
-			if (rented != null)
-				ArrayPool<byte>.Shared.Return(rented);
-		}
+		// Write NoNode into the vacated slot
+		_bitConverter.WriteTo(NoNode, record, _childrenOffset + ((childCount - 1) * sizeof(long)));
+		_bitConverter.WriteTo(childCount - 1, record, ChildCountOffset);
+		WriteNode(node, record);
 	}
 
 	#endregion

@@ -148,10 +148,10 @@ public class WindowsAlternateStreamTests {
 			}
 		};
 		var pending = files.ReadAlternateStreamAsync(_path, "worker", 1);
-		await using var drainOpen = Tools.Scope.ExecuteOnDisposeAsync(async () => {
-			release.Set();
-			await pending.WaitAsync(TimeSpan.FromSeconds(5));
-		});
+		await using var drainOpen = Tools.Scope.ExecuteOnDisposeAsync<(ManualResetEventSlim Release, Task<byte[]> Pending)>(static async state => {
+			state.Release.Set();
+			await state.Pending.WaitAsync(TimeSpan.FromSeconds(5));
+		}, (Release: release, Pending: pending));
 		Assert.That(opened.Wait(TimeSpan.FromSeconds(3)), Is.True);
 		Assert.That(openingThread, Is.Not.EqualTo(callerThread), "An inaccessible UNC/native open must not block its UI caller.");
 		Assert.That(pending.IsCompleted, Is.False);

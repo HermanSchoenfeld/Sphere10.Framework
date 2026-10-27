@@ -166,7 +166,7 @@ public class ApplicationAsyncLifecycleTests {
 		await disposal.WaitAsync(TimeSpan.FromSeconds(5));
 		Assert.That(disposals, Is.EqualTo(1));
 		Assert.That(finalizer.AsynchronousCalls, Is.EqualTo(1));
-		Assert.That(() => application.Initialize(), Throws.InvalidOperationException);
+		Assert.That(() => application.Initialize(), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	[TestCase(false)]

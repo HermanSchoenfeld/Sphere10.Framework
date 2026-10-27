@@ -17,7 +17,7 @@ namespace Sphere10.Framework;
 /// A scope that carries with it a collection of disposable items. If not salvaged, the items are
 /// disposed at the end of the DisposalScope.
 /// </summary>
-public class Disposables : ListDecorator<IDisposable>, IDisposable {
+public class Disposables : ListDecorator<IDisposable>, IDisposable, IAsyncDisposable {
 	private readonly bool _ignoreExceptions;
 
 	static Disposables() {
@@ -44,6 +44,15 @@ public class Disposables : ListDecorator<IDisposable>, IDisposable {
 			this.ForEach(disposable => disposable.Dispose());
 	}
 
+	public async ValueTask DisposeAsync() {
+		foreach (var disposable in this) {
+			if (_ignoreExceptions)
+				await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => DisposeItemAsync(disposable).AsTask()).ConfigureAwait(false);
+			else
+				await DisposeItemAsync(disposable).ConfigureAwait(false);
+		}
+	}
+
 	public void Add(Action disposeAction) {
 		base.Add(new ActionDisposable(disposeAction));
 	}
@@ -53,6 +62,9 @@ public class Disposables : ListDecorator<IDisposable>, IDisposable {
 	}
 
 	public static Disposables None { get; }
+
+	private static ValueTask DisposeItemAsync(IDisposable disposable)
+		=> disposable is IAsyncDisposable asyncDisposable ? asyncDisposable.DisposeAsync() : new ValueTask(Task.Run(disposable.Dispose));
 
 }
 

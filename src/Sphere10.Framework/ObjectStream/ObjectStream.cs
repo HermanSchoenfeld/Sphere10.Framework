@@ -64,7 +64,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 			Streams.Load();
 	}
 
-	public IDisposable EnterAccessScope() => Streams.EnterAccessScope();
+	public AccessScope EnterAccessScope() => Streams.EnterAccessScope();
 
 	public void Dispose() {
 		if (OwnsStreams)
@@ -145,7 +145,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		};
 		try {
 			stream.IsReaped = false;
-			using var writer = new EndianBinaryWriter(EndianBitConverter.For(Streams.Endianness), stream);
+			using var writer = new EndianBinaryWriter(EndianBitConverter.For(Streams.Endianness), stream, leaveOpen: true);
 			if (item != null) {
 				stream.IsNull = false;
 				if (_preAllocateOptimization) {
@@ -182,7 +182,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		try {
 			NotifyPreItemOperation(index, default, ObjectStreamOperationType.Read);
 			if (!stream.IsNull) {
-				using var reader = new EndianBinaryReader(EndianBitConverter.For(Streams.Endianness), stream);
+				using var reader = new EndianBinaryReader(EndianBitConverter.For(Streams.Endianness), stream, leaveOpen: true);
 				item = ItemSerializer.PackedDeserialize(reader);
 				CheckItemType(item);
 			} else {

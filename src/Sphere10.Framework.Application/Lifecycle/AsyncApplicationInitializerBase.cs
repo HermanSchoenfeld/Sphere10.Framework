@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Application;
 
 public abstract class AsyncApplicationInitializerBase : ApplicationInitializerBase {
+	// Sync-over-async pattern
 	public override void Initialize()
 		=> Task.Run(() => InitializeAsync()).GetAwaiter().GetResult();
 }

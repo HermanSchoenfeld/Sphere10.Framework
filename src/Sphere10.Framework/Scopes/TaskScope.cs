@@ -11,27 +11,43 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
-public class TaskScope : AsyncScope {
-	private readonly Func<Task> _scopeFinalizer;
+/// <summary>Awaits an asynchronous finalizer or joins its complete operation for synchronous disposal.</summary>
+public readonly struct TaskScope : IScope {
+	private readonly Func<ValueTask> _finalizer;
 
-	public TaskScope(Func<Task> scopeFinalizer) {
-		_scopeFinalizer = scopeFinalizer;
+	public TaskScope(Func<ValueTask> finalizer) {
+		Guard.ArgumentNotNull(finalizer, nameof(finalizer));
+		_finalizer = finalizer;
 	}
 
-	protected override async ValueTask OnScopeEndAsync() {
-		if (_scopeFinalizer != null)
-			await _scopeFinalizer();
+	public void Dispose() {
+		var finalizer = _finalizer;
+		// Sync-over-async pattern
+		Task.Run(() => finalizer().AsTask()).GetAwaiter().GetResult();
 	}
+
+	public async ValueTask DisposeAsync() => await _finalizer();
 }
 
+/// <summary>Awaits an asynchronous finalizer with its original item.</summary>
+public readonly struct TaskScope<T> : IScope<T> {
+	private readonly Func<T, ValueTask> _finalizer;
 
-public class TaskScope<T> : TaskScope, IScope<T> {
-
-	public TaskScope(T item, Func<Task> scopeFinalizer)
-		: base(scopeFinalizer) {
+	public TaskScope(T item, Func<T, ValueTask> finalizer) {
+		Guard.ArgumentNotNull(finalizer, nameof(finalizer));
 		Item = item;
+		_finalizer = finalizer;
 	}
 
 	public T Item { get; }
+
+	public void Dispose() {
+		var finalizer = _finalizer;
+		var item = Item;
+		// Sync-over-async pattern
+		Task.Run(() => finalizer(item).AsTask()).GetAwaiter().GetResult();
+	}
+
+	public async ValueTask DisposeAsync() => await _finalizer(Item);
 }
 

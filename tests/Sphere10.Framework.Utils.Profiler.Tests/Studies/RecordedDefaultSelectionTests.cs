@@ -20,9 +20,15 @@ namespace Sphere10.Framework.Utils.Profiler.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
+[Explicit("Requires historical captures supplied through ProfilerResultsRoot.")]
+[Category("RecordedPerformance")]
 public class RecordedDefaultSelectionTests {
 	public static IEnumerable<TestCaseData> SelectedConstants() {
-		var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", "final-default-selection.json");
+		if (!ProfilerEvidence.IsConfigured) {
+			yield return new TestCaseData("not-configured").Ignore(ProfilerEvidence.MissingInputMessage);
+			yield break;
+		}
+		var path = Path.Combine(ProfilerEvidence.GetRoot(), "final-default-selection.json");
 		if (!File.Exists(path)) {
 			yield return new TestCaseData("missing-selection").SetName("RecordedDefaultSelectionTests.FinalSelectionIsRequired");
 			yield break;
@@ -41,7 +47,7 @@ public class RecordedDefaultSelectionTests {
 
 	[TestCaseSource(nameof(SelectedConstants))]
 	public void SelectedConstantMatchesItsActualMeasuredConfiguration(string constantName) {
-		var root = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results");
+		var root = ProfilerEvidence.GetRoot();
 		var path = Path.Combine(root, "final-default-selection.json");
 		Assert.That(File.Exists(path), Is.True, "Record final choices, evidence references and rationale after the measurements finish.");
 		TestContext.AddTestAttachment(path, "Final numeric default decisions and provenance");
@@ -143,7 +149,7 @@ public class RecordedDefaultSelectionTests {
 
 	[Test]
 	public void DeclaredOptionalParameterDefaultsMatchTheirChosenConstants() {
-		var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Results", "final-default-selection.json");
+		var path = Path.Combine(ProfilerEvidence.GetRoot(), "final-default-selection.json");
 		Assert.That(File.Exists(path), Is.True);
 		using var selection = JsonDocument.Parse(File.ReadAllText(path));
 		if (!selection.RootElement.TryGetProperty("DefaultBindings", out var bindings))

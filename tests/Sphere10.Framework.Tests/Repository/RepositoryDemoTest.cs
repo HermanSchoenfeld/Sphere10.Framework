@@ -623,9 +623,9 @@
 //		}
 //	}
 
-//	public IDisposable EnterReadScope() => _lock.EnterReadScope();
+//	public ReadScope EnterReadScope() => _lock.EnterReadScope();
 
-//	public IDisposable EnterWriteScope() => _lock.EnterWriteScope();
+//	public WriteScope EnterWriteScope() => _lock.EnterWriteScope();
 
 //	public void Commit() => _transactionalDict.Commit();
 

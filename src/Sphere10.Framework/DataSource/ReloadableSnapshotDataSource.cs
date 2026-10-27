@@ -76,6 +76,7 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 
 	public void Reload() {
 		Debug.AssertNotMainThread();
+		// Sync-over-async pattern
 		Task.Run(() => ReloadAsync()).GetAwaiter().GetResult();
 	}
 
@@ -88,6 +89,7 @@ public class ReloadableSnapshotDataSource<T> : SnapshotDataSource<T> {
 	private void EnsureLoaded() {
 		if (!IsLoaded) {
 			Debug.AssertNotMainThread();
+			// Sync-over-async pattern
 			Task.Run(() => EnsureLoadedAsync(CancellationToken.None)).GetAwaiter().GetResult();
 		}
 	}
