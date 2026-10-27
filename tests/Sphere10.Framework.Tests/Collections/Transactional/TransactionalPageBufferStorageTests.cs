@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Tests;
 
 [TestFixture]
 [NonParallelizable]
-public class TransactionalPageBufferPoolingTests {
+public class TransactionalPageBufferStorageTests {
 
 	[Test]
 	public void PoolLeaseIsLazyAndExpandedBytesAndReturnedStorageAreCleared() {
