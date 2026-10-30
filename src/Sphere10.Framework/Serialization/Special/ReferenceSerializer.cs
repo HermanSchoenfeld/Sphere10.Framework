@@ -25,6 +25,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.Argument(!valueSerializer.GetType().IsSubtypeOfGenericType(typeof(ReferenceSerializer<>), out _), nameof(valueSerializer), "Value serializer cannot be a reference serializer");
 		Guard.Ensure(!typeof(TItem).IsValueType, $"{nameof(TItem)} can only be used with reference types");
+		Mode = mode;
 		_supportsNull = mode.HasFlag(ReferenceSerializerMode.SupportNull);
 		_supportsContextReferences = mode.HasFlag(ReferenceSerializerMode.SupportContextReferences);
 		_supportsExternalReferences = mode.HasFlag(ReferenceSerializerMode.SupportExternalReferences);
@@ -37,6 +38,8 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 	}
 
 	public override bool SupportsNull => true;
+
+	public ReferenceSerializerMode Mode { get; }
 
 	public override long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		// We need to calculate the size of each item individually, since some may be references and some may not be.

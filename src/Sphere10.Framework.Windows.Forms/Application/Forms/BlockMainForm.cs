@@ -101,7 +101,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
-	/// <summary>The navigation width in device pixels, including its remembered width when temporarily hidden.</summary>
+	/// <summary>The preferred navigation width in device pixels, retained while hidden or temporarily constrained by a narrow window.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int NavigationPaneWidth {
 		get => (int)Math.Round(_navigationPaneWidth);
@@ -646,8 +646,6 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		_splitContainer.SuspendLayout();
 		using var LayoutScope = Tools.Scope.ExecuteOnDispose(() => _splitContainer.ResumeLayout(true));
 		if (_splitContainer.Panel1Collapsed != Collapsed) {
-			if (Collapsed && HasUsableNavigationPaneBounds)
-				_navigationPaneWidth = _splitContainer.SplitterDistance;
 			var RememberedWidth = _navigationPaneWidth;
 			var WasUpdating = _updatingNavigationPaneWidth;
 			_updatingNavigationPaneWidth = true;
@@ -665,9 +663,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	private int GetMaximumNavigationPaneWidth(bool FitClientArea) {
 		var MaximumWidth = Math.Min(int.MaxValue, Math.Round(MaximumNavigationPaneWidth * (_navigationPaneDpi / 96.0)));
 		if (FitClientArea) {
-			// Keep the screen usable when the window is narrower than the configured sidebar limit plus its content.
-			var ContentWidth = Math.Max(_navigationPaneMinimumContentWidth, Math.Round(320 * (_navigationPaneDpi / 96.0)));
-			MaximumWidth = Math.Min(MaximumWidth, _splitContainer.Width - _splitContainer.SplitterWidth - ContentWidth);
+			// Frame resizing gives space to the content pane; only physically unavoidable native panel limits constrain navigation.
+			MaximumWidth = Math.Min(MaximumWidth, _splitContainer.Width - _splitContainer.SplitterWidth - Math.Round(_navigationPaneMinimumContentWidth));
 		}
 		return (int)Math.Max(_splitContainer.Panel1MinSize, MaximumWidth);
 	}
@@ -695,7 +692,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		_splitContainer.Panel2MinSize = Math.Max((int)Math.Round(_navigationPaneMinimumContentWidth), _splitContainer.Width - _splitContainer.SplitterWidth - MaximumWidth);
 		if (_splitContainer.SplitterDistance != Width)
 			_splitContainer.SplitterDistance = Width;
-		_navigationPaneWidth = _splitContainer.SplitterDistance;
+		// The visible divider can be clamped by the frame width; only an explicit divider move replaces the preference.
 	}
 
 	private void NavigationPaneSplitterMoved(object? Sender, SplitterEventArgs Args) {

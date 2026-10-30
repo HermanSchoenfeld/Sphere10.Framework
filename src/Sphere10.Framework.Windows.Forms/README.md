@@ -120,6 +120,19 @@ chart.SetSamples(new[] {
 
 ## Chart Log Output
 
+`ChartLogOutputBehavior.FormatSample(title, capturedAtUtc, readings)` also formats
+one related sample without accessing controls or writing output. A raw sampler
+can use it on a worker and enqueue the result through a shared toolbar selector
+with `includesTimestamp: true`. Disable chart capture when that sampler supplies
+the shared output, so repainting retained history does not duplicate records.
+
+Register `LogOutputLifetime` as an application-owned singleton when outputs must
+drain during application shutdown. Register each owner and its asynchronous close
+callback through `Register` or `RegisterCurrent`, and await `CompleteAsync` in the
+application finalizer on the owning UI dispatcher. Closing an owner removes its
+registration immediately; only unfinished accepted writes remain tracked until
+they complete. The component tester and System Expert share this implementation.
+
 Right-click a `GraphChart`, `BarChart` or `TelemetryChart`, including its empty
 surface, and choose **Log Output**. The command uses the shared
 `LogOutputSelectorControl` wizard and configuration dialog. Hosted charts bind
@@ -522,6 +535,12 @@ At runtime a newly created grid shows its loading surface immediately. First bin
 After a selected-row operation, await `RefreshEntityAsync(entity)` or `RefreshSelectedEntityAsync()` to reread only that visible row through the source's `RefreshRangeAsync`. The source can replace the array entry with a fresh instance, or null when it disappeared. The grid retains page/sort settings, column widths and unaffected rows, and transfers selection to the replacement. A false result means the row is no longer visible or a source/query change superseded it. This requires a source that implements entity refresh; the standard read-only `SnapshotDataSource<T>` deliberately does not. A caller-owned snapshot source can supply that behavior without adding application collection policy to the grid. Targeted and full-page refreshes share scoped asynchronous admission.
 
 Click a sortable column header to cycle **Ascending → Descending → None**, then ascending again. **None** clears the header arrow and requests the source's natural order with `SortDirection.None`; changing to another column starts ascending. Sorting preserves the current page and established column widths, and an explicitly cleared sort persists across sessions. `SnapshotDataSource<T>` honors explicit **None** even when a default sort is configured; the initial null column with **Ascending** still requests that configured default.
+
+`grid.TotalRecords` exposes the last accepted query's filtered total across all
+pages. `DataBindingComplete` runs on the grid's owning thread after the current
+query is bound, including zero matches; superseded reads do not emit it. Use
+these members for external summaries without querying or enumerating the source
+again. `VisibleEntities` remains the displayed page only.
 
 `await grid.ReadFilteredEntitiesAsync(cancellationToken)` captures the current
 source, search and sort on the owning UI thread, then reads and materializes all
@@ -1073,16 +1092,18 @@ Tab widths grow with their titles up to `WinFormsApplicationScreenTabControl.Max
 
 Selecting a tab restores the previous screen's toolbar items and removes its screen menu, then merges the selected screen's `ToolBar` and registered `MenuItems` into the main form. The same item instances and event handlers are retained. When detached, `WinFormsApplicationScreenForm` displays the registered `MenuItems` directly as top-level menus, including File when supplied, regardless of `ShowInApplicationMenuStrip`. It retains the original `ToolBar` control, layout, and handlers instead of copying its items into a replacement strip. The selected docked screen continues to supply the main window's menu and toolbar. Redocking selects the returned tab and merges its items back into the main form.
 
-Hosted horizontal toolbars reserve the preferred height of every current command, including temporarily hidden commands. Switching Live/paused actions or enabling a command therefore leaves the tabs and active content at the same vertical position. `ToolStripStableHeightBehavior` supplies this shared sizing for the main toolbar and a screen's assigned `ToolBar`, including when undocked. It uses native preferred or explicit item sizes, margins, padding, fonts and current DPI; tall hosted controls fit, and removing them releases their height. Explicit caller minimum sizes are retained. Ordinary standalone strips can opt in by owning the behavior, whose disposal restores their declared minimum and releases its subscriptions without disposing the borrowed strip.
+The application toolbar has one frame-owned row height. `MainForm.ToolBarRowHeight` defaults to 32 logical pixels at the standard menu font and scales for global font and DPI changes; switching between empty, ordinary and logging toolbars does not resize it. Configure a larger common row explicitly when an application supplies larger hosted controls. `ToolStripStableHeightBehavior.LogicalHeight` supplies this fixed-row mode independently of the current command set.
+
+A screen's own toolbar, including in a detached window, uses the behavior's content-sized mode (`LogicalHeight = 0`). It reserves the preferred height of every current command, including temporarily hidden commands, so Live/paused visibility changes keep content in place. This mode uses preferred or explicit item sizes, margins, padding, fonts and current DPI; removing a tall control releases its height. Explicit caller minimum sizes are retained. Ordinary standalone strips can own the behavior; disposal restores the declared minimum and automatic sizing without disposing the borrowed strip.
 
 Detached windows use a compact caption with accessible **Re-dock**, **Minimize**, **Maximize/Restore**, and **Close** icon buttons. The title area supports native dragging and double-click maximize/restore, and the border remains resizable. Close and re-dock preserve the screen's cancellation checks. Only menus and toolbars supplied by the screen occupy space; a content-only screen starts immediately below the caption, without empty bars or a detached tab row.
 
-- Close a tab with its close button, middle-click, or its context menu.
-- Undock using the tab context menu, or drag the selected tab away from the tab headers and release.
+- Close a tab with its close button, middle-click, or its context menu. Closing the active tab selects the next surviving tab in visual order, otherwise the nearest previous tab. Closing the last tab leaves no active selection; an Empty screen remains available through normal startup/navigation rather than activating as a side effect of close. Closing inactive tabs preserves the current screen.
+- Undock using the tab context menu, or drag the selected tab away from the tab headers and release. The dragged tab turns grey while release would request undocking, and returns to its normal appearance when moved back over the headers. Release, Escape, capture loss and tab removal clear that preview; permanent tabs never show an undocking hint.
 - Drag tabs along the tab bar to see them move immediately; Escape restores the original position.
 - In a detached window, use the caption's **Re-dock** icon, or bring the window's title bar close to the main tab strip. Only the header band accepts drag docking; the screen content panel does not. A highlighted tab-sized **Release to dock** preview and text hint show the proposed position and screen title without changing tab widths, order, or selection. The highlight uses the ExplorerBar palette and follows the visible navigation pane's blue in `BlockMainForm`. Leaving the target or cancelling the drag clears the preview.
 
-The left navigation pane starts at 320 logical pixels wide and scales with the form. Drag its divider to choose a different width. `MaximumNavigationPaneWidth` defaults to 480 logical pixels at 96 DPI; the effective limit also reserves 320 logical pixels for the screen when space permits. Limits scale with DPI and clamp oversized saved widths. Minimized or temporarily undersized layouts defer divider updates until both panels fit; the remembered width remains available for restoration and settings capture. Collapse and restore the entire left navigation pane with the **sidebar icon** in the main toolbar, or **Ctrl+Alt+M**. The icon remains available across screen switches and supplies Show/Hide sidebar tooltips. It does not reserve a separate header or collapsed gutter. `BlockMainForm.NavigationPaneCollapsed` exposes the preference. The pane remembers its width and collapsed state across screen switches. Filled screens temporarily hide navigation without changing that preference.
+The left navigation pane starts at 320 logical pixels wide and scales with DPI. Drag its divider to choose a different width. `MaximumNavigationPaneWidth` defaults to 480 logical pixels at 96 DPI. Main-frame resizing changes the content pane's width, preserving the navigation width while the native panels physically fit. A physically unavoidable clamp does not replace `NavigationPaneWidth`: widening restores the preferred width without another divider move. Limits scale with DPI and clamp oversized saved preferences against the configured maximum. Minimized or temporarily undersized layouts defer divider updates until both panels fit; the remembered width remains available for restoration and settings capture. Collapse and restore the entire left navigation pane with the **sidebar icon** in the main toolbar, or **Ctrl+Alt+M**. The icon remains available across screen switches and supplies Show/Hide sidebar tooltips. It does not reserve a separate header or collapsed gutter. `BlockMainForm.NavigationPaneCollapsed` exposes the preference. The pane remembers its width and collapsed state across screen switches. Filled screens temporarily hide navigation without changing that preference.
 
 Menu rows wrap captions to the available navigation width. Narrowing the pane increases row and group heights; widening it removes unnecessary wrapped lines. The navigation container keeps its menu viewport sized to the pane, including applications with one block and no block-selector buttons. Following groups move below their contents, with vertical scrolling when necessary.
 

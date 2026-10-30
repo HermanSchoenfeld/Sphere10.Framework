@@ -76,16 +76,18 @@ public class NavigationPaneTests {
 
 	[TestCase(1)]
 	[TestCase(int.MaxValue)]
-	public void NavigationWidthClampsToCurrentWindowLimits(int RequestedWidth) {
+	public void NavigationWidthRetainsItsConfiguredPreferenceWhileTheWindowLimitsTheVisiblePane(int RequestedWidth) {
 		using var Form = new BlockMainForm { ClientSize = new Size(400, 450) };
 		var SplitContainer = Form.Controls.OfType<SplitContainer>().Single();
 		Form.NavigationPaneWidth = RequestedWidth;
-		Assert.That(Form.NavigationPaneWidth,
+		Assert.That(SplitContainer.SplitterDistance,
 			Is.InRange(SplitContainer.Panel1MinSize, SplitContainer.Width - SplitContainer.SplitterWidth - SplitContainer.Panel2MinSize));
-		var ClampedWidth = Form.NavigationPaneWidth;
+		var preferredWidth = Form.NavigationPaneWidth;
 		Form.NavigationPaneCollapsed = true;
 		Form.NavigationPaneCollapsed = false;
-		Assert.That(Form.NavigationPaneWidth, Is.EqualTo(ClampedWidth));
+		Assert.That(Form.NavigationPaneWidth, Is.EqualTo(preferredWidth));
+		Form.ClientSize = new Size(1280, 900);
+		Assert.That(SplitContainer.SplitterDistance, Is.EqualTo(preferredWidth), "The frame only constrains presentation, not the divider preference.");
 	}
 
 	[TestCase(144)]
@@ -149,18 +151,46 @@ public class NavigationPaneTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void NarrowWindowKeepsContentRoomWhenSidebarIsVisible(bool CollapsedDuringResize) {
-		using var Form = new BlockMainForm { ClientSize = new Size(1280, 900), NavigationPaneWidth = 480, NavigationPaneCollapsed = CollapsedDuringResize };
+	public void NarrowWindowKeepsNavigationWidthAndGivesRemainingSpaceToContent(bool CollapsedDuringResize) {
+		using var Form = new BlockMainForm { ClientSize = new Size(1280, 900), NavigationPaneWidth = 410, NavigationPaneCollapsed = CollapsedDuringResize };
 		var SplitContainer = Form.Controls.OfType<SplitContainer>().Single();
 		Form.ClientSize = new Size(600, 500);
 		Form.NavigationPaneCollapsed = false;
-		var ContentWidth = (int)Math.Round(320 * Form.DeviceDpi / 96.0);
-		Assert.That(Form.NavigationPaneWidth, Is.EqualTo(SplitContainer.Width - SplitContainer.SplitterWidth - ContentWidth));
-		Assert.That(SplitContainer.Panel2.Width, Is.GreaterThanOrEqualTo(ContentWidth));
+		Assert.That(SplitContainer.SplitterDistance, Is.EqualTo(410), "Only the divider may change the blue menu width while it still physically fits.");
+		Assert.That(Form.NavigationPaneWidth, Is.EqualTo(410), "Narrowing the frame must not replace the user's divider preference.");
+		Assert.That(SplitContainer.Panel2.Width, Is.EqualTo(SplitContainer.Width - SplitContainer.SplitterWidth - 410));
 		Assert.That(SplitContainer.Width, Is.EqualTo(Form.ClientSize.Width), "The previous drag range must not force the container wider than the shrunken window");
 		Form.ClientSize = new Size(1280, 900);
-		Form.NavigationPaneWidth = 480;
-		Assert.That(Form.NavigationPaneWidth, Is.EqualTo(480), "Growing the window must release the smaller window's drag range");
+		Assert.That(Form.NavigationPaneWidth, Is.EqualTo(410), "Growing the window must release the smaller window's drag range");
+		Assert.That(SplitContainer.SplitterDistance, Is.EqualTo(410), "Widening restores the divider without another explicit assignment.");
+		SplitContainer.SplitterDistance = 355;
+		Form.ClientSize = new Size(600, 500);
+		Assert.That(Form.NavigationPaneWidth, Is.EqualTo(355), "An explicit divider move chooses the next preferred width.");
+		Assert.That(SplitContainer.SplitterDistance, Is.EqualTo(355));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void RepeatedNativeFrameResizesDoNotReplaceTheDividerPreference(bool collapsedWhileNarrow) {
+		using var form = new NavigationResizeProbeMainForm {
+			ClientSize = new Size(1280, 900), NavigationPaneWidth = 410,
+			ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000)
+		};
+		form.Show();
+		var splitter = form.Controls.OfType<SplitContainer>().Single();
+		foreach (var width in new[] { 650, 600, 500, 200, 1100, 590, 1280 }) {
+			form.Width = width;
+			System.Windows.Forms.Application.DoEvents();
+			if (collapsedWhileNarrow) {
+				form.NavigationPaneCollapsed = true;
+				form.NavigationPaneCollapsed = false;
+			}
+			Assert.That(form.NavigationPaneWidth, Is.EqualTo(410), "Native right-edge resizing must not act like a divider drag.");
+			var availableWidth = splitter.Width - splitter.SplitterWidth - splitter.Panel2MinSize;
+			Assert.That(splitter.SplitterDistance, Is.EqualTo(Math.Min(410, availableWidth)), "The navigation pane shrinks only when the native panels cannot physically fit.");
+		}
+		Assert.That(splitter.SplitterDistance, Is.EqualTo(410));
+		Assert.That(form.LayoutErrors, Is.Empty);
 	}
 
 	[TestCase(96)]

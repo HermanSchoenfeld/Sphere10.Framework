@@ -8,6 +8,9 @@
 
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -88,6 +91,61 @@ public class ApplicationToolbarLayoutTests {
 		Assert.That(host.DockScreen(screen), Is.True);
 	}
 
+	[TestCase(1F)]
+	[TestCase(1.25F)]
+	[TestCase(1.5F)]
+	[TestCase(2F)]
+	public void SwitchingBetweenEmptyOrdinaryAndRealLogOutputToolbarsKeepsOneFrameRow(float scale) {
+		using var font = new Font(SystemFonts.MenuFont.FontFamily, SystemFonts.MenuFont.SizeInPoints * scale);
+		using var form = new ToolbarMainForm { ScreenMode = ScreenMode.MultiView, Size = new Size(1400, 800) };
+		form.ApplicationToolbar.Font = font;
+		using var ordinary = new ToolbarScreen();
+		using var empty = new WinFormsApplicationScreen { Title = "Empty toolbar" };
+		using var logged = new ToolbarScreen();
+		using var selector = new LogOutputSelectorControl { Font = font, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
+		using var output = new ToolStripControlHost(selector) { AutoSize = true, Margin = Padding.Empty };
+		logged.ToolBar.Font = ordinary.ToolBar.Font = font;
+		logged.ToolBar.Items.Add(output);
+		form.ShowScreen(empty);
+		form.Show();
+		System.Windows.Forms.Application.DoEvents();
+		var rowHeight = form.ApplicationToolbar.Height;
+		var tabTop = form.ScreenHost.TabControl.PointToScreen(Point.Empty).Y;
+		TestContext.WriteLine($"Toolbar font scale {scale:0.##}; actual native DPI {form.ApplicationToolbar.DeviceDpi}; common row {rowHeight}px; tab top {tabTop}px.");
+		foreach (var screen in new WinFormsApplicationScreen[] { ordinary, logged, empty, logged, ordinary, empty }) {
+			Assert.That(form.ShowScreen(screen), Is.True);
+			System.Windows.Forms.Application.DoEvents();
+			Assert.That(form.ApplicationToolbar.AutoSize, Is.False, "Active commands must not control the frame row's height.");
+			Assert.That(form.ApplicationToolbar.Height, Is.EqualTo(rowHeight));
+			Assert.That(form.ScreenHost.TabControl.PointToScreen(Point.Empty).Y, Is.EqualTo(tabTop));
+			if (ReferenceEquals(screen, logged)) {
+				Assert.That(form.ApplicationToolbar.DisplayRectangle.Height, Is.GreaterThanOrEqualTo(output.Height + output.Margin.Vertical), "The real logging widget must fit without clipping at each configured font scale.");
+				var configure = selector.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<Button>().Single();
+				var configureBounds = selector.RectangleToClient(configure.RectangleToScreen(configure.ClientRectangle));
+				Assert.That(selector.ClientRectangle.Contains(configureBounds), Is.True, "The complete Configure button must fit inside the font-scaled selector.");
+			}
+			var kind = ReferenceEquals(screen, logged) ? "logging" : ReferenceEquals(screen, ordinary) ? "ordinary" : "empty";
+			CaptureLayout(form, $"toolbar-{scale:0.##}-{kind}.png");
+		}
+	}
+
+	[Test]
+	public void ExplicitHostRowConfigurationChangesTheCommonHeightWithoutFollowingActiveCommands() {
+		using var form = new ToolbarMainForm { ScreenMode = ScreenMode.MultiView, Size = new Size(1300, 700) };
+		using var screen = new ToolbarScreen();
+		form.Show();
+		System.Windows.Forms.Application.DoEvents();
+		var initial = form.ApplicationToolbar.Height;
+		form.ToolBarRowHeight = 48;
+		System.Windows.Forms.Application.DoEvents();
+		var configured = form.ApplicationToolbar.Height;
+		Assert.That(configured, Is.GreaterThan(initial));
+		form.ShowScreen(screen);
+		System.Windows.Forms.Application.DoEvents();
+		Assert.That(form.ApplicationToolbar.Height, Is.EqualTo(configured));
+		Assert.That(() => form.ToolBarRowHeight = 0, Throws.TypeOf<ArgumentOutOfRangeException>());
+	}
+
 	[Test]
 	public void LargerHostedControlsAndRuntimeFontChangesFitThenReleaseTheirHeightWhenRemoved() {
 		using var form = new Form { Size = new Size(900, 500) };
@@ -135,6 +193,16 @@ public class ApplicationToolbarLayoutTests {
 		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), 0x0200, IntPtr.Zero, point);
 		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), WinAPI.USER32.WM_LBUTTONDOWN, (IntPtr)1, point);
 		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), WinAPI.USER32.WM_LBUTTONUP, IntPtr.Zero, point);
+	}
+
+	private static void CaptureLayout(Form form, string name) {
+		var directory = TestContext.Parameters.Get("UiCaptureDirectory", string.Empty);
+		if (string.IsNullOrWhiteSpace(directory))
+			return;
+		Directory.CreateDirectory(directory);
+		using var bitmap = new Bitmap(form.Width, form.Height);
+		form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.Size));
+		bitmap.Save(Path.Combine(directory, name), ImageFormat.Png);
 	}
 
 	[Test]

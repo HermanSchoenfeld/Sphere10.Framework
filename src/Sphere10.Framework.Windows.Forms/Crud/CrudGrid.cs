@@ -45,6 +45,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	public event EventHandlerEx<CrudGrid, object> EntityDeleted;
 	[Category("Behavior")]
 	public event EventHandlerEx<CrudGrid, CrudEntityPropertyChangedEventArgs> EntityPropertyChanged;
+	/// <summary>Raised on the owning UI thread after the current filtered query has been bound, including empty results.</summary>
+	[Category("Behavior")]
+	public event EventHandler DataBindingComplete;
 	#endregion
 
 	#region Fields
@@ -377,6 +380,10 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	public IEnumerable<object> VisibleEntities {
 		get { return _rowToEntityMap.Keys.Select(row => _rowToEntityMap[row]); }
 	}
+
+	/// <summary>The total matching records in the last accepted query, across every page.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public int TotalRecords => _totalRecords;
 
 	internal object SelectedEntityDirect {
 		get => _selectedEntity;
@@ -1128,6 +1135,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			CalculateEntityToRowLookup();
 			_grid.Redim(0, 0);
 			_sizedColumnBindings = null;
+			_totalRecords = 0;
+			_totalRecordsLabel.Text = "0";
+			DataBindingComplete?.Invoke(this, EventArgs.Empty);
 			return false;
 		}
 
@@ -1268,6 +1278,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			UpdatePageSizeDisplay();
 		}
 
+		if (!QueryChanged())
+			DataBindingComplete?.Invoke(this, EventArgs.Empty);
 		return QueryChanged();
 	}
 

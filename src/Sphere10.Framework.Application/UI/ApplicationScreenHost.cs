@@ -731,6 +731,13 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			return false;
 		var activeClosing = closing.Any(screen => ReferenceEquals(screen, _activeScreen));
 		var activeIndex = _activeScreen == null ? -1 : IndexOfOpenScreen(_activeScreen);
+		var nextSelection = _activeScreen;
+		if (activeClosing) {
+			// Resolve the neighbor before removal so a batch closing earlier tabs cannot skip the next surviving tab.
+			var closingSet = new HashSet<TScreen>(closing, ReferenceEqualityComparer.Instance);
+			nextSelection = _openOrder.Skip(activeIndex + 1).FirstOrDefault(screen => !closingSet.Contains(screen))
+				?? _openOrder.Take(activeIndex).LastOrDefault(screen => !closingSet.Contains(screen));
+		}
 		var removedPermanentTypes = closing.Where(IsPermanent).Select(GetScreenType).ToHashSet();
 		if (activeClosing)
 			await NotifyDeactivatedAsync(_activeScreen, token);
@@ -738,15 +745,16 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		foreach (var screen in closing)
 			RemoveTrackedScreen(screen);
 		if (activeClosing)
-			_activeScreen = _openOrder.Count == 0 ? null : _openOrder[Math.Min(Math.Max(activeIndex, 0), _openOrder.Count - 1)];
+			_activeScreen = nextSelection;
 		afterClose?.Invoke();
 		if (unregistering)
 			OpenPermanentScreens(GetDefinitions().Where(definition => removedPermanentTypes.Contains(definition.ScreenType)));
-		if (_activeScreen == null)
+		if (_activeScreen == null && unregistering)
 			await ShowFallbackAsync();
 		else if (activeClosing) {
 			SetTrackedSelection(_activeScreen);
-			await _activeScreen.OnActivatedAsync(CancellationToken.None);
+			if (_activeScreen != null)
+				await _activeScreen.OnActivatedAsync(CancellationToken.None);
 		}
 		OnChanged();
 		return true;

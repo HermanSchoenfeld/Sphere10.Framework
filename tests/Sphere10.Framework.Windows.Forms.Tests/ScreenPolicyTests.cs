@@ -238,7 +238,8 @@ public class ScreenPolicyTests {
 		Assert.That(empty.IsDisposed, Is.EqualTo(activationMode == ScreenActivationMode.MultiInstance));
 		Assert.That(host.ActivateScreen(block, typeof(EmptyScreen)), Is.Null, "An open regular screen suppresses the placeholder.");
 		Assert.That(host.CloseScreen(regular), Is.True);
-		var returned = (EmptyScreen)host.ActiveScreen;
+		Assert.That(host.ActiveScreen, Is.Null, "Closing the last tab does not activate a different screen, including a configured Empty screen.");
+		var returned = (EmptyScreen)host.ActivateScreen(block, typeof(EmptyScreen));
 		Assert.That(ReferenceEquals(returned, empty), Is.EqualTo(activationMode == ScreenActivationMode.SingleInstance));
 		Assert.That(returned.Value, Is.EqualTo(activationMode == ScreenActivationMode.SingleInstance ? 37 : 0));
 		Assert.That(host.OpenScreens, Is.Empty);
@@ -261,7 +262,8 @@ public class ScreenPolicyTests {
 		Assert.That(host.ActiveScreen, Is.SameAs(regular));
 		regular.CancelHide = false;
 		Assert.That(host.CloseScreen(regular), Is.True);
-		Assert.That(host.ActiveScreen, Is.SameAs(empty));
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(host.ActivateScreen(block, typeof(EmptyScreen)), Is.SameAs(empty), "Explicit placeholder navigation retains the original lifetime policy.");
 	}
 
 	[TestCase(ScreenActivationMode.SingleInstance)]

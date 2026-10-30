@@ -65,6 +65,16 @@ row utilities; grid row commands follow the toolbar/context-menu rule below. Bin
 each command to one behavior path, retaining its validation, busy state and
 permissions when its presentation moves.
 
+Keep the application's toolbar row the same height when changing screens or
+showing/hiding commands. `MainForm.ToolBarRowHeight` configures that common row
+in logical pixels; its default is 32, adjusted only for global font/DPI changes.
+Use compact hosted controls that fit the common row and let their preferred
+width grow with fonts, rather than freezing a child layout's initial width and
+clipping its configure button. An application with larger toolbar controls must
+configure a larger common row explicitly. Standalone and detached screen strips
+can retain content-sized `ToolStripStableHeightBehavior` sizing for their full
+current command set, including temporarily hidden commands.
+
 ### Row actions on grid screens
 
 Expose custom row context-menu actions through the screen's toolbar too, such as

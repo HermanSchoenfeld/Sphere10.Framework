@@ -20,6 +20,50 @@ namespace Sphere10.Framework.Application.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationScreenHostNavigationTests {
 	[Test]
+	public async Task BatchCloseSelectsTheFirstSurvivingSuccessorInTheOriginalTabOrder() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = CreateHost(provider);
+		var screens = new ProbeScreen[5];
+		for (var index = 0; index < screens.Length; index++)
+			screens[index] = await host.ActivateScreenAsync(Block(host, "first"), ScreenItemFor(host, "first", "multiple"));
+		await host.ShowScreenAsync(screens[2]);
+
+		Assert.That(await host.CloseScreensAsync(new[] { screens[0], screens[2] }), Is.True);
+
+		Assert.That(host.ActiveScreen, Is.SameAs(screens[3]));
+		Assert.That(host.OpenScreens, Is.EqualTo(new[] { screens[1], screens[3], screens[4] }));
+	}
+
+	[Test]
+	public async Task ClosingAnInactiveTabPreservesTheCurrentSelectionAndActivationCount() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = CreateHost(provider);
+		var first = await host.ActivateScreenAsync(Block(host, "first"), ScreenItemFor(host, "first", "single"));
+		var active = await host.ActivateScreenAsync(Block(host, "first"), ScreenItemFor(host, "first", "multiple"));
+		var activations = active.Activations;
+
+		Assert.That(await host.CloseScreenAsync(first), Is.True);
+
+		Assert.That(host.ActiveScreen, Is.SameAs(active));
+		Assert.That(active.Activations, Is.EqualTo(activations));
+	}
+
+	[Test]
+	public async Task ClosingTheLastTabPublishesANullSelection() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = CreateHost(provider);
+		var screen = await host.ActivateScreenAsync(Block(host, "first"), ScreenItemFor(host, "first", "single"));
+		IApplicationScreen selected = screen;
+		host.ScreenSelected += next => selected = next;
+
+		Assert.That(await host.CloseScreenAsync(screen), Is.True);
+
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(selected, Is.Null);
+		Assert.That(host.OpenScreens, Is.Empty);
+	}
+
+	[Test]
 	public async Task AnUnregisteredBlockCannotHostAScreenOrChangeApplicationNavigationState() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = CreateHost(provider);

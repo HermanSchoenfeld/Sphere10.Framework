@@ -136,6 +136,9 @@ public class SerializerFactory {
 		factory.Register(typeof(Dictionary<,>), typeof(DictionarySerializer<,>));
 		factory.Register(typeof(HashSet<>), typeof(HashSetSerializer<>));
 		factory.Register(typeof(SortedSet<>), typeof(SortedSetSerializer<>));
+
+		// Factories use the same ordinary registration path as the other built-in values.
+		factory.Register<SerializerFactory, SerializerFactorySerializer>();
 	}
 
 	public void CopyRegistrations(SerializerFactory factory) {
@@ -148,6 +151,7 @@ public class SerializerFactory {
 				DataType = registration.Value.DataType,
 				SerializerType = registration.Value.SerializerType,
 				Factory = registration.Value.Factory,
+				Construction = registration.Value.Construction,
 				Owner = this  // when copying another factory, we set the new factory as the owner of the registration
 			};
 			_registrations.Add(registration.Key, newRegistration);
@@ -171,11 +175,11 @@ public class SerializerFactory {
 		var nullableEnumSerializer = (IItemSerializer) typeof(NullableSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs(enumSerializer);
 		var code = typeCode ?? GenerateTypeCode();
 		if (!ContainsSerializer(enumType))
-			RegisterInternal(code, enumType, enumSerializer.GetType(), enumSerializer, null);
+			RegisterInternal(code, enumType, enumSerializer.GetType(), enumSerializer, null, RegistrationConstruction.Constructor);
 
 		var nullableEnumType  = typeof(Nullable<>).MakeGenericType(enumType);
 		if (!ContainsSerializer(nullableEnumType))
-			RegisterInternal(code + 1, nullableEnumType, nullableEnumSerializer.GetType(), nullableEnumSerializer, null);
+			RegisterInternal(code + 1, nullableEnumType, nullableEnumSerializer.GetType(), nullableEnumSerializer, null, RegistrationConstruction.Constructor);
 		return this;
 	}
 
@@ -185,7 +189,7 @@ public class SerializerFactory {
 	}
 
 	public SerializerFactory Register<TItem, TSerializer>(long? typeCode = null) where TSerializer : IItemSerializer<TItem>, new() {
-		RegisterInternal(typeCode ?? GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => new TSerializer());
+		RegisterInternal(typeCode ?? GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => new TSerializer(), RegistrationConstruction.Parameterless);
 		return this;
 	}
 
@@ -222,7 +226,8 @@ public class SerializerFactory {
 		return this;
 	}
 	
-	internal void RegisterInternal(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory) {
+	internal void RegisterInternal(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory,
+		RegistrationConstruction construction = RegistrationConstruction.Custom) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		Guard.ArgumentNotNull(serializerType, nameof(serializerType));
 		Guard.Argument(!serializerType.IsConstructedGenericTypeOf(typeof(ReferenceSerializer<>)), nameof(serializerType), "Reference serializers cannot be registered directly");
@@ -274,6 +279,8 @@ public class SerializerFactory {
 		};
 
 		// Ensure instance is of correct type
+		if (serializerInstance == null && factory == null)
+			construction = RegistrationConstruction.Constructor;
 		if (serializerInstance != null) {
 			if (!serializerType.IsInstanceOfType(serializerInstance))
 				throw new InvalidOperationException($"Serializer instance is not of type {serializerType.Name}");
@@ -287,6 +294,7 @@ public class SerializerFactory {
 		} 
 
 		registration.Factory = factory;
+		registration.Construction = construction;
 		_registrations.Add(typeCode, registration);
 		_registrationsByType.Add(dataType, typeCode);
 
@@ -518,11 +526,44 @@ public class SerializerFactory {
 	#region Inner Types
 
 	public record Registration {
+		private Type _dataType;
+		private Type _serializerType;
+		private Func<Registration, Type, IItemSerializer> _factory;
+
 		public long TypeCode { get; set; }
-		public Type DataType { get; set; }
-		public Type SerializerType { get; set; }
-		public Func<Registration, Type, IItemSerializer> Factory { get; set; }
+		public Type DataType {
+			get => _dataType;
+			set {
+				_dataType = value;
+				Construction = RegistrationConstruction.Custom;
+			}
+		}
+		public Type SerializerType {
+			get => _serializerType;
+			set {
+				_serializerType = value;
+				Construction = RegistrationConstruction.Custom;
+			}
+		}
+		public Func<Registration, Type, IItemSerializer> Factory {
+			get => _factory;
+			set {
+				_factory = value;
+				Construction = RegistrationConstruction.Custom;
+			}
+		}
 		public SerializerFactory Owner { get; set; }
+
+		// Records how the registration was created without inspecting or replaying its delegate.
+		internal RegistrationConstruction Construction { get; set; }
+	}
+
+	internal enum RegistrationConstruction {
+		Custom,
+		Constructor,
+		Parameterless,
+		Composite,
+		Polymorphic
 	}
 
 	#endregion

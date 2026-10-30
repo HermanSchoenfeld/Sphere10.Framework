@@ -31,7 +31,7 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 
 	public MainForm() {
 		InitializeComponent();
-		_toolStripHeight = new ToolStripStableHeightBehavior(ToolStrip);
+		_toolStripHeight = new ToolStripStableHeightBehavior(ToolStrip, ToolStripStableHeightBehavior.StandardLogicalHeight);
 		Disposed += (_, _) => _toolStripHeight.Dispose();
 		HelpToolStripMenuItem = new ToolStripMenuItem("Help");
 		HelpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] {
@@ -66,6 +66,15 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 				ScreenHost.ShowScreen(value);
 			else if (ActiveScreen != null)
 				ScreenHost.CloseScreen(ActiveScreen);
+		}
+	}
+
+	[DefaultValue(ToolStripStableHeightBehavior.StandardLogicalHeight), Category("Layout"), Description("Common application toolbar row height in logical pixels; screen command changes do not resize the row")]
+	public int ToolBarRowHeight {
+		get => _toolStripHeight.LogicalHeight;
+		set {
+			Guard.ArgumentGT(value, 0, nameof(value));
+			_toolStripHeight.LogicalHeight = value;
 		}
 	}
 

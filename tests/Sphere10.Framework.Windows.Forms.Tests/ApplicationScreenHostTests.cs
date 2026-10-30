@@ -304,6 +304,52 @@ public class ApplicationScreenHostTests {
 		Assert.That(Host.ActivateScreen(Block, typeof(ProbeScreen)), Is.Not.SameAs(First));
 	}
 
+	[TestCase(0, 1)]
+	[TestCase(1, 2)]
+	[TestCase(2, 1)]
+	public void ClosingTheActiveTabSelectsItsNextVisualNeighborThenItsPrevious(int activeIndex, int expectedIndex) {
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var screens = Enumerable.Range(0, 3).Select(index => new MultiProbeScreen { Title = $"Screen {index}" }).ToArray();
+		foreach (var screen in screens)
+			host.ShowScreen(screen);
+		host.ShowScreen(screens[activeIndex]);
+		Assert.That(host.CloseScreen(screens[activeIndex]), Is.True);
+		Assert.That(host.ActiveScreen, Is.SameAs(screens[expectedIndex]));
+		Assert.That(host.TabControl.SelectedTab.Tag, Is.SameAs(screens[expectedIndex]));
+	}
+
+	[Test]
+	public void BatchCloseResolvesTheNextSurvivorBeforeRemovingEarlierTabs() {
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var screens = Enumerable.Range(0, 5).Select(index => new MultiProbeScreen { Title = $"Screen {index}" }).ToArray();
+		foreach (var screen in screens)
+			host.ShowScreen(screen);
+		host.ShowScreen(screens[2]);
+		Assert.That(host.CloseScreens(new[] { screens[0], screens[2], screens[3] }), Is.True);
+		Assert.That(host.ActiveScreen, Is.SameAs(screens[4]));
+		Assert.That(host.TabControl.SelectedTab.Tag, Is.SameAs(screens[4]));
+	}
+
+	[Test]
+	public void ClosingATabUsesReorderedVisualNeighborsAndPreservesInactiveSelection() {
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var first = new MultiProbeScreen();
+		var second = new MultiProbeScreen();
+		var third = new MultiProbeScreen();
+		host.ShowScreen(first);
+		host.ShowScreen(second);
+		host.ShowScreen(third);
+		host.TabControl.MoveTab(host.TabControl.SelectedTab, 0);
+		host.ShowScreen(first);
+		Assert.That(host.CloseScreen(third), Is.True);
+		Assert.That(host.ActiveScreen, Is.SameAs(first));
+		Assert.That(host.CloseScreen(first), Is.True);
+		Assert.That(host.ActiveScreen, Is.SameAs(second));
+		Assert.That(host.CloseScreen(second), Is.True);
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(host.TabControl.SelectedTab, Is.Null);
+	}
+
 	[Test]
 	public void ExplicitScreenDisposalRemovesItsTabAndCacheEntry() {
 		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };

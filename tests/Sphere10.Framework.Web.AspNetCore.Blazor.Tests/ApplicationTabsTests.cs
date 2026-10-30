@@ -42,6 +42,96 @@ public class ApplicationTabsTests {
 		Assert.That(host.ActiveScreen, Is.SameAs(third));
 	}
 
+	[TestCase(0, 1)]
+	[TestCase(1, 2)]
+	[TestCase(2, 1)]
+	public async Task ClosingActiveTabSelectsNextThenPrevious(int activeIndex, int expectedIndex) {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		var screens = new[] {
+			await host.ActivateScreenAsync("block", "single"),
+			await host.ActivateScreenAsync("block", "multiple"),
+			await host.ActivateScreenAsync("block", "multiple")
+		};
+		await host.ShowScreenAsync(screens[activeIndex].Id);
+
+		Assert.That(await host.CloseScreenAsync(screens[activeIndex].Id), Is.True);
+
+		Assert.That(host.ActiveScreen, Is.SameAs(screens[expectedIndex]));
+	}
+
+	[Test]
+	public async Task BatchCloseUsesSurvivingNeighborsAfterReordering() {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		var first = await host.ActivateScreenAsync("block", "single");
+		var second = await host.ActivateScreenAsync("block", "multiple");
+		var third = await host.ActivateScreenAsync("block", "multiple");
+		var fourth = await host.ActivateScreenAsync("block", "multiple");
+		var fifth = await host.ActivateScreenAsync("block", "multiple");
+		await host.MoveScreenAsync(fifth.Id, 1);
+		await host.ShowScreenAsync(third.Id);
+
+		Assert.That(await host.CloseScreensAsync(new[] { first.Id, third.Id }), Is.True);
+
+		Assert.That(host.OpenScreens, Is.EqualTo(new[] { fifth, second, fourth }));
+		Assert.That(host.ActiveScreen, Is.SameAs(fourth));
+	}
+
+	[Test]
+	public async Task ClosingInactiveTabsKeepsTheActiveComponentSelected() {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		var first = await host.ActivateScreenAsync("block", "single");
+		var active = await host.ActivateScreenAsync("block", "multiple");
+		var component = new OtherProbe();
+		await host.AttachScreenAsync(active.Id, component);
+		var activations = component.Activations;
+
+		Assert.That(await host.CloseScreenAsync(first.Id), Is.True);
+
+		Assert.That(host.ActiveScreen, Is.SameAs(active));
+		Assert.That(active.Screen, Is.SameAs(component));
+		Assert.That(component.Activations, Is.EqualTo(activations));
+	}
+
+	[Test]
+	public async Task ClosingEveryTabLeavesNoSelectedScreen() {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		var first = await host.ActivateScreenAsync("block", "single");
+		var second = await host.ActivateScreenAsync("block", "multiple");
+
+		Assert.That(await host.CloseScreensAsync(new[] { first.Id, second.Id }), Is.True);
+
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(host.OpenScreens, Is.Empty);
+	}
+
+	[Test]
+	public async Task PendingCloseGuardRetainsTheSelectedTabUntilItAccepts() {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		var first = await host.ActivateScreenAsync("block", "single");
+		var active = await host.ActivateScreenAsync("block", "multiple");
+		var next = await host.ActivateScreenAsync("block", "multiple");
+		await host.ShowScreenAsync(active.Id);
+		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var decision = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		await host.AttachScreenAsync(active.Id, new OtherProbe { Guard = _ => {
+			entered.SetResult();
+			return decision.Task;
+		} });
+
+		var closing = host.CloseScreensAsync(new[] { first.Id, active.Id });
+		await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.That(host.ActiveScreen, Is.SameAs(active));
+		Assert.That(host.OpenScreens, Is.EqualTo(new[] { first, active, next }));
+		decision.SetResult(true);
+		Assert.That(await closing.WaitAsync(TimeSpan.FromSeconds(5)), Is.True);
+		Assert.That(host.ActiveScreen, Is.SameAs(next));
+	}
+
 	[Test]
 	public async Task BatchCloseVetoAndModeSwitchAreAtomicAcrossHiddenAndVisibleGuards() {
 		using var services = new ServiceCollection().BuildServiceProvider();

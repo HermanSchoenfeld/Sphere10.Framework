@@ -34,6 +34,13 @@ Existing builder limitations remain explicit: `UseFactory` reads its unset `_fac
 
 ## Wire contracts and sizing
 
+Use [`SerializerFactorySerializer`](../../usage/serializer-factory-serialization.md)
+to persist a reconstructible factory's registrations, exact type codes and composite
+member configuration. It supports ordinary registered constructors and automatic
+composite/polymorphic assembly; arbitrary delegates and independently configured
+serializer state require application-supplied configuration. The factory codec is
+independent of the storage container using it.
+
 Reflected automatic assembly does not establish a stable wire layout. Custom factory registrations, type codes, member layout, null/reference handling and endianness must match the storage or protocol contract. `CalculateSize(context, item)` must agree with the bytes written by `Serialize`. Reuse one context throughout the graph; convenience overloads without a context create a new one. Pure composite and polymorphic serializers report `SupportsNull=false`; use the existing null/reference wrappers when the contract requires them.
 
 [SerializerBuilderTests](../../../tests/Sphere10.Framework.Tests/Serialization/SerializerBuilderTests.cs) provide explicit-binding, automatic-assembly, base-member ordering, constructor, null and cyclic-reference examples. They are references for the relevant behavior, not a promise that every reflected type can be serialized automatically.

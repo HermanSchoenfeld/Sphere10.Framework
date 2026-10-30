@@ -27,8 +27,13 @@ public static class ScreenPoliciesPlugin {
 				.WithName("Empty workspace")
 				.WithPosition(4)
 				.WithIconUrl("img/heading-solid.svg")
-				.WithTooltip("Shown when all normal screens are closed")
+				.WithTooltip("Open the tabless empty-workspace screen when no normal screens are open")
 				.WithDefaultScreen<EmptyWorkspaceScreen>("Empty workspace", emptyScreenLifetime, ScreenKind.Empty)
+				.ConfigureMenu(menu => menu
+					.WithId("empty")
+					.WithText("Workspace")
+					.AddScreenItem<EmptyWorkspaceScreen>("empty", "Empty workspace", emptyScreenLifetime, screenKind: ScreenKind.Empty)
+				)
 			);
 		if (permanentScreen)
 			plugin

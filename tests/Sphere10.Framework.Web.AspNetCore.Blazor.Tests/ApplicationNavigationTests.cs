@@ -29,6 +29,39 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationNavigationTests {
 	[Test]
+	public async Task LastTabCloseDoesNotReactivateTheBlockDefaultWhenItsQueryUrlReturns() {
+		var navigation = new ProbeNavigation();
+		await using var provider = CreateRenderingServices(navigation).BuildServiceProvider();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			BrowserShell shell = null;
+			await renderer.RenderComponentAsync<NavigationHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(NavigationHarness.UseQueryRoutes)] = true,
+				[nameof(NavigationHarness.Capture)] = (Action<BrowserShell>)(component => shell = component)
+			}));
+			await shell.SynchronizeBrowserAsync();
+			await navigation.PendingNavigation;
+			var active = host.ActiveScreen;
+			Assert.That(active, Is.Not.Null);
+			Assert.That(await host.CloseScreenAsync(active.Id), Is.True);
+			Synchronize(shell);
+			await navigation.PendingNavigation;
+			Assert.That(navigation.Uri, Is.EqualTo("http://localhost/app/application?block=projects"));
+
+			await shell.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(ApplicationShell.BlockId)] = "projects",
+				[nameof(ApplicationShell.ScreenId)] = null,
+				[nameof(ApplicationShell.InstanceId)] = null
+			}));
+
+			Assert.That(host.ActiveScreen, Is.Null);
+			Assert.That(host.OpenScreens, Is.Empty);
+			Assert.That(host.Screens, Is.Empty);
+		});
+	}
+
+	[Test]
 	public async Task ProgrammaticActivationSynchronizesRenderedShellWithoutAParentParameterUpdate() {
 		var navigation = new ProbeNavigation();
 		await using var provider = CreateRenderingServices(navigation).BuildServiceProvider();
@@ -303,9 +336,12 @@ public class ApplicationNavigationTests {
 	public class NavigationHarness : ComponentBase {
 		[Parameter] public Action<BrowserShell> Capture { get; set; }
 
+		[Parameter] public bool UseQueryRoutes { get; set; }
+
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<BrowserShell>(0);
-			builder.AddAttribute(1, nameof(ApplicationShell.NavigationUriFactory), (Func<BlazorApplicationScreenSession, string>)ProjectPath);
+			if (!UseQueryRoutes)
+				builder.AddAttribute(1, nameof(ApplicationShell.NavigationUriFactory), (Func<BlazorApplicationScreenSession, string>)ProjectPath);
 			builder.AddComponentReferenceCapture(2, component => Capture((BrowserShell)component));
 			builder.CloseComponent();
 		}
