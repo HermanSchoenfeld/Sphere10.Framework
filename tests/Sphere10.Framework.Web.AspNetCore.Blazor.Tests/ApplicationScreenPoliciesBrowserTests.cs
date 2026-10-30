@@ -67,6 +67,9 @@ public class ApplicationScreenPoliciesBrowserTests {
 		if (TestContext.Parameters.Get("PermanentProfile", "false") == "true")
 			Assert.Ignore("The permanent profile intentionally never has an empty workspace.");
 		await CloseAllAsync();
+		await _page.GetByText("Select an application block to open a screen.", new() { Exact = true }).WaitForAsync();
+		Assert.That(await _page.GetByRole(AriaRole.Tab).CountAsync(), Is.Zero);
+		await ShowEmptyWorkspaceAsync();
 		await _page.GetByRole(AriaRole.Heading, new() { Name = "No screens are open", Exact = true }).WaitForAsync();
 		Assert.That(await _page.GetByRole(AriaRole.Tab).CountAsync(), Is.Zero);
 		var original = await _page.Locator("[data-empty-instance]").InnerTextAsync();
@@ -79,6 +82,8 @@ public class ApplicationScreenPoliciesBrowserTests {
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }).WaitForAsync();
 		Assert.That(await _page.GetByRole(AriaRole.Textbox, new() { Name = "Empty workspace note", Exact = true }).IsVisibleAsync(), Is.False);
 		await CloseAllAsync();
+		await _page.GetByText("Select an application block to open a screen.", new() { Exact = true }).WaitForAsync();
+		await ShowEmptyWorkspaceAsync();
 		var note = _page.GetByRole(AriaRole.Textbox, new() { Name = "Empty workspace note", Exact = true });
 		await note.WaitForAsync();
 		Assert.That(await note.InputValueAsync(), Is.EqualTo(retained ? "Retained empty draft" : ""));
@@ -113,6 +118,13 @@ public class ApplicationScreenPoliciesBrowserTests {
 		Assert.That(await note.InputValueAsync(), Is.EqualTo("Permanent draft"));
 		Assert.That(await _page.GetByRole(AriaRole.Heading, new() { Name = "No screens are open", Exact = true }).CountAsync(), Is.Zero);
 		await AttachScreenshotAsync("permanent-screen");
+	}
+
+	private async Task ShowEmptyWorkspaceAsync() {
+		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Application blocks", Exact = true })
+			.GetByRole(AriaRole.Button, new() { Name = "Empty workspace", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Empty workspace menus", Exact = true })
+			.GetByRole(AriaRole.Button, new() { Name = "Empty workspace", Exact = true }).ClickAsync();
 	}
 
 	private async Task CloseAllAsync() {

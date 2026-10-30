@@ -63,6 +63,38 @@ public class ApplicationTabsBrowserTests {
 	}
 
 	[Test]
+	public async Task ClosingTabsFocusesTheNextThenPreviousAndFinallyNoScreen() {
+		var menu = _page.GetByRole(AriaRole.Navigation, new() { Name = "Workspace menus", Exact = true });
+		await menu.GetByRole(AriaRole.Button, new() { Name = "New screen instance", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Textbox, new() { Name = "Tab title", Exact = true }).FillAsync("First close neighbor");
+		await _page.GetByRole(AriaRole.Textbox, new() { Name = "Tab title", Exact = true }).PressAsync("Tab");
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "First close neighbor", Exact = true }).WaitForAsync();
+		await menu.GetByRole(AriaRole.Button, new() { Name = "New screen instance", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "New scratchpad", Exact = true }).And(_page.Locator("[aria-selected=true]")).WaitForAsync();
+		await _page.GetByRole(AriaRole.Textbox, new() { Name = "Tab title", Exact = true }).FillAsync("Second close neighbor");
+		await _page.GetByRole(AriaRole.Textbox, new() { Name = "Tab title", Exact = true }).PressAsync("Tab");
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Second close neighbor", Exact = true }).WaitForAsync();
+		var first = _page.GetByRole(AriaRole.Tab, new() { Name = "First close neighbor", Exact = true });
+		var second = _page.GetByRole(AriaRole.Tab, new() { Name = "Second close neighbor", Exact = true });
+		await first.ClickAsync();
+
+		await _page.GetByRole(AriaRole.Button, new() { Name = "Close First close neighbor", Exact = true }).ClickAsync();
+		await first.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		await AssertSelectedAndFocusedAsync(second);
+		await _page.GetByRole(AriaRole.Button, new() { Name = "Close Second close neighbor", Exact = true }).ClickAsync();
+		await second.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		await AssertSelectedAndFocusedAsync(_page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }));
+		await _page.GetByRole(AriaRole.Button, new() { Name = "Close Overview", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab).WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		await _page.GetByText("Select an application block to open a screen.", new() { Exact = true }).WaitForAsync();
+		Assert.That(await _page.Locator(".sphere10-screen:not([hidden])").CountAsync(), Is.Zero);
+		Assert.That(await _page.Locator("[data-empty-workspace]:visible").CountAsync(), Is.Zero);
+		var screenshot = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"tabs-{TestContext.CurrentContext.Test.ID}-closed.png");
+		await _page.ScreenshotAsync(new() { Path = screenshot, FullPage = true });
+		TestContext.AddTestAttachment(screenshot, "Closing the last tab leaves no active screen");
+	}
+
+	[Test]
 	public async Task OpenScreensSelectorRestoresItsSelectedOptionWhenTheScreenRejectsNavigation() {
 		var menu = _page.GetByRole(AriaRole.Navigation, new() { Name = "Workspace menus", Exact = true });
 		await menu.GetByRole(AriaRole.Button, new() { Name = "Single-instance screen", Exact = true }).ClickAsync();

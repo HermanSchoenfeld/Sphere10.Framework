@@ -36,7 +36,7 @@ Opening an interactive browser circuit awaits application initialization. The fo
 
 Screen menu entries open independent instances by default, including the component and legacy galleries. Overview, **Single-instance screen**, and the four Application patterns screens explicitly retain their singleton lifetimes. Collection editors use an instance key so each collection has its own retained tab; the empty and permanent profiles also declare their intended lifetimes.
 
-Use File → Close all screens in the default tester to display the real **Empty workspace** screen without a tab. Enter a note, browse back to Workspace and open Overview, then close it. The default empty singleton retains both its note and instance ID.
+Use File → Close all screens in the default tester to leave no active screen. Select the **Empty workspace** block and its **Empty workspace** command to open its real tabless screen explicitly. Enter a note, browse back to Workspace and open Overview, then close it and open Empty workspace again. The default empty singleton retains both its note and instance ID; closing the final normal tab itself does not activate a placeholder screen.
 
 Three named launch profiles make the policies visible:
 

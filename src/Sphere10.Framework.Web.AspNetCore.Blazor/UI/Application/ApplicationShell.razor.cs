@@ -124,6 +124,13 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		var request = (BlockId, ScreenId, InstanceId);
 		if (_lastRequest == request)
 			return;
+		if (ScreenHost.ActiveScreen == null && string.IsNullOrEmpty(request.ScreenId) && !request.InstanceId.HasValue
+			&& request.BlockId == ActiveBlock?.Id && string.Equals(Navigation.Uri, _synchronizedLocation, StringComparison.Ordinal)) {
+			// Closing the last tab already committed an empty selection; its own block-only URL must not reopen the block default.
+			_lastRequest = request;
+			_synchronizedLocation = null;
+			return;
+		}
 		_navigationOperations++;
 		using var operation = Tools.Scope.ExecuteOnDispose(() => _navigationOperations--);
 		CancelRouteRequest();
