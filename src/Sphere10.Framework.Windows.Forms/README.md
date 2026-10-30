@@ -120,6 +120,19 @@ chart.SetSamples(new[] {
 
 ## Chart Log Output
 
+`ChartLogOutputBehavior.FormatSample(title, capturedAtUtc, readings)` also formats
+one related sample without accessing controls or writing output. A raw sampler
+can use it on a worker and enqueue the result through a shared toolbar selector
+with `includesTimestamp: true`. Disable chart capture when that sampler supplies
+the shared output, so repainting retained history does not duplicate records.
+
+Register `LogOutputLifetime` as an application-owned singleton when outputs must
+drain during application shutdown. Register each owner and its asynchronous close
+callback through `Register` or `RegisterCurrent`, and await `CompleteAsync` in the
+application finalizer on the owning UI dispatcher. Closing an owner removes its
+registration immediately; only unfinished accepted writes remain tracked until
+they complete. The component tester and System Expert share this implementation.
+
 Right-click a `GraphChart`, `BarChart` or `TelemetryChart`, including its empty
 surface, and choose **Log Output**. The command uses the shared
 `LogOutputSelectorControl` wizard and configuration dialog. Hosted charts bind

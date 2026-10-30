@@ -163,8 +163,7 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 			}
 			if (!changed)
 				continue;
-			var message = (sample.Key.CapturedAtUtc ?? publicationTime).ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)
-				+ " " + Clean(title) + " — " + string.Join("; ", measurements.Select(measurement => measurement.Details));
+			var message = FormatSample(title, sample.Key.CapturedAtUtc ?? publicationTime, sample.ToArray());
 			if (!_outputSelector.EnqueueInfo(message, includesTimestamp: true)) {
 				if (_outputSelector.IsLogging)
 					Interlocked.Increment(ref _droppedSamples);
@@ -182,6 +181,13 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 			_published.Add(item.Key, item.Value);
 		if (current.Count == 0 || current.Count < previousCount / 4)
 			_published.TrimExcess();
+	}
+
+	/// <summary>Formats one related captured sample without reading controls or performing output IO. Safe for sampler workers.</summary>
+	public static string FormatSample(string title, DateTime capturedAtUtc, ChartLogSample[] readings) {
+		Guard.ArgumentNotNull(readings, nameof(readings));
+		return AsUtc(capturedAtUtc).ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)
+			+ " " + Clean(title) + " — " + string.Join("; ", readings.Where(reading => reading != null).Select(reading => FormatDetails(title, reading)));
 	}
 
 	/// <summary>Awaits every write accepted before this call, without stopping capture or blocking the UI thread.</summary>
