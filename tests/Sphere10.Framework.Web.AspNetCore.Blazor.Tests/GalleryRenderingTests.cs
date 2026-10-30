@@ -147,10 +147,13 @@ public class GalleryRenderingTests {
 		Assert.That(html, Does.Not.Contain("class=\"sphere10-application\""));
 	}
 
-	[Test]
-	public void WorkspacePreservesStableScreenIdsAndSuppliesIconsForEveryMenuItem() {
+	[TestCase(false, ScreenActivationMode.SingleInstance)]
+	[TestCase(false, ScreenActivationMode.MultiInstance)]
+	[TestCase(true, ScreenActivationMode.SingleInstance)]
+	[TestCase(true, ScreenActivationMode.MultiInstance)]
+	public void WorkspacePreservesStableScreenIdsAndSuppliesIconsForEveryMenuItem(bool permanentScreen, ScreenActivationMode emptyScreenLifetime) {
 		var services = new ServiceCollection().AddLogging();
-		Program.ConfigureServices(services);
+		Program.ConfigureServices(services, permanentScreen, emptyScreenLifetime);
 		using var provider = services.BuildServiceProvider();
 		var metadataHost = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var plugins = provider.GetServices<IBlazorPlugin>().ToArray();
@@ -171,6 +174,19 @@ public class GalleryRenderingTests {
 		var legacy = metadataHost.AvailableBlocks.Single(block => block.Id == "legacy").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
 		Assert.That(legacy.Keys, Is.EquivalentTo(new[] { "gallery", "dialogs", "tables", "wizards", "servers", "dashboard" }));
 		Assert.That(legacy.Values, Is.All.InstanceOf<BlazorScreenMenuItem>());
+		var empty = (BlazorScreenMenuItem)metadataHost.AvailableBlocks.Single(block => block.Id == "empty-workspace").Menus.SelectMany(menu => menu.Items).Single();
+		Assert.That(empty.Id, Is.EqualTo("empty"));
+		Assert.That(empty.Icon, Is.EqualTo("fas fa-window-maximize"));
+		Assert.That(empty.ActivationMode, Is.EqualTo(emptyScreenLifetime));
+		Assert.That(empty.ScreenKind, Is.EqualTo(ScreenKind.Empty));
+		var permanentBlocks = metadataHost.AvailableBlocks.Where(block => block.Id == "permanent-workspace").ToArray();
+		Assert.That(permanentBlocks.Length, Is.EqualTo(permanentScreen ? 1 : 0));
+		if (permanentScreen) {
+			var permanent = (BlazorScreenMenuItem)permanentBlocks[0].Menus.SelectMany(menu => menu.Items).Single();
+			Assert.That(permanent.Id, Is.EqualTo("permanent"));
+			Assert.That(permanent.Icon, Is.EqualTo("fas fa-thumbtack"));
+			Assert.That(permanent.ActivationMode, Is.EqualTo(ScreenActivationMode.PermanentSingleton));
+		}
 		Assert.That(metadataHost.AvailableBlocks.SelectMany(block => block.Menus).SelectMany(menu => menu.Items).Select(item => item.Icon), Is.All.Not.Null.And.Not.Empty);
 	}
 

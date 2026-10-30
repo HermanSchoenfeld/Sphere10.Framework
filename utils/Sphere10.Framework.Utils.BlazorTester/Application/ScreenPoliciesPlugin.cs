@@ -32,7 +32,14 @@ public static class ScreenPoliciesPlugin {
 				.ConfigureMenu(menu => menu
 					.WithId("empty")
 					.WithText("Workspace")
-					.AddScreenItem<EmptyWorkspaceScreen>("empty", "Empty workspace", emptyScreenLifetime, screenKind: ScreenKind.Empty)
+					.ConfigureItem(item => item
+						.WithId("empty")
+						.WithText("Empty workspace")
+						.WithIcon("fas fa-window-maximize")
+						.WithScreen<EmptyWorkspaceScreen>()
+						.WithActivationMode(emptyScreenLifetime)
+						.WithScreenKind(ScreenKind.Empty)
+					)
 				)
 			);
 		if (permanentScreen)
@@ -50,6 +57,7 @@ public static class ScreenPoliciesPlugin {
 						.ConfigureItem(item => item
 							.WithId("permanent")
 							.WithText("Permanent screen")
+							.WithIcon("fas fa-thumbtack")
 							.WithScreen<PermanentWorkspaceScreen>()
 							.AsPermanentSingleton()
 						)
