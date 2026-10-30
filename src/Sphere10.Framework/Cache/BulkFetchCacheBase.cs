@@ -28,10 +28,6 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 	protected sealed override TValue Fetch(TKey key) {
 		TValue result;
 		using (EnterWriteScope()) {
-			if (!_fetchOnceOnly || FetchCount == 0) {
-				ForceRefresh();
-			}
-
 			if (InternalStorage.TryGetValue(key, out var item)) {
 				result = item.Value;
 			} else {
@@ -53,11 +49,15 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		if (key is null)
 			Guard.ArgumentNotNull(key, nameof(key));
 		using (EnterWriteScope()) {
-			if (FetchCount == 0)
+			// Prepare one whole snapshot; a missing key in that snapshot must not trigger another source fetch.
+			if (FetchCount == 0 || !_fetchOnceOnly && (!InternalStorage.TryGetValue(key, out var item) || !item.IsRemoving && base.RequiresFetch(key, item, DateTime.Now)))
 				ForceRefresh();
 			return base.Get(key);
 		}
 	}
+
+	// Get has already checked the snapshot; fetch-once entries must also survive expiry and invalidation.
+	protected sealed override bool RequiresFetch(TKey key, CachedItem<TValue> item, DateTime now) => false;
 
 	public override bool ContainsCachedItem(TKey key) {
 		if (key is null)
@@ -65,12 +65,12 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		using (EnterWriteScope()) {
 			if (FetchCount == 0)
 				ForceRefresh();
-			return base.ContainsCachedItem(key);
+			return base.ContainsCachedItem(key) || _fetchOnceOnly && InternalStorage.ContainsKey(key);
 		}
 	}
 
 	/// <summary>
-	/// Immediately refetches all items and resets fetch counters.
+	/// Replaces the whole snapshot immediately. A failed source fetch leaves the cache empty.
 	/// </summary>
 	public void ForceRefresh() {
 		using (EnterWriteScope()) {
@@ -87,6 +87,13 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 
 	public override void Remove(TKey key) {
 		throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
+	}
+
+	public override long Reap(long minimumRelease) {
+		Guard.Argument(minimumRelease >= 0, nameof(minimumRelease), "The requested release must be nonnegative.");
+		// Whole snapshots have zero-sized entries: per-entry reaping releases no capacity and would leave partial data.
+		// The base zero-release path preserves synchronized disposed validation without fetching or removing entries.
+		return base.Reap(0);
 	}
 
 	protected sealed override long EstimateSize(TValue value) {

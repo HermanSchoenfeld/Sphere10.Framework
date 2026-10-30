@@ -125,7 +125,7 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		using (EnterWriteScope()) {
 			CheckNotDisposed();
 			var now = DateTime.Now;
-			var requiresFetch = !InternalStorage.TryGetValue(key, out var item) || !item.IsRemoving && (IsExpired(item, now) || IsStale(key, item));
+			var requiresFetch = !InternalStorage.TryGetValue(key, out var item) || !item.IsRemoving && RequiresFetch(key, item, now);
 			CheckNotDisposed();
 			if (requiresFetch) {
 				if (item != null)
@@ -289,6 +289,10 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 	protected abstract TValue Fetch(TKey key);
 
 	protected abstract bool CheckStaleness(TKey key, CachedItem<TValue> item);
+
+	/// <summary>Whether an existing entry needs replacement before it can be returned.</summary>
+	protected virtual bool RequiresFetch(TKey key, CachedItem<TValue> item, DateTime now)
+		=> IsExpired(item, now) || IsStale(key, item);
 
 	protected virtual CachedItem<TValue> NewCachedItem(TKey key, TValue value) => new() { Value = value };
 
