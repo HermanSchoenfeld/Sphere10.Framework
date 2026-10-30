@@ -15,15 +15,27 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Sizes a horizontal toolbar for its complete command set so visibility changes do not move the workspace.</summary>
 public sealed class ToolStripStableHeightBehavior : IDisposable {
 	private ToolStrip _toolStrip;
+	private readonly bool _originalAutoSize;
+	private int _logicalHeight;
 	private Size _originalMinimum;
 	private int _originalDpi;
 	private Size _appliedMinimum;
 	private int _appliedDpi;
 	private bool _updating;
 
-	public ToolStripStableHeightBehavior(ToolStrip toolStrip) {
+	public const int StandardLogicalHeight = 32;
+
+	public ToolStripStableHeightBehavior(ToolStrip toolStrip)
+		: this(toolStrip, 0) {
+	}
+
+	/// <summary>A positive logical height fixes the row independently of its current commands; zero retains content-based sizing.</summary>
+	public ToolStripStableHeightBehavior(ToolStrip toolStrip, int logicalHeight) {
 		Guard.ArgumentNotNull(toolStrip, nameof(toolStrip));
+		Guard.ArgumentGTE(logicalHeight, 0, nameof(logicalHeight));
 		_toolStrip = toolStrip;
+		_originalAutoSize = toolStrip.AutoSize;
+		_logicalHeight = logicalHeight;
 		_originalMinimum = toolStrip.MinimumSize;
 		_originalDpi = toolStrip.DeviceDpi;
 		_appliedMinimum = _originalMinimum;
@@ -35,6 +47,21 @@ public sealed class ToolStripStableHeightBehavior : IDisposable {
 		toolStrip.DpiChangedAfterParent += MetricsChanged;
 		toolStrip.Disposed += StripDisposed;
 		UpdateHeight();
+	}
+
+	/// <summary>The fixed row height in logical pixels at the standard menu font, or zero for content-based sizing.</summary>
+	public int LogicalHeight {
+		get => _logicalHeight;
+		set {
+			Guard.ArgumentGTE(value, 0, nameof(value));
+			if (_logicalHeight == value)
+				return;
+			var restoreAutoSize = _logicalHeight > 0 && value == 0;
+			_logicalHeight = value;
+			if (restoreAutoSize && _toolStrip != null)
+				_toolStrip.AutoSize = _originalAutoSize;
+			UpdateHeight();
+		}
 	}
 
 	public void Dispose() {
@@ -49,8 +76,11 @@ public sealed class ToolStripStableHeightBehavior : IDisposable {
 		strip.FontChanged -= MetricsChanged;
 		strip.DpiChangedAfterParent -= MetricsChanged;
 		strip.Disposed -= StripDisposed;
-		if (!strip.IsDisposed && !strip.Disposing)
+		if (!strip.IsDisposed && !strip.Disposing) {
 			strip.MinimumSize = ScaledOriginalMinimum(strip.DeviceDpi);
+			if (_logicalHeight > 0)
+				strip.AutoSize = _originalAutoSize;
+		}
 	}
 
 	private void Layout(object sender, LayoutEventArgs args) => UpdateHeight();
@@ -69,6 +99,19 @@ public sealed class ToolStripStableHeightBehavior : IDisposable {
 		using var update = Tools.Scope.ExecuteOnDispose(() => _updating = false);
 		CaptureDeclaredMinimum(strip);
 		var minimum = ScaledOriginalMinimum(strip.DeviceDpi);
+		if (_logicalHeight > 0 && strip.Orientation == Orientation.Horizontal) {
+			// A hosted row belongs to the frame, not the active command set. Only global DPI/font/configuration changes resize it.
+			var fontScale = Math.Max(1, strip.Font.SizeInPoints / SystemFonts.MenuFont.SizeInPoints);
+			var height = Math.Max(minimum.Height, (int)Math.Ceiling(_logicalHeight * strip.DeviceDpi / 96.0 * fontScale));
+			_appliedMinimum = minimum;
+			_appliedDpi = strip.DeviceDpi;
+			strip.AutoSize = false;
+			if (strip.MinimumSize != minimum)
+				strip.MinimumSize = minimum;
+			if (strip.Height != height)
+				strip.Height = height;
+			return;
+		}
 		if (strip.AutoSize && strip.Orientation == Orientation.Horizontal
 			&& strip.LayoutStyle is ToolStripLayoutStyle.StackWithOverflow or ToolStripLayoutStyle.HorizontalStackWithOverflow) {
 			foreach (ToolStripItem item in strip.Items) {
