@@ -1077,7 +1077,7 @@ Hosted horizontal toolbars reserve the preferred height of every current command
 
 Detached windows use a compact caption with accessible **Re-dock**, **Minimize**, **Maximize/Restore**, and **Close** icon buttons. The title area supports native dragging and double-click maximize/restore, and the border remains resizable. Close and re-dock preserve the screen's cancellation checks. Only menus and toolbars supplied by the screen occupy space; a content-only screen starts immediately below the caption, without empty bars or a detached tab row.
 
-- Close a tab with its close button, middle-click, or its context menu.
+- Close a tab with its close button, middle-click, or its context menu. Closing the active tab selects the next surviving tab in visual order, otherwise the nearest previous tab. Closing the last tab leaves no active selection; an Empty screen remains available through normal startup/navigation rather than activating as a side effect of close. Closing inactive tabs preserves the current screen.
 - Undock using the tab context menu, or drag the selected tab away from the tab headers and release.
 - Drag tabs along the tab bar to see them move immediately; Escape restores the original position.
 - In a detached window, use the caption's **Re-dock** icon, or bring the window's title bar close to the main tab strip. Only the header band accepts drag docking; the screen content panel does not. A highlighted tab-sized **Release to dock** preview and text hint show the proposed position and screen title without changing tab widths, order, or selection. The highlight uses the ExplorerBar palette and follows the visible navigation pane's blue in `BlockMainForm`. Leaving the target or cancelling the drag clears the preview.

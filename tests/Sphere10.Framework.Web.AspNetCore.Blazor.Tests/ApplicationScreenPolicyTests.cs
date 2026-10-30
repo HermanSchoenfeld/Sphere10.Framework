@@ -99,6 +99,8 @@ public class ApplicationScreenPolicyTests {
 		await host.InitializeAsync();
 		Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("normal"));
 		await host.CloseScreenAsync(host.ActiveScreen.Id);
+		Assert.That(host.ActiveScreen, Is.Null);
+		await host.ActivateBlockAsync("empty");
 		var empty = host.ActiveScreen;
 		Assert.That(empty.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		Assert.That(host.OpenScreens, Is.Empty);
@@ -108,6 +110,8 @@ public class ApplicationScreenPolicyTests {
 		Assert.That(host.Screens.Contains(empty), Is.EqualTo(mode == ScreenActivationMode.SingleInstance));
 		Assert.That(probe.Deactivations, Is.EqualTo(1));
 		await host.CloseScreenAsync(host.ActiveScreen.Id);
+		Assert.That(host.ActiveScreen, Is.Null);
+		await host.ActivateBlockAsync("empty");
 		Assert.That(host.ActiveScreen.Id == empty.Id, Is.EqualTo(mode == ScreenActivationMode.SingleInstance));
 		if (mode == ScreenActivationMode.SingleInstance)
 			Assert.That(probe.Activations, Is.EqualTo(2));
@@ -123,6 +127,8 @@ public class ApplicationScreenPolicyTests {
 		Assert.That(await host.ActivateBlockAsync("empty"), Is.Null);
 		Assert.That(host.ActiveScreen, Is.SameAs(normal));
 		await host.CloseScreenAsync(normal.Id);
+		Assert.That(host.ActiveScreen, Is.Null);
+		await host.ActivateBlockAsync("empty");
 		var empty = host.ActiveScreen;
 		var probe = new EmptyScreen { AllowLeave = false };
 		await host.AttachScreenAsync(empty.Id, probe);
@@ -265,6 +271,8 @@ public class ApplicationScreenPolicyTests {
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.InitializeAsync();
 			await host.CloseScreenAsync(host.ActiveScreen.Id);
+			Assert.That(host.ActiveScreen, Is.Null);
+			await host.ActivateBlockAsync("empty");
 			var view = await renderer.RenderComponentAsync<ApplicationScreenHostView>();
 			var session = host.ActiveScreen;
 			var component = (RenderedEmptyScreen)session.Screen;
@@ -277,6 +285,8 @@ public class ApplicationScreenPolicyTests {
 			var state = provider.GetRequiredService<RenderedScreenState>();
 			state.Attached = new TaskCompletionSource<RenderedEmptyScreen>(TaskCreationOptions.RunContinuationsAsynchronously);
 			await host.CloseScreenAsync(host.ActiveScreen.Id);
+			Assert.That(host.ActiveScreen, Is.Null);
+			await host.ActivateBlockAsync("empty");
 			if (mode == ScreenActivationMode.MultiInstance)
 				await state.Attached.Task;
 			Assert.That(ReferenceEquals(host.ActiveScreen.Screen, component), Is.EqualTo(mode == ScreenActivationMode.SingleInstance));

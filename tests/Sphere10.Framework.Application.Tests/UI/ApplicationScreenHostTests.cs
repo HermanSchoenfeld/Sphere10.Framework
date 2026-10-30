@@ -317,7 +317,7 @@ public class ApplicationScreenHostTests {
 
 	[TestCase(ScreenActivationMode.SingleInstance, true)]
 	[TestCase(ScreenActivationMode.MultiInstance, false)]
-	public async Task EmptyScreenReturnsWhenTheLastNormalScreenCloses(ScreenActivationMode lifetime, bool reuseExpected) {
+	public async Task ClosingLastNormalScreenLeavesNoSelectionUntilEmptyScreenIsRequested(ScreenActivationMode lifetime, bool reuseExpected) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var block = CreateBlock("workspace", Item("welcome", typeof(EmptyScreen), lifetime, ScreenKind.Empty), Item("editor", typeof(OtherScreen)));
 		block.DefaultScreenDefinition = block.ScreenDefinitions.Single(definition => definition.ScreenType == typeof(EmptyScreen));
@@ -329,6 +329,10 @@ public class ApplicationScreenHostTests {
 		var editor = await host.OpenScreenAsync(Block(host, "workspace"), Definition(host, "workspace", "editor"));
 		Assert.That(host.OpenScreens.Single(), Is.SameAs(editor));
 		Assert.That(await host.CloseScreenAsync(editor), Is.True);
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(host.OpenScreens, Is.Empty);
+
+		await host.OpenScreenAsync(Block(host, "workspace"), Definition(host, "workspace", "welcome"));
 		Assert.That(host.KindOf(host.ActiveScreen), Is.EqualTo(ScreenKind.Empty));
 		Assert.That(ReferenceEquals(host.ActiveScreen, welcome), Is.EqualTo(reuseExpected));
 		Assert.That(host.OpenScreens, Is.Empty);

@@ -409,12 +409,25 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	private void CloseScreensCore(WinFormsApplicationScreen[] Closing, bool selectRemaining = true) {
 		using var Update = EnterUpdateScope();
+		var nextScreen = GetScreenAfterClosing(Closing);
 		if (ActiveScreen != null && Closing.Contains(ActiveScreen, ReferenceEqualityComparer.Instance))
 			ChangeActiveScreen(null);
 		foreach (var Screen in Closing)
 			DestroyScreen(Screen);
 		if (selectRemaining)
-			SelectRemainingScreen();
+			SelectRemainingScreen(nextScreen, showEmptyScreen: false);
+	}
+
+	private WinFormsApplicationScreen GetScreenAfterClosing(WinFormsApplicationScreen[] closing) {
+		if (ActiveScreen == null || !closing.Contains(ActiveScreen, ReferenceEqualityComparer.Instance))
+			return null;
+		// Native removal chooses a page of its own. Resolve the successor against the visual order before any page is removed.
+		var tabs = _tabs.TabPages.Cast<TabPage>().Select(page => (WinFormsApplicationScreen)page.Tag).ToArray();
+		var activeIndex = Array.FindIndex(tabs, screen => ReferenceEquals(screen, ActiveScreen));
+		if (activeIndex < 0)
+			return null;
+		return tabs.Skip(activeIndex + 1).FirstOrDefault(screen => !closing.Contains(screen, ReferenceEqualityComparer.Instance))
+			?? tabs.Take(activeIndex).Reverse().FirstOrDefault(screen => !closing.Contains(screen, ReferenceEqualityComparer.Instance));
 	}
 
 	public override bool CanCloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) {
@@ -744,20 +757,22 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		Screen.Dispose();
 	}
 
-	private void SelectRemainingScreen() {
+	private void SelectRemainingScreen(WinFormsApplicationScreen preferredScreen = null, bool showEmptyScreen = true) {
 		if (ActiveScreen != null || _disposing)
 			return;
 		// During a batched close the native selection can still name a removed page.
 		var selectedIndex = _tabs.SelectedIndex;
-		var next = selectedIndex >= 0 && selectedIndex < _tabs.TabPages.Count
-			? _tabs.TabPages[selectedIndex].Tag as WinFormsApplicationScreen : null;
+		var next = preferredScreen ?? (selectedIndex >= 0 && selectedIndex < _tabs.TabPages.Count
+			? _tabs.TabPages[selectedIndex].Tag as WinFormsApplicationScreen : null);
 		next ??= Screens.FirstOrDefault(screen => IsPresented(screen, GetBinding(screen)) && GetBinding(screen).Window == null && screen.ScreenKind == ScreenKind.Normal);
-		next ??= Screens.FirstOrDefault(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton);
+		if (showEmptyScreen || ScreenMode == ScreenMode.SingleView)
+			next ??= Screens.FirstOrDefault(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton
+				&& (showEmptyScreen || screen.ScreenKind == ScreenKind.Normal));
 		if (next != null) {
 			ShowScreen(next);
 			return;
 		}
-		if (OpenScreens.Length > 0)
+		if (!showEmptyScreen || OpenScreens.Length > 0)
 			return;
 		var empty = Tools.UI.GetEmptyScreen(_engine.RegistrationBlocks);
 		if (empty != null)
@@ -789,6 +804,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		if (_disposing || Sender is not WinFormsApplicationScreen Screen || !ContainsScreen(Screen))
 			return;
 		using var Update = EnterUpdateScope();
+		var nextScreen = GetScreenAfterClosing(new[] { Screen });
 		if (ReferenceEquals(ActiveScreen, Screen))
 			ChangeActiveScreen(null);
 		Screen.TextChanged -= ScreenTextChanged;
@@ -797,7 +813,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		RemovePresentation(Screen, binding);
 		_screens.Remove(Screen);
 		_engine.Remove(Screen);
-		SelectRemainingScreen();
+		SelectRemainingScreen(nextScreen, showEmptyScreen: false);
 	}
 
 	private void ScreenFormDisposed(object? Sender, EventArgs Args) {
@@ -806,7 +822,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		using var Update = EnterUpdateScope();
 		Binding.Window = null;
 		DestroyScreen(Window.Screen);
-		SelectRemainingScreen();
+		SelectRemainingScreen(showEmptyScreen: false);
 	}
 
 	private void TabDragEnter(object? Sender, DragEventArgs Args) {
