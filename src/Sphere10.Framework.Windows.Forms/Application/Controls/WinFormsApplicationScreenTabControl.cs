@@ -50,6 +50,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	private Rectangle _dockPreviewBounds;
 	private Point _pressLocation;
 	private bool _dragging;
+	private bool _undockPreviewVisible;
 	private bool _completingDrag;
 	private bool _updatingCaptions;
 	private bool _deferringInputRendering;
@@ -158,6 +159,10 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int DockPreviewIndex => _dockPreviewIndex;
 
+	/// <summary>Whether releasing the current dragged tab at the last pointer position will request undocking.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public bool UndockPreviewVisible => _undockPreviewVisible;
+
 	/// <summary>Shows a highlighted docking tab without adding pages or disturbing their layout and selection.</summary>
 	public void ShowDockPreview(string Title, Point Location) {
 		Guard.ArgumentNotNull(Title, nameof(Title));
@@ -211,7 +216,8 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 			return;
 		var Page = TabPages[Args.Index];
 		var Bounds = Args.Bounds;
-		using var Background = new SolidBrush(Args.Index == SelectedIndex ? SystemColors.Window : SystemColors.Control);
+		var undockPreview = _undockPreviewVisible && ReferenceEquals(Page, _pressedTab);
+		using var Background = new SolidBrush(undockPreview ? SystemColors.ControlDark : Args.Index == SelectedIndex ? SystemColors.Window : SystemColors.Control);
 		Args.Graphics.FillRectangle(Background, Bounds);
 		var CloseBounds = GetCloseBounds(Bounds);
 		var TextBounds = Rectangle.FromLTRB(Bounds.Left + ScaleMetric(LogicalTextInset), Bounds.Top, CloseBounds.Left - ScaleMetric(LogicalTextInset), Bounds.Bottom);
@@ -227,7 +233,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 			TextFormatFlags.EndEllipsis | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding);
 		if (_dragging && Page == _pressedTab) {
 			var BorderWidth = ScaleMetric(LogicalBorderWidth);
-			using var Border = new Pen(DockPreviewBackColor, BorderWidth);
+			using var Border = new Pen(undockPreview ? SystemColors.ControlDarkDark : DockPreviewBackColor, BorderWidth);
 			Args.Graphics.DrawRectangle(Border, Rectangle.Inflate(Bounds, -BorderWidth / 2, -BorderWidth / 2));
 		}
 		if (CanCloseOrUndock(Page)) {
@@ -247,6 +253,8 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 
 	protected override void OnControlRemoved(ControlEventArgs Args) {
 		HideDockPreview();
+		if (!Reordering && ReferenceEquals(Args.Control, _pressedTab))
+			CancelDrag();
 		base.OnControlRemoved(Args);
 	}
 
@@ -283,6 +291,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 
 	protected override void OnMouseDown(MouseEventArgs Args) {
 		_dragging = false;
+		_undockPreviewVisible = false;
 		_pressedTab = GetTabAt(Args.Location);
 		_pressLocation = Args.Location;
 		_originalIndex = _pressedTab == null ? -1 : TabPages.IndexOf(_pressedTab);
@@ -311,6 +320,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 			_dragging = true;
 			Invalidate();
 		}
+		UpdateUndockPreview(Args.Location);
 		if (!IsOverTabBar(Args.Location))
 			return;
 		var Target = GetTabAt(Args.Location);
@@ -330,9 +340,10 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 
 	protected override void OnMouseUp(MouseEventArgs Args) {
 		var WasDragging = _dragging;
-		var UndockingTab = Args.Button == MouseButtons.Left && _dragging && _pressedTab == SelectedTab && !IsOverTabBar(Args.Location) ? _pressedTab : null;
+		var UndockingTab = Args.Button == MouseButtons.Left ? GetUndockingTab(Args.Location) : null;
 		_pressedTab = null;
 		_dragging = false;
+		_undockPreviewVisible = false;
 		Capture = false;
 		if (WasDragging)
 			Invalidate();
@@ -345,6 +356,24 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 		if (!Capture && !_completingDrag)
 			CancelDrag();
 		base.OnMouseCaptureChanged(Args);
+	}
+
+	protected override void OnVisibleChanged(EventArgs args) {
+		base.OnVisibleChanged(args);
+		if (!Visible)
+			CancelDrag();
+	}
+
+	protected override void OnEnabledChanged(EventArgs args) {
+		base.OnEnabledChanged(args);
+		if (!Enabled)
+			CancelDrag();
+	}
+
+	protected override void OnSelectedIndexChanged(EventArgs args) {
+		base.OnSelectedIndexChanged(args);
+		if (_dragging && !Reordering && _pressedTab != SelectedTab)
+			CancelDrag();
 	}
 
 	protected override bool ProcessCmdKey(ref Message Message, Keys KeyData) {
@@ -408,6 +437,10 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 
 	protected override void Dispose(bool Disposing) {
 		if (Disposing) {
+			_pressedTab = null;
+			_dragging = false;
+			_undockPreviewVisible = false;
+			Capture = false;
 			HideDockPreview();
 			components?.Dispose();
 		}
@@ -429,6 +462,19 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	}
 
 	private bool IsOverTabBar(Point Location) => TabStripBounds.Contains(Location);
+
+	private TabPage GetUndockingTab(Point location) => _dragging && _pressedTab == SelectedTab
+		&& _pressedTab?.Tag is WinFormsApplicationScreen && CanCloseOrUndock(_pressedTab)
+		&& TabPages.Contains(_pressedTab) && !IsOverTabBar(location) ? _pressedTab : null;
+
+	private void UpdateUndockPreview(Point location) {
+		var visible = GetUndockingTab(location) != null;
+		if (_undockPreviewVisible == visible)
+			return;
+		_undockPreviewVisible = visible;
+		if (_pressedTab != null && TabPages.Contains(_pressedTab))
+			Invalidate(GetTabRect(TabPages.IndexOf(_pressedTab)));
+	}
 
 	private int GetInsertionIndex(Point Location) {
 		var Index = 0;
@@ -587,6 +633,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 		var RestoreOrder = _dragging && !Disposing && !IsDisposed && Page != null && !Page.IsDisposed && TabPages.Contains(Page);
 		_pressedTab = null;
 		_dragging = false;
+		_undockPreviewVisible = false;
 		if (RestoreOrder)
 			MoveTab(Page!, Math.Min(_originalIndex, TabCount - 1));
 		Capture = false;

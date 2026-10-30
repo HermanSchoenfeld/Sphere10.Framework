@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using Sphere10.Framework.Application.UI;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -177,6 +179,110 @@ public class ApplicationScreenTabTests {
 			Tabs.DrawTab(SurfaceGraphics, 0, Tabs.GetTabRect(0));
 			Assert.That(ValidDraws, Is.EqualTo(1), "Remaining tabs must continue to paint after undocking");
 		}
+	}
+
+	[Test]
+	public void DragOutHintTracksTheSameRegionAsUndockingAndClearsOnReturnOrRelease() {
+		using var tabs = new TestTabs { Size = new Size(800, 400) };
+		using var screen = new DragScreen();
+		tabs.TabPages.Add(new TabPage("Drag me") { Tag = screen });
+		_ = tabs.Handle;
+		var page = tabs.TabPages[0];
+		var header = Center(tabs.GetTabRect(0));
+		var outside = new Point(header.X, tabs.TabStripBounds.Bottom + 40);
+		var requests = 0;
+		tabs.ScreenUndockRequested += _ => requests++;
+		tabs.BeginDrag(page);
+		tabs.DragTo(outside);
+		Assert.That(tabs.UndockPreviewVisible, Is.True);
+		using var preview = new Bitmap(tabs.Width, tabs.Height);
+		using (var surface = Graphics.FromImage(preview))
+			tabs.DrawTab(surface, 0, tabs.GetTabRect(0));
+		var sample = new Point(tabs.GetTabRect(0).Left + 4, tabs.GetTabRect(0).Top + 4);
+		Assert.That(preview.GetPixel(sample.X, sample.Y).ToArgb(), Is.EqualTo(SystemColors.ControlDark.ToArgb()), "The impending undock must be visible on the tab itself.");
+		var captureDirectory = TestContext.Parameters.Get("UiCaptureDirectory", string.Empty);
+		if (!string.IsNullOrWhiteSpace(captureDirectory)) {
+			Directory.CreateDirectory(captureDirectory);
+			preview.Save(Path.Combine(captureDirectory, "undock-pending.png"), ImageFormat.Png);
+		}
+		tabs.DragTo(header);
+		Assert.That(tabs.UndockPreviewVisible, Is.False);
+		using (var surface = Graphics.FromImage(preview))
+			tabs.DrawTab(surface, 0, tabs.GetTabRect(0));
+		Assert.That(preview.GetPixel(sample.X, sample.Y).ToArgb(), Is.EqualTo(SystemColors.Window.ToArgb()));
+		if (!string.IsNullOrWhiteSpace(captureDirectory))
+			preview.Save(Path.Combine(captureDirectory, "undock-returned.png"), ImageFormat.Png);
+		tabs.EndNativeDrag(header);
+		Assert.That(requests, Is.Zero);
+		tabs.BeginDrag(page);
+		tabs.DragTo(outside);
+		Assert.That(tabs.UndockPreviewVisible, Is.True);
+		tabs.EndNativeDrag(outside);
+		Assert.That(requests, Is.EqualTo(1));
+		Assert.That(tabs.UndockPreviewVisible, Is.False);
+	}
+
+	[TestCase(true)]
+	[TestCase(false)]
+	public void CancelledDragClearsItsUndockHint(bool escape) {
+		using var tabs = new TestTabs { Size = new Size(800, 400) };
+		using var screen = new DragScreen();
+		using var other = new Control();
+		tabs.TabPages.Add(new TabPage("Drag me") { Tag = screen });
+		_ = tabs.Handle;
+		tabs.BeginDrag(tabs.TabPages[0]);
+		tabs.DragTo(new Point(20, 150));
+		Assert.That(tabs.UndockPreviewVisible, Is.True);
+		if (escape)
+			Assert.That(tabs.PreprocessEscape(), Is.True);
+		else
+			other.Capture = true;
+		Assert.That(tabs.UndockPreviewVisible, Is.False);
+		Assert.That(tabs.Capture, Is.False);
+	}
+
+	[Test]
+	public void AReorderedPermanentTabNeverHintsThatItCanUndock() {
+		using var tabs = new TestTabs { Size = new Size(800, 400) };
+		using var screen = new PermanentDragScreen();
+		tabs.TabPages.Add(new TabPage("Permanent") { Tag = screen });
+		_ = tabs.Handle;
+		tabs.BeginDrag(tabs.TabPages[0]);
+		tabs.DragTo(new Point(20, 150));
+		Assert.That(tabs.UndockPreviewVisible, Is.False);
+		tabs.EndNativeDrag(new Point(20, 150));
+	}
+
+	[Test]
+	public void SelectingAnotherTabCancelsThePendingUndockHint() {
+		using var tabs = new TestTabs { Size = new Size(800, 400) };
+		using var screen = new DragScreen();
+		tabs.TabPages.AddRange(new[] { new TabPage("Drag me") { Tag = screen }, new TabPage("Other") });
+		_ = tabs.Handle;
+		tabs.BeginDrag(tabs.TabPages[0]);
+		tabs.DragTo(new Point(20, 150));
+		Assert.That(tabs.UndockPreviewVisible, Is.True);
+		tabs.SelectedTab = tabs.TabPages[1];
+		Assert.That(tabs.UndockPreviewVisible, Is.False);
+		Assert.That(tabs.Capture, Is.False);
+	}
+
+	[TestCase(true)]
+	[TestCase(false)]
+	public void HidingOrDisablingTheTabStripClearsItsUndockHint(bool hide) {
+		using var tabs = new TestTabs { Size = new Size(800, 400) };
+		using var screen = new DragScreen();
+		tabs.TabPages.Add(new TabPage("Drag me") { Tag = screen });
+		_ = tabs.Handle;
+		tabs.BeginDrag(tabs.TabPages[0]);
+		tabs.DragTo(new Point(20, 150));
+		Assert.That(tabs.UndockPreviewVisible, Is.True);
+		if (hide)
+			tabs.Visible = false;
+		else
+			tabs.Enabled = false;
+		Assert.That(tabs.UndockPreviewVisible, Is.False);
+		Assert.That(tabs.Capture, Is.False);
 	}
 
 	[Test]
