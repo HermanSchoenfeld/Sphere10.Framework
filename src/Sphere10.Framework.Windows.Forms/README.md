@@ -523,6 +523,12 @@ After a selected-row operation, await `RefreshEntityAsync(entity)` or `RefreshSe
 
 Click a sortable column header to cycle **Ascending → Descending → None**, then ascending again. **None** clears the header arrow and requests the source's natural order with `SortDirection.None`; changing to another column starts ascending. Sorting preserves the current page and established column widths, and an explicitly cleared sort persists across sessions. `SnapshotDataSource<T>` honors explicit **None** even when a default sort is configured; the initial null column with **Ascending** still requests that configured default.
 
+`grid.TotalRecords` exposes the last accepted query's filtered total across all
+pages. `DataBindingComplete` runs on the grid's owning thread after the current
+query is bound, including zero matches; superseded reads do not emit it. Use
+these members for external summaries without querying or enumerating the source
+again. `VisibleEntities` remains the displayed page only.
+
 `await grid.ReadFilteredEntitiesAsync(cancellationToken)` captures the current
 source, search and sort on the owning UI thread, then reads and materializes all
 matching rows on a worker, across pages. It does not rebind, disable the grid,
