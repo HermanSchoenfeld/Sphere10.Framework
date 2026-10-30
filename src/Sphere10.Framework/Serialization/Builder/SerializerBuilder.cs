@@ -242,11 +242,11 @@ public abstract class SerializerBuilder {
 				// Case for abstract types
 				// NOTE: concrete subtypes can be registered via KnownSubTypeAttribute annotations scanned above
 				var polymorphicSerializer = PolymorphicSerializer.Create(factory, requestedType);
-				factory.RegisterInternal(factory.GenerateTypeCode(), requestedType, polymorphicSerializer.GetType(), polymorphicSerializer, null);
+				factory.RegisterInternal(factory.GenerateTypeCode(), requestedType, polymorphicSerializer.GetType(), polymorphicSerializer, null, SerializerFactory.RegistrationConstruction.Polymorphic);
 			} else if (missingSerializers.Contains(requestedType)) {
 				// Missing a serializer for requested type, so build it as a CompositeSerializer
 				var compositeSerializer = CompositeSerializer.Create(requestedType);
-				factory.RegisterInternal(factory.GenerateTypeCode(), requestedType, compositeSerializer.GetType(), compositeSerializer, null);
+				factory.RegisterInternal(factory.GenerateTypeCode(), requestedType, compositeSerializer.GetType(), compositeSerializer, null, SerializerFactory.RegistrationConstruction.Composite);
 				var members = GetSerializableMembers(requestedType);
 				var memberBindings = new List<MemberSerializationBinding>(members.Length);
 				foreach (var member in members) {
