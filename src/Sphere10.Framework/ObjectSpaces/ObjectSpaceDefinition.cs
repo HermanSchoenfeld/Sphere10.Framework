@@ -17,15 +17,16 @@ namespace Sphere10.Framework.ObjectSpaces;
 /// Defines the structure and policies for an <see cref="ObjectSpace"/>, including dimensions, indexes, and optional merkle/autosave traits.
 /// </summary>
 public class ObjectSpaceDefinition {
-	private BTreeSpec _indexBTreeSpec;
-	private int _indexBTreeOrder = Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder;
-	private bool _hasExplicitIndexBTreeOrder;
+	private BTreeSpec _indexBTreeSpec = BTreeSpec.Default;
+	private int _metaDataCapacity;
 
-
+	/// <summary>Creates an empty definition with default member-index settings and no optional traits.</summary>
 	public ObjectSpaceDefinition() : this(false, false) {
 	}
 
+	/// <summary>Creates an empty definition with the requested Merkle and automatic-save traits.</summary>
 	public ObjectSpaceDefinition(bool merkleized, bool autosave) {
+		IndexBTreeOrder = Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder;
 		Traits = ObjectSpaceTraits.None;
 		if (merkleized)
 			Traits |= ObjectSpaceTraits.Merkleized;
@@ -33,23 +34,35 @@ public class ObjectSpaceDefinition {
 			Traits |= ObjectSpaceTraits.AutoSave;
 	}
 
+	/// <summary>The behavior and storage flags shared with the constructed ObjectSpace.</summary>
 	public ObjectSpaceTraits Traits { get; set ; } = ObjectSpaceTraits.None;
-		
+
 	/// <summary>
 	/// Hash function used for merkle-enabled object spaces.
 	/// </summary>
 	public CHF HashFunction { get; set; } = Sphere10FrameworkDefaults.HashFunction;
 
+	/// <summary>Creation-time metadata budget. Zero requests the exact record size; activation records the allocated capacity.</summary>
+	public int MetaDataCapacity {
+		get => _metaDataCapacity;
+		set {
+			Guard.ArgumentNotNegative(value, nameof(value));
+			_metaDataCapacity = value;
+		}
+	}
+
 	/// <summary>
-	/// Optional complete specification for the dimension's member indexes. Otherwise their constructors receive <see cref="IndexBTreeOrder"/>.
+	/// Shared specification for member indexes without an explicit per-index specification.
 	/// Preserve the same configuration when reopening storage.
 	/// </summary>
 	public BTreeSpec IndexBTreeSpec {
 		get => _indexBTreeSpec;
 		set {
 			Guard.ArgumentNotNull(value, nameof(value));
-			SetIndexBTreeSpec(value);
-			_hasExplicitIndexBTreeOrder = true;
+			_indexBTreeSpec = value;
+			foreach (var index in Dimensions.SelectMany(dimension => dimension.Indexes)
+				.Where(index => index.Type is IndexType.Identifier or IndexType.UniqueKey or IndexType.Index))
+				index.BTreeSpec = value;
 		}
 	}
 
@@ -57,52 +70,35 @@ public class ObjectSpaceDefinition {
 	/// B-tree order used by the dimension's member indexes. Must be at least 3 and must remain unchanged when reopening existing storage.
 	/// </summary>
 	public int IndexBTreeOrder {
-		get => _indexBTreeSpec?.Order ?? _indexBTreeOrder;
+		get => _indexBTreeSpec.Order;
 		set {
-			if (value < 3)
-				throw new ArgumentOutOfRangeException(nameof(value), value, "B-tree order must be at least 3.");
-			Guard.Ensure(!HasBoundIndexBTreeSpec || value == IndexBTreeOrder,
-				"An ObjectSpace definition cannot change its index B-tree order after loading storage.");
-			if (_indexBTreeSpec is null)
-				_indexBTreeOrder = value;
-			else
-				SetIndexBTreeSpec(new BTreeSpec(_indexBTreeSpec.Type, value));
-			_hasExplicitIndexBTreeOrder = true;
+			_indexBTreeSpec = new BTreeSpec(_indexBTreeSpec.Type, value);
+			foreach (var index in Dimensions.SelectMany(dimension => dimension.Indexes).Where(index => index.BTreeSpec != null))
+				index.BTreeSpec = new BTreeSpec(index.BTreeSpec.Type, value);
 		}
 	}
 
 	/// <summary>
-	/// Selects the type for all member indexes. Null leaves the choice to each index's order-only constructor.
-	/// An explicit selection must remain unchanged when reopening storage.
+	/// Selects the type for all member indexes. Preserve the selection when reopening storage.
 	/// </summary>
-	public BTreeType? IndexBTreeType {
-		get => _indexBTreeSpec?.Type;
-		set {
-			var order = IndexBTreeOrder;
-			SetIndexBTreeSpec(value.HasValue ? new BTreeSpec(value.Value, order) : null);
-			_indexBTreeOrder = order;
-		}
+	public BTreeType IndexBTreeType {
+		get => _indexBTreeSpec.Type;
+		set => IndexBTreeSpec = new BTreeSpec(value, _indexBTreeSpec.Order);
 	}
-
-	/// <summary>Whether the index order was assigned explicitly rather than inherited from the framework default.</summary>
-	internal bool HasExplicitIndexBTreeOrder => _hasExplicitIndexBTreeOrder;
-
-	/// <summary>Whether this definition's index specification became immutable after a successful load.</summary>
-	internal bool HasBoundIndexBTreeSpec { get; private set; }
-
 
 	/// <summary>
 	/// Dimensions (tables) that compose the object space.
 	/// </summary>
 	public DimensionDefinition[] Dimensions { get; set; } = Array.Empty<DimensionDefinition>();
 
+	/// <summary>Checks dimension membership, attachment definitions and trait requirements.</summary>
 	public Result Validate() {
 		var result = Result.Success;
 
 		// Pre-condition checks
 		if (Dimensions == null)
 			return Result.Error($"Unexpected null property: {nameof(Dimensions)}");
-		
+
 
 		// At least 1 dimension
 		if (Dimensions.Length == 0) {
@@ -154,6 +150,8 @@ public class ObjectSpaceDefinition {
 					// Ensure indexes which require a property member that one is specified
 					if (RequiresMember(index.Type) && index.Member is null)
 						result.AddError($"{dimensionErrorPrefix} contains an {nameof(index.Type)} (at {j}) which requires a member");
+					if (!RequiresMember(index.Type) && index.BTreeSpec != null)
+						result.AddError($"{dimensionErrorPrefix} contains an {nameof(index.Type)} (at {j}) which does not use a B-tree specification");
 
 					// Ensure not over-indexing members
 					if (index.Member is not null && !alreadyProcessedMembers.Contains(index.Member) && dimension.Indexes.Count(x => x.Member == index.Member) > 1) {
@@ -194,18 +192,13 @@ public class ObjectSpaceDefinition {
 
 	}
 
-	internal void AssertOpeningIndexOrder(bool hasPersistedState) {
-		Validate().ThrowOnFailure();
-		Guard.Ensure(!hasPersistedState || HasExplicitIndexBTreeOrder || HasBoundIndexBTreeSpec,
-			"Existing ObjectSpace storage requires its original index order. Declare WithIndexBTreeSpec(originalSpec) or WithIndexBTreeOrder(originalOrder), using 64 for the historical default.");
-	}
-
-	internal void BindIndexBTreeSpec() => HasBoundIndexBTreeSpec = true;
-
-	private void SetIndexBTreeSpec(BTreeSpec spec) {
-		Guard.Ensure(!HasBoundIndexBTreeSpec || spec == _indexBTreeSpec,
-			"An ObjectSpace definition cannot change its index B-tree specification after loading storage.");
-		_indexBTreeSpec = spec;
+	// Applies the shared specification only to member indexes without an explicit layout.
+	internal void ResolveIndexBTreeSpecs() {
+		foreach (var index in Dimensions.SelectMany(dimension => dimension.Indexes)) {
+			if (index.Type is not (IndexType.Identifier or IndexType.UniqueKey or IndexType.Index) || index.BTreeSpec != null)
+				continue;
+			index.BTreeSpec = IndexBTreeSpec;
+		}
 	}
 
 	public class DimensionDefinition {
@@ -237,7 +230,7 @@ public class ObjectSpaceDefinition {
 	}
 
 	public class IndexDefinition {
-		
+
 		/// <summary>
 		/// Index storage type.
 		/// </summary>
@@ -258,13 +251,20 @@ public class ObjectSpaceDefinition {
 		/// </summary>
 		public IndexNullPolicy NullPolicy { get; set; }
 
+		/// <summary>The complete tree layout, resolved before constructing a member index. Other attachment kinds have no tree specification.</summary>
+		public BTreeSpec BTreeSpec { get; set; }
+
 	}
 
 	public enum IndexType {
 		Identifier,
+
 		UniqueKey,
+
 		Index,
+
 		RecyclableIndexStore,
+
 		MerkleTree
 	}
 

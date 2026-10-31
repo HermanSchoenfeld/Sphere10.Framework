@@ -24,6 +24,7 @@ public class ConfigurationTests {
 		AssertIndexOrders(space, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder);
 	}
 
+	/// <summary>Verifies that invalid order changes preserve the existing complete index specification.</summary>
 	[TestCase(-1)]
 	[TestCase(0)]
 	[TestCase(2)]
@@ -32,9 +33,10 @@ public class ConfigurationTests {
 		Assert.That(() => builder.WithIndexBTreeOrder(order), Throws.InstanceOf<ArgumentException>());
 		Assert.That(builder.BuildDefinition().IndexBTreeOrder, Is.EqualTo(8));
 		var definition = builder.BuildDefinition();
+		var original = definition.IndexBTreeSpec;
 		Assert.That(() => definition.IndexBTreeOrder = order, Throws.TypeOf<ArgumentOutOfRangeException>());
 		Assert.That(definition.IndexBTreeOrder, Is.EqualTo(8));
-		Assert.That(definition.IndexBTreeSpec, Is.Null);
+		Assert.That(definition.IndexBTreeSpec, Is.SameAs(original));
 
 		var spec = new BTreeSpec(BTreeType.BTreePlus, 8);
 		definition.IndexBTreeSpec = spec;

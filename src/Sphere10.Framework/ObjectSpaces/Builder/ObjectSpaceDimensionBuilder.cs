@@ -14,6 +14,7 @@ using Sphere10.Framework.Mapping;
 
 namespace Sphere10.Framework.ObjectSpaces;
 
+/// <summary>Configures one typed dimension and builds independent dimension definitions.</summary>
 public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder<ObjectSpaceDimensionBuilder<T>> {
 	protected readonly ObjectSpaceBuilder _parent;
 	private readonly IList<ObjectSpaceDefinition.IndexDefinition> _indexes;
@@ -114,7 +115,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder<Objec
 		_indexes.Add(index);
 		return this;
 	}
-	
+
 	public ObjectSpaceDimensionBuilder<T> WithIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) 
 		=> WithIndexOn(memberExpression.ToMember(), indexName, nullPolicy);
 
@@ -139,7 +140,6 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder<Objec
 
 	public ObjectSpaceDimensionBuilder<T> WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) 
 		=> (ObjectSpaceDimensionBuilder<T>)((IObjectSpaceDimensionBuilder)this).WithUniqueIndexOn(member, indexName, nullPolicy);
-
 
 	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithUniqueIndexOn(Member member, string indexName, IndexNullPolicy nullPolicy) {
 		Guard.ArgumentNotNull(member, nameof(member));
@@ -182,6 +182,16 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder<Objec
 		return this;
 	}
 
+	/// <summary>Replaces the dimension's indexes, preserving their supplied physical order.</summary>
+	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithIndexes(ObjectSpaceDefinition.IndexDefinition[] indexes) {
+		Guard.ArgumentNotNull(indexes, nameof(indexes));
+		Guard.Argument(indexes.All(index => index != null), nameof(indexes), "Indexes cannot contain null entries.");
+		_indexes.Clear();
+		foreach (var index in indexes)
+			_indexes.Add(index);
+		return this;
+	}
+
 	public ObjectSpaceDimensionBuilder<T> OptimizeAssumingAverageItemSize(int bytes) {
 		_averageItemSize = bytes;
 		return this;
@@ -193,12 +203,20 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder<Objec
 		return _parent;
 	}
 
+	/// <summary>Creates a dimension definition with its own ordered index rows.</summary>
 	public ObjectSpaceDefinition.DimensionDefinition BuildDefinition() {
+		// Give each definition its own index rows; resolving defaults must not mutate earlier builds.
 		return new ObjectSpaceDefinition.DimensionDefinition {
 			ObjectType = typeof(T),
 			IsRoot = _isRoot,
 			AverageObjectSizeBytes = _averageItemSize,
-			Indexes = _indexes.ToArray(),
+			Indexes = _indexes.Select(index => new ObjectSpaceDefinition.IndexDefinition {
+				Type = index.Type,
+				Name = index.Name,
+				Member = index.Member,
+				NullPolicy = index.NullPolicy,
+				BTreeSpec = index.BTreeSpec
+			}).ToArray(),
 			ChangeTracker = _changeTracker
 		};
 	}

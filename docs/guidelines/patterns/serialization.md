@@ -35,7 +35,8 @@ the agreed field order, enum representation, length framing and null/reference
 semantics when replacing direct primitive IO.
 
 Use nested component serializers for subordinate records instead of duplicating
-their field encodings in each owning serializer. The factory codec constructs its complex components and uses the basic singleton components directly.
+their field encodings in each owning serializer. The factory and metadata codecs
+construct their complex components and use the basic singleton components directly.
 
 ## Endian-Aware Bit Conversion
 
@@ -44,6 +45,8 @@ their field encodings in each owning serializer. The factory codec constructs it
 - **[EndianBitConverter](../../../src/Sphere10.Framework/Conversion/EndianBitConverter.cs)** — abstract base with `LittleEndianBitConverter` and `BigEndianBitConverter` implementations. Select configured byte order through `EndianBitConverter.For(endianness)`. Use explicit `.Little` / `.Big` only when the byte contract fixes that order.
 - **[EndianBinaryWriter](../../../src/Sphere10.Framework/IO/EndianBinaryWriter.cs)** / **[EndianBinaryReader](../../../src/Sphere10.Framework/IO/EndianBinaryReader.cs)** — endian-aware stream readers/writers used throughout serialization.
 - All serialization infrastructure (`IItemSerializer<T>`, `ClusteredStreams`, `ObjectStream`) is endianness-aware. When writing new serializers or stream code, reuse the supplied reader/writer and context. Endianness comes from the reader/writer's `BitConverter`; [SerializationContext](../../../src/Sphere10.Framework/Serialization/SerialiationContext.cs) does not expose an `Endianness` property.
+
+Storage openers receive byte order from their caller and pass it through to readers and component serializers. The ObjectSpace/ObjectStream helpers validate the recorded endian trait against that supplied order; they do not infer endianness by probing the magic value.
 
 `EndianBinaryReader`, `EndianBinaryWriter` and `EncryptedStream` mirror the .NET `leaveOpen` convention. They close their underlying stream by default (`leaveOpen: false`); pass `leaveOpen: true` when a temporary helper borrows a stream whose lifetime belongs to its caller. Disposing a borrowed writer still flushes it. Framework containers and other owned abstract data types retain their positive `ownsStream` convention; pass `leaveOpen: !ownsStream` when adapting that choice to a .NET-style helper.
 

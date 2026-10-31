@@ -122,7 +122,7 @@ public class ComparerFactory {
 		#endregion
 
 	}
-	
+
 	public IEqualityComparer<T> GetEqualityComparer<T>()
 		=> (IEqualityComparer<T>)GetEqualityComparer(typeof(T));
 
@@ -176,7 +176,7 @@ public class ComparerFactory {
 
 		return defaultComparer;
 	}
-	
+
 	public IComparer<T> GetComparer<T>()
 		=> (IComparer<T>)GetComparer(typeof(T));
 
@@ -220,6 +220,14 @@ public class ComparerFactory {
 		Guard.Argument(equalityComparer.GetType().IsSubtypeOfGenericType(typeof(IEqualityComparer<>), out var comparerInterfaceType), nameof(equalityComparer), $"Not an {typeof(IEqualityComparer<>).ToStringCS()}");
 		Guard.Argument(comparerInterfaceType.GenericTypeArguments[0] == type, nameof(equalityComparer), $"Not an {typeof(IEqualityComparer<>).MakeGenericType(type).ToStringCS()}");
 		_equalityComparers.Add(type, equalityComparer);
+	}
+
+	// Checks that both factories contain the same comparer registrations and instances.
+	internal bool HasSameRegistrations(ComparerFactory other) {
+		// Metadata can reuse default comparer semantics only while every registration is unchanged.
+		return other != null && _comparers.Count == other._comparers.Count && _equalityComparers.Count == other._equalityComparers.Count
+			&& _comparers.All(entry => other._comparers.TryGetValue(entry.Key, out var comparer) && ReferenceEquals(entry.Value, comparer))
+			&& _equalityComparers.All(entry => other._equalityComparers.TryGetValue(entry.Key, out var comparer) && ReferenceEquals(entry.Value, comparer));
 	}
 
 }

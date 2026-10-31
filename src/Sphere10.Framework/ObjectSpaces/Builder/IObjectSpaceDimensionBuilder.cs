@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Mapping;
 using System;
 using System.Collections.Generic;
+using Sphere10.Framework.Mapping;
 
 namespace Sphere10.Framework.ObjectSpaces;
 
@@ -38,6 +38,9 @@ public interface IObjectSpaceDimensionBuilder {
 	IObjectSpaceDimensionBuilder WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull);
 
 	IObjectSpaceDimensionBuilder WithChangeTrackingVia(Member member);
+
+	/// <summary>Replaces attachment definitions in their supplied physical order.</summary>
+	IObjectSpaceDimensionBuilder WithIndexes(ObjectSpaceDefinition.IndexDefinition[] indexes);
 
 	IObjectSpaceDimensionBuilder OptimizeAssumingAverageItemSize(int bytes);
 

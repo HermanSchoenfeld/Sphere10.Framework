@@ -7,13 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-using Sphere10.Framework.Mapping;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Sphere10.Framework.Mapping;
 
 namespace Sphere10.Framework;
 
@@ -23,12 +23,35 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ObjectStream<T> : ObjectStream {
+	/// <summary>Creates an ObjectStream over borrowed raw storage, with optional metadata and an explicit metadata capacity.</summary>
+	/// <remarks>Zero capacity uses the serialized record's exact size; existing metadata is read using the supplied byte order.</remarks>
+	public ObjectStream(
+		Stream rawStream,
+		int clusterSize = Sphere10FrameworkDefaults.ClusterSize,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
+		long reservedStreams = 0,
+		Endianness endianness = Endianness.LittleEndian,
+		bool preAllocateOptimization = true,
+		bool storeMetaData = false,
+		ObjectStreamMetaData.Index[] indexes = null,
+		int metaDataCapacity = 0
+	)
+		: this(ObjectStreamStorageHelper.CreateStorage<T>(rawStream, clusterSize, policy, reservedStreams, endianness, preAllocateOptimization, storeMetaData, indexes), metaDataCapacity) {
+	}
+
+	// Adopts the prepared container and registers the metadata-defined attachments before loading.
+	private ObjectStream((ClusteredStreams Streams, SerializerFactory Factory, ObjectStreamMetaData MetaData, bool CreateMetaData) storage, int metaDataCapacity)
+		: this(storage.Streams, storage.Factory.GetSerializer<T>(), storage.MetaData.PreAllocateOptimization) {
+		OwnsStreams = true;
+		ObjectStreamStorageHelper.InitializeStorage(this, storage.Factory, storage.MetaData, storage.CreateMetaData, metaDataCapacity);
+	}
+
 	public ObjectStream(ClusteredStreams streams, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
 		: base(typeof(T), streams, (serializer ?? ItemSerializer<T>.Default), preAllocateOptimization) {
 	}
 
 	public new IItemSerializer<T> ItemSerializer => (IItemSerializer<T>) base.ItemSerializer;
-	
+
 	public void SaveItem(long index, T item, ObjectStreamOperationType operationType) => SaveItem(index, item as object, operationType);
 
 	public new T LoadItem(long index) => (T)base.LoadItem(index);
@@ -51,7 +74,6 @@ public class ObjectStream<T> : ObjectStream {
 
 		return index;
 	}
-
 
 	public bool TryGetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IProjectionIndex<TMember> index) 
 		=> TryGetIndex(memberExpression.ToMember().Name, out index);
@@ -80,6 +102,6 @@ public class ObjectStream<T> : ObjectStream {
 		item = (T)obj;
 		return result;
 	}
-	
+
 }
 

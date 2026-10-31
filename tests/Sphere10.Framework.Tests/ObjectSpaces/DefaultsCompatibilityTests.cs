@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -18,39 +17,38 @@ namespace Sphere10.Framework.Tests.ObjectSpaces;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class DefaultsCompatibilityTests {
+	/// <summary>Verifies ordinary reopening of default layouts using a complete default tree specification.</summary>
 	[TestCase(false, false, false)]
 	[TestCase(false, false, true)]
 	[TestCase(true, false, false)]
 	[TestCase(true, true, false)]
 	[TestCase(true, false, true)]
 	[TestCase(true, true, true)]
-	public void UnknownLegacyLayoutIsRejectedBeforeDataOrMarkersChange(bool fileBacked, bool autoLoad, bool useBuilder) {
+	public void DefaultLayoutReopensWithItsConcreteDefaultSpecification(bool fileBacked, bool autoLoad, bool useBuilder) {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		using var memory = new MemoryStream();
-		var path = Path.Combine(folder, "legacy.dat");
-		using (var legacy = ConfigureStorage(CreateBuilder(true), fileBacked, path, memory, true).Build()) {
-			SaveRecords(legacy);
-			CompleteWrites(legacy);
+		var path = Path.Combine(folder, "default.dat");
+		using (var original = ConfigureStorage(CreateBuilder(false), fileBacked, path, memory, true).Build()) {
+			SaveRecords(original);
+			CompleteWrites(original);
 		}
-		memory.Position = Math.Min(17, memory.Length);
-		var position = memory.Position;
-		var originalMemory = memory.ToArray();
-		var originalFiles = SnapshotFiles(folder);
-		var originalDirectories = Directory.GetDirectories(folder, "*", SearchOption.AllDirectories);
-		Assert.That(() => {
-			var builder = ConfigureStorage(CreateBuilder(false), fileBacked, path, memory, autoLoad);
-			using var refused = useBuilder ? builder.Build() : fileBacked
-				? new FileObjectSpace(LegacyDescriptor(path), builder.BuildDefinition(), Serializers(), new ComparerFactory(ComparerFactory.Default),
-					autoLoad ? FileAccessMode.Default : FileAccessMode.OpenOrCreate)
-				: new MemoryObjectSpace(memory, builder.BuildDefinition(), Serializers(), new ComparerFactory(ComparerFactory.Default));
-		}, Throws.InvalidOperationException.With.Message.Contains("original index order"));
-		Assert.That(memory.ToArray(), Is.EqualTo(originalMemory));
-		Assert.That(memory.Position, Is.EqualTo(position));
-		AssertFilesUnchanged(folder, originalFiles);
-		Assert.That(Directory.GetDirectories(folder, "*", SearchOption.AllDirectories), Is.EquivalentTo(originalDirectories));
+		var builder = ConfigureStorage(CreateBuilder(false), fileBacked, path, memory, autoLoad);
+		var descriptor = Sphere10FrameworkFileDescriptor.From(path, Sphere10FrameworkDefaults.TransactionalPageFolder,
+			Sphere10FrameworkDefaults.ObjectSpacePageSize, Sphere10FrameworkDefaults.ObjectSpaceMaxMemory,
+			Sphere10FrameworkDefaults.FileObjectSpaceClusterSize, Sphere10FrameworkDefaults.FileObjectSpaceContainerPolicy);
+		using var reopened = useBuilder ? builder.Build() : fileBacked
+			? new FileObjectSpace(descriptor, builder.BuildDefinition(), Serializers(), new ComparerFactory(ComparerFactory.Default),
+				autoLoad ? FileAccessMode.Default : FileAccessMode.OpenOrCreate)
+			: new MemoryObjectSpace(memory, builder.BuildDefinition(), Serializers(), new ComparerFactory(ComparerFactory.Default));
+		if (reopened.RequiresLoad)
+			reopened.Load();
+		Assert.That(reopened.Definition.IndexBTreeSpec,
+			Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
+		AssertRecords(reopened);
 	}
 
+	/// <summary>Verifies historical mixed index layouts using their original per-index tree specifications.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ExplicitHistoricalLayoutReadsOldBytesAndAllMemberIndexes(bool fileBacked) {
@@ -58,13 +56,15 @@ public class DefaultsCompatibilityTests {
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		using var memory = new MemoryStream();
 		var path = Path.Combine(folder, "legacy.dat");
-		using (var legacy = ConfigureStorage(CreateBuilder(true), fileBacked, path, memory, true).Build()) {
+		using (var legacy = ConfigureStorage(CreateHistoricalBuilder(), fileBacked, path, memory, true).Build()) {
 			SaveRecords(legacy);
 			CompleteWrites(legacy);
 		}
-		using var reopened = ConfigureStorage(CreateBuilder(true), fileBacked, path, memory, true).Build();
+		using var reopened = ConfigureStorage(CreateHistoricalBuilder(), fileBacked, path, memory, true).Build();
 		AssertRecords(reopened);
 		Assert.That(reopened.Definition.IndexBTreeOrder, Is.EqualTo(64));
+		Assert.That(reopened.Definition.Dimensions.Single().Indexes.Where(index => index.Type is ObjectSpaceDefinition.IndexType.UniqueKey or ObjectSpaceDefinition.IndexType.Index)
+			.Select(index => index.BTreeSpec), Is.All.EqualTo(new BTreeSpec(BTreeType.BTreePlus, 64)));
 	}
 
 	[TestCase(8, false)]
@@ -88,9 +88,10 @@ public class DefaultsCompatibilityTests {
 		Assert.That(reopened.Streams.Header.ClusterSize, Is.EqualTo(2048));
 	}
 
+	/// <summary>Verifies supplied-definition reopening and rollback retain original physical layout settings.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
-	public void FreshDefaultDefinitionBindsAndReopensWithoutChangingOrder(bool fileBacked) {
+	public void SuppliedDefinitionReopensWithOriginalSettings(bool fileBacked) {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		using var memory = new MemoryStream();
@@ -104,13 +105,11 @@ public class DefaultsCompatibilityTests {
 			definition = space.Definition;
 			serializers = space.Serializers;
 			comparers = space.Comparers;
-			Assert.That(definition.HasExplicitIndexBTreeOrder, Is.False);
-			Assert.That(definition.HasBoundIndexBTreeSpec, Is.True);
+			Assert.That(definition.IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
 			Assert.That(definition.IndexBTreeOrder, Is.EqualTo(Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder));
 			Assert.That(space.Streams.Header.ClusterSize, Is.EqualTo(fileBacked ? Sphere10FrameworkDefaults.FileObjectSpaceClusterSize : Sphere10FrameworkDefaults.MemoryObjectSpaceClusterSize));
 			Assert.That(space.Dimensions.Single().Container.ObjectStream.Streams.Header.ClusterSize,
 				Is.EqualTo(fileBacked ? Sphere10FrameworkDefaults.FileObjectSpaceDimensionClusterSize : Sphere10FrameworkDefaults.MemoryObjectSpaceDimensionClusterSize));
-			Assert.That(() => definition.IndexBTreeOrder = definition.IndexBTreeOrder + 1, Throws.InvalidOperationException);
 			SaveRecords(space);
 			CompleteWrites(space);
 			if (space is FileObjectSpace file)
@@ -131,18 +130,17 @@ public class DefaultsCompatibilityTests {
 		AssertRecords(sameBuilder);
 	}
 
+	/// <summary>Verifies that loading a deferred owner does not change its builder's configuration.</summary>
 	[Test]
-	public void DeferredFileLoadRetainsBuilderConfigurationOnlyAfterSuccessfulLoad() {
+	public void DeferredFileLoadDoesNotChangeBuilderConfiguration() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		var builder = CreateBuilder(false).UseFile(Path.Combine(folder, "deferred.dat"));
 		using (var space = builder.Build()) {
 			Assert.That(space.RequiresLoad, Is.True);
-			Assert.That(space.Definition.HasBoundIndexBTreeSpec, Is.False);
-			Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.False);
+			Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(space.Definition.IndexBTreeSpec));
 			space.Load();
-			Assert.That(space.Definition.HasBoundIndexBTreeSpec, Is.True);
-			Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.True);
+			Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(space.Definition.IndexBTreeSpec));
 			SaveRecords(space);
 			CompleteWrites(space);
 		}
@@ -151,24 +149,69 @@ public class DefaultsCompatibilityTests {
 		AssertRecords(reopened);
 	}
 
+	/// <summary>Verifies that a deferred owner retains its definition after later builder configuration changes.</summary>
 	[Test]
-	public void FailedLoadDoesNotBindDefinitionOrBuilder() {
+	public void DeferredFileLoadPreservesALaterBuilderSpecificationReplacement() {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
+		var builder = CreateBuilder(false).WithIndexBTreeOrder(4).UseFile(Path.Combine(folder, "deferred.dat"));
+		using var space = builder.Build();
+		builder.WithIndexBTreeOrder(8);
+		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, 8)));
+		space.Load();
+		Assert.That(space.Definition.IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, 4)));
+		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, 8)));
+	}
+
+	/// <summary>Verifies that pre-load definition changes affect that store without changing its builder.</summary>
+	[Test]
+	public void DeferredDefinitionChangesStayLocalToThatStore() {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
+		var path = Path.Combine(folder, "deferred.dat");
+		var builder = CreateBuilder(false).WithIndexBTreeOrder(4).UseFile(path);
+		using (var space = (FileObjectSpace)builder.Build()) {
+			space.Definition.IndexBTreeOrder = 8;
+			space.Load();
+			Assert.That(space.Definition.IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, 8)));
+			Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, 4)));
+			SaveRecords(space);
+			space.Commit();
+		}
+		using var reopened = CreateBuilder(false).WithIndexBTreeOrder(8).UseFile(path).AutoLoad().Build();
+		AssertRecords(reopened);
+	}
+
+	/// <summary>Verifies that loading an invalid definition does not mutate the builder or write storage bytes.</summary>
+	[Test]
+	public void FailedLoadDoesNotChangeBuilderDefinition() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		var builder = CreateBuilder(false).UseFile(Path.Combine(folder, "invalid.dat"));
 		using var space = builder.Build();
 		space.Definition.Dimensions = Array.Empty<ObjectSpaceDefinition.DimensionDefinition>();
 		Assert.That(() => space.Load(), Throws.Exception);
-		Assert.That(space.Definition.HasBoundIndexBTreeSpec, Is.False);
-		Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.False);
+		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
+		Assert.That(builder.BuildDefinition().Dimensions, Has.Length.EqualTo(1));
 		Assert.That(new FileInfo(Path.Combine(folder, "invalid.dat")).Length, Is.Zero);
 	}
 
+	/// <summary>Verifies pending-commit recovery with complete default index specifications.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
-	public void ZeroLengthCommittedFileWithPendingPagesIsGuardedBeforeRecovery(bool autoLoad) {
+	public void ConcreteDefaultSpecificationRecoversValidPendingPages(bool autoLoad) {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
+		byte[] pendingBytes;
+		using (var memory = new MemoryStream()) {
+			var builder = CreateBuilder(false).WithClusterSize(4096).WithClusteredStreamsPolicy(ClusteredStreamsPolicy.Default).UseMemoryStream(memory);
+			builder.Configure<Record>().OptimizeAssumingAverageItemSize(256);
+			using var original = builder.Build();
+			SaveRecords(original);
+			original.Flush();
+			pendingBytes = memory.ToArray();
+		}
+		// Recreate a valid interrupted commit with no committed bytes and one staged page.
 		var path = Path.Combine(folder, "pending.dat");
 		File.WriteAllBytes(path, Array.Empty<byte>());
 		var pages = Path.Combine(folder, "pages");
@@ -179,14 +222,24 @@ public class DefaultsCompatibilityTests {
 			TransactionalFileMappedListBase<byte>.PageMarkerType.UncommittedPage, 0);
 		var committing = TransactionalFileMappedListBase<byte>.MarkerRepository.GenerateFileMarkerFileName(pages, fileID,
 			TransactionalFileMappedListBase<byte>.FileMarkerType.Committing);
-		File.WriteAllBytes(page, Enumerable.Range(0, 512).Select(value => (byte)value).ToArray());
-		File.WriteAllBytes(committing, new byte[] { 19, 37 });
-		var original = SnapshotFiles(folder);
-		Assert.That(() => {
-			using var refused = new FileObjectSpace(descriptor, CreateBuilder(false).BuildDefinition(), Serializers(), new ComparerFactory(ComparerFactory.Default),
-				autoLoad ? FileAccessMode.Default : FileAccessMode.OpenOrCreate);
-		}, Throws.InvalidOperationException.With.Message.Contains("original index order"));
-		AssertFilesUnchanged(folder, original);
+		Assert.That(pendingBytes.Length, Is.LessThanOrEqualTo(descriptor.PageSize));
+		File.WriteAllBytes(page, pendingBytes);
+		File.WriteAllBytes(committing, Array.Empty<byte>());
+		using (var recovered = new FileObjectSpace(descriptor, CreateBuilder(false).BuildDefinition(), Serializers(), new ComparerFactory(ComparerFactory.Default),
+			autoLoad ? FileAccessMode.Default : FileAccessMode.OpenOrCreate)) {
+			if (!autoLoad) {
+				Assert.That(recovered.RequiresLoad, Is.True);
+				Assert.That(File.Exists(page), Is.True);
+				Assert.That(File.Exists(committing), Is.True);
+				recovered.Load();
+			}
+			AssertRecords(recovered);
+			Assert.That(recovered.Definition.IndexBTreeSpec,
+				Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
+			recovered.Commit();
+		}
+		using var reopened = new FileObjectSpace(descriptor, CreateBuilder(false).BuildDefinition(), Serializers(), new ComparerFactory(ComparerFactory.Default));
+		AssertRecords(reopened);
 	}
 
 	[TestCase(false, false)]
@@ -214,8 +267,9 @@ public class DefaultsCompatibilityTests {
 		}
 	}
 
+	/// <summary>Verifies that selecting a legacy file uses the caller's replacement layout settings.</summary>
 	[Test]
-	public void ReusingBuilderForDifferentLegacyFileCannotPromoteTheNewFileOrder() {
+	public void ReusingBuilderForDifferentLegacyFileUsesTheReplacementSpecification() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		var legacyPath = Path.Combine(folder, "legacy64.dat");
@@ -228,19 +282,17 @@ public class DefaultsCompatibilityTests {
 			SaveRecords(fresh);
 			CompleteWrites(fresh);
 		}
-		var original = SnapshotFiles(folder);
 		builder.UseFile(legacyPath);
-		Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.False);
-		Assert.That(() => { using var refused = builder.Build(); }, Throws.InvalidOperationException.With.Message.Contains("original index order"));
-		AssertFilesUnchanged(folder, original);
+		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
 		builder.WithIndexBTreeOrder(64).WithClusterSize(4096);
 		builder.Configure<Record>().OptimizeAssumingAverageItemSize(256);
 		using var reopened = builder.Build();
 		AssertRecords(reopened);
 	}
 
+	/// <summary>Verifies that selecting legacy memory storage uses the caller's replacement layout settings.</summary>
 	[Test]
-	public void ReusingBuilderForDifferentLegacyMemoryCannotPromoteTheNewStreamOrder() {
+	public void ReusingBuilderForDifferentLegacyMemoryUsesTheReplacementSpecification() {
 		using var legacyMemory = new MemoryStream();
 		using (var legacy = CreateBuilder(true).UseMemoryStream(legacyMemory).Build()) {
 			SaveRecords(legacy);
@@ -252,27 +304,24 @@ public class DefaultsCompatibilityTests {
 			SaveRecords(fresh);
 			CompleteWrites(fresh);
 		}
-		legacyMemory.Position = 17;
-		var original = legacyMemory.ToArray();
 		builder.UseMemoryStream(legacyMemory);
-		Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.False);
-		Assert.That(() => { using var refused = builder.Build(); }, Throws.InvalidOperationException.With.Message.Contains("original index order"));
-		Assert.That(legacyMemory.ToArray(), Is.EqualTo(original));
-		Assert.That(legacyMemory.Position, Is.EqualTo(17));
+		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
 		builder.WithIndexBTreeOrder(64).WithClusterSize(4096);
 		builder.Configure<Record>().OptimizeAssumingAverageItemSize(256);
 		using var reopened = builder.Build();
 		AssertRecords(reopened);
 	}
 
+	/// <summary>Verifies that reselecting the same storage leaves the configured complete specification intact.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
-	public void ReselectingTheSameStorageIdentityRetainsItsOriginalConfiguration(bool fileBacked) {
+	public void ReselectingStorageDoesNotChangeTheConfiguredSpecification(bool fileBacked) {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		using var memory = new MemoryStream();
 		var path = Path.Combine(folder, "same.dat");
-		var builder = ConfigureStorage(CreateBuilder(false), fileBacked, path, memory, true);
+		var builder = ConfigureStorage(CreateBuilder(false).WithIndexBTreeOrder(7).WithClusterSize(2048), fileBacked, path, memory, true);
+		builder.Configure<Record>().OptimizeAssumingAverageItemSize(512);
 		using (var space = builder.Build()) {
 			SaveRecords(space);
 			CompleteWrites(space);
@@ -281,13 +330,14 @@ public class DefaultsCompatibilityTests {
 			builder.UseFile(Path.Combine(folder, ".", "same.dat"));
 		else
 			builder.UseMemoryStream(memory);
-		Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.True);
+		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, 7)));
 		using var reopened = builder.Build();
 		AssertRecords(reopened);
 	}
 
+	/// <summary>Verifies that transaction-folder changes preserve index configuration and existing store bytes.</summary>
 	[Test]
-	public void ChangingTransactionFolderDoesNotRetainAnImplicitOpeningConfiguration() {
+	public void ChangingTransactionFolderPreservesTheConcreteSpecification() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
 		var builder = CreateBuilder(false).UseFile(Path.Combine(folder, "same.dat")).KeepUncommittedPagesAt("first-txn").AutoLoad();
@@ -295,11 +345,12 @@ public class DefaultsCompatibilityTests {
 			SaveRecords(space);
 			CompleteWrites(space);
 		}
-		var original = SnapshotFiles(folder);
+		var original = File.ReadAllBytes(Path.Combine(folder, "same.dat"));
 		builder.KeepUncommittedPagesAt("different-txn");
-		Assert.That(builder.BuildDefinition().HasExplicitIndexBTreeOrder, Is.False);
-		Assert.That(() => { using var refused = builder.Build(); }, Throws.InvalidOperationException.With.Message.Contains("original index order"));
-		AssertFilesUnchanged(folder, original);
+		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
+		using (var reopened = builder.Build())
+			AssertRecords(reopened);
+		Assert.That(File.ReadAllBytes(Path.Combine(folder, "same.dat")), Is.EqualTo(original));
 	}
 
 	[Test]
@@ -374,6 +425,14 @@ public class DefaultsCompatibilityTests {
 		return builder;
 	}
 
+	/// <summary>Creates the historical schema with its original mixed BTree and BTreePlus index layouts.</summary>
+	private static ObjectSpaceBuilder CreateHistoricalBuilder() {
+		var builder = CreateBuilder(true);
+		foreach (var index in builder.Configure<Record>().Indexes.Where(index => index.Member != null))
+			index.BTreeSpec = new BTreeSpec(index.Type == ObjectSpaceDefinition.IndexType.Identifier ? BTreeType.BTree : BTreeType.BTreePlus, 64);
+		return builder;
+	}
+
 	private static ObjectSpaceBuilder ConfigureStorage(ObjectSpaceBuilder builder, bool fileBacked, string path, MemoryStream memory, bool autoLoad) {
 		if (fileBacked) {
 			builder.UseFile(path);
@@ -384,9 +443,6 @@ public class DefaultsCompatibilityTests {
 		}
 		return builder;
 	}
-
-	private static Sphere10FrameworkFileDescriptor LegacyDescriptor(string path)
-		=> Sphere10FrameworkFileDescriptor.From(path, Sphere10FrameworkDefaults.TransactionalPageFolder, 262144, 16777216, 4096, ClusteredStreamsPolicy.Default);
 
 	private static SerializerFactory Serializers() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
@@ -416,16 +472,6 @@ public class DefaultsCompatibilityTests {
 			file.Commit();
 		else
 			space.Flush();
-	}
-
-	private static Dictionary<string, byte[]> SnapshotFiles(string folder)
-		=> Directory.GetFiles(folder, "*", SearchOption.AllDirectories).ToDictionary(path => Path.GetRelativePath(folder, path), File.ReadAllBytes);
-
-	private static void AssertFilesUnchanged(string folder, Dictionary<string, byte[]> snapshot) {
-		var actual = SnapshotFiles(folder);
-		Assert.That(actual.Keys, Is.EquivalentTo(snapshot.Keys));
-		foreach (var file in snapshot)
-			Assert.That(actual[file.Key], Is.EqualTo(file.Value), file.Key);
 	}
 
 	public class Record {

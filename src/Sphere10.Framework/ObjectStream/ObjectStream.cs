@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.IO;
 using Tools;
 
 namespace Sphere10.Framework;
@@ -15,14 +16,16 @@ namespace Sphere10.Framework;
 /// A objectStream that stores objects (and metadata) in a stream and provides a List-like interface.
 /// This class uses a <see cref="Streams"/> to store the objects and their metadata. This class is 
 /// a primitive from which <see cref="StreamMappedList{TItem}"/>, <see cref="StreamMappedDictionary{TKey,TValue}"/> and
-/// <see cref="StreamMappedHashSet{TItem}"/> build their functionality of. It it also what <see cref="ObjectSpace"/> are comprised of.
+/// <see cref="StreamMappedHashSet{TItem}"/> build their functionality of. It it also what <see cref="ObjectSpaces.ObjectSpace"/> are comprised of.
 /// Conceptually, an <see cref="ObjectStream"/> like "database table" that stores objects and metadata suitable for querying and lookup.
 /// 
 /// </summary>
 public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx<long, object, ObjectStreamOperationType> PreItemOperation;
 	public event EventHandlerEx<long, object, ObjectStreamOperationType> PostItemOperation;
+
 	public event EventHandlerEx Clearing { add => Streams.Clearing += value; remove => Streams.Clearing -= value; }
+
 	public event EventHandlerEx Cleared { add => Streams.Cleared += value; remove => Streams.Cleared -= value; }
 
 	private readonly bool _preAllocateOptimization;
@@ -57,8 +60,13 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public IItemSerializer ItemSerializer { get; }
 
+	/// <summary>Opens borrowed raw storage using the supplied byte order and recorded settings, or returns false when it cannot be reconstructed.</summary>
+	public static bool TryOpenFromStream(Stream rawStream, Endianness endianness, out ObjectStream objects) {
+		return ObjectStreamStorageHelper.TryOpenFromStream(rawStream, endianness, out objects);
+	}
+
 	#region ILoadable & IDisposable
-	
+
 	protected override void LoadInternal() {
 		if (Streams.RequiresLoad)
 			Streams.Load();
@@ -131,10 +139,10 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		Guard.ArgumentGTE(index, 0, nameof(index));
 		Guard.Argument(operationType != ObjectStreamOperationType.Remove, nameof(operationType), "Remove operation not supported in this method");
 		CheckItemType(item);
-	
+
 		// Pre-notify before opening any streams
 		NotifyPreItemOperation(index, item, operationType);
-		
+
 		var streamIndex = index + Streams.Header.ReservedStreams;
 		// initialized and re-entrancy checks done by one of below called methods
 		var stream = operationType switch {
@@ -199,7 +207,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	#endregion
-	
+
 	#region Event Notification
 
 	private void NotifyPreItemOperation(long index, object item, ObjectStreamOperationType operationType) {
@@ -212,7 +220,6 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		PostItemOperation?.Invoke(index, item, operationType);
 	}
 
-
 	#endregion
 
 	private void CheckItemType(object item) {
@@ -224,6 +231,6 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		if (type != ItemType)
 			throw new InvalidOperationException($@"This objectStream does not support type '{type}'");
 	}
-	
+
 }
 

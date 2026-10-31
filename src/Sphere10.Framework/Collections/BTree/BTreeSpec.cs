@@ -12,6 +12,9 @@ namespace Sphere10.Framework;
 
 /// <summary>Configures a concrete B-tree type and an order of at least three.</summary>
 public sealed record BTreeSpec {
+	/// <summary>The complete specification supplied by the framework's default tree type and order.</summary>
+	public static BTreeSpec Default { get; } = new(Sphere10FrameworkDefaults.BTreeType, Sphere10FrameworkDefaults.BTreeOrder);
+
 	public BTreeSpec(BTreeType type, int order) {
 		if (!Enum.IsDefined(type))
 			throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown B-tree type.");

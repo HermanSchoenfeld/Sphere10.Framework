@@ -15,6 +15,13 @@ namespace Sphere10.Framework.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BTreeSpecTests {
+	/// <summary>Verifies that the shared default specification uses the framework-owned type and order constants.</summary>
+	[Test]
+	public void DefaultUsesTheFrameworkTypeAndOrder() {
+		Assert.That(BTreeSpec.Default.Type, Is.EqualTo(Sphere10FrameworkDefaults.BTreeType));
+		Assert.That(BTreeSpec.Default.Order, Is.EqualTo(Sphere10FrameworkDefaults.BTreeOrder));
+	}
+
 	[TestCase(-1)]
 	[TestCase(2)]
 	[TestCase(int.MaxValue)]

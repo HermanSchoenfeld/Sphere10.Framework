@@ -14,6 +14,7 @@ using System.Linq;
 
 namespace Sphere10.Framework.ObjectSpaces;
 
+/// <summary>Configures dimensions, factories and storage settings for independently built ObjectSpaces.</summary>
 public class ObjectSpaceBuilder {
 
 	private static readonly string ErrMsgUseSerializerFactory = $"Unable to use a custom {nameof(SerializerFactory)} since {typeof(IItemSerializer<>).ToStringCS()}'s have already been registered. Ensure all serializer registrations are made to your custom factory and not with this {nameof(ObjectSpaceBuilder)}.";
@@ -30,22 +31,12 @@ public class ObjectSpaceBuilder {
 	private long _pageSize;
 	private int _clusterSize;
 	private BTreeSpec _indexBTreeSpec;
-	private int _indexBTreeOrder;
-	private bool _indexBTreeOrderSpecified;
-	private bool _indexBTreeTypeSpecified;
 	private bool _clusterSizeSpecified;
 	private bool _clusteredStreamsPolicySpecified;
-	private ObjectSpaceType? _boundType;
-	private ObjectSpaceDefinition _boundDefinition;
-	private Sphere10FrameworkFileDescriptor _boundFileDescriptor;
-	private MemoryStream _boundMemoryStream;
-	private Dictionary<Type, int> _boundDimensionClusterSizes = new(TypeEquivalenceComparer.Instance);
-	private int _boundClusterSize;
-	private ClusteredStreamsPolicy _boundPolicy;
-	private bool _merkleized;
+	private ObjectSpaceTraits _traits;
+	private int _metaDataCapacity;
 	private CHF _hashFunction;
 	private ClusteredStreamsPolicy _clusteredStreamsPolicy;
-	private Endianness _endianness;
 	private FileAccessMode _accessMode;
 	private IList<IObjectSpaceDimensionBuilder> _dimensions;
 	private SerializerFactory _serializerFactory;
@@ -54,10 +45,10 @@ public class ObjectSpaceBuilder {
 	private ComparerFactory _comparerFactory;
 	private bool _usingCustomComparerFactory;
 	private bool _specifiedCustomComparer;
-	private bool _autoSave;
-	private bool _garbageCollect;
 
+	/// <summary>Starts with Framework storage defaults and local copies of the default factories.</summary>
 	public ObjectSpaceBuilder() {
+		// Start with complete storage settings and one set of ObjectSpace behavior flags.
 		_type = null;
 		_filepath = null;
 		_memoryStream = null;
@@ -65,14 +56,15 @@ public class ObjectSpaceBuilder {
 		_maxMemory = Sphere10FrameworkDefaults.ObjectSpaceMaxMemory;
 		_pageSize = Sphere10FrameworkDefaults.ObjectSpacePageSize;
 		_clusterSize = Sphere10FrameworkDefaults.ClusterSize;
-		_indexBTreeOrder = Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder;
-		_merkleized = false;
+		_indexBTreeSpec = new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder);
+		_traits = ObjectSpaceTraits.None;
 		_hashFunction = Sphere10FrameworkDefaults.HashFunction;
 		_clusteredStreamsPolicy = Sphere10FrameworkDefaults.ContainerPolicy;
-		_endianness = Sphere10FrameworkDefaults.Endianness;
+		WithEndianness(Sphere10FrameworkDefaults.Endianness);
 		_accessMode = FileAccessMode.OpenOrCreate;
 		_dimensions = new List<IObjectSpaceDimensionBuilder>();
 
+		// Keep application registrations local to this builder's factories.
 		_serializerFactory = new SerializerFactory(SerializerFactory.Default);
 		_usingCustomSerializerFactory = false;
 		_specifiedCustomSerializer = false;
@@ -80,31 +72,25 @@ public class ObjectSpaceBuilder {
 		_comparerFactory = new ComparerFactory(ComparerFactory.Default);
 		_usingCustomComparerFactory = false;
 		_specifiedCustomComparer = false;
-
-		_autoSave = false;
-		_garbageCollect = false;
 	}
 
+	/// <summary>Selects the transactional file backend at the supplied path.</summary>
 	public ObjectSpaceBuilder UseFile(string filePath) {
 		_type = ObjectSpaceType.FileMapped;
 		_filepath = filePath;
-		if (!MatchesBoundStorage())
-			ResetBoundConfiguration();
 		return this;
 	}
 
+	/// <summary>Selects memory storage, borrowing a supplied stream or creating a new one for each build.</summary>
 	public ObjectSpaceBuilder UseMemoryStream(MemoryStream stream = null) {
 		_type = ObjectSpaceType.MemoryMapped;
 		_memoryStream = stream;
-		if (!MatchesBoundStorage())
-			ResetBoundConfiguration();
 		return this;
 	}
 
+	/// <summary>Selects the directory used by the file backend's transactional pages.</summary>
 	public ObjectSpaceBuilder KeepUncommittedPagesAt(string folder) {
 		_pagesPath = folder;
-		if (!MatchesBoundStorage())
-			ResetBoundConfiguration();
 		return this;
 	}
 
@@ -151,39 +137,40 @@ public class ObjectSpaceBuilder {
 	public ObjectSpaceBuilder WithIndexBTreeSpec(BTreeSpec spec) {
 		Guard.ArgumentNotNull(spec, nameof(spec));
 		_indexBTreeSpec = spec;
-		_indexBTreeOrderSpecified = true;
-		_indexBTreeTypeSpecified = true;
 		return this;
 	}
 
 	/// <summary>Sets the B-tree order for all member indexes. Existing storage must be reopened with the same order.</summary>
 	public ObjectSpaceBuilder WithIndexBTreeOrder(int order) {
-		if (order < 3)
-			throw new ArgumentOutOfRangeException(nameof(order), order, "B-tree order must be at least 3.");
-		if (_indexBTreeSpec is null)
-			_indexBTreeOrder = order;
-		else
-			_indexBTreeSpec = new BTreeSpec(_indexBTreeSpec.Type, order);
-		_indexBTreeOrderSpecified = true;
+		_indexBTreeSpec = new BTreeSpec(_indexBTreeSpec.Type, order);
 		return this;
 	}
 
-	/// <summary>Selects the type for all member indexes. Null retains the historical mixed layout. Preserve the selection on reopen.</summary>
-	public ObjectSpaceBuilder WithIndexBTreeType(BTreeType? type) {
-		var order = _indexBTreeSpec?.Order ?? _indexBTreeOrder;
-		_indexBTreeSpec = type.HasValue ? new BTreeSpec(type.Value, order) : null;
-		_indexBTreeOrder = order;
-		_indexBTreeTypeSpecified = true;
+	/// <summary>Selects the type for all member indexes. Preserve the selection on reopen.</summary>
+	public ObjectSpaceBuilder WithIndexBTreeType(BTreeType type) {
+		_indexBTreeSpec = new BTreeSpec(type, _indexBTreeSpec.Order);
 		return this;
 	}
 
+	/// <summary>Sets the byte order for storage and metadata through the ObjectSpace endian trait.</summary>
 	public ObjectSpaceBuilder WithEndianness(Endianness endianness) {
-		_endianness = endianness;
+		if (!Enum.IsDefined(endianness))
+			throw new ArgumentOutOfRangeException(nameof(endianness));
+		_traits = endianness == Endianness.BigEndian ? _traits | ObjectSpaceTraits.BigEndian : _traits & ~ObjectSpaceTraits.BigEndian;
 		return this;
 	}
 
+	/// <summary>Stores metadata when creating an object space. Existing storage keeps its original layout.</summary>
+	public ObjectSpaceBuilder StoreMetaData(int capacity = 0) {
+		Guard.ArgumentNotNegative(capacity, nameof(capacity));
+		_traits |= ObjectSpaceTraits.MetaData;
+		_metaDataCapacity = capacity;
+		return this;
+	}
+
+	/// <summary>Enables the trait that saves tracked dirty objects during flush.</summary>
 	public ObjectSpaceBuilder AutoSave() {
-		_autoSave = true;
+		_traits |= ObjectSpaceTraits.AutoSave;
 		return this;
 	}
 
@@ -192,12 +179,13 @@ public class ObjectSpaceBuilder {
 	/// incoming references will be automatically collected on save/delete and via explicit <c>CollectGarbage()</c>.
 	/// </summary>
 	public ObjectSpaceBuilder WithGarbageCollection() {
-		_garbageCollect = true;
+		_traits |= ObjectSpaceTraits.GarbageCollect;
 		return this;
 	}
 
+	/// <summary>Enables ObjectSpace Merkle aggregation and adds a Merkle attachment to each configured dimension.</summary>
 	public ObjectSpaceBuilder Merkleized() {
-		_merkleized = true;
+		_traits |= ObjectSpaceTraits.Merkleized;
 		foreach(var dimension in _dimensions) {
 			if (!dimension.Indexes.Any(x => x.Type == ObjectSpaceDefinition.IndexType.MerkleTree))
 				dimension.Merkleized();
@@ -296,7 +284,7 @@ public class ObjectSpaceBuilder {
 	public IObjectSpaceDimensionBuilder AddDimension(Type type, bool ignoreAnnotations = false) {
 		var dimensionBuilder = (IObjectSpaceDimensionBuilder)typeof(ObjectSpaceDimensionBuilder<>).MakeGenericType(type).ActivateWithCompatibleArgs(this);
 		_dimensions.Add(dimensionBuilder);
-		
+
 		if (!ignoreAnnotations) {
 
 			// Check for [Root] attribute — marks the dimension as a GC root so its objects are never auto-collected
@@ -315,7 +303,7 @@ public class ObjectSpaceBuilder {
 
 				if (member.MemberInfo.TryGetCustomAttributeOfType<UniqueIndexAttribute>(false, out var uniqueIndexAttribute)) 
 					dimensionBuilder.WithUniqueIndexOn(member, uniqueIndexAttribute.IndexName, uniqueIndexAttribute.NullPolicy); 
-				
+
 			}
 		}
 		return dimensionBuilder;
@@ -327,123 +315,69 @@ public class ObjectSpaceBuilder {
 			throw new InvalidOperationException($"No dimension for type {typeof(T).ToStringCS()} was found");
 		return (ObjectSpaceDimensionBuilder<T>)dim;
 	}	
-	
-	public ObjectSpaceDefinition BuildDefinition() {
-		var definition = new ObjectSpaceDefinition(_merkleized, _autoSave) {
-			HashFunction = _hashFunction,
-			Dimensions = _dimensions.Select(x => x.BuildDefinition()).ToArray()
-		};
-		var retained = MatchesBoundStorage();
-		var configuredOrder = _indexBTreeSpec?.Order ?? _indexBTreeOrder;
-		var inheritedOrder = retained ? _boundDefinition.IndexBTreeOrder : configuredOrder;
-		var order = _indexBTreeOrderSpecified ? configuredOrder : inheritedOrder;
-		var configuredType = _indexBTreeSpec?.Type;
-		var inheritedType = retained ? _boundDefinition.IndexBTreeType : configuredType;
-		var type = _indexBTreeTypeSpecified ? configuredType : inheritedType;
-		var spec = type.HasValue ? new BTreeSpec(type.Value, order) : null;
-		Guard.Ensure(!retained || (spec == _boundDefinition.IndexBTreeSpec && order == _boundDefinition.IndexBTreeOrder),
-			"An ObjectSpace builder cannot change the index B-tree specification of its bound storage.");
-		if (_indexBTreeOrderSpecified || retained)
-			definition.IndexBTreeOrder = order;
-		definition.IndexBTreeType = type;
-		if (retained) {
-			foreach (var dimension in definition.Dimensions)
-				if (!dimension.AverageObjectSizeBytes.HasValue && _boundDimensionClusterSizes.TryGetValue(dimension.ObjectType, out var boundSize))
-					dimension.AverageObjectSizeBytes = boundSize;
-		}
-		// Wire in the GarbageCollect trait if enabled via the builder
-		if (_garbageCollect)
-			definition.Traits |= ObjectSpaceTraits.GarbageCollect;
-		definition.Validate().ThrowOnFailure();
-		return definition;
-	}
 
+	/// <summary>Constructs a fresh ObjectSpace using the configured backend and dimension definitions.</summary>
 	public ObjectSpace Build() {
+		// Use the caller's configured settings and the selected backend's construction defaults.
 		Guard.Ensure(_type.HasValue, "Object Space type has not been specified (file or memory mapped).");
 		var selectedType = _type.Value;
 		var definition = BuildDefinition();
-		var retained = MatchesBoundStorage();
-		var clusterSize = _clusterSizeSpecified ? _clusterSize : retained ? _boundClusterSize
+		var endianness = _traits.HasFlag(ObjectSpaceTraits.BigEndian) ? Endianness.BigEndian : Endianness.LittleEndian;
+		var clusterSize = _clusterSizeSpecified ? _clusterSize
 			: selectedType == ObjectSpaceType.MemoryMapped ? Sphere10FrameworkDefaults.MemoryObjectSpaceClusterSize : Sphere10FrameworkDefaults.FileObjectSpaceClusterSize;
-		var policy = _clusteredStreamsPolicySpecified ? _clusteredStreamsPolicy : retained ? _boundPolicy
+		var policy = _clusteredStreamsPolicySpecified ? _clusteredStreamsPolicy
 			: selectedType == ObjectSpaceType.MemoryMapped ? Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy : Sphere10FrameworkDefaults.FileObjectSpaceContainerPolicy;
 		ObjectSpace space;
 		switch (selectedType) {
 			case ObjectSpaceType.FileMapped:
-				var descriptor = Sphere10FrameworkFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, clusterSize, policy, _endianness);
+				var descriptor = Sphere10FrameworkFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, clusterSize, policy, endianness);
 				space = new FileObjectSpace(descriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
 				break;
 			case ObjectSpaceType.MemoryMapped:
-				if (_clusterSizeSpecified || retained) {
+				if (_clusterSizeSpecified) {
 					space = _memoryStream is null
-						? new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, clusterSize, policy, _endianness)
-						: new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, clusterSize, policy, _endianness);
+						? new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, clusterSize, policy, endianness)
+						: new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, clusterSize, policy, endianness);
 				} else {
 					space = _memoryStream is null
-						? new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, policy, _endianness)
-						: new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, policy, _endianness);
+						? new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, policy, endianness)
+						: new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, policy, endianness);
 				}
 				break;
 			default:
 				throw new ArgumentOutOfRangeException();
 		}
-		if (space.RequiresLoad) {
-			EventHandlerEx<object> onLoaded = null;
-			onLoaded = _ => {
-				CaptureBoundConfiguration(space, selectedType);
-				space.Loaded -= onLoaded;
-			};
-			space.Loaded += onLoaded;
-		} else {
-			CaptureBoundConfiguration(space, selectedType);
-		}
 		return space;
 	}
 
-	private bool MatchesBoundStorage() {
-		if (_boundType != _type || _boundDefinition is not { HasBoundIndexBTreeSpec: true })
-			return false;
-		if (_type == ObjectSpaceType.MemoryMapped)
-			return _memoryStream != null && ReferenceEquals(_memoryStream, _boundMemoryStream);
-		if (_type != ObjectSpaceType.FileMapped || _boundFileDescriptor == null || string.IsNullOrWhiteSpace(_filepath))
-			return false;
-		var selected = TransactionalFileDescriptor.From(_filepath, _pagesPath);
-		// Transaction marker IDs are based on the exact full path; case changes conservatively require declared settings.
-		return string.Equals(Path.GetFullPath(_filepath), _boundFileDescriptor.CaseCorrectPath, StringComparison.Ordinal)
-			&& string.Equals(TransactionalFileMappedListBase<byte>.GetPagesDirectoryPath(selected),
-				TransactionalFileMappedListBase<byte>.GetPagesDirectoryPath(_boundFileDescriptor), StringComparison.Ordinal);
+	/// <summary>Builds an independent, validated definition with complete per-index tree specifications.</summary>
+	public ObjectSpaceDefinition BuildDefinition() {
+		// Compose the shared specification and flags without duplicating individual trait booleans.
+		var definition = new ObjectSpaceDefinition {
+			Traits = _traits,
+			HashFunction = _hashFunction,
+			MetaDataCapacity = _metaDataCapacity,
+			IndexBTreeSpec = _indexBTreeSpec,
+			Dimensions = _dimensions.Select(x => x.BuildDefinition()).ToArray()
+		};
+
+		// Validate and resolve complete per-index layouts before constructing storage.
+		definition.Validate().ThrowOnFailure();
+		definition.ResolveIndexBTreeSpecs();
+		return definition;
 	}
 
-	private void ResetBoundConfiguration() {
-		_boundType = null;
-		_boundDefinition = null;
-		_boundFileDescriptor = null;
-		_boundMemoryStream = null;
-		_boundDimensionClusterSizes.Clear();
+	/// <summary>Builds an unloaded ObjectSpace over clustered storage whose metadata has already been parsed.</summary>
+	internal ObjectSpace Build(ClusteredStreams streams) {
+		// Storage helpers perform metadata configuration and loading after construction.
+		return new ObjectSpace(streams, BuildDefinition(), _serializerFactory, _comparerFactory,
+			FileAccessMode.Default, Sphere10FrameworkDefaults.MemoryObjectSpaceDimensionClusterSize);
 	}
 
-	private void CaptureBoundConfiguration(ObjectSpace space, ObjectSpaceType selectedType) {
-		if (space.RequiresLoad || !space.Definition.HasBoundIndexBTreeSpec)
-			return;
-		if (selectedType == ObjectSpaceType.MemoryMapped && _memoryStream == null)
-			return;
-		_boundType = selectedType;
-		_boundDefinition = space.Definition;
-		_boundClusterSize = space.Streams.Header.ClusterSize;
-		_boundPolicy = space.Streams.Policy;
-		_boundDimensionClusterSizes = space.Dimensions.ToDictionary(dimension => dimension.Definition.ObjectType,
-			dimension => dimension.Container.ObjectStream.Streams.Header.ClusterSize, TypeEquivalenceComparer.Instance);
-		if (space is FileObjectSpace file) {
-			_boundFileDescriptor = file.File;
-			_boundMemoryStream = null;
-		} else {
-			_boundMemoryStream = ((MemoryObjectSpace)space).Stream;
-			_boundFileDescriptor = null;
-		}
-	}
-
+	/// <summary>The backend selected for ordinary ObjectSpace construction.</summary>
 	private enum ObjectSpaceType {
 		FileMapped,
+
 		MemoryMapped
 	}
 

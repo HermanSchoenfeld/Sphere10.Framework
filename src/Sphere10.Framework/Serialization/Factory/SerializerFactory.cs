@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Sphere10.Framework.ObjectSpaces;
 
 namespace Sphere10.Framework;
 
@@ -56,7 +57,7 @@ public class SerializerFactory {
 
 	#region Registration
 
-	/// <summary>Registers built-in value, collection and factory serializers in the supplied factory.</summary>
+	/// <summary>Registers built-in value, collection, factory and storage-metadata serializers in the supplied factory.</summary>
 	public static void RegisterDefaults(SerializerFactory factory) {
 		// register self-assembling factory for object
 
@@ -140,6 +141,10 @@ public class SerializerFactory {
 
 		// Factories use the same ordinary registration path as the other built-in values.
 		factory.Register<SerializerFactory, SerializerFactorySerializer>();
+
+		// Object Spaces and Streams
+		factory.Register<ObjectSpaceMetaData, ObjectSpaceMetaDataSerializer>();
+		factory.Register<ObjectStreamMetaData, ObjectStreamMetaDataSerializer>();
 	}
 
 	/// <summary>Copies registrations and their construction provenance while assigning this factory as their new owner.</summary>

@@ -17,14 +17,18 @@ namespace Sphere10.Framework.ObjectSpaces;
 public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 
 	public event EventHandlerEx Committing { add => _fileStream.Committing += value; remove => _fileStream.Committing -= value; }
+
 	public event EventHandlerEx Committed { add => _fileStream.Committed += value; remove => _fileStream.Committed -= value; }
+
 	public event EventHandlerEx RollingBack { add => _fileStream.RollingBack += value; remove => _fileStream.RollingBack -= value; }
+
 	public event EventHandlerEx RolledBack { add => _fileStream.RolledBack += value; remove => _fileStream.RolledBack -= value; }
 
 	private readonly TransactionalStream _fileStream;
 
+	/// <summary>Creates a transactional ObjectSpace with one permanent file-backed container and optional metadata.</summary>
 	public FileObjectSpace(Sphere10FrameworkFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default)
-		: base(CreateStreams(file, objectSpaceDefinition, accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode, Sphere10FrameworkDefaults.FileObjectSpaceDimensionClusterSize) {
+		: base(ObjectSpaceStorageHelper.CreateFileStorage(file, objectSpaceDefinition, serializerFactory, comparerFactory, accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode, Sphere10FrameworkDefaults.FileObjectSpaceDimensionClusterSize) {
 		Guard.ArgumentNotNull(file, nameof(file));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
@@ -38,34 +42,15 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 		// Create the file stream
 		_fileStream = fileStream;
 		SubscribeToFileStreamEvents();
-		
+
 
 		if (AccessMode.HasFlag(FileAccessMode.AutoLoad))
 			Load();
 	}
 
 	public FileAccessMode AccessMode { get; }
-	
-	public Sphere10FrameworkFileDescriptor File { get; }
 
-	private static ClusteredStreams CreateStreams(Sphere10FrameworkFileDescriptor file, ObjectSpaceDefinition definition, FileAccessMode accessMode, out TransactionalStream fileStream) {
-		Guard.ArgumentNotNull(file, nameof(file));
-		Guard.ArgumentNotNull(definition, nameof(definition));
-		definition.AssertOpeningIndexOrder(TransactionalFileMappedListBase<byte>.HasPersistedState(file));
-		var merkleized = definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized);
-		fileStream = new TransactionalStream(file, accessMode.WithoutAutoLoad());
-		var objectSpaceMetaDataStreamCount = merkleized ? 1 : 0;
-		var streams = new ClusteredStreams(
-			fileStream,
-			(int)file.ClusterSize,
-			file.ContainerPolicy,
-			objectSpaceMetaDataStreamCount,
-			file.Endianness,
-			false
-		);
-		streams.OwnsStream = true; // disposes _fileStream
-		return streams;
-	}
+	public Sphere10FrameworkFileDescriptor File { get; }
 
 	public void Commit()  {
 		using (EnterAccessScope()) {
@@ -75,7 +60,7 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 	}
 
 	public Task CommitAsync() => throw new NotSupportedException();
-	
+
 	public void Rollback() {
 		using (EnterAccessScope()) {
 			_fileStream.Rollback();
@@ -89,8 +74,11 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 		base.Dispose();
 	}
 
+	/// <summary>Flushes loaded dimensions before commit while allowing initial transaction recovery.</summary>
 	protected virtual void OnCommitting() {
-		Flush();
+		// Recovery can commit before this ObjectSpace has loaded any dimensions to flush.
+		if (!RequiresLoad)
+			Flush();
 	}
 
 	protected virtual void OnCommitted() {
@@ -100,10 +88,13 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 		Unload();
 	}
 
+	/// <summary>Reloads an initialized container after rollback without reentering initial recovery.</summary>
 	protected virtual void OnRolledBack() {
-		// reload after rollback
-		_streams.Initialize();
-		Load();
+		// Initial transaction recovery already precedes container initialization; avoid reentering that load.
+		if (_streams.Initialized) {
+			_streams.Initialize();
+			Load();
+		}
 	}
 
 	private void SubscribeToFileStreamEvents() {

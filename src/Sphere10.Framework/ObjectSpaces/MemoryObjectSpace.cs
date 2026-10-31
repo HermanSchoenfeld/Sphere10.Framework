@@ -16,6 +16,7 @@ namespace Sphere10.Framework.ObjectSpaces;
 /// </summary>
 public class MemoryObjectSpace : ObjectSpace {
 
+	/// <summary>Creates a loaded ObjectSpace that owns its new memory stream and uses the default outer cluster size.</summary>
 	public MemoryObjectSpace(
 		ObjectSpaceDefinition objectSpaceDefinition,
 		SerializerFactory serializerFactory,
@@ -27,6 +28,7 @@ public class MemoryObjectSpace : ObjectSpace {
 		clusteredStreamsPolicy, endianness) {
 	}
 
+	/// <summary>Creates a loaded ObjectSpace that owns its new memory stream with the supplied outer cluster size.</summary>
 	public MemoryObjectSpace(
 		ObjectSpaceDefinition objectSpaceDefinition,
 		SerializerFactory serializerFactory,
@@ -38,6 +40,7 @@ public class MemoryObjectSpace : ObjectSpace {
 		Streams.OwnsStream = true;
 	}
 
+	/// <summary>Creates or loads an ObjectSpace over a borrowed memory stream, retaining its recorded cluster size.</summary>
 	public MemoryObjectSpace(
 		MemoryStream memoryStream,
 		ObjectSpaceDefinition objectSpaceDefinition,
@@ -50,6 +53,7 @@ public class MemoryObjectSpace : ObjectSpace {
 		clusteredStreamsPolicy, endianness) {
 	}
 
+	/// <summary>Creates or loads an ObjectSpace over a borrowed memory stream using the supplied storage settings.</summary>
 	public MemoryObjectSpace(
 		MemoryStream memoryStream,
 		ObjectSpaceDefinition objectSpaceDefinition,
@@ -58,7 +62,7 @@ public class MemoryObjectSpace : ObjectSpace {
 		int clusterSize,
 		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy,
 		Endianness endianness = Sphere10FrameworkDefaults.Endianness
-	) : base(CreateStreams(memoryStream, objectSpaceDefinition, clusterSize, clusteredStreamsPolicy, endianness), objectSpaceDefinition, serializerFactory, comparerFactory,
+	) : base(CreateStreams(memoryStream, objectSpaceDefinition, serializerFactory, comparerFactory, clusterSize, clusteredStreamsPolicy, endianness), objectSpaceDefinition, serializerFactory, comparerFactory,
 		FileAccessMode.Default, Sphere10FrameworkDefaults.MemoryObjectSpaceDimensionClusterSize) {
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
@@ -69,22 +73,32 @@ public class MemoryObjectSpace : ObjectSpace {
 
 	public MemoryStream Stream { get; }
 
+	// Uses the new-store default or reads the existing container's outer cluster size.
 	private static int ResolveClusterSize(MemoryStream stream, ObjectSpaceDefinition definition, Endianness endianness) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentNotNull(definition, nameof(definition));
-		definition.AssertOpeningIndexOrder(stream.Length > 0);
+		definition.Validate().ThrowOnFailure();
 		return stream.Length == 0 ? Sphere10FrameworkDefaults.MemoryObjectSpaceClusterSize
 			: ClusteredStreams.ReadStoredClusterSize(stream, definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized) ? 1 : 0, endianness);
 	}
 
-	private static ClusteredStreams CreateStreams(MemoryStream memoryStream, ObjectSpaceDefinition definition, int clusterSize, ClusteredStreamsPolicy clusteredStreamsPolicy, Endianness endianness) {
+	// Validates the supplied schema and geometry, then configures metadata on one borrowed-stream container.
+	private static ClusteredStreams CreateStreams(MemoryStream memoryStream, ObjectSpaceDefinition definition, SerializerFactory serializers, ComparerFactory comparers, int clusterSize, ClusteredStreamsPolicy clusteredStreamsPolicy, Endianness endianness) {
 		Guard.ArgumentNotNull(memoryStream, nameof(memoryStream));
 		Guard.ArgumentNotNull(definition, nameof(definition));
-		definition.AssertOpeningIndexOrder(memoryStream.Length > 0);
+		Guard.ArgumentNotNull(serializers, nameof(serializers));
+		Guard.ArgumentNotNull(comparers, nameof(comparers));
+		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
+		definition.Validate().ThrowOnFailure();
+		definition.ResolveIndexBTreeSpecs();
 		var objectSpaceMetaDataStreamCount = definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized) ? 1 : 0;
 		if (memoryStream.Length > 0)
 			Guard.Ensure(ClusteredStreams.ReadStoredClusterSize(memoryStream, objectSpaceMetaDataStreamCount, endianness) == clusterSize,
 				"The explicitly configured outer cluster size must match existing storage.");
-		return new ClusteredStreams(memoryStream, clusterSize, clusteredStreamsPolicy, objectSpaceMetaDataStreamCount, endianness, false);
+
+		// Owner mappings and metadata use the existing clustered header and its generic blob facility.
+		var streams = new ClusteredStreams(memoryStream, clusterSize, clusteredStreamsPolicy, objectSpaceMetaDataStreamCount, endianness, false);
+		ObjectSpaceStorageHelper.ConfigureStorage(streams, definition, serializers, comparers);
+		return streams;
 	}
 }
