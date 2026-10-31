@@ -9,36 +9,242 @@
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-# :rocket: Sphere10 Framework: Comprehensive .NET Application Framework
+# Sphere10 Framework
 
 Copyright © Herman Schoenfeld 2005 - Present
 
-**A mature, production-ready .NET framework** providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, Sphere10 Framework has evolved into a comprehensive general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and utilities for high-performance .NET development.
+**Build rich applications, powerful storage engines and cryptographic systems with one modular .NET toolkit.**
 
-## :sparkles: What Sphere10 Framework Provides
+Sphere10 Framework brings application shells, data access, embedded object storage, advanced collections, binary serialization and cryptography into a consistent set of C# libraries. Build a complete desktop or web application, compose your own storage engine, or pick the components your existing application needs.
 
-**Core Foundation**
-- **Unified Architecture**: Consistent patterns for application lifecycle, dependency injection, configuration, and component lifecycle across all platforms
-- **Enterprise Data Access**: Abstracted data layer with support for multiple database engines (SQL Server, SQLite, Firebird, NHibernate) and advanced query building
-- **Advanced Cryptography**: Comprehensive cryptographic implementations including post-quantum algorithms, digital signatures, and multiple hashing algorithms
-- **Multi-Protocol Networking**: TCP, UDP, WebSockets, and RPC frameworks for building distributed systems
-- **Rich Serialization**: Flexible binary serialization, JSON support, and streaming implementations
+[Explore the features](#what-you-can-build) · [Try the demos](#see-it-in-action) · [Read the docs](docs/README.md) · [Install](#installation)
 
-**Application Development**
-- **Desktop UI Framework**: Full-featured Windows Forms component library with data binding, validation, and plugin support
-- **Web Integration**: ASP.NET Core hosting and MVC forms, plus a Blazor ApplicationBlock workspace and a CRUD grid with typed columns, validation and reference editors
-- **Cross-Platform**: Run applications on Windows, macOS, iOS, Android, or .NET Core/5+
-- **Plugin Architecture**: Startup plugins contribute blocks, service registrations, and application initialization and shutdown tasks
+## What you can build
 
-**Specialized Features**
-- **Memory Efficiency**: Advanced collections, paged data structures, and streaming for handling large datasets
-- **Graphics & Drawing**: Cross-platform drawing utilities and image manipulation
-- **Performance**: Caching, connection pooling, and optimized algorithms
-- **Testing**: Comprehensive testing framework and utilities for unit and integration testing
+### Complete desktop and web applications
 
-## :wrench: Prerequisites
+Compose modular applications from **plugins, application blocks, menus, toolbars, screens and wizards**. WinForms and Blazor adapters share the application model, dependency injection and lifecycle conventions, with platform-specific screen rendering and hosting.
 
-- **.NET 10.0 SDK** or later
+- **Windows Forms:** native application shells, detachable tabs, CRUD grids, data-bound editors, validation, splash screens and chart controls.
+- **Blazor:** Interactive Server workspaces with tabbed navigation, typed CRUD columns, buffered editing, reference pickers, custom commands, dialogs, wizards and theme switching.
+- **Application infrastructure:** startup and shutdown tasks, persisted settings, command-line parsing, logging, screen lifetime policies and unsaved-change handling.
+
+[Application framework](src/Sphere10.Framework.Application/README.md) · [Windows Forms](src/Sphere10.Framework.Windows.Forms/README.md) · [Blazor](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md)
+
+### Embedded object databases in ordinary streams
+
+**ObjectSpaces persist typed C# objects directly**, with declared identifier, unique and nonunique member indexes, tracked object identity, recyclable storage slots and optional dirty tracking. Choose memory-backed storage or file-backed transactions with explicit commit and rollback.
+
+Enable self-describing ObjectSpaces and ObjectStreams to carry their construction metadata, including serializer registrations and index settings, so supported stores can be reconstructed from their raw stream. Merkle attachments add cryptographic integrity roots to object stores.
+
+[ObjectSpace guide](src/Sphere10.Framework/ObjectSpaces/README.md) · [Self-describing storage](docs/usage/self-describing-storage.md)
+
+### Collections that fit your data and your storage
+
+Work with **memory, paged and stream-backed lists, dictionaries and sets**, managed and persisted B-trees and B+ trees, grouped lookups, recyclable collections, synchronized wrappers and projected views. Extended collection contracts support long-indexed range operations for batch processing.
+
+Clustered streams multiplex independent logical streams into a single backing stream, with dynamic allocation and pluggable attachments. Page sizes, cache budgets, cluster sizes and index layouts give you direct control over memory and I/O policy.
+
+[Core library](src/Sphere10.Framework/README.md) · [Collections and storage](docs/guidelines/patterns/collections-and-storage.md)
+
+### Binary serialization for complex object graphs
+
+Compose serializers with **explicit member layouts, polymorphic types, shared references, cyclic graphs, size calculation and byte-order control**. Serializer factories and fluent builders connect the same serialization contracts to object stores, collections and typed message protocols.
+
+Use fixed-size records where predictable offsets matter, compact integer encodings where size matters, and stream-based readers and writers throughout.
+
+[Serialization guide](docs/guidelines/patterns/serialization.md)
+
+### Cryptographic integrity and specialized security primitives
+
+Build with **pluggable hashing, digital-signature abstractions, verifiable random functions and dynamic Merkle trees**. Merkle-aware lists, dictionaries, sets and object stores bring integrity roots and proofs into the storage layer.
+
+CryptoEx adds elliptic-curve signing and encryption, Schnorr and MuSig implementations, and additional cryptographic integrations. The core also contains reference implementations of the AMS and Winternitz signature families, alongside the project's published technical papers.
+
+For blockchain applications, compose reversible chain state, chain and branch management, and proof-of-work target and difficulty primitives.
+
+[Core cryptography and Merkle trees](src/Sphere10.Framework/README.md) · [CryptoEx](src/Sphere10.Framework.CryptoEx/README.md) · [Blockchain primitives](src/Sphere10.Framework.Consensus/README.md) · [Research papers](#technical-papers)
+
+### Relational data access across database engines
+
+Use a common **data-access contract, scoped connections and transactions, SQL builders and schema metadata** across SQLite, SQL Server, Firebird, MySQL, PostgreSQL and Oracle. NHibernate integration supports ORM-based applications, while platform-specific controls connect database access to native desktop workflows.
+
+The shared abstractions keep application code consistent; provider guides document their supported SQL and capabilities.
+
+[Data access](src/Sphere10.Framework.Data/README.md) · [NHibernate](src/Sphere10.Framework.Data.NHibernate/README.md)
+
+### Connected services and reusable application infrastructure
+
+Define typed protocols and request/response flows, expose JSON-RPC services, and connect processes through TCP/UDP channels, anonymous pipes and WebSocket implementations. ASP.NET Core and MVC libraries supply web hosting, middleware, controller and form integrations.
+
+Round out your application with scheduled jobs, composable caches and loggers, synchronization scopes, reflection and mapping helpers, source generators, and NUnit utilities for application and database testing.
+
+[Communications](src/Sphere10.Framework.Communications/README.md) · [ASP.NET Core](src/Sphere10.Framework.Web.AspNetCore/README.md) · [Job scheduling](docs/guidelines/patterns/scheduling.md)
+
+## Discover the toolkit with `Tools.*`
+
+Type **`Tools.`** in your IDE to explore utilities grouped by domain: `Tools.Text`, `Tools.Collection`, `Tools.FileSystem`, `Tools.Reflection`, `Tools.Streams`, `Tools.Crypto` and more. The same discovery pattern extends into database, drawing, web and Windows libraries through their owning packages.
+
+[Browse the Tools reference](docs/tools-reference.md).
+
+## See it in action
+
+| Explore | What you can try |
+|---|---|
+| [Windows Forms tester](utils/Sphere10.Framework.Utils.WinFormsTester/README.md) | Native application screens, ObjectSpaces, CRUD controls, charts and component demonstrations |
+| [Blazor tester](utils/Sphere10.Framework.Utils.BlazorTester/README.md) | A modular workspace with tabs, editable grids, menus, toolbars, themes, dialogs and wizards |
+| [Blazor CRUD quick start](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start) | Build an editable grid with typed columns and validation |
+| [Custom editors and reference pickers](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions) | Connect related records and add application-specific actions |
+| [MVC tester](utils/Sphere10.Framework.Utils.MvcTester/README.md) | A runnable ASP.NET Core MVC application |
+| [ObjectSpace profiler](utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) | Exercise storage workloads, allocation policies, indexes and file transactions with reproducible measurements |
+
+## Browse the libraries
+
+The libraries are organized under `src/`, with tests under `tests/` and runnable demonstrations and profiling tools under `utils/`. Select the packages that fit your application; the project guides cover their APIs and platform requirements.
+
+<details>
+<summary><strong>Library and test project catalog</strong></summary>
+
+## :open_file_folder: Project Structure
+
+> **Note**: The `blackhole/` directory contains archived/experimental projects (DApp framework) that are not part of the active framework. These are retained for reference but are not maintained or included in NuGet packages.
+
+Projects are grouped by their role:
+
+### :gear: Core Framework & Utilities
+
+| Project | Purpose | NuGet |
+|---------|---------|-------|
+| [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework) |
+| [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, shared application/block hierarchy, startup plugins and wizard orchestration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
+| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
+| [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation | |
+| [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Internal runtime/compiler support assembly | |
+| [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) |
+
+### :lock: Cryptography & Security
+
+| Project | Purpose | NuGet |
+|---------|---------|-------|
+| [**Sphere10.Framework.CryptoEx**](src/Sphere10.Framework.CryptoEx/README.md) | Elliptic-curve signing/encryption, Schnorr, MuSig and cryptographic integrations | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.CryptoEx.svg)](https://www.nuget.org/packages/Sphere10.Framework.CryptoEx) |
+| [**Sphere10.Framework.Consensus**](src/Sphere10.Framework.Consensus/README.md) | Reversible blockchain state, chain/branch management and proof-of-work target/difficulty primitives | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Consensus.svg)](https://www.nuget.org/packages/Sphere10.Framework.Consensus) |
+
+### :floppy_disk: Data Access & Persistence
+
+| Project | Purpose | NuGet |
+|---------|---------|-------|
+| [**Sphere10.Framework.Data**](src/Sphere10.Framework.Data/README.md) | Data access abstraction layer with ADO.NET enhancements, SQL query building, CSV support | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data) |
+| [**Sphere10.Framework.Data.Sqlite**](src/Sphere10.Framework.Data.Sqlite/README.md) | SQLite implementation for embedded databases | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Sqlite.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.Sqlite) |
+| [**Sphere10.Framework.Data.Firebird**](src/Sphere10.Framework.Data.Firebird/README.md) | Firebird database implementation | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Firebird.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.Firebird) |
+| [**Sphere10.Framework.Data.MSSQL**](src/Sphere10.Framework.Data.MSSQL/README.md) | Microsoft SQL Server implementation | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.MSSQL.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.MSSQL) |
+| [**Sphere10.Framework.Data.NHibernate**](src/Sphere10.Framework.Data.NHibernate/README.md) | NHibernate ORM integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.NHibernate.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.NHibernate) |
+| [**Sphere10.Framework.Data.MySQL**](src/Sphere10.Framework.Data.MySQL/README.md) | MySQL data-access provider | |
+| [**Sphere10.Framework.Data.PostgreSQL**](src/Sphere10.Framework.Data.PostgreSQL/README.md) | PostgreSQL data-access provider | |
+| [**Sphere10.Framework.Data.Oracle**](src/Sphere10.Framework.Data.Oracle/README.md) | Oracle data-access provider | |
+
+### :desktop_computer: Desktop & Windows
+
+| Project | Purpose | NuGet |
+|---------|---------|-------|
+| [**Sphere10.Framework.Windows**](src/Sphere10.Framework.Windows/README.md) | Windows platform integration: registry, services, event logging | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows) |
+| [**Sphere10.Framework.Windows.Forms**](src/Sphere10.Framework.Windows.Forms/README.md) | Windows Forms UI framework and components | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms) |
+| [**Sphere10.Framework.Windows.Forms.DataVisualization**](src/Sphere10.Framework.Windows.Forms.DataVisualization/README.md) | Microsoft charting controls adapted to modern .NET, retaining upstream licenses | |
+| [**Sphere10.Framework.Windows.Forms.Sqlite**](src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) | SQLite connection editors for Windows Forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Sqlite.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Sqlite) |
+| [**Sphere10.Framework.Windows.Forms.Firebird**](src/Sphere10.Framework.Windows.Forms.Firebird/README.md) | Firebird connection editors for Windows Forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Firebird.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Firebird) |
+| [**Sphere10.Framework.Windows.Forms.MSSQL**](src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) | SQL Server connection editors for Windows Forms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.MSSQL.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.MSSQL) |
+| [**Sphere10.Framework.Windows.Forms.MySQL**](src/Sphere10.Framework.Windows.Forms.MySQL/README.md) | MySQL connection editors for Windows Forms | |
+| [**Sphere10.Framework.Windows.Forms.PostgreSQL**](src/Sphere10.Framework.Windows.Forms.PostgreSQL/README.md) | PostgreSQL connection editors for Windows Forms | |
+| [**Sphere10.Framework.Windows.Forms.Oracle**](src/Sphere10.Framework.Windows.Forms.Oracle/README.md) | Oracle connection editors for Windows Forms | |
+| [**Sphere10.Framework.Windows.LevelDB**](src/Sphere10.Framework.Windows.LevelDB/README.md) | LevelDB integration for fast key-value storage | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.LevelDB.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.LevelDB) |
+
+### :globe_with_meridians: Web & Cross-Platform
+
+| Project | Purpose | NuGet |
+|---------|---------|-------|
+| [**Sphere10.Framework.Web**](src/Sphere10.Framework.Web/README.md) | HTML, sitemap, and presentation models independent of ASP.NET Core | |
+| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | Shared ASP.NET Core HTTP, middleware, logging, and lifecycle integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
+| [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC controllers, forms, filters, routing, and action results | |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Tabbed Blazor applications, extensible identity controls, and CRUD grids with typed columns, validation, reference editors, dialogs and wizards | |
+| [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Color and geometry helpers, plus Windows image processing and GDI+ rendering | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) |
+| [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | |
+| [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | |
+| [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Legacy Xamarin.iOS integration, outside the active .NET 10 solutions | |
+| [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Legacy Xamarin.Android integration, outside the active .NET 10 solutions | |
+| [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Legacy macOS integration source, outside the active .NET 10 solutions | |
+
+## :test_tube: Test Projects
+
+The `tests/` directory contains unit and integration tests across framework subsystems:
+
+GitHub Actions builds the cross-platform solution and runs the configured NUnit test assemblies, including the restored Blazor tests. Console output and TRX artifacts include test results and failures. See the [CI test guide](.github/ci.md) for adding tests and reproducing failures locally.
+
+| Test Project | Purpose |
+|--------------|---------|
+| [**Sphere10.HashLib4CSharp.Tests**](tests/Sphere10.HashLib4CSharp.Tests) | Tests for hashing algorithms |
+| [**Sphere10.Framework.Communications.Tests**](tests/Sphere10.Framework.Communications.Tests) | Networking and RPC tests |
+| [**Sphere10.Framework.CryptoEx.Tests**](tests/Sphere10.Framework.CryptoEx.Tests) | Cryptography implementation tests |
+| [**Sphere10.Framework.Data.Tests**](tests/Sphere10.Framework.Data.Tests) | Database access layer tests |
+| [**Sphere10.Framework.Tests**](tests/Sphere10.Framework.Tests) | Core framework tests |
+| [**Sphere10.Framework.Application.Tests**](tests/Sphere10.Framework.Application.Tests/README.md) | Shared presentation behavior and UI-independent dependency tests |
+| [**Sphere10.Framework.Web.AspNetCore.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Tests) | Shared web and MVC integration regressions |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests) | CRUD grid, table, wizard, plugin, ApplicationBlock and lifecycle regression tests |
+| [**Sphere10.Framework.Windows.LevelDB.Tests**](tests/Sphere10.Framework.Windows.LevelDB.Tests) | LevelDB integration tests |
+| [**Sphere10.Framework.Windows.Tests**](tests/Sphere10.Framework.Windows.Tests) | Windows platform tests |
+
+</details>
+
+## Documentation and learning
+
+### Getting started
+
+- [**Documentation Home**](docs/README.md) — Complete documentation index
+- [**Framework To-do**](src/TODO.md) — Running engineering backlog across all Framework subsystems
+- [**Getting Started Guide**](docs/start-here.md) — Quick orientation for new developers
+- [**Tools Reference**](docs/tools-reference.md) — Complete Tools.* namespace catalog
+- [**Real-World Examples**](docs/real-world-usage-examples.md) — Practical patterns from test suite
+
+### Architecture
+
+- [Framework Architecture](docs/architecture/sphere10-framework.md) — Design philosophy, layers, subsystems
+- [Framework Domains](docs/architecture/domains.md) — Catalog of 40+ specialized domains
+
+### Engineering guides
+
+- [3-Tier Architecture](docs/guidelines/3-tier-architecture.md) — Architectural patterns
+- [Code Styling](docs/guidelines/code-styling.md) — Coding standards and conventions
+
+### Technical papers
+
+- [Dynamic Merkle Trees](https://sphere10.com/tech/dynamic-merkle-trees)
+- [Abstract Merkle Signatures (AMS)](https://sphere10.com/tech/ams)
+- [Winternitz Abstracted Merkle Signatures (WAMS)](https://sphere10.com/tech/wams)
+- [Faster and Smaller Winternitz Signatures](https://sphere10.com/tech/wots-sharp)
+
+## Contributing
+
+Contributions are welcome!
+
+To submit a change:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes
+4. Push to your branch
+5. Open a Pull Request
+
+Please follow the [Code Styling Guidelines](docs/guidelines/code-styling.md).
+
+## License
+
+Sphere10 Framework is distributed under the **MIT License**.
+
+More information: [MIT License](https://opensource.org/license/mit)
+
+## Installation
+
+### Prerequisites
+
+- **.NET 10 SDK**
 - An IDE that supports the **.NET 10 SDK**, such as Visual Studio or JetBrains Rider
 - **Windows** required for `Sphere10.Framework.Windows.*` projects
 - Two solution files available:
@@ -47,7 +253,7 @@ Copyright © Herman Schoenfeld 2005 - Present
 
 Both solutions expose architecture guides, engineering practices and reference documents under **Developer Documentation**. The root README appears once in **Misc**, with packaging scripts under **Misc → Scripts**. Project, test and demo READMEs remain in their real projects. Solution items open the original files in Visual Studio.
 
-## :package: Installation
+### NuGet packages
 
 Sphere10 Framework is available as NuGet packages. Install the packages you need:
 
@@ -78,197 +284,6 @@ From the Framework repository root, run [pack.ps1](scripts/pack.ps1) to clean an
 ./scripts/publish.ps1 -IncludeSymbols
 ```
 
-[publish.ps1](scripts/publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Independent packages such as `Sphere10.VisualRenderer` live under `Components/` and are packed separately. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
+[publish.ps1](scripts/publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Independent packages such as `Sphere10.VisualRenderer` are packed separately. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
 
 The publisher accepts `-ApiKey`, reads `NUGET_API_KEY`, or prompts with hidden input. Ordinary publication asks for PowerShell confirmation; use `-Confirm:$false` for an automated run with credentials supplied. `-Source`, `-SymbolSource`, and `-PackagesDirectory` override the default feeds and package directory. Both scripts support Windows PowerShell 5.1 and PowerShell 7 and keep their default paths rooted in the Framework repository.
-
-## :mag: Tools.* Namespace — Global Utility Discovery
-
-The **Tools namespace** is a defining architectural feature providing a **global, IntelliSense-discoverable collection of static utility methods** across the entire framework. Simply type `Tools.` to explore all available operations:
-
-### Core Utilities
-- **Tools.Crypto** — Hashing, signatures, key derivation
-- **Tools.Text** — String manipulation, validation, generation
-- **Tools.Collection** — Collection operations, filtering, transformation
-- **Tools.FileSystem** — File I/O, directory management, temp files
-- **Tools.Reflection** — Type inspection, member discovery, attributes
-- **Tools.Json** / **Tools.Xml** — Data serialization
-- **Tools.Memory** — Buffer operations, memory allocation
-- **Tools.Maths** — Mathematical utilities and RNG
-- And 30+ more...
-
-### Platform-Specific Tools
-- **Tools.WinTool** (Windows) — Registry, services, event logging, privileges
-- **Tools.Web.Html** / **Tools.Web.AspNetCore** (Web) — HTML utilities, ASP.NET Core integration
-- **Tools.iOSTool** (iOS) — iOS-specific operations
-- **Tools.Data** / **Tools.Sqlite** / **Tools.MSSQL** (Database) — Database provider utilities
-
-### Design Pattern
-```csharp
-using Sphere10.Framework;
-
-// Discovery-first pattern — IntelliSense shows all available tools
-byte[] hash = Tools.Crypto.SHA256(data);
-string sanitized = Tools.Text.RemoveWhitespace(input);
-var connection = Tools.Sqlite.Create(connectionString);
-bool running = Tools.WinTool.IsServiceRunning("MyService");
-```
-
-For the complete Tools reference, see [docs/tools-reference.md](docs/tools-reference.md).
-
-
-
-## :open_file_folder: Project Structure
-
-> **Note**: The `blackhole/` directory contains archived/experimental projects (DApp framework) that are not part of the active framework. These are retained for reference but are not maintained or included in NuGet packages.
-
-The Sphere10 Framework consists of **45+ projects** organized by category within `src/`, `tests/`, and `utils/`:
-
-### :gear: Core Framework & Utilities
-
-| Project | Purpose | NuGet |
-|---------|---------|-------|
-| [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework) |
-| [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, shared application/block hierarchy, startup plugins and wizard orchestration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
-| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
-| [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation | |
-| [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Runtime environment detection, diagnostics, and platform utilities | |
-| [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) |
-
-### :lock: Cryptography & Security
-
-| Project | Purpose | NuGet |
-|---------|---------|-------|
-| [**Sphere10.Framework.CryptoEx**](src/Sphere10.Framework.CryptoEx/README.md) | Extended cryptography: Bitcoin (SECP256k1), elliptic curves, hash functions, post-quantum algorithms | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.CryptoEx.svg)](https://www.nuget.org/packages/Sphere10.Framework.CryptoEx) |
-| [**Sphere10.Framework.Consensus**](src/Sphere10.Framework.Consensus/README.md) | Blockchain consensus mechanisms and validation rules framework | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Consensus.svg)](https://www.nuget.org/packages/Sphere10.Framework.Consensus) |
-
-### :floppy_disk: Data Access & Persistence
-
-| Project | Purpose | NuGet |
-|---------|---------|-------|
-| [**Sphere10.Framework.Data**](src/Sphere10.Framework.Data/README.md) | Data access abstraction layer with ADO.NET enhancements, SQL query building, CSV support | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data) |
-| [**Sphere10.Framework.Data.Sqlite**](src/Sphere10.Framework.Data.Sqlite/README.md) | SQLite implementation for embedded databases | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Sqlite.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.Sqlite) |
-| [**Sphere10.Framework.Data.Firebird**](src/Sphere10.Framework.Data.Firebird/README.md) | Firebird database implementation | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.Firebird.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.Firebird) |
-| [**Sphere10.Framework.Data.MSSQL**](src/Sphere10.Framework.Data.MSSQL/README.md) | Microsoft SQL Server implementation | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.MSSQL.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.MSSQL) |
-| [**Sphere10.Framework.Data.NHibernate**](src/Sphere10.Framework.Data.NHibernate/README.md) | NHibernate ORM integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Data.NHibernate.svg)](https://www.nuget.org/packages/Sphere10.Framework.Data.NHibernate) |
-
-### :desktop_computer: Desktop & Windows
-
-| Project | Purpose | NuGet |
-|---------|---------|-------|
-| [**Sphere10.Framework.Windows**](src/Sphere10.Framework.Windows/README.md) | Windows platform integration: registry, services, event logging | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows) |
-| [**Sphere10.Framework.Windows.Forms**](src/Sphere10.Framework.Windows.Forms/README.md) | Windows Forms UI framework and components | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms) |
-| [**Sphere10.Framework.Windows.Forms.Sqlite**](src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) | Windows Forms with SQLite data binding | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Sqlite.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Sqlite) |
-| [**Sphere10.Framework.Windows.Forms.Firebird**](src/Sphere10.Framework.Windows.Forms.Firebird/README.md) | Windows Forms with Firebird data binding | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.Firebird.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.Firebird) |
-| [**Sphere10.Framework.Windows.Forms.MSSQL**](src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) | Windows Forms with SQL Server data binding | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.Forms.MSSQL.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.Forms.MSSQL) |
-| [**Sphere10.Framework.Windows.LevelDB**](src/Sphere10.Framework.Windows.LevelDB/README.md) | LevelDB integration for fast key-value storage | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.LevelDB.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.LevelDB) |
-
-### :globe_with_meridians: Web & Cross-Platform
-
-| Project | Purpose | NuGet |
-|---------|---------|-------|
-| [**Sphere10.Framework.Web**](src/Sphere10.Framework.Web/README.md) | HTML, sitemap, and presentation models independent of ASP.NET Core | |
-| [**Sphere10.Framework.Web.AspNetCore**](src/Sphere10.Framework.Web.AspNetCore/README.md) | Shared ASP.NET Core HTTP, middleware, logging, and lifecycle integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Web.AspNetCore.svg)](https://www.nuget.org/packages/Sphere10.Framework.Web.AspNetCore) |
-| [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC controllers, forms, filters, routing, and action results | |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Tabbed Blazor applications, extensible identity controls, and CRUD grids with typed columns, validation, reference editors, dialogs and wizards | |
-| [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Drawing.svg)](https://www.nuget.org/packages/Sphere10.Framework.Drawing) |
-| [**Sphere10.Framework.NUnit**](src/Sphere10.Framework.NUnit/README.md) | NUnit testing utilities and framework test support | |
-| [**Sphere10.Framework.NUnit.DB**](src/Sphere10.Framework.NUnit.DB/README.md) | Database-specific NUnit testing utilities | |
-| [**Sphere10.Framework.iOS**](src/Sphere10.Framework.iOS/README.md) | Xamarin.iOS integration for native iOS apps | |
-| [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Xamarin.Android integration for native Android apps | |
-| [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Xamarin.macOS integration for native macOS apps | |
-
-For web development, start with the [Blazor host and complete CRUD grid example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start), the [custom editor and reference-picker example](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions), or the [MVC quick start](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md). Run the [Blazor tester](utils/Sphere10.Framework.Utils.BlazorTester/README.md) to exercise the grid and ApplicationBlock workspace.
-
-WinForms and Blazor share the runtime hierarchy `IApplication` → `IApplicationBlock` → menus and screen definitions in `Sphere10.Framework.Application.UI`. Parent links identify the owning application, block and menu; blocks retain their startup plugin as `Source`, and hosted screens expose their `Host` and `Block`. Plugins contribute blocks during startup, and `LoadedPlugins` records successfully registered plugins. Shell navigation icons select blocks through the host. Their typed plugin builders reuse the shared registration and lifecycle model. The Blazor tester demonstrates the full application shell, merged menus/toolbars, single- and multi-instance tabs, permanent singleton screens, tabless empty-workspace screens, theme switching and a reusable claims-based identity control. See the [shared plugin guide](src/Sphere10.Framework.Application/README.md#application-plugins) and [Blazor component guide](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for configuration and extension examples.
-
-`IApplication` also coordinates initialization, shutdown, confirmed exit, logging and its owned disposable resources. Declare a plugin's name before `RegisterInitializer` or `RegisterFinalizer`; tasks resolve under that unique name through the application's provider. With splash screens enabled, WinForms shows application and existing process tasks through startup/shutdown splashes and closes the main form after shutdown. Blazor runs application tasks once per interactive circuit, retaining state across temporary reconnects and finalizing on exit or circuit closure. Both APIs support synchronous and asynchronous execution through the [directional base-class pattern](docs/guidelines/patterns/sync-async.md#synchronous-and-asynchronous-implementation-hierarchies). See the [WinForms lifecycle guide](src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) and [Blazor demo lifecycle](utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown).
-
-The [WinForms tester](utils/Sphere10.Framework.Utils.WinFormsTester/README.md) retains its original ObjectSpace demonstration under **Data and collections > Data editing > ObjectSpace**. The cross-platform [profiling project](utils/Sphere10.Framework.Utils.Profiler/README.md) organizes workloads by subsystem and includes a [Visual Studio launch profile](utils/Sphere10.Framework.Utils.Profiler/README.md#visual-studio) that displays retained measurements and selected defaults in Release. Its [ObjectSpace suite](utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) measures B-tree order and storage/index configurations using the models and factory in [ObjectSpaces/Lab](utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/README.md). Read the [ObjectSpace guide](src/Sphere10.Framework/ObjectSpaces/README.md) for persistence, identity and current limits.
-
-## :test_tube: Test Projects
-
-The `tests/` directory contains **2000+ comprehensive unit and integration tests** covering all framework subsystems:
-
-GitHub Actions builds the cross-platform solution and runs the configured NUnit test assemblies, including the restored Blazor tests. Console output and TRX artifacts include test results and failures. See the [CI test guide](.github/ci.md) for adding tests and reproducing failures locally.
-
-| Test Project | Purpose |
-|--------------|---------|
-| [**Sphere10.HashLib4CSharp.Tests**](tests/Sphere10.HashLib4CSharp.Tests) | Tests for hashing algorithms |
-| [**Sphere10.Framework.Communications.Tests**](tests/Sphere10.Framework.Communications.Tests) | Networking and RPC tests |
-| [**Sphere10.Framework.CryptoEx.Tests**](tests/Sphere10.Framework.CryptoEx.Tests) | Cryptography implementation tests |
-| [**Sphere10.Framework.Data.Tests**](tests/Sphere10.Framework.Data.Tests) | Database access layer tests |
-| [**Sphere10.Framework.Tests**](tests/Sphere10.Framework.Tests) | Core framework tests |
-| [**Sphere10.Framework.Application.Tests**](tests/Sphere10.Framework.Application.Tests/README.md) | Shared presentation behavior and UI-independent dependency tests |
-| [**Sphere10.Framework.Web.AspNetCore.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Tests) | Shared web and MVC integration regressions |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests) | CRUD grid, table, wizard, plugin, ApplicationBlock and lifecycle regression tests |
-| [**Sphere10.Framework.Windows.LevelDB.Tests**](tests/Sphere10.Framework.Windows.LevelDB.Tests) | LevelDB integration tests |
-| [**Sphere10.Framework.Windows.Tests**](tests/Sphere10.Framework.Windows.Tests) | Windows platform tests |
-
-## :art: Presentation & UI Layer
-
-### Desktop (Windows Forms)
-| Project | Purpose |
-|---------|---------|
-| [**Sphere10.Framework.Windows.Forms**](src/Sphere10.Framework.Windows.Forms/README.md) | Comprehensive Windows Forms UI framework with data binding, validation, and component library |
-| [**Sphere10.Framework.Windows.Forms.DataVisualization**](src/Sphere10.Framework.Windows.Forms.DataVisualization/README.md) | Absorbed Microsoft charting controls for modern .NET, with Sphere10 namespaces, enums and resources in one assembly; retains upstream licenses |
-| [**Sphere10.Framework.Windows.Forms.Sqlite**](src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) | Windows Forms with SQLite data binding and persistence |
-| [**Sphere10.Framework.Windows.Forms.MSSQL**](src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) | Windows Forms with SQL Server data binding and persistence |
-| [**Sphere10.Framework.Windows.Forms.Firebird**](src/Sphere10.Framework.Windows.Forms.Firebird/README.md) | Windows Forms with Firebird data binding and persistence |
-
-### Web & Cross-Platform UI
-| Project | Purpose |
-|---------|---------|
-| [**Sphere10.Framework.Web.AspNetCore.MVC**](src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) | MVC forms, controller helpers, filters, and results |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor**](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) | Both restored Blazor component generations in one Razor class library |
-| [**Sphere10.Framework.Utils.BlazorTester**](utils/Sphere10.Framework.Utils.BlazorTester/README.md) | Runnable ApplicationBlock workspace, editable CRUD grid and component galleries |
-| [**Sphere10.Framework.Utils.MvcTester**](utils/Sphere10.Framework.Utils.MvcTester/README.md) | Minimal runnable MVC test application |
-| [**Sphere10.Framework.Drawing**](src/Sphere10.Framework.Drawing/README.md) | Cross-platform graphics and drawing utilities for all platforms |
-
-## :books: Documentation & Learning
-
-### :open_book: Getting Started
-
-- [**Documentation Home**](docs/README.md) — Complete documentation index
-- [**Framework To-do**](src/TODO.md) — Running engineering backlog across all Framework subsystems
-- [**Getting Started Guide**](docs/start-here.md) — Quick orientation for new developers
-- [**Tools Reference**](docs/tools-reference.md) — Complete Tools.* namespace catalog
-- [**Real-World Examples**](docs/real-world-usage-examples.md) — Practical patterns from test suite
-
-### :triangular_ruler: Architecture
-
-- [Framework Architecture](docs/architecture/sphere10-framework.md) — Design philosophy, layers, subsystems
-- [Framework Domains](docs/architecture/domains.md) — Catalog of 40+ specialized domains
-
-### :bookmark_tabs: Guidelines
-
-- [3-Tier Architecture](docs/guidelines/3-tier-architecture.md) — Architectural patterns
-- [Code Styling](docs/guidelines/code-styling.md) — Coding standards and conventions
-
-### :chains: Technical Papers
-
-- [Dynamic Merkle Trees](https://sphere10.com/tech/dynamic-merkle-trees)
-- [Abstract Merkle Signatures (AMS)](https://sphere10.com/tech/ams)
-- [Winternitz Abstracted Merkle Signatures (WAMS)](https://sphere10.com/tech/wams)
-- [Faster and Smaller Winternitz Signatures](https://sphere10.com/tech/wots-sharp)
-
-## :handshake: Contributing
-
-Contributions are welcome!
-
-To submit a change:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes
-4. Push to your branch
-5. Open a Pull Request
-
-Please follow the [Code Styling Guidelines](docs/guidelines/code-styling.md).
-
-## :balance_scale: License
-
-Sphere10 Framework is distributed under the **MIT License**.
-
-More information: [MIT License](https://opensource.org/license/mit)
-
