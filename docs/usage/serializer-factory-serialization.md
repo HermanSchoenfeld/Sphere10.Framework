@@ -10,7 +10,7 @@ persists the registry needed to reconstruct that factory.
 ```csharp
 var factory = new SerializerFactory(SerializerFactory.Default)
 	.RegisterAutoBuild<StoredItem>();
-var serializer = SerializerFactorySerializer.Instance;
+var serializer = new SerializerFactorySerializer();
 var bytes = serializer.SerializeToBytes(factory, Endianness.LittleEndian);
 var restored = serializer.DeserializeBytes(bytes, Endianness.LittleEndian);
 
@@ -26,7 +26,9 @@ public sealed class StoredItem {
 The codec is also registered in `SerializerFactory.Default`. The byte order is
 chosen by the caller, as with the other Framework serializers. Binary reader,
 writer and serialization context instances are passed through its component
-serializers; component instances are retained in readonly constructor fields.
+serializers. The codec owns its complex registration/member components and
+accesses primitive and other basic singleton components directly. The complex
+factory codec has no singleton instance.
 
 This adds a built-in registration to the default factory. Existing persisted
 formats must retain their original type/code mappings when automatic application

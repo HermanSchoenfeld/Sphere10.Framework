@@ -18,44 +18,42 @@ namespace Sphere10.Framework;
 /// <summary>Serializes a factory's type codes, registrations and serializer construction settings.</summary>
 /// <remarks>Captured delegates and independently configured serializer instances cannot be reconstructed.</remarks>
 public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerFactory> {
-	private readonly PrimitiveSerializer<long> _longSerializer;
-	private readonly PrimitiveSerializer<int> _integerSerializer;
 	private readonly RegistrationSerializer _registrationSerializer;
 
+	/// <summary>Creates a factory serializer with its own registration and member component serializers.</summary>
 	public SerializerFactorySerializer() {
-		// Retain the shared prefix and registration components for every factory operation.
-		_longSerializer = PrimitiveSerializer<long>.Instance;
-		_integerSerializer = PrimitiveSerializer<int>.Instance;
-		_registrationSerializer = RegistrationSerializer.Instance;
+		// Each factory serializer owns its hierarchical registration and member components.
+		_registrationSerializer = new RegistrationSerializer();
 	}
 
-	public static SerializerFactorySerializer Instance { get; } = new();
-
+	/// <summary>Calculates the encoded size of reconstructible registrations and their ordered member bindings.</summary>
 	public override long CalculateSize(SerializationContext context, SerializerFactory item) {
 		// Capture the same registration records used by Serialize before sizing their nested members.
 		var registrations = Capture(item);
-		var size = _longSerializer.CalculateSize(context, item.MinGeneratedTypeCode)
-			+ _integerSerializer.CalculateSize(context, registrations.Length);
+		var size = PrimitiveSerializer<long>.Instance.CalculateSize(context, item.MinGeneratedTypeCode)
+			+ PrimitiveSerializer<int>.Instance.CalculateSize(context, registrations.Length);
 		foreach (var row in registrations)
 			size += _registrationSerializer.CalculateSize(context, row);
 		return size;
 	}
 
+	/// <summary>Writes original type codes and construction settings, rejecting unsupported registrations before output.</summary>
 	public override void Serialize(SerializerFactory item, EndianBinaryWriter writer, SerializationContext context) {
 		// Reject unsupported construction choices before writing any factory bytes.
 		var registrations = Capture(item);
 
 		// Preserve the generated-code boundary and every registration's original type code.
-		_longSerializer.Serialize(item.MinGeneratedTypeCode, writer, context);
-		_integerSerializer.Serialize(registrations.Length, writer, context);
+		PrimitiveSerializer<long>.Instance.Serialize(item.MinGeneratedTypeCode, writer, context);
+		PrimitiveSerializer<int>.Instance.Serialize(registrations.Length, writer, context);
 		foreach (var row in registrations)
 			_registrationSerializer.Serialize(row, writer, context);
 	}
 
+	/// <summary>Reads the registration table and reconstructs a finished factory with its original serializer bindings.</summary>
 	public override SerializerFactory Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		// Read the complete registration table before resolving dependencies between serializers.
-		var minGeneratedTypeCode = _longSerializer.Deserialize(reader, context);
-		var count = ReadCount(reader, context, _registrationSerializer.MinimumSize, _integerSerializer);
+		var minGeneratedTypeCode = PrimitiveSerializer<long>.Instance.Deserialize(reader, context);
+		var count = ReadCount(reader, context, _registrationSerializer.MinimumSize);
 
 		// Nonseekable input cannot validate its claimed count up front; grow only as complete rows are decoded.
 		var registrations = new List<Registration>(reader.BaseStream.CanSeek ? count : 0);
@@ -66,6 +64,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 		return Build(minGeneratedTypeCode, registrations.ToArray());
 	}
 
+	// Captures supported registration provenance and composite bindings without persisting arbitrary executable state.
 	private static Registration[] Capture(SerializerFactory factory) {
 		Guard.ArgumentNotNull(factory, nameof(factory));
 
@@ -103,6 +102,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 				var bindings = (MemberSerializationBinding[])source.SerializerType.GetProperty(nameof(CompositeSerializer<object>.MemberBindings)).GetValue(serializer);
 				row.Members = bindings.Select(binding => CaptureMember(binding, factory)).ToArray();
 			}
+
 			// A polymorphic serializer must dispatch through the factory being captured.
 			if (row.Construction == ConstructionKind.Polymorphic) {
 				var serializer = factory.GetPureSerializer(source.DataType);
@@ -113,6 +113,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 		}).ToArray();
 	}
 
+	// Recreates exact registrations before configuring composite dependencies and finishing the reconstructed factory.
 	private static SerializerFactory Build(long minGeneratedTypeCode, Registration[] registrations) {
 		// Register every type first so references between composite serializers can be resolved later.
 		var factory = new SerializerFactory().SetMinTypeCode(minGeneratedTypeCode);
@@ -150,6 +151,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 					throw new InvalidDataException("Unknown serializer construction kind.");
 			}
 		}
+
 		// Resolve composite instances before attaching bindings, including self-referential member graphs.
 		foreach (var (type, _) in composites)
 			factory.GetPureSerializer(type);
@@ -165,6 +167,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 		factory.FinishRegistrations();
 		return factory;
 
+		// Configures one composite after its dependencies, terminating recursive member graphs at an active node.
 		void ConfigureComposite(Type type) {
 			if (configured.Contains(type) || !compositeRows.TryGetValue(type, out var row) || !configuring.Add(type))
 				return;
@@ -177,6 +180,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 			configured.Add(type);
 		}
 
+		// Configures composite element and generic-argument dependencies before their enclosing serializer activates.
 		void ConfigureDependencies(Type type) {
 			// Arrays and generic wrappers can cache their element serializers while being activated.
 			if (type.HasElementType)
@@ -187,16 +191,19 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 		}
 	}
 
+	// Captures a member's declared identity and serializer wrappers, rejecting independent member configuration.
 	private static Member CaptureMember(MemberSerializationBinding binding, SerializerFactory factory) {
 		// Preserve reflection identity separately from the optional serializer decorators.
 		var serializer = binding.Serializer;
 		var row = new Member { Name = binding.Member.Name, DeclaringType = binding.Member.DeclaringType, IsField = binding.Member.IsField };
+
 		// Unwrap the reference layer while retaining its exact null/reference policy.
 		row.IsReference = serializer.GetType().IsConstructedGenericTypeOf(typeof(ReferenceSerializer<>));
 		if (row.IsReference) {
 			row.ReferenceMode = (ReferenceSerializerMode)serializer.GetType().GetProperty(nameof(ReferenceSerializer<object>.Mode)).GetValue(serializer);
 			serializer = ((IItemSerializerDecorator)serializer).InternalSerializer;
 		}
+
 		// Polymorphic dispatch must use this factory and ultimately resolve to its registered pure serializer.
 		row.IsPolymorphic = serializer.GetType().IsConstructedGenericTypeOf(typeof(PolymorphicSerializer<>));
 		if (row.IsPolymorphic) {
@@ -205,44 +212,79 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 			if (!binding.Member.PropertyType.IsAbstract)
 				serializer = (IItemSerializer)serializer.GetType().GetProperty(nameof(PolymorphicSerializer<object>.PureSerializer)).GetValue(serializer);
 		}
+
 		// Instance-specific member configuration cannot be reproduced from registration data alone.
 		if (!ReferenceEquals(serializer, factory.GetPureSerializer(binding.Member.PropertyType)))
 			throw new NotSupportedException($"Member {binding.Member.Name} has independent serializer configuration; provide explicit application configuration.");
 		return row;
 	}
 
-	private static int ReadCount(EndianBinaryReader reader, SerializationContext context, long minimumSize, PrimitiveSerializer<int> integerSerializer) {
+	// Reads a nonnegative row count and bounds it by available bytes when the source exposes its length.
+	private static int ReadCount(EndianBinaryReader reader, SerializationContext context, long minimumSize) {
 		// Validate the claimed row count against the available bytes when the source exposes its length.
-		var count = integerSerializer.Deserialize(reader, context);
+		var count = PrimitiveSerializer<int>.Instance.Deserialize(reader, context);
 		if (count < 0 || reader.BaseStream.CanSeek && count > (reader.BaseStream.Length - reader.BaseStream.Position) / minimumSize)
 			throw new InvalidDataException("Invalid serializer factory row count.");
 		return count;
 	}
 
+	/// <summary>Identifies the supported construction path recorded for a persisted serializer registration.</summary>
 	internal enum ConstructionKind : byte {
+		/// <summary>Reuses the corresponding built-in registration's construction function.</summary>
 		Default,
+
+		/// <summary>Activates the serializer through its compatible registered-type constructor.</summary>
 		Constructor,
+
+		/// <summary>Activates a serializer registered through its parameterless constructor.</summary>
 		Parameterless,
+
+		/// <summary>Reconstructs a composite serializer from its ordered member records.</summary>
 		Composite,
+
+		/// <summary>Recreates polymorphic dispatch through the reconstructed factory.</summary>
 		Polymorphic
 	}
 
+	/// <summary>The persisted type identity, construction choice and ordered bindings of one factory registration.</summary>
 	internal sealed class Registration {
+		/// <summary>The original numeric code used to identify this registration's data type.</summary>
 		public long TypeCode { get; set; }
+
+		/// <summary>The registered CLR data type, including open generic definitions when applicable.</summary>
 		public Type DataType { get; set; }
+
+		/// <summary>The CLR serializer type to activate for this registration.</summary>
 		public Type SerializerType { get; set; }
+
+		/// <summary>The supported construction path used to recreate the registered serializer.</summary>
 		public ConstructionKind Construction { get; set; }
+
+		/// <summary>The composite member bindings in their original serialization order; empty for other constructions.</summary>
 		internal Member[] Members { get; set; } = Array.Empty<Member>();
 	}
 
+	/// <summary>The declared reflection identity and serializer wrapper settings of one composite member.</summary>
 	internal sealed class Member {
+		/// <summary>The name of the field or property declared by <see cref="DeclaringType"/>.</summary>
 		public string Name { get; set; }
+
+		/// <summary>The CLR type that declares the recorded member, distinguishing hidden or inherited names.</summary>
 		public Type DeclaringType { get; set; }
+
+		/// <summary>Whether the member is a field rather than a property.</summary>
 		public bool IsField { get; set; }
+
+		/// <summary>Whether the member serializer includes polymorphic dispatch through its owning factory.</summary>
 		public bool IsPolymorphic { get; set; }
+
+		/// <summary>Whether the member serializer is wrapped by a reference serializer.</summary>
 		public bool IsReference { get; set; }
+
+		/// <summary>The original reference handling flags, used when <see cref="IsReference"/> is true.</summary>
 		public ReferenceSerializerMode ReferenceMode { get; set; }
 
+		// Rebuilds this member binding against the reconstructed factory, preserving decorator order and flags.
 		internal MemberSerializationBinding Build(SerializerFactory factory) {
 			var member = Resolve();
 
@@ -255,6 +297,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 			return new MemberSerializationBinding(member, serializer);
 		}
 
+		// Resolves the recorded declared field or property and rejects missing CLR members.
 		internal Sphere10.Framework.Mapping.Member Resolve() {
 			// Resolve only the member declared by the recorded type; inherited names can identify different members.
 			const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
@@ -263,62 +306,58 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 		}
 	}
 
+	/// <summary>Serializes one registration and delegates its ordered composite bindings to the member serializer.</summary>
 	internal sealed class RegistrationSerializer : ItemSerializerBase<Registration> {
-		private readonly PrimitiveSerializer<long> _longSerializer;
-		private readonly PrimitiveSerializer<int> _integerSerializer;
-		private readonly TypeSerializer _typeSerializer;
-		private readonly EnumSerializer<ConstructionKind> _constructionSerializer;
 		private readonly MemberSerializer _memberSerializer;
 
-		private RegistrationSerializer() {
-			// Capture the registration fields and its nested member serializer once.
-			_longSerializer = PrimitiveSerializer<long>.Instance;
-			_integerSerializer = PrimitiveSerializer<int>.Instance;
-			_typeSerializer = TypeSerializer.Instance;
-			_constructionSerializer = EnumSerializer<ConstructionKind>.Instance;
-			_memberSerializer = MemberSerializer.Instance;
-			MinimumSize = _longSerializer.ConstantSize + _constructionSerializer.ConstantSize
-				+ _integerSerializer.ConstantSize + StringSerializer.Unicode.CalculateSize(string.Empty) * 2;
+		/// <summary>Creates the member component and calculates the minimum encoded registration width.</summary>
+		internal RegistrationSerializer() {
+			// Each registration serializer owns the component used for its nested member rows.
+			_memberSerializer = new MemberSerializer();
+			MinimumSize = PrimitiveSerializer<long>.Instance.ConstantSize + EnumSerializer<ConstructionKind>.Instance.ConstantSize
+				+ PrimitiveSerializer<int>.Instance.ConstantSize + StringSerializer.Unicode.CalculateSize(string.Empty) * 2;
 		}
 
-		public static RegistrationSerializer Instance { get; } = new();
-
+		/// <summary>The smallest possible registration encoding, used to validate a claimed row count.</summary>
 		internal long MinimumSize { get; }
 
+		/// <summary>Calculates the registration prefix and the sizes of its ordered member records.</summary>
 		public override long CalculateSize(SerializationContext context, Registration item) {
 			// The registration prefix describes construction; its ordered member rows describe composite layout.
-			var size = _longSerializer.CalculateSize(context, item.TypeCode) + _typeSerializer.CalculateSize(context, item.DataType)
-				+ _typeSerializer.CalculateSize(context, item.SerializerType) + _constructionSerializer.CalculateSize(context, item.Construction)
-				+ _integerSerializer.CalculateSize(context, item.Members.Length);
+			var size = PrimitiveSerializer<long>.Instance.CalculateSize(context, item.TypeCode) + TypeSerializer.Instance.CalculateSize(context, item.DataType)
+				+ TypeSerializer.Instance.CalculateSize(context, item.SerializerType) + EnumSerializer<ConstructionKind>.Instance.CalculateSize(context, item.Construction)
+				+ PrimitiveSerializer<int>.Instance.CalculateSize(context, item.Members.Length);
 			foreach (var member in item.Members)
 				size += _memberSerializer.CalculateSize(context, member);
 			return size;
 		}
 
+		/// <summary>Writes registration identity and construction followed by its ordered member records.</summary>
 		public override void Serialize(Registration item, EndianBinaryWriter writer, SerializationContext context) {
 			// Write registration identity and the constructor choice before its composite member table.
-			_longSerializer.Serialize(item.TypeCode, writer, context);
-			_typeSerializer.Serialize(item.DataType, writer, context);
-			_typeSerializer.Serialize(item.SerializerType, writer, context);
-			_constructionSerializer.Serialize(item.Construction, writer, context);
+			PrimitiveSerializer<long>.Instance.Serialize(item.TypeCode, writer, context);
+			TypeSerializer.Instance.Serialize(item.DataType, writer, context);
+			TypeSerializer.Instance.Serialize(item.SerializerType, writer, context);
+			EnumSerializer<ConstructionKind>.Instance.Serialize(item.Construction, writer, context);
 
 			// Member order is part of the wire layout and must not be inferred again from reflection.
-			_integerSerializer.Serialize(item.Members.Length, writer, context);
+			PrimitiveSerializer<int>.Instance.Serialize(item.Members.Length, writer, context);
 			foreach (var member in item.Members)
 				_memberSerializer.Serialize(member, writer, context);
 		}
 
+		/// <summary>Reads a registration and its validated member table without resolving serializer dependencies.</summary>
 		public override Registration Deserialize(EndianBinaryReader reader, SerializationContext context) {
 			// Validate the member count before allocating the ordered member table.
 			var item = new Registration {
-				TypeCode = _longSerializer.Deserialize(reader, context),
-				DataType = _typeSerializer.Deserialize(reader, context),
-				SerializerType = _typeSerializer.Deserialize(reader, context),
-				Construction = _constructionSerializer.Deserialize(reader, context)
+				TypeCode = PrimitiveSerializer<long>.Instance.Deserialize(reader, context),
+				DataType = TypeSerializer.Instance.Deserialize(reader, context),
+				SerializerType = TypeSerializer.Instance.Deserialize(reader, context),
+				Construction = EnumSerializer<ConstructionKind>.Instance.Deserialize(reader, context)
 			};
 
 			// The member serializer owns each row's identity and settings; unbounded input grows incrementally.
-			var count = ReadCount(reader, context, _memberSerializer.MinimumSize, _integerSerializer);
+			var count = ReadCount(reader, context, _memberSerializer.MinimumSize);
 			var members = new List<Member>(reader.BaseStream.CanSeek ? count : 0);
 			for (var index = 0; index < count; index++)
 				members.Add(_memberSerializer.Deserialize(reader, context));
@@ -327,53 +366,50 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 		}
 	}
 
+	/// <summary>Serializes a composite member's declared identity and its reference and polymorphic wrappers.</summary>
 	internal sealed class MemberSerializer : ItemSerializerBase<Member> {
-		private readonly StringSerializer _stringSerializer;
-		private readonly TypeSerializer _typeSerializer;
-		private readonly PrimitiveSerializer<bool> _booleanSerializer;
-		private readonly EnumSerializer<ReferenceSerializerMode> _referenceModeSerializer;
-
-		private MemberSerializer() {
-			// Preserve reflection identity and decorator settings through the same cached components.
-			_stringSerializer = StringSerializer.UTF8;
-			_typeSerializer = TypeSerializer.Instance;
-			_booleanSerializer = PrimitiveSerializer<bool>.Instance;
-			_referenceModeSerializer = EnumSerializer<ReferenceSerializerMode>.Instance;
-			MinimumSize = _booleanSerializer.ConstantSize * 3 + _referenceModeSerializer.ConstantSize
-				+ _stringSerializer.CalculateSize(string.Empty) + StringSerializer.Unicode.CalculateSize(string.Empty);
+		/// <summary>Calculates the minimum encoded member width from the component serializers.</summary>
+		internal MemberSerializer() {
+			// Derive each row's minimum width from the existing primitive and value serializers.
+			MinimumSize = PrimitiveSerializer<bool>.Instance.ConstantSize * 3 + EnumSerializer<ReferenceSerializerMode>.Instance.ConstantSize
+				+ StringSerializer.UTF8.CalculateSize(string.Empty) + StringSerializer.Unicode.CalculateSize(string.Empty);
 		}
 
-		public static MemberSerializer Instance { get; } = new();
-
+		/// <summary>The smallest possible member encoding, used to validate a claimed binding count.</summary>
 		internal long MinimumSize { get; }
 
-		// Reflection identity and decorator flags have the same representation for every member kind.
-		public override long CalculateSize(SerializationContext context, Member item)
-			=> _stringSerializer.CalculateSize(context, item.Name) + _typeSerializer.CalculateSize(context, item.DeclaringType)
-				+ _booleanSerializer.CalculateSize(context, item.IsField) + _booleanSerializer.CalculateSize(context, item.IsPolymorphic)
-				+ _booleanSerializer.CalculateSize(context, item.IsReference) + _referenceModeSerializer.CalculateSize(context, item.ReferenceMode);
-
-		public override void Serialize(Member item, EndianBinaryWriter writer, SerializationContext context) {
-			// Member identity comes before the serializer decorators applied to its declared value type.
-			_stringSerializer.Serialize(item.Name, writer, context);
-			_typeSerializer.Serialize(item.DeclaringType, writer, context);
-			_booleanSerializer.Serialize(item.IsField, writer, context);
-
-			// Preserve these flags even when a particular wrapper is absent from this member.
-			_booleanSerializer.Serialize(item.IsPolymorphic, writer, context);
-			_booleanSerializer.Serialize(item.IsReference, writer, context);
-			_referenceModeSerializer.Serialize(item.ReferenceMode, writer, context);
+		/// <summary>Calculates the encoded size of reflection identity and serializer wrapper settings.</summary>
+		public override long CalculateSize(SerializationContext context, Member item) {
+			// Reflection identity and decorator flags have the same representation for every member kind.
+			return StringSerializer.UTF8.CalculateSize(context, item.Name) + TypeSerializer.Instance.CalculateSize(context, item.DeclaringType)
+				+ PrimitiveSerializer<bool>.Instance.CalculateSize(context, item.IsField) + PrimitiveSerializer<bool>.Instance.CalculateSize(context, item.IsPolymorphic)
+				+ PrimitiveSerializer<bool>.Instance.CalculateSize(context, item.IsReference) + EnumSerializer<ReferenceSerializerMode>.Instance.CalculateSize(context, item.ReferenceMode);
 		}
 
-		// The registration serializer preserves row order; this row restores identity and wrapper settings.
-		public override Member Deserialize(EndianBinaryReader reader, SerializationContext context)
-			=> new() {
-				Name = _stringSerializer.Deserialize(reader, context),
-				DeclaringType = _typeSerializer.Deserialize(reader, context),
-				IsField = _booleanSerializer.Deserialize(reader, context),
-				IsPolymorphic = _booleanSerializer.Deserialize(reader, context),
-				IsReference = _booleanSerializer.Deserialize(reader, context),
-				ReferenceMode = _referenceModeSerializer.Deserialize(reader, context)
+		/// <summary>Writes declared member identity followed by its polymorphic and reference handling flags.</summary>
+		public override void Serialize(Member item, EndianBinaryWriter writer, SerializationContext context) {
+			// Member identity comes before the serializer decorators applied to its declared value type.
+			StringSerializer.UTF8.Serialize(item.Name, writer, context);
+			TypeSerializer.Instance.Serialize(item.DeclaringType, writer, context);
+			PrimitiveSerializer<bool>.Instance.Serialize(item.IsField, writer, context);
+
+			// Preserve these flags even when a particular wrapper is absent from this member.
+			PrimitiveSerializer<bool>.Instance.Serialize(item.IsPolymorphic, writer, context);
+			PrimitiveSerializer<bool>.Instance.Serialize(item.IsReference, writer, context);
+			EnumSerializer<ReferenceSerializerMode>.Instance.Serialize(item.ReferenceMode, writer, context);
+		}
+
+		/// <summary>Reads member identity and wrapper settings without resolving the CLR member or activating its serializer.</summary>
+		public override Member Deserialize(EndianBinaryReader reader, SerializationContext context) {
+			// The registration serializer preserves row order; this row restores identity and wrapper settings.
+			return new Member {
+				Name = StringSerializer.UTF8.Deserialize(reader, context),
+				DeclaringType = TypeSerializer.Instance.Deserialize(reader, context),
+				IsField = PrimitiveSerializer<bool>.Instance.Deserialize(reader, context),
+				IsPolymorphic = PrimitiveSerializer<bool>.Instance.Deserialize(reader, context),
+				IsReference = PrimitiveSerializer<bool>.Instance.Deserialize(reader, context),
+				ReferenceMode = EnumSerializer<ReferenceSerializerMode>.Instance.Deserialize(reader, context)
 			};
+		}
 	}
 }

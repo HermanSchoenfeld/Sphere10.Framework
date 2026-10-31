@@ -20,6 +20,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		: this(valueSerializer, ReferenceSerializerMode.Default) {
 	}
 
+	/// <summary>Wraps a value serializer with the supplied null, context-reference and external-reference handling flags.</summary>
 	public ReferenceSerializer(IItemSerializer<TItem> valueSerializer, ReferenceSerializerMode mode) 
 		: base(valueSerializer) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
@@ -39,6 +40,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 
 	public override bool SupportsNull => true;
 
+	/// <summary>The original reference handling flags supplied at construction, retained for serializer reconstruction.</summary>
 	public ReferenceSerializerMode Mode { get; }
 
 	public override long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
@@ -47,7 +49,6 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		itemSizes = calculateIndividualItems ? sizes.ToArray() : null;
 		return sizes.Sum();
 	}
-		
 
 	public override long CalculateSize(SerializationContext context, TItem item) {
 		var referenceType = ClassifyReferenceType(item, context, true, out var contextIndex);
@@ -170,8 +171,11 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 	/// </summary>
 	public enum ReferenceType : byte {
 		IsNull = 0,             // The value is null — only the discriminator byte is written
+
 		IsNotNull = 1,          // The value is a full inline object — discriminator byte followed by the serialized object
+
 		IsContextReference = 2, // The value was already seen in this serialization context — discriminator byte followed by a CVarInt context index
+
 		IsExternalReference = 3 // The value is an external reference — discriminator byte followed by subclass-defined reference data
 	}
 }

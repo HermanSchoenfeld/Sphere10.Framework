@@ -14,11 +14,34 @@ The serialization framework provides binary serializers for efficient stream-bas
 - **[PolymorphicSerializer<T>](../../../src/Sphere10.Framework/Serialization/Special/PolymorphicSerializer.cs)** — resolves the concrete runtime type's serializer through a factory. The non-generic `PolymorphicSerializer.Create(factory, itemType)` is its construction helper.
 - Serializers are endian-aware (`EndianBitConverter`, `Endianness`).
 
+## Component serializers
+
+Compose complex serializers from serializers for their fields. Use
+`PrimitiveSerializer<T>.Instance`, `EnumSerializer<T>.Instance` and existing type,
+string or other component serializers consistently for sizing, serialization and
+deserialization. Derive fixed widths from a component's `ConstantSize`; calculate
+variable fields through that component's `CalculateSize(context, value)`.
+
+Access existing primitive and basic singleton components such as
+`PrimitiveSerializer<T>.Instance`, `EnumSerializer<T>.Instance` and
+`StringSerializer.UTF8` directly where they are used. Do not cache their
+singleton references in fields or local aliases.
+
+Instantiate complex serializers when needed rather than exposing them as
+singletons. A containing serializer can construct and own its complex component
+serializers in readonly fields, preserving their registration/member hierarchy.
+Pass the supplied context and reader/writer through to every component. Preserve
+the agreed field order, enum representation, length framing and null/reference
+semantics when replacing direct primitive IO.
+
+Use nested component serializers for subordinate records instead of duplicating
+their field encodings in each owning serializer. The factory codec constructs its complex components and uses the basic singleton components directly.
+
 ## Endian-Aware Bit Conversion
 
 **Never** use `System.BitConverter`. Always use the framework's endian-aware equivalents:
 
-- **[EndianBitConverter](../../../src/Sphere10.Framework/Conversion/EndianBitConverter.cs)** — abstract base with `LittleEndianBitConverter` and `BigEndianBitConverter` implementations. Use `EndianBitConverter.Little` / `EndianBitConverter.Big` static singletons.
+- **[EndianBitConverter](../../../src/Sphere10.Framework/Conversion/EndianBitConverter.cs)** — abstract base with `LittleEndianBitConverter` and `BigEndianBitConverter` implementations. Select configured byte order through `EndianBitConverter.For(endianness)`. Use explicit `.Little` / `.Big` only when the byte contract fixes that order.
 - **[EndianBinaryWriter](../../../src/Sphere10.Framework/IO/EndianBinaryWriter.cs)** / **[EndianBinaryReader](../../../src/Sphere10.Framework/IO/EndianBinaryReader.cs)** — endian-aware stream readers/writers used throughout serialization.
 - All serialization infrastructure (`IItemSerializer<T>`, `ClusteredStreams`, `ObjectStream`) is endianness-aware. When writing new serializers or stream code, reuse the supplied reader/writer and context. Endianness comes from the reader/writer's `BitConverter`; [SerializationContext](../../../src/Sphere10.Framework/Serialization/SerialiationContext.cs) does not expose an `Endianness` property.
 

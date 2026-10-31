@@ -31,7 +31,7 @@ namespace Sphere10.Framework;
 ///				.Build();
 /// </remarks>
 public class SerializerBuilder<TItem> : SerializerBuilder {
-	
+
 	public SerializerBuilder() 
 		: base(typeof(TItem)) {
 	}
@@ -82,11 +82,12 @@ public abstract class SerializerBuilder {
 	private IItemSerializer _compositeSerializer;
 	private SerializerFactory _factory;
 	private Delegate _activator;
+
 	//private ReferenceSerializerMode _referenceMode;
 
 	protected SerializerBuilder(Type itemType) {
 		ItemType = itemType;
-		
+
 		_compositeSerializer = CompositeSerializer.Create(ItemType);
 		_memberBindings = new List<MemberSerializationBinding>();
 		//_allowNull = false;
@@ -141,7 +142,7 @@ public abstract class SerializerBuilder {
 
 	public virtual SerializerBuilder SerializeMembersUsingExistingSerializers() 
 		=> SerializeMembers((_, member) => throw new InvalidOperationException($"No serializer found for member type {member.PropertyType} of member {member.Name}"));
-			
+
 	public virtual SerializerBuilder SerializeMembersAutomatically(bool retainMemberSerializersAsRegistrations = true) 
 		=> SerializeMembers((factory, member) => FactoryAssemble(factory, member.PropertyType, retainMemberSerializersAsRegistrations), retainMemberSerializersAsRegistrations);
 
@@ -191,6 +192,11 @@ public abstract class SerializerBuilder {
 	public static IItemSerializer FactoryAssemble(Type itemType, SerializerFactory factory) 
 		=> FactoryAssemble(factory, itemType, false, factory.MaxGeneratedTypeCode + 1);
 
+	/// <summary>Assembles missing serializers and records composite or polymorphic construction for later factory reconstruction.</summary>
+	/// <param name="factory">The existing registrations used to resolve item and member serializers.</param>
+	/// <param name="itemType">The CLR type for which a serializer graph is required.</param>
+	/// <param name="retainAssembledTypeSerializersInFactory">Whether to add generated registrations to this factory rather than a private copy.</param>
+	/// <param name="typeCodeStart">The generated-code boundary for a private copy; defaults to the next available type code.</param>
 	public static IItemSerializer FactoryAssemble(SerializerFactory factory, Type itemType, bool retainAssembledTypeSerializersInFactory, long? typeCodeStart = null) {
 
 		// If not retaining assembled serialized in the factory, we use an anonymous chained factory to avoid polluting the factory
@@ -204,6 +210,7 @@ public abstract class SerializerBuilder {
 
 		return assembledSerializer;
 
+		// Resolves a serializer graph and records how each newly assembled composite or polymorphic registration was created.
 		IItemSerializer BuildRecursively(Type requestedType, ReferenceSerializerMode mode, HashSet<Type> visitedTypes) {
 			visitedTypes.Add(requestedType);
 
@@ -233,7 +240,7 @@ public abstract class SerializerBuilder {
 			// No serializer found, make sure we build dependent serializers first
 			foreach (var missing in missingSerializers.Except(requestedType))
 				BuildRecursively(missing, ReferenceSerializerMode.Default, visitedTypes);
-			
+
 			// Build serializer for this type
 			if (requestedType.IsEnumOrNullableEnum(out var enumType)) {
 				// Case for Enums

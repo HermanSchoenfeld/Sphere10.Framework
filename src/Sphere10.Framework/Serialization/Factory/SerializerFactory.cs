@@ -29,7 +29,7 @@ public class SerializerFactory {
 		Default = new SerializerFactory();
 		RegisterDefaults(Default);
 		Default.FinishRegistrations();
-		
+
 	}
 
 	public SerializerFactory() {
@@ -56,9 +56,10 @@ public class SerializerFactory {
 
 	#region Registration
 
+	/// <summary>Registers built-in value, collection and factory serializers in the supplied factory.</summary>
 	public static void RegisterDefaults(SerializerFactory factory) {
 		// register self-assembling factory for object
-		
+
 		// fundamental serialization types
 		factory.Register<object, PureObjectSerializer>();
 		factory.Register(typeof (Nullable<>), typeof (NullableSerializer<>)); // nullable struct serializer
@@ -99,7 +100,7 @@ public class SerializerFactory {
 		factory.Register(TimeSpanSerializer.Instance);
 		factory.Register(DateTimeOffsetSerializer.Instance);
 		factory.Register(GuidSerializer.Instance);
-		
+
 		// nullable base types 
 		factory.Register(NullableSerializer<bool>.Instance);
 		factory.Register(NullableSerializer<byte>.Instance);
@@ -125,7 +126,7 @@ public class SerializerFactory {
 		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>));
 		factory.Register(TypeSerializer.Instance);
 		factory.Register(AssemblySerializer.Instance);
-		
+
 		// general collections
 		factory.Register(typeof(Array), typeof(ArraySerializer<>));  // special general array serializer
 		factory.Register(ByteArraySerializer.Instance);
@@ -141,6 +142,7 @@ public class SerializerFactory {
 		factory.Register<SerializerFactory, SerializerFactorySerializer>();
 	}
 
+	/// <summary>Copies registrations and their construction provenance while assigning this factory as their new owner.</summary>
 	public void CopyRegistrations(SerializerFactory factory) {
 		Guard.ArgumentNotNull(factory, nameof(factory));
 		Guard.Ensure(!_readOnly, "Factory is read-only and cannot be changed");
@@ -165,9 +167,11 @@ public class SerializerFactory {
 		return this;
 	}
 
+	/// <summary>Registers an enum and its nullable form with reconstructible enum-serializer construction.</summary>
 	public SerializerFactory RegisterEnum<TEnum>(long? typeCode = null) where TEnum : struct, Enum 
 		=> RegisterEnum(typeof(TEnum), typeCode);
 
+	/// <summary>Registers the enum and its nullable form at adjacent type codes, preserving their constructor provenance.</summary>
 	public SerializerFactory RegisterEnum(Type enumType, long? typeCode = null) {
 		Guard.ArgumentNotNull(enumType, nameof(enumType));
 		Guard.Argument(enumType.IsEnum, nameof(enumType), $"Type {enumType.Name} is not an enum");
@@ -188,6 +192,7 @@ public class SerializerFactory {
 		return this;
 	}
 
+	/// <summary>Registers a serializer's parameterless constructor so its activation can be reproduced from factory metadata.</summary>
 	public SerializerFactory Register<TItem, TSerializer>(long? typeCode = null) where TSerializer : IItemSerializer<TItem>, new() {
 		RegisterInternal(typeCode ?? GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => new TSerializer(), RegistrationConstruction.Parameterless);
 		return this;
@@ -225,7 +230,8 @@ public class SerializerFactory {
 		SerializerBuilder.FactoryAssemble(this, dataType, true, typeCodeStart: typeCode);
 		return this;
 	}
-	
+
+	// Validates and installs one registration, retaining known construction provenance for factory serialization.
 	internal void RegisterInternal(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory,
 		RegistrationConstruction construction = RegistrationConstruction.Custom) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
@@ -233,7 +239,7 @@ public class SerializerFactory {
 		Guard.Argument(!serializerType.IsConstructedGenericTypeOf(typeof(ReferenceSerializer<>)), nameof(serializerType), "Reference serializers cannot be registered directly");
 		if (!dataType.IsAbstract)
 			Guard.Argument(!serializerType.IsConstructedGenericTypeOf(typeof(PolymorphicSerializer<>)), nameof(serializerType), $"A polymorphic serializer cannot be registered directly for non-abstract type {dataType.ToStringCS()}");
-		
+
 		//Guard.Against(dataType == typeof(object), $"Cannot register serializer for {nameof(Object)} type");
 		Guard.Ensure(!_readOnly, "Factory is read-only and cannot be changed");
 
@@ -396,7 +402,7 @@ public class SerializerFactory {
 	}
 
 	#endregion
-	
+
 	#region Serializer Hierarchy 
 
 	public RecursiveDataType<long> GetSerializerHierarchy(Type dataType) 
@@ -406,7 +412,7 @@ public class SerializerFactory {
 		Guard.ArgumentNotNull(type, nameof(type));
 		Guard.Argument(!type.IsGenericTypeDefinition, nameof(type), $"Type {type.ToStringCS()} must not be a generic type definition");
 		RecursiveDataType<long>[] childSerializers;
-	
+
 		var serializerRegistration = FindRegistration(type);
 		if (serializerRegistration.DataType == typeof(Array)) {
 			// arrays are special case, we matched generic array serializer, so sub-serializers are for element type
@@ -446,7 +452,7 @@ public class SerializerFactory {
 		if (!dataType.IsGenericTypeDefinition && dataType != typeof(Array))
 			return dataType;
 		var subTypes = serializerHierarchy.SubStates.Select(CalculateTypeFromHierarchy).ToArray();
-		
+
 		return dataType switch {
 			_ when dataType == typeof(Array) => subTypes[0].MakeArrayType(),
 			_ => dataType.MakeGenericType(subTypes)
@@ -456,7 +462,7 @@ public class SerializerFactory {
 	#endregion
 
 	#region Registrations
-	
+
 	public Registration GetRegistration(long typeCode) {
 		if (!TryGetRegistration(typeCode, out var registration))
 			throw new InvalidOperationException($"No serializer registered for type code {typeCode}");
@@ -488,7 +494,7 @@ public class SerializerFactory {
 
 		if (foundRegistrations.ContainsKey(dataType))
 			return;
-		
+
 		if (_registrationsByType.TryGetValue(dataType, out var typeCode)) {
 			// Try direct lookup
 			var registration = _registrations[typeCode];
@@ -520,17 +526,20 @@ public class SerializerFactory {
 		_readOnly = true;
 	}
 
-
 	#endregion
 
 	#region Inner Types
 
+	/// <summary>Associates a persisted type code and CLR data type with a serializer activation function and its owning factory.</summary>
 	public record Registration {
 		private Type _dataType;
 		private Type _serializerType;
 		private Func<Registration, Type, IItemSerializer> _factory;
 
+		/// <summary>The numeric type code under which the registration is stored.</summary>
 		public long TypeCode { get; set; }
+
+		/// <summary>The registered CLR data type; replacing it clears recognized construction provenance.</summary>
 		public Type DataType {
 			get => _dataType;
 			set {
@@ -538,6 +547,8 @@ public class SerializerFactory {
 				Construction = RegistrationConstruction.Custom;
 			}
 		}
+
+		/// <summary>The registered serializer type; replacing it clears recognized construction provenance.</summary>
 		public Type SerializerType {
 			get => _serializerType;
 			set {
@@ -545,6 +556,8 @@ public class SerializerFactory {
 				Construction = RegistrationConstruction.Custom;
 			}
 		}
+
+		/// <summary>The serializer activator; replacing it marks the registration as custom and prevents inferred reconstruction.</summary>
 		public Func<Registration, Type, IItemSerializer> Factory {
 			get => _factory;
 			set {
@@ -552,17 +565,29 @@ public class SerializerFactory {
 				Construction = RegistrationConstruction.Custom;
 			}
 		}
+
+		/// <summary>The factory used to resolve this registration's serializer dependencies.</summary>
 		public SerializerFactory Owner { get; set; }
 
 		// Records how the registration was created without inspecting or replaying its delegate.
 		internal RegistrationConstruction Construction { get; set; }
 	}
 
+	/// <summary>Tracks the original registration path without interpreting delegates or persisting serializer instance state.</summary>
 	internal enum RegistrationConstruction {
+		/// <summary>An arbitrary activator or serializer instance whose construction is not recorded.</summary>
 		Custom,
+
+		/// <summary>A compatible serializer constructor resolved from the registered data and serializer types.</summary>
 		Constructor,
+
+		/// <summary>A serializer's parameterless constructor selected by the generic registration API.</summary>
 		Parameterless,
+
+		/// <summary>An automatically assembled composite whose member bindings can be recorded.</summary>
 		Composite,
+
+		/// <summary>An automatically assembled polymorphic serializer tied to its owning factory.</summary>
 		Polymorphic
 	}
 
