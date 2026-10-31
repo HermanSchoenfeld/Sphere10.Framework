@@ -15,16 +15,19 @@ using NUnit.Framework;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
+/// <summary>Exercises both wizard generations in an isolated browser against the local tester.</summary>
 [TestFixture]
-[Explicit("Requires BlazorTesterUrl and an installed Chromium or BrowserExecutablePath.")]
+[Explicit("Run scripts/test-blazor-browser.ps1 to supply the local tester and browser.")]
 [Category("Browser")]
 [NonParallelizable]
 public class WizardBrowserTests {
+	/// <summary>Verifies validation, completion, responsive modal layout, cancellation and focus restoration.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task SharedWorkflowValidatesCompletesAndHonorsModalCancellation(bool legacy) {
 		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
-		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True);
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback && origin.Scheme is "http" or "https", Is.True,
+			"Run scripts/test-blazor-browser.ps1 or supply a loopback BlazorTesterUrl through runsettings.");
 		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
 		using var playwright = await Playwright.CreateAsync();
 		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions {

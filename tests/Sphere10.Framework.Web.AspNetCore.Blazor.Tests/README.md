@@ -149,6 +149,24 @@ The portable `Application` test project owns wizard navigation, mutation, termin
 
 ## Opt-in browser regression checks
 
+The `OneTimeSetUp: Requires BlazorTesterUrl...` message in an ordinary test run is the fixture's `[Explicit]` skip reason, not a failed wizard setup method. Browser fixtures remain opt-in so the default suite needs no running tester or browser.
+
+Run the two wizard cases with one command from the repository root using PowerShell 7.2 or later:
+
+```powershell
+./scripts/test-blazor-browser.ps1
+```
+
+The [browser runner](../../scripts/test-blazor-browser.ps1) builds into an isolated artifact directory, starts its own tester on a free loopback port, supplies `BlazorTesterUrl` and the browser path through temporary runsettings, explicitly runs `WizardBrowserTests`, and stops only its own server afterwards. It prefers an installed Edge or Chrome on Windows; otherwise it uses separately installed Playwright Chromium. It does not download browsers or use personal browser profiles. A run in which every case was skipped is rejected. Logs, screenshots and TRX results remain in the reported temporary directory; pass `-outputDirectory` to choose another location.
+
+The [build workflow](../../.github/workflows/main.yml) runs both wizard cases in a separate **Wizard browser tests** job using this runner and retains its logs, screenshots and TRX results. The ordinary unit-test job continues to run without a browser.
+
+Select another browser fixture or an executable explicitly when needed:
+
+```powershell
+./scripts/test-blazor-browser.ps1 -filter 'FullyQualifiedName~BlazorGridBrowserTests' -browserExecutablePath 'C:\Program Files\Google\Chrome\Application\chrome.exe'
+```
+
 [ApplicationTabsBrowserTests.cs](ApplicationTabsBrowserTests.cs) exercises singleton session reuse, distinct multi-instance IDs and local state, per-instance switching locks with independent block browsing, selection, guard vetoes (including restoring the Open Screens dropdown after a rejected choice), batch closure, renaming, drag/keyboard reordering, focus, history, View-menu screen modes and merged File-menu/toolbar commands in the actual workspace. [WizardBrowserTests.cs](WizardBrowserTests.cs) opens both wizard generations through registered block/sidebar controls, then tests validation, non-cancellable Escape, successful completion and cancellable reopening with focus restoration. Run all browser fixtures with `--filter "FullyQualifiedName~BrowserTests"` and the runsettings below.
 
 [ApplicationStartupScreenBrowserTests.cs](ApplicationStartupScreenBrowserTests.cs) uses the same tester and runsettings. Run it together with `ApplicationTabsBrowserTests` using `--filter "FullyQualifiedName~ApplicationStartupScreenBrowserTests|FullyQualifiedName~ApplicationTabsBrowserTests"`. It saves the actual tab-context startup choice in an isolated browser context, opens the root URL in a fresh circuit, checks that the unrelated default never mounted, verifies explicit bookmark precedence, and corrupts only that context's preference to exercise safe fallback. It does not use a personal browser profile or change server-wide user settings.
@@ -186,7 +204,7 @@ dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framew
 
 After source changes, stop the tester and repeat the build/start sequence. The fixture does not start or stop the tester, download browsers, access an existing browser profile or persist sample changes. Default test runs skip it. A stopped tester, unavailable executable or missing Playwright browser is a setup failure when the fixture is explicitly selected.
 
-The centrally pinned [Microsoft.Playwright package](https://www.nuget.org/packages/Microsoft.Playwright/1.63.0) supplies the .NET browser library; see the [official library guide](https://playwright.dev/dotnet/docs/library) for browser setup. Geometry samples use CSS zoom and `DeviceScaleFactor` to exercise fractional layout; this is separate from manually testing native browser zoom controls. The tester's independent **Live snapshots and layout** section supplies the configured Auto Paged, image-layout and no-indicator scenarios described in its walkthrough; the original editable-grid geometry cases alone do not establish those behaviors.
+The centrally pinned [Microsoft.Playwright package](https://www.nuget.org/packages/Microsoft.Playwright) supplies the .NET browser library; see the [official library guide](https://playwright.dev/dotnet/docs/library) for browser setup. Geometry samples use CSS zoom and `DeviceScaleFactor` to exercise fractional layout; this is separate from manually testing native browser zoom controls. The tester's independent **Live snapshots and layout** section supplies the configured Auto Paged, image-layout and no-indicator scenarios described in its walkthrough; the original editable-grid geometry cases alone do not establish those behaviors.
 
 ## Retained migration references
 

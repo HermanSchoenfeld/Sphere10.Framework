@@ -71,3 +71,30 @@ jobs:
           path: TestResults/**/*.trx
           if-no-files-found: ignore
           retention-days: 14
+
+  browser:
+    name: Wizard browser tests
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run wizard browser regressions
+        shell: pwsh
+        run: ./scripts/test-blazor-browser.ps1 -outputDirectory "${{ runner.temp }}/wizard-browser"
+      - name: Upload wizard browser reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wizard-browser-results
+          path: |
+            ${{ runner.temp }}/wizard-browser/*.log
+            ${{ runner.temp }}/wizard-browser/browser.runsettings
+            ${{ runner.temp }}/wizard-browser/results/**/*.trx
+            ${{ runner.temp }}/wizard-browser/results/**/*.png
+            ${{ runner.temp }}/wizard-browser/browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
