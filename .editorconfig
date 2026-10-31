@@ -1,4 +1,5 @@
 [*.cs]
+dotnet_sort_system_directives_first = true
 # Use camelCase for local variables and parameters across source, tests, and utilities.
 dotnet_naming_rule.locals_and_parameters_are_camel_case.severity = suggestion
 dotnet_naming_rule.locals_and_parameters_are_camel_case.symbols = locals_and_parameters

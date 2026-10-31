@@ -32,6 +32,19 @@ All new source files must include the copyright header:
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 ```
 
+### Using directives
+
+Order namespace imports from general to specific. Put `System` namespaces first, followed by library and project namespaces; more complex namespaces such as `Sphere10.Framework.ObjectSpaces` belong at the end. Within a namespace family, put the parent namespace before its children. Apply this rule to source, tests and code examples.
+
+```csharp
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Sphere10.Framework.ObjectSpaces;
+```
+
 ### Braces at end-of-line
 
 Braces should begin at end of line and finish at beginning of line (with corresponding tab offsets)
@@ -149,7 +162,11 @@ public interface IApplicationMenu {
 
 ### Member Ordering
 
-Class members should be ordered according to the following guide
+Class members should be ordered according to the following guide. Within the
+methods, put the most general or commonly used entry points first, followed by
+the lower-level utility and auxiliary methods they use. Visibility does not
+determine method order: an internal main operation belongs above a public
+auxiliary operation. Apply this reading order to code generally.
 
 ```csharp
 
@@ -168,11 +185,10 @@ public class SomeClass {
 
 	// 6. Internal/protected/private properties
 
-	// 7. Public methods
+	// 7. Methods: general/common entry points first, utilities and auxiliary methods last
+	//    Order by responsibility and use, regardless of public/internal/protected/private visibility.
 
-	// 8. Internal/protected/private methods
-
-	// 9. Inner class/type declarations
+	// 8. Inner class/type declarations
 }
 
 ```
@@ -454,6 +470,20 @@ capture/ignore/report-only `try/catch`.
 ### Code Comments & Vertical Spaces
 
 Preserve existing code comments when changing an implementation. Remove a comment only when it is no longer relevant to the replacement; update referenced names or details when needed while retaining its explanation. Optimization, shortening code or changing formatting does not justify removing relevant comments. Review removed comment lines as part of every code change.
+
+#### Member documentation spacing
+
+Leave one clean empty line between a member declaration and the documentation or descriptive comment for the next member. Apply this to constants, fields, properties, constructors, methods, nested types and enum values, including internal and private members. A separator line must contain no spaces or tabs.
+
+Keep each member's XML documentation, attributes and declaration together. Consecutive documentation lines form one block; do not insert blank lines inside that block or between it and its declaration. Undocumented fields may remain together as a logical group. This rule does not add blank lines inside fluent configuration chains.
+
+```csharp
+/// <summary>The transfer buffer size in bytes.</summary>
+public const int BufferSize = 4096;
+
+/// <summary>The maximum number of items admitted to a batch.</summary>
+public const int MaxBatchItems = 256;
+```
 
 Developers should add code-comments inside their code so as to assist auditors on what the purpose of the code is. XMLDOC code comments need not be done during development but can be retrofitted later using tooling. Spaces between lines of code should **only** be used to group the "logical segments" of the code block. All code within a "logical segment" should have no spaces. Each logical segment should have a comment. A fluent builder invocation and its nested child builders form one continuous logical segment, with no blank separator lines.
 
