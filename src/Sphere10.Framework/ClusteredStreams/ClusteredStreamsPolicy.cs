@@ -10,6 +10,7 @@ using System;
 
 namespace Sphere10.Framework;
 
+/// <summary>Selects clustered-stream allocation, caching, integrity and stored metadata options.</summary>
 [Flags]
 public enum ClusteredStreamsPolicy : uint {
 
@@ -32,6 +33,11 @@ public enum ClusteredStreamsPolicy : uint {
 	/// Performs real-time integrity checks when processing. Disabling this may improve performance slightly.
 	/// </summary>
 	IntegrityChecks = 1 << 3,
+
+	/// <summary>
+	/// The stored header is followed by a metadata allocation. Creation is configured through ClusteredStreams.ConfigureMetaData.
+	/// </summary>
+	MetaData = 1 << 4,
 
 	///// <summary>
 	///// Encrypts the underlying data

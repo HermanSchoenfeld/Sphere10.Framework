@@ -21,6 +21,7 @@ namespace Sphere10.Framework;
 /// This stream permits the basis of a "virtual file system" allowing any arbitrary number of <see cref="Stream"/>'s to be stored in a sequential manner, and arbitrarily updated both in content
 /// and size. This class (and <see cref="ObjectStream{T}"/>) serve a vital component of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s
 /// implementations.
+/// </summary>
 /// <remarks>
 /// The structure of the root clustered stream is depicted below:
 /// [ClusteredStreamsHeader] Version: 1, ClusterSize: 4, TotalClusters: 17, StreamCount: 2, StreamDescriptorsEndCluster: 14, ReservedStreams: 0, Policy: 0
@@ -48,6 +49,7 @@ namespace Sphere10.Framework;
 ///  
 ///  Notes:
 ///  - Header is fixed 256b and has space for user-defined fields, such as merkle-root's and encryption keys.
+///  - Optional opaque metadata and its padding follow the fixed header, before the first cluster.
 ///  - Has pluggable <see cref="IClusteredStreamsAttachment"/> which mutate with stream operations (used for indexing, merkle-tree's, etc)
 ///  - Meta-data based streams are saved as "Reserved Streams" which are always open.
 ///  - Cluster chains start with a cluster marked Start and end with a cluster marked End.
@@ -78,7 +80,9 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	private ClusteredStreamsHeader _header;
 	private readonly IDictionary<long, ClusteredStream> _openStreams;
 	private readonly DictionaryList<string, IClusteredStreamsAttachment> _attachments;
-	private readonly List<Action> _initActions;
+	private readonly List<Action<bool>> _initActions;
+	private LazyLoad<byte[]> _createMetaData;
+	private int _configuredMetaDataCapacity;
 
 	private readonly ConcurrentStream _rootStream;
 	private readonly int _clusterSize;
@@ -97,7 +101,8 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
 		Guard.ArgumentGTE(reservedStreams, 0, nameof(reservedStreams));
-		Policy = policy;
+		// Metadata presence is a stored header flag; ConfigureMetaData controls creation of its allocation.
+		Policy = policy & ~ClusteredStreamsPolicy.MetaData;
 		Endianness = endianness;
 		_clusters = null;
 		_streamDescriptorsFragmentProvider = null;
@@ -106,7 +111,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		_header = null;
 		_openStreams = new Dictionary<long, ClusteredStream>();
 		_attachments = new DictionaryList<string, IClusteredStreamsAttachment>();
-		_initActions = new List<Action>();
+		_initActions = new List<Action<bool>>();
 		Initialized = false;
 		_rootStream = rootStream.AsConcurrent();
 		_clusterSize = clusterSize;
@@ -191,6 +196,15 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	public ClusteredStreamsPolicy Policy { get; }
 
 	public Endianness Endianness { get; }
+
+	/// <summary>Whether this store has an opaque metadata region after its fixed header.</summary>
+	public bool HasMetaData => Header.HasMetaData;
+
+	/// <summary>The metadata region's fixed allocated capacity.</summary>
+	public int MetaDataCapacity => Header.MetaDataSize;
+
+	/// <summary>The first cluster byte after the fixed header and optional metadata region.</summary>
+	public long DataOffset => Header.DataOffset;
 
 	public long Count {
 		get {
@@ -386,7 +400,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	#endregion
 
 	#region Stream Descriptors
-	
+
 	public ClusteredStreamDescriptor GetStreamDescriptor(long index) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
@@ -412,7 +426,6 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		NotifyStreamCreated(record);
 		return record;
 	}
-
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal ClusteredStreamTraits FastReadStreamDescriptorTraits(long index) {
@@ -508,9 +521,55 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	#region Lifecycle Management
 
+	/// <summary>Configures creation-time metadata without changing existing storage.</summary>
+	public void ConfigureMetaData(Func<byte[]> create, int capacity = 0) {
+		Guard.ArgumentNotNull(create, nameof(create));
+		Guard.ArgumentNotNegative(capacity, nameof(capacity));
+		Guard.Ensure(!Initialized, "Metadata must be configured before activation.");
+		_configuredMetaDataCapacity = capacity;
+		_createMetaData = new LazyLoad<byte[]>(() => {
+			// Capture the original bytes once, including when a new file is later rolled back to empty.
+			var bytes = create();
+			Guard.ArgumentNotNull(bytes, nameof(create));
+			Guard.Ensure(_configuredMetaDataCapacity == 0 || bytes.Length <= _configuredMetaDataCapacity,
+				"Metadata exceeds its configured capacity.");
+			return bytes.ToArray();
+		});
+	}
+
+	/// <summary>Reads the opaque metadata allocation without interpreting its record format.</summary>
+	public byte[] ReadMetaData() {
+		CheckInitialized();
+		using var accessScope = EnterAccessScope();
+		Guard.Ensure(HasMetaData, "This clustered stream has no metadata region.");
+
+		// Header size fixes this allocation; reads never consume cluster bytes or retain a second copy as a cache.
+		var bytes = new byte[MetaDataCapacity];
+		_rootStream.Position = ClusteredStreamsHeader.MetaDataOffset;
+		_rootStream.ReadExactly(bytes);
+		return bytes;
+	}
+
+	/// <summary>Replaces metadata bytes within the existing allocation and clears its unused padding.</summary>
+	public void WriteMetaData(byte[] bytes) {
+		CheckInitialized();
+		Guard.ArgumentNotNull(bytes, nameof(bytes));
+		using var accessScope = EnterAccessScope();
+		Guard.Ensure(HasMetaData, "This clustered stream has no metadata region.");
+		WriteMetaDataInternal(bytes, MetaDataCapacity);
+	}
+
+	/// <summary>Runs an initialization action now or after the container is activated.</summary>
 	public void RegisterInitAction(Action action) {
+		Guard.ArgumentNotNull(action, nameof(action));
+		RegisterInitAction(_ => action());
+	}
+
+	/// <summary>Registers owner initialization, identifying newly created storage without retaining another lifecycle flag.</summary>
+	public void RegisterInitAction(Action<bool> action) {
+		Guard.ArgumentNotNull(action, nameof(action));
 		if (Initialized)
-			action();
+			action(false);
 		else
 			_initActions.Add(action);
 	}
@@ -546,7 +605,16 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			_header.CheckHeaderIntegrity();
 			CheckHeaderDataIntegrity(_rootStream.Length, _header, clusterSerializer, recordSerializer);
 		} else {
-			_header.Create(1, _clusterSize, _reservedStreams);
+			// Resolve and validate creation metadata before the first header or cluster write.
+			var metaData = _createMetaData?.Value;
+			_header.Create(ClusteredStreamsHeader.VersionNumber, _clusterSize, _reservedStreams);
+			if (metaData != null) {
+				var capacity = _configuredMetaDataCapacity == 0 ? metaData.Length : _configuredMetaDataCapacity;
+				_rootStream.SetLength(ClusteredStreamsHeader.MetaDataOffset + (long)capacity);
+				_header.Policy = Policy | ClusteredStreamsPolicy.MetaData;
+				_header.MetaDataSize = capacity;
+				WriteMetaDataInternal(metaData, capacity);
+			}
 		}
 		Guard.Ensure(_header.ClusterSize == _clusterSize, $"Inconsistent cluster size {_clusterSize} (header had '{_header.ClusterSize}')");
 
@@ -555,7 +623,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		// - when a start/end cluster is moved, we must update the descriptor that points to it (the descriptor is stored as the terminal values of a cluster chain)
 		if (_clusters is not null)
 			_clusters.Changed -= ClusterMapChangedHandler;
-		_clusters = new StreamMappedClusterMap(_rootStream, ClusteredStreamsHeader.ByteLength, clusterSerializer, Policy.HasFlag(ClusteredStreamsPolicy.CacheClusterHeaders), Endianness, autoLoad: true);
+		_clusters = new StreamMappedClusterMap(_rootStream, _header.DataOffset, clusterSerializer, Policy.HasFlag(ClusteredStreamsPolicy.CacheClusterHeaders), Endianness, autoLoad: true);
 		_clusters.Changed += ClusterMapChangedHandler;
 
 		// Records
@@ -616,9 +684,9 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 		if (wasEmptyStream)
 			CreateReservedStreams();
-		
+
 		// Run sub-class initialization actions
-		_initActions.ForEach(x => x());
+		_initActions.ForEach(x => x(wasEmptyStream));
 
 		void ClusterMapChangedHandler(object source, ClusterMapChangedEventArgs changedEvent) {
 			CheckLocked();
@@ -697,8 +765,6 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		}
 	}
 
-
-
 	public void Dispose() {
 		UnloadAttachments();
 		CheckNoOpenedStreams(false);
@@ -712,7 +778,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	#endregion
 
 	#region Attachment Management
-	
+
 	public void RegisterAttachment(IClusteredStreamsAttachment attachment) {
 		// NOTE: we cannot lock the streams since it's not initialized yet, nor can we verify 
 		// the Header.ReservedStreams for same reason.
@@ -868,7 +934,6 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		Clearing?.Invoke();
 	}
 
-
 	private void NotifyCleared() {
 		if (_suppressEvents)
 			return;
@@ -897,6 +962,24 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	#region Aux methods
 
+	// Writes within the fixed metadata allocation and clears unused padding.
+	private void WriteMetaDataInternal(byte[] bytes, int capacity) {
+		// Validate the fixed budget before writing; metadata updates never relocate clusters.
+		Guard.Ensure(bytes.Length <= capacity, "Metadata exceeds its configured capacity.");
+		_rootStream.Position = ClusteredStreamsHeader.MetaDataOffset;
+		_rootStream.Write(bytes);
+
+		// Clear unused bytes so replacing a shorter record cannot retain its previous contents.
+		var remaining = capacity - bytes.Length;
+		Span<byte> padding = stackalloc byte[Math.Min(remaining, 2048)];
+		padding.Clear();
+		while (remaining > 0) {
+			var count = Math.Min(remaining, padding.Length);
+			_rootStream.Write(padding[..count]);
+			remaining -= count;
+		}
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckLocked() => Guard.Ensure(IsLocked, "An access-scope is required for this operation");
 
@@ -911,7 +994,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			throw new InvalidOperationException(errorMessage);
 		}
 	}
-		
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckInitialized() {
 		if (!Initialized)
@@ -928,7 +1011,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		var clusterEnvelopeSize = clusterSerializer.ConstantSize - header.ClusterSize;
 		var recordClusters = (long)Math.Ceiling(header.StreamCount * recordSerializer.ConstantSize / (float)header.ClusterSize);
 		Guard.Ensure(header.TotalClusters >= recordClusters, $"Inconsistency in {nameof(ClusteredStreamsHeader.TotalClusters)}/{nameof(ClusteredStreamsHeader.StreamCount)}");
-		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStreamsHeader.ByteLength;
+		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + header.DataOffset;
 		Guard.Ensure(rootStreamLength >= minStreamSize, $"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
 	}
 

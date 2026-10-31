@@ -18,6 +18,16 @@ namespace Sphere10.Framework;
 public class ClusteredStreamsHeader {
 
 	public const int ByteLength = 256;
+
+	/// <summary>The supported clustered-stream header version.</summary>
+	public const byte VersionNumber = 1;
+
+	/// <summary>The final header DWORD, containing allocated metadata bytes when metadata is present.</summary>
+	public const int MetaDataSizeOffset = ByteLength - sizeof(int);
+
+	/// <summary>The byte offset immediately after the fixed header, where metadata begins.</summary>
+	public const int MetaDataOffset = ByteLength;
+
 	public const int MerkleRootLength = 32;
 	public const int MasterKeyLength = 32;
 
@@ -39,7 +49,7 @@ public class ClusteredStreamsHeader {
 	internal const int ExtensionPropertiesOffset = TotalClustersOffset + TotalClustersLength;
 
 
-	private readonly Stream _headerStream;
+	private readonly BoundedStream _headerStream;
 	private readonly Stream _extensionPropertiesStream;
 	private readonly EndianBinaryReader _reader;
 	private readonly EndianBinaryWriter _writer;
@@ -97,12 +107,62 @@ public class ClusteredStreamsHeader {
 
 	public long TotalClusters { get => _totalClustersProperty.Value; set => _totalClustersProperty.Value = value; }
 
+	/// <summary>Whether an opaque metadata region follows the fixed header.</summary>
+	public bool HasMetaData => Policy.HasFlag(ClusteredStreamsPolicy.MetaData);
+
+	/// <summary>The allocated metadata size in bytes, stored inside the fixed header.</summary>
+	public int MetaDataSize {
+		get {
+			using var accessScope = _lock.EnterAccessScope();
+			if (!HasMetaData)
+				return 0;
+
+			// Read the stored field; allocation bounds are checked by CheckHeaderIntegrity.
+			_headerStream.Position = MetaDataSizeOffset;
+			return PrimitiveSerializer<int>.Instance.Deserialize(_reader);
+		}
+		internal set {
+			Guard.ArgumentNotNegative(value, nameof(value));
+			using var accessScope = _lock.EnterAccessScope();
+			_headerStream.Position = MetaDataSizeOffset;
+			PrimitiveSerializer<int>.Instance.Serialize(value, _writer);
+		}
+	}
+
+	/// <summary>The first cluster byte; legacy streams retain their original offset.</summary>
+	public long DataOffset => MetaDataOffset + (long)MetaDataSize;
+
+	/// <summary>Bytes available for extensions, excluding the metadata size field when present.</summary>
+	public long ExtensionPropertiesLength => ByteLength - ExtensionPropertiesOffset - (HasMetaData ? sizeof(int) : 0);
+
+	/// <summary>Reads a fixed-size value at an offset relative to the header extension area.</summary>
+	public T ReadExtensionProperty<T>(long offset, IItemSerializer<T> serializer) {
+		// Fixed header fields are read directly through the established header reader.
+		Guard.ArgumentNotNull(serializer, nameof(serializer));
+		Guard.Argument(serializer.IsConstantSize, nameof(serializer), "Header fields require a constant-size serializer.");
+		Guard.Argument(offset >= 0 && offset <= ExtensionPropertiesLength - serializer.ConstantSize, nameof(offset), "The field must fit in the extension area.");
+		using var accessScope = _lock.EnterAccessScope();
+		_extensionPropertiesStream.Position = offset;
+		return serializer.Deserialize(_reader);
+	}
+
+	/// <summary>Writes a fixed-size value at an offset relative to the header extension area.</summary>
+	public void WriteExtensionProperty<T>(long offset, T value, IItemSerializer<T> serializer) {
+		// The field stays within its header allocation without creating a mapped property or cache.
+		Guard.ArgumentNotNull(serializer, nameof(serializer));
+		Guard.Argument(serializer.IsConstantSize, nameof(serializer), "Header fields require a constant-size serializer.");
+		Guard.Argument(offset >= 0 && offset <= ExtensionPropertiesLength - serializer.ConstantSize, nameof(offset), "The field must fit in the extension area.");
+		using var accessScope = _lock.EnterAccessScope();
+		_extensionPropertiesStream.Position = offset;
+		serializer.Serialize(value, _writer);
+	}
+
 	public StreamMappedProperty<T> MapExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer)
 		=> MapExtensionProperty(offset, length, serializer, false);
 
 	public StreamMappedProperty<T> MapExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer, bool useCache = false) {
-		Guard.ArgumentInRange(offset, 0, _extensionPropertiesStream.Length - 1, nameof(offset));
-		Guard.ArgumentInRange(length, 1, _extensionPropertiesStream.Length - offset, nameof(length));
+		Guard.ArgumentInRange(offset, 0, ExtensionPropertiesLength - 1, nameof(offset));
+		Guard.ArgumentInRange(length, 1, ExtensionPropertiesLength - offset, nameof(length));
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		var extProp = StreamMappedProperty.From(_extensionPropertiesStream, offset, length, serializer, _reader, _writer, @lock: _lock, useCache: useCache);
 		_mappedExtensionPropertyFlushes.Add(extProp.FlushCache);
@@ -115,9 +175,10 @@ public class ClusteredStreamsHeader {
 	}
 
 	public void Create(byte version, int clusterSize, long reservedRecords) {
+		Guard.Argument(version == VersionNumber, nameof(version), "Unsupported clustered-stream version.");
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
 		Guard.ArgumentGTE(reservedRecords, 0, nameof(reservedRecords));
-		
+
 		using var accessScope = _lock.EnterAccessScope();
 		Guard.Ensure(_headerStream.Length == 0, "Header must be empty");
 		_headerStream.SetLength(ByteLength);
@@ -134,12 +195,19 @@ public class ClusteredStreamsHeader {
 
 	public void CheckHeaderIntegrity() {
 		using var accessScope = _lock.EnterAccessScope();
-		Guard.Ensure(Version == 1, $"Corrupt header property {nameof(Version)} value was {Version} bytes");
+		Guard.Ensure(Version == VersionNumber, $"Corrupt header property {nameof(Version)} value was {Version} bytes");
 		Guard.Ensure(ClusterSize > 0, $"Corrupt header property {nameof(ClusterSize)} value was {ClusterSize} bytes");
 		Guard.Ensure(TotalClusters >= 0, $"Corrupt header property {nameof(TotalClusters)} value was {TotalClusters} bytes");
 		Guard.Ensure(ReservedStreams >= 0, $"Corrupt header property {nameof(ReservedStreams)} value was {ReservedStreams} bytes");
 		Guard.Ensure(StreamCount >= 0, $"Corrupt header property {nameof(StreamCount)} value was {StreamCount} bytes");
 		Guard.Ensure(StreamDescriptorsEndCluster >= Cluster.Null, $"Corrupt header property {nameof(StreamDescriptorsEndCluster)} value was {StreamDescriptorsEndCluster} bytes");
+
+		// The declared metadata allocation must fit after the fixed header.
+		if (HasMetaData) {
+			var metaDataSize = MetaDataSize;
+			if (metaDataSize < 0 || metaDataSize > _headerStream.InnerStream.Length - MetaDataOffset)
+				throw new InvalidDataException("Invalid clustered-stream metadata capacity.");
+		}
 	}
 
 	public void FlushCache() {
