@@ -229,21 +229,21 @@
 		<Compile Update="ComboBoxes\ComboBoxEx.cs" />
 		<Compile Update="ComboBoxes\CustomComboBox.cs" />
 		<Compile Update="ComboBoxes\EnumComboBox.cs" />
-		<Compile Update="Crud\CrudComboBox.cs" />
-		<Compile Update="Crud\CrudDialog.cs" />
-		<Compile Update="Crud\CrudDialog.Designer.cs">
+		<Compile Update="VisualGrid\CrudComboBox.cs" />
+		<Compile Update="VisualGrid\CrudDialog.cs" />
+		<Compile Update="VisualGrid\CrudDialog.Designer.cs">
 			<DependentUpon>CrudDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Crud\CrudEntityEditorDialog.cs" />
-		<Compile Update="Crud\CrudEntityEditorDialog.Designer.cs">
+		<Compile Update="VisualGrid\CrudEntityEditorDialog.cs" />
+		<Compile Update="VisualGrid\CrudEntityEditorDialog.Designer.cs">
 			<DependentUpon>CrudEntityEditorDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Crud\CrudGrid.cs" />
-		<Compile Update="Crud\CrudGrid.Designer.cs">
-			<DependentUpon>CrudGrid.cs</DependentUpon>
+		<Compile Update="VisualGrid\VisualGrid.cs" />
+		<Compile Update="VisualGrid\VisualGrid.Designer.cs">
+			<DependentUpon>VisualGrid.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Crud\DefaultCrudEntityEditor.cs" />
-		<Compile Update="Crud\DefaultCrudEntityEditor.Designer.cs">
+		<Compile Update="VisualGrid\DefaultCrudEntityEditor.cs" />
+		<Compile Update="VisualGrid\DefaultCrudEntityEditor.Designer.cs">
 			<DependentUpon>DefaultCrudEntityEditor.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Database\ConnectionBarBase.cs" />
@@ -422,16 +422,16 @@
 			<SubType>Designer</SubType>
 			<DependentUpon>SquareButton.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Crud\CrudDialog.resx">
+		<EmbeddedResource Update="VisualGrid\CrudDialog.resx">
 			<DependentUpon>CrudDialog.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Crud\CrudEntityEditorDialog.resx">
+		<EmbeddedResource Update="VisualGrid\CrudEntityEditorDialog.resx">
 			<DependentUpon>CrudEntityEditorDialog.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Crud\CrudGrid.resx">
-			<DependentUpon>CrudGrid.cs</DependentUpon>
+		<EmbeddedResource Update="VisualGrid\VisualGrid.resx">
+			<DependentUpon>VisualGrid.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Crud\DefaultCrudEntityEditor.resx">
+		<EmbeddedResource Update="VisualGrid\DefaultCrudEntityEditor.resx">
 			<DependentUpon>DefaultCrudEntityEditor.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Database\ConnectionBarBase.resx">
