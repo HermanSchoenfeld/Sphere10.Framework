@@ -34,15 +34,8 @@ public static class ScreenPoliciesPlugin {
 					.WithScreenKind(ScreenKind.Empty)
 				)
 				.WithDefaultScreen<EmptyWorkspaceScreen>()
-				.AddMenu(menu => menu
-					.WithId("empty")
-					.WithText("Workspace")
-					.AddItem(item => item
-						.WithId("empty")
-						.WithText("Empty workspace")
-						.WithIcon("fas fa-window-maximize")
-						.WithScreen<EmptyWorkspaceScreen>()
-					)
+				.AddMenu("Workspace", id: "empty", configure: menu => menu
+					.AddItem<EmptyWorkspaceScreen>("Empty workspace", id: "empty", icon: "fas fa-window-maximize")
 				)
 			);
 		if (permanentScreen)
@@ -53,20 +46,10 @@ public static class ScreenPoliciesPlugin {
 					.WithPosition(5)
 					.WithIconUrl("img/heading-solid.svg")
 					.WithTooltip("A screen that stays open for this application session")
-					.AddScreen<PermanentWorkspaceScreen>(screen => screen
-						.WithTitle("Permanent screen")
-						.AsPermanentSingleton()
-					)
+					.AddScreen<PermanentWorkspaceScreen>("Permanent screen", activationMode: ScreenActivationMode.PermanentSingleton)
 					.WithDefaultScreen<PermanentWorkspaceScreen>()
-					.AddMenu(menu => menu
-						.WithId("permanent")
-						.WithText("Permanent screen")
-						.AddItem(item => item
-							.WithId("permanent")
-							.WithText("Permanent screen")
-							.WithIcon("fas fa-thumbtack")
-							.WithScreen<PermanentWorkspaceScreen>()
-						)
+					.AddMenu("Permanent screen", id: "permanent", configure: menu => menu
+						.AddItem<PermanentWorkspaceScreen>("Permanent screen", id: "permanent", icon: "fas fa-thumbtack")
 					)
 				);
 	}

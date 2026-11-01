@@ -34,66 +34,20 @@ public static class ShowcasePlugin {
 				.WithPosition(2)
 				.WithIconUrl("img/patterns.svg")
 				.WithTooltip("Cards, workflows, native commands and complete theme layouts")
-				.AddScreen<CardsScreen>(screen => screen
-					.WithTitle("Cards & collections")
-					.AsSingleInstance()
-				)
-				.AddScreen<CommandsScreen>(screen => screen
-					.WithTitle("Menus & commands")
-					.AsSingleInstance()
-				)
-				.AddScreen<GuidedWizardsScreen>(screen => screen
-					.WithTitle("Guided workflows")
-					.AsSingleInstance()
-				)
-				.AddScreen<ThemeStudioScreen>(screen => screen
-					.WithTitle("Theme studio")
-					.AsSingleInstance()
-				)
-				.AddScreen<CollectionDetailScreen>(screen => screen
-					.WithTitle("Collection details")
-					.AsMultiInstance()
-				)
+				.AddScreen<CardsScreen>("Cards & collections", activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<CommandsScreen>("Menus & commands", activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<GuidedWizardsScreen>("Guided workflows", activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<ThemeStudioScreen>("Theme studio", activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<CollectionDetailScreen>("Collection details", activationMode: ScreenActivationMode.MultiInstance)
 				.WithDefaultScreen<CardsScreen>()
-				.AddMenu(menu => menu
-					.WithId("patterns")
-					.WithText("Application patterns")
-					.WithIcon("fas fa-layer-group")
-					.AddItem(item => item
-						.WithId("cards-gallery")
-						.WithText("Cards & collections")
-						.WithIcon("fas fa-th-large")
-						.WithScreen<CardsScreen>()
-					)
-					.AddItem(item => item
-						.WithId("commands")
-						.WithText("Menus & commands")
-						.WithIcon("fas fa-bars")
-						.WithScreen<CommandsScreen>()
-					)
-					.AddItem(item => item
-						.WithId("guided-wizards")
-						.WithText("Guided workflows")
-						.WithIcon("fas fa-magic")
-						.WithScreen<GuidedWizardsScreen>()
-					)
-					.AddItem(item => item
-						.WithId("theme-studio")
-						.WithText("Theme studio")
-						.WithIcon("fas fa-palette")
-						.WithScreen<ThemeStudioScreen>()
-					)
+				.AddMenu("Application patterns", id: "patterns", icon: "fas fa-layer-group", configure: menu => menu
+					.AddItem<CardsScreen>("Cards & collections", id: "cards-gallery", icon: "fas fa-th-large")
+					.AddItem<CommandsScreen>("Menus & commands", id: "commands", icon: "fas fa-bars")
+					.AddItem<GuidedWizardsScreen>("Guided workflows", id: "guided-wizards", icon: "fas fa-magic")
+					.AddItem<ThemeStudioScreen>("Theme studio", id: "theme-studio", icon: "fas fa-palette")
 				)
-				.AddMenu(menu => menu
-					.WithId("collection-screens")
-					.WithText("Collection editors")
-					.AddItem(item => item
-						.WithId("collection-detail")
-						.WithText("Collection details")
-						.WithIcon("fas fa-folder-open")
-						.WithVisibility(false)
-						.WithScreen<CollectionDetailScreen>()
-					)
+				.AddMenu("Collection editors", id: "collection-screens", configure: menu => menu
+					.AddItem<CollectionDetailScreen>("Collection details", id: "collection-detail", icon: "fas fa-folder-open", isVisible: false)
 				)
 			);
 	}

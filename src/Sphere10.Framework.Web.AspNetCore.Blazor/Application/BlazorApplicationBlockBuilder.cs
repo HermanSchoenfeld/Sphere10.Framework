@@ -9,6 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -16,6 +18,77 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorApplicationBlockBuilder, IBlazorApplicationMenu, BlazorApplicationMenuBuilder, BlazorApplicationBlock> {
 	private readonly List<IBlazorApplicationMenuItem> _toolBarItems = new();
 	private string _id;
+
+	/// <summary>Adds a component using optional inline registration metadata.</summary>
+	public BlazorApplicationBlockBuilder AddScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null,
+		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, object settings = null, Func<object> settingsFactory = null,
+		IReadOnlyDictionary<string, object> parameters = null,
+		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null)
+		where TScreen : IBlazorApplicationScreen {
+		return AddScreen<TScreen>(title, out _, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor);
+	}
+
+	/// <summary>Adds a component and captures its exact registration for later navigation.</summary>
+	public BlazorApplicationBlockBuilder AddScreen<TScreen>(string title, out ApplicationScreenRegistration<TScreen> registration,
+		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
+		object settings = null, Func<object> settingsFactory = null, IReadOnlyDictionary<string, object> parameters = null,
+		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null)
+		where TScreen : IBlazorApplicationScreen {
+		registration = new ApplicationScreenRegistration<TScreen>();
+		AddScreenDefinitionInternal(CreateScreenDefinition(typeof(TScreen), registration, title, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor));
+		return this;
+	}
+
+	/// <summary>Adds a runtime component type using optional inline registration metadata.</summary>
+	public BlazorApplicationBlockBuilder AddScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
+		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, object settings = null, Func<object> settingsFactory = null,
+		IReadOnlyDictionary<string, object> parameters = null,
+		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null) {
+		return AddScreen(screenType, title, out _, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor);
+	}
+
+	/// <summary>Adds a runtime component type and captures its exact registration.</summary>
+	public BlazorApplicationBlockBuilder AddScreen(Type screenType, string title, out ApplicationScreenRegistration registration,
+		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
+		object settings = null, Func<object> settingsFactory = null, IReadOnlyDictionary<string, object> parameters = null,
+		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null) {
+		registration = new ApplicationScreenRegistration(screenType);
+		AddScreenDefinitionInternal(CreateScreenDefinition(screenType, registration, title, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor));
+		return this;
+	}
+
+	/// <summary>Adds a menu with optional web presentation and child configuration.</summary>
+	public BlazorApplicationBlockBuilder AddMenu(string text, string icon = null, string id = null,
+		Action<BlazorApplicationMenuBuilder> configure = null) {
+		return AddMenu(text, out _, icon, id, configure);
+	}
+
+	/// <summary>Adds a configured menu and captures its definition before graph snapshots are built.</summary>
+	public BlazorApplicationBlockBuilder AddMenu(string text, out IBlazorApplicationMenu registration, string icon = null,
+		string id = null, Action<BlazorApplicationMenuBuilder> configure = null) {
+		return AddMenu(menu => {
+			menu
+				.WithText(text)
+				.WithIcon(icon);
+
+			if (id != null)
+				menu.WithId(id);
+
+			configure?.Invoke(menu);
+		}, out registration);
+	}
+
+	/// <summary>Adds a top-level menu through the block's existing menu ownership path.</summary>
+	public BlazorApplicationBlockBuilder AddMenuItem(string text, string icon = null, string id = null,
+		Action<BlazorApplicationMenuBuilder> configure = null) {
+		return AddMenu(text, icon, id, configure);
+	}
+
+	/// <summary>Adds a top-level menu and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddMenuItem(string text, out IBlazorApplicationMenu registration, string icon = null,
+		string id = null, Action<BlazorApplicationMenuBuilder> configure = null) {
+		return AddMenu(text, out registration, icon, id, configure);
+	}
 
 	/// <summary>Configures and registers a component without requiring a menu command.</summary>
 	public BlazorApplicationBlockBuilder AddScreen<TScreen>(Action<BlazorApplicationScreenBuilder<TScreen>> configure)
@@ -68,6 +141,85 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 		return this;
 	}
 
+	/// <summary>Adds a toolbar action using optional inline web presentation.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(string text, Action action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return AddToolBarItem(text, action, out _, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds a toolbar action and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(string text, Action action, out IBlazorApplicationMenuItem registration,
+		string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return ConfigureToolBarItem(item => item.WithAction(action), text, out registration, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds a toolbar action using optional inline web presentation.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(string text, Func<IServiceProvider, CancellationToken, Task> action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return AddToolBarItem(text, action, out _, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds a toolbar action and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(string text, Func<IServiceProvider, CancellationToken, Task> action, out IBlazorApplicationMenuItem registration,
+		string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return ConfigureToolBarItem(item => item.WithAction(action), text, out registration, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds toolbar navigation for the owning block's first matching registration.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem<TScreen>(string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		where TScreen : IBlazorApplicationScreen {
+		return AddToolBarItem(typeof(TScreen), text, out _, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds typed toolbar navigation and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem<TScreen>(string text, out IBlazorApplicationMenuItem registration, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		where TScreen : IBlazorApplicationScreen {
+		return AddToolBarItem(typeof(TScreen), text, out registration, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds toolbar navigation without creating or changing a screen registration.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(Type screenType, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return AddToolBarItem(screenType, text, out _, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds toolbar navigation and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(Type screenType, string text, out IBlazorApplicationMenuItem registration,
+		string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return AddToolBarItem(ApplicationScreenRegistration.ForType(screenType), text, out registration, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds toolbar navigation without creating or changing a screen registration.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(ApplicationScreenRegistration screen, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return AddToolBarItem(screen, text, out _, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds toolbar navigation and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(ApplicationScreenRegistration screen, string text, out IBlazorApplicationMenuItem registration,
+		string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return ConfigureToolBarItem(item => item.WithScreen(screen), text, out registration, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds toolbar navigation without creating or changing a screen registration.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(ApplicationScreenDefinition definition, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return AddToolBarItem(definition, text, out _, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds toolbar navigation and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(ApplicationScreenDefinition definition, string text, out IBlazorApplicationMenuItem registration,
+		string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		return AddToolBarItem(definition.Registration, text, out registration, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds a toolbar action group using optional inline web presentation.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(string text, IBlazorApplicationMenuItem[] children, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return AddToolBarItem(text, children, out _, id, icon, isVisible, canExecute);
+	}
+
+	/// <summary>Adds a toolbar action group and captures its configuration definition.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(string text, IBlazorApplicationMenuItem[] children,
+		out IBlazorApplicationMenuItem registration, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
+		return ConfigureToolBarItem(item => item.WithChildren(children), text, out registration, id, icon, isVisible, canExecute);
+	}
+
 	public BlazorApplicationBlockBuilder AddToolBarItem(IBlazorApplicationMenuItem item) {
 		return AddToolBarItem(item, out _);
 	}
@@ -105,6 +257,41 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle,
 			DefaultScreenActivationMode = DefaultScreenActivationMode, DefaultScreenKind = DefaultScreenKind, Menus = menus.ToArray(), ToolBarItems = _toolBarItems.ToArray()
 		});
+
+	// Reuse the child builder's behavior validation and the block's existing toolbar ownership path.
+	private BlazorApplicationBlockBuilder ConfigureToolBarItem(Action<BlazorApplicationMenuItemBuilder> configureBehavior, string text,
+		out IBlazorApplicationMenuItem registration, string id, string icon, bool isVisible, Func<bool> canExecute) {
+		return AddToolBarItem(item => {
+			configureBehavior(item);
+			item
+				.WithIcon(icon)
+				.WithVisibility(isVisible);
+
+			if (text != null)
+				item.WithText(text);
+			if (id != null)
+				item.WithId(id);
+			if (canExecute != null)
+				item.EnabledWhen(canExecute);
+		}, out registration);
+	}
+
+	// Capture settings defaults during composition; the renderer still owns operational components.
+	private static BlazorApplicationScreenDefinition CreateScreenDefinition(Type screenType, ApplicationScreenRegistration registration,
+		string title, ScreenActivationMode? activationMode, ScreenKind screenKind, string stableKey, object settings,
+		Func<object> settingsFactory, IReadOnlyDictionary<string, object> parameters,
+		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator, Type settingsEditor) {
+		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
+		Guard.Argument(title == null || title.Length > 0, nameof(title), "A screen title cannot be empty.");
+
+		if (settingsFactory != null) {
+			settings ??= settingsFactory();
+			Guard.ArgumentNotNull(settings, nameof(settingsFactory));
+		}
+
+		return new BlazorApplicationScreenDefinition(screenType, title, activationMode, screenKind, registration, stableKey, parameters, activator, settings, settingsFactory, settingsEditor);
+	}
 
 	/// <summary>Builder inputs are borrowed until the final snapshot owns their cloned graph.</summary>
 	private sealed class BlockSource : IBlazorApplicationBlock {

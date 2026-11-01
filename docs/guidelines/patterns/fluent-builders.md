@@ -19,6 +19,18 @@ Preserve execution timing: a child callback runs during composition, plugin `Add
 
 Keep non-`out` overloads available. Optional registration-reference overloads place `configure` first and `out registration` second; existing-object forms place the object before the reference. A callback closes its own configuration scope. Only an optional direct child-builder API uses `.Done()` to return to its parent.
 
+For lower-level UI composition, prefer direct arguments when the child only needs
+known values: `.AddScreen<MyScreen>("Title")` or
+`.AddScreen<MyScreen>("Title", out var screen, activationMode: ScreenActivationMode.SingleInstance)`.
+Other registration options remain optional named arguments. Native and web block
+`AddMenu`/`AddMenuItem` accept their caption and image/icon directly, with an optional
+child callback for commands. Menu `AddItem` and web `AddToolBarItem` accept direct
+actions or registered-screen references and optional presentation arguments. These
+overloads use the same ownership paths as callback composition; plugin and block
+composition retain their child-builder callbacks. An exact moniker selects one
+registration; type-based menu/toolbar shortcuts select the first matching registration
+in the owning block.
+
 For example, this native block uses the existing direct action-item overload;
 the action is a runtime callback rather than a child-builder callback:
 

@@ -960,6 +960,31 @@ public class MyApplicationBlock {
 serviceCollection.AddApplicationBlock(MyApplicationBlock.Build());
 ```
 
+Use direct arguments for compact registration and retain a moniker only when needed:
+
+```csharp
+var block = new WinFormsApplicationBlockBuilder()
+	.WithName("Controls")
+	.AddScreen<FlagsCheckedBoxListScreen>("Flag Choices", out var flags, activationMode: ScreenActivationMode.SingleInstance)
+	.WithDefaultScreen(flags)
+	.AddMenuItem("Input", inputImage, showInMenuStrip: true, configure: menu => menu
+		.AddItem(flags, "Flag Choices", image16x16: flagsImage)
+		.AddItem("Reset", () => ResetChoices(), showOnToolBar: false)
+	)
+	.Build();
+```
+
+`AddScreen<TScreen>("Title")` requires no callback or moniker. Optional named arguments
+cover activation mode, screen kind, stable key, ordinary settings/defaults, activator
+and settings editor. The runtime form is `AddScreen(typeof(MyScreen), "Title")`;
+both forms can capture `out var registration` after the title. `AddMenu` and
+`AddMenuItem` use the same owned-menu path, with optional image, menu-strip flag
+and child callback. Their `out` forms capture the owned menu. Menu `AddItem` accepts
+an action, generic/runtime screen type, exact moniker or existing definition, with
+optional native presentation flags and command capture. Callbacks and existing
+`AddShowScreenItem`/`AddActionItem` conveniences remain available. These overloads
+preserve deferred activation and the native builders' retained product behavior.
+
 Owner-aware actions receive the executing `IUserInterfaceServices`, including actions marked `executeOnLoad`:
 
 ```csharp

@@ -89,28 +89,18 @@ public static class WinFormsDemoPlugin {
 					.WithActivator(context => new ScreenHostingDesignTestScreen("Menu-free Inspector")),
 					out var menuFreeInspector
 				)
-				.AddScreen<ScreenHostingPlainTestScreen>(screen => screen
-					.WithTitle("Plain Screen")
-				)
+				.AddScreen<ScreenHostingPlainTestScreen>("Plain Screen")
 				.AddScreen(screen => screen
 					.WithScreen(emptyScreen)
 					.WithTitle("Empty Workspace")
 					.WithActivationMode(freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance)
 					.WithScreenKind(ScreenKind.Empty)
 				)
-				.AddScreen<ScreenA>(screen => screen
-					.WithTitle("Calendar And Toolbar")
-				)
-				.AddScreen<ScreenB>(screen => screen
-					.WithTitle("Expandable Panels")
-				)
-				.AddScreen<ScreenC>(screen => screen
-					.WithTitle("Task Pane Grids")
-				)
+				.AddScreen<ScreenA>("Calendar And Toolbar")
+				.AddScreen<ScreenB>("Expandable Panels")
+				.AddScreen<ScreenC>("Task Pane Grids")
 				.WithDefaultScreen(freshEmptyWorkspace ? emptyScreen : typeof(ScreenHostingSettingsTestScreen))
-				.AddMenu(menu => menu
-					.WithText("Screen Hosting")
-					.WithImage32x32((Image)Resources.Tests32x32.Clone())
+				.AddMenuItem("Screen Hosting", (Image)Resources.Tests32x32.Clone(), configure: menu => menu
 					.AddItem(item => item
 						.AsScreenItem()
 						.WithText("Settings")
@@ -138,16 +128,12 @@ public static class WinFormsDemoPlugin {
 						.ShowOnToolBar(false)
 					)
 				)
-				.AddMenu(menu => menu
-					.WithText("Navigation Samples")
-					.WithImage32x32((Image)Resources.Menu32x32.Clone())
+				.AddMenuItem("Navigation Samples", (Image)Resources.Menu32x32.Clone(), configure: menu => menu
 					.AddShowScreenItem<ScreenA>("Calendar And Toolbar", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<ScreenB>("Expandable Panels", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<ScreenC>("Task Pane Grids", (Image)Resources.Generic16x16.Clone())
 				)
-				.AddMenu(menu => menu
-					.WithText("Wizard")
-					.WithImage32x32((Image)Resources.Wizard32x32.Clone())
+				.AddMenuItem("Wizard", (Image)Resources.Wizard32x32.Clone(), configure: menu => menu
 					.AddActionItem("Demo Wizard", async userInterface => await ShowDemoWizardAsync((Form)userInterface.PrimaryUIController), (Image)Resources.Wizard16x16.Clone())
 				),
 				out workspace
@@ -163,9 +149,7 @@ public static class WinFormsDemoPlugin {
 						.WithTitle("Permanent Notes")
 						.WithActivationMode(ScreenActivationMode.PermanentSingleton)
 					)
-					.AddMenu(menu => menu
-						.WithText("Notes")
-						.WithImage32x32((Image)Resources.Menu32x32.Clone())
+					.AddMenuItem("Notes", (Image)Resources.Menu32x32.Clone(), configure: menu => menu
 						.AddItem(item => item
 							.AsScreenItem()
 							.WithText("Permanent Notes")

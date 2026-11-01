@@ -707,6 +707,7 @@ Add these imports at the top of `Program.cs`, then place the registration before
 
 ```csharp
 using GridExample.Components.Screens;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 
 builder.Services
@@ -715,25 +716,30 @@ builder.Services
 		.AddBlock(block => block
 			.WithId("work")
 			.WithName("Workspace")
-			.AddScreen<OverviewScreen>(screen => screen
-				.WithTitle("Overview")
-				.AsSingleInstance()
-			)
-			.WithDefaultScreen<OverviewScreen>()
-			.AddMenu(menu => menu
-				.WithId("main")
-				.WithText("Work")
-				.WithIcon("fas fa-desktop")
-				.AddItem(item => item
-					.WithId("overview")
-					.WithText("Overview")
-					.WithIcon("fas fa-home")
-					.WithScreen<OverviewScreen>()
-				)
+			.AddScreen<OverviewScreen>("Overview", out var overview, activationMode: ScreenActivationMode.SingleInstance)
+			.WithDefaultScreen(overview)
+			.AddMenu("Work", id: "main", icon: "fas fa-desktop", configure: menu => menu
+				.AddItem(overview, "Overview", id: "overview", icon: "fas fa-home")
 			)
 		)
 	);
 ```
+
+Screen registration accepts a title directly: `AddScreen<OverviewScreen>("Overview")`.
+Its optional named arguments cover policy, kind, stable key, settings/defaults,
+parameters, activation preparation and the settings editor. Add `out var registration`
+immediately after the title to retain an exact moniker. The runtime form is
+`AddScreen(typeof(OverviewScreen), "Overview", out var registration)`.
+
+`AddMenu(text, icon: ..., id: ..., configure: ...)` and `AddMenuItem(...)` create the
+same owned menu; the latter is a convenience name for a top-level menu. Menu
+`AddItem` and block `AddToolBarItem` accept actions, generic/runtime screen types,
+exact registrations or definitions, and child-item arrays for groups. Their optional
+arguments configure IDs, icons, visibility and enablement; an `out` overload captures
+the configured command before snapshot construction. Existing callback overloads
+remain useful for incremental configuration. Configuration never runs screen
+activators or command actions, and repeated web builds keep independent ownership
+snapshots.
 
 `BlazorPluginBuilder` inherits `WithName`, `AddBlock(block)`, `AddBlock(block => ...)`, `AddServices`, `AddInitializer<T>()` and `AddFinalizer<T>()` from the shared typed `ApplicationPluginBuilderBase`; it supplies the Blazor plugin factory and composes the platform block, menu and item builders. Its product derives from the shared `ApplicationPlugin`, which owns name/block storage, startup service callbacks and Loaded/Unloaded notifications. Register plugin dependencies with `AddServices(registry => ...)`. Child configuration runs immediately; service callbacks run during plugin loading, with scoped dependencies created for each circuit. Repeated service callbacks compose in registration order.
 

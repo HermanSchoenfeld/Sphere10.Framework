@@ -41,18 +41,9 @@ public static class Sphere10Plugin {
 				.WithName("Workspace")
 				.WithIconUrl("img/heading-solid.svg")
 				.WithTooltip("Workspace")
-				.AddScreen<OverviewScreen>(screen => screen
-					.WithTitle("Overview")
-					.AsSingleInstance()
-				)
-				.AddScreen<EditorScreen>(screen => screen
-					.WithTitle("Single-instance screen")
-					.AsSingleInstance()
-				)
-				.AddScreen<ScratchpadScreen>(screen => screen
-					.WithTitle("New screen instance")
-					.AsMultiInstance()
-				)
+				.AddScreen<OverviewScreen>("Overview", activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<EditorScreen>("Single-instance screen", activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<ScratchpadScreen>("New screen instance", activationMode: ScreenActivationMode.MultiInstance)
 				.AddScreen<RegistrationExampleScreen>(screen => screen
 					.WithTitle("CPU inspector")
 					.WithStableKey("cpu-inspector")
@@ -69,10 +60,7 @@ public static class Sphere10Plugin {
 					.WithActivator(context => new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(RegistrationExampleScreen.Name)] = "GPU" })),
 					out var gpuInspector
 				)
-				.AddScreen<RegistrationDetailsScreen>(screen => screen
-					.WithTitle("Menu-free details")
-					.AsSingleInstance()
-				)
+				.AddScreen<RegistrationDetailsScreen>("Menu-free details", activationMode: ScreenActivationMode.SingleInstance)
 				.WithDefaultScreen<OverviewScreen>()
 				.AddToolBarSeparator()
 				.AddToolBarItem(item => item
@@ -85,30 +73,12 @@ public static class Sphere10Plugin {
 						return Task.CompletedTask;
 					})
 				)
-				.AddMenu(menu => menu
-					.WithId("work")
-					.WithText("Screen hosting")
-					.WithIcon("fas fa-desktop")
+				.AddMenu("Screen hosting", id: "work", icon: "fas fa-desktop", configure: menu => menu
 					.AddShowScreenItem(cpuInspector, id: "cpu-inspector", icon: "fas fa-microchip")
 					.AddShowScreenItem(gpuInspector, id: "gpu-inspector", icon: "fas fa-desktop")
-					.AddItem(item => item
-						.WithId("overview")
-						.WithText("Overview")
-						.WithIcon("fas fa-home")
-						.WithScreen<OverviewScreen>()
-					)
-					.AddItem(item => item
-						.WithId("editor")
-						.WithText("Single-instance screen")
-						.WithIcon("fas fa-edit")
-						.WithScreen<EditorScreen>()
-					)
-					.AddItem(item => item
-						.WithId("scratchpad")
-						.WithText("New screen instance")
-						.WithIcon("fas fa-sticky-note")
-						.WithScreen<ScratchpadScreen>()
-					)
+					.AddItem<OverviewScreen>("Overview", id: "overview", icon: "fas fa-home")
+					.AddItem<EditorScreen>("Single-instance screen", id: "editor", icon: "fas fa-edit")
+					.AddItem<ScratchpadScreen>("New screen instance", id: "scratchpad", icon: "fas fa-sticky-note")
 					.AddItem(item => item
 						.WithId("action")
 						.WithText("Run scoped async action")
