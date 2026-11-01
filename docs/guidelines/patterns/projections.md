@@ -138,7 +138,7 @@ projects reads and enumeration without a write conversion.
 [ProjectedDataSource](../../../src/Sphere10.Framework/DataSource/ProjectedDataSource.cs)
 forwards CRUD, paging and async operations; operations that need a source item
 reject use when its optional inverse is absent. The WinForms
-[VisualGrid binding](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGrid.cs)
+[VisualGrid binding](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/VisualGrid.cs)
 uses it to expose a typed data source through an object view.
 
 ## Verify exemplars before copying

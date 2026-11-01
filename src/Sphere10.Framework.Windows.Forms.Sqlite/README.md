@@ -126,7 +126,7 @@ dotnet build src/Sphere10.Framework.Windows.Forms.Sqlite/Sphere10.Framework.Wind
 
 - [SqliteConnectionBar](SqliteConnectionBar.cs) and [SqliteConnectionPanel](SqliteConnectionPanel.cs): field mapping and connection-test implementation.
 - [ModuleConfiguration](ModuleConfiguration.cs): registration.
-- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/ConnectionPanelBase.cs): shared API.
+- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs): shared API.
 
 ## Related guides
 

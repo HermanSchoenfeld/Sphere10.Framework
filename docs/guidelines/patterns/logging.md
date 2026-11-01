@@ -50,7 +50,7 @@ for an application example; these links require the sibling checkout.
 ## Optional visual output
 
 For optional output in a native form, reuse the public
-[LogOutputSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Controls/LogOutputSelectorControl.cs).
+[LogOutputSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Logging/Controls/LogOutputSelectorControl.cs).
 Its checkbox opens the shared wizard on first activation to select File,
 Windows Application Log, Screen, Standard Output or Standard Error, followed by applicable options.
 Destination names are bold with explanatory text beside them. Windows Application
@@ -135,4 +135,4 @@ Implementation references: [ILogger](../../../src/Sphere10.Framework/Logging/ILo
 [writer sink](../../../src/Sphere10.Framework/Logging/TextWriterLogger.cs),
 [disposable rolling sink](../../../src/Sphere10.Framework/Logging/RollingFileLogger.cs),
 [asynchronous decorator](../../../src/Sphere10.Framework/Logging/AsyncLogger.cs)
-and [WinForms sink](../../../src/Sphere10.Framework.Windows.Forms/TextBox/TextBoxLogger.cs).
+and [WinForms sink](../../../src/Sphere10.Framework.Windows.Forms/Logging/TextBoxLogger.cs).

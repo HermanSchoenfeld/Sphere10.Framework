@@ -8,7 +8,7 @@ The codebase favors **fluent builder classes** for configuring complex objects. 
 
 - **[SerializerBuilder](../../../src/Sphere10.Framework/Serialization/Builder/SerializerBuilder.cs)** builds `IItemSerializer<T>` through `For<T>()`, member `Serialize(...)` calls and `Build()`. The parameterless `For<T>()` requires `T : new()`; supply `For<T>(Func<T>)` for another activation strategy. Use `FactoryAssemble<T>(factory)` for factory-based assembly; consult the [serialization practice](serialization.md#automatic-assembly-and-reflection) before selecting automatic configuration paths.
 - **[ProtocolBuilder](../../../src/Sphere10.Framework/Protocol/Builder/ProtocolBuilder.cs)** builds communication `Protocol` objects using `WithHandshake`, `AddRequest`, `AddCommand`, direct handler registrations and `SetMode`.
-- **[WinFormsApplicationBlockBuilder](../../../src/Sphere10.Framework.Windows.Forms/Application/Builder/WinFormsApplicationBlockBuilder.cs)** builds native blocks through `WithName(string)`, optional `WithDefaultScreen<TScreen>(...)`, `AddMenu(...)` and `Build()`. The screen type must derive from `WinFormsApplicationScreen`.
+- **[WinFormsApplicationBlockBuilder](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplicationBlockBuilder.cs)** builds native blocks through `WithName(string)`, optional `WithDefaultScreen<TScreen>(...)`, `AddMenu(...)` and `Build()`. The screen type must derive from `WinFormsApplicationScreen`.
 - **[WinFormsWizardBuilder](../../../src/Sphere10.Framework.Windows.Forms/Wizard/WinFormsWizardBuilder.cs)** configures a native wizard through `WithTitle(string)`, `WithModel(T)`, `AddScreen(WinFormsWizardScreen<T>)` and `OnFinished(...)`. Its shared [WizardBuilderBase](../../../src/Sphere10.Framework.Application/UI/Wizard/WizardBuilderBase.cs) also exposes `AddStep`; native `AddScreen` delegates to it. `Build()` requires a nonblank title, at least one step and a finish callback, then creates [WinFormsActionWizard](../../../src/Sphere10.Framework.Windows.Forms/Wizard/WinFormsActionWizard.cs).
 
 When creating new complex configuration APIs, follow this pattern: create a `FooBuilder` class with chainable methods and a terminal `.Build()`. Format each builder invocation as a continuous indented block with no blank lines: one configuration call per line, child calls one tab deeper than their owning call, and multiline closing parentheses aligned with that call.
@@ -57,7 +57,7 @@ rather than an `AddHandshake` API to invent.
 
 - [WinFormsApplicationBlock](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplicationBlock.cs) owns screen registrations independently from navigation. Add them with `AddScreen<TScreen>(screen => ...)`; `WithDefaultScreen<TScreen>()` selects an existing unambiguous registration. `AddMenu(...)` uses `AddShowScreenItem<TScreen>()` or an exact registration reference for navigation commands.
 - [WinFormsApplicationScreen](../../../src/Sphere10.Framework.Windows.Forms/Application/Forms/WinFormsApplicationScreen.cs) is the existing concrete, inheritable native control type required by registration. Reuse that public family when defining screens; it is not a template for introducing new concrete classes whose only purpose is inheritance. Follow [type hierarchies](type-hierarchies.md) for new foundations.
-- [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGrid.cs) binds grid screens through `SetDataSource<TEntity>(IDataSource<TEntity>, ...)` and the existing [IDataSource](../../../src/Sphere10.Framework/DataSource/IDataSource.cs) contract.
+- [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/VisualGrid.cs) binds grid screens through `SetDataSource<TEntity>(IDataSource<TEntity>, ...)` and the existing [IDataSource](../../../src/Sphere10.Framework/DataSource/IDataSource.cs) contract.
 
 The [WinForms project guide](../../../src/Sphere10.Framework.Windows.Forms/README.md) cover native screens, grids and wizards. Shared application builders and their platform specializations are described in the [application guide](../../../src/Sphere10.Framework.Application/README.md#shared-ui-framework) and [Blazor workspace guide](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#register-a-workspace).
 
@@ -66,7 +66,7 @@ A builder's existing construction and reuse semantics remain authoritative: `Bui
 `ProtocolBuilder`, `SerializerBuilder` and
 [JobBuilder](../../../src/Sphere10.Framework/Scheduler/JobBuilder.cs)
 retain their configured product. Native block and
-[menu builders](../../../src/Sphere10.Framework.Windows.Forms/Application/Builder/WinFormsApplicationMenuBuilder.cs)
+[menu builders](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplicationMenuBuilder.cs)
 also return the same product after their first build, and later fluent calls can
 update it. In contrast, the
 [Blazor block](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/BlazorApplicationBlockBuilder.cs)

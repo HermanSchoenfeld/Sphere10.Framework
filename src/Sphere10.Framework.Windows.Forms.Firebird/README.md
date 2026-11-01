@@ -120,7 +120,7 @@ dotnet build src/Sphere10.Framework.Windows.Forms.Firebird/Sphere10.Framework.Wi
 - [Server bar](FirebirdConnectionBar.cs) and [server panel](FirebirdConnectionPanel.cs).
 - [Embedded bar](FirebirdEmbeddedConnectionBar.cs) and [embedded panel](FirebirdEmbeddedConnectionPanel.cs).
 - [ModuleConfiguration](ModuleConfiguration.cs): both provider-mode registrations.
-- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/ConnectionPanelBase.cs).
+- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs).
 
 ## Related guides
 

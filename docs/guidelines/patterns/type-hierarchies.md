@@ -45,7 +45,7 @@ IApplicationMenu contract = menu;
 
 The base is abstract even though it implements every required menu member.
 The concrete menu is also consumed by
-[WinFormsApplicationMenuBuilder](../../../src/Sphere10.Framework.Windows.Forms/Application/Builder/WinFormsApplicationMenuBuilder.cs).
+[WinFormsApplicationMenuBuilder](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplicationMenuBuilder.cs).
 It does not need an additional empty concrete wrapper or a custom hierarchy to
 make that contract usable.
 

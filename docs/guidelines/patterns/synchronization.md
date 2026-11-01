@@ -155,7 +155,7 @@ actual owner controls in-flight completion and disposal.
 
 Owned resources have a different boundary: an owned file writer can remain under
 the lifetime write scope so Stop/disposal joins the write before closing it.
-[LogOutputSession](../../../src/Sphere10.Framework.Windows.Forms/Controls/Logging/LogOutputSession.cs)
+[LogOutputSession](../../../src/Sphere10.Framework.Windows.Forms/Logging/LogOutputSession.cs)
 demonstrates both paths. Native event subscriptions should post UI work rather
 than synchronously invoke a UI thread that may be stopping the native source.
 

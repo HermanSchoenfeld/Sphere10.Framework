@@ -6,6 +6,17 @@
 
 Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application development** with pre-built UI components for database connectivity, data display, user input validation, and common desktop patterns.
 
+## Source organization
+
+Domain folders such as `Application`, `AppointmentBook`, `Charts`, `Database`,
+`ExplorerBar`, `Logging`, `VisualGrid` and `Wizard` own their related functionality.
+Their `Controls` folders contain reusable visual controls; their `Forms` folders
+contain forms, dialogs and hosted screens. Nonvisual contracts, settings, builders
+and helpers remain with the domain. General controls live in the root `Controls`
+folder, general dialogs and forms in `Forms`, and common helpers at the project
+root. Existing CLR namespaces and persisted control identities are independent
+of these source locations.
+
 ## 📦 Installation
 
 ```bash

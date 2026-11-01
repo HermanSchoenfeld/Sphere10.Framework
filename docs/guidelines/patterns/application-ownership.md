@@ -148,7 +148,7 @@ multiple-screen contract should expose the operations their consumers need
 without requiring every host to provide tab collections and ordering.
 
 [Blazor registration](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/IServiceCollectionExtensions.cs)
-and [WinForms registration](../../../src/Sphere10.Framework.Windows.Forms/Extensions/IoCExtensions.cs)
+and [WinForms registration](../../../src/Sphere10.Framework.Windows.Forms/IoCExtensions.cs)
 validate contributions before and after `Load(IServiceCollection)` and publish
 [ApplicationPluginRegistration](../../../src/Sphere10.Framework.Application/UI/ApplicationPluginRegistration.cs)
 only after successful registration. A DI plugin registration alone is not a

@@ -114,7 +114,7 @@ dotnet build src/Sphere10.Framework.Windows.Forms.MSSQL/Sphere10.Framework.Windo
 
 - [MSSQLConnectionBar](MSSQLConnectionBar.cs) and [MSSQLConnectionPanel](MSSQLConnectionPanel.cs): field mapping and DAC construction.
 - [ModuleConfiguration](ModuleConfiguration.cs): registration names.
-- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/ConnectionPanelBase.cs): shared lifecycle.
+- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs): shared lifecycle.
 
 ## Related guides
 

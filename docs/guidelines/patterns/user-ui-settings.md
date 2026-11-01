@@ -111,7 +111,7 @@ Remember normal bounds as well as the monitor and maximized state. Use restore b
 is a settings data object for one logical grid. It stores nullable `PageMode`, the
 manual `PageSize`, zero-based Paged/Auto `PageNumber`, `SortColumnName` and
 `SortDirection`. It contains values rather than controls, row data or a live
-provider graph. [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGrid.cs)
+provider graph. [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/VisualGrid.cs)
 uses the same `Get<T>(id)` / instance `Save()` pattern as form preferences.
 
 `VisualGrid.PersistSettings` defaults to true. `SettingsKey` supplies an explicit
@@ -176,9 +176,9 @@ retain their built-in persistence using the same value capture/apply mechanism.
 ## Reusable logging preferences
 
 Use the public WinForms
-[LogOutputSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Controls/LogOutputSelectorControl.cs)
+[LogOutputSelectorControl](../../../src/Sphere10.Framework.Windows.Forms/Logging/Controls/LogOutputSelectorControl.cs)
 for optional File, Application or standard-stream output. Its
-[LogOutputSelectorSettings](../../../src/Sphere10.Framework.Windows.Forms/Controls/Logging/LogOutputSelectorSettings.cs)
+[LogOutputSelectorSettings](../../../src/Sphere10.Framework.Windows.Forms/Logging/LogOutputSelectorSettings.cs)
 payload stores the accepted `LogOutputConfiguration` and enabled choice; no
 logger, writer, service or control is serialized. **Remember After Close** is an
 explicit wizard option, off by default.
@@ -227,7 +227,7 @@ Inspect these current implementations before extending their behavior:
 - [UserSettings](../../../src/Sphere10.Framework.Application/Settings/UserSettings.cs), [SettingsObject](../../../src/Sphere10.Framework.Application/Settings/SettingsObject.cs), and [ISettingsProvider](../../../src/Sphere10.Framework.Application/Settings/ISettingsProvider.cs).
 - [Application module registration](../../../src/Sphere10.Framework.Application/ModuleConfiguration.cs).
 - [DirectoryFileSettingsProvider](../../../src/Sphere10.Framework.Application/Settings/DirectoryFileSettingsProvider.cs) and [CachedSettingsProvider](../../../src/Sphere10.Framework.Application/Settings/CachedSettingsProvider.cs).
-- [MainFormSettingsFinalizer](../../../src/Sphere10.Framework.Windows.Forms/Application/Components/MainFormSettingsFinalizer.cs) and [window tracking helpers](../../../src/Sphere10.Framework.Windows.Forms/WindowSettingsTool.cs).
+- [MainFormSettingsFinalizer](../../../src/Sphere10.Framework.Windows.Forms/Application/MainFormSettingsFinalizer.cs) and [window tracking helpers](../../../src/Sphere10.Framework.Windows.Forms/WindowSettingsTool.cs).
 - [WinForms usage](../../../src/Sphere10.Framework.Windows.Forms/README.md).
 - [VisualGrid preference and layout tests](../../../tests/Sphere10.Framework.Windows.Forms.Tests/VisualGridAutoPageSizeTests.cs), including fresh-provider round trips and concurrent instances sharing a settings ID.
 

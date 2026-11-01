@@ -222,7 +222,7 @@ can deadlock. Prefer awaited calls on UI execution paths.
 Keep platform dispatch in the owning UI implementation; general disposable
 bases do not need creator-thread IDs or UI context machinery.
 The abstract
-[`WinFormsSyncDisposableBase`](../../../src/Sphere10.Framework.Windows.Forms/Disposables/WinFormsSyncDisposableBase.cs)
+[`WinFormsSyncDisposableBase`](../../../src/Sphere10.Framework.Windows.Forms/WinFormsSyncDisposableBase.cs)
 specializes the sync-first async hook for rendering, highlight, screen-transition,
 hot-key and wizard owners. It captures their WinForms context in one place.
 Synchronous cleanup remains inline on the calling UI thread and leaves queued
